@@ -54,7 +54,6 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
                     }
                     .toMutableList()
                     .apply { sortBy { it.name } }
-
             }
             drawableList.clear()
             drawableList.addAll(list)

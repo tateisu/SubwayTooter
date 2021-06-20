@@ -16,124 +16,121 @@ import jp.juggler.util.LogCategory
 import org.jetbrains.anko.matchParent
 
 internal class StatusButtonsPopup(
-	private val activity : ActMain,
-	column : Column,
-	bSimpleList : Boolean,
-	itemViewHolder : ItemViewHolder
+    private val activity: ActMain,
+    column: Column,
+    bSimpleList: Boolean,
+    itemViewHolder: ItemViewHolder,
 ) {
-	
-	companion object {
-		
-		@Suppress("unused")
-		private var log = LogCategory("StatusButtonsPopup")
-		
-		private fun getViewWidth(v : View) : Int {
-			val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-			v.measure(spec, spec)
-			return v.measuredWidth
-		}
-		
-		var last_popup_close = 0L
-		
-	}
-	
-	private val viewRoot : View
-	private val buttons_for_status : StatusButtons
-	private var window : PopupWindow? = null
-	
-	init {
-		@SuppressLint("InflateParams")
-		this.viewRoot = activity.layoutInflater.inflate(R.layout.list_item_popup, null, false)
-		val statusButtonsViewHolder = StatusButtonsViewHolder(activity, matchParent, 0f)
-		viewRoot.findViewById<LinearLayout>(R.id.llBarPlaceHolder)
-			.addView(statusButtonsViewHolder.viewRoot)
-		this.buttons_for_status = StatusButtons(
-			activity,
-			column,
-			bSimpleList,
-			statusButtonsViewHolder,
-			itemViewHolder
-		)
-	}
-	
-	fun dismiss() {
-		val window = this.window
-		if(window != null && window.isShowing) {
-			window.dismiss()
-		}
-	}
-	
-	@SuppressLint("RtlHardcoded", "ClickableViewAccessibility")
-	fun show(
-		listView : RecyclerView,
-		anchor : View,
-		status : TootStatus,
-		notification : TootNotification?
-	) {
-		
-		val window = PopupWindow(activity)
-		this.window = window
-		
-		window.width = WindowManager.LayoutParams.WRAP_CONTENT
-		window.height = WindowManager.LayoutParams.WRAP_CONTENT
-		window.contentView = viewRoot
-		window.setBackgroundDrawable(ColorDrawable(0x00000000))
-		window.isTouchable = true
-		window.isOutsideTouchable = true
-		window.setTouchInterceptor { _, event ->
-			if(event.action == MotionEvent.ACTION_OUTSIDE) {
-				// ポップアップの外側をタッチしたらポップアップを閉じる
-				// また、そのタッチイベントがlistViewに影響しないようにする
-				window.dismiss()
-				last_popup_close = SystemClock.elapsedRealtime()
-				true
-			} else {
-				false
-			}
-		}
-		
-		buttons_for_status.bind(status, notification)
-		buttons_for_status.close_window = window
-		
-		val location = IntArray(2)
-		
-		anchor.getLocationOnScreen(location)
-		val anchor_left = location[0]
-		val anchor_top = location[1]
-		
-		listView.getLocationOnScreen(location)
-		val listView_top = location[1]
-		
-		val density = activity.density
-		
-		val clip_top = listView_top + (0.5f + 8f * density).toInt()
-		val clip_bottom = listView_top + listView.height - (0.5f + 8f * density).toInt()
-		
-		val popup_height = (0.5f + (56f + 24f) * density).toInt()
-		var popup_y = anchor_top + anchor.height / 2
-		
-		if(popup_y < clip_top) {
-			// 画面外のは画面内にする
-			popup_y = clip_top
-		} else if(clip_bottom - popup_y < popup_height) {
-			// 画面外のは画面内にする
-			if(popup_y > clip_bottom) popup_y = clip_bottom
-			
-			// 画面の下側にあるならポップアップの吹き出しが下から出ているように見せる
-			viewRoot.findViewById<View>(R.id.ivTriangleTop).visibility = View.GONE
-			viewRoot.findViewById<View>(R.id.ivTriangleBottom).visibility = View.VISIBLE
-			popup_y -= popup_height
-		}
-		
-		val anchor_width = anchor.width
-		val popup_width = getViewWidth(viewRoot)
-		var popup_x = anchor_left + anchor_width / 2 - popup_width / 2
-		if(popup_x < 0) popup_x = 0
-		val popup_x_max = activity.resources.displayMetrics.widthPixels - popup_width
-		if(popup_x > popup_x_max) popup_x = popup_x_max
-		
-		window.showAtLocation(
-			listView, Gravity.LEFT or Gravity.TOP, popup_x, popup_y
-		)
-	}
+
+    companion object {
+
+        @Suppress("unused")
+        private var log = LogCategory("StatusButtonsPopup")
+
+        private fun getViewWidth(v: View): Int {
+            val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            v.measure(spec, spec)
+            return v.measuredWidth
+        }
+
+        var lastPopupClose = 0L
+    }
+
+    private val viewRoot: View
+    private val buttonsForStatus: StatusButtons
+    private var window: PopupWindow? = null
+
+    init {
+        @SuppressLint("InflateParams")
+        this.viewRoot = activity.layoutInflater.inflate(R.layout.list_item_popup, null, false)
+        val statusButtonsViewHolder = StatusButtonsViewHolder(activity, matchParent, 0f)
+        viewRoot.findViewById<LinearLayout>(R.id.llBarPlaceHolder)
+            .addView(statusButtonsViewHolder.viewRoot)
+        this.buttonsForStatus = StatusButtons(
+            activity,
+            column,
+            bSimpleList,
+            statusButtonsViewHolder,
+            itemViewHolder
+        )
+    }
+
+    fun dismiss() {
+        val window = this.window
+        if (window != null && window.isShowing) {
+            window.dismiss()
+        }
+    }
+
+    @SuppressLint("RtlHardcoded", "ClickableViewAccessibility")
+    fun show(
+        listView: RecyclerView,
+        anchor: View,
+        status: TootStatus,
+        notification: TootNotification?,
+    ) {
+
+        val window = PopupWindow(activity)
+        this.window = window
+
+        window.width = WindowManager.LayoutParams.WRAP_CONTENT
+        window.height = WindowManager.LayoutParams.WRAP_CONTENT
+        window.contentView = viewRoot
+        window.setBackgroundDrawable(ColorDrawable(0x00000000))
+        window.isTouchable = true
+        window.isOutsideTouchable = true
+        window.setTouchInterceptor { _, event ->
+            if (event.action == MotionEvent.ACTION_OUTSIDE) {
+                // ポップアップの外側をタッチしたらポップアップを閉じる
+                // また、そのタッチイベントがlistViewに影響しないようにする
+                window.dismiss()
+                lastPopupClose = SystemClock.elapsedRealtime()
+                true
+            } else {
+                false
+            }
+        }
+
+        buttonsForStatus.bind(status, notification)
+        buttonsForStatus.closeWindow = window
+
+        val location = IntArray(2)
+
+        anchor.getLocationOnScreen(location)
+        val anchorLeft = location[0]
+        val anchorTop = location[1]
+
+        listView.getLocationOnScreen(location)
+        val listviewTop = location[1]
+
+        val density = activity.density
+
+        val clipTop = listviewTop + (0.5f + 8f * density).toInt()
+        val clipBottom = listviewTop + listView.height - (0.5f + 8f * density).toInt()
+
+        val popupHeight = (0.5f + (56f + 24f) * density).toInt()
+        var popupY = anchorTop + anchor.height / 2
+
+        if (popupY < clipTop) {
+            // 画面外のは画面内にする
+            popupY = clipTop
+        } else if (clipBottom - popupY < popupHeight) {
+            // 画面外のは画面内にする
+            if (popupY > clipBottom) popupY = clipBottom
+
+            // 画面の下側にあるならポップアップの吹き出しが下から出ているように見せる
+            viewRoot.findViewById<View>(R.id.ivTriangleTop).visibility = View.GONE
+            viewRoot.findViewById<View>(R.id.ivTriangleBottom).visibility = View.VISIBLE
+            popupY -= popupHeight
+        }
+
+        val anchorWidth = anchor.width
+        val popupWidth = getViewWidth(viewRoot)
+        var popupX = anchorLeft + anchorWidth / 2 - popupWidth / 2
+        if (popupX < 0) popupX = 0
+        val popupXMax = activity.resources.displayMetrics.widthPixels - popupWidth
+        if (popupX > popupXMax) popupX = popupXMax
+
+        window.showAtLocation(listView, Gravity.LEFT or Gravity.TOP, popupX, popupY)
+    }
 }

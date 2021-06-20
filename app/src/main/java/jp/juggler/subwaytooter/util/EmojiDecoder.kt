@@ -147,7 +147,7 @@ object EmojiDecoder {
             )
         }
 
-        fun addImageSpan(text: String, @DrawableRes res_id: Int) {
+        fun addImageSpan(text: String, @DrawableRes resId: Int) {
             val context = options.context
             if (context == null) {
                 openNormalText()
@@ -158,7 +158,7 @@ object EmojiDecoder {
                 sb.append(text)
                 val end = sb.length
                 sb.setSpan(
-                    EmojiImageSpan(context, res_id, scale = options.enlargeEmoji),
+                    EmojiImageSpan(context, resId, scale = options.enlargeEmoji),
                     start,
                     end,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -301,13 +301,17 @@ object EmojiDecoder {
 
             // 閉じるコロンを探す
             var posEndColon = -1
-            while (i < end) {
+            loop@ while (i < end) {
                 val cp = s.codePointAt(i)
-                if (cp == codepointColon) {
-                    posEndColon = i
-                    break
-                } else if (!shortCodeCharacterSet.get(cp, false))
-                    break
+                when {
+                    cp == codepointColon -> {
+                        posEndColon = i
+                        break@loop
+                    }
+
+                    !shortCodeCharacterSet.get(cp, false) ->
+                        break@loop
+                }
 
                 i += Character.charCount(cp)
             }
@@ -372,7 +376,7 @@ object EmojiDecoder {
                 val emojiCustom = emojiMapCustom?.get(name)
                 if (emojiCustom != null) {
                     val url = when {
-                        Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.static_url?.isNotEmpty() == true -> emojiCustom.static_url
+                        Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl
                         else -> emojiCustom.url
                     }
                     builder.addNetworkEmojiSpan(part, url)

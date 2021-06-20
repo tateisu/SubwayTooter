@@ -88,7 +88,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
     class Field(
         val name: String,
         val value: String,
-        val verified_at: Long // 0L if not verified
+        val verified_at: Long, // 0L if not verified
     )
 
     val fields: ArrayList<Field>?
@@ -107,7 +107,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
     val isRemote: Boolean
         get() = acct.host != null
 
-    fun getUserUrl() = url ?: "https://${apDomain.pretty}/@${username}"
+    fun getUserUrl() = url ?: "https://${apDomain.pretty}/@$username"
 
     // user_hides_network is preference, not exposed in API
     // val user_hides_network : Boolean
@@ -126,7 +126,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
     // mastodon 3.3.0
     var suspended = false
 
-
     val json: JsonObject
 
     init {
@@ -136,9 +135,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         when (parser.serviceType) {
             ServiceType.MISSKEY -> {
 
-
                 this.custom_emojis =
-                    parseMapOrNull(CustomEmoji.decodeMisskey,  parser.apDomain, src.jsonArray("emojis"))
+                    parseMapOrNull(CustomEmoji.decodeMisskey, parser.apDomain, src.jsonArray("emojis"))
                 this.profile_emojis = null
 
                 this.username = src.stringOrThrow("username")
@@ -169,8 +167,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 this.movedRef = null
                 this.locked = src.optBoolean("isLocked")
 
-
-
                 this.bot = src.optBoolean("isBot", false)
                 this.isCat = src.optBoolean("isCat", false)
                 this.isAdmin = src.optBoolean("isAdmin", false)
@@ -179,7 +175,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 // this.user_hides_network = src.optBoolean("user_hides_network")
 
                 this.id = EntityId.mayDefault(src.string("id"))
-
 
                 this.followers_count = src.long("followersCount") ?: -1L
                 this.following_count = src.long("followingCount") ?: -1L
@@ -200,7 +195,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 this.header = src.string("bannerUrl")
                 this.header_static = src.string("bannerUrl")?.getStaticImageUrl()
 
-
                 this.pinnedNoteIds = src.stringArrayList("pinnedNoteIds")
                 if (parser.misskeyDecodeProfilePin) {
                     val list = parseList(::TootStatus, parser, src.jsonArray("pinnedNotes"))
@@ -212,15 +206,12 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 this.location = profile?.string("location")
                 this.birthday = profile?.string("birthday")
 
-
                 this.fields = parseMisskeyFields(src)
-
 
                 UserRelation.fromAccount(parser, src, id)
 
                 @Suppress("LeakingThis")
                 MisskeyAccountDetailMap.fromAccount(parser, this, id)
-
             }
             ServiceType.NOTESTOCK -> {
 
@@ -245,7 +236,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 this.apiHost = apiHost
                 this.apDomain = apDomain
                 this.acct = Acct.parse(this.username, apDomain)
-
 
                 this.avatar = src.string("avatar")
                 this.avatar_static = src.string("avatar_static")
@@ -282,7 +272,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             else -> {
 
                 // 絵文字データは先に読んでおく
-                this.custom_emojis = parseMapOrNull(CustomEmoji.decode,  parser.apDomain, src.jsonArray("emojis"))
+                this.custom_emojis = parseMapOrNull(CustomEmoji.decode, parser.apDomain, src.jsonArray("emojis"))
 
                 this.profile_emojis = when (val o = src["profile_emojis"]) {
                     is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
@@ -347,7 +337,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                         this.avatar_static = src.string("avatar_static")
                         this.header = src.string("header")
                         this.header_static = src.string("header_static")
-
                     }
 
                     ServiceType.TOOTSEARCH -> {
@@ -377,7 +366,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                         this.header_static = src.string("header_static")
                     }
 
-
                     ServiceType.MSP -> {
                         this.id = EntityId.mayDefault(src.string("id"))
 
@@ -403,7 +391,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                         this.avatar_static = avatar
                         this.header = null
                         this.header_static = null
-
                     }
 
                     ServiceType.MISSKEY, ServiceType.NOTESTOCK -> error("will not happen")
@@ -454,7 +441,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
 
     private fun SpannableStringBuilder.replaceAllEx(
         pattern: Pattern,
-        replacement: String
+        replacement: String,
     ): SpannableStringBuilder {
         val m = pattern.matcher(this)
         var buffer: SpannableStringBuilder? = null
@@ -488,7 +475,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         tv: TextView,
         invalidator: NetworkEmojiInvalidator?,
         fromProfileHeader: Boolean = false,
-        suggestionSource: String? =null,
+        suggestionSource: String? = null,
     ): SpannableStringBuilder? {
         val pref = App1.pref
         val context = tv.context
@@ -497,35 +484,39 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         fun prepareSb() = sb?.apply { append('\n') } ?: SpannableStringBuilder().also { sb = it }
         val delm = ": "
 
-        if( suggestionSource?.isNotEmpty() == true){
+        if (suggestionSource?.isNotEmpty() == true) {
             prepareSb()
                 .append(context.getString(R.string.suggestion_source))
                 .append(delm)
                 .append(suggestionSource)
-
         }
 
-        if (Pref.bpDirectoryLastActive(pref) && last_status_at > 0L)
+        if (Pref.bpDirectoryLastActive(pref) && last_status_at > 0L) {
             prepareSb()
                 .append(context.getString(R.string.last_active))
                 .append(delm)
                 .append(TootStatus.formatTime(context, last_status_at, bAllowRelative = true, onlyDate = true))
+        }
 
         if (!fromProfileHeader) {
-            if (Pref.bpDirectoryTootCount(pref)
-                && (statuses_count ?: 0L) > 0L)
+            if (Pref.bpDirectoryTootCount(pref) &&
+                (statuses_count ?: 0L) > 0L
+            ) {
                 prepareSb()
                     .append(context.getString(R.string.toot_count))
                     .append(delm)
                     .append(statuses_count.toString())
+            }
 
-            if (Pref.bpDirectoryFollowers(pref)
-                && !Pref.bpHideFollowCount(pref)
-                && (followers_count ?: 0L) > 0L)
+            if (Pref.bpDirectoryFollowers(pref) &&
+                !Pref.bpHideFollowCount(pref) &&
+                (followers_count ?: 0L) > 0L
+            ) {
                 prepareSb()
                     .append(context.getString(R.string.followers))
                     .append(delm)
                     .append(followers_count.toString())
+            }
 
             if (Pref.bpDirectoryNote(pref) && note?.isNotEmpty() == true) {
                 val decodedNote = DecodeOptions(
@@ -704,7 +695,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         fun findHostFromUrl(
             acctArg: String?,
             linkHelper: LinkHelper?,
-            url: String?
+            url: String?,
         ): Pair<Host?, Host?> {
             val apDomain = findApDomain(acctArg, linkHelper)
             val apiHost = findApiHost(url)
@@ -784,6 +775,5 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
 
             return if (dst?.isNotEmpty() == true) dst else null
         }
-
     }
 }

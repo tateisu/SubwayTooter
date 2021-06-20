@@ -14,7 +14,7 @@ import okhttp3.Request
 // private val log = LogCategory("Action_Filter")
 
 fun ActMain.filterDelete(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     filter: TootFilter,
     bConfirmed: Boolean = false
 ) {
@@ -23,14 +23,14 @@ fun ActMain.filterDelete(
             this,
             getString(R.string.filter_delete_confirm, filter.phrase)
         ) {
-            filterDelete(access_info, filter, bConfirmed = true)
+            filterDelete(accessInfo, filter, bConfirmed = true)
         }
         return
     }
 
     launchMain {
         var resultFilterList: ArrayList<TootFilter>? = null
-        runApiTask(access_info) { client ->
+        runApiTask(accessInfo) { client ->
             var result = client.request("/api/v1/filters/${filter.id}", Request.Builder().delete())
             if (result != null && result.error == null) {
                 result = client.request("/api/v1/filters")
@@ -44,8 +44,8 @@ fun ActMain.filterDelete(
 
                 else -> {
                     showToast(false, R.string.delete_succeeded)
-                    for (column in app_state.columnList) {
-                        if (column.access_info == access_info) {
+                    for (column in appState.columnList) {
+                        if (column.accessInfo == accessInfo) {
                             column.onFilterDeleted(filter, filterList)
                         }
                     }

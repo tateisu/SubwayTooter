@@ -8,10 +8,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlin.coroutines.CoroutineContext
 
-abstract class AsyncActivity : AppCompatActivity() , CoroutineScope {
+abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
     private lateinit var activityJob: Job
 
-    override val coroutineContext : CoroutineContext
+    override val coroutineContext: CoroutineContext
         get() = activityJob + Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -13,38 +13,35 @@ import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.util.startMargin
 import org.jetbrains.anko.allCaps
 
-
-
-
-fun ColumnViewHolder.addEmojiQuery(reaction:TootReaction? =null){
-    val column = this.column?:return
-    if(reaction==null){
-        EmojiPicker(activity, column.access_info, closeOnSelected = true) { result ->
+fun ColumnViewHolder.addEmojiQuery(reaction: TootReaction? = null) {
+    val column = this.column ?: return
+    if (reaction == null) {
+        EmojiPicker(activity, column.accessInfo, closeOnSelected = true) { result ->
             val newReaction = when (val emoji = result.emoji) {
                 is UnicodeEmoji -> TootReaction(name = emoji.unifiedCode)
                 is CustomEmoji -> TootReaction(
-                    name=emoji.shortcode,
+                    name = emoji.shortcode,
                     url = emoji.url,
-                    static_url = emoji.static_url
+                    static_url = emoji.staticUrl
                 )
             }
             addEmojiQuery(newReaction)
         }.show()
         return
     }
-    val list = TootReaction.decodeEmojiQuery(column.search_query).toMutableList()
+    val list = TootReaction.decodeEmojiQuery(column.searchQuery).toMutableList()
     list.add(reaction)
-    column.search_query = TootReaction.  encodeEmojiQuery(list)
+    column.searchQuery = TootReaction.encodeEmojiQuery(list)
     updateReactionQueryView()
-    activity.app_state.saveColumnList()
+    activity.appState.saveColumnList()
 }
 
-private fun ColumnViewHolder.removeEmojiQuery(target:TootReaction?){
+private fun ColumnViewHolder.removeEmojiQuery(target: TootReaction?) {
     target ?: return
-    val list = TootReaction.decodeEmojiQuery(column?.search_query).filter { it.name != target.name }
-    column?.search_query = TootReaction.encodeEmojiQuery(list)
+    val list = TootReaction.decodeEmojiQuery(column?.searchQuery).filter { it.name != target.name }
+    column?.searchQuery = TootReaction.encodeEmojiQuery(list)
     updateReactionQueryView()
-    activity.app_state.saveColumnList()
+    activity.appState.saveColumnList()
 }
 
 fun ColumnViewHolder.updateReactionQueryView() {
@@ -59,7 +56,7 @@ fun ColumnViewHolder.updateReactionQueryView() {
 
     val options = DecodeOptions(
         activity,
-        column.access_info,
+        column.accessInfo,
         decodeEmoji = true,
         enlargeEmoji = 1.5f,
         enlargeCustomEmoji = 1.5f
@@ -75,19 +72,19 @@ fun ColumnViewHolder.updateReactionQueryView() {
 
     val contentColor = column.getContentColor()
 
-    TootReaction.decodeEmojiQuery(column.search_query).forEachIndexed { index, reaction ->
-        val ssb = reaction.toSpannableStringBuilder(options, status=null)
+    TootReaction.decodeEmojiQuery(column.searchQuery).forEachIndexed { index, reaction ->
+        val ssb = reaction.toSpannableStringBuilder(options, status = null)
 
         val b = Button(activity).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
                 buttonHeight
             ).apply {
-                if(index >0 ) startMargin = marginBetween
+                if (index > 0) startMargin = marginBetween
             }
             minWidthCompat = buttonHeight
 
-            background = ContextCompat.getDrawable(act,R.drawable.btn_bg_transparent_round6dp)
+            background = ContextCompat.getDrawable(act, R.drawable.btn_bg_transparent_round6dp)
 
             setTextColor(contentColor)
             setPadding(paddingH, paddingV, paddingH, paddingV)
@@ -108,5 +105,4 @@ fun ColumnViewHolder.updateReactionQueryView() {
         }
         flEmoji.addView(b)
     }
-
 }

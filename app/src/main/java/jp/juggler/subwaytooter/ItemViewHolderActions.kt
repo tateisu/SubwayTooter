@@ -17,11 +17,11 @@ import jp.juggler.util.showToast
 val defaultBoostedAction: ItemViewHolder.() -> Unit = {
     val pos = activity.nextPosition(column)
     val notification = (item as? TootNotification)
-    boost_account?.let { whoRef ->
-        if (access_info.isPseudo) {
+    boostAccount?.let { whoRef ->
+        if (accessInfo.isPseudo) {
             DlgContextMenu(activity, column, whoRef, null, notification, tvContent).show()
         } else {
-            activity.userProfileLocal(pos, access_info, whoRef.get())
+            activity.userProfileLocal(pos, accessInfo, whoRef.get())
         }
     }
 }
@@ -29,15 +29,15 @@ val defaultBoostedAction: ItemViewHolder.() -> Unit = {
 fun ItemViewHolder.openConversationSummary() {
     val cs = item as? TootConversationSummary ?: return
 
-    if( activity.conversationUnreadClear(access_info, cs) ){
-        list_adapter.notifyChange(
+    if (activity.conversationUnreadClear(accessInfo, cs)) {
+        listAdapter.notifyChange(
             reason = "ConversationSummary reset unread",
             reset = true
         )
     }
     activity.conversation(
         activity.nextPosition(column),
-        access_info,
+        accessInfo,
         cs.last_status
     )
 }
@@ -45,10 +45,10 @@ fun ItemViewHolder.openConversationSummary() {
 fun ItemViewHolder.openFilterMenu(item: TootFilter) {
     val ad = ActionsDialog()
     ad.addAction(activity.getString(R.string.edit)) {
-        ActKeywordFilter.open(activity, access_info, item.id)
+        ActKeywordFilter.open(activity, accessInfo, item.id)
     }
     ad.addAction(activity.getString(R.string.delete)) {
-        activity.filterDelete( access_info, item)
+        activity.filterDelete(accessInfo, item)
     }
     ad.show(activity, activity.getString(R.string.filter_of, item.phrase))
 }
@@ -68,7 +68,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                 llCardImage.visibility = View.GONE
                 btnCardImageShow.visibility = View.VISIBLE
             }
-            status_showing?.let { status ->
+            statusShowing?.let { status ->
                 MediaShown.save(status, false)
                 hideViews()
             }
@@ -85,7 +85,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                 llCardImage.visibility = View.VISIBLE
                 btnCardImageShow.visibility = View.GONE
             }
-            status_showing?.let { status ->
+            statusShowing?.let { status ->
                 MediaShown.save(status, true)
                 showViews()
             }
@@ -101,26 +101,26 @@ fun ItemViewHolder.onClickImpl(v: View?) {
         ivMedia4 -> clickMedia(3)
 
         btnContentWarning -> {
-            status_showing?.let { status ->
-                val new_shown = llContents.visibility == View.GONE
-                ContentWarning.save(status, new_shown)
+            statusShowing?.let { status ->
+                val newShown = llContents.visibility == View.GONE
+                ContentWarning.save(status, newShown)
 
                 // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-                list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
-
+                listAdapter.notifyChange(reason = "ContentWarning onClick", reset = true)
             }
+
             if (item is TootScheduled) {
-                val new_shown = llContents.visibility == View.GONE
-                ContentWarning.save(item.uri, new_shown)
+                val newShown = llContents.visibility == View.GONE
+                ContentWarning.save(item.uri, newShown)
 
                 // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-                list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
+                listAdapter.notifyChange(reason = "ContentWarning onClick", reset = true)
             }
         }
 
-        ivThumbnail -> status_account?.let { whoRef ->
+        ivThumbnail -> statusAccount?.let { whoRef ->
             when {
-                access_info.isNA -> DlgContextMenu(
+                accessInfo.isNA -> DlgContextMenu(
                     activity,
                     column,
                     whoRef,
@@ -134,7 +134,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                 else -> activity.userProfileLocal(
 
                     pos,
-                    access_info,
+                    accessInfo,
                     whoRef.get()
                 )
             }
@@ -143,34 +143,34 @@ fun ItemViewHolder.onClickImpl(v: View?) {
         llBoosted -> boostedAction()
 
         llReply -> {
-            val s = status_reply
+            val s = statusReply
 
             when {
-                s != null -> activity.conversation(pos, access_info, s)
+                s != null -> activity.conversation(pos, accessInfo, s)
 
                 // tootsearchは返信元のIDを取得するのにひと手間必要
                 column.type == ColumnType.SEARCH_TS ||
                     column.type == ColumnType.SEARCH_NOTESTOCK ->
-                    activity.conversationFromTootsearch(pos, status_showing)
+                    activity.conversationFromTootsearch(pos, statusShowing)
 
                 else -> {
-                    val id = status_showing?.in_reply_to_id
+                    val id = statusShowing?.in_reply_to_id
                     if (id != null) {
-                        activity.conversationLocal(pos, access_info, id)
+                        activity.conversationLocal(pos, accessInfo, id)
                     }
                 }
             }
         }
 
-        llFollow -> follow_account?.let { whoRef ->
-            if (access_info.isPseudo) {
+        llFollow -> followAccount?.let { whoRef ->
+            if (accessInfo.isPseudo) {
                 DlgContextMenu(activity, column, whoRef, null, notification, tvContent).show()
             } else {
-                activity.userProfileLocal(pos, access_info, whoRef.get())
+                activity.userProfileLocal(pos, accessInfo, whoRef.get())
             }
         }
 
-        btnFollow -> follow_account?.let { who ->
+        btnFollow -> followAccount?.let { who ->
             DlgContextMenu(activity, column, who, null, notification, tvContent).show()
         }
 
@@ -210,7 +210,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                     .setNegativeButton(R.string.cancel, null)
                     .setPositiveButton(R.string.ok) { _, _ ->
                         activity.domainBlock(
-                            access_info,
+                            accessInfo,
                             item.domain,
                             bBlock = false
                         )
@@ -221,7 +221,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             is TootTag -> {
                 activity.tagTimeline(
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     item.name // #を含まない
                 )
             }
@@ -229,10 +229,10 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             is TootScheduled -> {
                 ActionsDialog()
                     .addAction(activity.getString(R.string.edit)) {
-                        activity.scheduledPostEdit(access_info, item)
+                        activity.scheduledPostEdit(accessInfo, item)
                     }
                     .addAction(activity.getString(R.string.delete)) {
-                        activity.scheduledPostDelete(access_info, item) {
+                        activity.scheduledPostDelete(accessInfo, item) {
                             column.onScheduleDeleted(item)
                             activity.showToast(false, R.string.scheduled_post_deleted)
                         }
@@ -242,32 +242,32 @@ fun ItemViewHolder.onClickImpl(v: View?) {
         }
 
         btnListTL -> if (item is TootList) {
-            activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
+            activity.addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
         } else if (item is MisskeyAntenna) {
             // TODO
-            activity.addColumn(pos, access_info, ColumnType.MISSKEY_ANTENNA_TL, item.id)
+            activity.addColumn(pos, accessInfo, ColumnType.MISSKEY_ANTENNA_TL, item.id)
         }
 
         btnListMore -> when (item) {
             is TootList -> {
                 ActionsDialog()
                     .addAction(activity.getString(R.string.list_timeline)) {
-                        activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
+                        activity.addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
                     }
                     .addAction(activity.getString(R.string.list_member)) {
                         activity.addColumn(
                             false,
                             pos,
-                            access_info,
+                            accessInfo,
                             ColumnType.LIST_MEMBER,
                             item.id
                         )
                     }
                     .addAction(activity.getString(R.string.rename)) {
-                        activity.listRename( access_info, item)
+                        activity.listRename(accessInfo, item)
                     }
                     .addAction(activity.getString(R.string.delete)) {
-                        activity.listDelete( access_info, item)
+                        activity.listDelete(accessInfo, item)
                     }
                     .show(activity, item.title)
             }
@@ -277,29 +277,29 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             }
         }
 
-        btnFollowRequestAccept -> follow_account?.let { whoRef ->
+        btnFollowRequestAccept -> followAccount?.let { whoRef ->
             val who = whoRef.get()
             DlgConfirm.openSimple(
                 activity,
                 activity.getString(
                     R.string.follow_accept_confirm,
-                    AcctColor.getNickname(access_info, who)
+                    AcctColor.getNickname(accessInfo, who)
                 )
             ) {
-                activity.followRequestAuthorize(access_info, whoRef, true)
+                activity.followRequestAuthorize(accessInfo, whoRef, true)
             }
         }
 
-        btnFollowRequestDeny -> follow_account?.let { whoRef ->
+        btnFollowRequestDeny -> followAccount?.let { whoRef ->
             val who = whoRef.get()
             DlgConfirm.openSimple(
                 activity,
                 activity.getString(
                     R.string.follow_deny_confirm,
-                    AcctColor.getNickname(access_info, who)
+                    AcctColor.getNickname(accessInfo, who)
                 )
             ) {
-                activity.followRequestAuthorize(access_info, whoRef, false)
+                activity.followRequestAuthorize(accessInfo, whoRef, false)
             }
         }
 
@@ -307,12 +307,12 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             openFilterMenu(item)
         }
 
-        ivCardImage -> status_showing?.card?.let { card ->
+        ivCardImage -> statusShowing?.card?.let { card ->
             val originalStatus = card.originalStatus
             if (originalStatus != null) {
                 activity.conversation(
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     originalStatus
                 )
             } else {
@@ -322,7 +322,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                         activity,
                         pos,
                         url,
-                        accessInfo = access_info
+                        accessInfo = accessInfo
                     )
                 }
             }
@@ -340,7 +340,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
     when (v) {
 
         ivThumbnail -> {
-            status_account?.let { who ->
+            statusAccount?.let { who ->
                 DlgContextMenu(
                     activity,
                     column,
@@ -354,7 +354,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
         }
 
         llBoosted -> {
-            boost_account?.let { who ->
+            boostAccount?.let { who ->
                 DlgContextMenu(
                     activity,
                     column,
@@ -368,7 +368,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
         }
 
         llReply -> {
-            val s = status_reply
+            val s = statusReply
             when {
 
                 // 返信元のstatusがあるならコンテキストメニュー
@@ -388,15 +388,15 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                     column.type == ColumnType.SEARCH_NOTESTOCK ->
                     activity.conversationFromTootsearch(
                         activity.nextPosition(column),
-                        status_showing
+                        statusShowing
                     )
 
                 else -> {
-                    val id = status_showing?.in_reply_to_id
+                    val id = statusShowing?.in_reply_to_id
                     if (id != null) {
                         activity.conversationLocal(
                             activity.nextPosition(column),
-                            access_info,
+                            accessInfo,
                             id
                         )
                     }
@@ -405,7 +405,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
         }
 
         llFollow -> {
-            follow_account?.let { whoRef ->
+            followAccount?.let { whoRef ->
                 DlgContextMenu(
                     activity,
                     column,
@@ -418,10 +418,10 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
         }
 
         btnFollow -> {
-            follow_account?.let { whoRef ->
+            followAccount?.let { whoRef ->
                 activity.followFromAnotherAccount(
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     whoRef.get()
                 )
             }
@@ -430,7 +430,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
 
         ivCardImage -> activity.conversationOtherInstance(
             activity.nextPosition(column),
-            status_showing?.card?.originalStatus
+            statusShowing?.card?.originalStatus
         )
 
         btnSearchTag, llTrendTag -> {
@@ -449,15 +449,14 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                 is TootTag -> {
                     // search_tag は#を含まない
                     val tagEncoded = item.name.encodePercent()
-                    val url = "https://${access_info.apiHost.ascii}/tags/$tagEncoded"
+                    val url = "https://${accessInfo.apiHost.ascii}/tags/$tagEncoded"
                     activity.tagTimelineFromAccount(
                         pos = activity.nextPosition(column),
                         url = url,
-                        host = access_info.apiHost,
-                        tag_without_sharp = item.name
+                        host = accessInfo.apiHost,
+                        tagWithoutSharp = item.name
                     )
                 }
-
             }
             return true
         }
@@ -468,24 +467,24 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
 
 fun ItemViewHolder.clickMedia(i: Int) {
     try {
-        val media_attachments =
-            status_showing?.media_attachments ?: (item as? TootScheduled)?.media_attachments
+        val mediaAttachments =
+            statusShowing?.media_attachments ?: (item as? TootScheduled)?.mediaAttachments
             ?: return
 
-        when (val item = if (i < media_attachments.size) media_attachments[i] else return) {
+        when (val item = if (i < mediaAttachments.size) mediaAttachments[i] else return) {
             is TootAttachmentMSP -> {
                 // マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
                 // 会話の流れを表示する
                 activity.conversationOtherInstance(
                     activity.nextPosition(column),
-                    status_showing
+                    statusShowing
                 )
             }
 
             is TootAttachment -> when {
 
                 // unknownが1枚だけなら内蔵ビューアを使わずにインテントを投げる
-                item.type == TootAttachmentType.Unknown && media_attachments.size == 1 -> {
+                item.type == TootAttachmentType.Unknown && mediaAttachments.size == 1 -> {
                     // https://github.com/tateisu/SubwayTooter/pull/119
                     // メディアタイプがunknownの場合、そのほとんどはリモートから来たURLである
                     // Pref.bpPriorLocalURL の状態に関わらずリモートURLがあればそれをブラウザで開く
@@ -499,11 +498,11 @@ fun ItemViewHolder.clickMedia(i: Int) {
                 Pref.bpUseInternalMediaViewer(App1.pref) ->
                     ActMediaViewer.open(
                         activity,
-                        when (access_info.isMisskey) {
+                        when (accessInfo.isMisskey) {
                             true -> ServiceType.MISSKEY
                             else -> ServiceType.MASTODON
                         },
-                        media_attachments,
+                        mediaAttachments,
                         i
                     )
 

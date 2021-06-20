@@ -17,7 +17,7 @@ class ActAbout : AppCompatActivity() {
     class Translators(
         val name: String,
         val acct: String?,
-        val lang: String
+        val lang: String,
     )
 
     companion object {
@@ -66,9 +66,7 @@ class ActAbout : AppCompatActivity() {
             Translators("yucj", null, "Chinese (Traditional)"),
             Translators("邓志诚", null, "Chinese (Simplified)"),
             Translators("배태길", null, "Korea"),
-
-
-            )
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,7 +96,6 @@ class ActAbout : AppCompatActivity() {
             finish()
         }
 
-
         setButton(
             R.id.btnDeveloper,
             getString(R.string.search_for, developer_acct)
@@ -107,20 +104,24 @@ class ActAbout : AppCompatActivity() {
         setButton(
             R.id.btnOfficialAccount,
             getString(R.string.search_for, official_acct)
-        ) { searchAcct(official_acct) }
+        ) {
+            searchAcct(official_acct)
+        }
 
-        setButton(R.id.btnReleaseNote, url_release)
-        { openBrowser(url_release) }
+        setButton(R.id.btnReleaseNote, url_release) {
+            openBrowser(url_release)
+        }
 
         // setButton(R.id.btnIconDesign, url_futaba)
         //   { openUrl(url_futaba) }
 
-        setButton(R.id.btnWeblate, getString(R.string.please_help_translation))
-        { openBrowser(url_weblate) }
+        setButton(R.id.btnWeblate, getString(R.string.please_help_translation)) {
+            openBrowser(url_weblate)
+        }
 
         val ll = findViewById<LinearLayout>(R.id.llContributors)
         val density = resources.displayMetrics.density
-        val margin_top = (0.5f + density * 8).toInt()
+        val marginTop = (0.5f + density * 8).toInt()
         val padding = (0.5f + density * 8).toInt()
 
         for (who in translators) {
@@ -130,7 +131,7 @@ class ActAbout : AppCompatActivity() {
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    if (ll.childCount != 0) topMargin = margin_top
+                    if (ll.childCount != 0) topMargin = marginTop
                 }
                 //
                 setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)

@@ -31,11 +31,11 @@ enum class HeaderType(val viewType: Int) {
 }
 
 class Column(
-    val app_state: AppState,
+    val appState: AppState,
     val context: Context,
-    val access_info: SavedAccount,
+    val accessInfo: SavedAccount,
     typeId: Int,
-    val column_id: String
+    val columnId: String,
 ) {
     companion object {
 
@@ -65,11 +65,10 @@ class Column(
             val account_db_id = src.long(ColumnEncoder.KEY_ACCOUNT_ROW_ID) ?: -1L
             return if (account_db_id >= 0) {
                 SavedAccount.loadAccount(context, account_db_id)
-                    ?: throw RuntimeException("missing account")
+                    ?: error("missing account")
             } else {
                 SavedAccount.na
             }
-
         }
 
         // private val channelIdSeed = AtomicInteger(0)
@@ -81,7 +80,6 @@ class Column(
         val reMinId = """[&?](min_id|since_id)=([^&?;\s]+)""".asciiPattern()
 
         val COLUMN_REGEX_FILTER_DEFAULT: (CharSequence?) -> Boolean = { false }
-
 
         var defaultColorHeaderBg = 0
         var defaultColorHeaderName = 0
@@ -109,7 +107,6 @@ class Column(
 
             defaultColorContentText = Pref.ipCcdContentText(pref).notZero()
                 ?: activity.attrColor(R.attr.colorContentText)
-
         }
 
         private val internalIdSeed = AtomicInteger(0)
@@ -120,62 +117,62 @@ class Column(
 
     val type = ColumnType.parse(typeId)
 
-    internal var dont_close: Boolean = false
+    internal var dontClose = false
 
-    internal var with_attachment: Boolean = false
-    internal var with_highlight: Boolean = false
-    internal var dont_show_boost: Boolean = false
-    internal var dont_show_reply: Boolean = false
+    internal var withAttachment = false
+    internal var withHighlight = false
+    internal var dontShowBoost = false
+    internal var dontShowReply = false
 
-    internal var dont_show_normal_toot: Boolean = false
-    internal var dont_show_non_public_toot: Boolean = false
+    internal var dontShowNormalToot = false
+    internal var dontShowNonPublicToot = false
 
-    internal var dont_show_favourite: Boolean = false // 通知カラムのみ
-    internal var dont_show_follow: Boolean = false // 通知カラムのみ
-    internal var dont_show_reaction: Boolean = false // 通知カラムのみ
-    internal var dont_show_vote: Boolean = false // 通知カラムのみ
+    internal var dontShowFavourite = false // 通知カラムのみ
+    internal var dontShowFollow = false // 通知カラムのみ
+    internal var dontShowReaction = false // 通知カラムのみ
+    internal var dontShowVote = false // 通知カラムのみ
 
-    internal var quick_filter = QUICK_FILTER_ALL
+    internal var quickFilter = QUICK_FILTER_ALL
 
     @Volatile
-    internal var dont_streaming: Boolean = false
+    internal var dontStreaming = false
 
-    internal var dont_auto_refresh: Boolean = false
-    internal var hide_media_default: Boolean = false
-    internal var system_notification_not_related: Boolean = false
-    internal var instance_local: Boolean = false
+    internal var dontAutoRefresh = false
+    internal var hideMediaDefault = false
+    internal var systemNotificationNotRelated = false
+    internal var instanceLocal = false
 
-    internal var enable_speech: Boolean = false
-    internal var use_old_api = false
+    internal var enableSpeech = false
+    internal var useOldApi = false
 
-    internal var regex_text: String = ""
+    internal var regexText: String = ""
 
-    internal var header_bg_color: Int = 0
-    internal var header_fg_color: Int = 0
-    internal var column_bg_color: Int = 0
-    internal var acct_color: Int = 0
-    internal var content_color: Int = 0
-    internal var column_bg_image: String = ""
-    internal var column_bg_image_alpha = 1f
+    internal var headerBgColor = 0
+    internal var headerFgColor = 0
+    internal var columnBgColor = 0
+    internal var acctColor = 0
+    internal var contentColor = 0
+    internal var columnBgImage = ""
+    internal var columnBgImageAlpha = 1f
 
-    internal var profile_tab = ProfileTab.Status
+    internal var profileTab = ProfileTab.Status
 
-    internal var status_id: EntityId? = null
+    internal var statusId: EntityId? = null
 
     // プロフカラムではアカウントのID。リストカラムではリストのID
-    internal var profile_id: EntityId? = null
+    internal var profileId: EntityId? = null
 
-    internal var search_query: String = ""
-    internal var search_resolve: Boolean = false
-    internal var remote_only: Boolean = false
-    internal var instance_uri: String = ""
-    internal var hashtag: String = ""
-    internal var hashtag_any: String = ""
-    internal var hashtag_all: String = ""
-    internal var hashtag_none: String = ""
-    internal var hashtag_acct: String = ""
+    internal var searchQuery = ""
+    internal var searchResolve = false
+    internal var remoteOnly = false
+    internal var instanceUri = ""
+    internal var hashtag = ""
+    internal var hashtagAny = ""
+    internal var hashtagAll = ""
+    internal var hashtagNone = ""
+    internal var hashtagAcct = ""
 
-    internal var language_filter: JsonObject? = null
+    internal var languageFilter: JsonObject? = null
 
     // 告知のリスト
     internal var announcements: MutableList<TootAnnouncement>? = null
@@ -191,47 +188,47 @@ class Column(
 
     // プロフカラムでのアカウント情報
     @Volatile
-    internal var who_account: TootAccountRef? = null
+    internal var whoAccount: TootAccountRef? = null
 
     // プロフカラムでのfeatured tag 情報(Mastodon3.3.0)
     @Volatile
-    internal var who_featured_tags: List<TootTag>? = null
+    internal var whoFeaturedTags: List<TootTag>? = null
 
     // リストカラムでのリスト情報
     @Volatile
-    internal var list_info: TootList? = null
+    internal var listInfo: TootList? = null
 
     // アンテナカラムでのリスト情報
     @Volatile
-    internal var antenna_info: MisskeyAntenna? = null
+    internal var antennaInfo: MisskeyAntenna? = null
 
     // 「インスタンス情報」カラムに表示するインスタンス情報
     // (SavedAccount中のインスタンス情報とは異なるので注意)
-    internal var instance_information: TootInstance? = null
+    internal var instanceInformation: TootInstance? = null
     internal var handshake: Handshake? = null
 
-    internal var scroll_save: ScrollPosition? = null
-    var last_viewing_item_id: EntityId? = null
+    internal var scrollSave: ScrollPosition? = null
+    var lastViewingItemId: EntityId? = null
 
-    internal val is_dispose = AtomicBoolean()
+    internal val isDispose = AtomicBoolean()
 
     @Volatile
     internal var bFirstInitialized = false
 
-    var filter_reload_required: Boolean = false
+    var filterReloadRequired = false
 
     //////////////////////////////////////////////////////////////////////////////////////
 
     // カラムを閉じた後のnotifyDataSetChangedのタイミングで、add/removeされる順序が期待通りにならないので
     // 参照を１つだけ持つのではなく、リストを保持して先頭の要素を使うことにする
 
-    val _holder_list = LinkedList<ColumnViewHolder>()
+    val listViewHolder = LinkedList<ColumnViewHolder>()
 
     internal // 複数のリスナがある場合、最も新しいものを返す
     val viewHolder: ColumnViewHolder?
         get() {
-            if (is_dispose.get()) return null
-            return if (_holder_list.isEmpty()) null else _holder_list.first
+            if (isDispose.get()) return null
+            return if (listViewHolder.isEmpty()) null else listViewHolder.first
         }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -249,14 +246,13 @@ class Column(
     internal var mRefreshLoadingErrorTime: Long = 0L
     internal var mRefreshLoadingErrorPopupState: Int = 0
 
-    internal var task_progress: String? = null
+    internal var taskProgress: String? = null
 
-    internal val list_data = BucketList<TimelineItem>()
-    internal val duplicate_map = DuplicateMap()
-
+    internal val listData = BucketList<TimelineItem>()
+    internal val duplicateMap = DuplicateMap()
 
     @Volatile
-    var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
+    var columnRegexFilter = COLUMN_REGEX_FILTER_DEFAULT
 
     @Volatile
     var keywordFilterTrees: FilterTrees? = null
@@ -265,7 +261,7 @@ class Column(
     var favMuteSet: HashSet<Acct>? = null
 
     @Volatile
-    var highlight_trie: WordTrieTree? = null
+    var highlightTrie: WordTrieTree? = null
 
     // タイムライン中のデータの始端と終端
     // misskeyは
@@ -278,8 +274,8 @@ class Column(
 
     // ListViewの表示更新が追いつかないとスクロール位置が崩れるので
     // 一定時間より短期間にはデータ更新しないようにする
-    val last_show_stream_data = AtomicLong(0L)
-    val stream_data_queue = ConcurrentLinkedQueue<TimelineItem>()
+    val lastShowStreamData = AtomicLong(0L)
+    val streamDataQueue = ConcurrentLinkedQueue<TimelineItem>()
 
     @Volatile
     var bPutGap: Boolean = false
@@ -325,25 +321,24 @@ class Column(
 
     // create from column spec
     internal constructor(
-        app_state: AppState,
-        access_info: SavedAccount,
+        appState: AppState,
+        accessInfo: SavedAccount,
         type: Int,
-        vararg params: Any
+        vararg params: Any,
     ) : this(
-        app_state = app_state,
-        context = app_state.context,
-        access_info = access_info,
+        appState = appState,
+        context = appState.context,
+        accessInfo = accessInfo,
         typeId = type,
-        column_id = ColumnEncoder.generateColumnId()
+        columnId = ColumnEncoder.generateColumnId()
     ) {
         ColumnSpec.decode(this, params)
     }
 
-    internal constructor(app_state: AppState, src: JsonObject)
-        : this(
-        app_state,
-        app_state.context,
-        loadAccount(app_state.context, src),
+    internal constructor(appState: AppState, src: JsonObject) : this(
+        appState,
+        appState.context,
+        loadAccount(appState.context, src),
         src.optInt(ColumnEncoder.KEY_TYPE),
         ColumnEncoder.decodeColumnId(src)
     ) {
@@ -355,10 +350,10 @@ class Column(
     override fun equals(other: Any?): Boolean = this === other
 
     internal fun dispose() {
-        is_dispose.set(true)
-        app_state.streamManager.updateStreamingColumns()
+        isDispose.set(true)
+        appState.streamManager.updateStreamingColumns()
 
-        for (vh in _holder_list) {
+        for (vh in listViewHolder) {
             try {
                 vh.listView.adapter = null
             } catch (ignored: Throwable) {
@@ -367,6 +362,6 @@ class Column(
     }
 
     init {
-        ColumnEncoder.registerColumnId(column_id, this)
+        ColumnEncoder.registerColumnId(columnId, this)
     }
 }

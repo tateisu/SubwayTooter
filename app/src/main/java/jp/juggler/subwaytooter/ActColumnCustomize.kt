@@ -51,9 +51,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
     }
 
-    private var column_index: Int = 0
+    private var columnIndex: Int = 0
     internal lateinit var column: Column
-    internal lateinit var app_state: AppState
+    internal lateinit var appState: AppState
     internal var density: Float = 0f
 
     private lateinit var flColumnBackground: View
@@ -66,10 +66,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     private lateinit var tvSampleAcct: TextView
     private lateinit var tvSampleContent: TextView
 
-    internal var loading_busy: Boolean = false
+    internal var loadingBusy: Boolean = false
 
-    private var last_image_uri: String? = null
-    private var last_image_bitmap: Bitmap? = null
+    private var lastImageUri: String? = null
+    private var lastImageBitmap: Bitmap? = null
 
     val arColumnBackgroundImage = activityResultHandler { ar ->
         val data = ar?.data
@@ -86,7 +86,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     private fun makeResult() {
         val data = Intent()
-        data.putExtra(EXTRA_COLUMN_INDEX, column_index)
+        data.putExtra(EXTRA_COLUMN_INDEX, columnIndex)
         setResult(RESULT_OK, data)
     }
 
@@ -96,10 +96,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         App1.setActivityTheme(this)
         initUI()
 
-        app_state = App1.getAppState(this)
-        density = app_state.density
-        column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
-        column = app_state.column(column_index)!!
+        appState = App1.getAppState(this)
+        density = appState.density
+        columnIndex = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
+        column = appState.column(columnIndex)!!
         show()
     }
 
@@ -125,7 +125,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
 
             R.id.btnHeaderBackgroundReset -> {
-                column.header_bg_color = 0
+                column.headerBgColor = 0
                 show()
             }
 
@@ -140,7 +140,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
 
             R.id.btnHeaderTextReset -> {
-                column.header_fg_color = 0
+                column.headerFgColor = 0
                 show()
             }
 
@@ -150,12 +150,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                     .setAllowPresets(true)
                     .setShowAlphaSlider(false)
                     .setDialogId(COLOR_DIALOG_ID_COLUMN_BACKGROUND)
-                if (column.column_bg_color != 0) builder.setColor(column.column_bg_color)
+                if (column.columnBgColor != 0) builder.setColor(column.columnBgColor)
                 builder.show(this)
             }
 
             R.id.btnColumnBackgroundColorReset -> {
-                column.column_bg_color = 0
+                column.columnBgColor = 0
                 show()
             }
 
@@ -170,7 +170,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
 
             R.id.btnAcctColorReset -> {
-                column.acct_color = 0
+                column.acctColor = 0
                 show()
             }
 
@@ -185,7 +185,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
 
             R.id.btnContentColorReset -> {
-                column.content_color = 0
+                column.contentColor = 0
                 show()
             }
 
@@ -200,7 +200,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
 
             R.id.btnColumnBackgroundImageReset -> {
-                column.column_bg_image = ""
+                column.columnBgImage = ""
                 show()
             }
         }
@@ -211,19 +211,19 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     override fun onColorSelected(dialogId: Int, @ColorInt colorSelected: Int) {
         when (dialogId) {
-            COLOR_DIALOG_ID_HEADER_BACKGROUND -> column.header_bg_color = colorFF000000 or
+            COLOR_DIALOG_ID_HEADER_BACKGROUND -> column.headerBgColor = colorFF000000 or
                 colorSelected
-            COLOR_DIALOG_ID_HEADER_FOREGROUND -> column.header_fg_color = colorFF000000 or
+            COLOR_DIALOG_ID_HEADER_FOREGROUND -> column.headerFgColor = colorFF000000 or
                 colorSelected
-            COLOR_DIALOG_ID_COLUMN_BACKGROUND -> column.column_bg_color = colorFF000000 or
+            COLOR_DIALOG_ID_COLUMN_BACKGROUND -> column.columnBgColor = colorFF000000 or
                 colorSelected
 
             COLOR_DIALOG_ID_ACCT_TEXT -> {
-                column.acct_color = colorSelected.notZero() ?: 1
+                column.acctColor = colorSelected.notZero() ?: 1
             }
 
             COLOR_DIALOG_ID_CONTENT_TEXT -> {
-                column.content_color = colorSelected.notZero() ?: 1
+                column.contentColor = colorSelected.notZero() ?: 1
             }
         }
         show()
@@ -231,17 +231,16 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     override fun onDialogDismissed(dialogId: Int) {}
 
-
     private fun updateBackground(uriArg: Uri) {
         launchMain {
             var resultUri: String? = null
             runApiTask { client ->
                 try {
                     val backgroundDir = getBackgroundImageDir(this@ActColumnCustomize)
-                    val file = File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
+                    val file = File(backgroundDir, "${column.columnId}:${System.currentTimeMillis()}")
                     val fileUri = Uri.fromFile(file)
 
-                    client.publishApiProgress("loading image from ${uriArg}")
+                    client.publishApiProgress("loading image from $uriArg")
                     contentResolver.openInputStream(uriArg).use { inStream ->
                         FileOutputStream(file).use { outStream ->
                             IOUtils.copy(inStream, outStream)
@@ -264,7 +263,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                     )
                     if (bitmap != null) {
                         try {
-                            client.publishApiProgress("save resized(${bitmap.width}x${bitmap.height}) image to ${file}")
+                            client.publishApiProgress("save resized(${bitmap.width}x${bitmap.height}) image to $file")
                             FileOutputStream(file).use { os ->
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
                             }
@@ -283,7 +282,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 when (val bgUri = resultUri) {
                     null -> showToast(true, result.error ?: "?")
                     else -> {
-                        column.column_bg_image = bgUri
+                        column.columnBgImage = bgUri
                         show()
                     }
                 }
@@ -305,7 +304,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         tvSampleAcct = findViewById(R.id.tvSampleAcct)
         tvSampleContent = findViewById(R.id.tvSampleContent)
 
-
         findViewById<View>(R.id.btnHeaderBackgroundEdit).setOnClickListener(this)
         findViewById<View>(R.id.btnHeaderBackgroundReset).setOnClickListener(this)
         findViewById<View>(R.id.btnHeaderTextEdit).setOnClickListener(this)
@@ -322,47 +320,34 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         sbColumnBackgroundAlpha = findViewById(R.id.sbColumnBackgroundAlpha)
         sbColumnBackgroundAlpha.max = PROGRESS_MAX
 
-        sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object :
-            SeekBar.OnSeekBarChangeListener {
+        sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-
-            }
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                if (loading_busy) return
+                if (loadingBusy) return
                 if (!fromUser) return
-                column.column_bg_image_alpha = progress / PROGRESS_MAX.toFloat()
-                ivColumnBackground.alpha = column.column_bg_image_alpha
+                column.columnBgImageAlpha = progress / PROGRESS_MAX.toFloat()
+                ivColumnBackground.alpha = column.columnBgImageAlpha
                 etAlpha.setText(
                     String.format(
                         defaultLocale(this@ActColumnCustomize),
                         "%.4f",
-                        column.column_bg_image_alpha
+                        column.columnBgImageAlpha
                     )
                 )
             }
-
         })
 
         etAlpha = findViewById(R.id.etAlpha)
         etAlpha.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-
-            }
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                if (loading_busy) return
+                if (loadingBusy) return
                 try {
 
                     var f = NumberFormat.getInstance(defaultLocale(this@ActColumnCustomize))
@@ -371,14 +356,13 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                     if (f != null && !f.isNaN()) {
                         if (f < 0f) f = 0f
                         if (f > 1f) f = 1f
-                        column.column_bg_image_alpha = f
-                        ivColumnBackground.alpha = column.column_bg_image_alpha
+                        column.columnBgImageAlpha = f
+                        ivColumnBackground.alpha = column.columnBgImageAlpha
                         sbColumnBackgroundAlpha.progress = (0.5f + f * PROGRESS_MAX).toInt()
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "alpha parse failed.")
                 }
-
             }
         })
 
@@ -396,7 +380,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     private fun show() {
         try {
-            loading_busy = true
+            loadingBusy = true
 
             column.setHeaderBackground(llColumnHeader)
 
@@ -407,16 +391,16 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
             tvColumnName.text = column.getColumnName(false)
 
-            if (column.column_bg_color != 0) {
-                flColumnBackground.setBackgroundColor(column.column_bg_color)
+            if (column.columnBgColor != 0) {
+                flColumnBackground.setBackgroundColor(column.columnBgColor)
             } else {
                 ViewCompat.setBackground(flColumnBackground, null)
             }
 
-            var alpha = column.column_bg_image_alpha
+            var alpha = column.columnBgImageAlpha
             if (alpha.isNaN()) {
                 alpha = 1f
-                column.column_bg_image_alpha = alpha
+                column.columnBgImageAlpha = alpha
             }
             ivColumnBackground.alpha = alpha
             sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
@@ -425,31 +409,29 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 String.format(
                     defaultLocale(this@ActColumnCustomize),
                     "%.4f",
-                    column.column_bg_image_alpha
+                    column.columnBgImageAlpha
                 )
             )
 
-            loadImage(ivColumnBackground, column.column_bg_image)
+            loadImage(ivColumnBackground, column.columnBgImage)
 
             tvSampleAcct.setTextColor(column.getAcctColor())
             tvSampleContent.setTextColor(column.getContentColor())
-
         } finally {
-            loading_busy = false
+            loadingBusy = false
         }
     }
 
     private fun closeBitmaps() {
         try {
             ivColumnBackground.setImageDrawable(null)
-            last_image_uri = null
+            lastImageUri = null
 
-            last_image_bitmap?.recycle()
-            last_image_bitmap = null
+            lastImageBitmap?.recycle()
+            lastImageBitmap = null
         } catch (ex: Throwable) {
             log.trace(ex)
         }
-
     }
 
     private fun loadImage(ivColumnBackground: ImageView, url: String) {
@@ -457,7 +439,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             if (url.isEmpty()) {
                 closeBitmaps()
                 return
-            } else if (url == last_image_uri) {
+            } else if (url == lastImageUri) {
                 // 今表示してるのと同じ
                 return
             }
@@ -468,17 +450,14 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             val uri = url.mayUri() ?: return
 
             // 画像をロードして、成功したら表示してURLを覚える
-            val resize_max = (0.5f + 64f * density).toInt()
-            last_image_bitmap = createResizedBitmap(this, uri, resize_max)
-            if (last_image_bitmap != null) {
-                ivColumnBackground.setImageBitmap(last_image_bitmap)
-                last_image_uri = url
+            val resizeMax = (0.5f + 64f * density).toInt()
+            lastImageBitmap = createResizedBitmap(this, uri, resizeMax)
+            if (lastImageBitmap != null) {
+                ivColumnBackground.setImageBitmap(lastImageBitmap)
+                lastImageUri = url
             }
-
         } catch (ex: Throwable) {
             log.trace(ex)
         }
-
     }
-
 }

@@ -29,7 +29,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
     private class MyItem(
         val code: String,
-        var allow: Boolean
+        var allow: Boolean,
     )
 
     companion object {
@@ -43,7 +43,6 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             Intent(activity, ActLanguageFilter::class.java).apply {
                 putExtra(EXTRA_COLUMN_INDEX, idx)
             }
-
 
         private val languageComparator = Comparator<MyItem> { a, b ->
             when {
@@ -103,7 +102,6 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             put(TootStatus.LANGUAGE_CODE_DEFAULT, getString(R.string.language_code_default))
             put(TootStatus.LANGUAGE_CODE_UNKNOWN, getString(R.string.language_code_unknown))
         }
-
     }
 
     private fun getDesc(item: MyItem): String {
@@ -111,15 +109,15 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
         return languageNameMap[code] ?: getString(R.string.custom)
     }
 
-    private var column_index: Int = 0
+    private var columnIndex: Int = 0
     internal lateinit var column: Column
-    internal lateinit var app_state: AppState
+    internal lateinit var appState: AppState
     internal var density: Float = 0f
 
     private lateinit var listView: ListView
     private lateinit var adapter: MyAdapter
     private val languageList = ArrayList<MyItem>()
-    private var loading_busy: Boolean = false
+    private var loadingBusy: Boolean = false
 
     private val arExport = activityResultHandler { }
 
@@ -140,10 +138,10 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
         App1.setActivityTheme(this)
         initUI()
 
-        app_state = App1.getAppState(this)
-        density = app_state.density
-        column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
-        column = app_state.column(column_index)!!
+        appState = App1.getAppState(this)
+        density = appState.density
+        columnIndex = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
+        column = appState.column(columnIndex)!!
 
         if (savedInstanceState != null) {
             try {
@@ -157,7 +155,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                 log.trace(ex)
             }
         }
-        load(column.language_filter)
+        load(column.languageFilter)
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
@@ -166,7 +164,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onBackPressed() {
-        if (!equalsLanguageList(column.language_filter, encodeLanguageList())) {
+        if (!equalsLanguageList(column.languageFilter, encodeLanguageList())) {
             AlertDialog.Builder(this)
                 .setMessage(R.string.language_filter_quit_waring)
                 .setPositiveButton(R.string.ok) { _, _ -> finish() }
@@ -205,7 +203,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun load(src: JsonObject?) {
-        loading_busy = true
+        loadingBusy = true
         try {
             languageList.clear()
 
@@ -223,12 +221,12 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
             adapter.notifyDataSetChanged()
         } finally {
-            loading_busy = false
+            loadingBusy = false
         }
     }
 
     private fun save() {
-        column.language_filter = encodeLanguageList()
+        column.languageFilter = encodeLanguageList()
     }
 
     private inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
@@ -244,12 +242,8 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                 false
             )) as TextView
             val item = languageList[idx]
-            tv.text = String.format(
-                "%s %s : %s",
-                item.code,
-                getDesc(item),
-                getString(if (item.allow) R.string.language_show else R.string.language_hide)
-            )
+            tv.text =
+                "${item.code} ${getDesc(item)} : ${getString(if (item.allow) R.string.language_show else R.string.language_hide)}"
             tv.textColor = attrColor(
                 when (item.allow) {
                     true -> R.attr.colorContentText
@@ -269,7 +263,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             R.id.btnSave -> {
                 save()
                 val data = Intent()
-                data.putExtra(EXTRA_COLUMN_INDEX, column_index)
+                data.putExtra(EXTRA_COLUMN_INDEX, columnIndex)
                 setResult(RESULT_OK, data)
                 finish()
             }
@@ -375,7 +369,6 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 }
-
             })
             if (item != null) {
                 etLanguage.isEnabledAlpha = false
@@ -419,11 +412,11 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                         .toString()
                         .encodeUTF8()
 
-                    val cache_dir = cacheDir
-                    cache_dir.mkdir()
+                    val cacheDir = this@ActLanguageFilter.cacheDir
+                    cacheDir.mkdir()
 
                     val file = File(
-                        cache_dir,
+                        cacheDir,
                         "SubwayTooter-language-filter.${Process.myPid()}.${Process.myTid()}.json"
                     )
                     FileOutputStream(file).use {
@@ -453,7 +446,6 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     private fun import() {
         arImport.launch(intentOpenDocument("*/*"))
     }
-
 
     @Suppress("BlockingMethodInNonBlockingContext")
     private fun import2(uri: Uri) {

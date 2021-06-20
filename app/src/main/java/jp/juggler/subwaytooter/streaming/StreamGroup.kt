@@ -21,10 +21,15 @@ class StreamGroup(val spec: StreamSpec) {
         return false
     }
 
-    fun eachCallback(channelId: String?, stream: JsonArray?, item: TimelineItem?, block: (callback: StreamCallback) -> Unit) {
+    fun eachCallback(
+        channelId: String?,
+        stream: JsonArray?,
+        item: TimelineItem?,
+        block: (callback: StreamCallback) -> Unit,
+    ) {
         // skip if channel id is provided and not match
-        if (channelId?.isNotEmpty() == true && channelId != spec.channelId){
-            if(StreamManager.traceDelivery) log.v("${spec.name} channelId not match.")
+        if (channelId?.isNotEmpty() == true && channelId != spec.channelId) {
+            if (StreamManager.traceDelivery) log.v("${spec.name} channelId not match.")
             return
         }
 
@@ -32,8 +37,8 @@ class StreamGroup(val spec: StreamSpec) {
             try {
                 if (stream != null && item != null) {
                     val column = dst.refColumn.get() ?: return@forEach
-                    if (!dst.spec.streamFilter(column, stream, item)){
-                        if(StreamManager.traceDelivery) log.v("${spec.name} streamFilter not match. stream=$stream")
+                    if (!dst.spec.streamFilter(column, stream, item)) {
+                        if (StreamManager.traceDelivery) log.v("${spec.name} streamFilter not match. stream=$stream")
                         return@forEach
                     }
                 }

@@ -6,12 +6,13 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
 
+@Suppress("ClassNaming")
 class ColumnTask_Refresh(
     columnArg: Column,
     private val bSilent: Boolean,
     val bBottom: Boolean,
-    internal val posted_status_id: EntityId? = null,
-    internal val refresh_after_toot: Int = -1
+    internal val postedStatusId: EntityId? = null,
+    internal val refreshAfterToot: Int = -1,
 ) : ColumnTask(
     columnArg,
     if (bBottom) ColumnTaskType.REFRESH_BOTTOM else ColumnTaskType.REFRESH_TOP
@@ -28,17 +29,17 @@ class ColumnTask_Refresh(
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
             override val isApiCancelled: Boolean
-                get() = isCancelled || column.is_dispose.get()
+                get() = isCancelled || column.isDispose.get()
 
             override suspend fun publishApiProgress(s: String) {
                 runOnMainLooper {
                     if (isCancelled) return@runOnMainLooper
-                    column.task_progress = s
+                    column.taskProgress = s
                     column.fireShowContent(reason = "refresh progress", changeList = ArrayList())
                 }
             }
         })
-        client.account = access_info
+        client.account = accessInfo
         try {
 
             if (!bBottom) {
@@ -54,7 +55,7 @@ class ColumnTask_Refresh(
             return TootApiResult(ex.withCaption("refresh failed."))
         } finally {
             try {
-                column.updateRelation(client, list_tmp, column.who_account, parser)
+                column.updateRelation(client, listTmp, column.whoAccount, parser)
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
@@ -66,7 +67,7 @@ class ColumnTask_Refresh(
     }
 
     override suspend fun handleResult(result: TootApiResult?) {
-        if (column.is_dispose.get()) return
+        if (column.isDispose.get()) return
 
         if (isCancelled || result == null) {
             return
@@ -87,8 +88,8 @@ class ColumnTask_Refresh(
                 return
             }
 
-            val list_new = column.duplicate_map.filterDuplicate(list_tmp)
-            if (list_new.isEmpty()) {
+            val listNew = column.duplicateMap.filterDuplicate(listTmp)
+            if (listNew.isEmpty()) {
                 column.fireShowContent(
                     reason = "refresh list_new is empty",
                     changeList = ArrayList()
@@ -107,11 +108,11 @@ class ColumnTask_Refresh(
                 val changeList = listOf(
                     AdapterChange(
                         AdapterChangeType.RangeInsert,
-                        column.list_data.size,
-                        list_new.size
+                        column.listData.size,
+                        listNew.size
                     )
                 )
-                column.list_data.addAll(list_new)
+                column.listData.addAll(listNew)
                 column.fireShowContent(reason = "refresh updated bottom", changeList = changeList)
 
                 // 新着が少しだけ見えるようにスクロール位置を移動する
@@ -122,13 +123,13 @@ class ColumnTask_Refresh(
 
                 val changeList = ArrayList<AdapterChange>()
 
-                if (column.list_data.isNotEmpty() && column.list_data[0] is TootGap) {
+                if (column.listData.isNotEmpty() && column.listData[0] is TootGap) {
                     changeList.add(AdapterChange(AdapterChangeType.RangeRemove, 0, 1))
-                    column.list_data.removeAt(0)
+                    column.listData.removeAt(0)
                 }
 
                 var doneSound = false
-                for (o in list_new) {
+                for (o in listNew) {
                     if (o is TootStatus) {
                         o.highlightSound?.let {
                             if (!doneSound) {
@@ -137,42 +138,42 @@ class ColumnTask_Refresh(
                             }
                         }
                         o.highlightSpeech?.let {
-                            column.app_state.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+                            column.appState.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
                         }
                     }
                 }
 
-                replaceConversationSummary(changeList, list_new, column.list_data)
+                replaceConversationSummary(changeList, listNew, column.listData)
 
-                val added = list_new.size // may 0
+                val added = listNew.size // may 0
 
                 // 投稿後のリフレッシュなら当該投稿の位置を探す
-                var status_index = -1
+                var statusIndex = -1
                 for (i in 0 until added) {
-                    val o = list_new[i]
-                    if (o is TootStatus && o.id == posted_status_id) {
-                        status_index = i
+                    val o = listNew[i]
+                    if (o is TootStatus && o.id == postedStatusId) {
+                        statusIndex = i
                         break
                     }
                 }
 
                 changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
-                column.list_data.addAll(0, list_new)
+                column.listData.addAll(0, listNew)
                 column.fireShowContent(reason = "refresh updated head", changeList = changeList)
 
-                if (status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL) {
+                if (statusIndex >= 0 && refreshAfterToot == Pref.RAT_REFRESH_SCROLL) {
                     // 投稿後にその投稿にスクロールする
                     if (holder != null) {
                         holder.setScrollPosition(
-                            ScrollPosition(column.toAdapterIndex(status_index)),
+                            ScrollPosition(column.toAdapterIndex(statusIndex)),
                             0f
                         )
                     } else {
-                        column.scroll_save = ScrollPosition(column.toAdapterIndex(status_index))
+                        column.scrollSave = ScrollPosition(column.toAdapterIndex(statusIndex))
                     }
                 } else {
                     //
-                    val scroll_save = column.scroll_save
+                    val scrollSave = column.scrollSave
                     when {
                         // ViewHolderがある場合は増加件数分+deltaの位置にスクロールする
                         sp != null -> {
@@ -181,16 +182,15 @@ class ColumnTask_Refresh(
                             holder?.setScrollPosition(sp, delta)
                         }
                         // ViewHolderがなくて保存中の位置がある場合、増加件数分ずらす。deltaは難しいので反映しない
-                        scroll_save != null -> scroll_save.adapterIndex += added
+                        scrollSave != null -> scrollSave.adapterIndex += added
                         // 保存中の位置がない場合、保存中の位置を新しく作る
-                        else -> column.scroll_save =
+                        else -> column.scrollSave =
                             ScrollPosition(column.toAdapterIndex(added))
                     }
                 }
             }
 
             column.updateMisskeyCapture()
-
         } finally {
             column.fireShowColumnStatus()
 
@@ -209,12 +209,13 @@ class ColumnTask_Refresh(
         requester: suspend (first: Boolean) -> TootApiResult?,
         arrayFinder: (JsonObject) -> JsonArray?,
         listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-        adder: (List<T>, Boolean) -> Unit
+        adder: (List<T>, Boolean) -> Unit,
     ): TootApiResult? {
 
         // ColumnPagingType.Defaultだけが始端を更新できる
-        if (column.pagingType != ColumnPagingType.Default)
+        if (column.pagingType != ColumnPagingType.Default) {
             return TootApiResult("can't refresh top.")
+        }
 
         val addToHead = true
 
@@ -224,7 +225,7 @@ class ColumnTask_Refresh(
         var willAddGap = false
 
         fun parseResult(result: TootApiResult?): Boolean {
-            val first = list_tmp?.isEmpty() != false
+            val first = listTmp?.isEmpty() != false
 
             if (result == null) {
                 if (!first) willAddGap = true
@@ -240,7 +241,7 @@ class ColumnTask_Refresh(
             }
 
             val src = listParser(parser, array)
-            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            if (listTmp == null) listTmp = ArrayList(src.size)
             adder(src, addToHead)
 
             column.saveRangeTop(result = result, list = src)
@@ -253,7 +254,7 @@ class ColumnTask_Refresh(
             }
         }
 
-        val time_start = SystemClock.elapsedRealtime()
+        val timeStart = SystemClock.elapsedRealtime()
 
         // 初回のリクエスト
         val firstResult = requester(true)
@@ -264,13 +265,13 @@ class ColumnTask_Refresh(
             isCancelled ->
                 log.d("$logCaption: cancelled.")
 
-            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH -> {
+            (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH -> {
                 // 既に十分読んだなら止める
                 willAddGap = true
                 log.d("$logCaption: read enough. make gap.")
             }
 
-            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT -> {
+            SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT -> {
                 willAddGap = true
                 log.d("$logCaption: timeout.")
             }
@@ -279,13 +280,13 @@ class ColumnTask_Refresh(
         }
 
         // MisskeyはsinceIdを指定するとID昇順のデータが得られるので、ID降順に並べ直す
-        list_tmp?.sortByDescending { it.getOrderId() }
+        listTmp?.sortByDescending { it.getOrderId() }
 
-        if (!isCancelled
-            && list_tmp?.isNotEmpty() == true
-            && (willAddGap || Pref.bpForceGap(context))
+        if (!isCancelled &&
+            listTmp?.isNotEmpty() == true &&
+            (willAddGap || Pref.bpForceGap(context))
         ) {
-            addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = addToHead)
+            addOne(listTmp, TootGap.mayNull(null, column.idRecent), head = addToHead)
         }
 
         return firstResult
@@ -300,16 +301,15 @@ class ColumnTask_Refresh(
         repeatReading: Boolean = false,
     ): TootApiResult? {
 
+        @Suppress("NON_EXHAUSTIVE_WHEN")
         when (column.pagingType) {
             ColumnPagingType.None ->
                 return TootApiResult(context.getString(R.string.end_of_list))
 
             ColumnPagingType.Cursor ->
-                if (column.idOld == null)
+                if (column.idOld == null) {
                     return TootApiResult(context.getString(R.string.end_of_list))
-
-            else -> {
-            }
+                }
         }
 
         val addToHead = false
@@ -329,7 +329,7 @@ class ColumnTask_Refresh(
                 ?: return log.w("$logCaption: missing item list.")
 
             val src = listParser(parser, array)
-            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            if (listTmp == null) listTmp = ArrayList(src.size)
             adder(src, addToHead)
 
             val more = when (column.pagingType) {
@@ -351,8 +351,7 @@ class ColumnTask_Refresh(
             }
         }
 
-
-        val time_start = SystemClock.elapsedRealtime()
+        val timeStart = SystemClock.elapsedRealtime()
         val firstResult = requester(true)
         var more = parseResult(firstResult) && repeatReading
         while (more) more = when {
@@ -367,10 +366,10 @@ class ColumnTask_Refresh(
                 log.d("$logCaption: idOld is null.")
 
             // 十分読んだらそれで終了
-            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
+            (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
                 log.d("$logCaption: read enough data.")
 
-            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT ->
+            SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT ->
                 log.d("$logCaption: loop timeout.")
 
             else -> parseResult(requester(false))
@@ -384,12 +383,13 @@ class ColumnTask_Refresh(
         requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
         arrayFinder: (JsonObject) -> JsonArray?,
         listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-        adder: (List<T>, Boolean) -> Unit
+        adder: (List<T>, Boolean) -> Unit,
     ): TootApiResult? {
 
         // 上端の差分更新に対応できるのは ColumnPagingType.Default だけ
-        if (column.pagingType != ColumnPagingType.Default)
+        if (column.pagingType != ColumnPagingType.Default) {
             return TootApiResult("can't refresh top.")
+        }
 
         val addToHead = false
 
@@ -397,11 +397,11 @@ class ColumnTask_Refresh(
         var willAddGap = false
 
         // 2回目以降のリクエスト範囲はギャップを意識したものになる
-        val last_since_id = column.idRecent
-        var max_id: EntityId? = null
+        val lastSinceId = column.idRecent
+        var maxId: EntityId? = null
 
         fun parseResult(result: TootApiResult?): Boolean {
-            val first = list_tmp?.isEmpty() != false
+            val first = listTmp?.isEmpty() != false
 
             if (result == null) {
                 if (!first) willAddGap = true
@@ -417,7 +417,7 @@ class ColumnTask_Refresh(
             }
 
             val src = listParser(parser, array)
-            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            if (listTmp == null) listTmp = ArrayList(src.size)
             adder(src, addToHead)
 
             when {
@@ -437,14 +437,13 @@ class ColumnTask_Refresh(
                 src.isEmpty() -> log.d("$logCaption: empty list.")
                 else -> {
                     // 直前に読んだ範囲のmaxIdを調べる
-                    max_id = column.parseRange(result, src).first
+                    maxId = column.parseRange(result, src).first
                     true
                 }
             }
         }
 
-
-        val time_start = SystemClock.elapsedRealtime()
+        val timeStart = SystemClock.elapsedRealtime()
         // 初回リクエスト
         val firstResult = requester(true, null, null)
         var more = parseResult(firstResult)
@@ -453,27 +452,27 @@ class ColumnTask_Refresh(
             isCancelled ->
                 log.d("$logCaption: cancelled.")
 
-            max_id == null ->
+            maxId == null ->
                 log.d("$logCaption: max_id is null.")
 
-            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH -> {
+            (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH -> {
                 willAddGap = true
                 log.d("$logCaption: read enough. make gap.")
             }
 
-            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT -> {
+            SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT -> {
                 willAddGap = true
                 log.d("$logCaption: timeout. make gap.")
             }
 
-            else -> parseResult(requester(false, max_id, last_since_id))
+            else -> parseResult(requester(false, maxId, lastSinceId))
         }
 
-        if (!isCancelled
-            && list_tmp?.isNotEmpty() == true
-            && (willAddGap || Pref.bpForceGap(context))
+        if (!isCancelled &&
+            listTmp?.isNotEmpty() == true &&
+            (willAddGap || Pref.bpForceGap(context))
         ) {
-            addOne(list_tmp, TootGap.mayNull(max_id, last_since_id), head = addToHead)
+            addOne(listTmp, TootGap.mayNull(maxId, lastSinceId), head = addToHead)
         }
         return firstResult
     }
@@ -483,23 +482,24 @@ class ColumnTask_Refresh(
         requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
         arrayFinder: (JsonObject) -> JsonArray?,
         listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-        adder: (List<T>, Boolean) -> Unit
+        adder: (List<T>, Boolean) -> Unit,
     ): TootApiResult? {
 
         // 上端の差分更新に対応できるのは ColumnPagingType.Default だけ
-        if (column.pagingType != ColumnPagingType.Default)
+        if (column.pagingType != ColumnPagingType.Default) {
             return TootApiResult("can't refresh top.")
+        }
 
         val addToHead = true
 
         var willAddGap = false
 
         // 2回目以降のリクエスト範囲
-        val last_since_id = column.idRecent
-        var max_id: EntityId? = null
+        val lastSinceId = column.idRecent
+        var maxId: EntityId? = null
 
         fun parseResult(result: TootApiResult?): Boolean {
-            val first = list_tmp?.isEmpty() != false
+            val first = listTmp?.isEmpty() != false
 
             if (result == null) {
                 if (!first) willAddGap = true
@@ -515,7 +515,7 @@ class ColumnTask_Refresh(
             }
 
             val src = listParser(parser, array)
-            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            if (listTmp == null) listTmp = ArrayList(src.size)
             adder(src, addToHead)
 
             column.saveRangeTop(result, src)
@@ -528,13 +528,13 @@ class ColumnTask_Refresh(
 
                 else -> {
                     // 直前に読んだ範囲のmaxIdを調べる
-                    max_id = column.parseRange(result, src).first
+                    maxId = column.parseRange(result, src).first
                     true
                 }
             }
         }
 
-        val time_start = SystemClock.elapsedRealtime()
+        val timeStart = SystemClock.elapsedRealtime()
 
         val firstResult = requester(true, null, null)
         var more = parseResult(firstResult)
@@ -542,10 +542,10 @@ class ColumnTask_Refresh(
             isCancelled ->
                 log.d("$logCaption: cancelled.")
 
-            max_id == null ->
+            maxId == null ->
                 log.d("$logCaption: max_id is null.")
 
-            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT -> {
+            SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT -> {
                 // タイムアウト
                 // 隙間ができるかもしれない。後ほど手動で試してもらうしかない
                 willAddGap = true
@@ -555,11 +555,11 @@ class ColumnTask_Refresh(
             else -> parseResult(requester(false, null, null))
         }
 
-        if (!isCancelled
-            && list_tmp?.isNotEmpty() == true
-            && (willAddGap || Pref.bpForceGap(context))
+        if (!isCancelled &&
+            listTmp?.isNotEmpty() == true &&
+            (willAddGap || Pref.bpForceGap(context))
         ) {
-            addOne(list_tmp, TootGap.mayNull(max_id, last_since_id), head = addToHead)
+            addOne(listTmp, TootGap.mayNull(maxId, lastSinceId), head = addToHead)
         }
 
         return firstResult
@@ -571,7 +571,7 @@ class ColumnTask_Refresh(
         arrayFinder: (JsonObject) -> JsonArray?,
         listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
         adder: (List<T>, Boolean) -> Unit,
-        repeatReading: Boolean = false
+        repeatReading: Boolean = false,
     ): TootApiResult? {
 
         @Suppress("NON_EXHAUSTIVE_WHEN")
@@ -580,8 +580,9 @@ class ColumnTask_Refresh(
                 return TootApiResult(context.getString(R.string.end_of_list))
 
             ColumnPagingType.Cursor ->
-                if (column.idOld == null)
+                if (column.idOld == null) {
                     return TootApiResult(context.getString(R.string.end_of_list))
+                }
         }
 
         val addToHead = false
@@ -601,7 +602,7 @@ class ColumnTask_Refresh(
                 ?: return log.d("$logCaption: missing item list.")
 
             val src = listParser(parser, array)
-            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            if (listTmp == null) listTmp = ArrayList(src.size)
             adder(src, addToHead)
 
             // save range to column
@@ -627,7 +628,7 @@ class ColumnTask_Refresh(
             }
         }
 
-        val time_start = SystemClock.elapsedRealtime()
+        val timeStart = SystemClock.elapsedRealtime()
         val firstResult = requester(true, null, null)
         var more = parseResult(firstResult) && repeatReading
         while (more) more = when {
@@ -641,10 +642,10 @@ class ColumnTask_Refresh(
             column.idOld == null ->
                 log.d("$logCaption: idOld is null.")
 
-            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
+            (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
                 log.d("$logCaption: read enough data.")
 
-            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT ->
+            SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT ->
                 log.d("$logCaption: loop timeout.")
 
             else -> parseResult(requester(false, null, null))
@@ -655,11 +656,11 @@ class ColumnTask_Refresh(
 
     private suspend fun defaultRequesterMisskey(
         client: TootApiClient,
-        path_base: String,
+        pathBase: String,
         params: JsonObject,
-        first: Boolean
+        first: Boolean,
     ) = client.request(
-        path_base,
+        pathBase,
         params.apply {
             if (!bBottom) {
                 if (first) {
@@ -695,51 +696,51 @@ class ColumnTask_Refresh(
 
     private suspend fun defaultRequesterMastodon(
         client: TootApiClient,
-        path_base: String,
+        pathBase: String,
         delimiter: Char,
         @Suppress("UNUSED_PARAMETER") first: Boolean,
         useMinId: Boolean,
         gapIdNewer: EntityId?,
-        gapIdOlder: EntityId?
+        gapIdOlder: EntityId?,
     ) =
         client.request(
             when {
                 // profile directory 用
                 column.pagingType == ColumnPagingType.Offset ->
-                    "$path_base${delimiter}offset=${column.offsetNext}"
+                    "$pathBase${delimiter}offset=${column.offsetNext}"
 
                 useMinId ->
-                    column.addRangeMin(path_base)
+                    column.addRangeMin(pathBase)
 
                 gapIdNewer != null ->
-                    "$path_base${delimiter}max_id=$gapIdNewer&since_id=$gapIdOlder"
+                    "$pathBase${delimiter}max_id=$gapIdNewer&since_id=$gapIdOlder"
 
                 else ->
-                    column.addRange(bBottom = bBottom, path_base, delimiter = delimiter)
+                    column.addRange(bBottom = bBottom, pathBase, delimiter = delimiter)
             }
         )
 
     suspend fun getStatusList(
         client: TootApiClient,
-        path_base: String?,
+        pathBase: String?,
         useMinId: Boolean = false,
         misskeyParams: JsonObject? = null,
         listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootStatus> =
-            defaultStatusListParser
+            defaultStatusListParser,
     ): TootApiResult? {
 
-        path_base ?: return null // cancelled.
+        pathBase ?: return null // cancelled.
 
         val logCaption = "getStatusList"
         val adder: (List<TootStatus>, Boolean) -> Unit =
-            { src, head -> addWithFilterStatus(list_tmp, src, head = head) }
+            { src, head -> addWithFilterStatus(listTmp, src, head = head) }
 
         return if (isMisskey) {
 
             val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
 
             val requester: suspend (Boolean) -> TootApiResult? =
-                { defaultRequesterMisskey(client, path_base, params, it) }
+                { defaultRequesterMisskey(client, pathBase, params, it) }
 
             when {
                 bBottom -> refreshBottomMisskey(
@@ -758,16 +759,15 @@ class ColumnTask_Refresh(
                     adder = adder
                 )
             }
-
         } else {
 
-            val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
+            val delimiter = if (-1 != pathBase.indexOf('?')) '&' else '?'
 
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
                         client,
-                        path_base,
+                        pathBase,
                         delimiter,
                         first,
                         useMinId = useMinId,
@@ -806,7 +806,7 @@ class ColumnTask_Refresh(
     suspend fun getNotificationList(
         client: TootApiClient,
         fromAcct: String? = null,
-        useMinId: Boolean = false
+        useMinId: Boolean = false,
     ): TootApiResult? {
 
         val logCaption = "getNotificationList"
@@ -815,10 +815,10 @@ class ColumnTask_Refresh(
             defaultNotificationListParser
 
         val adder: (List<TootNotification>, Boolean) -> Unit =
-            { src, head -> addWithFilterNotification(list_tmp, src, head = head) }
+            { src, head -> addWithFilterNotification(listTmp, src, head = head) }
 
         // Misskeyの通知TLはfromAcctに対応していない
-        val path_base = column.makeNotificationUrl(client, fromAcct)
+        val pathBase = column.makeNotificationUrl(client, fromAcct)
 
         return if (isMisskey) {
 
@@ -826,7 +826,7 @@ class ColumnTask_Refresh(
                 column.makeMisskeyBaseParameter(parser).addMisskeyNotificationFilter(column)
 
             val requester: suspend (Boolean) -> TootApiResult? =
-                { defaultRequesterMisskey(client, path_base, params, it) }
+                { defaultRequesterMisskey(client, pathBase, params, it) }
 
             when {
                 bBottom -> refreshBottomMisskey(
@@ -847,13 +847,13 @@ class ColumnTask_Refresh(
             }
         } else {
 
-            val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
+            val delimiter = if (-1 != pathBase.indexOf('?')) '&' else '?'
 
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
                         client,
-                        path_base,
+                        pathBase,
                         delimiter,
                         first,
                         useMinId = useMinId,
@@ -891,22 +891,22 @@ class ColumnTask_Refresh(
 
     suspend fun getAccountList(
         client: TootApiClient,
-        path_base: String,
+        pathBase: String,
         misskeyParams: JsonObject? = null,
         arrayFinder: (JsonObject) -> JsonArray? =
             nullArrayFinder,
         listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
-            defaultAccountListParser
+            defaultAccountListParser,
     ): TootApiResult? {
 
         val logCaption = "getAccountList"
         val adder: (List<TootAccountRef>, Boolean) -> Unit =
-            { src, head -> addAll(list_tmp, src, head = head) }
+            { src, head -> addAll(listTmp, src, head = head) }
 
         return if (isMisskey) {
             val params = misskeyParams ?: column.makeMisskeyBaseParameter(parser)
             val requester: suspend (Boolean) -> TootApiResult? =
-                { defaultRequesterMisskey(client, path_base, params, it) }
+                { defaultRequesterMisskey(client, pathBase, params, it) }
             when {
                 bBottom -> refreshBottomMisskey(
                     logCaption,
@@ -924,12 +924,12 @@ class ColumnTask_Refresh(
                 )
             }
         } else {
-            val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
+            val delimiter = if (-1 != pathBase.indexOf('?')) '&' else '?'
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
                         client,
-                        path_base,
+                        pathBase,
                         delimiter,
                         first,
                         useMinId = false,
@@ -959,13 +959,13 @@ class ColumnTask_Refresh(
 
     suspend fun getDomainList(
         client: TootApiClient,
-        path_base: String
+        pathBase: String,
     ): TootApiResult? {
 
         val logCaption = "getDomainList"
 
         val adder: (List<TimelineItem>, Boolean) -> Unit =
-            { src, head -> addAll(list_tmp, src, head = head) }
+            { src, head -> addAll(listTmp, src, head = head) }
 
         val listParser = defaultDomainBlockListParser
 
@@ -973,12 +973,12 @@ class ColumnTask_Refresh(
             TootApiResult("misskey support is not yet implemented.")
         } else {
             // ページングIDはサーバ側の内部IDで、Linkヘッダ以外には露出しない。
-            val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
+            val delimiter = if (-1 != pathBase.indexOf('?')) '&' else '?'
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
                         client,
-                        path_base,
+                        pathBase,
                         delimiter,
                         first,
                         useMinId = false,
@@ -1016,12 +1016,12 @@ class ColumnTask_Refresh(
 
     suspend fun getReportList(
         client: TootApiClient,
-        path_base: String
+        pathBase: String,
     ): TootApiResult? {
 
         val logCaption = "getReportList"
         val adder: (List<TootReport>, Boolean) -> Unit =
-            { src, head -> addAll(list_tmp, src, head = head) }
+            { src, head -> addAll(listTmp, src, head = head) }
 
         val listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootReport> =
             { _, jsonArray -> parseList(::TootReport, jsonArray) }
@@ -1030,12 +1030,12 @@ class ColumnTask_Refresh(
             TootApiResult("Misskey has no API to list reports from you.")
         } else {
             // ページングIDはサーバ側の内部IDで、Linkヘッダ以外には露出しない。
-            val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
+            val delimiter = if (-1 != pathBase.indexOf('?')) '&' else '?'
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
                         client,
-                        path_base,
+                        pathBase,
                         delimiter,
                         first,
                         useMinId = false,
@@ -1065,7 +1065,7 @@ class ColumnTask_Refresh(
 
     suspend fun getConversationSummaryList(
         client: TootApiClient,
-        path_base: String,
+        pathBase: String,
         //	aroundMin : Boolean = false,
         misskeyParams: JsonObject? = null,
     ): TootApiResult? {
@@ -1075,14 +1075,14 @@ class ColumnTask_Refresh(
             defaultConversationSummaryListParser
 
         val adder: (List<TootConversationSummary>, Boolean) -> Unit =
-            { src, head -> addWithFilterConversationSummary(list_tmp, src, head = head) }
+            { src, head -> addWithFilterConversationSummary(listTmp, src, head = head) }
 
         return if (isMisskey) {
 
             val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
 
             val requester: suspend (Boolean) -> TootApiResult? =
-                { defaultRequesterMisskey(client, path_base, params, it) }
+                { defaultRequesterMisskey(client, pathBase, params, it) }
 
             when {
                 bBottom -> refreshBottomMisskey(
@@ -1102,12 +1102,12 @@ class ColumnTask_Refresh(
                 )
             }
         } else {
-            val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
+            val delimiter = if (-1 != pathBase.indexOf('?')) '&' else '?'
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
                         client,
-                        path_base,
+                        pathBase,
                         delimiter,
                         first,
                         useMinId = false,
@@ -1139,7 +1139,7 @@ class ColumnTask_Refresh(
     suspend fun getScheduledStatuses(client: TootApiClient): TootApiResult? {
         val result = client.request(column.addRange(bBottom, ApiPath.PATH_SCHEDULED_STATUSES))
         val src = parseList(::TootScheduled, parser, result?.jsonArray)
-        list_tmp = addAll(list_tmp, src)
+        listTmp = addAll(listTmp, src)
         column.saveRange(bBottom, !bBottom, result, src)
         return result
     }

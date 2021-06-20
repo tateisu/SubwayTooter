@@ -27,7 +27,7 @@ import kotlin.math.min
 class FilterTrees(
     val treeIrreversible: WordTrieTree = WordTrieTree(),
     val treeReversible: WordTrieTree = WordTrieTree(),
-    val treeAll: WordTrieTree = WordTrieTree()
+    val treeAll: WordTrieTree = WordTrieTree(),
 )
 
 @Suppress("MemberVisibilityCanPrivate")
@@ -184,9 +184,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     class AutoCW(
         var refActivity: WeakReference<Any>? = null,
-        var cell_width: Int = 0,
-        var decoded_spoiler_text: Spannable? = null,
-        var originalLineCount: Int = 0
+        var cellWidth: Int = 0,
+        var decodedSpoilerText: Spannable? = null,
+        var originalLineCount: Int = 0,
     )
 
     // アプリ内部で使うワークエリア
@@ -243,7 +243,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.profile_emojis = null
 
                 val who = parser.account(src.jsonObject("user"))
-                    ?: throw RuntimeException("missing account")
+                    ?: error("missing account")
 
                 this.accountRef = TootAccountRef(parser, who)
 
@@ -372,7 +372,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     src.string("myReaction")
                 )
 
-
                 val reblog = parser.status(src.jsonObject("renote"))
                 this.reblog = reblog
 
@@ -397,16 +396,15 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     null -> false
 
                     // 別の投稿を参照して、かつこの投稿自体が何かコンテンツを持つなら引用トゥートである
-                    else -> content?.isNotEmpty() == true
-                        || spoiler_text.isNotEmpty()
-                        || media_attachments?.isNotEmpty() == true
-                        || enquete != null
+                    else -> content?.isNotEmpty() == true ||
+                        spoiler_text.isNotEmpty() ||
+                        media_attachments?.isNotEmpty() == true ||
+                        enquete != null
                 }
 
-                this.quote_id = if (isQuoteToot) {
-                    reblog?.id
-                } else {
-                    null
+                this.quote_id = when {
+                    isQuoteToot -> reblog?.id
+                    else -> null
                 }
 
                 this.deletedAt = src.string("deletedAt")
@@ -424,7 +422,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 this.isPromoted = src.string("_prId_")?.isNotEmpty() == true
                 this.isFeatured = src.string("_featuredId_")?.isNotEmpty() == true
-
             }
 
             ServiceType.NOTESTOCK -> {
@@ -442,8 +439,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.mentions = apTag.mentions
                 this.tags = apTag.hashtags
 
-                val who = parser.account(src.jsonObject("account"))
-                    ?: throw RuntimeException("missing account")
+                val who = parser.account(src.jsonObject("account")) ?: error("missing account")
 
                 this.accountRef = TootAccountRef(parser, who)
 
@@ -595,7 +591,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 }
 
                 val who = parser.account(src.jsonObject("account"))
-                    ?: throw RuntimeException("missing account")
+                    ?: error("missing account")
 
                 this.accountRef = TootAccountRef(parser, who)
 
@@ -627,21 +623,20 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                                 src.jsonArray("media_attachments"),
                                 log
                             )
-                        val visibilityString = if (src.boolean("limited") == true)
-                            "limited"
-                        else
-                            src.string("visibility")
+                        val visibilityString = when {
+                            src.boolean("limited") == true -> "limited"
+                            else -> src.string("visibility")
+                        }
                         this.visibility = TootVisibility.parseMastodon(visibilityString)
                             ?: TootVisibility.Unknown
                         this.sensitive = src.optBoolean("sensitive")
-
                     }
 
                     ServiceType.TOOTSEARCH -> {
                         this.readerApDomain = null
 
                         // 投稿元タンスでのIDを調べる。失敗するかもしれない
-                        // FIXME: Pleromaだとダメそうな印象
+                        // XXX: Pleromaだとダメそうな印象
                         this.uri = src.string("uri") ?: error("missing uri")
                         this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
 
@@ -654,7 +649,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                         )
                         this.visibility = TootVisibility.Public
                         this.sensitive = src.optBoolean("sensitive")
-
                     }
 
                     ServiceType.MSP -> {
@@ -723,17 +717,19 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 // content
                 this.content = src.string("content")?.let { sv ->
-                    if (removeQt) {
-                        log.d("removeQt? $sv")
-                        val reQuoteTootRemover =
-                            """(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
-                        sv.replace(reQuoteTootRemover) {
-                            it.groupValues.elementAtOrNull(1) ?: ""
-                        }.also { after ->
-                            log.d("removeQt? after = $after")
+                    when {
+                        removeQt -> {
+                            log.d("removeQt? $sv")
+                            val reQuoteTootRemover =
+                                """(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
+                            sv.replace(reQuoteTootRemover) {
+                                it.groupValues.elementAtOrNull(1) ?: ""
+                            }.also { after ->
+                                log.d("removeQt? after = $after")
+                            }
                         }
-                    } else
-                        sv
+                        else -> sv
+                    }
                 }
 
                 var options = DecodeOptions(
@@ -807,7 +803,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     private fun mergeMentions(
         mentions1: java.util.ArrayList<TootMention>?,
-        mentions2: java.util.ArrayList<TootMention>?
+        mentions2: java.util.ArrayList<TootMention>?,
     ): java.util.ArrayList<TootMention>? {
         val size = (mentions1?.size ?: 0) + (mentions2?.size ?: 0)
         if (size == 0) return null
@@ -846,18 +842,16 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         // reblog
         return true == reblog?.checkMuted()
-
     }
 
     fun hasMedia(): Boolean {
         return (media_attachments?.size ?: 0) > 0
     }
 
-    fun canPin(access_info: SavedAccount): Boolean {
-        return reblog == null
-            && access_info.isMe(account)
-            && visibility.canPin(access_info.isMisskey)
-    }
+    fun canPin(accessInfo: SavedAccount): Boolean =
+        reblog == null &&
+            accessInfo.isMe(account) &&
+            visibility.canPin(accessInfo.isMisskey)
 
     // 内部で使う
     private var _filteredWord: String? = null
@@ -868,11 +862,11 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     val filtered: Boolean
         get() = filteredWord != null
 
-    private fun hasReceipt(access_info: SavedAccount): TootVisibility {
-        val fullAcctMe = access_info.getFullAcct(account)
+    private fun hasReceipt(accessInfo: SavedAccount): TootVisibility {
+        val fullAcctMe = accessInfo.getFullAcct(account)
 
         val reply_account = reply?.account
-        if (reply_account != null && fullAcctMe != access_info.getFullAcct(reply_account)) {
+        if (reply_account != null && fullAcctMe != accessInfo.getFullAcct(reply_account)) {
             return TootVisibility.DirectSpecified
         }
 
@@ -882,24 +876,26 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         }
 
         mentions?.forEach {
-            if (fullAcctMe != access_info.getFullAcct(it.acct))
+            if (fullAcctMe != accessInfo.getFullAcct(it.acct)) {
                 return@hasReceipt TootVisibility.DirectSpecified
+            }
         }
 
         return TootVisibility.DirectPrivate
     }
 
-    fun getBackgroundColorType(access_info: SavedAccount) =
+    fun getBackgroundColorType(accessInfo: SavedAccount) =
         when (visibility) {
             TootVisibility.DirectPrivate,
-            TootVisibility.DirectSpecified -> hasReceipt(access_info)
+            TootVisibility.DirectSpecified,
+            -> hasReceipt(accessInfo)
             else -> visibility
         }
 
     fun updateKeywordFilteredFlag(
         accessInfo: SavedAccount,
         trees: FilterTrees?,
-        checkIrreversible: Boolean = false
+        checkIrreversible: Boolean = false,
     ) {
 
         trees ?: return
@@ -987,7 +983,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         code: String?,
         byMe: Boolean,
         emoji: CustomEmoji? = null,
-        caller: String
+        caller: String,
     ): Boolean {
         code ?: return false
 
@@ -1026,7 +1022,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     fun decreaseReactionMisskey(
         code: String?,
         byMe: Boolean,
-        caller: String
+        caller: String,
     ): Boolean {
         code ?: return false
 
@@ -1074,7 +1070,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     class FindStatusIdFromUrlResult(
         val statusId: EntityId?, // may null
         hostArg: String,
-        val url: String
+        val url: String,
     ) {
 
         val host = Host.parse(hostArg)
@@ -1178,7 +1174,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             return null
         }
 
-
         private val tz_utc = TimeZone.getTimeZone("UTC")
 
         private val reDate = """\A\d+\D+\d+\D+\d+\z""".asciiPattern()
@@ -1210,7 +1205,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     m = reDate.matcher(strTime)
                     if (m.find()) return parseTime("${strTime}T00:00:00.000Z")
 
-                    log.w("invalid time format: ${strTime}")
+                    log.w("invalid time format: $strTime")
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)
                     log.e(ex, "TootStatus.parseTime failed. src=$strTime")
@@ -1240,9 +1235,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     }
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)
-                    log.e(ex, "parseTimeMSP failed. src=${strTime}" )
+                    log.e(ex, "parseTimeMSP failed. src=$strTime")
                 }
-
             }
             return 0L
         }
@@ -1257,16 +1251,16 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             context: Context,
             t: Long,
             bAllowRelative: Boolean,
-            onlyDate: Boolean = false
+            onlyDate: Boolean = false,
         ): String {
 
             val now = System.currentTimeMillis()
             var delta = now - t
 
-            @StringRes val phraseId = if (delta >= 0)
-                R.string.relative_time_phrase_past
-            else
-                R.string.relative_time_phrase_future
+            @StringRes val phraseId = when {
+                delta >= 0 -> R.string.relative_time_phrase_past
+                else -> R.string.relative_time_phrase_future
+            }
 
             fun f(v: Long, unit1: Int, units: Int): String {
                 val vi = v.toInt()
@@ -1329,7 +1323,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             t: Long,
             format: SimpleDateFormat,
             omitZeroSecond: Boolean,
-            omitYear: Boolean
+            omitYear: Boolean,
         ): String {
             var dateTarget = format.format(Date(t))
 
@@ -1418,7 +1412,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         // 投稿元タンスでのステータスIDを調べる
         fun findStatusIdFromUri(
             uri: String?,
-            url: String?
+            url: String?,
         ): EntityId? {
 
             try {
@@ -1476,17 +1470,13 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     m = reStatusPageNotice.matcher(url)
                     if (m.find()) return EntityId(m.groupEx(2)!!)
 
-
                     log.w("findStatusIdFromUri: unsupported url. $url")
                 }
-
             } catch (ex: Throwable) {
                 log.e(ex, "can't parse status from: $uri,$url")
             }
 
             return null
         }
-
     }
-
 }

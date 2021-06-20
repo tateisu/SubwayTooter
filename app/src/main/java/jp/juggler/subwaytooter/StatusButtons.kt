@@ -29,21 +29,21 @@ class StatusButtons(
     private val bSimpleList: Boolean,
 
     private val holder: StatusButtonsViewHolder,
-    private val itemViewHolder: ItemViewHolder
+    private val itemViewHolder: ItemViewHolder,
 
-) : View.OnClickListener, View.OnLongClickListener {
+    ) : View.OnClickListener, View.OnLongClickListener {
 
     companion object {
 
         val log = LogCategory("StatusButtons")
     }
 
-    private val access_info: SavedAccount
+    private val accessInfo: SavedAccount
     private var relation: UserRelation? = null
     private var status: TootStatus? = null
     private var notification: TootNotification? = null
 
-    var close_window: PopupWindow? = null
+    var closeWindow: PopupWindow? = null
 
     private val btnConversation = holder.btnConversation
     private val btnReply = holder.btnReply
@@ -61,13 +61,13 @@ class StatusButtons(
     private val btnCustomShare3 = holder.btnCustomShare3
     private val btnMore = holder.btnMore
 
-    private val color_normal = column.getContentColor()
+    private val colorNormal = column.getContentColor()
 
-    private val color_accent: Int
+    private val colorAccent: Int
         get() = activity.attrColor(R.attr.colorImageButtonAccent)
 
     init {
-        this.access_info = column.access_info
+        this.accessInfo = column.accessInfo
 
         arrayOf(
             btnBoost,
@@ -106,32 +106,32 @@ class StatusButtons(
             activity,
             btnConversation,
             R.drawable.ic_forum,
-            color = color_normal,
-            alphaMultiplier = Styler.boost_alpha
+            color = colorNormal,
+            alphaMultiplier = Styler.boostAlpha
         )
 
         setIconDrawableId(
             activity,
             btnMore,
             R.drawable.ic_more,
-            color = color_normal,
-            alphaMultiplier = Styler.boost_alpha
+            color = colorNormal,
+            alphaMultiplier = Styler.boostAlpha
         )
 
         setButton(
             btnReply,
             true,
-            color_normal,
+            colorNormal,
             R.drawable.ic_reply,
-            when (val replies_count = status.replies_count) {
+            when (val repliesCount = status.replies_count) {
                 null -> ""
                 else -> when (Pref.ipRepliesCount(activity.pref)) {
                     Pref.RC_SIMPLE -> when {
-                        replies_count >= 2L -> "1+"
-                        replies_count == 1L -> "1"
+                        repliesCount >= 2L -> "1+"
+                        repliesCount == 1L -> "1"
                         else -> ""
                     }
-                    Pref.RC_ACTUAL -> replies_count.toString()
+                    Pref.RC_ACTUAL -> repliesCount.toString()
                     else -> ""
                 }
             },
@@ -141,21 +141,21 @@ class StatusButtons(
         // ブーストボタン
         when {
             // マストドンではDirectはブーストできない (Misskeyはできる)
-            (!access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) ->
+            (!accessInfo.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) ->
                 setButton(
                     btnBoost,
                     false,
-                    color_accent,
+                    colorAccent,
                     R.drawable.ic_mail,
                     "",
                     activity.getString(R.string.boost)
                 )
 
-            activity.app_state.isBusyBoost(access_info, status) ->
+            activity.appState.isBusyBoost(accessInfo, status) ->
                 setButton(
                     btnBoost,
                     false,
-                    color_normal,
+                    colorNormal,
                     R.drawable.ic_refresh,
                     "?",
                     activity.getString(R.string.boost)
@@ -164,20 +164,20 @@ class StatusButtons(
             else -> setButton(
                 btnBoost,
                 true,
-                if (status.reblogged)
-                    Pref.ipButtonBoostedColor(pref).notZero() ?: color_accent
-                else
-                    color_normal,
+                when {
+                    status.reblogged -> Pref.ipButtonBoostedColor(pref).notZero() ?: colorAccent
+                    else -> colorNormal
+                },
                 R.drawable.ic_repeat,
-                when (val boosts_count = status.reblogs_count) {
+                when (val boostsCount = status.reblogs_count) {
                     null -> ""
                     else -> when (Pref.ipBoostsCount(activity.pref)) {
                         Pref.RC_SIMPLE -> when {
-                            boosts_count >= 2L -> "1+"
-                            boosts_count == 1L -> "1"
+                            boostsCount >= 2L -> "1+"
+                            boostsCount == 1L -> "1"
                             else -> ""
                         }
-                        Pref.RC_ACTUAL -> boosts_count.toString()
+                        Pref.RC_ACTUAL -> boostsCount.toString()
                         else -> ""
                     }
                 },
@@ -185,48 +185,42 @@ class StatusButtons(
             )
         }
 
-        val ti = TootInstance.getCached(access_info)
+        val ti = TootInstance.getCached(accessInfo)
         btnQuote.vg(ti?.feature_quote == true)?.let {
             setButton(
                 it,
                 true,
-                color_normal,
+                colorNormal,
                 R.drawable.ic_quote,
                 activity.getString(R.string.quote)
             )
         }
 
-        btnReaction.vg(TootReaction.canReaction(access_info, ti))?.let {
-            val canMultipleReaction = InstanceCapability.canMultipleReaction(access_info,ti)
+        btnReaction.vg(TootReaction.canReaction(accessInfo, ti))?.let {
+            val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo, ti)
             val hasMyReaction = status.reactionSet?.hasMyReaction() == true
-            val bRemoveButton = hasMyReaction &&!canMultipleReaction
+            val bRemoveButton = hasMyReaction && !canMultipleReaction
             setButton(
                 it,
                 true,
-                color_normal,
-                if (bRemoveButton)
-                    R.drawable.ic_remove
-                else
-                    R.drawable.ic_add,
+                colorNormal,
+                if (bRemoveButton) R.drawable.ic_remove else R.drawable.ic_add,
                 activity.getString(
-                    if (bRemoveButton)
-                        R.string.reaction_remove
-                    else
-                        R.string.reaction_add
+                    if (bRemoveButton) R.string.reaction_remove else R.string.reaction_add
                 )
             )
         }
 
         // お気に入りボタン
-        val fav_icon_drawable = when {
-            access_info.isNicoru(status.account) -> R.drawable.ic_nicoru
+        val favIconDrawable = when {
+            accessInfo.isNicoru(status.account) -> R.drawable.ic_nicoru
             else -> R.drawable.ic_star
         }
         when {
-            activity.app_state.isBusyFav(access_info, status) -> setButton(
+            activity.appState.isBusyFav(accessInfo, status) -> setButton(
                 btnFavourite,
                 false,
-                color_normal,
+                colorNormal,
                 R.drawable.ic_refresh,
                 "?",
                 activity.getString(R.string.favourite)
@@ -235,20 +229,20 @@ class StatusButtons(
             else -> setButton(
                 btnFavourite,
                 true,
-                if (status.favourited)
-                    Pref.ipButtonFavoritedColor(pref).notZero() ?: color_accent
-                else
-                    color_normal,
-                fav_icon_drawable,
-                when (val favourites_count = status.favourites_count) {
+                when {
+                    status.favourited -> Pref.ipButtonFavoritedColor(pref).notZero() ?: colorAccent
+                    else -> colorNormal
+                },
+                favIconDrawable,
+                when (val favouritesCount = status.favourites_count) {
                     null -> ""
                     else -> when (Pref.ipFavouritesCount(activity.pref)) {
                         Pref.RC_SIMPLE -> when {
-                            favourites_count >= 2L -> "1+"
-                            favourites_count == 1L -> "1"
+                            favouritesCount >= 2L -> "1+"
+                            favouritesCount == 1L -> "1"
                             else -> ""
                         }
-                        Pref.RC_ACTUAL -> favourites_count.toString()
+                        Pref.RC_ACTUAL -> favouritesCount.toString()
                         else -> ""
                     }
                 },
@@ -260,10 +254,10 @@ class StatusButtons(
         when {
             !Pref.bpShowBookmarkButton(activity.pref) -> btnBookmark.vg(false)
 
-            activity.app_state.isBusyBookmark(access_info, status) -> setButton(
+            activity.appState.isBusyBookmark(accessInfo, status) -> setButton(
                 btnBookmark,
                 false,
-                color_normal,
+                colorNormal,
                 R.drawable.ic_refresh,
                 activity.getString(R.string.bookmark)
             )
@@ -271,10 +265,10 @@ class StatusButtons(
             else -> setButton(
                 btnBookmark,
                 true,
-                if (status.bookmarked)
-                    Pref.ipButtonBookmarkedColor(pref).notZero() ?: color_accent
-                else
-                    color_normal,
+                when {
+                    status.bookmarked -> Pref.ipButtonBookmarkedColor(pref).notZero() ?: colorAccent
+                    else -> colorNormal
+                },
                 R.drawable.ic_bookmark,
                 activity.getString(R.string.bookmark)
             )
@@ -287,15 +281,15 @@ class StatusButtons(
             null
         } else {
             llFollow2.visibility = View.VISIBLE
-            val relation = UserRelation.load(access_info.db_id, account.id)
+            val relation = UserRelation.load(accessInfo.db_id, account.id)
             Styler.setFollowIcon(
                 activity,
                 btnFollow2,
                 ivFollowedBy2,
                 relation,
                 account,
-                color_normal,
-                alphaMultiplier = Styler.boost_alpha
+                colorNormal,
+                alphaMultiplier = Styler.boostAlpha
             )
             relation
         }
@@ -314,8 +308,8 @@ class StatusButtons(
                     icon ?: createColoredDrawable(
                         this@StatusButtons.activity,
                         R.drawable.ic_question,
-                        color_normal,
-                        Styler.boost_alpha
+                        colorNormal,
+                        Styler.boostAlpha
                     )
                 )
                 ++optionalButtonCount
@@ -396,7 +390,6 @@ class StatusButtons(
                     }
                 }
             }
-
         }
 
         updateAdditionalButton(btnTranslate)
@@ -411,9 +404,9 @@ class StatusButtons(
         color: Int,
         drawableId: Int,
         count: String,
-        contentDescription: String
+        contentDescription: String,
     ) {
-        val alpha = Styler.boost_alpha
+        val alpha = Styler.boostAlpha
         val d = createColoredDrawable(
             activity,
             drawableId,
@@ -432,9 +425,9 @@ class StatusButtons(
         enabled: Boolean,
         color: Int,
         drawableId: Int,
-        contentDescription: String
+        contentDescription: String,
     ) {
-        val alpha = Styler.boost_alpha
+        val alpha = Styler.boostAlpha
         val d = createColoredDrawable(
             activity,
             drawableId,
@@ -448,8 +441,8 @@ class StatusButtons(
 
     override fun onClick(v: View) {
 
-        close_window?.dismiss()
-        close_window = null
+        closeWindow?.dismiss()
+        closeWindow = null
 
         val status = this.status ?: return
 
@@ -458,9 +451,9 @@ class StatusButtons(
             btnConversation -> {
 
                 val cs = status.conversationSummary
-                if( activity.conversationUnreadClear(access_info, cs) ){
+                if (activity.conversationUnreadClear(accessInfo, cs)) {
                     // 表示の更新
-                    itemViewHolder.list_adapter.notifyChange(
+                    itemViewHolder.listAdapter.notifyChange(
                         reason = "ConversationSummary reset unread",
                         reset = true
                     )
@@ -468,27 +461,26 @@ class StatusButtons(
 
                 activity.conversation(
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     status
                 )
-
             }
 
-            btnReply -> if (!access_info.isPseudo) {
-                activity.reply(access_info, status)
+            btnReply -> if (!accessInfo.isPseudo) {
+                activity.reply(accessInfo, status)
             } else {
-                activity.replyFromAnotherAccount(access_info, status)
+                activity.replyFromAnotherAccount(accessInfo, status)
             }
 
-            btnQuote -> if (!access_info.isPseudo) {
-                activity.reply(access_info, status,quote = true)
+            btnQuote -> if (!accessInfo.isPseudo) {
+                activity.reply(accessInfo, status, quote = true)
             } else {
-                activity.quoteFromAnotherAccount(access_info, status)
+                activity.quoteFromAnotherAccount(accessInfo, status)
             }
 
             btnBoost -> {
-                if (access_info.isPseudo) {
-                    activity.boostFromAnotherAccount(access_info, status)
+                if (accessInfo.isPseudo) {
+                    activity.boostFromAnotherAccount(accessInfo, status)
                 } else {
 
                     // トグル動作
@@ -496,75 +488,75 @@ class StatusButtons(
 
                     activity.boost(
 
-                        access_info,
+                        accessInfo,
                         status,
-                        access_info.getFullAcct(status.account),
+                        accessInfo.getFullAcct(status.account),
                         CrossAccountMode.SameAccount,
                         bSet = bSet,
                         callback = when {
                             !bSimpleList -> emptyCallback
                             // 簡略表示なら結果をトースト表示
-                            bSet -> activity.boost_complete_callback
-                            else -> activity.unboost_complete_callback
+                            bSet -> activity.boostCompleteCallback
+                            else -> activity.unboostCompleteCallback
                         },
                     )
                 }
             }
 
             btnFavourite -> {
-                if (access_info.isPseudo) {
-                    activity.favouriteFromAnotherAccount(access_info, status)
+                if (accessInfo.isPseudo) {
+                    activity.favouriteFromAnotherAccount(accessInfo, status)
                 } else {
 
                     // トグル動作
                     val bSet = !status.favourited
 
                     activity.favourite(
-                        access_info,
+                        accessInfo,
                         status,
                         CrossAccountMode.SameAccount,
                         bSet = bSet,
                         callback = when {
                             !bSimpleList -> emptyCallback
                             // 簡略表示なら結果をトースト表示
-                            bSet -> activity.favourite_complete_callback
-                            else -> activity.unfavourite_complete_callback
+                            bSet -> activity.favouriteCompleteCallback
+                            else -> activity.unfavouriteCompleteCallback
                         },
                     )
                 }
             }
 
             btnBookmark -> {
-                if (access_info.isPseudo) {
-                    activity.bookmarkFromAnotherAccount(access_info, status)
+                if (accessInfo.isPseudo) {
+                    activity.bookmarkFromAnotherAccount(accessInfo, status)
                 } else {
 
                     // トグル動作
                     val bSet = !status.bookmarked
 
                     activity.bookmark(
-                        access_info,
+                        accessInfo,
                         status,
                         CrossAccountMode.SameAccount,
                         bSet = bSet,
                         callback = when {
                             !bSimpleList -> emptyCallback
                             // 簡略表示なら結果をトースト表示
-                            bSet -> activity.bookmark_complete_callback
-                            else -> activity.unbookmark_complete_callback
+                            bSet -> activity.bookmarkCompleteCallback
+                            else -> activity.unbookmarkCompleteCallback
                         },
                     )
                 }
             }
 
-            btnReaction ->{
-                val canMultipleReaction = InstanceCapability.canMultipleReaction(access_info)
+            btnReaction -> {
+                val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
                 val hasMyReaction = status.reactionSet?.hasMyReaction() == true
-                val bRemoveButton = hasMyReaction &&!canMultipleReaction
+                val bRemoveButton = hasMyReaction && !canMultipleReaction
                 when {
-                    !TootReaction.canReaction(access_info) ->
+                    !TootReaction.canReaction(accessInfo) ->
                         activity.reactionFromAnotherAccount(
-                            access_info,
+                            accessInfo,
                             status
                         )
                     bRemoveButton ->
@@ -574,19 +566,18 @@ class StatusButtons(
                 }
             }
 
-
             btnFollow2 -> {
                 val accountRef = status.accountRef
                 val account = accountRef.get()
                 val relation = this.relation ?: return
 
                 when {
-                    access_info.isPseudo -> {
+                    accessInfo.isPseudo -> {
                         // 別アカでフォロー
                         activity.followFromAnotherAccount(
 
                             activity.nextPosition(column),
-                            access_info,
+                            accessInfo,
                             account
                         )
                     }
@@ -595,15 +586,15 @@ class StatusButtons(
                         // 何もしない
                     }
 
-                    access_info.isMisskey && relation.getRequested(account) && !relation.getFollowing(
+                    accessInfo.isMisskey && relation.getRequested(account) && !relation.getFollowing(
                         account
                     ) ->
                         activity.followRequestDelete(
 
                             activity.nextPosition(column),
-                            access_info,
+                            accessInfo,
                             accountRef,
-                            callback = activity.cancel_follow_request_complete_callback
+                            callback = activity.cancelFollowRequestCompleteCallback
                         )
 
                     relation.getFollowing(account) || relation.getRequested(account) -> {
@@ -611,22 +602,21 @@ class StatusButtons(
                         activity.follow(
 
                             activity.nextPosition(column),
-                            access_info,
+                            accessInfo,
                             accountRef,
                             bFollow = false,
-                            callback = activity.unfollow_complete_callback
+                            callback = activity.unfollowCompleteCallback
                         )
                     }
 
                     else -> {
                         // フォロー
                         activity.follow(
-
                             activity.nextPosition(column),
-                            access_info,
+                            accessInfo,
                             accountRef,
                             bFollow = true,
-                            callback = activity.follow_complete_callback
+                            callback = activity.followCompleteCallback
                         )
                     }
                 }
@@ -634,28 +624,28 @@ class StatusButtons(
 
             btnTranslate -> CustomShare.invoke(
                 activity,
-                access_info,
+                accessInfo,
                 status,
                 CustomShareTarget.Translate
             )
 
             btnCustomShare1 -> CustomShare.invoke(
                 activity,
-                access_info,
+                accessInfo,
                 status,
                 CustomShareTarget.CustomShare1
             )
 
             btnCustomShare2 -> CustomShare.invoke(
                 activity,
-                access_info,
+                accessInfo,
                 status,
                 CustomShareTarget.CustomShare2
             )
 
             btnCustomShare3 -> CustomShare.invoke(
                 activity,
-                access_info,
+                accessInfo,
                 status,
                 CustomShareTarget.CustomShare3
             )
@@ -673,25 +663,25 @@ class StatusButtons(
 
     override fun onLongClick(v: View): Boolean {
 
-        close_window?.dismiss()
-        close_window = null
+        closeWindow?.dismiss()
+        closeWindow = null
 
         val status = this.status ?: return true
 
         when (v) {
-            btnBoost -> activity.boostFromAnotherAccount(access_info, status)
-            btnFavourite -> activity.favouriteFromAnotherAccount(access_info, status)
-            btnBookmark -> activity.bookmarkFromAnotherAccount(access_info, status)
+            btnBoost -> activity.boostFromAnotherAccount(accessInfo, status)
+            btnFavourite -> activity.favouriteFromAnotherAccount(accessInfo, status)
+            btnBookmark -> activity.bookmarkFromAnotherAccount(accessInfo, status)
 
-            btnReply -> activity.replyFromAnotherAccount(access_info, status)
-            btnQuote -> activity.quoteFromAnotherAccount(access_info, status)
+            btnReply -> activity.replyFromAnotherAccount(accessInfo, status)
+            btnQuote -> activity.quoteFromAnotherAccount(accessInfo, status)
 
-            btnReaction -> activity.reactionFromAnotherAccount(access_info, status)
+            btnReaction -> activity.reactionFromAnotherAccount(accessInfo, status)
 
             btnConversation -> activity.conversationOtherInstance(activity.nextPosition(column), status)
 
             btnFollow2 ->
-                activity.followFromAnotherAccount(activity.nextPosition(column), access_info, status.account)
+                activity.followFromAnotherAccount(activity.nextPosition(column), accessInfo, status.account)
 
             btnTranslate -> shareUrl(status, CustomShareTarget.Translate)
             btnCustomShare1 -> shareUrl(status, CustomShareTarget.CustomShare1)
@@ -703,7 +693,7 @@ class StatusButtons(
 
     private fun shareUrl(
         status: TootStatus,
-        target: CustomShareTarget
+        target: CustomShareTarget,
     ) {
         val url = status.url ?: status.uri
 
@@ -711,12 +701,12 @@ class StatusButtons(
     }
 }
 
-open class _FlexboxLayout(ctx: Context) : FlexboxLayout(ctx) {
+open class AnkoFlexboxLayout(ctx: Context) : FlexboxLayout(ctx) {
 
     inline fun <T : View> T.lparams(
         width: Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
         height: Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-        init: LayoutParams.() -> Unit = {}
+        init: LayoutParams.() -> Unit = {},
     ): T {
         val layoutParams = LayoutParams(width, height)
         layoutParams.init()
@@ -729,7 +719,7 @@ class StatusButtonsViewHolder(
     activity: ActMain,
     lpWidth: Int,
     topMarginDp: Float,
-    @JustifyContent justifyContent: Int = JustifyContent.CENTER
+    @JustifyContent justifyContent: Int = JustifyContent.CENTER,
 ) {
 
     private val buttonHeight = ActMain.boostButtonSize
@@ -761,7 +751,7 @@ class StatusButtonsViewHolder(
     init {
         viewRoot = with(activity.UI {}) {
 
-            customView<_FlexboxLayout> {
+            customView<AnkoFlexboxLayout> {
                 // トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
                 layoutParams = LinearLayout.LayoutParams(lpWidth, wrapContent).apply {
                     topMargin = dip(topMarginDp)
@@ -772,7 +762,6 @@ class StatusButtonsViewHolder(
                 fun normalButtons() {
 
                     btnConversation = imageButton {
-
                         background = ContextCompat.getDrawable(
                             context,
                             R.drawable.btn_bg_transparent_round6dp
@@ -785,7 +774,6 @@ class StatusButtonsViewHolder(
                     }.lparams(buttonHeight, buttonHeight)
 
                     btnReply = customView<CountImageButton> {
-
                         background = ContextCompat.getDrawable(
                             context,
                             R.drawable.btn_bg_transparent_round6dp
@@ -798,7 +786,6 @@ class StatusButtonsViewHolder(
                     }
 
                     btnBoost = customView<CountImageButton> {
-
                         background = ContextCompat.getDrawable(
                             context,
                             R.drawable.btn_bg_transparent_round6dp
@@ -818,7 +805,6 @@ class StatusButtonsViewHolder(
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
                         minimumWidth = buttonHeight
-
                     }.lparams(wrapContent, buttonHeight) {
                         startMargin = marginBetween
                     }
@@ -831,7 +817,6 @@ class StatusButtonsViewHolder(
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
                         minimumWidth = buttonHeight
-
                     }.lparams(wrapContent, buttonHeight) {
                         startMargin = marginBetween
                     }
@@ -844,7 +829,6 @@ class StatusButtonsViewHolder(
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
                         minimumWidth = buttonHeight
-
                     }.lparams(wrapContent, buttonHeight) {
                         startMargin = marginBetween
                     }
@@ -867,7 +851,6 @@ class StatusButtonsViewHolder(
                         }
 
                         btnFollow2 = imageButton {
-
                             background = ContextCompat.getDrawable(
                                 context,
                                 R.drawable.btn_bg_transparent_round6dp
@@ -876,7 +859,6 @@ class StatusButtonsViewHolder(
                             scaleType = ImageView.ScaleType.FIT_CENTER
 
                             contentDescription = context.getString(R.string.follow)
-
                         }.lparams(matchParent, matchParent)
 
                         ivFollowedBy2 = imageView {
@@ -887,7 +869,6 @@ class StatusButtonsViewHolder(
                             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                         }.lparams(matchParent, matchParent)
                     }
-
 
                     btnMore = imageButton {
                         background = ContextCompat.getDrawable(
@@ -912,7 +893,6 @@ class StatusButtonsViewHolder(
                         )
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(buttonHeight, buttonHeight) {
                         startMargin = marginBetween
                     }
@@ -924,7 +904,6 @@ class StatusButtonsViewHolder(
                         )
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(buttonHeight, buttonHeight) {
                         startMargin = marginBetween
                     }
@@ -936,7 +915,6 @@ class StatusButtonsViewHolder(
                         )
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(buttonHeight, buttonHeight) {
                         startMargin = marginBetween
                     }
@@ -948,7 +926,6 @@ class StatusButtonsViewHolder(
                         )
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(buttonHeight, buttonHeight) {
                         startMargin = marginBetween
                     }

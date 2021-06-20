@@ -19,7 +19,7 @@ import java.util.*
 fun ActMain.timeline(
     pos: Int,
     type: ColumnType,
-    args: Array<out Any> = emptyArray()
+    args: Array<out Any> = emptyArray(),
 ) {
     launchMain {
         pickAccount(
@@ -41,7 +41,6 @@ fun ActMain.timeline(
         }
     }
 }
-
 
 // アカウント選択付きでタイムラインを追加
 // その際にアカウントをラムダ式でフィルタする
@@ -88,63 +87,63 @@ fun ActMain.timeline(
 fun ActMain.timelineDomain(
     pos: Int,
     accessInfo: SavedAccount,
-    host: Host
+    host: Host,
 ) = addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE, host)
 
 // 指定タンスのローカルタイムラインを開く
 fun ActMain.timelineLocal(
     pos: Int,
-    host: Host
+    host: Host,
 ) {
     launchMain {
         // 指定タンスのアカウントを持ってるか？
-        val account_list = ArrayList<SavedAccount>()
+        val accountList = ArrayList<SavedAccount>()
         for (a in SavedAccount.loadAccountList(applicationContext)) {
-            if (a.matchHost(host)) account_list.add(a)
+            if (a.matchHost(host)) accountList.add(a)
         }
 
-        if (account_list.isEmpty()) {
+        if (accountList.isEmpty()) {
             // 持ってないなら疑似アカウントを追加する
             addPseudoAccount(host)?.let { ai ->
                 addColumn(pos, ai, ColumnType.LOCAL)
             }
         } else {
             // 持ってるならアカウントを選んで開く
-            SavedAccount.sort(account_list)
+            SavedAccount.sort(accountList)
             pickAccount(
                 bAllowPseudo = true,
                 bAuto = false,
                 message = getString(R.string.account_picker_add_timeline_of, host),
-                accountListArg = account_list
+                accountListArg = accountList
             )?.let { addColumn(pos, it, ColumnType.LOCAL) }
         }
     }
 }
 
 private fun ActMain.timelineAround(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     pos: Int,
     id: EntityId,
-    type: ColumnType
-) = addColumn(pos, access_info, type, id)
+    type: ColumnType,
+) = addColumn(pos, accessInfo, type, id)
 
 // 投稿を同期してstatusIdを調べてから指定アカウントでタイムラインを開く
 private fun ActMain.timelineAroundByStatus(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     pos: Int,
     status: TootStatus,
-    type: ColumnType
+    type: ColumnType,
 ) {
     launchMain {
         var resultStatus: TootStatus? = null
-        runApiTask(access_info) { client ->
-            val pair = client.syncStatus(access_info, status)
+        runApiTask(accessInfo) { client ->
+            val pair = client.syncStatus(accessInfo, status)
             resultStatus = pair.second
             pair.first
         }?.let { result ->
             when (val localStatus = resultStatus) {
                 null -> showToast(true, result.error)
-                else -> timelineAround(access_info, pos, localStatus.id, type)
+                else -> timelineAround(accessInfo, pos, localStatus.id, type)
             }
         }
     }
@@ -152,35 +151,35 @@ private fun ActMain.timelineAroundByStatus(
 
 // 指定タンスの指定投稿付近のタイムラインを開く。アカウント選択あり。
 fun ActMain.timelineAroundByStatusAnotherAccount(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     pos: Int,
     host: Host?,
     status: TootStatus?,
     type: ColumnType,
-    allowPseudo: Boolean = true
+    allowPseudo: Boolean = true,
 ) {
     host?.valid() ?: return
     status ?: return
 
     // 利用可能なアカウントを列挙する
-    val account_list1 = ArrayList<SavedAccount>() // 閲覧アカウントとホストが同じ
-    val account_list2 = ArrayList<SavedAccount>() // その他実アカウント
+    val accountList1 = ArrayList<SavedAccount>() // 閲覧アカウントとホストが同じ
+    val accountList2 = ArrayList<SavedAccount>() // その他実アカウント
     label@ for (a in SavedAccount.loadAccountList(this)) {
         // Misskeyアカウントはステータスの同期が出来ないので選択させない
         if (a.isNA || a.isMisskey) continue
         when {
             // 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
-            a.matchHost(access_info) -> if (allowPseudo || !a.isPseudo) account_list1.add(a)
+            a.matchHost(accessInfo) -> if (allowPseudo || !a.isPseudo) accountList1.add(a)
 
             // 実アカウントならステータスを同期して同時間帯のTLを見れる
-            !a.isPseudo -> account_list2.add(a)
+            !a.isPseudo -> accountList2.add(a)
         }
     }
-    SavedAccount.sort(account_list1)
-    SavedAccount.sort(account_list2)
-    account_list1.addAll(account_list2)
+    SavedAccount.sort(accountList1)
+    SavedAccount.sort(accountList2)
+    accountList1.addAll(accountList2)
 
-    if (account_list1.isEmpty()) {
+    if (accountList1.isEmpty()) {
         showToast(false, R.string.missing_available_account)
         return
     }
@@ -189,9 +188,9 @@ fun ActMain.timelineAroundByStatusAnotherAccount(
         pickAccount(
             bAuto = true,
             message = "select account to read timeline",
-            accountListArg = account_list1
+            accountListArg = accountList1
         )?.let { ai ->
-            if (!ai.isNA && ai.matchHost(access_info)) {
+            if (!ai.isNA && ai.matchHost(accessInfo)) {
                 timelineAround(ai, pos, status.id, type)
             } else {
                 timelineAroundByStatus(ai, pos, status, type)

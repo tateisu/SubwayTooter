@@ -25,7 +25,7 @@ class MyListView : ListView {
 
         // ポップアップを閉じた時にクリックでリストを触ったことになってしまう不具合の回避
         val now = SystemClock.elapsedRealtime()
-        if (now - StatusButtonsPopup.last_popup_close < 30L) {
+        if (now - StatusButtonsPopup.lastPopupClose < 30L) {
             val action = ev.action
             if (action == MotionEvent.ACTION_DOWN) {
                 // ポップアップを閉じた直後はタッチダウンを無視する
@@ -33,7 +33,7 @@ class MyListView : ListView {
             }
 
             val rv = super.onTouchEvent(ev)
-            log.d("onTouchEvent action=${action}, rv=${rv}")
+            log.d("onTouchEvent action=$action, rv=$rv")
             return rv
         }
 
@@ -46,7 +46,5 @@ class MyListView : ListView {
         } catch (ex: Throwable) {
             log.trace(ex)
         }
-
     }
-
 }

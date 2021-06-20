@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.os.Environment
 import android.util.LruCache
+import androidx.annotation.RawRes
 import jp.juggler.subwaytooter.api.ApiPath.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.*
@@ -13,13 +14,13 @@ import java.io.File
 import java.util.*
 
 val Column.isMastodon: Boolean
-    get() = access_info.isMastodon
+    get() = accessInfo.isMastodon
 
 val Column.isMisskey: Boolean
-    get() = access_info.isMisskey
+    get() = accessInfo.isMisskey
 
 val Column.misskeyVersion: Int
-    get() = access_info.misskeyVersion
+    get() = accessInfo.misskeyVersion
 
 val Column.isSearchColumn: Boolean
     get() {
@@ -27,7 +28,8 @@ val Column.isSearchColumn: Boolean
             ColumnType.SEARCH,
             ColumnType.SEARCH_MSP,
             ColumnType.SEARCH_TS,
-            ColumnType.SEARCH_NOTESTOCK -> true
+            ColumnType.SEARCH_NOTESTOCK,
+            -> true
             else -> false
         }
     }
@@ -47,14 +49,15 @@ val Column.isPublicStream: Boolean
             ColumnType.HASHTAG,
             ColumnType.LOCAL_AROUND,
             ColumnType.FEDERATED_AROUND,
-            ColumnType.DOMAIN_TIMELINE -> true
+            ColumnType.DOMAIN_TIMELINE,
+            -> true
 
             else -> false
         }
     }
 
 fun Column.canAutoRefresh() =
-    !access_info.isNA && type.canAutoRefresh
+    !accessInfo.isNA && type.canAutoRefresh
 
 /////////////////////////////////////////////////////////////////////////////
 // 読み込み処理の内部で使うメソッド
@@ -63,39 +66,39 @@ fun Column.getNotificationTypeString(): String {
     val sb = StringBuilder()
     sb.append("(")
 
-    when (quick_filter) {
+    when (quickFilter) {
         Column.QUICK_FILTER_ALL -> {
             var n = 0
-            if (!dont_show_reply) {
+            if (!dontShowReply) {
                 if (n++ > 0) sb.append(", ")
                 sb.append(context.getString(R.string.notification_type_mention))
             }
-            if (!dont_show_follow) {
+            if (!dontShowFollow) {
                 if (n++ > 0) sb.append(", ")
                 sb.append(context.getString(R.string.notification_type_follow))
             }
-            if (!dont_show_boost) {
+            if (!dontShowBoost) {
                 if (n++ > 0) sb.append(", ")
                 sb.append(context.getString(R.string.notification_type_boost))
             }
-            if (!dont_show_favourite) {
+            if (!dontShowFavourite) {
                 if (n++ > 0) sb.append(", ")
                 sb.append(context.getString(R.string.notification_type_favourite))
             }
-            if (isMisskey && !dont_show_reaction) {
+            if (isMisskey && !dontShowReaction) {
                 if (n++ > 0) sb.append(", ")
                 sb.append(context.getString(R.string.notification_type_reaction))
             }
-            if (!dont_show_vote) {
+            if (!dontShowVote) {
                 if (n++ > 0) sb.append(", ")
                 sb.append(context.getString(R.string.notification_type_vote))
             }
-            val n_max = if (isMisskey) {
+            val nMax = if (isMisskey) {
                 6
             } else {
                 5
             }
-            if (n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
+            if (n == 0 || n == nMax) return "" // 全部か皆無なら部分表記は要らない
         }
 
         Column.QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
@@ -114,19 +117,19 @@ fun Column.getNotificationTypeString(): String {
 suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser, bForceReload: Boolean): TootApiResult? =
     when {
         // リロード不要なら何もしない
-        this.who_account != null && !bForceReload -> null
+        this.whoAccount != null && !bForceReload -> null
 
         isMisskey -> client.request(
             "/api/users/show",
-            access_info.putMisskeyApiToken().apply {
-                put("userId", profile_id)
+            accessInfo.putMisskeyApiToken().apply {
+                put("userId", profileId)
             }.toPostRequestBuilder()
         )?.also { result1 ->
             // ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
             parser.misskeyDecodeProfilePin = true
             try {
                 TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
-                    this.who_account = a
+                    this.whoAccount = a
                     client.publishApiProgress("") // カラムヘッダの再表示
                 }
             } finally {
@@ -135,16 +138,16 @@ suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser,
         }
 
         else -> client.request(
-            "/api/v1/accounts/${profile_id}"
+            "/api/v1/accounts/$profileId"
         )?.also { result1 ->
             TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
-                this.who_account = a
+                this.whoAccount = a
 
-                this.who_featured_tags = null
-                client.request("/api/v1/accounts/${profile_id}/featured_tags")
+                this.whoFeaturedTags = null
+                client.request("/api/v1/accounts/$profileId/featured_tags")
                     ?.also { result2 ->
 
-                        this.who_featured_tags =
+                        this.whoFeaturedTags =
                             TootTag.parseListOrNull(parser, result2.jsonArray)
                     }
 
@@ -153,18 +156,18 @@ suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser,
         }
     }
 
-fun Column.loadSearchDesc(raw_en: Int, raw_ja: Int): String {
-    val res_id = if ("ja" == context.getString(R.string.language_code)) raw_ja else raw_en
-    return context.loadRawResource(res_id).decodeUTF8()
+fun Column.loadSearchDesc(@RawRes rawEn: Int, @RawRes rawJa: Int): String {
+    @RawRes val rawId = if ("ja" == context.getString(R.string.language_code)) rawJa else rawEn
+    return context.loadRawResource(rawId).decodeUTF8()
 }
 
 suspend fun Column.updateRelation(
     client: TootApiClient,
     list: ArrayList<TimelineItem>?,
     whoRef: TootAccountRef?,
-    parser: TootParser
+    parser: TootParser,
 ) {
-    if (access_info.isPseudo) return
+    if (accessInfo.isPseudo) return
 
     val env = UpdateRelationEnv(this)
 
@@ -183,7 +186,7 @@ suspend fun Column.updateRelation(
 
 fun Column.parseRange(
     result: TootApiResult?,
-    list: List<TimelineItem>?
+    list: List<TimelineItem>?,
 ): Pair<EntityId?, EntityId?> {
     var idMin: EntityId? = null
     var idMax: EntityId? = null
@@ -203,12 +206,12 @@ fun Column.parseRange(
         }
     } else {
         // Linkヘッダを読む
-        idMin = Column.reMaxId.matcher(result?.link_older ?: "").findOrNull()
+        idMin = Column.reMaxId.matcher(result?.linkOlder ?: "").findOrNull()
             ?.let {
                 EntityId(it.groupEx(1)!!)
             }
 
-        idMax = Column.reMinId.matcher(result?.link_newer ?: "").findOrNull()
+        idMax = Column.reMinId.matcher(result?.linkNewer ?: "").findOrNull()
             ?.let {
                 // min_idとsince_idの読み分けは現在利用してない it.groupEx(1)=="min_id"
                 EntityId(it.groupEx(2)!!)
@@ -225,7 +228,7 @@ fun Column.saveRange(
     bBottom: Boolean,
     bTop: Boolean,
     result: TootApiResult?,
-    list: List<TimelineItem>?
+    list: List<TimelineItem>?,
 ): Boolean {
     val (idMin, idMax) = parseRange(result, list)
 
@@ -263,26 +266,24 @@ fun Column.saveRangeBottom(result: TootApiResult?, list: List<TimelineItem>?) =
     saveRange(true, bTop = false, result = result, list = list)
 
 // no return value: can't find there may be more items.
-fun Column.saveRangeTop(result: TootApiResult?, list: List<TimelineItem>?){
+fun Column.saveRangeTop(result: TootApiResult?, list: List<TimelineItem>?) {
     saveRange(false, bTop = true, result = result, list = list)
-
 }
-
 
 fun Column.addRange(
     bBottom: Boolean,
     path: String,
-    delimiter: Char = if (-1 == path.indexOf('?')) '?' else '&'
+    delimiter: Char = if (-1 == path.indexOf('?')) '?' else '&',
 ) = if (bBottom) {
-    if (idOld != null) "$path${delimiter}max_id=${idOld}" else path
+    if (idOld != null) "$path${delimiter}max_id=$idOld" else path
 } else {
-    if (idRecent != null) "$path${delimiter}since_id=${idRecent}" else path
+    if (idRecent != null) "$path${delimiter}since_id=$idRecent" else path
 }
 
 fun Column.addRangeMin(
     path: String,
-    delimiter: Char = if (-1 != path.indexOf('?')) '&' else '?'
-) = if (idRecent == null) path else "$path${delimiter}min_id=${idRecent}"
+    delimiter: Char = if (-1 != path.indexOf('?')) '&' else '?',
+) = if (idRecent == null) path else "$path${delimiter}min_id=$idRecent"
 
 fun Column.toAdapterIndex(listIndex: Int): Int {
     return if (type.headerType != null) listIndex + 1 else listIndex
@@ -295,12 +296,12 @@ fun Column.toListIndex(adapterIndex: Int): Int {
 fun Column.saveScrollPosition() {
     try {
         if (viewHolder?.saveScrollPosition() == true) {
-            val ss = this.scroll_save
+            val ss = this.scrollSave
             if (ss != null) {
                 val idx = toListIndex(ss.adapterIndex)
-                if (0 <= idx && idx < list_data.size) {
-                    val item = list_data[idx]
-                    this.last_viewing_item_id = item.getOrderId()
+                if (0 <= idx && idx < listData.size) {
+                    val item = listData[idx]
+                    this.lastViewingItemId = item.getOrderId()
                     // とりあえず保存はするが
                     // TLデータそのものを永続化しないかぎり出番はないっぽい
                 }
@@ -311,11 +312,10 @@ fun Column.saveScrollPosition() {
     }
 }
 
-
 inline fun <reified T : TimelineItem> addAll(
     dstArg: ArrayList<TimelineItem>?,
     src: List<T>,
-    head: Boolean = false
+    head: Boolean = false,
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(src.size)).apply {
         if (head) {
@@ -328,7 +328,7 @@ inline fun <reified T : TimelineItem> addAll(
 fun addOne(
     dstArg: ArrayList<TimelineItem>?,
     item: TimelineItem?,
-    head: Boolean = false
+    head: Boolean = false,
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList()).apply {
         if (item != null) {
@@ -343,7 +343,7 @@ fun addOne(
 fun ColumnTask.addWithFilterStatus(
     dstArg: ArrayList<TimelineItem>?,
     srcArg: List<TootStatus>,
-    head: Boolean = false
+    head: Boolean = false,
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(srcArg.size)).apply {
         val src = srcArg.filter { !column.isFiltered(it) }
@@ -357,7 +357,7 @@ fun ColumnTask.addWithFilterStatus(
 fun ColumnTask.addWithFilterConversationSummary(
     dstArg: ArrayList<TimelineItem>?,
     srcArg: List<TootConversationSummary>,
-    head: Boolean = false
+    head: Boolean = false,
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(srcArg.size)).apply {
         val src = srcArg.filter { !column.isFiltered(it.last_status) }
@@ -366,13 +366,12 @@ fun ColumnTask.addWithFilterConversationSummary(
         } else {
             addAll(src)
         }
-
     }
 
 fun ColumnTask.addWithFilterNotification(
     dstArg: ArrayList<TimelineItem>?,
     srcArg: List<TootNotification>,
-    head: Boolean = false
+    head: Boolean = false,
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(srcArg.size)).apply {
         val src = srcArg.filter { !column.isFiltered(it) }
@@ -393,7 +392,7 @@ fun Column.dispatchProfileTabFollowing() =
     when {
         misskeyVersion >= 11 -> ColumnType.FollowingMisskey11
         isMisskey -> ColumnType.FollowingMisskey10
-        access_info.isPseudo -> ColumnType.FollowingMastodonPseudo
+        accessInfo.isPseudo -> ColumnType.FollowingMastodonPseudo
         else -> ColumnType.FollowingMastodon
     }
 
@@ -401,7 +400,7 @@ fun Column.dispatchProfileTabFollowers() =
     when {
         misskeyVersion >= 11 -> ColumnType.FollowersMisskey11
         isMisskey -> ColumnType.FollowersMisskey10
-        access_info.isPseudo -> ColumnType.FollowersMastodonPseudo
+        accessInfo.isPseudo -> ColumnType.FollowersMastodonPseudo
         else -> ColumnType.FollowersMastodon
     }
 
@@ -415,24 +414,24 @@ fun ColumnTask.dispatchProfileTabFollowers() =
     column.dispatchProfileTabFollowers()
 
 suspend fun Column.loadListInfo(client: TootApiClient, bForceReload: Boolean) {
-    val parser = TootParser(context, access_info)
-    if (bForceReload || this.list_info == null) {
+    val parser = TootParser(context, accessInfo)
+    if (bForceReload || this.listInfo == null) {
         val result = if (isMisskey) {
             client.request(
                 "/api/users/lists/show",
                 makeMisskeyBaseParameter(parser).apply {
-                    put("listId", profile_id)
+                    put("listId", profileId)
                 }.toPostRequestBuilder()
             )
         } else {
-            client.request("/api/v1/lists/${profile_id.toString()}")
+            client.request("/api/v1/lists/$profileId")
         }
 
         val jsonObject = result?.jsonObject
         if (jsonObject != null) {
             val data = parseItem(::TootList, parser, jsonObject)
             if (data != null) {
-                this.list_info = data
+                this.listInfo = data
                 client.publishApiProgress("") // カラムヘッダの再表示
             }
         }
@@ -440,14 +439,14 @@ suspend fun Column.loadListInfo(client: TootApiClient, bForceReload: Boolean) {
 }
 
 suspend fun Column.loadAntennaInfo(client: TootApiClient, bForceReload: Boolean) {
-    val parser = TootParser(context, access_info)
-    if (bForceReload || this.antenna_info == null) {
+    val parser = TootParser(context, accessInfo)
+    if (bForceReload || this.antennaInfo == null) {
 
         val result = if (isMisskey) {
             client.request(
                 "/api/antennas/show",
                 makeMisskeyBaseParameter(parser).apply {
-                    put("antennaId", profile_id)
+                    put("antennaId", profileId)
                 }.toPostRequestBuilder()
             )
         } else {
@@ -458,7 +457,7 @@ suspend fun Column.loadAntennaInfo(client: TootApiClient, bForceReload: Boolean)
         if (jsonObject != null) {
             val data = parseItem(::MisskeyAntenna, jsonObject)
             if (data != null) {
-                this.antenna_info = data
+                this.antennaInfo = data
                 client.publishApiProgress("") // カラムヘッダの再表示
             }
         }
@@ -486,28 +485,28 @@ fun JsonObject.addRangeMisskey(column: Column, bBottom: Boolean): JsonObject {
 }
 
 fun JsonObject.addMisskeyNotificationFilter(column: Column): JsonObject {
-    when (column.quick_filter) {
+    when (column.quickFilter) {
         Column.QUICK_FILTER_ALL -> {
             val excludeList = jsonArray {
                 // Misskeyのお気に入りは通知されない
                 // if(dont_show_favourite) ...
 
-                if (column.dont_show_boost) {
+                if (column.dontShowBoost) {
                     add("renote")
                     add("quote")
                 }
-                if (column.dont_show_follow) {
+                if (column.dontShowFollow) {
                     add("follow")
                     add("receiveFollowRequest")
                 }
-                if (column.dont_show_reply) {
+                if (column.dontShowReply) {
                     add("mention")
                     add("reply")
                 }
-                if (column.dont_show_reaction) {
+                if (column.dontShowReaction) {
                     add("reaction")
                 }
-                if (column.dont_show_vote) {
+                if (column.dontShowVote) {
                     add("poll_vote")
                 }
 //				// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
@@ -543,7 +542,7 @@ fun JsonObject.addMisskeyNotificationFilter(column: Column): JsonObject {
 }
 
 fun JsonObject.putMisskeyParamsTimeline(column: Column): JsonObject {
-    if (column.with_attachment && !column.with_highlight) {
+    if (column.withAttachment && !column.withHighlight) {
         put("mediaOnly", true)
         put("withMedia", true)
         put("withFiles", true)
@@ -557,22 +556,22 @@ suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
         // currently not supported
         null
     } else {
-        if (profile_id == null) {
-            val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
+        if (profileId == null) {
+            val (result, whoRef) = client.syncAccountByAcct(accessInfo, hashtagAcct)
             result ?: return null // cancelled.
             if (whoRef == null) {
                 log.w("makeHashtagAcctUrl: ${result.error ?: "?"}")
                 return null
             }
-            profile_id = whoRef.get().id
+            profileId = whoRef.get().id
         }
 
-        val sb = StringBuilder("/api/v1/accounts/${profile_id}/statuses")
+        val sb = StringBuilder("/api/v1/accounts/$profileId/statuses")
             .append("?limit=").append(READ_LIMIT)
             .append("&tagged=").append(hashtag.encodePercent())
 
-        if (with_attachment) sb.append("&only_media=true")
-        if (instance_local) sb.append("&local=true")
+        if (withAttachment) sb.append("&only_media=true")
+        if (instanceLocal) sb.append("&local=true")
 
         makeHashtagQueryParams(tagKey = null).encodeQuery().notEmpty()?.let {
             sb.append('&').append(it)
@@ -583,8 +582,8 @@ suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
 }
 
 fun Column.makeMisskeyBaseParameter(parser: TootParser?) =
-    access_info.putMisskeyApiToken().apply {
-        if (access_info.isMisskey) {
+    accessInfo.putMisskeyApiToken().apply {
+        if (accessInfo.isMisskey) {
             if (parser != null) parser.serviceType = ServiceType.MISSKEY
             put("limit", 40)
         }
@@ -592,7 +591,7 @@ fun Column.makeMisskeyBaseParameter(parser: TootParser?) =
 
 fun Column.makeMisskeyParamsUserId(parser: TootParser) =
     makeMisskeyBaseParameter(parser).apply {
-        put("userId", profile_id.toString())
+        put("userId", profileId.toString())
     }
 
 fun Column.makeMisskeyTimelineParameter(parser: TootParser) =
@@ -603,44 +602,44 @@ fun Column.makeMisskeyTimelineParameter(parser: TootParser) =
 fun Column.makeMisskeyParamsProfileStatuses(parser: TootParser) =
     makeMisskeyParamsUserId(parser).apply {
         putMisskeyParamsTimeline(this@makeMisskeyParamsProfileStatuses)
-        if (!dont_show_reply) put("includeReplies", true)
-        if (!dont_show_boost) put("includeMyRenotes", true)
+        if (!dontShowReply) put("includeReplies", true)
+        if (!dontShowBoost) put("includeMyRenotes", true)
     }
 
 private const val PATH_LOCAL = "/api/v1/timelines/public?local=true&limit=$READ_LIMIT"
 
 fun Column.makePublicLocalUrl(): String {
     return when {
-        access_info.isMisskey -> "/api/notes/local-timeline"
-        with_attachment -> "${PATH_LOCAL}&only_media=true" // mastodon 2.3 or later
+        accessInfo.isMisskey -> "/api/notes/local-timeline"
+        withAttachment -> "$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
         else -> PATH_LOCAL
     }
 }
 
 fun Column.makeMisskeyHybridTlUrl(): String {
     return when {
-        access_info.isMisskey -> "/api/notes/hybrid-timeline"
+        accessInfo.isMisskey -> "/api/notes/hybrid-timeline"
         else -> makePublicLocalUrl()
     }
 }
 
 fun Column.makeDomainTimelineUrl(): String {
-    val base = "/api/v1/timelines/public?domain=$instance_uri&limit=$READ_LIMIT"
+    val base = "/api/v1/timelines/public?domain=$instanceUri&limit=$READ_LIMIT"
     return when {
-        access_info.isMisskey -> "/api/notes/local-timeline"
-        with_attachment -> "$base&only_media=true"
+        accessInfo.isMisskey -> "/api/notes/local-timeline"
+        withAttachment -> "$base&only_media=true"
         else -> base
     }
 }
 
 fun Column.makePublicFederateUrl(): String {
 
-    return if (access_info.isMisskey) {
+    return if (accessInfo.isMisskey) {
         "/api/notes/global-timeline"
     } else {
         val sb = StringBuilder("/api/v1/timelines/public?limit=$READ_LIMIT")
-        if (with_attachment) sb.append("&only_media=true")
-        if (remote_only) sb.append("&remote=true")
+        if (withAttachment) sb.append("&only_media=true")
+        if (remoteOnly) sb.append("&remote=true")
         sb.toString()
     }
 }
@@ -649,50 +648,50 @@ private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
 
 fun Column.makeHomeTlUrl(): String {
     return when {
-        access_info.isMisskey -> "/api/notes/timeline"
-        with_attachment -> "$PATH_HOME&only_media=true"
+        accessInfo.isMisskey -> "/api/notes/timeline"
+        withAttachment -> "$PATH_HOME&only_media=true"
         else -> PATH_HOME
     }
 }
 
 suspend fun Column.makeNotificationUrl(
     client: TootApiClient,
-    fromAcct: String? = null
+    fromAcct: String? = null,
 ): String {
     return when {
-        access_info.isMisskey -> "/api/i/notifications"
+        accessInfo.isMisskey -> "/api/i/notifications"
 
         else -> {
             val sb = StringBuilder(ApiPath.PATH_NOTIFICATIONS) // always contain "?limit=XX"
-            when (val quick_filter = quick_filter) {
+            when (val quickFilter = this.quickFilter) {
                 Column.QUICK_FILTER_ALL -> {
-                    if (dont_show_favourite) sb.append("&exclude_types[]=favourite")
-                    if (dont_show_boost) sb.append("&exclude_types[]=reblog")
-                    if (dont_show_follow) sb.append("&exclude_types[]=follow")
-                    if (dont_show_reply) sb.append("&exclude_types[]=mention")
-                    if (dont_show_vote) sb.append("&exclude_types[]=poll")
-                    if (dont_show_normal_toot) sb.append("&exclude_types[]=status")
+                    if (dontShowFavourite) sb.append("&exclude_types[]=favourite")
+                    if (dontShowBoost) sb.append("&exclude_types[]=reblog")
+                    if (dontShowFollow) sb.append("&exclude_types[]=follow")
+                    if (dontShowReply) sb.append("&exclude_types[]=mention")
+                    if (dontShowVote) sb.append("&exclude_types[]=poll")
+                    if (dontShowNormalToot) sb.append("&exclude_types[]=status")
                 }
 
                 else -> {
-                    if (quick_filter != Column.QUICK_FILTER_FAVOURITE) sb.append("&exclude_types[]=favourite")
-                    if (quick_filter != Column.QUICK_FILTER_BOOST) sb.append("&exclude_types[]=reblog")
-                    if (quick_filter != Column.QUICK_FILTER_FOLLOW) sb.append("&exclude_types[]=follow")
-                    if (quick_filter != Column.QUICK_FILTER_MENTION) sb.append("&exclude_types[]=mention")
-                    if (quick_filter != Column.QUICK_FILTER_POST) sb.append("&exclude_types[]=status")
+                    if (quickFilter != Column.QUICK_FILTER_FAVOURITE) sb.append("&exclude_types[]=favourite")
+                    if (quickFilter != Column.QUICK_FILTER_BOOST) sb.append("&exclude_types[]=reblog")
+                    if (quickFilter != Column.QUICK_FILTER_FOLLOW) sb.append("&exclude_types[]=follow")
+                    if (quickFilter != Column.QUICK_FILTER_MENTION) sb.append("&exclude_types[]=mention")
+                    if (quickFilter != Column.QUICK_FILTER_POST) sb.append("&exclude_types[]=status")
                 }
             }
 
             if (fromAcct?.isNotEmpty() == true) {
-                if (profile_id == null) {
-                    val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
+                if (profileId == null) {
+                    val (result, whoRef) = client.syncAccountByAcct(accessInfo, hashtagAcct)
                     if (result != null) {
                         whoRef ?: error(result.error ?: "unknown error")
-                        profile_id = whoRef.get().id
+                        profileId = whoRef.get().id
                     }
                 }
-                if (profile_id != null) {
-                    sb.append("&account_id=").append(profile_id.toString())
+                if (profileId != null) {
+                    sb.append("&account_id=").append(profileId.toString())
                 }
             }
 
@@ -706,14 +705,14 @@ fun Column.makeListTlUrl(): String {
     return if (isMisskey) {
         "/api/notes/user-list-timeline"
     } else {
-        "/api/v1/timelines/list/${profile_id}?limit=$READ_LIMIT"
+        "/api/v1/timelines/list/$profileId?limit=$READ_LIMIT"
     }
 }
 
 fun Column.makeReactionsUrl(): String {
     if (isMisskey) error("misskey has no api to list your reactions.")
     val basePath = ApiPath.PATH_REACTIONS
-    val list = TootReaction.decodeEmojiQuery(search_query)
+    val list = TootReaction.decodeEmojiQuery(searchQuery)
     if (list.isEmpty()) return basePath
     val delm = if (basePath.contains("?")) "&" else "?"
     return "$basePath$delm${list.joinToString("&") { "emojis[]=${it.name.encodePercent()}" }}"
@@ -769,22 +768,22 @@ fun Column.makeHashtagQueryParams(tagKey: String? = "tag") = JsonObject().apply 
 
     if (tagKey != null) put(tagKey, hashtag)
 
-    hashtag_any.parseExtraTag().notEmpty()?.let { put("any", it.toJsonArray()) }
-    hashtag_all.parseExtraTag().notEmpty()?.let { put("all", it.toJsonArray()) }
-    hashtag_none.parseExtraTag().notEmpty()?.let { put("none", it.toJsonArray()) }
+    hashtagAny.parseExtraTag().notEmpty()?.let { put("any", it.toJsonArray()) }
+    hashtagAll.parseExtraTag().notEmpty()?.let { put("all", it.toJsonArray()) }
+    hashtagNone.parseExtraTag().notEmpty()?.let { put("none", it.toJsonArray()) }
 }
 
 fun Column.checkHashtagExtra(item: TootStatus): Boolean {
-    hashtag_any.parseExtraTag().notEmpty()
+    hashtagAny.parseExtraTag().notEmpty()
         ?.any { item.tags?.any { tag -> tag.name.equals(it, ignoreCase = true) } ?: false }
         ?.let { if (!it) return false }
 
-    hashtag_all.parseExtraTag().notEmpty()
+    hashtagAll.parseExtraTag().notEmpty()
         .notEmpty()
         ?.all { item.tags?.any { tag -> tag.name.equals(it, ignoreCase = true) } ?: false }
         ?.let { if (!it) return false }
 
-    hashtag_none.parseExtraTag().notEmpty()
+    hashtagNone.parseExtraTag().notEmpty()
         ?.any { item.tags?.any { tag -> tag.name.equals(it, ignoreCase = true) } ?: false }
         ?.not()
         ?.let { if (!it) return false }
@@ -801,8 +800,8 @@ fun Column.makeHashtagUrl(): String {
             .append(hashtag.encodePercent())
             .append("?limit=").append(READ_LIMIT)
 
-        if (with_attachment) sb.append("&only_media=true")
-        if (instance_local) sb.append("&local=true")
+        if (withAttachment) sb.append("&only_media=true")
+        if (instanceLocal) sb.append("&local=true")
 
         makeHashtagQueryParams(tagKey = null).encodeQuery().notEmpty()?.let {
             sb.append('&').append(it)
@@ -819,11 +818,11 @@ fun Column.makeHashtagParams(parser: TootParser) =
     }
 
 // mastodon用
-fun Column.makeProfileStatusesUrl(profile_id: EntityId?): String {
-    var path = "/api/v1/accounts/$profile_id/statuses?limit=$READ_LIMIT"
-    if (with_attachment && !with_highlight) path += "&only_media=1"
-    if (dont_show_boost) path += "&exclude_reblogs=1"
-    if (dont_show_reply) path += "&exclude_replies=1"
+fun Column.makeProfileStatusesUrl(profileId: EntityId?): String {
+    var path = "/api/v1/accounts/$profileId/statuses?limit=$READ_LIMIT"
+    if (withAttachment && !withHighlight) path += "&only_media=1"
+    if (dontShowBoost) path += "&exclude_reblogs=1"
+    if (dontShowReply) path += "&exclude_replies=1"
     return path
 }
 
@@ -900,13 +899,13 @@ val defaultConversationSummaryListParser: (parser: TootParser, jsonArray: JsonAr
 
 ///////////////////////////////////////////////////////////////////////
 
-val mastodonFollowSuggestion2ListParser : (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
+val mastodonFollowSuggestion2ListParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
     { parser, jsonArray ->
         TootAccountRef.wrapList(parser,
-            jsonArray.objectList().mapNotNull{
-                parser.account(it.jsonObject("account"))?.also{ a->
+            jsonArray.objectList().mapNotNull {
+                parser.account(it.jsonObject("account"))?.also { a ->
                     SuggestionSource.set(
-                        (parser.linkHelper as? SavedAccount) ?.db_id ,
+                        (parser.linkHelper as? SavedAccount)?.db_id,
                         a.acct,
                         it.string("source")
                     )
@@ -926,39 +925,39 @@ fun getBackgroundImageDir(context: Context): File {
     } else {
         val state = Environment.getExternalStorageState()
         if (state != Environment.MEDIA_MOUNTED) {
-            log.e("getExternalStorageState: ${state}")
+            log.e("getExternalStorageState: $state")
         } else {
-            log.i("externalDir: ${externalDir}")
+            log.i("externalDir: $externalDir")
             externalDir.mkdir()
             val backgroundDir = File(externalDir, DIR_BACKGROUND_IMAGE)
             backgroundDir.mkdir()
-            log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+            log.i("backgroundDir: $backgroundDir exists=${backgroundDir.exists()}")
             return backgroundDir
         }
     }
     val backgroundDir = context.getDir(DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
-    log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+    log.i("backgroundDir: $backgroundDir exists=${backgroundDir.exists()}")
     return backgroundDir
 }
 
 fun StringBuilder.appendHashtagExtra(column: Column): StringBuilder {
     val limit = (Column.HASHTAG_ELLIPSIZE * 2 - kotlin.math.min(length, Column.HASHTAG_ELLIPSIZE)) / 3
-    if (column.hashtag_any.isNotBlank()) append(' ').append(
+    if (column.hashtagAny.isNotBlank()) append(' ').append(
         column.context.getString(
             R.string.hashtag_title_any,
-            column.hashtag_any.ellipsizeDot3(limit)
+            column.hashtagAny.ellipsizeDot3(limit)
         )
     )
-    if (column.hashtag_all.isNotBlank()) append(' ').append(
+    if (column.hashtagAll.isNotBlank()) append(' ').append(
         column.context.getString(
             R.string.hashtag_title_all,
-            column.hashtag_all.ellipsizeDot3(limit)
+            column.hashtagAll.ellipsizeDot3(limit)
         )
     )
-    if (column.hashtag_none.isNotBlank()) append(' ').append(
+    if (column.hashtagNone.isNotBlank()) append(' ').append(
         column.context.getString(
             R.string.hashtag_title_none,
-            column.hashtag_none.ellipsizeDot3(limit)
+            column.hashtagNone.ellipsizeDot3(limit)
         )
     )
     return this

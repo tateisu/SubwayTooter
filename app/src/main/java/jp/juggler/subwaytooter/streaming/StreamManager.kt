@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.set
 
-
 class StreamManager(val appState: AppState) {
     companion object {
         private val log = LogCategory("StreamManager")
@@ -26,7 +25,6 @@ class StreamManager(val appState: AppState) {
 
         // 画面ONの間は定期的に状況を更新する
         const val updateInterval = 5000L
-
     }
 
     val context = appState.context
@@ -73,21 +71,18 @@ class StreamManager(val appState: AppState) {
 
         if (isScreenOn && !Pref.bpDontUseStreaming(appState.pref)) {
             for (column in appState.columnList) {
-                val accessInfo = column.access_info
-                if (column.is_dispose.get() || column.dont_streaming || accessInfo.isNA) continue
+                val accessInfo = column.accessInfo
+                if (column.isDispose.get() || column.dontStreaming || accessInfo.isNA) continue
 
-                val acctGroup = prepareAcctGroup(accessInfo) ?: continue
-
-                val streamSpec = column.getStreamDestination()
-                if (streamSpec != null)
-                    acctGroup.addSpec(streamSpec)
+                prepareAcctGroup(accessInfo)?.let { acctGroup ->
+                    column.getStreamDestination()?.let { acctGroup.addSpec(it) }
+                }
             }
         }
 
         if (newMap.size != acctGroups.size) {
             log.d("updateConnection: acctGroups.size changed. ${acctGroups.size} => ${newMap.size}")
         }
-
 
         // 新構成にないサーバは破棄する
         acctGroups.entries.toList().forEach {
@@ -106,11 +101,11 @@ class StreamManager(val appState: AppState) {
         }
 
         // ハイライトツリーを読み直す
-        val highlight_trie = HighlightWord.nameSet
+        val highlightTrie = HighlightWord.nameSet
 
         acctGroups.values.forEach {
             // パーサーを更新する
-            it.parser.highlightTrie = highlight_trie
+            it.parser.highlightTrie = highlightTrie
 
             // 接続を更新する
             it.updateConnection()
@@ -151,12 +146,12 @@ class StreamManager(val appState: AppState) {
     // UIスレッドから呼ばれる
     // returns StreamStatus.Missing if account is NA or all columns are non-streaming.
     fun getStreamStatus(column: Column): StreamStatus =
-        acctGroups[column.access_info.acct]?.getStreamStatus(column.internalId)
+        acctGroups[column.accessInfo.acct]?.getStreamStatus(column.internalId)
             ?: StreamStatus.Missing
 
     // returns null if account is NA or all columns are non-streaming.
     fun getConnection(column: Column): StreamConnection? =
-        acctGroups[column.access_info.acct]?.getConnection(column.internalId)
+        acctGroups[column.accessInfo.acct]?.getConnection(column.internalId)
 
     ////////////////////////////////////////////////////////////////
 
@@ -174,4 +169,3 @@ class StreamManager(val appState: AppState) {
         }
     }
 }
-

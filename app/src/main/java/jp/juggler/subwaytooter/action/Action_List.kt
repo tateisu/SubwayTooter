@@ -14,113 +14,112 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Request
 
-fun interface CreateCallback {
+fun interface ListOnCreatedCallback {
     fun onCreated(list: TootList)
 }
 
-
 // リストを作成する
 fun ActMain.listCreate(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     title: String,
-    callback: CreateCallback?
+    callback: ListOnCreatedCallback?,
 ) {
-	launchMain {
-		var resultList: TootList? = null
-		runApiTask(access_info) {client->
-			if (access_info.isMisskey) {
-				client.request(
-					"/api/users/lists/create",
-					access_info.putMisskeyApiToken().apply {
-						put("title", title)
-						put("name", title)
-					}
-						.toPostRequestBuilder()
-				)
-			} else {
-				client.request(
-					"/api/v1/lists",
-					jsonObject {
-						put("title", title)
-					}
-						.toPostRequestBuilder()
-				)
-			}?.also { result ->
-				client.publishApiProgress(getString(R.string.parsing_response))
-				resultList = parseItem(
-					::TootList,
-					TootParser(this, access_info),
-					result.jsonObject
-				)
-			}
-		}?.let { result ->
-			when (val list = resultList) {
-				null -> showToast(false, result.error)
+    launchMain {
+        var resultList: TootList? = null
+        runApiTask(accessInfo) { client ->
+            if (accessInfo.isMisskey) {
+                client.request(
+                    "/api/users/lists/create",
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("title", title)
+                        put("name", title)
+                    }
+                        .toPostRequestBuilder()
+                )
+            } else {
+                client.request(
+                    "/api/v1/lists",
+                    jsonObject {
+                        put("title", title)
+                    }
+                        .toPostRequestBuilder()
+                )
+            }?.also { result ->
+                client.publishApiProgress(getString(R.string.parsing_response))
+                resultList = parseItem(
+                    ::TootList,
+                    TootParser(this, accessInfo),
+                    result.jsonObject
+                )
+            }
+        }?.let { result ->
+            when (val list = resultList) {
+                null -> showToast(false, result.error)
 
-				else -> {
-					for (column in app_state.columnList) {
-						column.onListListUpdated(access_info)
-					}
-					showToast(false, R.string.list_created)
-					callback?.onCreated(list)
-				}
-			}
-		}
-	}
+                else -> {
+                    for (column in appState.columnList) {
+                        column.onListListUpdated(accessInfo)
+                    }
+                    showToast(false, R.string.list_created)
+                    callback?.onCreated(list)
+                }
+            }
+        }
+    }
 }
 
 // リストを削除する
 fun ActMain.listDelete(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     list: TootList,
-    bConfirmed: Boolean = false
+    bConfirmed: Boolean = false,
 ) {
     if (!bConfirmed) {
         DlgConfirm.openSimple(
             this,
-			getString(R.string.list_delete_confirm, list.title)
+            getString(R.string.list_delete_confirm, list.title)
         ) {
-            listDelete( access_info, list, bConfirmed = true)
+            listDelete(accessInfo, list, bConfirmed = true)
         }
         return
     }
 
-	launchMain {
-		runApiTask(access_info) { client ->
-			if (access_info.isMisskey) {
-				client.request(
-					"/api/users/lists/delete",
-					access_info.putMisskeyApiToken().apply {
-						put("listId", list.id)
-					}
-						.toPostRequestBuilder()
-				)
-				// 204 no content
-			} else {
-				client.request(
-					"/api/v1/lists/${list.id}",
-					Request.Builder().delete()
-				)
-			}
-		}?.let{result->
+    launchMain {
+        runApiTask(accessInfo) { client ->
+            if (accessInfo.isMisskey) {
+                client.request(
+                    "/api/users/lists/delete",
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("listId", list.id)
+                    }
+                        .toPostRequestBuilder()
+                )
+                // 204 no content
+            } else {
+                client.request(
+                    "/api/v1/lists/${list.id}",
+                    Request.Builder().delete()
+                )
+            }
+        }?.let { result ->
 
-			when (result.jsonObject) {
-				null -> showToast(false, result.error)
+            when (result.jsonObject) {
+                null -> showToast(false, result.error)
 
-				else -> {
-					for (column in app_state.columnList) {
-						column.onListListUpdated(access_info)
-					}
-					showToast(false, R.string.delete_succeeded)
-				}
-			}
-		}
-	}
+                else -> {
+                    for (column in appState.columnList) {
+                        column.onListListUpdated(accessInfo)
+                    }
+                    showToast(false, R.string.delete_succeeded)
+                }
+            }
+        }
+    }
 }
 
 fun ActMain.listRename(
-    access_info: SavedAccount,
-    item: TootList
+    accessInfo: SavedAccount,
+    item: TootList,
 ) {
 
     DlgTextInput.show(
@@ -133,51 +132,48 @@ fun ActMain.listRename(
             }
 
             override fun onOK(dialog: Dialog, text: String) {
-				launchMain {
-					var  resultList: TootList? = null
-					runApiTask (access_info){client->
-						if (access_info.isMisskey) {
-							client.request(
-								"/api/users/lists/update",
-								access_info.putMisskeyApiToken().apply {
-									put("listId", item.id)
-									put("title", text)
-								}
-									.toPostRequestBuilder()
-							)
-						} else {
-							client.request(
-								"/api/v1/lists/${item.id}",
-								jsonObject {
-									put("title", text)
-								}
+                launchMain {
+                    var resultList: TootList? = null
+                    runApiTask(accessInfo) { client ->
+                        if (accessInfo.isMisskey) {
+                            client.request(
+                                "/api/users/lists/update",
+                                accessInfo.putMisskeyApiToken().apply {
+                                    put("listId", item.id)
+                                    put("title", text)
+                                }
+                                    .toPostRequestBuilder()
+                            )
+                        } else {
+                            client.request(
+                                "/api/v1/lists/${item.id}",
+                                jsonObject {
+                                    put("title", text)
+                                }
 
-									.toPutRequestBuilder()
-							)
-						}?.also{ result->
-							client.publishApiProgress(getString(R.string.parsing_response))
-							resultList = parseItem(
-								::TootList,
-								TootParser(this, access_info),
-								result.jsonObject
-							)
-						}
-					}?.let{result->
-						when (val list =resultList) {
-							null -> showToast(false, result.error)
-							else -> {
-								for (column in app_state.columnList) {
-									column.onListNameUpdated(access_info, list)
-								}
-								dialog.dismissSafe()
-							}
-						}
-					}
-				}
-
-
+                                    .toPutRequestBuilder()
+                            )
+                        }?.also { result ->
+                            client.publishApiProgress(getString(R.string.parsing_response))
+                            resultList = parseItem(
+                                ::TootList,
+                                TootParser(this, accessInfo),
+                                result.jsonObject
+                            )
+                        }
+                    }?.let { result ->
+                        when (val list = resultList) {
+                            null -> showToast(false, result.error)
+                            else -> {
+                                for (column in appState.columnList) {
+                                    column.onListNameUpdated(accessInfo, list)
+                                }
+                                dialog.dismissSafe()
+                            }
+                        }
+                    }
+                }
             }
         }
     )
 }
-

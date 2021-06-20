@@ -27,7 +27,7 @@ object LoginForm {
     enum class Action(
         val pos: Int,
         @StringRes val idName: Int,
-        @StringRes val idDesc: Int
+        @StringRes val idDesc: Int,
     ) {
 
         Existing(0, R.string.existing_account, R.string.existing_account_desc),
@@ -43,8 +43,8 @@ object LoginForm {
         onClickOk: (
             dialog: Dialog,
             instance: Host,
-            action: Action
-        ) -> Unit
+            action: Action,
+        ) -> Unit,
     ) {
         val view = activity.layoutInflater.inflate(R.layout.dlg_account_add, null, false)
         val etInstance: AutoCompleteTextView = view.findViewById(R.id.etInstance)
@@ -59,14 +59,15 @@ object LoginForm {
                 ?: "(null)"
 
         val spAction = view.findViewById<Spinner>(R.id.spAction).also { sp ->
+
             sp.adapter = ArrayAdapter(
                 activity,
                 android.R.layout.simple_spinner_item,
                 Action.values().map { activity.getString(it.idName) }.toTypedArray()
             ).apply {
                 setDropDownViewResource(R.layout.lv_spinner_dropdown)
-
             }
+
             sp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) { // TODO
                     tvActionDesc.text = sp.getActionDesc()
@@ -76,7 +77,7 @@ object LoginForm {
                     parent: AdapterView<*>?,
                     view: View?,
                     position: Int,
-                    id: Long
+                    id: Long,
                 ) {
                     tvActionDesc.text = sp.getActionDesc()
                 }
@@ -171,7 +172,7 @@ object LoginForm {
 
                 override fun publishResults(
                     constraint: CharSequence?,
-                    results: FilterResults?
+                    results: FilterResults?,
                 ) {
                     clear()
                     val values = results?.values
@@ -191,12 +192,10 @@ object LoginForm {
         adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
         etInstance.setAdapter<ArrayAdapter<String>>(adapter)
 
-
         dialog.window?.setLayout(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT
         )
         dialog.show()
     }
-
 }

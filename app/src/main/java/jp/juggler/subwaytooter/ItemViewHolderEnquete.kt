@@ -97,7 +97,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
                 sb.append(
                     when {
                         v == null ||
-                            (column.isSearchColumn && column.access_info.isNA) ->
+                            (column.isSearchColumn && column.accessInfo.isNA) ->
                             activity.getString(R.string.vote_count_unavailable)
                         else ->
                             activity.getString(R.string.vote_count_text, v)
@@ -124,7 +124,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
 
         b.text = text
         val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-        extra_invalidator_list.add(invalidator)
+        extraInvalidatorList.add(invalidator)
         invalidator.register(text)
 
         b.padding = (activity.density * 3f + 0.5f).toInt()
@@ -152,7 +152,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
 
         if (ratio != null) {
             b.backgroundDrawable = PollPlotDrawable(
-                color = (content_color and 0xFFFFFF) or 0x20000000,
+                color = (contentColor and 0xFFFFFF) or 0x20000000,
                 ratio = ratio,
                 isRtl = b.layoutDirection == View.LAYOUT_DIRECTION_RTL,
                 startWidth = (activity.density * 2f + 0.5f).toInt()
@@ -160,7 +160,6 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         }
 
         llExtra.addView(b)
-
     } else if (enquete.multiple) {
         // 複数選択なのでチェックボックス
         val b = CheckBox(activity)
@@ -168,7 +167,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         b.isAllCaps = false
         b.text = text
         val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-        extra_invalidator_list.add(invalidator)
+        extraInvalidatorList.add(invalidator)
         invalidator.register(text)
         if (!canVote) {
             b.isEnabledAlpha = false
@@ -179,19 +178,18 @@ fun ItemViewHolder.makeEnqueteChoiceView(
             }
         }
         llExtra.addView(b)
-
     } else {
         val b = Button(activity)
         b.layoutParams = lp
         b.isAllCaps = false
         b.text = text
         val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-        extra_invalidator_list.add(invalidator)
+        extraInvalidatorList.add(invalidator)
         invalidator.register(text)
         if (!canVote) {
             b.isEnabled = false
         } else {
-            val accessInfo = this@makeEnqueteChoiceView.access_info
+            val accessInfo = this@makeEnqueteChoiceView.accessInfo
             b.setOnClickListener { view ->
                 val context = view.context ?: return@setOnClickListener
                 onClickEnqueteChoice(status, enquete, context, accessInfo, i)
@@ -232,7 +230,7 @@ fun ItemViewHolder.makeEnqueteFooterMastodon(
         b.layoutParams = lp
         b.isAllCaps = false
         b.text = activity.getString(R.string.vote_button)
-        val accessInfo = this@makeEnqueteFooterMastodon.access_info
+        val accessInfo = this@makeEnqueteFooterMastodon.accessInfo
         b.setOnClickListener { view ->
             val context = view.context ?: return@setOnClickListener
             sendMultiple(status, enquete, context, accessInfo)
@@ -250,10 +248,10 @@ fun ItemViewHolder.makeEnqueteFooterMastodon(
 
     val sb = StringBuilder()
 
-    val votes_count = enquete.votes_count ?: 0
+    val votesCount = enquete.votes_count ?: 0
     when {
-        votes_count == 1 -> sb.append(activity.getString(R.string.vote_1))
-        votes_count > 1 -> sb.append(activity.getString(R.string.vote_2, votes_count))
+        votesCount == 1 -> sb.append(activity.getString(R.string.vote_1))
+        votesCount > 1 -> sb.append(activity.getString(R.string.vote_2, votesCount))
     }
 
     when (val t = enquete.expired_at) {
@@ -320,7 +318,6 @@ fun ItemViewHolder.onClickEnqueteChoice(
                     accessInfo.putMisskeyApiToken().apply {
                         put("noteId", enquete.status_id.toString())
                         put("choice", idx)
-
                     }.toPostRequestBuilder()
                 )
                 TootPollsType.Mastodon -> client.request(
@@ -346,7 +343,7 @@ fun ItemViewHolder.onClickEnqueteChoice(
                         context.showToast(false, R.string.enquete_voted)
 
                         // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-                        list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
+                        listAdapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
                     }
 
                     TootPollsType.Mastodon -> {
@@ -360,7 +357,7 @@ fun ItemViewHolder.onClickEnqueteChoice(
                         if (newPoll != null) {
                             status.enquete = newPoll
                             // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-                            list_adapter.notifyChange(
+                            listAdapter.notifyChange(
                                 reason = "onClickEnqueteChoice",
                                 reset = true
                             )
@@ -404,7 +401,7 @@ fun ItemViewHolder.sendMultiple(
 
     launchMain {
         var newPoll: TootPolls? = null
-        activity.runApiTask (accessInfo){ client->
+        activity.runApiTask(accessInfo) { client ->
             client.request(
                 "/api/v1/polls/${enquete.pollId}/votes",
                 jsonObject {
@@ -427,15 +424,14 @@ fun ItemViewHolder.sendMultiple(
                     if (newPoll == null) result.setError("response parse error")
                 }
             }
-        }?.let{ result->
+        }?.let { result ->
 
-
-            when ( val data = newPoll) {
-                null -> result.error?.let{ context.showToast(true, it)}
+            when (val data = newPoll) {
+                null -> result.error?.let { context.showToast(true, it) }
                 else -> {
                     status.enquete = data
                     // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-                    list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
+                    listAdapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
                 }
             }
         }

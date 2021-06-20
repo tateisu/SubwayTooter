@@ -34,7 +34,7 @@ class AppSettingItem(
     val parent: AppSettingItem?,
     val type: SettingType,
     @StringRes val caption: Int,
-    val pref: BasePref<*>? = null
+    val pref: BasePref<*>? = null,
 ) {
 
     @StringRes
@@ -84,14 +84,14 @@ class AppSettingItem(
 
     fun section(
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) {
         items.add(AppSettingItem(this, SettingType.Section, caption).apply { initializer() })
     }
 
     fun group(
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) {
         items.add(AppSettingItem(this, SettingType.Group, caption).apply { initializer() })
     }
@@ -100,7 +100,7 @@ class AppSettingItem(
         type: SettingType,
         pref: BasePref<*>?,
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ): AppSettingItem {
         val item = AppSettingItem(this, type, caption, pref).apply { initializer() }
         items.add(item)
@@ -110,7 +110,7 @@ class AppSettingItem(
     fun spinner(
         pref: IntPref,
         @StringRes caption: Int,
-        vararg args: Int
+        vararg args: Int,
     ) = item(SettingType.Spinner, pref, caption) {
         spinnerArgs = args
     }
@@ -118,7 +118,7 @@ class AppSettingItem(
     fun spinner(
         pref: IntPref,
         @StringRes caption: Int,
-        argsProc: (ActAppSetting) -> List<String>
+        argsProc: (ActAppSetting) -> List<String>,
     ) = item(SettingType.Spinner, pref, caption) {
         spinnerArgsProc = argsProc
     }
@@ -126,37 +126,37 @@ class AppSettingItem(
     fun sw(
         pref: BooleanPref,
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.Switch, pref, caption, initializer)
 
     fun checkbox(
         pref: BooleanPref,
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.CheckBox, pref, caption, initializer)
 
     fun action(
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.Action, null, caption, initializer)
 
     fun colorOpaque(
         pref: IntPref,
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.ColorOpaque, pref, caption, initializer)
 
     fun colorAlpha(
         pref: IntPref,
         @StringRes caption: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.ColorAlpha, pref, caption, initializer)
 
     fun text(
         pref: StringPref,
         @StringRes caption: Int,
         inputType: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.EditText, pref, caption) {
         this.inputType = inputType
         this.initializer()
@@ -166,7 +166,7 @@ class AppSettingItem(
         pref: BasePref<*>,
         @StringRes caption: Int,
         inputType: Int,
-        initializer: AppSettingItem.() -> Unit = {}
+        initializer: AppSettingItem.() -> Unit = {},
     ) = item(SettingType.EditText, pref, caption) {
         this.inputType = inputType
         this.initializer()
@@ -174,7 +174,7 @@ class AppSettingItem(
 
     fun sample(
         sampleLayoutId: Int = 0,
-        sampleUpdate: (ActAppSetting, View) -> Unit = { _, _ -> }
+        sampleUpdate: (ActAppSetting, View) -> Unit = { _, _ -> },
         // ,initializer : AppSettingItem.() -> Unit = {}
     ) = item(SettingType.Sample, pref, caption) {
         this.sampleLayoutId = sampleLayoutId
@@ -579,9 +579,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             onClickEdit = {
                 try {
                     val intent = intentOpenDocument("*/*")
-
-
-
                     arTimelineFont.launch(intent)
                 } catch (ex: Throwable) {
                     showToast(ex, "could not open picker for font")
@@ -594,7 +591,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             showTextView = { showTimelineFont(item, it) }
         }
 
-
         AppSettingItem.TIMELINE_FONT_BOLD = item(
             SettingType.TextWithSelector,
             Pref.spTimelineFontBold,
@@ -604,9 +600,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             onClickEdit = {
                 try {
                     val intent = intentOpenDocument("*/*")
-
-
-
                     arTimelineFontBold.launch(intent)
                 } catch (ex: Throwable) {
                     showToast(ex, "could not open picker for font")
@@ -746,8 +739,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         text(Pref.spScreenBottomPadding, R.string.screen_bottom_padding, InputTypeEx.numberDecimal)
 
-
-
         sw(Pref.bpOpenSticker, R.string.show_open_sticker) {
             desc = R.string.powered_by_open_sticker
             descClick = { openBrowser("https://github.com/cutls/OpenSticker") }
@@ -826,7 +817,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             colorAlpha(Pref.ipEventBgColorGap, R.string.gap)
         }
 
-
         group(R.string.button_accent_color) {
             colorAlpha(Pref.ipButtonBoostedColor, R.string.boost)
             colorAlpha(Pref.ipButtonFavoritedColor, R.string.favourites)
@@ -844,24 +834,24 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val ivColumnHeader: ImageView = viewRoot.findViewById(R.id.ivColumnHeader)
                     val tvColumnName: TextView = viewRoot.findViewById(R.id.tvColumnName)
 
-                    val color_column_header_bg = Pref.ipCcdHeaderBg(activity.pref)
-                    val color_column_header_fg = Pref.ipCcdHeaderFg(activity.pref)
+                    val colorColumnHeaderBg = Pref.ipCcdHeaderBg(activity.pref)
+                    val colorColumnHeaderFg = Pref.ipCcdHeaderFg(activity.pref)
 
-                    val header_bg = when {
-                        color_column_header_bg != 0 -> color_column_header_bg
+                    val headerBg = when {
+                        colorColumnHeaderBg != 0 -> colorColumnHeaderBg
                         else -> activity.attrColor(R.attr.color_column_header)
                     }
 
-                    val header_fg = when {
-                        color_column_header_fg != 0 -> color_column_header_fg
+                    val headerFg = when {
+                        colorColumnHeaderFg != 0 -> colorColumnHeaderFg
                         else -> activity.attrColor(R.attr.colorColumnHeaderName)
                     }
 
-                    llColumnHeader.background = getAdaptiveRippleDrawable(header_bg, header_fg)
+                    llColumnHeader.background = getAdaptiveRippleDrawable(headerBg, headerFg)
 
-                    tvColumnName.setTextColor(header_fg)
+                    tvColumnName.setTextColor(headerFg)
                     ivColumnHeader.setImageResource(R.drawable.ic_bike)
-                    ivColumnHeader.imageTintList = ColorStateList.valueOf(header_fg)
+                    ivColumnHeader.imageTintList = ColorStateList.valueOf(headerFg)
                 }
 
             colorOpaque(Pref.ipCcdHeaderBg, R.string.header_background_color) {
@@ -877,19 +867,19 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val tvSampleAcct: TextView = viewRoot.findViewById(R.id.tvSampleAcct)
                     val tvSampleContent: TextView = viewRoot.findViewById(R.id.tvSampleContent)
 
-                    val color_column_bg = Pref.ipCcdContentBg(activity.pref)
-                    val color_column_acct = Pref.ipCcdContentAcct(activity.pref)
-                    val color_column_text = Pref.ipCcdContentText(activity.pref)
+                    val colorColumnBg = Pref.ipCcdContentBg(activity.pref)
+                    val colorColumnAcct = Pref.ipCcdContentAcct(activity.pref)
+                    val colorColumnText = Pref.ipCcdContentText(activity.pref)
 
-                    flColumnBackground.setBackgroundColor(color_column_bg) // may 0
+                    flColumnBackground.setBackgroundColor(colorColumnBg) // may 0
 
                     tvSampleAcct.setTextColor(
-                        color_column_acct.notZero()
+                        colorColumnAcct.notZero()
                             ?: activity.attrColor(R.attr.colorTimeSmall)
                     )
 
                     tvSampleContent.setTextColor(
-                        color_column_text.notZero()
+                        colorColumnText.notZero()
                             ?: activity.attrColor(R.attr.colorContentText)
                     )
                 }
@@ -918,21 +908,21 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val vFooterDivider2: View = viewRoot.findViewById(R.id.vFooterDivider2)
                     val vIndicator: View = viewRoot.findViewById(R.id.vIndicator)
 
-                    val footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
-                    val footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
-                    val footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
-                    val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
-                    val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
+                    val footerButtonBgColor = Pref.ipFooterButtonBgColor(pref)
+                    val footerButtonFgColor = Pref.ipFooterButtonFgColor(pref)
+                    val footerTabBgColor = Pref.ipFooterTabBgColor(pref)
+                    val footerTabDividerColor = Pref.ipFooterTabDividerColor(pref)
+                    val footerTabIndicatorColor = Pref.ipFooterTabIndicatorColor(pref)
 
-                    val colorColumnStripBackground = footer_tab_bg_color.notZero()
+                    val colorColumnStripBackground = footerTabBgColor.notZero()
                         ?: activity.attrColor(R.attr.colorColumnStripBackground)
 
                     llFooterBG.setBackgroundColor(colorColumnStripBackground)
 
-                    val colorButtonBg = footer_button_bg_color.notZero()
+                    val colorButtonBg = footerButtonBgColor.notZero()
                         ?: colorColumnStripBackground
 
-                    val colorButtonFg = footer_button_fg_color.notZero()
+                    val colorButtonFg = footerButtonFgColor.notZero()
                         ?: activity.attrColor(R.attr.colorRippleEffect)
 
                     ivFooterMenu.backgroundDrawable =
@@ -941,19 +931,19 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                         getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
 
                     val csl = ColorStateList.valueOf(
-                        footer_button_fg_color.notZero()
+                        footerButtonFgColor.notZero()
                             ?: activity.attrColor(R.attr.colorVectorDrawable)
                     )
                     ivFooterToot.imageTintList = csl
                     ivFooterMenu.imageTintList = csl
 
-                    val c = footer_tab_divider_color.notZero()
+                    val c = footerTabDividerColor.notZero()
                         ?: colorColumnStripBackground
                     vFooterDivider1.setBackgroundColor(c)
                     vFooterDivider2.setBackgroundColor(c)
 
                     vIndicator.setBackgroundColor(
-                        footer_tab_indicator_color.notZero()
+                        footerTabIndicatorColor.notZero()
                             ?: activity.attrColor(R.attr.colorAccent)
                     )
                 }
@@ -1022,7 +1012,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                 }
             }
         }
-
     }
 
     action(R.string.app_data_export) {

@@ -214,7 +214,7 @@ class SpanList {
         for (sp in list) {
             when {
                 sp.end <= offset -> {
-
+                    // nothing to do
                 }
 
                 sp.start <= offset -> {
@@ -226,10 +226,8 @@ class SpanList {
                     sp.end += length
                 }
             }
-
         }
     }
-
 }
 
 // 正規表現パターンごとにMatcherをキャッシュする
@@ -241,11 +239,11 @@ internal object MatcherCache {
     private class MatcherCacheItem(
         var matcher: Matcher,
         var text: String,
-        var textHashCode: Int
+        var textHashCode: Int,
     )
 
     // スレッドごとにキャッシュ用のマップを持つ
-    private val matcherCache =
+    private val matcherCacheMap =
         object : ThreadLocal<HashMap<Pattern, MatcherCacheItem>>() {
             override fun initialValue(): HashMap<Pattern, MatcherCacheItem> = HashMap()
         }
@@ -254,11 +252,11 @@ internal object MatcherCache {
         pattern: Pattern,
         text: String,
         start: Int = 0,
-        end: Int = text.length
+        end: Int = text.length,
     ): Matcher {
         val m: Matcher
         val textHashCode = text.hashCode()
-        val map = matcherCache.get()!!
+        val map = matcherCacheMap.get()!!
         val item = map[pattern]
         if (item != null) {
             if (item.textHashCode != textHashCode || item.text != text) {
@@ -394,13 +392,13 @@ object MisskeySyntaxHighlighter {
         val length: Int,
         val color: Int = 0,
         val italic: Boolean = false,
-        val comment: Boolean = false
+        val comment: Boolean = false,
     )
 
     private class Env(
         val source: String,
         val start: Int,
-        val end: Int
+        val end: Int,
     ) {
 
         // 出力先2
@@ -677,7 +675,7 @@ object MisskeyMarkdownDecoder {
 
     // デコード結果にはメンションの配列を含む。TootStatusのパーサがこれを回収する。
     class SpannableStringBuilderEx(
-        var mentions: ArrayList<TootMention>? = null
+        var mentions: ArrayList<TootMention>? = null,
     ) : SpannableStringBuilder()
 
     // ブロック要素は始端と終端の空行を除去したい
@@ -690,7 +688,7 @@ object MisskeyMarkdownDecoder {
     // 装飾つきテキストの出力時に使うデータの集まり
     internal class SpanOutputEnv(
         val options: DecodeOptions,
-        val sb: SpannableStringBuilderEx
+        val sb: SpannableStringBuilderEx,
     ) {
 
         val context: Context = options.context ?: error("missing context")
@@ -772,7 +770,7 @@ object MisskeyMarkdownDecoder {
         }
 
         // URL中のテキストを追加する
-        private fun appendLinkText(display_url: String, href: String) {
+        private fun appendLinkText(displayUrl: String, href: String) {
             when {
                 // 添付メディアのURLなら絵文字に変えてしまう
                 options.isMediaAttachment(href) -> {
@@ -786,7 +784,7 @@ object MisskeyMarkdownDecoder {
                     )
                 }
 
-                else -> appendText(shortenUrl(display_url))
+                else -> appendText(shortenUrl(displayUrl))
             }
         }
 
@@ -795,7 +793,7 @@ object MisskeyMarkdownDecoder {
             text: String,
             url: String,
             allowShort: Boolean = false,
-            mention: TootMention? = null
+            mention: TootMention? = null,
         ) {
             when {
                 allowShort -> appendLinkText(text, url)
@@ -837,7 +835,7 @@ object MisskeyMarkdownDecoder {
 
         fun appendMention(
             username: String,
-            strHost: String?
+            strHost: String?,
         ) {
             // ユーザが記述したacct
             val rawAcct = Acct.parse(username, strHost)
@@ -854,10 +852,10 @@ object MisskeyMarkdownDecoder {
 
             // mentionsメタデータに含まれるacct
             // ユーザの記述に因らず、サーバのホスト名同じなら短い、そうでなければ長いメンション
-            val shortAcct = if (linkHelper.matchHost(fullAcct.host))
-                Acct.parse(username)
-            else
-                fullAcct
+            val shortAcct = when {
+                linkHelper.matchHost(fullAcct.host) -> Acct.parse(username)
+                else -> fullAcct
+            }
 
             // リンク表記はユーザの記述やアプリ設定の影響を受ける
             val caption = "@${
@@ -903,7 +901,7 @@ object MisskeyMarkdownDecoder {
 
     private fun mixColor(
         @Suppress("SameParameterValue") col1: Int,
-        col2: Int
+        col2: Int,
     ): Int = Color.rgb(
         (Color.red(col1) + Color.red(col2)) ushr 1,
         (Color.green(col1) + Color.green(col2)) ushr 1,
@@ -1062,7 +1060,7 @@ object MisskeyMarkdownDecoder {
             spanList.addFirst(
                 start,
                 sb.length,
-                MisskeyMotionSpan(ActMain.timeline_font)
+                MisskeyMotionSpan(ActMain.timelineFont)
             )
         }),
 
@@ -1280,18 +1278,15 @@ object MisskeyMarkdownDecoder {
                 QUOTE_BLOCK wraps allSet
 
                 ROOT wraps allSet
-
             }
-
         }
     }
-
 
     // マークダウン要素
     internal class Node(
         val type: NodeType, // ノード種別
         val args: Array<String> = emptyArray(), // 引数
-        parentNode: Node?
+        parentNode: Node?,
     ) {
 
         val childNodes = LinkedList<Node>()
@@ -1300,7 +1295,6 @@ object MisskeyMarkdownDecoder {
             NodeType.QUOTE_BLOCK, NodeType.QUOTE_INLINE -> 1
             else -> 0
         }
-
     }
 
     // マークダウン要素の出現位置
@@ -1310,7 +1304,7 @@ object MisskeyMarkdownDecoder {
         val end: Int, // テキスト中の終了位置
         val textInside: String, // 内部範囲。親から継承する場合もあるし独自に作る場合もある
         val startInside: Int, // 内部範囲の開始位置
-        private val lengthInside: Int // 内部範囲の終了位置
+        private val lengthInside: Int, // 内部範囲の終了位置
     ) {
 
         val endInside: Int
@@ -1322,7 +1316,7 @@ object MisskeyMarkdownDecoder {
         private val parentNode: Node,
         val text: String,
         start: Int,
-        val end: Int
+        val end: Int,
     ) {
 
         private val childNodes = parentNode.childNodes
@@ -1412,7 +1406,7 @@ object MisskeyMarkdownDecoder {
             end: Int,
             textInside: String,
             startInside: Int,
-            lengthInside: Int
+            lengthInside: Int,
         ): NodeDetected {
 
             val node = Node(type, args, parentNode)
@@ -1436,7 +1430,8 @@ object MisskeyMarkdownDecoder {
 
     // ノードのパースを行う関数をキャプチャパラメータつきで生成する
     private fun simpleParser(
-        pattern: Pattern, type: NodeType
+        pattern: Pattern,
+        type: NodeType,
     ): NodeParseEnv.() -> NodeDetected? = {
         val matcher = remainMatcher(pattern)
         when {
@@ -1450,11 +1445,9 @@ object MisskeyMarkdownDecoder {
                     matcher.start(), matcher.end(),
                     this.text, matcher.start(1), textInside.length
                 )
-
             }
         }
     }
-
 
     // [title] 【title】
     // 直後に改行が必要だったが文末でも良いことになった https://github.com/syuilo/misskey/commit/79ffbf95db9d0cc019d06ab93b1bfa6ba0d4f9ae
@@ -1495,7 +1488,7 @@ object MisskeyMarkdownDecoder {
     }
 
     @Suppress("SpellCheckingInspection")
-	private val latexEscape = listOf(
+    private val latexEscape = listOf(
         "\\#" to "#",
         "\\$" to "$",
         "\\%" to "%",
@@ -1589,13 +1582,12 @@ object MisskeyMarkdownDecoder {
         return null
     }
 
-
     // (マークダウン要素の特徴的な文字)と(パーサ関数の配列)のマップ
     private val nodeParserMap = SparseArray<Array<out NodeParseEnv.() -> NodeDetected?>>().apply {
 
         fun addParser(
             firstChars: String,
-            vararg nodeParsers: NodeParseEnv.() -> NodeDetected?
+            vararg nodeParsers: NodeParseEnv.() -> NodeDetected?,
         ) {
             for (s in firstChars) {
                 put(s.code, nodeParsers)
@@ -1626,7 +1618,7 @@ object MisskeyMarkdownDecoder {
                 val c = text[pos - 1]
                 if (c != '\r' && c != '\n') {
                     //直前が改行文字ではない
-                    if (DEBUG) log.d("QUOTE: previous char is not line end. ${c} pos=$pos text=$text")
+                    if (DEBUG) log.d("QUOTE: previous char is not line end. $c pos=$pos text=$text")
                     return@addParser null
                 }
             }
@@ -1704,14 +1696,11 @@ object MisskeyMarkdownDecoder {
 
         // ***big*** **bold**
         addParser(
-            "*"
+            "*",
             // 処理順序に意味があるので入れ替えないこと
             // 記号列が長い順にパースを試す
-            , simpleParser(
-                """^\Q***\E(.+?)\Q***\E""".asciiPattern(), NodeType.BIG
-            ), simpleParser(
-                """^\Q**\E(.+?)\Q**\E""".asciiPattern(), NodeType.BOLD
-            )
+            simpleParser("""^\Q***\E(.+?)\Q***\E""".asciiPattern(), NodeType.BIG),
+            simpleParser("""^\Q**\E(.+?)\Q**\E""".asciiPattern(), NodeType.BOLD),
         )
 
         val reAlnum = """[A-Za-z0-9]""".asciiPattern()
@@ -1778,7 +1767,6 @@ object MisskeyMarkdownDecoder {
             }
         }
 
-
         val titleParser: NodeParseEnv.() -> NodeDetected? = { titleParserImpl() }
 
         // Link
@@ -1795,8 +1783,9 @@ object MisskeyMarkdownDecoder {
                     makeDetected(
                         NodeType.LINK,
                         arrayOf(
-                            title, matcher.groupEx(2)!! // url
-                            , text[pos].toString()   // silent なら "?" になる
+                            title,
+                            matcher.groupEx(2)!!, // url
+                            text[pos].toString() // silent なら "?" になる
                         ),
                         matcher.start(), matcher.end(),
                         this.text, matcher.start(1), title.length
@@ -1961,7 +1950,6 @@ object MisskeyMarkdownDecoder {
 
                 // 末尾の空白を取り除く
                 this.removeEndWhitespaces()
-
             } catch (ex: Throwable) {
                 log.trace(ex)
                 log.e(ex, "decodeMarkdown failed")

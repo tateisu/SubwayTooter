@@ -32,7 +32,7 @@ internal class DlgContextMenu(
     private val whoRef: TootAccountRef?,
     private val status: TootStatus?,
     private val notification: TootNotification? = null,
-    private val contentTextView: TextView? = null
+    private val contentTextView: TextView? = null,
 ) : View.OnClickListener, View.OnLongClickListener {
 
     companion object {
@@ -40,7 +40,7 @@ internal class DlgContextMenu(
         private val log = LogCategory("DlgContextMenu")
     }
 
-    private val access_info: SavedAccount
+    private val accessInfo = column.accessInfo
     private val relation: UserRelation
 
     private val dialog: Dialog
@@ -80,8 +80,6 @@ internal class DlgContextMenu(
     private val btnPostNotification: Button = viewRoot.findViewById(R.id.btnPostNotification)
 
     init {
-        this.access_info = column.access_info
-
         val columnType = column.type
 
         val who = whoRef?.get()
@@ -89,8 +87,8 @@ internal class DlgContextMenu(
 
         this.relation = when {
             who == null -> UserRelation()
-            access_info.isPseudo -> UserRelation.loadPseudo(access_info.getFullAcct(who))
-            else -> UserRelation.load(access_info.db_id, who.id)
+            accessInfo.isPseudo -> UserRelation.loadPseudo(accessInfo.getFullAcct(who))
+            else -> UserRelation.load(accessInfo.db_id, who.id)
         }
 
         this.dialog = Dialog(activity)
@@ -252,13 +250,13 @@ internal class DlgContextMenu(
             it.setOnLongClickListener(this)
         }
 
-        val account_list = SavedAccount.loadAccountList(activity)
+        val accountList = SavedAccount.loadAccountList(activity)
         //	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
 
-        val account_list_non_pseudo = ArrayList<SavedAccount>()
-        for (a in account_list) {
+        val accountListNonPseudo = ArrayList<SavedAccount>()
+        for (a in accountList) {
             if (!a.isPseudo) {
-                account_list_non_pseudo.add(a)
+                accountListNonPseudo.add(a)
                 //				if( a.host.equalsIgnoreCase( access_info.host ) ){
                 //					account_list_non_pseudo_same_instance.add( a );
                 //				}
@@ -269,7 +267,7 @@ internal class DlgContextMenu(
             llStatus.visibility = View.GONE
             llLinks.visibility = View.GONE
         } else {
-            val status_by_me = access_info.isMe(status.account)
+            val statusByMe = accessInfo.isMe(status.account)
 
             if (Pref.bpLinksInContextMenu(activity.pref) && contentTextView != null) {
 
@@ -287,9 +285,9 @@ internal class DlgContextMenu(
                     b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
                     b.minHeight = (activity.density * 32f + 0.5f).toInt()
                     b.minimumHeight = (activity.density * 32f + 0.5f).toInt()
-                    val pad_lr = (activity.density * 8f + 0.5f).toInt()
-                    val pad_tb = (activity.density * 4f + 0.5f).toInt()
-                    b.setPaddingRelative(pad_lr, pad_tb, pad_lr, pad_tb)
+                    val padLr = (activity.density * 8f + 0.5f).toInt()
+                    val padTb = (activity.density * 4f + 0.5f).toInt()
+                    b.setPaddingRelative(padLr, padTb, padLr, padTb)
                     b.text = caption
                     b.allCaps = false
                     b.setOnClickListener {
@@ -310,29 +308,29 @@ internal class DlgContextMenu(
             }
             llLinks.vg(llLinks.childCount > 1)
 
-            btnYourToot.vg(status_by_me)
+            btnYourToot.vg(statusByMe)
 
             btnQuoteTootBT.vg(status.reblogParent != null)
 
-            btnBoostWithVisibility.vg(!access_info.isPseudo && !access_info.isMisskey)
+            btnBoostWithVisibility.vg(!accessInfo.isPseudo && !accessInfo.isMisskey)
 
-            btnReportStatus.vg(!(status_by_me || access_info.isPseudo))
+            btnReportStatus.vg(!(statusByMe || accessInfo.isPseudo))
 
-            val application_name = status.application?.name
-            if (status_by_me || application_name == null || application_name.isEmpty()) {
+            val applicationName = status.application?.name
+            if (statusByMe || applicationName == null || applicationName.isEmpty()) {
                 btnMuteApp.visibility = View.GONE
             } else {
-                btnMuteApp.text = activity.getString(R.string.mute_app_of, application_name)
+                btnMuteApp.text = activity.getString(R.string.mute_app_of, applicationName)
             }
 
-            val canPin = status.canPin(access_info)
+            val canPin = status.canPin(accessInfo)
             btnProfileUnpin.vg(canPin && status.pinned)
             btnProfilePin.vg(canPin && !status.pinned)
         }
 
         val bShowConversationMute = when {
             status == null -> false
-            access_info.isMe(status.account) -> true
+            accessInfo.isMe(status.account) -> true
             notification != null && TootNotification.TYPE_MENTION == notification.type -> true
             else -> false
         }
@@ -340,9 +338,10 @@ internal class DlgContextMenu(
         val muted = status?.muted ?: false
         btnConversationMute.vg(bShowConversationMute)
             ?.setText(
-                if (muted)
-                    R.string.unmute_this_conversation
-                else R.string.mute_this_conversation
+                when {
+                    muted -> R.string.unmute_this_conversation
+                    else -> R.string.mute_this_conversation
+                }
             )
 
         llNotification.vg(notification != null)
@@ -374,7 +373,6 @@ internal class DlgContextMenu(
                 }
             )
 
-
             btnFollow.imageTintList = ColorStateList.valueOf(
                 when {
                     relation.getRequested(who) -> colorButtonError
@@ -400,7 +398,7 @@ internal class DlgContextMenu(
             )
         }
 
-        if (access_info.isPseudo) {
+        if (accessInfo.isPseudo) {
             // 疑似アカミュートができたのでアカウントアクションを表示する
             showRelation(relation)
             llAccountActionBar.visibility = View.VISIBLE
@@ -427,13 +425,13 @@ internal class DlgContextMenu(
                 // 疑似アカウントではドメインブロックできない
                 // 自ドメインはブロックできない
                 btnDomainBlock.vg(
-                    !(access_info.isPseudo || access_info.matchHost(whoApiHost))
+                    !(accessInfo.isPseudo || accessInfo.matchHost(whoApiHost))
                 )
 
                 btnDomainTimeline.vg(
                     Pref.bpEnableDomainTimeline(activity.pref) &&
-                        !access_info.isPseudo &&
-                        !access_info.isMisskey
+                        !accessInfo.isPseudo &&
+                        !accessInfo.isMisskey
                 )
             }
 
@@ -443,30 +441,28 @@ internal class DlgContextMenu(
             btnOpenInstanceInAdminWebUi.visibility = View.GONE
 
             btnReportUser.visibility = View.GONE
-
         } else {
 
             btnCopyAccountId.visibility = View.VISIBLE
             btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString())
 
-            btnOpenAccountInAdminWebUi.vg(!access_info.isPseudo)
-            btnOpenInstanceInAdminWebUi.vg(!access_info.isPseudo)
+            btnOpenAccountInAdminWebUi.vg(!accessInfo.isPseudo)
+            btnOpenInstanceInAdminWebUi.vg(!accessInfo.isPseudo)
 
-            btnReportUser.vg(!(access_info.isPseudo || access_info.isMe(who)))
+            btnReportUser.vg(!(accessInfo.isPseudo || accessInfo.isMe(who)))
 
-            btnPostNotification.vg(!access_info.isPseudo && access_info.isMastodon && relation.following)
+            btnPostNotification.vg(!accessInfo.isPseudo && accessInfo.isMastodon && relation.following)
                 ?.let {
                     it.text = when (relation.notifying) {
                         true -> activity.getString(R.string.stop_notify_posts_from_this_user)
                         else -> activity.getString(R.string.notify_posts_from_this_user)
                     }
                 }
-
         }
 
         viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
 
-        if (access_info.isPseudo) {
+        if (accessInfo.isPseudo) {
             btnProfile.visibility = View.GONE
             btnSendMessage.visibility = View.GONE
             btnEndorse.visibility = View.GONE
@@ -486,7 +482,7 @@ internal class DlgContextMenu(
             btnDeleteSuggestion.visibility = View.GONE
         }
 
-        if (account_list_non_pseudo.isEmpty()) {
+        if (accountListNonPseudo.isEmpty()) {
             btnFollowFromAnotherAccount.visibility = View.GONE
             btnSendMessageFromAnotherAccount.visibility = View.GONE
         }
@@ -495,10 +491,10 @@ internal class DlgContextMenu(
         viewRoot.findViewById<View>(R.id.btnCancel).setOnClickListener(this)
         viewRoot.findViewById<View>(R.id.btnAccountQrCode).setOnClickListener(this)
 
-        if (access_info.isPseudo
-            || who == null
-            || !relation.getFollowing(who)
-            || relation.following_reblogs == UserRelation.REBLOG_UNKNOWN
+        if (accessInfo.isPseudo ||
+            who == null ||
+            !relation.getFollowing(who) ||
+            relation.following_reblogs == UserRelation.REBLOG_UNKNOWN
         ) {
             btnHideBoost.visibility = View.GONE
             btnShowBoost.visibility = View.GONE
@@ -516,7 +512,7 @@ internal class DlgContextMenu(
                 btnShowFavourite.visibility = View.GONE
             }
 
-            FavMute.contains(access_info.getFullAcct(who)) -> {
+            FavMute.contains(accessInfo.getFullAcct(who)) -> {
                 btnHideFavourite.visibility = View.GONE
                 btnShowFavourite.visibility = View.VISIBLE
             }
@@ -535,7 +531,6 @@ internal class DlgContextMenu(
         updateGroup(btnYourToot, llYourToot)
         updateGroup(btnStatusExtraAction, llStatusExtraAction)
         updateGroup(btnAccountExtraAction, llAccountExtraAction)
-
     }
 
     fun show() {
@@ -550,17 +545,17 @@ internal class DlgContextMenu(
     }
 
     private fun getUserApiHost(): Host =
-        when (val who_host = whoRef?.get()?.apiHost) {
-            Host.UNKNOWN -> Host.parse(column.instance_uri)
-            Host.EMPTY, null -> access_info.apiHost
-            else -> who_host
+        when (val whoHost = whoRef?.get()?.apiHost) {
+            Host.UNKNOWN -> Host.parse(column.instanceUri)
+            Host.EMPTY, null -> accessInfo.apiHost
+            else -> whoHost
         }
 
     private fun getUserApDomain(): Host =
-        when (val who_host = whoRef?.get()?.apDomain) {
-            Host.UNKNOWN -> Host.parse(column.instance_uri)
-            Host.EMPTY, null -> access_info.apDomain
-            else -> who_host
+        when (val whoHost = whoRef?.get()?.apDomain) {
+            Host.UNKNOWN -> Host.parse(column.instanceUri)
+            Host.EMPTY, null -> accessInfo.apDomain
+            else -> whoHost
         }
 
     private fun updateGroup(btn: Button, group: View, toggle: Boolean = false) {
@@ -634,7 +629,6 @@ internal class DlgContextMenu(
                 )
         }
 
-
         dialog.dismissSafe()
 
         val pos = activity.nextPosition(column)
@@ -646,105 +640,105 @@ internal class DlgContextMenu(
             when (v.id) {
 
                 R.id.btnReportStatus -> if (status is TootStatus) {
-                    activity.userReportForm(access_info, who, status)
+                    activity.userReportForm(accessInfo, who, status)
                 }
 
                 R.id.btnReportUser ->
-                    activity.userReportForm(access_info, who)
+                    activity.userReportForm(accessInfo, who)
 
                 R.id.btnFollow ->
                     when {
 
-                        access_info.isPseudo -> activity.followFromAnotherAccount(
+                        accessInfo.isPseudo -> activity.followFromAnotherAccount(
 
                             pos,
-                            access_info,
+                            accessInfo,
                             who
                         )
 
-                        access_info.isMisskey &&
+                        accessInfo.isMisskey &&
                             relation.getRequested(who) &&
                             !relation.getFollowing(who) ->
                             activity.followRequestDelete(
-                                pos, access_info, whoRef,
-                                callback = activity.cancel_follow_request_complete_callback
+                                pos, accessInfo, whoRef,
+                                callback = activity.cancelFollowRequestCompleteCallback
                             )
 
                         else -> {
                             val bSet = !(relation.getRequested(who) || relation.getFollowing(who))
                             activity.follow(
                                 pos,
-                                access_info,
+                                accessInfo,
                                 whoRef,
                                 bFollow = bSet,
                                 callback = when (bSet) {
-                                    true -> activity.follow_complete_callback
-                                    else -> activity.unfollow_complete_callback
+                                    true -> activity.followCompleteCallback
+                                    else -> activity.unfollowCompleteCallback
                                 }
                             )
                         }
                     }
 
                 R.id.btnAccountText -> {
-                    activity.launchActText(ActText.createIntent(activity, access_info, who))
+                    activity.launchActText(ActText.createIntent(activity, accessInfo, who))
                 }
 
                 R.id.btnMute -> when {
                     relation.muting -> activity.userUnmute(
-                        access_info,
+                        accessInfo,
                         who,
-                        access_info
+                        accessInfo
                     )
                     else -> activity.userMuteConfirm(
-                        access_info,
+                        accessInfo,
                         who,
-                        access_info
+                        accessInfo
                     )
                 }
 
                 R.id.btnBlock -> when {
                     relation.blocking -> activity.userBlock(
-                        access_info,
+                        accessInfo,
                         who,
-                        access_info,
+                        accessInfo,
                         false
                     )
-                    else -> activity.userBlockConfirm( access_info, who, access_info)
+                    else -> activity.userBlockConfirm(accessInfo, who, accessInfo)
                 }
 
                 R.id.btnProfile ->
-                    activity.userProfileLocal( pos, access_info, who)
+                    activity.userProfileLocal(pos, accessInfo, who)
 
                 R.id.btnSendMessage ->
-                    activity.mention( access_info, who)
+                    activity.mention(accessInfo, who)
 
                 R.id.btnAccountWebPage -> who.url?.let { url ->
                     activity.openCustomTab(url)
                 }
 
                 R.id.btnFollowRequestOK ->
-                    activity.followRequestAuthorize( access_info, whoRef, true)
+                    activity.followRequestAuthorize(accessInfo, whoRef, true)
 
                 R.id.btnDeleteSuggestion ->
-                    activity.userSuggestionDelete( access_info, who)
+                    activity.userSuggestionDelete(accessInfo, who)
 
                 R.id.btnFollowRequestNG ->
-                    activity.followRequestAuthorize( access_info, whoRef, false)
+                    activity.followRequestAuthorize(accessInfo, whoRef, false)
 
                 R.id.btnFollowFromAnotherAccount ->
-                    activity.followFromAnotherAccount( pos, access_info, who)
+                    activity.followFromAnotherAccount(pos, accessInfo, who)
 
                 R.id.btnSendMessageFromAnotherAccount ->
-                    activity.mentionFromAnotherAccount( access_info, who)
+                    activity.mentionFromAnotherAccount(accessInfo, who)
 
                 R.id.btnOpenProfileFromAnotherAccount ->
-                    activity.userProfileFromAnotherAccount( pos, access_info, who)
+                    activity.userProfileFromAnotherAccount(pos, accessInfo, who)
 
                 R.id.btnNickname -> {
                     activity.arNickname.launch(
                         ActNickname.createIntent(
                             activity,
-                            access_info.getFullAcct(who),
+                            accessInfo.getFullAcct(who),
                             true
                         )
                     )
@@ -758,14 +752,14 @@ internal class DlgContextMenu(
                     )
 
                 R.id.btnDomainBlock ->
-                    if (access_info.isPseudo) {
+                    if (accessInfo.isPseudo) {
                         // 疑似アカウントではドメインブロックできない
                         activity.showToast(false, R.string.domain_block_from_pseudo)
                         return
                     } else {
                         val whoApDomain = who.apDomain
                         // 自分のドメインではブロックできない
-                        if (access_info.matchHost(whoApDomain)) {
+                        if (accessInfo.matchHost(whoApDomain)) {
                             activity.showToast(false, R.string.domain_block_from_local)
                             return
                         }
@@ -779,7 +773,7 @@ internal class DlgContextMenu(
                             .setNegativeButton(R.string.cancel, null)
                             .setPositiveButton(R.string.ok) { _, _ ->
                                 activity.domainBlock(
-                                    access_info,
+                                    accessInfo,
                                     whoApDomain,
                                     true
                                 )
@@ -789,13 +783,13 @@ internal class DlgContextMenu(
 
                 R.id.btnOpenTimeline -> {
                     who.apiHost.valid()?.let {
-                        activity.timelineLocal( pos, it)
+                        activity.timelineLocal(pos, it)
                     }
                 }
 
                 R.id.btnDomainTimeline -> {
                     who.apiHost.valid()?.let {
-                        activity.timelineDomain( pos, access_info, it)
+                        activity.timelineDomain(pos, accessInfo, it)
                     }
                 }
 
@@ -820,30 +814,30 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnHideBoost ->
-                    activity.userSetShowBoosts( access_info, who, false)
+                    activity.userSetShowBoosts(accessInfo, who, false)
 
                 R.id.btnShowBoost ->
-                    activity.userSetShowBoosts( access_info, who, true)
+                    activity.userSetShowBoosts(accessInfo, who, true)
 
                 R.id.btnHideFavourite -> {
-                    val acct = access_info.getFullAcct(who)
+                    val acct = accessInfo.getFullAcct(who)
                     FavMute.save(acct)
                     activity.showToast(false, R.string.changed)
-                    for (column in activity.app_state.columnList) {
+                    for (column in activity.appState.columnList) {
                         column.onHideFavouriteNotification(acct)
                     }
                 }
 
                 R.id.btnShowFavourite -> {
-                    FavMute.delete(access_info.getFullAcct(who))
+                    FavMute.delete(accessInfo.getFullAcct(who))
                     activity.showToast(false, R.string.changed)
                 }
 
                 R.id.btnListMemberAddRemove ->
-                    DlgListMember(activity, who, access_info).show()
+                    DlgListMember(activity, who, accessInfo).show()
 
                 R.id.btnInstanceInformation -> {
-                    activity.serverInformation( pos, getUserApiHost())
+                    activity.serverInformation(pos, getUserApiHost())
                 }
 
                 R.id.btnProfileDirectory -> {
@@ -855,14 +849,14 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnEndorse -> activity.userEndorsement(
-                    access_info,
+                    accessInfo,
                     who,
                     !relation.endorsed
                 )
 
                 R.id.btnAroundAccountTL -> activity.timelineAroundByStatusAnotherAccount(
 
-                    access_info,
+                    accessInfo,
                     pos,
                     who.apiHost,
                     status,
@@ -871,7 +865,7 @@ internal class DlgContextMenu(
 
                 R.id.btnAroundLTL -> activity.timelineAroundByStatusAnotherAccount(
 
-                    access_info,
+                    accessInfo,
                     pos,
                     who.apiHost,
                     status,
@@ -880,7 +874,7 @@ internal class DlgContextMenu(
 
                 R.id.btnAroundFTL -> activity.timelineAroundByStatusAnotherAccount(
 
-                    access_info,
+                    accessInfo,
                     pos,
                     who.apiHost,
                     status,
@@ -891,17 +885,17 @@ internal class DlgContextMenu(
 
                 R.id.btnOpenAccountInAdminWebUi ->
                     activity.openBrowser(
-                        "https://${access_info.apiHost.ascii}/admin/accounts/${who.id}"
+                        "https://${accessInfo.apiHost.ascii}/admin/accounts/${who.id}"
                     )
 
                 R.id.btnOpenInstanceInAdminWebUi ->
                     activity.openBrowser(
-                        "https://${access_info.apiHost.ascii}/admin/instances/${who.apDomain.ascii}"
+                        "https://${accessInfo.apiHost.ascii}/admin/instances/${who.apDomain.ascii}"
                     )
 
                 R.id.btnBoostWithVisibility -> {
                     val status = this.status ?: return
-                    val list = if (access_info.isMisskey) {
+                    val list = if (accessInfo.isMisskey) {
                         arrayOf(
                             TootVisibility.Public,
                             TootVisibility.UnlistedHome,
@@ -919,21 +913,21 @@ internal class DlgContextMenu(
                             TootVisibility.PrivateFollowers
                         )
                     }
-                    val caption_list = list
-                        .map { Styler.getVisibilityCaption(activity, access_info.isMisskey, it) }
+                    val captionList = list
+                        .map { Styler.getVisibilityCaption(activity, accessInfo.isMisskey, it) }
                         .toTypedArray()
 
                     AlertDialog.Builder(activity)
                         .setTitle(R.string.choose_visibility)
-                        .setItems(caption_list) { _, which ->
+                        .setItems(captionList) { _, which ->
                             if (which in list.indices) {
                                 activity.boost(
-                                    access_info,
+                                    accessInfo,
                                     status,
-                                    access_info.getFullAcct(status.account),
+                                    accessInfo.getFullAcct(status.account),
                                     CrossAccountMode.SameAccount,
                                     visibility = list[which],
-                                    callback = activity.boost_complete_callback,
+                                    callback = activity.boostCompleteCallback,
                                 )
                             }
                         }
@@ -942,13 +936,13 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnNotificationFrom -> {
-                    if (access_info.isMisskey) {
+                    if (accessInfo.isMisskey) {
                         activity.showToast(false, R.string.misskey_account_not_supported)
                     } else {
-                        access_info.getFullAcct(who).validFull()?.let {
+                        accessInfo.getFullAcct(who).validFull()?.let {
                             activity.addColumn(
                                 pos,
-                                access_info,
+                                accessInfo,
                                 ColumnType.NOTIFICATION_FROM_ACCT,
                                 it
                             )
@@ -957,11 +951,11 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnPostNotification ->
-                    if (!access_info.isPseudo &&
-                        access_info.isMastodon &&
+                    if (!accessInfo.isPseudo &&
+                        accessInfo.isMastodon &&
                         relation.following
                     ) {
-                        activity.userSetStatusNotification( access_info, who.id, enabled=!relation.notifying)
+                        activity.userSetStatusNotification(accessInfo, who.id, enabled = !relation.notifying)
                     }
             }
         }
@@ -972,42 +966,42 @@ internal class DlgContextMenu(
                 activity.openCustomTab(status?.url)
 
             R.id.btnText -> if (status != null) {
-                activity.launchActText(ActText.createIntent(activity, access_info, status))
+                activity.launchActText(ActText.createIntent(activity, accessInfo, status))
             }
 
             R.id.btnFavouriteAnotherAccount -> activity.favouriteFromAnotherAccount(
-                access_info,
+                accessInfo,
                 status
             )
 
             R.id.btnBookmarkAnotherAccount -> activity.bookmarkFromAnotherAccount(
-                access_info,
+                accessInfo,
                 status
             )
 
             R.id.btnBoostAnotherAccount -> activity.boostFromAnotherAccount(
-                access_info,
+                accessInfo,
                 status
             )
 
             R.id.btnReactionAnotherAccount -> activity.reactionFromAnotherAccount(
 
-                access_info,
+                accessInfo,
                 status
             )
 
             R.id.btnReplyAnotherAccount -> activity.replyFromAnotherAccount(
-                access_info,
+                accessInfo,
                 status
             )
 
             R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(
-                access_info,
+                accessInfo,
                 status
             )
 
             R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(
-                access_info,
+                accessInfo,
                 status?.reblogParent
             )
 
@@ -1022,14 +1016,14 @@ internal class DlgContextMenu(
                     .setPositiveButton(R.string.ok) { _, _ ->
                         activity.statusDelete(
 
-                            access_info,
+                            accessInfo,
                             status.id
                         )
                     }
                     .show()
             }
             R.id.btnRedraft -> status?.let { status ->
-                activity.statusRedraft(access_info, status)
+                activity.statusRedraft(accessInfo, status)
             }
 
             R.id.btnMuteApp -> status?.application?.let {
@@ -1037,18 +1031,18 @@ internal class DlgContextMenu(
             }
 
             R.id.btnBoostedBy -> status?.let {
-                activity.addColumn(false, pos, access_info, ColumnType.BOOSTED_BY, it.id)
+                activity.addColumn(false, pos, accessInfo, ColumnType.BOOSTED_BY, it.id)
             }
 
             R.id.btnFavouritedBy -> status?.let {
-                activity.addColumn(false, pos, access_info, ColumnType.FAVOURITED_BY, it.id)
+                activity.addColumn(false, pos, accessInfo, ColumnType.FAVOURITED_BY, it.id)
             }
 
             R.id.btnCancel -> dialog.cancel()
 
             R.id.btnTranslate -> CustomShare.invoke(
                 activity,
-                access_info,
+                accessInfo,
                 status,
                 CustomShareTarget.Translate
             )
@@ -1068,21 +1062,20 @@ internal class DlgContextMenu(
                 if (url.isNotEmpty()) shareText(activity, url)
             }
             R.id.btnNotificationDelete -> notification?.let { notification ->
-                activity.notificationDeleteOne( access_info, notification)
+                activity.notificationDeleteOne(accessInfo, notification)
             }
 
             R.id.btnConversationMute -> status?.let { status ->
-                activity.conversationMute(access_info, status)
+                activity.conversationMute(accessInfo, status)
             }
 
             R.id.btnProfilePin -> status?.let { status ->
-                activity.statusPin(access_info, status, true)
+                activity.statusPin(accessInfo, status, true)
             }
 
             R.id.btnProfileUnpin -> status?.let { status ->
-                activity.statusPin(access_info, status, false)
+                activity.statusPin(accessInfo, status, false)
             }
-
         }
     }
 
@@ -1098,13 +1091,12 @@ internal class DlgContextMenu(
         val whoRef = this.whoRef
         val who = whoRef?.get()
 
-
         when (v.id) {
             R.id.btnFollow -> {
                 dialog.dismissSafe()
                 activity.followFromAnotherAccount(
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     who
                 )
             }
@@ -1113,25 +1105,24 @@ internal class DlgContextMenu(
                 dialog.dismissSafe()
                 activity.userProfileFromAnotherAccount(
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     who
                 )
             }
 
             R.id.btnSendMessage -> {
                 dialog.dismissSafe()
-                activity.mentionFromAnotherAccount( access_info, who)
+                activity.mentionFromAnotherAccount(accessInfo, who)
             }
 
-            R.id.btnMute ->  who?.let{ activity.userMuteFromAnotherAccount( it, access_info) }
-            R.id.btnBlock -> who?.let{ activity.userBlockFromAnotherAccount( it, access_info) }
+            R.id.btnMute -> who?.let { activity.userMuteFromAnotherAccount(it, accessInfo) }
+            R.id.btnBlock -> who?.let { activity.userBlockFromAnotherAccount(it, accessInfo) }
 
-            R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(access_info,status)
-            R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(access_info,status?.reblogParent)
+            R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(accessInfo, status)
+            R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(accessInfo, status?.reblogParent)
 
             else -> return false
         }
         return true
     }
-
 }

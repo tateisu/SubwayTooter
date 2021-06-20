@@ -179,10 +179,10 @@ private class ColoredDrawableCacheKey(
 
     override fun equals(other: Any?): Boolean {
         return this === other || (
-            other is ColoredDrawableCacheKey
-                && drawableId == other.drawableId
-                && rgb == other.rgb
-                && alpha == other.alpha
+            other is ColoredDrawableCacheKey &&
+                drawableId == other.drawableId &&
+                rgb == other.rgb &&
+                alpha == other.alpha
             )
     }
 
@@ -299,7 +299,6 @@ fun CharSequence.copyToClipboard(context: Context) {
         UiUtils.log.trace(ex)
         context.showToast(ex, "copy failed.")
     }
-
 }
 
 fun DialogInterface.dismissSafe() {
@@ -345,16 +344,15 @@ fun ImageButton.setEnabledColor(context: Context, iconId: Int, color: Int, enabl
     )
 }
 
-var View.isEnabledAlpha :Boolean
+var View.isEnabledAlpha: Boolean
     get() = isEnabled
-    set(enabled){
+    set(enabled) {
         this.isEnabled = enabled
         this.alpha = when (enabled) {
             true -> 1f
             else -> 0.3f
         }
     }
-
 
 /////////////////////////////////////////////////
 
@@ -366,8 +364,8 @@ class ActivityResultHandler<A : ComponentActivity>(
     private lateinit var launcher: ActivityResultLauncher<Intent>
 
     // startForActivityResultの代わりに呼び出す
-    fun launch(intent: Intent,options: ActivityOptionsCompat?=null) = try {
-        launcher.launch(intent,options)
+    fun launch(intent: Intent, options: ActivityOptionsCompat? = null) = try {
+        launcher.launch(intent, options)
     } catch (ex: Throwable) {
         log.e(ex, "launch failed")
         context.showToast(ex, "activity launch failed.")

@@ -32,58 +32,57 @@ http://userguide.icu-project.org/strings/regexp
 
 */
 
-fun String.asciiPattern(flags : Int = 0) : Pattern =
-	Pattern.compile(this.asciiPatternString(), flags)
+fun String.asciiPattern(flags: Int = 0): Pattern =
+    Pattern.compile(this.asciiPatternString(), flags)
 
-fun String.asciiPatternString() : String {
-	val dst = StringBuilder()
-	dst.ensureCapacity(this.length)
-	var escaped = false
-	var insideSet = 0
-	var lastOpen =0
-	for( i in this.indices){
-		val c= this[i]
-		when {
-			escaped -> {
-				escaped = false
-				when(c) {
-					'w' -> dst.append(if(insideSet>0) "A-Za-z0-9_" else "[A-Za-z0-9_]")
-					'd' -> dst.append(if(insideSet>0) "0-9" else "[0-9]")
-					
-					// W,Dは文字セット内では対応できないのでそのまま通す
-					'W' -> if(insideSet>0) dst.append('\\').append(c) else dst.append("[^A-Za-z0-9_]")
-					'D' -> if(insideSet>0) dst.append('\\').append(c) else dst.append("[^0-9]")
-					
-					else -> dst.append('\\').append(c)
-				}
-			}
-			
-			c == '\\' -> escaped = true
-			
-			else -> {
-				dst.append(c)
-				if(c == '[') {
-					insideSet++
-					lastOpen=i
-				} else if(c == ']' && insideSet >0 && i > lastOpen+1) {
-					insideSet--
-					
-					// [] のようなカラの文字クラスは正規表現のエラーになる。
-					// つまり文字クラスは最低でも1文字を含むので、
-					// []] のような記述は ] のみを示す文字クラスになる。
-					// [ ]] のような記述は 空白に続いて文字']'が出現する入力にマッチする。
-					// 1文字あけた次からは閉じ括弧として扱われて、
-					// 続いて開いてない時に登場した ] は普通の文字として扱われる。
+fun String.asciiPatternString(): String {
+    val dst = StringBuilder()
+    dst.ensureCapacity(this.length)
+    var escaped = false
+    var insideSet = 0
+    var lastOpen = 0
+    for (i in this.indices) {
+        val c = this[i]
+        when {
+            escaped -> {
+                escaped = false
+                when (c) {
+                    'w' -> dst.append(if (insideSet > 0) "A-Za-z0-9_" else "[A-Za-z0-9_]")
+                    'd' -> dst.append(if (insideSet > 0) "0-9" else "[0-9]")
 
-					// [[ABC][DEF]]は [ABCDEF]と同じ。入れ子になっている
-					// JVMのPatternでは[A-Z&&[^D-F]]のような記述は「A-ZのうちD-F以外」と解釈される
-					// ICUには [\p{Letter}&&\p{script=cyrillic}] や [\p{Letter}--\p{script=latin}]
-					// JVMと同じような記述ができるかどうかは分からない。
-					
-				}
-			}
-		}
-	}
-	if(escaped) dst.append('\\')
-	return dst.toString()
+                    // W,Dは文字セット内では対応できないのでそのまま通す
+                    'W' -> if (insideSet > 0) dst.append('\\').append(c) else dst.append("[^A-Za-z0-9_]")
+                    'D' -> if (insideSet > 0) dst.append('\\').append(c) else dst.append("[^0-9]")
+
+                    else -> dst.append('\\').append(c)
+                }
+            }
+
+            c == '\\' -> escaped = true
+
+            else -> {
+                dst.append(c)
+                if (c == '[') {
+                    insideSet++
+                    lastOpen = i
+                } else if (c == ']' && insideSet > 0 && i > lastOpen + 1) {
+                    insideSet--
+
+                    // [] のようなカラの文字クラスは正規表現のエラーになる。
+                    // つまり文字クラスは最低でも1文字を含むので、
+                    // []] のような記述は ] のみを示す文字クラスになる。
+                    // [ ]] のような記述は 空白に続いて文字']'が出現する入力にマッチする。
+                    // 1文字あけた次からは閉じ括弧として扱われて、
+                    // 続いて開いてない時に登場した ] は普通の文字として扱われる。
+
+                    // [[ABC][DEF]]は [ABCDEF]と同じ。入れ子になっている
+                    // JVMのPatternでは[A-Z&&[^D-F]]のような記述は「A-ZのうちD-F以外」と解釈される
+                    // ICUには [\p{Letter}&&\p{script=cyrillic}] や [\p{Letter}--\p{script=latin}]
+                    // JVMと同じような記述ができるかどうかは分からない。
+                }
+            }
+        }
+    }
+    if (escaped) dst.append('\\')
+    return dst.toString()
 }

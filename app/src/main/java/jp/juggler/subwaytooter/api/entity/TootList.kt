@@ -17,7 +17,6 @@ class TootList(parser: TootParser, src: JsonObject) : TimelineItem(), Comparable
     // タイトルの数字列部分は数字の大小でソートされるようにしたい
     private val title_for_sort: ArrayList<Any>?
 
-
     // 内部で使用する
     var isRegistered: Boolean = false
 
@@ -61,7 +60,7 @@ class TootList(parser: TootParser, src: JsonObject) : TimelineItem(), Comparable
                     }
                     try {
                         list.add(m.groupEx(1)!!.toLong())
-                    } catch (ex: Throwable) {
+                    } catch (ignored: Throwable) {
                         list.clear()
                         list.add(title)
                         return list
@@ -114,14 +113,13 @@ class TootList(parser: TootParser, src: JsonObject) : TimelineItem(), Comparable
                 else -> (ob is Long).b2i() - (oa is Long).b2i()
             }
             log.d(
-                "${oa} ${
+                "$oa ${
                     when {
                         delta < 0 -> "<"
                         delta > 0 -> ">"
                         else -> "="
                     }
-                } ${ob}"
-
+                } $ob"
             )
             if (delta != 0) return delta
             ++i

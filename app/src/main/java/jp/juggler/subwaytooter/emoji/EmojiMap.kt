@@ -44,12 +44,10 @@ object EmojiMap {
             unicodeTrie.append(code, 0, emoji)
         }
 
-
         fun addName(emoji: UnicodeEmoji, name: String) {
             shortNameMap[name] = emoji
             shortNameList.add(name)
         }
-
 
         val reComment = """\s*//.*""".toRegex()
         val reLineHeader = """\A(\w+):""".toRegex()
@@ -115,8 +113,8 @@ object EmojiMap {
 //                        if (emoji == null) {
 //                            Log.w("SubwayTooter", "missing emoji. lno=$lno line=$rawLine")
 //                        } else
-                        if (!category.emoji_list.contains(emoji)) {
-                            category.emoji_list.add(emoji)
+                        if (!category.emojiList.contains(emoji)) {
+                            category.emojiList.add(emoji)
                         }
                     }
                     else -> error("unknown header $head")
@@ -152,7 +150,6 @@ object EmojiMap {
             }
             used += nRead
         }
-
     }
 
     fun load(appContext: Context) {

@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import androidx.annotation.RawRes
 import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -190,7 +191,7 @@ fun getMimeType(log: LogCategory?, src: String): String {
 
             // 戻り値が空文字列の場合とnullの場合があり、空文字列の場合は既知なのでログ出力しない
             if (mimeType == null && log != null) {
-                log.w("getMimeType(): unknown file extension '${ext}'")
+                log.w("getMimeType(): unknown file extension '$ext'")
             }
         }
 
@@ -238,7 +239,7 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
 //	}
 //}
 
-fun Context.loadRawResource(resId: Int): ByteArray {
+fun Context.loadRawResource(@RawRes resId: Int): ByteArray {
     resources.openRawResource(resId).use { inStream ->
         val bao = ByteArrayOutputStream(inStream.available())
         IOUtils.copy(inStream, bao)
@@ -317,5 +318,3 @@ fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<G
     }
     return urlList
 }
-
-

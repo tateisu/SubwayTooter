@@ -12,7 +12,7 @@ enum class StreamStatus {
     Subscribed
 }
 
-fun Column.getStreamingStatus() =when{
-    canStreamingType() && !dont_streaming -> app_state.streamManager.getStreamStatus(this)
+fun Column.getStreamingStatus() = when {
+    canStreamingType() && !dontStreaming -> appState.streamManager.getStreamStatus(this)
     else -> StreamStatus.Missing
 }

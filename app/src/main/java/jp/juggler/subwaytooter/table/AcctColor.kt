@@ -7,6 +7,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
+import androidx.annotation.StringRes
 import androidx.collection.LruCache
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Acct
@@ -25,14 +26,13 @@ class AcctColor {
     val nickname: String
         get() = nicknameSave.notEmpty() ?: acctPretty
 
-
     constructor(
         acctAscii: String,
         acctPretty: String,
         nicknameSave: String,
         color_fg: Int,
         color_bg: Int,
-        notification_sound: String?
+        notification_sound: String?,
     ) {
         this.acctAscii = acctAscii
         this.acctPretty = acctPretty
@@ -97,22 +97,18 @@ class AcctColor {
         override fun onDBCreate(db: SQLiteDatabase) {
             log.d("onDBCreate!")
             db.execSQL(
-                "create table if not exists " + table
-                    + "(_id INTEGER PRIMARY KEY"
-                    + "," + COL_TIME_SAVE + " integer not null"
-                    + "," + COL_ACCT + " text not null"
-                    + "," + COL_COLOR_FG + " integer"
-                    + "," + COL_COLOR_BG + " integer"
-                    + "," + COL_NICKNAME + " text "
-                    + "," + COL_NOTIFICATION_SOUND + " text default ''"
-                    + ")"
+                """create table if not exists $table
+                (_id INTEGER PRIMARY KEY
+                ,$COL_TIME_SAVE integer not null
+                ,$COL_ACCT text not null
+                ,$COL_COLOR_FG integer
+                ,$COL_COLOR_BG integer
+                ,$COL_NICKNAME text
+                ,$COL_NOTIFICATION_SOUND text default ''
+                )""".trimIndent()
             )
-            db.execSQL(
-                "create unique index if not exists " + table + "_acct on " + table + "(" + COL_ACCT + ")"
-            )
-            db.execSQL(
-                "create index if not exists " + table + "_time on " + table + "(" + COL_TIME_SAVE + ")"
-            )
+            db.execSQL("create unique index if not exists ${table}_acct on $table($COL_ACCT)")
+            db.execSQL("create index if not exists ${table}_time on $table($COL_TIME_SAVE)")
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -127,7 +123,6 @@ class AcctColor {
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
         }
 
@@ -157,7 +152,6 @@ class AcctColor {
                             mMemoryCache.put(key, ac)
                             return ac
                         }
-
                     }
             } catch (ex: Throwable) {
                 log.trace(ex)
@@ -187,7 +181,6 @@ class AcctColor {
 
         fun getNickname(sa: SavedAccount, who: TootAccount): String =
             getNickname(sa.getFullAcct(who))
-
 
         fun getNicknameWithColor(sa: SavedAccount, who: TootAccount) =
             getNicknameWithColor(sa.getFullAcct(who))
@@ -241,16 +234,13 @@ class AcctColor {
 
         fun getStringWithNickname(
             context: Context,
-            string_id: Int,
-            acct: Acct
+            @StringRes stringId: Int,
+            acct: Acct,
         ): CharSequence {
             val ac = load(acct)
             val name = ac.nickname
             val sb = SpannableStringBuilder(
-                context.getString(
-                    string_id,
-                    String(charArrayOf(CHAR_REPLACE))
-                )
+                context.getString(stringId, String(charArrayOf(CHAR_REPLACE)))
             )
             for (i in sb.length - 1 downTo 0) {
                 val c = sb[i]
@@ -276,5 +266,4 @@ class AcctColor {
             return sb
         }
     }
-
 }

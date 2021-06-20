@@ -22,7 +22,7 @@ import kotlin.jvm.Throws
 import kotlin.math.max
 
 class ProgressResponseBody private constructor(
-	private val originalBody: ResponseBody
+    private val originalBody: ResponseBody,
 ) : ResponseBody() {
 
     companion object {
@@ -36,7 +36,7 @@ class ProgressResponseBody private constructor(
                 val originalResponse = chain.proceed(chain.request())
 
                 val originalBody = originalResponse.body
-                    ?: throw RuntimeException("makeInterceptor: originalResponse.body() returns null.")
+                    ?: error("makeInterceptor: originalResponse.body() returns null.")
 
                 return originalResponse.newBuilder()
                     .body(ProgressResponseBody(originalBody))
@@ -46,16 +46,16 @@ class ProgressResponseBody private constructor(
 
         @Throws(IOException::class)
         fun bytes(response: Response, callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit): ByteArray {
-            val body = response.body ?: throw RuntimeException("response.body() is null.")
+            val body = response.body ?: error("response.body() is null.")
             return bytes(body, callback)
         }
 
         @Suppress("MemberVisibilityCanPrivate")
         @Throws(IOException::class)
         private fun bytes(
-			body: ResponseBody,
-			callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit
-		): ByteArray {
+            body: ResponseBody,
+            callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit,
+        ): ByteArray {
             if (body is ProgressResponseBody) {
                 body.callback = callback
             }
@@ -75,7 +75,7 @@ class ProgressResponseBody private constructor(
 
         try {
             // if it is RealBufferedSource, I can access to source public field via reflection.
-            val field_source = originalSource.javaClass.getField("source")
+            val fieldSource = originalSource.javaClass.getField("source")
 
             // If there is the method, create the wrapper.
             object : ForwardingBufferedSource(originalSource) {
@@ -93,7 +93,7 @@ class ProgressResponseBody private constructor(
                     try {
                         val contentLength = originalBody.contentLength()
                         val buffer = originalSource.buffer
-                        val source = field_source.get(originalSource) as Source?
+                        val source = fieldSource.get(originalSource) as Source?
                             ?: throw IllegalArgumentException("source == null")
 
                         // same thing of Buffer.writeAll(), with counting.
@@ -111,18 +111,15 @@ class ProgressResponseBody private constructor(
                         runBlocking { callback(nRead, max(contentLength, nRead)) }
 
                         return buffer.readByteArray()
-
                     } catch (ex: Throwable) {
                         log.trace(ex)
                         log.e("readByteArray() failed. ")
                         return originalSource.readByteArray()
                     }
-
                 }
-
             }
         } catch (ex: Throwable) {
-            log.e("can't access to RealBufferedSource#source field.")
+            log.e(ex, "can't access to RealBufferedSource#source field.")
             originalSource
         }
     }
@@ -149,8 +146,8 @@ class ProgressResponseBody private constructor(
 
     // To avoid double buffering, We have to make ForwardingBufferedSource.
     internal open class ForwardingBufferedSource(
-		private val originalSource: BufferedSource
-	) : BufferedSource {
+        private val originalSource: BufferedSource,
+    ) : BufferedSource {
 
         override val buffer: Buffer
             get() = originalSource.buffer
@@ -254,11 +251,11 @@ class ProgressResponseBody private constructor(
             originalSource.rangeEquals(offset, bytes)
 
         override fun rangeEquals(
-			offset: Long,
-			bytes: ByteString,
-			bytesOffset: Int,
-			byteCount: Int
-		) = originalSource.rangeEquals(offset, bytes, bytesOffset, byteCount)
+            offset: Long,
+            bytes: ByteString,
+            bytesOffset: Int,
+            byteCount: Int,
+        ) = originalSource.rangeEquals(offset, bytes, bytesOffset, byteCount)
 
         override fun inputStream(): InputStream = originalSource.inputStream()
 
@@ -268,5 +265,4 @@ class ProgressResponseBody private constructor(
 
         override fun close() = originalSource.close()
     }
-
 }

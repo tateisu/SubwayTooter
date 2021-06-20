@@ -9,7 +9,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 private val log = LogCategory("EndlessScope")
 
-val <T:Any> T.wrapWeakReference : WeakReference<T>
+val <T : Any> T.wrapWeakReference: WeakReference<T>
     get() = WeakReference(this)
 
 // kotlinx.coroutines 1.5.0 で GlobalScopeがdeprecated になったが、
@@ -40,7 +40,6 @@ fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
             log.trace(ex, "launchDefault: cancelled.")
         }
     }
-
 
 // IOスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
@@ -90,14 +89,14 @@ suspend fun <T : Any?> AppCompatActivity.runWithProgress(
             progress.setCancelable(true)
             progress.setOnCancelListener { task.cancel() }
             progress.isIndeterminateEx = true
-            progress.setMessageEx("${caption}…")
+            progress.setMessageEx("$caption…")
             progressInitializer(progress)
             progress.show()
 
             try {
                 val result = try {
                     task.await()
-                } catch (ex: CancellationException) {
+                } catch (ignored: CancellationException) {
                     null
                 }
                 if (result != null) afterProc(result)

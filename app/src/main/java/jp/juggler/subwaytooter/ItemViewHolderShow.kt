@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
@@ -28,21 +29,21 @@ import kotlin.math.max
 
 @SuppressLint("ClickableViewAccessibility")
 fun ItemViewHolder.bind(
-    list_adapter: ItemListAdapter,
+    listAdapter: ItemListAdapter,
     column: Column,
     bSimpleList: Boolean,
-    item: TimelineItem
+    item: TimelineItem,
 ) {
     val b = Benchmark(ItemViewHolder.log, "Item-bind", 40L)
 
-    this.list_adapter = list_adapter
+    this.listAdapter = listAdapter
     this.column = column
     this.bSimpleList = bSimpleList
 
-    this.access_info = column.access_info
+    this.accessInfo = column.accessInfo
 
-    val font_bold = ActMain.timeline_font_bold
-    val font_normal = ActMain.timeline_font
+    val fontBold = ActMain.timeline_font_bold
+    val fontNormal = ActMain.timelineFont
     viewRoot.scan { v ->
         try {
             when (v) {
@@ -62,8 +63,8 @@ fun ItemViewHolder.bind(
                         v === tvTrendTagName ||
                         v === tvConversationIconsMore ||
                         v === tvConversationParticipants ||
-                        v === tvFilterPhrase -> font_bold
-                    else -> font_normal
+                        v === tvFilterPhrase -> fontBold
+                    else -> fontNormal
                 }
             }
         } catch (ex: Throwable) {
@@ -77,7 +78,7 @@ fun ItemViewHolder.bind(
             // ポップアップを閉じた時にクリックでリストを触ったことになってしまう不具合の回避
             val now = SystemClock.elapsedRealtime()
             // ポップアップを閉じた直後はタッチダウンを無視する
-            if (now - StatusButtonsPopup.last_popup_close >= 30L) {
+            if (now - StatusButtonsPopup.lastPopupClose >= 30L) {
                 false
             } else {
                 val action = ev.action
@@ -88,12 +89,12 @@ fun ItemViewHolder.bind(
 
         viewRoot.setOnClickListener { viewClicked ->
             activity.closeListItemPopup()
-            status_showing?.let { status ->
+            statusShowing?.let { status ->
                 val popup =
                     StatusButtonsPopup(activity, column, bSimpleList, this@bind)
                 activity.listItemPopup = popup
                 popup.show(
-                    list_adapter.columnVh.listView,
+                    listAdapter.columnVh.listView,
                     viewClicked,
                     status,
                     item as? TootNotification
@@ -101,11 +102,11 @@ fun ItemViewHolder.bind(
             }
         }
         llButtonBar.visibility = View.GONE
-        this.buttons_for_status = null
+        this.buttonsForStatus = null
     } else {
         viewRoot.isClickable = false
         llButtonBar.visibility = View.VISIBLE
-        this.buttons_for_status = StatusButtons(
+        this.buttonsForStatus = StatusButtons(
             activity,
             column,
             false,
@@ -114,12 +115,12 @@ fun ItemViewHolder.bind(
         )
     }
 
-    this.status_showing = null
-    this.status_reply = null
-    this.status_account = null
-    this.boost_account = null
-    this.follow_account = null
-    this.boost_time = 0L
+    this.statusShowing = null
+    this.statusReply = null
+    this.statusAccount = null
+    this.boostAccount = null
+    this.followAccount = null
+    this.boostTime = 0L
     this.viewRoot.setBackgroundColor(0)
     this.boostedAction = defaultBoostedAction
 
@@ -146,8 +147,8 @@ fun ItemViewHolder.bind(
 
     var c: Int
     c = column.getContentColor()
-    this.content_color = c
-    this.content_color_csl = ColorStateList.valueOf(c)
+    this.contentColor = c
+    this.contentColorCsl = ColorStateList.valueOf(c)
 
     tvBoosted.setTextColor(c)
     tvReply.setTextColor(c)
@@ -175,7 +176,7 @@ fun ItemViewHolder.bind(
     }
 
     c = column.getAcctColor()
-    this.acct_color = c
+    this.acctColor = c
     tvBoostedTime.setTextColor(c)
     tvTime.setTextColor(c)
     tvTrendTagDesc.setTextColor(c)
@@ -209,7 +210,7 @@ fun ItemViewHolder.bind(
                         item.time_created_at,
                         R.drawable.ic_repeat,
                         R.string.display_name_boosted_by,
-                        boost_status = item
+                        boostStatus = item
                     )
                     showStatusOrReply(item.reblog, colorBg)
                 }
@@ -255,81 +256,81 @@ fun ItemViewHolder.removeExtraView() {
     }
     llExtra.removeAllViews()
 
-    for (invalidator in extra_invalidator_list) {
+    for (invalidator in extraInvalidatorList) {
         invalidator.register(null)
     }
-    extra_invalidator_list.clear()
+    extraInvalidatorList.clear()
 }
 
 fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
 
-    follow_account = whoRef
+    followAccount = whoRef
     val who = whoRef.get()
     llFollow.visibility = View.VISIBLE
     ivFollow.setImageUrl(
         activity.pref,
         Styler.calcIconRound(ivFollow.layoutParams),
-        access_info.supplyBaseUrl(who.avatar_static),
-        access_info.supplyBaseUrl(who.avatar)
+        accessInfo.supplyBaseUrl(who.avatar_static),
+        accessInfo.supplyBaseUrl(who.avatar)
     )
 
     tvFollowerName.text = whoRef.decoded_display_name
-    follow_invalidator.register(whoRef.decoded_display_name)
+    followInvalidator.register(whoRef.decoded_display_name)
 
-    setAcct(tvFollowerAcct, access_info, who)
+    setAcct(tvFollowerAcct, accessInfo, who)
 
     who.setAccountExtra(
-        access_info,
+        accessInfo,
         tvLastStatusAt,
-        lastActive_invalidator,
+        lastActiveInvalidator,
         suggestionSource = if (column.type == ColumnType.FOLLOW_SUGGESTION) {
-            SuggestionSource.get(access_info.db_id, who.acct)
+            SuggestionSource.get(accessInfo.db_id, who.acct)
         } else {
             null
         }
     )
 
-    val relation = UserRelation.load(access_info.db_id, who.id)
+    val relation = UserRelation.load(accessInfo.db_id, who.id)
     Styler.setFollowIcon(
         activity,
         btnFollow,
         ivFollowedBy,
         relation,
         who,
-        content_color,
-        alphaMultiplier = Styler.boost_alpha
+        contentColor,
+        alphaMultiplier = Styler.boostAlpha
     )
 
     if (column.type == ColumnType.FOLLOW_REQUESTS) {
         llFollowRequest.visibility = View.VISIBLE
-        btnFollowRequestAccept.imageTintList = content_color_csl
-        btnFollowRequestDeny.imageTintList = content_color_csl
+        btnFollowRequestAccept.imageTintList = contentColorCsl
+        btnFollowRequestDeny.imageTintList = contentColorCsl
     }
 }
 
 fun ItemViewHolder.showAntenna(a: MisskeyAntenna) {
     llList.visibility = View.VISIBLE
     btnListTL.text = a.name
-    btnListTL.textColor = content_color
-    btnListMore.imageTintList = content_color_csl
+    btnListTL.textColor = contentColor
+    btnListMore.imageTintList = contentColorCsl
 }
 
 fun ItemViewHolder.showBoost(
     whoRef: TootAccountRef,
     time: Long,
     iconId: Int,
-    string_id: Int,
+    @StringRes stringId: Int,
     reaction: TootReaction? = null,
-    boost_status: TootStatus? = null
+    boostStatus: TootStatus? = null,
 ) {
-    boost_account = whoRef
+    boostAccount = whoRef
 
     setIconDrawableId(
         activity,
         ivBoosted,
         iconId,
-        color = content_color,
-        alphaMultiplier = Styler.boost_alpha
+        color = contentColor,
+        alphaMultiplier = Styler.boostAlpha
     )
 
     val who = whoRef.get()
@@ -338,43 +339,43 @@ fun ItemViewHolder.showBoost(
     val text: Spannable = if (reaction != null) {
         val options = DecodeOptions(
             activity,
-            access_info,
+            accessInfo,
             decodeEmoji = true,
             enlargeEmoji = 1.5f,
             enlargeCustomEmoji = 1.5f
         )
-        val ssb = reaction.toSpannableStringBuilder(options, boost_status)
+        val ssb = reaction.toSpannableStringBuilder(options, boostStatus)
         ssb.append(" ")
         ssb.append(
             who.decodeDisplayName(activity)
-                .intoStringResource(activity, string_id)
+                .intoStringResource(activity, stringId)
         )
     } else {
         who.decodeDisplayName(activity)
-            .intoStringResource(activity, string_id)
+            .intoStringResource(activity, stringId)
     }
 
-    boost_time = time
+    boostTime = time
     llBoosted.visibility = View.VISIBLE
-    showStatusTime(activity, tvBoostedTime, who, time = time, status = boost_status)
+    showStatusTime(activity, tvBoostedTime, who, time = time, status = boostStatus)
     tvBoosted.text = text
-    boost_invalidator.register(text)
-    setAcct(tvBoostedAcct, access_info, who)
+    boostInvalidator.register(text)
+    setAcct(tvBoostedAcct, accessInfo, who)
 }
 
 fun ItemViewHolder.showStatusOrReply(item: TootStatus, colorBgArg: Int = 0) {
     var colorBg = colorBgArg
     val reply = item.reply
-    val in_reply_to_id = item.in_reply_to_id
-    val in_reply_to_account_id = item.in_reply_to_account_id
+    val inReplyToId = item.in_reply_to_id
+    val inReplyToAccountId = item.in_reply_to_account_id
     when {
         reply != null -> {
             showReply(reply, R.drawable.ic_reply, R.string.reply_to)
             if (colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
         }
 
-        in_reply_to_id != null && in_reply_to_account_id != null -> {
-            showReply(item, in_reply_to_account_id)
+        inReplyToId != null && inReplyToAccountId != null -> {
+            showReply(item, inReplyToAccountId)
             if (colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
         }
     }
@@ -388,9 +389,9 @@ fun ItemViewHolder.showMessageHolder(item: TootMessageHolder) {
 }
 
 fun ItemViewHolder.showNotification(n: TootNotification) {
-    val n_status = n.status
-    val n_accountRef = n.accountRef
-    val n_account = n_accountRef?.get()
+    val nStatus = n.status
+    val nAccountRef = n.accountRef
+    val nAccount = nAccountRef?.get()
 
     fun showNotificationStatus(item: TootStatus, colorBgDefault: Int) {
         val reblog = item.reblog
@@ -408,7 +409,6 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
                 // ブースト表示は通知イベントと被るのでしない
                 showStatusOrReply(reblog, Pref.ipEventBgColorBoost(activity.pref))
             }
-
         }
     }
 
@@ -416,156 +416,158 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
 
         TootNotification.TYPE_FAVOURITE -> {
             val colorBg = Pref.ipEventBgColorFavourite(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
-                if (access_info.isNicoru(n_account)) R.drawable.ic_nicoru else R.drawable.ic_star,
+                if (accessInfo.isNicoru(nAccount)) R.drawable.ic_nicoru else R.drawable.ic_star,
                 R.string.display_name_favourited_by
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_REBLOG -> {
             val colorBg = Pref.ipEventBgColorBoost(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_repeat,
                 R.string.display_name_boosted_by,
-                boost_status = n_status
+                boostStatus = nStatus
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
-
         }
 
         TootNotification.TYPE_RENOTE -> {
             // 引用のないreblog
             val colorBg = Pref.ipEventBgColorBoost(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_repeat,
                 R.string.display_name_boosted_by,
-                boost_status = n_status
+                boostStatus = nStatus
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_FOLLOW -> {
             val colorBg = Pref.ipEventBgColorFollow(activity.pref)
-            if (n_account != null) {
+            if (nAccount != null) {
                 showBoost(
-                    n_accountRef,
+                    nAccountRef,
                     n.time_created_at,
                     R.drawable.ic_follow_plus,
                     R.string.display_name_followed_by
                 )
-                showAccount(n_accountRef)
+                showAccount(nAccountRef)
                 if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
             }
         }
 
         TootNotification.TYPE_UNFOLLOW -> {
             val colorBg = Pref.ipEventBgColorUnfollow(activity.pref)
-            if (n_account != null) {
+            if (nAccount != null) {
                 showBoost(
-                    n_accountRef,
+                    nAccountRef,
                     n.time_created_at,
                     R.drawable.ic_follow_cross,
                     R.string.display_name_unfollowed_by
                 )
-                showAccount(n_accountRef)
+                showAccount(nAccountRef)
                 if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
             }
         }
 
         TootNotification.TYPE_MENTION,
-        TootNotification.TYPE_REPLY -> {
+        TootNotification.TYPE_REPLY,
+        -> {
             val colorBg = Pref.ipEventBgColorMention(activity.pref)
-            if (!bSimpleList && !access_info.isMisskey) {
+            if (!bSimpleList && !accessInfo.isMisskey) {
                 when {
-                    n_account == null -> {
-
+                    nAccount == null -> {
+                        //
                     }
 
-                    n_status?.in_reply_to_id != null || n_status?.reply != null -> {
+                    nStatus?.in_reply_to_id != null || nStatus?.reply != null -> {
                         // トゥート内部に「～への返信」を表示するので、
                         // 通知イベントの「～からの返信」は表示しない
                     }
 
                     else -> // 返信ではなくメンションの場合は「～からの返信」を表示する
                         showBoost(
-                            n_accountRef,
+                            nAccountRef,
                             n.time_created_at,
                             R.drawable.ic_reply,
                             R.string.display_name_mentioned_by
                         )
                 }
             }
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
         TootNotification.TYPE_EMOJI_REACTION,
-        TootNotification.TYPE_REACTION -> {
+        TootNotification.TYPE_REACTION,
+        -> {
             val colorBg = Pref.ipEventBgColorReaction(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_face,
                 R.string.display_name_reaction_by,
                 reaction = n.reaction ?: TootReaction.UNKNOWN,
-                boost_status = n_status
+                boostStatus = nStatus
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_QUOTE -> {
             val colorBg = Pref.ipEventBgColorQuote(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_repeat,
                 R.string.display_name_quoted_by
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_STATUS -> {
             val colorBg = Pref.ipEventBgColorStatus(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
-                if (n_status == null) {
+                if (nStatus == null) {
                     R.drawable.ic_question
                 } else {
-                    Styler.getVisibilityIconId(access_info.isMisskey, n_status.visibility)
+                    Styler.getVisibilityIconId(accessInfo.isMisskey, nStatus.visibility)
                 },
                 R.string.display_name_posted_by
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_FOLLOW_REQUEST,
-        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
+        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+        -> {
             val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
-            if (n_account != null) {
+            if (nAccount != null) {
                 showBoost(
-                    n_accountRef,
+                    nAccountRef,
                     n.time_created_at,
                     R.drawable.ic_follow_wait,
                     R.string.display_name_follow_request_by
@@ -573,7 +575,7 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
                 if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
                 boostedAction = {
                     activity.addColumn(
-                        activity.nextPosition(column), access_info, ColumnType.FOLLOW_REQUESTS
+                        activity.nextPosition(column), accessInfo, ColumnType.FOLLOW_REQUESTS
                     )
                 }
             }
@@ -581,55 +583,56 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
 
         TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
             val colorBg = Pref.ipEventBgColorFollow(activity.pref)
-            if (n_account != null) {
+            if (nAccount != null) {
                 showBoost(
-                    n_accountRef,
+                    nAccountRef,
                     n.time_created_at,
                     R.drawable.ic_follow_plus,
                     R.string.display_name_follow_request_accepted_by
                 )
-                showAccount(n_accountRef)
+                showAccount(nAccountRef)
                 if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
             }
         }
 
         TootNotification.TYPE_VOTE,
-        TootNotification.TYPE_POLL_VOTE_MISSKEY -> {
+        TootNotification.TYPE_POLL_VOTE_MISSKEY,
+        -> {
             val colorBg = Pref.ipEventBgColorVote(activity.pref)
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_vote,
                 R.string.display_name_voted_by
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         TootNotification.TYPE_POLL -> {
             val colorBg = 0
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_vote,
                 R.string.end_of_polling_from
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
         }
 
         else -> {
             val colorBg = 0
-            if (n_account != null) showBoost(
-                n_accountRef,
+            if (nAccount != null) showBoost(
+                nAccountRef,
                 n.time_created_at,
                 R.drawable.ic_question,
                 R.string.unknown_notification_from
             )
-            if (n_status != null) {
-                showNotificationStatus(n_status, colorBg)
+            if (nStatus != null) {
+                showNotificationStatus(nStatus, colorBg)
             }
             tvMessageHolder.visibility = View.VISIBLE
             tvMessageHolder.text = "notification type is ${n.type}"
@@ -641,14 +644,13 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
 fun ItemViewHolder.showList(list: TootList) {
     llList.visibility = View.VISIBLE
     btnListTL.text = list.title
-    btnListTL.textColor = content_color
-    btnListMore.imageTintList = content_color_csl
+    btnListTL.textColor = contentColor
+    btnListMore.imageTintList = contentColorCsl
 }
 
-
-fun ItemViewHolder.showDomainBlock(domain_block: TootDomainBlock) {
+fun ItemViewHolder.showDomainBlock(domainBlock: TootDomainBlock) {
     llSearchTag.visibility = View.VISIBLE
-    btnSearchTag.text = domain_block.domain.pretty
+    btnSearchTag.text = domainBlock.domain.pretty
 }
 
 fun ItemViewHolder.showFilter(filter: TootFilter) {
@@ -690,7 +692,6 @@ fun ItemViewHolder.showSearchTag(tag: TootTag) {
     } else {
         llSearchTag.visibility = View.VISIBLE
         btnSearchTag.text = "#" + tag.name
-
     }
 }
 
@@ -699,10 +700,10 @@ fun ItemViewHolder.showGap() {
     btnSearchTag.text = activity.getString(R.string.read_gap)
 
     btnGapHead.vg(column.type.gapDirection(column, true))
-        ?.imageTintList = content_color_csl
+        ?.imageTintList = contentColorCsl
 
     btnGapTail.vg(column.type.gapDirection(column, false))
-        ?.imageTintList = content_color_csl
+        ?.imageTintList = contentColorCsl
 
     val c = Pref.ipEventBgColorGap(App1.pref)
     if (c != 0) this.viewRoot.backgroundColor = c
@@ -723,21 +724,20 @@ fun ItemViewHolder.showReply(iconId: Int, text: Spannable) {
 
     llReply.visibility = View.VISIBLE
 
-
     setIconDrawableId(
         activity,
         ivReply,
         iconId,
-        color = content_color,
-        alphaMultiplier = Styler.boost_alpha
+        color = contentColor,
+        alphaMultiplier = Styler.boostAlpha
     )
 
     tvReply.text = text
-    reply_invalidator.register(text)
+    replyInvalidator.register(text)
 }
 
 fun ItemViewHolder.showReply(reply: TootStatus, iconId: Int, stringId: Int) {
-    status_reply = reply
+    statusReply = reply
     showReply(
         iconId,
         reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
@@ -747,13 +747,13 @@ fun ItemViewHolder.showReply(reply: TootStatus, iconId: Int, stringId: Int) {
 fun ItemViewHolder.showReply(reply: TootStatus, accountId: EntityId) {
     val name = if (accountId == reply.account.id) {
         // 自己レスなら
-        AcctColor.getNicknameWithColor(access_info, reply.account)
+        AcctColor.getNicknameWithColor(accessInfo, reply.account)
     } else {
         val m = reply.mentions?.find { it.id == accountId }
         if (m != null) {
-            AcctColor.getNicknameWithColor(access_info.getFullAcct(m.acct))
+            AcctColor.getNicknameWithColor(accessInfo.getFullAcct(m.acct))
         } else {
-            SpannableString("ID(${accountId})")
+            SpannableString("ID($accountId)")
         }
     }
 
@@ -763,7 +763,6 @@ fun ItemViewHolder.showReply(reply: TootStatus, accountId: EntityId) {
     // tootsearchはreplyオブジェクトがなくin_reply_toだけが提供される場合があるが
     // tootsearchではどのタンスから読んだか分からないのでin_reply_toのIDも信用できない
 }
-
 
 fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
 
@@ -781,7 +780,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
         return
     }
 
-    this.status_showing = status
+    this.statusShowing = status
     llStatus.visibility = View.VISIBLE
 
     if (status.conversation_main) {
@@ -791,7 +790,6 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
                 ?: (activity.attrColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
 
         this.viewRoot.setBackgroundColor(conversationMainBgColor)
-
     } else {
         val c = colorBg.notZero()
 
@@ -800,7 +798,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
                 false -> 0
             }.notZero()
 
-            ?: when (status.getBackgroundColorType(access_info)) {
+            ?: when (status.getBackgroundColorType(accessInfo)) {
                 TootVisibility.UnlistedHome -> ItemViewHolder.toot_color_unlisted
                 TootVisibility.PrivateFollowers -> ItemViewHolder.toot_color_follower
                 TootVisibility.DirectSpecified -> ItemViewHolder.toot_color_direct_user
@@ -819,9 +817,9 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
 
     val whoRef = status.accountRef
     val who = whoRef.get()
-    this.status_account = whoRef
+    this.statusAccount = whoRef
 
-    setAcct(tvAcct, access_info, who)
+    setAcct(tvAcct, accessInfo, who)
 
     //		if(who == null) {
     //			tvName.text = "?"
@@ -829,12 +827,12 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     //			ivThumbnail.setImageUrl(activity.pref, 16f, null, null)
     //		} else {
     tvName.text = whoRef.decoded_display_name
-    name_invalidator.register(whoRef.decoded_display_name)
+    nameInvalidator.register(whoRef.decoded_display_name)
     ivThumbnail.setImageUrl(
         activity.pref,
         Styler.calcIconRound(ivThumbnail.layoutParams),
-        access_info.supplyBaseUrl(who.avatar_static),
-        access_info.supplyBaseUrl(who.avatar)
+        accessInfo.supplyBaseUrl(who.avatar_static),
+        accessInfo.supplyBaseUrl(who.avatar)
     )
     //		}
 
@@ -859,7 +857,6 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
             if (question.isNotBlank()) content = question
 
             showEnqueteItems(status, enquete)
-
         }
     }
 
@@ -893,31 +890,31 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     }
 
     tvContent.text = content
-    content_invalidator.register(content)
+    contentInvalidator.register(content)
 
     activity.checkAutoCW(status, content)
     val r = status.auto_cw
 
     tvContent.minLines = r?.originalLineCount ?: -1
 
-    val decoded_spoiler_text = status.decoded_spoiler_text
+    val decodedSpoilerText = status.decoded_spoiler_text
     when {
-        decoded_spoiler_text.isNotEmpty() -> {
+        decodedSpoilerText.isNotEmpty() -> {
             // 元データに含まれるContent Warning を使う
             llContentWarning.visibility = View.VISIBLE
             tvContentWarning.text = status.decoded_spoiler_text
-            spoiler_invalidator.register(status.decoded_spoiler_text)
-            val cw_shown = ContentWarning.isShown(status, access_info.expand_cw)
-            showContent(cw_shown)
+            spoilerInvalidator.register(status.decoded_spoiler_text)
+            val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
+            showContent(cwShown)
         }
 
-        r?.decoded_spoiler_text != null -> {
+        r?.decodedSpoilerText != null -> {
             // 自動CW
             llContentWarning.visibility = View.VISIBLE
-            tvContentWarning.text = r.decoded_spoiler_text
-            spoiler_invalidator.register(r.decoded_spoiler_text)
-            val cw_shown = ContentWarning.isShown(status, access_info.expand_cw)
-            showContent(cw_shown)
+            tvContentWarning.text = r.decodedSpoilerText
+            spoilerInvalidator.register(r.decodedSpoilerText)
+            val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
+            showContent(cwShown)
         }
 
         else -> {
@@ -927,8 +924,8 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
         }
     }
 
-    val media_attachments = status.media_attachments
-    if (media_attachments == null || media_attachments.isEmpty()) {
+    val mediaAttachments = status.media_attachments
+    if (mediaAttachments == null || mediaAttachments.isEmpty()) {
         flMedia.visibility = View.GONE
         llMedia.visibility = View.GONE
         btnShowMedia.visibility = View.GONE
@@ -936,23 +933,23 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
         flMedia.visibility = View.VISIBLE
 
         // hide sensitive media
-        val default_shown = when {
-            column.hide_media_default -> false
-            access_info.dont_hide_nsfw -> true
+        val defaultShown = when {
+            column.hideMediaDefault -> false
+            accessInfo.dont_hide_nsfw -> true
             else -> !status.sensitive
         }
-        val is_shown = MediaShown.isShown(status, default_shown)
+        val isShown = MediaShown.isShown(status, defaultShown)
 
-        btnShowMedia.visibility = if (!is_shown) View.VISIBLE else View.GONE
-        llMedia.visibility = if (!is_shown) View.GONE else View.VISIBLE
+        btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
+        llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
         val sb = StringBuilder()
-        setMedia(media_attachments, sb, ivMedia1, 0)
-        setMedia(media_attachments, sb, ivMedia2, 1)
-        setMedia(media_attachments, sb, ivMedia3, 2)
-        setMedia(media_attachments, sb, ivMedia4, 3)
+        setMedia(mediaAttachments, sb, ivMedia1, 0)
+        setMedia(mediaAttachments, sb, ivMedia2, 1)
+        setMedia(mediaAttachments, sb, ivMedia3, 2)
+        setMedia(mediaAttachments, sb, ivMedia4, 3)
 
         val m0 =
-            if (media_attachments.isEmpty()) null else media_attachments[0] as? TootAttachment
+            if (mediaAttachments.isEmpty()) null else mediaAttachments[0] as? TootAttachment
         btnShowMedia.blurhash = m0?.blurhash
 
         if (sb.isNotEmpty()) {
@@ -964,14 +961,14 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
             activity,
             btnHideMedia,
             R.drawable.ic_close,
-            color = content_color,
-            alphaMultiplier = Styler.boost_alpha
+            color = contentColor,
+            alphaMultiplier = Styler.boostAlpha
         )
     }
 
     makeReactionsView(status)
 
-    buttons_for_status?.bind(status, (item as? TootNotification))
+    buttonsForStatus?.bind(status, (item as? TootNotification))
 
     var sb: StringBuilder? = null
 
@@ -1002,13 +999,10 @@ fun ItemViewHolder.showOpenSticker(who: TootAccount) {
         val host = who.apDomain
 
         // LTLでホスト名が同じならTickerを表示しない
+        @Suppress("NON_EXHAUSTIVE_WHEN")
         when (column.type) {
             ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
-                if (host == access_info.apDomain) return
-            }
-
-            else -> {
-
+                if (host == accessInfo.apDomain) return
             }
         }
 
@@ -1040,7 +1034,6 @@ fun ItemViewHolder.showOpenSticker(who: TootAccount) {
         }
         llOpenSticker.visibility = View.VISIBLE
         llOpenSticker.requestLayout()
-
     } catch (ex: Throwable) {
         ItemViewHolder.log.trace(ex)
     }
@@ -1051,7 +1044,7 @@ fun ItemViewHolder.showStatusTime(
     tv: TextView,
     @Suppress("UNUSED_PARAMETER") who: TootAccount,
     status: TootStatus? = null,
-    time: Long? = null
+    time: Long? = null,
 ) {
     val sb = SpannableStringBuilder()
 
@@ -1103,7 +1096,7 @@ fun ItemViewHolder.showStatusTime(
 
         // visibility
         val visIconId =
-            Styler.getVisibilityIconId(access_info.isMisskey, status.visibility)
+            Styler.getVisibilityIconId(accessInfo.isMisskey, status.visibility)
         if (R.drawable.ic_public != visIconId) {
             if (sb.isNotEmpty()) sb.append('\u200B')
             sb.appendColorShadeIcon(
@@ -1111,7 +1104,7 @@ fun ItemViewHolder.showStatusTime(
                 visIconId,
                 Styler.getVisibilityString(
                     activity,
-                    access_info.isMisskey,
+                    accessInfo.isMisskey,
                     status.visibility
                 )
             )
@@ -1180,7 +1173,7 @@ fun ItemViewHolder.showStatusTime(
 fun ItemViewHolder.showStatusTimeScheduled(
     activity: ActMain,
     tv: TextView,
-    item: TootScheduled
+    item: TootScheduled,
 ) {
     val sb = SpannableStringBuilder()
 
@@ -1192,7 +1185,7 @@ fun ItemViewHolder.showStatusTimeScheduled(
 
     // visibility
     val visIconId =
-        Styler.getVisibilityIconId(access_info.isMisskey, item.visibility)
+        Styler.getVisibilityIconId(accessInfo.isMisskey, item.visibility)
     if (R.drawable.ic_public != visIconId) {
         if (sb.isNotEmpty()) sb.append('\u200B')
         sb.appendColorShadeIcon(
@@ -1200,12 +1193,11 @@ fun ItemViewHolder.showStatusTimeScheduled(
             visIconId,
             Styler.getVisibilityString(
                 activity,
-                access_info.isMisskey,
+                accessInfo.isMisskey,
                 item.visibility
             )
         )
     }
-
 
     if (sb.isNotEmpty()) sb.append(' ')
     sb.append(
@@ -1238,19 +1230,19 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
 
         showStatusTimeScheduled(activity, tvTime, item)
 
-        val who = column.who_account!!.get()
-        val whoRef = TootAccountRef(TootParser(activity, access_info), who)
-        this.status_account = whoRef
+        val who = column.whoAccount!!.get()
+        val whoRef = TootAccountRef(TootParser(activity, accessInfo), who)
+        this.statusAccount = whoRef
 
-        setAcct(tvAcct, access_info, who)
+        setAcct(tvAcct, accessInfo, who)
 
         tvName.text = whoRef.decoded_display_name
-        name_invalidator.register(whoRef.decoded_display_name)
+        nameInvalidator.register(whoRef.decoded_display_name)
         ivThumbnail.setImageUrl(
             activity.pref,
             Styler.calcIconRound(ivThumbnail.layoutParams),
-            access_info.supplyBaseUrl(who.avatar_static),
-            access_info.supplyBaseUrl(who.avatar)
+            accessInfo.supplyBaseUrl(who.avatar_static),
+            accessInfo.supplyBaseUrl(who.avatar)
         )
 
         val content = SpannableString(item.text ?: "")
@@ -1258,19 +1250,19 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
         tvMentions.visibility = View.GONE
 
         tvContent.text = content
-        content_invalidator.register(content)
+        contentInvalidator.register(content)
 
         tvContent.minLines = -1
 
-        val decoded_spoiler_text = SpannableString(item.spoiler_text ?: "")
+        val decodedSpoilerText = SpannableString(item.spoilerText ?: "")
         when {
-            decoded_spoiler_text.isNotEmpty() -> {
+            decodedSpoilerText.isNotEmpty() -> {
                 // 元データに含まれるContent Warning を使う
                 llContentWarning.visibility = View.VISIBLE
-                tvContentWarning.text = decoded_spoiler_text
-                spoiler_invalidator.register(decoded_spoiler_text)
-                val cw_shown = ContentWarning.isShown(item.uri, access_info.expand_cw)
-                showContent(cw_shown)
+                tvContentWarning.text = decodedSpoilerText
+                spoilerInvalidator.register(decodedSpoilerText)
+                val cwShown = ContentWarning.isShown(item.uri, accessInfo.expand_cw)
+                showContent(cwShown)
             }
 
             else -> {
@@ -1280,8 +1272,8 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
             }
         }
 
-        val media_attachments = item.media_attachments
-        if (media_attachments?.isEmpty() != false) {
+        val mediaAttachments = item.mediaAttachments
+        if (mediaAttachments?.isEmpty() != false) {
             flMedia.visibility = View.GONE
             llMedia.visibility = View.GONE
             btnShowMedia.visibility = View.GONE
@@ -1289,20 +1281,20 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
             flMedia.visibility = View.VISIBLE
 
             // hide sensitive media
-            val default_shown = when {
-                column.hide_media_default -> false
-                access_info.dont_hide_nsfw -> true
+            val defaultShown = when {
+                column.hideMediaDefault -> false
+                accessInfo.dont_hide_nsfw -> true
                 else -> !item.sensitive
             }
-            val is_shown = MediaShown.isShown(item.uri, default_shown)
+            val isShown = MediaShown.isShown(item.uri, defaultShown)
 
-            btnShowMedia.visibility = if (!is_shown) View.VISIBLE else View.GONE
-            llMedia.visibility = if (!is_shown) View.GONE else View.VISIBLE
+            btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
+            llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
             val sb = StringBuilder()
-            setMedia(media_attachments, sb, ivMedia1, 0)
-            setMedia(media_attachments, sb, ivMedia2, 1)
-            setMedia(media_attachments, sb, ivMedia3, 2)
-            setMedia(media_attachments, sb, ivMedia4, 3)
+            setMedia(mediaAttachments, sb, ivMedia1, 0)
+            setMedia(mediaAttachments, sb, ivMedia2, 1)
+            setMedia(mediaAttachments, sb, ivMedia3, 2)
+            setMedia(mediaAttachments, sb, ivMedia4, 3)
             if (sb.isNotEmpty()) {
                 tvMediaDescription.visibility = View.VISIBLE
                 tvMediaDescription.text = sb
@@ -1312,46 +1304,41 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 activity,
                 btnHideMedia,
                 R.drawable.ic_close,
-                color = content_color,
-                alphaMultiplier = Styler.boost_alpha
+                color = contentColor,
+                alphaMultiplier = Styler.boostAlpha
             )
         }
 
-        buttons_for_status?.hide()
+        buttonsForStatus?.hide()
 
         tvApplication.visibility = View.GONE
-
     } catch (ex: Throwable) {
-
+        ItemViewHolder.log.w(ex, "showScheduled failed")
     }
     llSearchTag.visibility = View.VISIBLE
     btnSearchTag.text = activity.getString(R.string.scheduled_status) + " " +
-        TootStatus.formatTime(
-            activity,
-            item.timeScheduledAt,
-            true
-        )
+        TootStatus.formatTime(activity, item.timeScheduledAt, true)
 }
 
 fun ItemViewHolder.showContent(shown: Boolean) {
     llContents.visibility = if (shown) View.VISIBLE else View.GONE
     btnContentWarning.setText(if (shown) R.string.hide else R.string.show)
-    status_showing?.let { status ->
+    statusShowing?.let { status ->
         val r = status.auto_cw
         tvContent.minLines = r?.originalLineCount ?: -1
-        if (r?.decoded_spoiler_text != null) {
+        if (r?.decodedSpoilerText != null) {
             // 自動CWの場合はContentWarningのテキストを切り替える
             tvContentWarning.text =
-                if (shown) activity.getString(R.string.auto_cw_prefix) else r.decoded_spoiler_text
+                if (shown) activity.getString(R.string.auto_cw_prefix) else r.decodedSpoilerText
         }
     }
 }
 
 fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
 
-    val last_account_id = cs.last_status.account.id
+    val lastAccountId = cs.last_status.account.id
 
-    val accountsOther = cs.accounts.filter { it.get().id != last_account_id }
+    val accountsOther = cs.accounts.filter { it.get().id != lastAccountId }
     if (accountsOther.isNotEmpty()) {
         llConversationIcons.visibility = View.VISIBLE
 
@@ -1372,8 +1359,8 @@ fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
             iv.setImageUrl(
                 activity.pref,
                 Styler.calcIconRound(iv.layoutParams),
-                access_info.supplyBaseUrl(who.avatar_static),
-                access_info.supplyBaseUrl(who.avatar)
+                accessInfo.supplyBaseUrl(who.avatar_static),
+                accessInfo.supplyBaseUrl(who.avatar)
             )
         }
         showIcon(ivConversationIcon1, 0)
@@ -1393,7 +1380,6 @@ fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
     }
 }
 
-
 fun ItemViewHolder.setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAccount) {
     val ac = AcctColor.load(accessInfo, who)
     tv.text = when {
@@ -1401,21 +1387,19 @@ fun ItemViewHolder.setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAcco
         Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
         else -> "@${ac.nickname}"
     }
-    tv.textColor = ac.color_fg.notZero() ?: this.acct_color
+    tv.textColor = ac.color_fg.notZero() ?: this.acctColor
 
     tv.setBackgroundColor(ac.color_bg) // may 0
-    tv.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)
-
+    tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
 }
 
-
 fun ItemViewHolder.setMedia(
-    media_attachments: ArrayList<TootAttachmentLike>,
+    mediaAttachments: ArrayList<TootAttachmentLike>,
     sbDesc: StringBuilder,
     iv: MyNetworkImageView,
-    idx: Int
+    idx: Int,
 ) {
-    val ta = if (idx < media_attachments.size) media_attachments[idx] else null
+    val ta = if (idx < mediaAttachments.size) mediaAttachments[idx] else null
     if (ta == null) {
         iv.visibility = View.GONE
         return
@@ -1468,13 +1452,12 @@ fun ItemViewHolder.setMedia(
                 iv.setImageUrl(
                     activity.pref,
                     0f,
-                    access_info.supplyBaseUrl(urlThumbnail),
-                    access_info.supplyBaseUrl(urlThumbnail)
+                    accessInfo.supplyBaseUrl(urlThumbnail),
+                    accessInfo.supplyBaseUrl(urlThumbnail)
                 )
                 showUrl = false
             }
         }
-
     }
 
     fun appendDescription(s: String) {

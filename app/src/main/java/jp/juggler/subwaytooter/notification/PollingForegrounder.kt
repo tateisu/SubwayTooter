@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
@@ -30,7 +31,7 @@ class PollingForegrounder : IntentService("PollingForegrounder") {
         internal const val NOTIFICATION_ID_FOREGROUNDER = 2
     }
 
-    private var last_status: String? = null
+    private var lastStatus: String? = null
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -55,29 +56,33 @@ class PollingForegrounder : IntentService("PollingForegrounder") {
 
     private fun createNotification(context: Context, text: String): Notification {
         // 通知タップ時のPendingIntent
-        val intent_click = Intent(context, ActMain::class.java)
-        intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        val pi_click = PendingIntent.getActivity(
-			context, 2, intent_click,
-			PendingIntent.FLAG_UPDATE_CURRENT or (if(Build.VERSION.SDK_INT>=23) PendingIntent.FLAG_IMMUTABLE else 0)
-		)
+        val clickIntent = Intent(context, ActMain::class.java)
+        clickIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val clickPi = PendingIntent.getActivity(
+            context,
+            2,
+            clickIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
 
         val builder = if (Build.VERSION.SDK_INT >= 26) {
             // Android 8 から、通知のスタイルはユーザが管理することになった
             // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
             // The user-visible description of the channel.
             val channel = NotificationHelper.createNotificationChannel(
-				context, "PollingForegrounder" // channel_id
-				, "real-time message notifier" // The user-visible name of the channel.
-				, null, 2 /* NotificationManager.IMPORTANCE_LOW */
-			)
+                context,
+                "PollingForegrounder",
+                "real-time message notifier",
+                null,
+                NotificationManagerCompat.IMPORTANCE_LOW
+            )
             NotificationCompat.Builder(context, channel.id)
         } else {
             NotificationCompat.Builder(context, "not_used")
         }
 
         builder
-            .setContentIntent(pi_click)
+            .setContentIntent(clickPi)
             .setAutoCancel(false)
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
@@ -100,13 +105,12 @@ class PollingForegrounder : IntentService("PollingForegrounder") {
             val tag = intent.getStringExtra(PollingWorker.EXTRA_TAG)
             val context = applicationContext
             PollingWorker.handleFCMMessage(context, tag) { sv ->
-                if (sv.isEmpty() || sv == last_status) return@handleFCMMessage
+                if (sv.isEmpty() || sv == lastStatus) return@handleFCMMessage
                 // 状況が変化したらログと通知領域に出力する
-                last_status = sv
+                lastStatus = sv
                 log.d("onStatus $sv")
                 startForeground(NOTIFICATION_ID_FOREGROUNDER, createNotification(context, sv))
             }
         }
     }
-
 }

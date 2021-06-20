@@ -15,70 +15,68 @@ import kotlin.collections.set
 
 // 予約した投稿を削除した後の処理
 fun Column.onScheduleDeleted(item: TootScheduled) {
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
-    for (o in list_data) {
+    val tmpList = ArrayList<TimelineItem>(listData.size)
+    for (o in listData) {
         if (o === item) continue
-        tmp_list.add(o)
+        tmpList.add(o)
     }
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "onScheduleDeleted")
     }
 }
 
-
 // ステータスが削除された時に呼ばれる
-fun Column.onStatusRemoved(tl_host: Host, status_id: EntityId) {
+fun Column.onStatusRemoved(tlHost: Host, statusId: EntityId) {
 
-    if (is_dispose.get() || bInitialLoading || bRefreshLoading) return
+    if (isDispose.get() || bInitialLoading || bRefreshLoading) return
 
-    if (!access_info.matchHost(tl_host)) return
+    if (!accessInfo.matchHost(tlHost)) return
 
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
-    for (o in list_data) {
+    val tmpList = ArrayList<TimelineItem>(listData.size)
+    for (o in listData) {
         if (o is TootStatus) {
-            if (status_id == o.id) continue
-            if (status_id == (o.reblog?.id ?: -1L)) continue
+            if (statusId == o.id) continue
+            if (statusId == (o.reblog?.id ?: -1L)) continue
         } else if (o is TootNotification) {
             val s = o.status
             if (s != null) {
-                if (status_id == s.id) continue
-                if (status_id == (s.reblog?.id ?: -1L)) continue
+                if (statusId == s.id) continue
+                if (statusId == (s.reblog?.id ?: -1L)) continue
             }
         }
 
-        tmp_list.add(o)
+        tmpList.add(o)
     }
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "removeStatus")
     }
 }
 
-
 // ブーストやお気に入りの更新に使う。ステータスを列挙する。
 fun Column.findStatus(
-    target_apDomain: Host,
-    target_status_id: EntityId,
-    callback: (account: SavedAccount, status: TootStatus) -> Boolean
+    targetApDomain: Host,
+    targetStatusId: EntityId,
+    callback: (account: SavedAccount, status: TootStatus) -> Boolean,
     // callback return true if rebind view required
 ) {
-    if (!access_info.matchHost(target_apDomain)) return
+    if (!accessInfo.matchHost(targetApDomain)) return
 
     var bChanged = false
 
     fun procStatus(status: TootStatus?) {
         if (status != null) {
-            if (target_status_id == status.id) {
-                if (callback(access_info, status)) bChanged = true
+            if (targetStatusId == status.id) {
+                if (callback(accessInfo, status)) bChanged = true
             }
             procStatus(status.reblog)
         }
     }
 
-    for (data in list_data) {
+    for (data in listData) {
         when (data) {
             is TootNotification -> procStatus(data.status)
             is TootStatus -> procStatus(data)
@@ -88,35 +86,35 @@ fun Column.findStatus(
     if (bChanged) fireRebindAdapterItems()
 }
 
+private const val INVALID_ACCOUNT = -1L
+
 // ミュート、ブロックが成功した時に呼ばれる
 // リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
 fun Column.removeAccountInTimeline(
-    target_account: SavedAccount,
-    who_id: EntityId,
-    removeFromUserList: Boolean = false
+    targetAccount: SavedAccount,
+    whoId: EntityId,
+    removeFromUserList: Boolean = false,
 ) {
-    if (target_account != access_info) return
+    if (targetAccount != accessInfo) return
 
-    val INVALID_ACCOUNT = -1L
-
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
-    for (o in list_data) {
+    val tmpList = ArrayList<TimelineItem>(listData.size)
+    for (o in listData) {
         if (o is TootStatus) {
-            if (who_id == (o.account.id)) continue
-            if (who_id == (o.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
+            if (whoId == (o.account.id)) continue
+            if (whoId == (o.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
         } else if (o is TootNotification) {
-            if (who_id == (o.account?.id ?: INVALID_ACCOUNT)) continue
-            if (who_id == (o.status?.account?.id ?: INVALID_ACCOUNT)) continue
-            if (who_id == (o.status?.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
+            if (whoId == (o.account?.id ?: INVALID_ACCOUNT)) continue
+            if (whoId == (o.status?.account?.id ?: INVALID_ACCOUNT)) continue
+            if (whoId == (o.status?.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
         } else if (o is TootAccountRef && removeFromUserList) {
-            if (who_id == o.get().id) continue
+            if (whoId == o.get().id) continue
         }
 
-        tmp_list.add(o)
+        tmpList.add(o)
     }
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "removeAccountInTimeline")
     }
 }
@@ -126,46 +124,46 @@ fun Column.removeAccountInTimeline(
 // require full acct
 fun Column.removeAccountInTimelinePseudo(acct: Acct) {
 
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
-    for (o in list_data) {
+    val tmpList = ArrayList<TimelineItem>(listData.size)
+    for (o in listData) {
         if (o is TootStatus) {
-            if (acct == access_info.getFullAcct(o.account)) continue
-            if (acct == access_info.getFullAcct(o.reblog?.account)) continue
+            if (acct == accessInfo.getFullAcct(o.account)) continue
+            if (acct == accessInfo.getFullAcct(o.reblog?.account)) continue
         } else if (o is TootNotification) {
-            if (acct == access_info.getFullAcct(o.account)) continue
-            if (acct == access_info.getFullAcct(o.status?.account)) continue
-            if (acct == access_info.getFullAcct(o.status?.reblog?.account)) continue
+            if (acct == accessInfo.getFullAcct(o.account)) continue
+            if (acct == accessInfo.getFullAcct(o.status?.account)) continue
+            if (acct == accessInfo.getFullAcct(o.status?.reblog?.account)) continue
         }
 
-        tmp_list.add(o)
+        tmpList.add(o)
     }
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "removeAccountInTimelinePseudo")
     }
 }
 
 // misskeyカラムやプロフカラムでブロック成功した時に呼ばれる
-fun Column.updateFollowIcons(target_account: SavedAccount) {
-    if (target_account != access_info) return
+fun Column.updateFollowIcons(targetAccount: SavedAccount) {
+    if (targetAccount != accessInfo) return
 
     fireShowContent(reason = "updateFollowIcons", reset = true)
 }
 
 // ユーザのブロック、ミュート、フォロー推奨の削除、フォローリクエストの承認/却下などから呼ばれる
-fun Column.removeUser(targetAccount: SavedAccount, columnType: ColumnType, who_id: EntityId) {
-    if (type == columnType && targetAccount == access_info) {
-        val tmp_list = ArrayList<TimelineItem>(list_data.size)
-        for (o in list_data) {
+fun Column.removeUser(targetAccount: SavedAccount, columnType: ColumnType, whoId: EntityId) {
+    if (type == columnType && targetAccount == accessInfo) {
+        val tmpList = ArrayList<TimelineItem>(listData.size)
+        for (o in listData) {
             if (o is TootAccountRef) {
-                if (o.get().id == who_id) continue
+                if (o.get().id == whoId) continue
             }
-            tmp_list.add(o)
+            tmpList.add(o)
         }
-        if (tmp_list.size != list_data.size) {
-            list_data.clear()
-            list_data.addAll(tmp_list)
+        if (tmpList.size != listData.size) {
+            listData.clear()
+            listData.addAll(tmpList)
             fireShowContent(reason = "removeUser")
         }
     }
@@ -185,53 +183,52 @@ fun Column.removeNotifications() {
     offsetNext = 0
     pagingType = ColumnPagingType.Default
 
-    list_data.clear()
-    duplicate_map.clear()
+    listData.clear()
+    duplicateMap.clear()
     fireShowContent(reason = "removeNotifications", reset = true)
 
-    PollingWorker.queueNotificationCleared(context, access_info.db_id)
+    PollingWorker.queueNotificationCleared(context, accessInfo.db_id)
 }
 
 // 通知を削除した後に呼ばれる
-fun Column.removeNotificationOne(target_account: SavedAccount, notification: TootNotification) {
+fun Column.removeNotificationOne(targetAccount: SavedAccount, notification: TootNotification) {
     if (!isNotificationColumn) return
 
-    if (access_info != target_account) return
+    if (accessInfo != targetAccount) return
 
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
-    for (o in list_data) {
+    val tmpList = ArrayList<TimelineItem>(listData.size)
+    for (o in listData) {
         if (o is TootNotification) {
             if (o.id == notification.id) continue
         }
 
-        tmp_list.add(o)
+        tmpList.add(o)
     }
 
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "removeNotificationOne")
     }
 }
-
 
 fun Column.onMuteUpdated() {
 
     val checker = { status: TootStatus? -> status?.checkMuted() ?: false }
 
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
-    for (o in list_data) {
+    val tmpList = ArrayList<TimelineItem>(listData.size)
+    for (o in listData) {
         if (o is TootStatus) {
             if (checker(o)) continue
         }
         if (o is TootNotification) {
             if (checker(o.status)) continue
         }
-        tmp_list.add(o)
+        tmpList.add(o)
     }
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "onMuteUpdated")
     }
 }
@@ -239,34 +236,34 @@ fun Column.onMuteUpdated() {
 fun Column.onHideFavouriteNotification(acct: Acct) {
     if (!isNotificationColumn) return
 
-    val tmp_list = ArrayList<TimelineItem>(list_data.size)
+    val tmpList = ArrayList<TimelineItem>(listData.size)
 
-    for (o in list_data) {
+    for (o in listData) {
         if (o is TootNotification && o.type != TootNotification.TYPE_MENTION) {
-            val a = o.account
-            if (a != null) {
-                val a_acct = access_info.getFullAcct(a)
-                if (a_acct == acct) continue
+            val who = o.account
+            if (who != null) {
+                val whoAcct = accessInfo.getFullAcct(who)
+                if (whoAcct == acct) continue
             }
         }
-        tmp_list.add(o)
+        tmpList.add(o)
     }
-    if (tmp_list.size != list_data.size) {
-        list_data.clear()
-        list_data.addAll(tmp_list)
+
+    if (tmpList.size != listData.size) {
+        listData.clear()
+        listData.addAll(tmpList)
         fireShowContent(reason = "onHideFavouriteNotification")
     }
 }
 
-
 fun Column.onDomainBlockChanged(
-    target_account: SavedAccount,
+    targetAccount: SavedAccount,
     domain: Host,
-    bBlocked: Boolean
+    bBlocked: Boolean,
 ) {
 
-    if (target_account.apiHost != access_info.apiHost) return
-    if (access_info.isPseudo) return
+    if (targetAccount.apiHost != accessInfo.apiHost) return
+    if (accessInfo.isPseudo) return
 
     if (type == ColumnType.DOMAIN_BLOCKS) {
         // ドメインブロック一覧を読み直す
@@ -279,9 +276,9 @@ fun Column.onDomainBlockChanged(
         val checker =
             { account: TootAccount? -> if (account == null) false else account.acct.host == domain }
 
-        val tmp_list = ArrayList<TimelineItem>(list_data.size)
+        val tmpList = ArrayList<TimelineItem>(listData.size)
 
-        for (o in list_data) {
+        for (o in listData) {
             if (o is TootStatus) {
                 if (checker(o.account)) continue
                 if (checker(o.reblog?.account)) continue
@@ -290,20 +287,18 @@ fun Column.onDomainBlockChanged(
                 if (checker(o.status?.account)) continue
                 if (checker(o.status?.reblog?.account)) continue
             }
-            tmp_list.add(o)
+            tmpList.add(o)
         }
-        if (tmp_list.size != list_data.size) {
-            list_data.clear()
-            list_data.addAll(tmp_list)
+        if (tmpList.size != listData.size) {
+            listData.clear()
+            listData.addAll(tmpList)
             fireShowContent(reason = "onDomainBlockChanged")
         }
-
     }
-
 }
 
 fun Column.onListListUpdated(account: SavedAccount) {
-    if (account != access_info) return
+    if (account != accessInfo) return
     if (type == ColumnType.LIST_LIST || type == ColumnType.MISSKEY_ANTENNA_LIST) {
         startLoading()
         val vh = viewHolder
@@ -312,12 +307,12 @@ fun Column.onListListUpdated(account: SavedAccount) {
 }
 
 fun Column.onListNameUpdated(account: SavedAccount, item: TootList) {
-    if (account != access_info) return
+    if (account != accessInfo) return
     if (type == ColumnType.LIST_LIST) {
         startLoading()
     } else if (type == ColumnType.LIST_TL || type == ColumnType.LIST_MEMBER) {
-        if (item.id == profile_id) {
-            this.list_info = item
+        if (item.id == profileId) {
+            this.listInfo = item
             fireShowColumnHeader()
         }
     }
@@ -337,15 +332,15 @@ fun Column.onListNameUpdated(account: SavedAccount, item: TootList) {
 
 fun Column.onListMemberUpdated(
     account: SavedAccount,
-    list_id: EntityId,
+    listId: EntityId,
     who: TootAccount,
-    bAdd: Boolean
+    bAdd: Boolean,
 ) {
-    if (type == ColumnType.LIST_TL && access_info == account && list_id == profile_id) {
+    if (type == ColumnType.LIST_TL && accessInfo == account && listId == profileId) {
         if (!bAdd) {
             removeAccountInTimeline(account, who.id)
         }
-    } else if (type == ColumnType.LIST_MEMBER && access_info == account && list_id == profile_id) {
+    } else if (type == ColumnType.LIST_MEMBER && accessInfo == account && listId == profileId) {
         if (!bAdd) {
             removeAccountInTimeline(account, who.id)
         }
@@ -357,41 +352,40 @@ fun Column.onListMemberUpdated(
 // 既存データを削除するかする
 fun replaceConversationSummary(
     changeList: ArrayList<AdapterChange>,
-    list_new: ArrayList<TimelineItem>,
-    list_data: BucketList<TimelineItem>
+    listNew: ArrayList<TimelineItem>,
+    listData: BucketList<TimelineItem>,
 ) {
 
     val newMap = HashMap<EntityId, TootConversationSummary>().apply {
-        for (o in list_new) {
+        for (o in listNew) {
             if (o is TootConversationSummary) this[o.id] = o
         }
     }
 
-    if (list_data.isEmpty() || newMap.isEmpty()) return
+    if (listData.isEmpty() || newMap.isEmpty()) return
 
     val removeSet = HashSet<EntityId>()
-    for (i in list_data.size - 1 downTo 0) {
-        val o = list_data[i] as? TootConversationSummary ?: continue
+    for (i in listData.size - 1 downTo 0) {
+        val o = listData[i] as? TootConversationSummary ?: continue
         val newItem = newMap[o.id] ?: continue
 
         if (o.last_status.uri == newItem.last_status.uri) {
             // 投稿が同じなので順序を入れ替えず、その場所で更新する
             changeList.add(AdapterChange(AdapterChangeType.RangeChange, i, 1))
-            list_data[i] = newItem
+            listData[i] = newItem
             removeSet.add(newItem.id)
             Column.log.d("replaceConversationSummary: in-place update")
         } else {
             // 投稿が異なるので古い方を削除して、リストの順序を変える
             changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
-            list_data.removeAt(i)
+            listData.removeAt(i)
             Column.log.d("replaceConversationSummary: order change")
         }
     }
 
-    val it = list_new.iterator()
+    val it = listNew.iterator()
     while (it.hasNext()) {
         val o = it.next() as? TootConversationSummary ?: continue
         if (removeSet.contains(o.id)) it.remove()
     }
 }
-

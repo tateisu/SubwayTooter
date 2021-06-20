@@ -85,7 +85,7 @@ class ActMutedPseudoAccount : AppCompatActivity() {
 
             override fun onItemSwipeEnded(
                 item: ListSwipeItem?,
-                swipedDirection: ListSwipeItem.SwipeDirection?
+                swipedDirection: ListSwipeItem.SwipeDirection?,
             ) {
                 // 操作完了でリフレッシュ許可
                 // mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
@@ -104,23 +104,23 @@ class ActMutedPseudoAccount : AppCompatActivity() {
 
     private fun loadData() {
 
-        val tmp_list = ArrayList<MyItem>()
+        val tmpList = ArrayList<MyItem>()
         try {
             UserRelation.createCursorPseudo().use { cursor ->
-                val idx_id = cursor.getColumnIndex(UserRelation.COL_ID)
-                val idx_name = cursor.getColumnIndex(UserRelation.COL_WHO_ID)
+                val idxId = cursor.getColumnIndex(UserRelation.COL_ID)
+                val idxName = cursor.getColumnIndex(UserRelation.COL_WHO_ID)
                 while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idx_id)
-                    val name = cursor.getString(idx_name)
+                    val id = cursor.getLong(idxId)
+                    val name = cursor.getString(idxName)
                     val item = MyItem(id, name)
-                    tmp_list.add(item)
+                    tmpList.add(item)
                 }
             }
         } catch (ex: Throwable) {
             log.trace(ex)
         }
 
-        listAdapter.itemList = tmp_list
+        listAdapter.itemList = tmpList
     }
 
     // リスト要素のデータ
@@ -141,7 +141,6 @@ class ActMutedPseudoAccount : AppCompatActivity() {
                 viewRoot.setSwipeInStyle(ListSwipeItem.SwipeInStyle.SLIDE)
                 viewRoot.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
             }
-
         } // View ID。 ここを押すとドラッグ操作をすぐに開始する
         // 長押しでドラッグ開始するなら真
 
@@ -196,5 +195,4 @@ class ActMutedPseudoAccount : AppCompatActivity() {
             return item.id
         }
     }
-
 }

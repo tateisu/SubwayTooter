@@ -6,7 +6,6 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.streaming.streamSpec
 import jp.juggler.util.getAdaptiveRippleDrawable
 import jp.juggler.util.isMainThread
 import jp.juggler.util.notZero
@@ -33,11 +32,13 @@ fun Column.canReloadWhenRefreshTop(): Boolean = when (type) {
     ColumnType.LIST_LIST,
     ColumnType.TREND_TAG,
     ColumnType.FOLLOW_SUGGESTION,
-    ColumnType.PROFILE_DIRECTORY -> true
+    ColumnType.PROFILE_DIRECTORY,
+    -> true
 
     ColumnType.LIST_MEMBER,
     ColumnType.MUTES,
-    ColumnType.FOLLOW_REQUESTS -> isMisskey
+    ColumnType.FOLLOW_REQUESTS,
+    -> isMisskey
 
     else -> false
 }
@@ -47,7 +48,8 @@ fun Column.canRefreshTopBySwipe(): Boolean =
     canReloadWhenRefreshTop() ||
         when (type) {
             ColumnType.CONVERSATION,
-            ColumnType.INSTANCE_INFORMATION -> false
+            ColumnType.INSTANCE_INFORMATION,
+            -> false
             else -> true
         }
 
@@ -59,7 +61,8 @@ fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
     ColumnType.KEYWORD_FILTER,
     ColumnType.SEARCH,
     ColumnType.TREND_TAG,
-    ColumnType.FOLLOW_SUGGESTION -> false
+    ColumnType.FOLLOW_SUGGESTION,
+    -> false
 
     ColumnType.FOLLOW_REQUESTS -> isMisskey
 
@@ -81,20 +84,20 @@ fun Column.canRefreshBottom(): Boolean = when (pagingType) {
     ColumnPagingType.Offset -> true
 }
 
-fun Column.getIconId(): Int = type.iconId(access_info.acct)
+fun Column.getIconId(): Int = type.iconId(accessInfo.acct)
 
 fun Column.getColumnName(long: Boolean) =
     type.name2(this, long) ?: type.name1(context)
 
-fun Column.getContentColor() = content_color.notZero() ?: Column.defaultColorContentText
+fun Column.getContentColor() = contentColor.notZero() ?: Column.defaultColorContentText
 
-fun Column.getAcctColor() = acct_color.notZero() ?: Column.defaultColorContentAcct
+fun Column.getAcctColor() = acctColor.notZero() ?: Column.defaultColorContentAcct
 
-fun Column.getHeaderPageNumberColor() = header_fg_color.notZero() ?: Column.defaultColorHeaderPageNumber
+fun Column.getHeaderPageNumberColor() = headerFgColor.notZero() ?: Column.defaultColorHeaderPageNumber
 
-fun Column.getHeaderNameColor() = header_fg_color.notZero() ?: Column.defaultColorHeaderName
+fun Column.getHeaderNameColor() = headerFgColor.notZero() ?: Column.defaultColorHeaderName
 
-fun Column.getHeaderBackgroundColor() = header_bg_color.notZero() ?: Column.defaultColorHeaderBg
+fun Column.getHeaderBackgroundColor() = headerBgColor.notZero() ?: Column.defaultColorHeaderBg
 
 fun Column.setHeaderBackground(view: View) {
     view.backgroundDrawable = getAdaptiveRippleDrawable(
@@ -134,7 +137,7 @@ fun Column.getHeaderDesc(): String {
     return cache
 }
 
-fun Column.hasMultipleViewHolder(): Boolean = _holder_list.size > 1
+fun Column.hasMultipleViewHolder(): Boolean = listViewHolder.size > 1
 
 fun Column.addColumnViewHolder(cvh: ColumnViewHolder) {
 
@@ -143,18 +146,18 @@ fun Column.addColumnViewHolder(cvh: ColumnViewHolder) {
 
     // 最後に追加されたものが先頭にくるようにする
     // 呼び出しの後に必ず追加されているようにする
-    _holder_list.addFirst(cvh)
+    listViewHolder.addFirst(cvh)
 }
 
 fun Column.removeColumnViewHolder(cvh: ColumnViewHolder) {
-    val it = _holder_list.iterator()
+    val it = listViewHolder.iterator()
     while (it.hasNext()) {
         if (cvh == it.next()) it.remove()
     }
 }
 
 fun Column.removeColumnViewHolderByActivity(activity: ActMain) {
-    val it = _holder_list.iterator()
+    val it = listViewHolder.iterator()
     while (it.hasNext()) {
         val cvh = it.next()
         if (cvh.activity == activity) {
@@ -166,46 +169,34 @@ fun Column.removeColumnViewHolderByActivity(activity: ActMain) {
 fun Column.fireShowContent(
     reason: String,
     changeList: List<AdapterChange>? = null,
-    reset: Boolean = false
+    reset: Boolean = false,
 ) {
-    if (!isMainThread) {
-        throw RuntimeException("fireShowContent: not on main thread.")
-    }
+    if (!isMainThread) error("fireShowContent: not on main thread.")
     viewHolder?.showContent(reason, changeList, reset)
 }
 
 fun Column.fireShowColumnHeader() {
-    if (!isMainThread) {
-        throw RuntimeException("fireShowColumnHeader: not on main thread.")
-    }
+    if (!isMainThread) error("fireShowColumnHeader: not on main thread.")
     viewHolder?.showColumnHeader()
 }
 
 fun Column.fireShowColumnStatus() {
-    if (!isMainThread) {
-        throw RuntimeException("fireShowColumnStatus: not on main thread.")
-    }
+    if (!isMainThread) error("fireShowColumnStatus: not on main thread.")
     viewHolder?.showColumnStatus()
 }
 
 fun Column.fireColumnColor() {
-    if (!isMainThread) {
-        throw RuntimeException("fireColumnColor: not on main thread.")
-    }
+    if (!isMainThread) error("fireColumnColor: not on main thread.")
     viewHolder?.showColumnColor()
 }
 
 fun Column.fireRelativeTime() {
-    if (!isMainThread) {
-        throw RuntimeException("fireRelativeTime: not on main thread.")
-    }
+    if (!isMainThread) error("fireRelativeTime: not on main thread.")
     viewHolder?.updateRelativeTime()
 }
 
 fun Column.fireRebindAdapterItems() {
-    if (!isMainThread) {
-        throw RuntimeException("fireRelativeTime: not on main thread.")
-    }
+    if (!isMainThread) error("fireRelativeTime: not on main thread.")
     viewHolder?.rebindAdapterItems()
 }
 
@@ -215,7 +206,7 @@ fun Column.fireRebindAdapterItems() {
 fun Column.onActivityStart() {
 
     // 破棄されたカラムなら何もしない
-    if (is_dispose.get()) {
+    if (isDispose.get()) {
         Column.log.d("onStart: column was disposed.")
         return
     }
@@ -233,8 +224,8 @@ fun Column.onActivityStart() {
     }
 
     // フィルタ一覧のリロードが必要
-    if (filter_reload_required) {
-        filter_reload_required = false
+    if (filterReloadRequired) {
+        filterReloadRequired = false
         startLoading()
         return
     }
@@ -246,19 +237,17 @@ fun Column.onActivityStart() {
         return
     }
 
-    if (!bRefreshLoading
-        && canAutoRefresh()
-        && !Pref.bpDontRefreshOnResume(app_state.pref)
-        && !dont_auto_refresh
+    if (!bRefreshLoading &&
+        canAutoRefresh() &&
+        !Pref.bpDontRefreshOnResume(appState.pref) &&
+        !dontAutoRefresh
     ) {
         // リフレッシュしてからストリーミング開始
         Column.log.d("onStart: start auto refresh.")
         startRefresh(bSilent = true, bBottom = false)
-
     } else if (isSearchColumn) {
         // 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
         fireShowContent(reason = "Column onStart isSearchColumn", reset = true)
-
     } else if (canStreamingState() && canStreamingType()) {
         // ギャップつきでストリーミング開始
         this.bPutGap = true
@@ -290,7 +279,7 @@ fun Column.startLoading() {
 
     initFilter()
 
-    Column.showOpenSticker = Pref.bpOpenSticker(app_state.pref)
+    Column.showOpenSticker = Pref.bpOpenSticker(appState.pref)
 
     mRefreshLoadingErrorPopupState = 0
     mRefreshLoadingError = ""
@@ -303,8 +292,8 @@ fun Column.startLoading() {
     offsetNext = 0
     pagingType = ColumnPagingType.Default
 
-    duplicate_map.clear()
-    list_data.clear()
+    duplicateMap.clear()
+    listData.clear()
     fireShowContent(reason = "loading start", reset = true)
 
     @SuppressLint("StaticFieldLeak")
@@ -316,8 +305,8 @@ fun Column.startLoading() {
 fun Column.startRefresh(
     bSilent: Boolean,
     bBottom: Boolean,
-    posted_status_id: EntityId? = null,
-    refresh_after_toot: Int = -1
+    postedStatusId: EntityId? = null,
+    refreshAfterToot: Int = -1,
 ) {
 
     if (lastTask != null) {
@@ -356,36 +345,38 @@ fun Column.startRefresh(
     mRefreshLoadingError = ""
 
     @SuppressLint("StaticFieldLeak")
-    val task = ColumnTask_Refresh(this, bSilent, bBottom, posted_status_id, refresh_after_toot)
+    val task = ColumnTask_Refresh(this, bSilent, bBottom, postedStatusId, refreshAfterToot)
     this.lastTask = task
     task.start()
     fireShowColumnStatus()
 }
 
 fun Column.startRefreshForPost(
-    refresh_after_post: Int,
-    posted_status_id: EntityId,
-    posted_reply_id: EntityId?
+    refreshAfterPost: Int,
+    postedStatusId: EntityId,
+    postedReplyId: EntityId?,
 ) {
+    @Suppress("NON_EXHAUSTIVE_WHEN")
     when (type) {
-        ColumnType.HOME, ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.DIRECT_MESSAGES, ColumnType.MISSKEY_HYBRID -> {
-            startRefresh(
-                bSilent = true,
-                bBottom = false,
-                posted_status_id = posted_status_id,
-                refresh_after_toot = refresh_after_post
-            )
-        }
+        ColumnType.HOME,
+        ColumnType.LOCAL,
+        ColumnType.FEDERATE,
+        ColumnType.DIRECT_MESSAGES,
+        ColumnType.MISSKEY_HYBRID,
+        -> startRefresh(
+            bSilent = true,
+            bBottom = false,
+            postedStatusId = postedStatusId,
+            refreshAfterToot = refreshAfterPost
+        )
 
         ColumnType.PROFILE -> {
-            if (profile_tab == ProfileTab.Status
-                && profile_id == access_info.loginAccount?.id
-            ) {
+            if (profileTab == ProfileTab.Status && profileId == accessInfo.loginAccount?.id) {
                 startRefresh(
                     bSilent = true,
                     bBottom = false,
-                    posted_status_id = posted_status_id,
-                    refresh_after_toot = refresh_after_post
+                    postedStatusId = postedStatusId,
+                    refreshAfterToot = refreshAfterPost
                 )
             }
         }
@@ -393,9 +384,9 @@ fun Column.startRefreshForPost(
         ColumnType.CONVERSATION -> {
             // 会話への返信が行われたなら会話を更新する
             try {
-                if (posted_reply_id != null) {
-                    for (item in list_data) {
-                        if (item is TootStatus && item.id == posted_reply_id) {
+                if (postedReplyId != null) {
+                    for (item in listData) {
+                        if (item is TootStatus && item.id == postedReplyId) {
                             startLoading()
                             break
                         }
@@ -403,10 +394,6 @@ fun Column.startRefreshForPost(
                 }
             } catch (_: Throwable) {
             }
-        }
-
-        else -> {
-
         }
     }
 }
@@ -436,13 +423,12 @@ fun Column.startGap(gap: TimelineItem?, isHead: Boolean) {
     fireShowColumnStatus()
 }
 
-
 // misskeyのキャプチャの対象となる投稿IDのリストを作る
 // カラム内データの上(最新)から40件をキャプチャ対象とする
 fun Column.updateMisskeyCapture() {
     if (!isMisskey) return
 
-    val streamConnection = app_state.streamManager.getConnection(this)
+    val streamConnection = appState.streamManager.getConnection(this)
         ?: return
 
     val max = 40
@@ -455,8 +441,8 @@ fun Column.updateMisskeyCapture() {
         add(s.reply)
     }
 
-    for (i in 0 until min(max, list_data.size)) {
-        val o = list_data[i]
+    for (i in 0 until min(max, listData.size)) {
+        val o = listData[i]
         if (o is TootStatus) {
             add(o)
         } else if (o is TootNotification) {

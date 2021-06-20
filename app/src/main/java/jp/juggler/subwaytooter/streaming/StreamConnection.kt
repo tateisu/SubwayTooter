@@ -134,18 +134,17 @@ class StreamConnection(
         eachCallbackForAcct { it.onEmojiReactionEvent(item) }
     }
 
-
     private fun fireNoteUpdated(ev: MisskeyNoteUpdate, channelId: String? = null) {
         eachCallback(channelId) { it.onNoteUpdated(ev, channelId) }
     }
 
     private fun fireDeleteId(id: EntityId) {
         if (Pref.bpDontRemoveDeletedToot.invoke(manager.appState.pref)) return
-        val tl_host = acctGroup.account.apiHost
+        val timelineHost = acctGroup.account.apiHost
         manager.appState.columnList.forEach {
             runOnMainLooper {
                 try {
-                    if (!it.is_dispose.get()) it.onStatusRemoved(tl_host, id)
+                    if (!it.isDispose.get()) it.onStatusRemoved(timelineHost, id)
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
@@ -184,7 +183,6 @@ class StreamConnection(
             "readAllNotifications",
             "readAllUnreadMentions",
             "readAllUnreadSpecifiedNotes" -> return
-
         }
 
         when (type) {
@@ -209,13 +207,12 @@ class StreamConnection(
                     log.e("$name handleMisskeyMessage: notification body is null")
                     return
                 }
-                log.d("$name misskey notification: ${acctGroup.parser.apiHost} ${body}")
+                log.d("$name misskey notification: ${acctGroup.parser.apiHost} $body")
                 fireTimelineItem(acctGroup.parser.notification(body), channelId)
             }
 
             else -> log.w("$name ignore streaming event $type")
         }
-
     }
 
     private fun handleMastodonMessage(obj: JsonObject, text: String) {
@@ -228,7 +225,6 @@ class StreamConnection(
 
             "filters_changed" ->
                 reloadFilter(manager.context, acctGroup.account)
-
 
             else -> {
                 val payload = TootPayload.parsePayload(acctGroup.parser, event, obj, text)
@@ -268,7 +264,6 @@ class StreamConnection(
                             fireEmojiReactionEvent(payload)
                         }
                     }
-
 
                     else -> when (payload) {
                         is TimelineItem -> {
@@ -451,7 +446,6 @@ class StreamConnection(
             }
         }
     }
-
 
     internal suspend fun updateConnection() {
         if (isDisposed.get()) {

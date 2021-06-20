@@ -110,9 +110,9 @@ class TootReaction(
         }
 
         fun canReaction(
-            access_info: SavedAccount,
-            ti: TootInstance? = TootInstance.getCached(access_info)
-        ) = InstanceCapability.emojiReaction(access_info, ti)
+            accessInfo: SavedAccount,
+            ti: TootInstance? = TootInstance.getCached(accessInfo),
+        ) = InstanceCapability.emojiReaction(accessInfo, ti)
 
         fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
             jsonText.notEmpty()?.let { src ->
@@ -144,7 +144,7 @@ class TootReaction(
         fun toSpannableStringBuilder(
             options: DecodeOptions,
             code: String,
-            url: String?
+            url: String?,
         ): SpannableStringBuilder {
 
             url?.let { return urlToSpan(options, code, url) }
@@ -158,8 +158,6 @@ class TootReaction(
 
             return EmojiDecoder.decodeEmoji(options, code)
         }
-
-
     }
 
     fun splitEmojiDomain() =
@@ -177,19 +175,15 @@ class TootReaction(
 
     fun toSpannableStringBuilder(
         options: DecodeOptions,
-        status: TootStatus?
+        status: TootStatus?,
     ): SpannableStringBuilder {
 
         val code = this.name
 
-        fun CustomEmoji.chooseUrl() =
-            if (Pref.bpDisableEmojiAnimation(App1.pref)) {
-                static_url
-            } else {
-                url
-            }
-
-
+        fun CustomEmoji.chooseUrl() = when {
+            Pref.bpDisableEmojiAnimation(App1.pref) -> staticUrl
+            else -> url
+        }
 
         if (options.linkHelper?.isMisskey == true) {
 

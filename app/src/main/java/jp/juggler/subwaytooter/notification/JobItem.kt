@@ -33,21 +33,21 @@ class JobItem(
             }
     }
 
-    val mJobCancelled_ = AtomicBoolean()
-    val mReschedule = AtomicBoolean()
-    val mWorkerAttached = AtomicBoolean()
+    val abJobCancelled = AtomicBoolean()
+    val abReschedule = AtomicBoolean()
+    val abWorkerAttached = AtomicBoolean()
 
     val bPollingRequired = AtomicBoolean(false)
-    lateinit var muted_app: HashSet<String>
-    lateinit var muted_word: WordTrieTree
+    lateinit var mutedApp: HashSet<String>
+    lateinit var mutedWord: WordTrieTree
     lateinit var favMuteSet: HashSet<Acct>
     var bPollingComplete = false
-    var install_id: String? = null
+    var installId: String? = null
 
     var currentCall: WeakReference<Call>? = null
 
     val isJobCancelled: Boolean
-        get() = mJobCancelled_.get()
+        get() = abJobCancelled.get()
 
     // 通知データインジェクションを行ったアカウント
     val injectedAccounts = HashSet<Long>()
@@ -55,8 +55,8 @@ class JobItem(
     private var pollingWorker: PollingWorker? = null
 
     fun cancel(bReschedule: Boolean) {
-        mJobCancelled_.set(true)
-        mReschedule.set(bReschedule)
+        abJobCancelled.set(true)
+        abReschedule.set(bReschedule)
         currentCall?.get()?.cancel()
         pollingWorker?.notifyWorker()
     }
@@ -66,7 +66,7 @@ class JobItem(
         this@JobItem.pollingWorker = pollingWorker
 
         try {
-            log.d("(JobItem.run jobId=${jobId}")
+            log.d("(JobItem.run jobId=$jobId")
 
             workerStatus = "check network status.."
 
@@ -81,12 +81,12 @@ class JobItem(
                         delay(333L)
                     }
                 }
-            } catch (ex: TimeoutCancellationException) {
+            } catch (ignored: TimeoutCancellationException) {
                 log.d("network state timeout. $connectionState")
             }
 
-            muted_app = MutedApp.nameSet
-            muted_word = MutedWord.nameSet
+            mutedApp = MutedApp.nameSet
+            mutedWord = MutedWord.nameSet
             favMuteSet = FavMute.acctSet
 
             // タスクがあれば処理する
@@ -97,7 +97,7 @@ class JobItem(
                 val taskIdInt = data.optInt(PollingWorker.EXTRA_TASK_ID, -1)
                 val taskId = TaskId.from(taskIdInt)
                 if (taskId == null) {
-                    log.e("JobItem.run(): unknown taskId ${taskIdInt}")
+                    log.e("JobItem.run(): unknown taskId $taskIdInt")
                     continue
                 }
                 // アプリデータのインポート処理が開始したらジョブを全て削除して処理を中断する
@@ -113,19 +113,19 @@ class JobItem(
                 TaskRunner(pollingWorker, this@JobItem, TaskId.Polling, JsonObject()).runTask()
             }
 
-            log.w("pollingComplete=${bPollingComplete},isJobCancelled=${isJobCancelled},bPollingRequired=${bPollingRequired.get()}")
+            log.w("pollingComplete=$bPollingComplete,isJobCancelled=$isJobCancelled,bPollingRequired=${bPollingRequired.get()}")
             if (!isJobCancelled && bPollingComplete) {
                 // ポーリングが完了した
                 pollingWorker.onPollingComplete(bPollingRequired.get())
             }
-        } catch (ex: JobCancelledException) {
+        } catch (ignored: JobCancelledException) {
             log.w("job execution cancelled.")
         } catch (ex: Throwable) {
             log.trace(ex)
             log.e(ex, "job execution failed.")
         }
 
-        log.d(")JobItem.run jobId=${jobId}, cancel=${isJobCancelled}")
+        log.d(")JobItem.run jobId=$jobId, cancel=$isJobCancelled")
 
         // メインスレッドで後処理を行う
         runOnMainLooper {

@@ -24,7 +24,7 @@ class SavedAccount(
     apDomainArg: String? = null,
     var token_info: JsonObject? = null,
     var loginAccount: TootAccount? = null, // 疑似アカウントではnull
-    override val misskeyVersion: Int = 0
+    override val misskeyVersion: Int = 0,
 ) : LinkHelper {
 
     // SavedAccountのロード時にhostを供給する必要があった
@@ -73,7 +73,7 @@ class SavedAccount(
 
     var max_toot_chars = 0
 
-    var last_notification_error: String? = null
+    var lastNotificationError: String? = null
     var last_subscription_error: String? = null
     var last_push_endpoint: String? = null
 
@@ -86,7 +86,7 @@ class SavedAccount(
     init {
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
-        if (username.isEmpty()) throw RuntimeException("missing username in acct")
+        if (username.isEmpty()) error("missing username in acct")
 
         val tmpApiHost = apiHostArg?.notEmpty()?.let { Host.parse(it) }
         val tmpApDomain = apDomainArg?.notEmpty()?.let { Host.parse(it) }
@@ -162,7 +162,7 @@ class SavedAccount(
         expand_cw = cursor.getBoolean(COL_EXPAND_CW)
         max_toot_chars = cursor.getInt(COL_MAX_TOOT_CHARS)
 
-        last_notification_error = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
+        lastNotificationError = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
         last_subscription_error = cursor.getStringOrNull(COL_LAST_SUBSCRIPTION_ERROR)
         last_push_endpoint = cursor.getStringOrNull(COL_LAST_PUSH_ENDPOINT)
 
@@ -183,13 +183,13 @@ class SavedAccount(
             App1.database.delete(table, "$COL_ID=?", arrayOf(db_id.toString()))
         } catch (ex: Throwable) {
             log.trace(ex)
-            throw RuntimeException("SavedAccount.delete failed.", ex)
+            errorEx(ex, "SavedAccount.delete failed.")
         }
     }
 
     fun updateTokenInfo(tokenInfoArg: JsonObject?) {
 
-        if (db_id == INVALID_DB_ID) throw RuntimeException("updateTokenInfo: missing db_id")
+        if (db_id == INVALID_DB_ID) error("updateTokenInfo: missing db_id")
 
         val token_info = tokenInfoArg ?: JsonObject()
         this.token_info = token_info
@@ -201,7 +201,7 @@ class SavedAccount(
 
     fun saveSetting() {
 
-        if (db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
+        if (db_id == INVALID_DB_ID) error("saveSetting: missing db_id")
 
         val cv = ContentValues()
         cv.put(COL_VISIBILITY, visibility.id.toString())
@@ -270,8 +270,7 @@ class SavedAccount(
     // onResumeの時に設定を読み直す
     fun reloadSetting(context: Context, newData: SavedAccount? = null) {
 
-        if (db_id == INVALID_DB_ID)
-            throw RuntimeException("SavedAccount.reloadSetting missing db_id")
+        if (db_id == INVALID_DB_ID) error("SavedAccount.reloadSetting missing db_id")
 
         // DBから削除されてるかもしれない
         val b = newData ?: loadAccount(context, db_id) ?: return
@@ -325,10 +324,10 @@ class SavedAccount(
     fun isMe(who: TootAccount?): Boolean = isMe(who?.acct)
     //	fun isMe(who_acct : String) : Boolean  = isMe(Acct.parse(who_acct))
 
-    fun isMe(who_acct: Acct?): Boolean {
-        who_acct ?: return false
-        if (who_acct.username != this.acct.username) return false
-        return who_acct.host == null || who_acct.host == this.acct.host
+    fun isMe(acct: Acct?): Boolean {
+        acct ?: return false
+        if (acct.username != this.acct.username) return false
+        return acct.host == null || acct.host == this.acct.host
     }
 
     fun supplyBaseUrl(url: String?): String? {
@@ -427,98 +426,53 @@ class SavedAccount(
 
         override fun onDBCreate(db: SQLiteDatabase) {
             db.execSQL(
-                "create table if not exists $table"
-                    + "($COL_ID INTEGER PRIMARY KEY"
-                    + ",$COL_USER text not null"
-                    + ",$COL_HOST text not null"
-                    + ",$COL_ACCOUNT text not null"
-                    + ",$COL_TOKEN text not null"
-                    + ",$COL_VISIBILITY text"
-                    + ",$COL_CONFIRM_BOOST integer default 1"
-                    + ",$COL_DONT_HIDE_NSFW integer default 0"
-
-                    // 以下はDBスキーマ2で追加
-                    + ",$COL_NOTIFICATION_MENTION integer default 1"
-                    + ",$COL_NOTIFICATION_BOOST integer default 1"
-                    + ",$COL_NOTIFICATION_FAVOURITE integer default 1"
-                    + ",$COL_NOTIFICATION_FOLLOW integer default 1"
-
-                    // 以下はDBスキーマ10で更新
-                    + ",$COL_CONFIRM_FOLLOW integer default 1"
-                    + ",$COL_CONFIRM_FOLLOW_LOCKED integer default 1"
-                    + ",$COL_CONFIRM_UNFOLLOW integer default 1"
-                    + ",$COL_CONFIRM_POST integer default 1"
-
-                    // 以下はDBスキーマ13で更新
-                    + ",$COL_NOTIFICATION_TAG text default ''"
-
-                    // 以下はDBスキーマ14で更新
-                    + ",$COL_REGISTER_KEY text default ''"
-                    + ",$COL_REGISTER_TIME integer default 0"
-
-                    // 以下はDBスキーマ16で更新
-                    + ",$COL_SOUND_URI text default ''"
-
-                    // 以下はDBスキーマ18で更新
-                    + ",$COL_DONT_SHOW_TIMEOUT integer default 0"
-
-                    // 以下はDBスキーマ23で更新
-                    + ",$COL_CONFIRM_FAVOURITE integer default 1"
-
-                    // 以下はDBスキーマ24で更新
-                    + ",$COL_CONFIRM_UNBOOST integer default 1"
-                    + ",$COL_CONFIRM_UNFAVOURITE integer default 1"
-
-                    // 以下はDBスキーマ27で更新
-                    + ",$COL_DEFAULT_TEXT text default ''"
-
-                    // 以下はDBスキーマ28で更新
-                    + ",$COL_MISSKEY_VERSION integer default 0"
-
-                    // スキーマ33から
-                    + ",$COL_NOTIFICATION_REACTION integer default 1"
-                    + ",$COL_NOTIFICATION_VOTE integer default 1"
-
-                    // スキーマ37から
-                    + ",$COL_DEFAULT_SENSITIVE integer default 0"
-                    + ",$COL_EXPAND_CW integer default 0"
-
-                    // スキーマ39から
-                    + ",$COL_MAX_TOOT_CHARS integer default 0"
-
-                    // スキーマ42から
-                    + ",$COL_LAST_NOTIFICATION_ERROR text"
-
-                    // スキーマ44から
-                    + ",$COL_NOTIFICATION_FOLLOW_REQUEST integer default 1"
-
-                    // スキーマ45から
-                    + ",$COL_LAST_SUBSCRIPTION_ERROR text"
-
-                    // スキーマ46から
-                    + ",$COL_LAST_PUSH_ENDPOINT text"
-
-                    // スキーマ56から
-                    + ",$COL_DOMAIN text"
-
-                    // スキーマ57から
-                    + ",$COL_NOTIFICATION_POST integer default 1"
-
-                    // スキーマ59から
-                    + ",$COL_IMAGE_RESIZE text default null"
-                    + ",$COL_IMAGE_MAX_MEGABYTES text default null"
-                    + ",$COL_MOVIE_MAX_MEGABYTES text default null"
-
-                    // スキーマ60から
-                    + ",$COL_PUSH_POLICY text default null"
-
-                    // スキーマ61から
-                    + ",$COL_CONFIRM_REACTION integer default 1"
-
-                    + ")"
+                """create table if not exists $table
+                ($COL_ID INTEGER PRIMARY KEY
+                ,$COL_USER text not null
+                ,$COL_HOST text not null
+                ,$COL_ACCOUNT text not null
+                ,$COL_TOKEN text not null
+                ,$COL_VISIBILITY text
+                ,$COL_CONFIRM_BOOST integer default 1
+                ,$COL_DONT_HIDE_NSFW integer default 0
+                ,$COL_NOTIFICATION_MENTION integer default 1
+                ,$COL_NOTIFICATION_BOOST integer default 1
+                ,$COL_NOTIFICATION_FAVOURITE integer default 1
+                ,$COL_NOTIFICATION_FOLLOW integer default 1
+                ,$COL_CONFIRM_FOLLOW integer default 1
+                ,$COL_CONFIRM_FOLLOW_LOCKED integer default 1
+                ,$COL_CONFIRM_UNFOLLOW integer default 1
+                ,$COL_CONFIRM_POST integer default 1
+                ,$COL_NOTIFICATION_TAG text default ''
+                ,$COL_REGISTER_KEY text default ''
+                ,$COL_REGISTER_TIME integer default 0
+                ,$COL_SOUND_URI text default ''
+                ,$COL_DONT_SHOW_TIMEOUT integer default 0
+                ,$COL_CONFIRM_FAVOURITE integer default 1
+                ,$COL_CONFIRM_UNBOOST integer default 1
+                ,$COL_CONFIRM_UNFAVOURITE integer default 1
+                ,$COL_DEFAULT_TEXT text default ''
+                ,$COL_MISSKEY_VERSION integer default 0
+                ,$COL_NOTIFICATION_REACTION integer default 1
+                ,$COL_NOTIFICATION_VOTE integer default 1
+                ,$COL_DEFAULT_SENSITIVE integer default 0
+                ,$COL_EXPAND_CW integer default 0
+                ,$COL_MAX_TOOT_CHARS integer default 0
+                ,$COL_LAST_NOTIFICATION_ERROR text
+                ,$COL_NOTIFICATION_FOLLOW_REQUEST integer default 1
+                ,$COL_LAST_SUBSCRIPTION_ERROR text
+                ,$COL_LAST_PUSH_ENDPOINT text
+                ,$COL_DOMAIN text
+                ,$COL_NOTIFICATION_POST integer default 1
+                ,$COL_IMAGE_RESIZE text default null
+                ,$COL_IMAGE_MAX_MEGABYTES text default null
+                ,$COL_MOVIE_MAX_MEGABYTES text default null
+                ,$COL_PUSH_POLICY text default null
+                ,$COL_CONFIRM_REACTION integer default 1
+                )""".trimIndent()
             )
-            db.execSQL("create index if not exists ${table}_user on ${table}(u)")
-            db.execSQL("create index if not exists ${table}_host on ${table}(h,u)")
+            db.execSQL("create index if not exists ${table}_user on $table(u)")
+            db.execSQL("create index if not exists ${table}_host on $table(h,u)")
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -550,8 +504,8 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
+
             isUpgraded(10) {
                 try {
                     db.execSQL("alter table $table add column $COL_CONFIRM_FOLLOW integer default 1")
@@ -576,7 +530,6 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
             isUpgraded(13) {
                 try {
@@ -584,7 +537,6 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
             isUpgraded(14) {
                 try {
@@ -598,7 +550,6 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
             isUpgraded(16) {
                 try {
@@ -606,7 +557,6 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
             isUpgraded(18) {
                 try {
@@ -614,16 +564,16 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
+
             isUpgraded(23) {
                 try {
                     db.execSQL("alter table $table add column $COL_CONFIRM_FAVOURITE integer default 1")
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
+
             isUpgraded(24) {
                 try {
                     db.execSQL("alter table $table add column $COL_CONFIRM_UNFAVOURITE integer default 1")
@@ -635,16 +585,16 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
+
             isUpgraded(27) {
                 try {
                     db.execSQL("alter table $table add column $COL_DEFAULT_TEXT text default ''")
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
+
             isUpgraded(28) {
                 try {
                     db.execSQL("alter table $table add column $COL_MISSKEY_VERSION integer default 0")
@@ -677,7 +627,6 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
 
             isUpgraded(39) {
@@ -711,6 +660,7 @@ class SavedAccount(
                     log.trace(ex)
                 }
             }
+
             isUpgraded(46) {
                 try {
                     db.execSQL("alter table $table add column $COL_LAST_PUSH_ENDPOINT text")
@@ -718,6 +668,7 @@ class SavedAccount(
                     log.trace(ex)
                 }
             }
+
             isUpgraded(56) {
                 try {
                     db.execSQL("alter table $table add column $COL_DOMAIN text")
@@ -725,14 +676,15 @@ class SavedAccount(
                     log.trace(ex)
                 }
             }
+
             isUpgraded(57) {
                 try {
                     db.execSQL("alter table $table add column $COL_NOTIFICATION_POST integer default 1")
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
+
             isUpgraded(59) {
                 try {
                     db.execSQL("alter table $table add column $COL_IMAGE_RESIZE text default null")
@@ -750,6 +702,7 @@ class SavedAccount(
                     log.trace(ex)
                 }
             }
+
             isUpgraded(60) {
                 try {
                     db.execSQL("alter table $table add column $COL_PUSH_POLICY text default null")
@@ -757,6 +710,7 @@ class SavedAccount(
                     log.trace(ex)
                 }
             }
+
             isUpgraded(61) {
                 try {
                     db.execSQL("alter table $table add column $COL_CONFIRM_REACTION integer default 1")
@@ -819,7 +773,7 @@ class SavedAccount(
             domain: String?,
             account: JsonObject,
             token: JsonObject,
-            misskeyVersion: Int = 0
+            misskeyVersion: Int = 0,
         ): Long {
             try {
                 val cv = ContentValues()
@@ -832,9 +786,8 @@ class SavedAccount(
                 return App1.database.insert(table, null, cv)
             } catch (ex: Throwable) {
                 log.trace(ex)
-                throw RuntimeException("SavedAccount.insert failed.", ex)
+                errorEx(ex, "SavedAccount.insert failed.")
             }
-
         }
 
         private const val REGISTER_KEY_UNREGISTERED = "unregistered"
@@ -846,13 +799,13 @@ class SavedAccount(
             App1.database.update(table, cv, null, null)
         }
 
-        fun loadAccount(context: Context, db_id: Long): SavedAccount? {
+        fun loadAccount(context: Context, dbId: Long): SavedAccount? {
             try {
                 App1.database.query(
                     table,
                     null,
                     "$COL_ID=?",
-                    arrayOf(db_id.toString()),
+                    arrayOf(dbId.toString()),
                     null,
                     null,
                     null
@@ -861,7 +814,7 @@ class SavedAccount(
                         if (cursor.moveToFirst()) {
                             return parse(context, cursor)
                         }
-                        log.e("moveToFirst failed. db_id=$db_id")
+                        log.e("moveToFirst failed. db_id=$dbId")
                     }
             } catch (ex: Throwable) {
                 log.trace(ex)
@@ -911,24 +864,23 @@ class SavedAccount(
                             val a = parse(context, cursor)
                             if (a != null) result.add(a)
                         }
-
                     }
             } catch (ex: Throwable) {
                 log.trace(ex)
                 log.e(ex, "loadByTag failed.")
-                throw RuntimeException("SavedAccount.loadByTag failed.", ex)
+                errorEx(ex, "SavedAccount.loadByTag failed.")
             }
 
             return result
         }
 
-        fun loadAccountByAcct(context: Context, full_acct: String): SavedAccount? {
+        fun loadAccountByAcct(context: Context, fullAcct: String): SavedAccount? {
             try {
                 App1.database.query(
                     table,
                     null,
                     "$COL_USER=?",
-                    arrayOf(full_acct),
+                    arrayOf(fullAcct),
                     null,
                     null,
                     null
@@ -983,7 +935,7 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                     log.e(ex, "getCount failed.")
-                    throw RuntimeException("SavedAccount.getCount failed.", ex)
+                    errorEx(ex, "SavedAccount.getCount failed.")
                 }
 
                 return 0L
@@ -1047,8 +999,8 @@ class SavedAccount(
             sa.compareTo(sb, ignoreCase = true)
         }
 
-        fun sort(account_list: MutableList<SavedAccount>) {
-            Collections.sort(account_list, account_comparator)
+        fun sort(accountList: MutableList<SavedAccount>) {
+            Collections.sort(accountList, account_comparator)
         }
 
         fun sweepBuggieData() {
@@ -1102,28 +1054,34 @@ class SavedAccount(
     fun canNotificationShowing(type: String?) = when (type) {
 
         TootNotification.TYPE_MENTION,
-        TootNotification.TYPE_REPLY -> notification_mention
+        TootNotification.TYPE_REPLY,
+        -> notification_mention
 
         TootNotification.TYPE_REBLOG,
         TootNotification.TYPE_RENOTE,
-        TootNotification.TYPE_QUOTE -> notification_boost
+        TootNotification.TYPE_QUOTE,
+        -> notification_boost
 
         TootNotification.TYPE_FAVOURITE -> notification_favourite
 
         TootNotification.TYPE_FOLLOW,
-        TootNotification.TYPE_UNFOLLOW -> notification_follow
+        TootNotification.TYPE_UNFOLLOW,
+        -> notification_follow
 
         TootNotification.TYPE_FOLLOW_REQUEST,
         TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> notification_follow_request
+        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
+        -> notification_follow_request
 
         TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
         TootNotification.TYPE_EMOJI_REACTION,
-        TootNotification.TYPE_REACTION -> notification_reaction
+        TootNotification.TYPE_REACTION,
+        -> notification_reaction
 
         TootNotification.TYPE_VOTE,
         TootNotification.TYPE_POLL,
-        TootNotification.TYPE_POLL_VOTE_MISSKEY -> notification_vote
+        TootNotification.TYPE_POLL_VOTE_MISSKEY,
+        -> notification_vote
 
         TootNotification.TYPE_STATUS -> notification_post
 
@@ -1162,7 +1120,7 @@ class SavedAccount(
     }
 
     fun updateNotificationError(text: String?) {
-        this.last_notification_error = text
+        this.lastNotificationError = text
         if (db_id != INVALID_DB_ID) {
             val cv = ContentValues()
             when (text) {
@@ -1204,7 +1162,6 @@ class SavedAccount(
         }
 
     override fun hashCode(): Int = acct.hashCode()
-
 
     fun getResizeConfig() =
         resizeConfigList.find { it.spec == this.image_resize } ?: defaultResizeConfig

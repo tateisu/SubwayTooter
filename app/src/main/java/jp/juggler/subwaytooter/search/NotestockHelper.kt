@@ -30,14 +30,14 @@ object NotestockHelper {
             ?.minByOrNull { it.second }
             ?.first
 
-    private suspend fun TootApiClient.search(query: String, max_dt: String?): TootApiResult? {
+    private suspend fun TootApiClient.search(query: String, nextId: String?): TootApiResult? {
         val result = TootApiResult.makeWithCaption("Notestock")
         if (result.error != null) return result
         if (!sendRequest(result) {
                 val url = StringBuilder().apply {
                     append("https://notestock.osa-p.net/api/v1/search.json?q=")
                     append(query.encodePercent())
-                    if (max_dt != null) append("&max_dt=").append(max_dt.encodePercent())
+                    if (nextId != null) append("&max_dt=").append(nextId.encodePercent())
                 }.toString()
 
                 Request.Builder().url(url).build()
@@ -64,21 +64,21 @@ object NotestockHelper {
 
     suspend fun ColumnTask_Loading.loadingNotestock(client: TootApiClient): TootApiResult? {
         column.idOld = null
-        val q = column.search_query.trim { it <= ' ' }
+        val q = column.searchQuery.trim { it <= ' ' }
         return if (q.isEmpty()) {
-            list_tmp = java.util.ArrayList()
+            listTmp = java.util.ArrayList()
             TootApiResult()
         } else {
-            client.search(column.search_query, null)?.also { result ->
+            client.search(column.searchQuery, null)?.also { result ->
                 result.jsonObject?.let { data ->
                     column.idOld = EntityId.mayNull(getNextId(data))
-                    list_tmp = addWithFilterStatus(
+                    listTmp = addWithFilterStatus(
                         null,
                         parseList(parser, data)
                             .also {
-                                if (it.isEmpty())
+                                if (it.isEmpty()) {
                                     log.d("search result is empty. ${result.bodyString}")
-
+                                }
                             }
                     )
                 }
@@ -88,17 +88,17 @@ object NotestockHelper {
 
     suspend fun ColumnTask_Refresh.refreshNotestock(client: TootApiClient): TootApiResult? {
         if (!bBottom) return TootApiResult("head of list.")
-        val q = column.search_query.trim { it <= ' ' }
+        val q = column.searchQuery.trim { it <= ' ' }
         val old = column.idOld?.toString()
         return if (q.isEmpty() || old == null) {
-            list_tmp = ArrayList()
+            listTmp = ArrayList()
             TootApiResult(context.getString(R.string.end_of_list))
         } else {
             client.search(q, old)?.also { result ->
                 result.jsonObject?.let { data ->
                     column.idOld = EntityId.mayNull(getNextId(data))
-                    list_tmp = addWithFilterStatus(
-                        list_tmp,
+                    listTmp = addWithFilterStatus(
+                        listTmp,
                         parseList(parser, data)
                     )
                 }

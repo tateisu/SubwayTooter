@@ -39,16 +39,14 @@ object InstanceCapability {
 //    TimelineGroup(CapabilitySource.Fedibird, "timeline_group"),
 //    TimelineGroupDirectory(CapabilitySource.Fedibird, "timeline_group_directory"),
 
-    fun quote(ti:TootInstance?) =
+    fun quote(ti: TootInstance?) =
         ti?.feature_quote == true
 
     fun visibilityMutual(ti: TootInstance?) =
         ti?.fedibird_capabilities?.contains("visibility_mutual") == true
 
-
     fun visibilityLimited(ti: TootInstance?) =
         ti?.fedibird_capabilities?.contains("visibility_limited") == true
-
 
     fun emojiReaction(ai: SavedAccount, ti: TootInstance?) =
         when {
@@ -59,7 +57,7 @@ object InstanceCapability {
                     ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
         }
 
-    fun canMultipleReaction(ai: SavedAccount, ti: TootInstance?=TootInstance.getCached(ai)) =
+    fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
         when {
             ai.isPseudo -> false
             ai.isMisskey -> false
@@ -76,7 +74,6 @@ object InstanceCapability {
                 // fedibird extension
                 ti?.fedibird_capabilities?.contains("emoji_reaction") == true
         }
-
 }
 
 class TootInstance(parser: TootParser, src: JsonObject) {
@@ -131,7 +128,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
     // (Mastodon 3.1.4)
     val invites_enabled: Boolean?
-
 
     val instanceType: InstanceType
 
@@ -215,7 +211,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             this.invites_enabled = src.boolean("invites_enabled")
 
             this.fedibird_capabilities = src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()
-            this.pleromaFeatures = src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")?.stringList()?.toSet()
+            this.pleromaFeatures =
+                src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")?.stringList()?.toSet()
         }
     }
 
@@ -277,8 +274,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         const val DESCRIPTION_DEFAULT = "(no description)"
 
         // 引数はtoken_infoかTootInstanceのパース前のいずれか
-        fun parseMisskeyVersion(token_info: JsonObject): Int {
-            return when (val o = token_info[TootApiClient.KEY_MISSKEY_VERSION]) {
+        fun parseMisskeyVersion(tokenInfo: JsonObject): Int {
+            return when (val o = tokenInfo[TootApiClient.KEY_MISSKEY_VERSION]) {
                 is Int -> o
                 is Boolean -> if (o) 10 else 0
                 else -> 0
@@ -287,7 +284,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformationMastodon(
-            forceAccessToken: String? = null
+            forceAccessToken: String? = null,
         ): TootApiResult? {
             val result = TootApiResult.makeWithCaption(apiHost?.pretty)
             if (result.error != null) return result
@@ -307,7 +304,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         }
 
         private suspend fun TootApiClient.getMisskeyEndpoints(
-            forceAccessToken: String? = null
+            forceAccessToken: String? = null,
         ): TootApiResult? {
             val result = TootApiResult.makeWithCaption(apiHost?.pretty)
             if (result.error != null) return result
@@ -328,7 +325,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformationMisskey(
-            forceAccessToken: String? = null
+            forceAccessToken: String? = null,
         ): TootApiResult? {
             val result = TootApiResult.makeWithCaption(apiHost?.pretty)
             if (result.error != null) return result
@@ -361,7 +358,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformation(
-            forceAccessToken: String? = null
+            forceAccessToken: String? = null,
         ): TootApiResult? {
 
             // misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
@@ -384,7 +381,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         fun queuedRequest(
             allowPixelfed: Boolean,
-            get: suspend (cached: TootInstance?) -> Pair<TootInstance?, TootApiResult?>
+            get: suspend (cached: TootInstance?) -> Pair<TootInstance?, TootApiResult?>,
         ) = QueuedRequest(allowPixelfed, get)
 
         // インスタンス情報のキャッシュ。同期オブジェクトを兼ねる
@@ -410,7 +407,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                     else -> pair
                 }
-
             } catch (ex: Throwable) {
                 Pair(
                     null,
@@ -419,9 +415,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             }
 
             init {
-                launchDefault{
+                launchDefault {
                     while (true) {
-                        for( req in requestQueue){
+                        for (req in requestQueue) {
                             req.result.send(handleRequest(req))
                         }
                     }
@@ -446,7 +442,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         // no request, no expiration check
         fun getCached(apiHost: String) = Host.parse(apiHost).getCacheEntry().cacheData
         fun getCached(apiHost: Host) = apiHost.getCacheEntry().cacheData
-        fun getCached(a:SavedAccount?) = a?.apiHost?.getCacheEntry()?.cacheData
+        fun getCached(a: SavedAccount?) = a?.apiHost?.getCacheEntry()?.cacheData
 
         suspend fun get(client: TootApiClient): Pair<TootInstance?, TootApiResult?> = getEx(client)
 
@@ -468,8 +464,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 // may use cached item.
                 if (!forceUpdate && forceAccessToken == null && cached != null) {
                     val now = SystemClock.elapsedRealtime()
-                    if (now - cached.time_parse <= EXPIRE)
+                    if (now - cached.time_parse <= EXPIRE) {
                         return@queuedRequest Pair(cached, TootApiResult())
+                    }
                 }
 
                 val tmpInstance = client.apiHost

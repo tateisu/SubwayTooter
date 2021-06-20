@@ -14,7 +14,7 @@ object ColumnSpec {
 
     private fun getParamEntityId(
         params: Array<out Any>,
-        @Suppress("SameParameterValue") idx: Int
+        @Suppress("SameParameterValue") idx: Int,
     ): EntityId =
         when (val o = params[idx]) {
             is EntityId -> o
@@ -46,43 +46,45 @@ object ColumnSpec {
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
                 ColumnType.FEDERATED_AROUND,
-                ColumnType.ACCOUNT_AROUND ->
-                    status_id = getParamEntityId(params, 0)
+                ColumnType.ACCOUNT_AROUND,
+                ->
+                    statusId = getParamEntityId(params, 0)
 
                 ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
-                ColumnType.MISSKEY_ANTENNA_TL ->
-                    profile_id = getParamEntityId(params, 0)
+                ColumnType.MISSKEY_ANTENNA_TL,
+                ->
+                    profileId = getParamEntityId(params, 0)
 
                 ColumnType.HASHTAG ->
                     hashtag = getParamString(params, 0)
 
                 ColumnType.HASHTAG_FROM_ACCT -> {
                     hashtag = getParamString(params, 0)
-                    hashtag_acct = getParamString(params, 1)
+                    hashtagAcct = getParamString(params, 1)
                 }
 
                 ColumnType.NOTIFICATION_FROM_ACCT -> {
-                    hashtag_acct = getParamString(params, 0)
+                    hashtagAcct = getParamString(params, 0)
                 }
 
                 ColumnType.SEARCH -> {
-                    search_query = getParamString(params, 0)
-                    search_resolve = getParamAt(params, 1)
+                    searchQuery = getParamString(params, 0)
+                    searchResolve = getParamAt(params, 1)
                 }
 
                 ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK ->
-                    search_query = getParamString(params, 0)
+                    searchQuery = getParamString(params, 0)
 
                 ColumnType.INSTANCE_INFORMATION ->
-                    instance_uri = getParamString(params, 0)
+                    instanceUri = getParamString(params, 0)
 
                 ColumnType.PROFILE_DIRECTORY -> {
-                    instance_uri = getParamString(params, 0)
-                    search_resolve = true
+                    instanceUri = getParamString(params, 0)
+                    searchResolve = true
                 }
 
                 ColumnType.DOMAIN_TIMELINE -> {
-                    instance_uri = getParamString(params, 0)
+                    instanceUri = getParamString(params, 0)
                 }
 
                 else -> {
@@ -95,10 +97,10 @@ object ColumnSpec {
         column: Column,
         ai: SavedAccount,
         type: ColumnType,
-        params: Array<out Any>
+        params: Array<out Any>,
     ): Boolean {
 
-        if (type != column.type || ai != column.access_info) return false
+        if (type != column.type || ai != column.accessInfo) return false
 
         return try {
             when (type) {
@@ -106,52 +108,55 @@ object ColumnSpec {
                 ColumnType.PROFILE,
                 ColumnType.LIST_TL,
                 ColumnType.LIST_MEMBER,
-                ColumnType.MISSKEY_ANTENNA_TL ->
-                    column.profile_id == getParamEntityId(params, 0)
+                ColumnType.MISSKEY_ANTENNA_TL,
+                ->
+                    column.profileId == getParamEntityId(params, 0)
 
                 ColumnType.CONVERSATION,
                 ColumnType.BOOSTED_BY,
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
                 ColumnType.FEDERATED_AROUND,
-                ColumnType.ACCOUNT_AROUND ->
-                    column.status_id == getParamEntityId(params, 0)
+                ColumnType.ACCOUNT_AROUND,
+                ->
+                    column.statusId == getParamEntityId(params, 0)
 
                 ColumnType.HASHTAG -> {
-                    (getParamString(params, 0) == column.hashtag)
-                        && ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtag_any)
-                        && ((getParamAtNullable<String>(params, 2) ?: "") == column.hashtag_all)
-                        && ((getParamAtNullable<String>(params, 3) ?: "") == column.hashtag_none)
+                    (getParamString(params, 0) == column.hashtag) &&
+                        ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtagAny) &&
+                        ((getParamAtNullable<String>(params, 2) ?: "") == column.hashtagAll) &&
+                        ((getParamAtNullable<String>(params, 3) ?: "") == column.hashtagNone)
                 }
 
                 ColumnType.HASHTAG_FROM_ACCT -> {
-                    (getParamString(params, 0) == column.hashtag)
-                        && ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtag_acct)
+                    (getParamString(params, 0) == column.hashtag) &&
+                        ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtagAcct)
                 }
 
                 ColumnType.NOTIFICATION_FROM_ACCT -> {
-                    ((getParamAtNullable<String>(params, 0) ?: "") == column.hashtag_acct)
+                    ((getParamAtNullable<String>(params, 0) ?: "") == column.hashtagAcct)
                 }
 
                 ColumnType.SEARCH ->
-                    getParamString(params, 0) == column.search_query &&
-                        getParamAtNullable<Boolean>(params, 1) == column.search_resolve
+                    getParamString(params, 0) == column.searchQuery &&
+                        getParamAtNullable<Boolean>(params, 1) == column.searchResolve
 
                 ColumnType.SEARCH_MSP,
                 ColumnType.SEARCH_TS,
-                ColumnType.SEARCH_NOTESTOCK ->
-                    getParamString(params, 0) == column.search_query
+                ColumnType.SEARCH_NOTESTOCK,
+                ->
+                    getParamString(params, 0) == column.searchQuery
 
                 ColumnType.INSTANCE_INFORMATION ->
-                    getParamString(params, 0) == column.instance_uri
+                    getParamString(params, 0) == column.instanceUri
 
                 ColumnType.PROFILE_DIRECTORY ->
-                    getParamString(params, 0) == column.instance_uri &&
-                        getParamAtNullable<String>(params, 1) == column.search_query &&
-                        getParamAtNullable<Boolean>(params, 2) == column.search_resolve
+                    getParamString(params, 0) == column.instanceUri &&
+                        getParamAtNullable<String>(params, 1) == column.searchQuery &&
+                        getParamAtNullable<Boolean>(params, 2) == column.searchResolve
 
                 ColumnType.DOMAIN_TIMELINE ->
-                    getParamString(params, 0) == column.instance_uri
+                    getParamString(params, 0) == column.instanceUri
 
                 else -> true
             }

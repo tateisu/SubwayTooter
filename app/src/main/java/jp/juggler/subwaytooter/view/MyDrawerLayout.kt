@@ -36,35 +36,34 @@ class MyDrawerLayout : DrawerLayout {
             //	log.d("onLayout $l,$t,$r,$b bottomExclusionSize=$bottomExclusionWidth,$bottomExclusionHeight")
 
             exclusionRects[0].set(
-				0,
-				h - bottomExclusionHeight * 2,
-				0 + bottomExclusionWidth,
-				h
-			)
+                0,
+                h - bottomExclusionHeight * 2,
+                0 + bottomExclusionWidth,
+                h
+            )
 
             exclusionRects[1].set(
-				w - bottomExclusionWidth,
-				h - bottomExclusionHeight * 2,
-				w,
-				h
-			)
+                w - bottomExclusionWidth,
+                h - bottomExclusionHeight * 2,
+                w,
+                h
+            )
 
             exclusionRects[2].set(
-				0,
-				0,
-				bottomExclusionWidth,
-				(bottomExclusionHeight * 1.5f).toInt()
-			)
+                0,
+                0,
+                bottomExclusionWidth,
+                (bottomExclusionHeight * 1.5f).toInt()
+            )
 
             exclusionRects[3].set(
-				w - bottomExclusionWidth,
-				0,
-				w,
-				(bottomExclusionHeight * 1.5).toInt()
-			)
+                w - bottomExclusionWidth,
+                0,
+                w,
+                (bottomExclusionHeight * 1.5).toInt()
+            )
 
             ViewCompat.setSystemGestureExclusionRects(this, exclusionRects)
-
 
             setWillNotDraw(false)
         }
@@ -90,6 +89,5 @@ class MyDrawerLayout : DrawerLayout {
 
         bottomExclusionWidth = w
         bottomExclusionHeight = h
-
     }
 }

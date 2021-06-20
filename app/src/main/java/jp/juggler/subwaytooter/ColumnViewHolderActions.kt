@@ -45,13 +45,12 @@ fun ColumnViewHolder.isRegexValid(): Boolean {
     return error == null
 }
 
-
 fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Boolean) {
     view ?: return
 
     val column = this.column
 
-    if (binding_busy || column == null || status_adapter == null) return
+    if (bindingBusy || column == null || statusAdapter == null) return
 
     // カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
     // リロードやリフレッシュ操作で直るようにする
@@ -60,113 +59,113 @@ fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Bool
     when (view) {
 
         cbDontCloseColumn -> {
-            column.dont_close = isChecked
+            column.dontClose = isChecked
             showColumnCloseButton()
-            activity.app_state.saveColumnList()
+            activity.appState.saveColumnList()
         }
 
         cbWithAttachment -> {
-            column.with_attachment = isChecked
-            activity.app_state.saveColumnList()
+            column.withAttachment = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbRemoteOnly -> {
-            column.remote_only = isChecked
-            activity.app_state.saveColumnList()
+            column.remoteOnly = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbWithHighlight -> {
-            column.with_highlight = isChecked
-            activity.app_state.saveColumnList()
+            column.withHighlight = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowBoost -> {
-            column.dont_show_boost = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowBoost = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowReply -> {
-            column.dont_show_reply = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowReply = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowReaction -> {
-            column.dont_show_reaction = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowReaction = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowVote -> {
-            column.dont_show_vote = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowVote = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowNormalToot -> {
-            column.dont_show_normal_toot = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowNormalToot = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowNonPublicToot -> {
-            column.dont_show_non_public_toot = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowNonPublicToot = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowFavourite -> {
-            column.dont_show_favourite = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowFavourite = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontShowFollow -> {
-            column.dont_show_follow = isChecked
-            activity.app_state.saveColumnList()
+            column.dontShowFollow = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbInstanceLocal -> {
-            column.instance_local = isChecked
-            activity.app_state.saveColumnList()
+            column.instanceLocal = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         cbDontStreaming -> {
-            column.dont_streaming = isChecked
-            activity.app_state.saveColumnList()
-            activity.app_state.streamManager.updateStreamingColumns()
+            column.dontStreaming = isChecked
+            activity.appState.saveColumnList()
+            activity.appState.streamManager.updateStreamingColumns()
         }
 
         cbDontAutoRefresh -> {
-            column.dont_auto_refresh = isChecked
-            activity.app_state.saveColumnList()
+            column.dontAutoRefresh = isChecked
+            activity.appState.saveColumnList()
         }
 
         cbHideMediaDefault -> {
-            column.hide_media_default = isChecked
-            activity.app_state.saveColumnList()
+            column.hideMediaDefault = isChecked
+            activity.appState.saveColumnList()
             column.fireShowContent(reason = "HideMediaDefault in ColumnSetting", reset = true)
         }
 
         cbSystemNotificationNotRelated -> {
-            column.system_notification_not_related = isChecked
-            activity.app_state.saveColumnList()
+            column.systemNotificationNotRelated = isChecked
+            activity.appState.saveColumnList()
         }
 
         cbEnableSpeech -> {
-            column.enable_speech = isChecked
-            activity.app_state.saveColumnList()
+            column.enableSpeech = isChecked
+            activity.appState.saveColumnList()
         }
 
         cbOldApi -> {
-            column.use_old_api = isChecked
-            activity.app_state.saveColumnList()
+            column.useOldApi = isChecked
+            activity.appState.saveColumnList()
             column.startLoading()
         }
     }
@@ -176,8 +175,8 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
     v ?: return
 
     val column = this.column
-    val status_adapter = this.status_adapter
-    if (binding_busy || column == null || status_adapter == null) return
+    val statusAdapter = this.statusAdapter
+    if (bindingBusy || column == null || statusAdapter == null) return
 
     // カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
     // リロードやリフレッシュ操作で直るようにする
@@ -191,8 +190,8 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
 
             if (column.isSearchColumn) {
                 etSearch.hideKeyboard()
-                etSearch.setText(column.search_query)
-                cbResolve.isCheckedNoAnime = column.search_resolve
+                etSearch.setText(column.searchQuery)
+                cbResolve.isCheckedNoAnime = column.searchResolve
             } else if (column.type == ColumnType.REACTIONS) {
                 updateReactionQueryView()
             }
@@ -203,19 +202,19 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
         btnSearch -> {
             if (column.isSearchColumn) {
                 etSearch.hideKeyboard()
-                column.search_query = etSearch.text.toString().trim { it <= ' ' }
-                column.search_resolve = cbResolve.isChecked
+                column.searchQuery = etSearch.text.toString().trim { it <= ' ' }
+                column.searchResolve = cbResolve.isChecked
             }
-            activity.app_state.saveColumnList()
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
         btnSearchClear -> {
-            column.search_query = ""
-            column.search_resolve = cbResolve.isChecked
+            column.searchQuery = ""
+            column.searchResolve = cbResolve.isChecked
             etSearch.setText("")
             flEmoji.removeAllViews()
-            activity.app_state.saveColumnList()
+            activity.appState.saveColumnList()
             column.startLoading()
         }
 
@@ -228,11 +227,10 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
         }
 
         btnDeleteNotification ->
-            activity.notificationDeleteAll(column.access_info)
+            activity.notificationDeleteAll(column.accessInfo)
 
         btnColor ->
-            activity.app_state.columnIndex(column)?.let { colIdx ->
-
+            activity.appState.columnIndex(column)?.let { colIdx ->
 
                 activity.arColumnColor.launch(
                     ActColumnCustomize.createIntent(activity, colIdx)
@@ -240,7 +238,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
             }
 
         btnLanguageFilter ->
-            activity.app_state.columnIndex(column)?.let { colIdx ->
+            activity.appState.columnIndex(column)?.let { colIdx ->
 
                 activity.arLanguageFilter.launch(
                     ActLanguageFilter.createIntent(activity, colIdx)
@@ -253,7 +251,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 activity.showToast(true, R.string.list_name_empty)
                 return
             }
-            activity.listCreate(column.access_info, tv, null)
+            activity.listCreate(column.accessInfo, tv, null)
         }
 
         llRefreshError -> {
@@ -275,19 +273,19 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
         btnAnnouncementsPrev -> {
             column.announcementId =
                 TootAnnouncement.move(column.announcements, column.announcementId, -1)
-            activity.app_state.saveColumnList()
+            activity.appState.saveColumnList()
             showAnnouncements()
         }
 
         btnAnnouncementsNext -> {
             column.announcementId =
                 TootAnnouncement.move(column.announcements, column.announcementId, +1)
-            activity.app_state.saveColumnList()
+            activity.appState.saveColumnList()
             showAnnouncements()
         }
 
         btnConfirmMail -> {
-            activity.accountResendConfirmMail(column.access_info)
+            activity.accountResendConfirmMail(column.accessInfo)
         }
 
         btnEmojiAdd -> {
@@ -296,16 +294,12 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
     }
 }
 
-fun ColumnViewHolder.onLongClickImpl(v: View?): Boolean {
-    v ?: return false
-    return when (v) {
-        btnColumnClose ->
-            activity.app_state.columnIndex(column)?.let {
-                activity.closeColumnAll(it)
-                true
-            } ?: false
+fun ColumnViewHolder.onLongClickImpl(v: View?): Boolean = when (v) {
+    btnColumnClose ->
+        activity.appState.columnIndex(column)?.let {
+            activity.closeColumnAll(it)
+            true
+        } ?: false
 
-        else -> false
-    }
+    else -> false
 }
-

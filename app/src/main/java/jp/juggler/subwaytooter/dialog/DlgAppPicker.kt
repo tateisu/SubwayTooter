@@ -18,12 +18,12 @@ import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
 
 class DlgAppPicker(
-	val activity: Activity,
-	val intent: Intent,
-	val autoSelect: Boolean = false,
-    val addCopyAction:Boolean= false,
-	val filter: (ResolveInfo) -> Boolean = { true },
-	val callback: (String) -> Unit,
+    val activity: Activity,
+    val intent: Intent,
+    val autoSelect: Boolean = false,
+    val addCopyAction: Boolean = false,
+    val filter: (ResolveInfo) -> Boolean = { true },
+    val callback: (String) -> Unit,
 ) {
 
     companion object {
@@ -31,22 +31,22 @@ class DlgAppPicker(
     }
 
     class ListItem(
-		val icon: Drawable?,
-		val text: String,
-		val componentName: String
-	)
+        val icon: Drawable?,
+        val text: String,
+        val componentName: String
+    )
 
     val list = ArrayList<ListItem>().apply {
 
         val pm = activity.packageManager
         val listResolveInfo = pm.queryIntentActivities(
-			intent,
-			if (Build.VERSION.SDK_INT >= 23) {
-				PackageManager.MATCH_ALL
-			} else {
-				0
-			}
-		)
+            intent,
+            if (Build.VERSION.SDK_INT >= 23) {
+                PackageManager.MATCH_ALL
+            } else {
+                0
+            }
+        )
 
         for (it in listResolveInfo) {
             if (!filter(it)) continue
@@ -57,7 +57,7 @@ class DlgAppPicker(
 
         // 自動選択オフの場合、末尾にクリップボード項目を追加する
         if (addCopyAction && !autoSelect) {
-			val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
+            val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
             add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
         }
 
@@ -98,9 +98,9 @@ class DlgAppPicker(
                 .create()
                 .apply {
                     window?.setLayout(
-						WindowManager.LayoutParams.MATCH_PARENT,
-						WindowManager.LayoutParams.WRAP_CONTENT
-					)
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT
+                    )
                     show()
                 }
 
@@ -147,12 +147,12 @@ class DlgAppPicker(
                 ivImage.setImageDrawable(item.icon)
             } else {
                 setIconDrawableId(
-					activity,
-					ivImage,
-					R.drawable.ic_question,
-					color = activity.attrColor(R.attr.colorVectorDrawable),
-					alphaMultiplier = 1f
-				)
+                    activity,
+                    ivImage,
+                    R.drawable.ic_question,
+                    color = activity.attrColor(R.attr.colorVectorDrawable),
+                    alphaMultiplier = 1f
+                )
             }
             tvText.text = item.text
         }

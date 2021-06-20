@@ -50,8 +50,8 @@ internal class ViewHolderHeaderProfile(
     private val ivFollowedBy: ImageView
     private val llProfile: View
     private val tvRemoteProfileWarning: TextView
-    private val name_invalidator: NetworkEmojiInvalidator
-    private val note_invalidator: NetworkEmojiInvalidator
+    private val nameInvalidator1: NetworkEmojiInvalidator
+    private val noteInvalidator: NetworkEmojiInvalidator
     private val llFields: LinearLayout
 
     private var whoRef: TootAccountRef? = null
@@ -65,8 +65,8 @@ internal class ViewHolderHeaderProfile(
     private val tvMovedAcct: TextView
     private val btnMoved: ImageButton
     private val ivMovedBy: ImageView
-    private val moved_caption_invalidator: NetworkEmojiInvalidator
-    private val moved_name_invalidator: NetworkEmojiInvalidator
+    private val movedCaptionInvalidator: NetworkEmojiInvalidator
+    private val movedNameInvalidator: NetworkEmojiInvalidator
     private val density: Float
     private val btnMore: ImageButton
 
@@ -104,7 +104,6 @@ internal class ViewHolderHeaderProfile(
         tvPersonalNotes = viewRoot.findViewById(R.id.tvPersonalNotes)
         btnPersonalNotesEdit = viewRoot.findViewById(R.id.btnPersonalNotesEdit)
 
-
         density = tvDisplayName.resources.displayMetrics.density
 
         for (v in arrayOf(
@@ -129,17 +128,17 @@ internal class ViewHolderHeaderProfile(
 
         tvNote.movementMethod = MyLinkMovementMethod
 
-        name_invalidator = NetworkEmojiInvalidator(activity.handler, tvDisplayName)
-        note_invalidator = NetworkEmojiInvalidator(activity.handler, tvNote)
-        moved_caption_invalidator = NetworkEmojiInvalidator(activity.handler, tvMoved)
-        moved_name_invalidator = NetworkEmojiInvalidator(activity.handler, tvMovedName)
+        nameInvalidator1 = NetworkEmojiInvalidator(activity.handler, tvDisplayName)
+        noteInvalidator = NetworkEmojiInvalidator(activity.handler, tvNote)
+        movedCaptionInvalidator = NetworkEmojiInvalidator(activity.handler, tvMoved)
+        movedNameInvalidator = NetworkEmojiInvalidator(activity.handler, tvMovedName)
 
         ivBackground.measureProfileBg = true
     }
 
     override fun showColor() {
         llProfile.setBackgroundColor(
-            when (val c = column.column_bg_color) {
+            when (val c = column.columnBgColor) {
                 0 -> activity.attrColor(R.attr.colorProfileBackgroundMask)
                 else -> -0x40000000 or (0x00ffffff and c)
             }
@@ -155,7 +154,7 @@ internal class ViewHolderHeaderProfile(
 
         var f: Float
 
-        f = activity.timeline_font_size_sp
+        f = activity.timelineFontSizeSp
         if (!f.isNaN()) {
             tvMovedName.textSize = f
             tvMoved.textSize = f
@@ -163,14 +162,14 @@ internal class ViewHolderHeaderProfile(
             tvFeaturedTags.textSize = f
         }
 
-        f = activity.acct_font_size_sp
+        f = activity.acctFontSizeSp
         if (!f.isNaN()) {
             tvMovedAcct.textSize = f
             tvCreated.textSize = f
             tvLastStatusAt.textSize = f
         }
 
-        val spacing = activity.timeline_spacing
+        val spacing = activity.timelineSpacing
         if (spacing != null) {
             tvMovedName.setLineSpacing(0f, spacing)
             tvMoved.setLineSpacing(0f, spacing)
@@ -195,7 +194,7 @@ internal class ViewHolderHeaderProfile(
             btnMore,
             R.drawable.ic_more,
             color = contentColor,
-            alphaMultiplier = Styler.boost_alpha
+            alphaMultiplier = Styler.boostAlpha
         )
 
         setIconDrawableId(
@@ -203,7 +202,7 @@ internal class ViewHolderHeaderProfile(
             btnPersonalNotesEdit,
             R.drawable.ic_edit,
             color = contentColor,
-            alphaMultiplier = Styler.boost_alpha
+            alphaMultiplier = Styler.boostAlpha
         )
 
         val acctColor = column.getAcctColor()
@@ -211,8 +210,7 @@ internal class ViewHolderHeaderProfile(
         tvMovedAcct.textColor = acctColor
         tvLastStatusAt.textColor = acctColor
 
-
-        val whoRef = column.who_account
+        val whoRef = column.whoAccount
         this.whoRef = whoRef
         val who = whoRef?.get()
 
@@ -220,7 +218,7 @@ internal class ViewHolderHeaderProfile(
         val whoDetail = if (who == null) {
             null
         } else {
-            MisskeyAccountDetailMap.get(access_info, who.id)
+            MisskeyAccountDetailMap.get(accessInfo, who.id)
         }
 
         showColor()
@@ -241,11 +239,11 @@ internal class ViewHolderHeaderProfile(
             tvAcct.text = "@"
 
             tvDisplayName.text = ""
-            name_invalidator.register(null)
+            nameInvalidator1.register(null)
 
             tvNote.text = ""
             tvMisskeyExtra.text = ""
-            note_invalidator.register(null)
+            noteInvalidator.register(null)
 
             btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
             btnFollowing.text = activity.getString(R.string.following) + "\n" + "?"
@@ -258,13 +256,13 @@ internal class ViewHolderHeaderProfile(
                 TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
 
             who.setAccountExtra(
-                access_info,
+                accessInfo,
                 tvLastStatusAt,
                 invalidator = null,
                 fromProfileHeader = true
             )
 
-            val featuredTagsText = column.who_featured_tags?.notEmpty()?.let { tagList ->
+            val featuredTagsText = column.whoFeaturedTags?.notEmpty()?.let { tagList ->
                 SpannableStringBuilder().apply {
                     append(activity.getString(R.string.featured_hashtags))
                     append(":")
@@ -291,22 +289,22 @@ internal class ViewHolderHeaderProfile(
             ivBackground.setImageUrl(
                 activity.pref,
                 0f,
-                access_info.supplyBaseUrl(who.header_static)
+                accessInfo.supplyBaseUrl(who.header_static)
             )
 
             ivAvatar.setImageUrl(
                 activity.pref,
                 Styler.calcIconRound(ivAvatar.layoutParams),
-                access_info.supplyBaseUrl(who.avatar_static),
-                access_info.supplyBaseUrl(who.avatar)
+                accessInfo.supplyBaseUrl(who.avatar_static),
+                accessInfo.supplyBaseUrl(who.avatar)
             )
 
             val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
             tvDisplayName.text = name
-            name_invalidator.register(name)
+            nameInvalidator1.register(name)
 
             tvRemoteProfileWarning.visibility =
-                if (column.access_info.isRemoteUser(who)) View.VISIBLE else View.GONE
+                if (column.accessInfo.isRemoteUser(who)) View.VISIBLE else View.GONE
 
             fun SpannableStringBuilder.appendSpan(text: String, span: Any) {
                 val start = length
@@ -323,7 +321,7 @@ internal class ViewHolderHeaderProfile(
 
                 append("@")
 
-                append(access_info.getFullAcct(who).pretty)
+                append(accessInfo.getFullAcct(who).pretty)
 
                 if (whoDetail?.locked ?: who.locked) {
                     append(" ")
@@ -358,7 +356,7 @@ internal class ViewHolderHeaderProfile(
 
             val note = whoRef.decoded_note
             tvNote.text = note
-            note_invalidator.register(note)
+            noteInvalidator.register(note)
 
             tvMisskeyExtra.text = SpannableStringBuilder().apply {
                 var s = whoDetail?.location
@@ -410,10 +408,9 @@ internal class ViewHolderHeaderProfile(
                     "${activity.getString(R.string.followers)}\n${
                         whoDetail?.followers_count ?: who.followers_count
                     }"
-
             }
 
-            val relation = UserRelation.load(access_info.db_id, who.id)
+            val relation = UserRelation.load(accessInfo.db_id, who.id)
             this.relation = relation
 
             Styler.setFollowIcon(
@@ -423,7 +420,7 @@ internal class ViewHolderHeaderProfile(
                 relation,
                 who,
                 contentColor,
-                alphaMultiplier = Styler.boost_alpha
+                alphaMultiplier = Styler.boostAlpha
             )
 
             tvPersonalNotes.text = relation.note ?: ""
@@ -441,7 +438,7 @@ internal class ViewHolderHeaderProfile(
                 val fieldDecodeOptions = DecodeOptions(
                     context = activity,
                     decodeEmoji = true,
-                    linkHelper = access_info,
+                    linkHelper = accessInfo,
                     short = true,
                     emojiMapCustom = who.custom_emojis,
                     emojiMapProfile = who.profile_emojis,
@@ -449,7 +446,7 @@ internal class ViewHolderHeaderProfile(
                 )
 
                 val nameTypeface = ActMain.timeline_font_bold
-                val valueTypeface = ActMain.timeline_font
+                val valueTypeface = ActMain.timelineFont
 
                 for (item in fields) {
 
@@ -517,7 +514,6 @@ internal class ViewHolderHeaderProfile(
                     }
 
                     llFields.addView(valueView)
-
                 }
             }
         }
@@ -535,21 +531,21 @@ internal class ViewHolderHeaderProfile(
             .intoStringResource(activity, R.string.account_moved_to)
 
         tvMoved.text = caption
-        moved_caption_invalidator.register(caption)
+        movedCaptionInvalidator.register(caption)
 
         ivMoved.layoutParams.width = activity.avatarIconSize
         ivMoved.setImageUrl(
             activity.pref,
             Styler.calcIconRound(ivMoved.layoutParams),
-            access_info.supplyBaseUrl(moved.avatar_static)
+            accessInfo.supplyBaseUrl(moved.avatar_static)
         )
 
         tvMovedName.text = movedRef.decoded_display_name
-        moved_name_invalidator.register(movedRef.decoded_display_name)
+        movedNameInvalidator.register(movedRef.decoded_display_name)
 
-        setAcct(tvMovedAcct, access_info, moved)
+        setAcct(tvMovedAcct, accessInfo, moved)
 
-        val relation = UserRelation.load(access_info.db_id, moved.id)
+        val relation = UserRelation.load(accessInfo.db_id, moved.id)
         Styler.setFollowIcon(
             activity,
             btnMoved,
@@ -557,7 +553,7 @@ internal class ViewHolderHeaderProfile(
             relation,
             moved,
             contentColor,
-            alphaMultiplier = Styler.boost_alpha
+            alphaMultiplier = Styler.boostAlpha
         )
     }
 
@@ -572,8 +568,7 @@ internal class ViewHolderHeaderProfile(
         tv.textColor = ac.color_fg.notZero() ?: column.getAcctColor()
 
         tv.setBackgroundColor(ac.color_bg) // may 0
-        tv.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)
-
+        tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
     }
 
     override fun onClick(v: View) {
@@ -584,20 +579,20 @@ internal class ViewHolderHeaderProfile(
                 activity.openCustomTab(whoRef?.get()?.url)
 
             R.id.btnFollowing -> {
-                column.profile_tab = ProfileTab.Following
-                activity.app_state.saveColumnList()
+                column.profileTab = ProfileTab.Following
+                activity.appState.saveColumnList()
                 column.startLoading()
             }
 
             R.id.btnFollowers -> {
-                column.profile_tab = ProfileTab.Followers
-                activity.app_state.saveColumnList()
+                column.profileTab = ProfileTab.Followers
+                activity.appState.saveColumnList()
                 column.startLoading()
             }
 
             R.id.btnStatusCount -> {
-                column.profile_tab = ProfileTab.Status
-                activity.app_state.saveColumnList()
+                column.profileTab = ProfileTab.Status
+                activity.appState.saveColumnList()
                 column.startLoading()
             }
 
@@ -614,13 +609,13 @@ internal class ViewHolderHeaderProfile(
             }
 
             R.id.llMoved -> movedRef?.let { movedRef ->
-                if (access_info.isPseudo) {
+                if (accessInfo.isPseudo) {
                     DlgContextMenu(activity, column, movedRef, null, null, null).show()
                 } else {
                     activity.userProfileLocal(
 
                         activity.nextPosition(column),
-                        access_info,
+                        accessInfo,
                         movedRef.get()
                     )
                 }
@@ -638,13 +633,14 @@ internal class ViewHolderHeaderProfile(
                     callback = object : DlgTextInput.Callback {
                         override fun onEmptyError() {
                         }
+
                         override fun onOK(dialog: Dialog, text: String) {
                             launchMain {
-                                activity.runApiTask(column.access_info) { client ->
+                                activity.runApiTask(column.accessInfo) { client ->
                                     when {
-                                        access_info.isPseudo ->
+                                        accessInfo.isPseudo ->
                                             TootApiResult("Personal notes is not supported on pseudo account.")
-                                        access_info.isMisskey ->
+                                        accessInfo.isMisskey ->
                                             TootApiResult("Personal notes is not supported on Misskey account.")
                                         else ->
                                             client.request(
@@ -654,9 +650,9 @@ internal class ViewHolderHeaderProfile(
                                                 }.toPostRequestBuilder()
                                             )
                                     }
-                                }?.let{result->
-                                    when(val error = result.error){
-                                        null ->{
+                                }?.let { result ->
+                                    when (val error = result.error) {
+                                        null -> {
                                             relation?.note = text
                                             dialog.dismissSafe()
                                             if (lastColumn == column) bindData(column)
@@ -679,7 +675,7 @@ internal class ViewHolderHeaderProfile(
                 activity.followFromAnotherAccount(
 
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     whoRef?.get()
                 )
                 return true
@@ -689,7 +685,7 @@ internal class ViewHolderHeaderProfile(
                 activity.followFromAnotherAccount(
 
                     activity.nextPosition(column),
-                    access_info,
+                    accessInfo,
                     movedRef?.get()
                 )
                 return true

@@ -12,7 +12,7 @@ import jp.juggler.util.*
 import okhttp3.Request
 import java.util.regex.Pattern
 
-fun interface ListMemberCallback {
+fun interface ListOnListMemberUpdatedCallback {
     fun onListMemberUpdated(willRegistered: Boolean, bSuccess: Boolean)
 }
 
@@ -20,33 +20,32 @@ private val reFollowError422 = "follow".asciiPattern(Pattern.CASE_INSENSITIVE)
 private val reFollowError404 = "Record not found".asciiPattern(Pattern.CASE_INSENSITIVE)
 
 fun ActMain.listMemberAdd(
-    access_info: SavedAccount,
-    list_id: EntityId,
-    local_who: TootAccount,
+    accessInfo: SavedAccount,
+    listId: EntityId,
+    localWho: TootAccount,
     bFollow: Boolean = false,
-    callback: ListMemberCallback?
+    callback: ListOnListMemberUpdatedCallback?,
 ) {
     launchMain {
-        runApiTask(access_info) { client ->
-            val parser = TootParser(this, access_info)
+        runApiTask(accessInfo) { client ->
+            val parser = TootParser(this, accessInfo)
 
-            var userId = local_who.id
+            var userId = localWho.id
 
-            if (access_info.isMisskey) {
+            if (accessInfo.isMisskey) {
                 // misskeyのリストはフォロー無関係
 
                 client.request(
                     "/api/users/lists/push",
-                    access_info.putMisskeyApiToken().apply {
-                        put("listId", list_id)
-                        put("userId", local_who.id)
-
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("listId", listId)
+                        put("userId", localWho.id)
                     }.toPostRequestBuilder()
                 )
                 // 204 no content
             } else {
 
-                val isMe = access_info.isMe(local_who)
+                val isMe = accessInfo.isMe(localWho)
                 if (isMe) {
                     val (ti, ri) = TootInstance.get(client)
                     ti ?: return@runApiTask ri
@@ -55,8 +54,8 @@ fun ActMain.listMemberAdd(
                     }
                 } else if (bFollow) {
                     // リモートユーザの解決
-                    if (!access_info.isLocalUser(local_who)) {
-                        val (r2, ar) = client.syncAccountByAcct(access_info, local_who.acct)
+                    if (!accessInfo.isLocalUser(localWho)) {
+                        val (r2, ar) = client.syncAccountByAcct(accessInfo, localWho.acct)
                         val user = ar?.get() ?: return@runApiTask r2
                         userId = user.id
                     }
@@ -66,7 +65,7 @@ fun ActMain.listMemberAdd(
                         "".toFormRequestBody().toPost()
                     ) ?: return@runApiTask null
 
-                    val relation = access_info.saveUserRelation(
+                    val relation = accessInfo.saveUserRelation(
                         parseItem(::TootRelationShip, parser, result.jsonObject)
                     ) ?: return@runApiTask TootApiResult("parse error.")
 
@@ -84,7 +83,7 @@ fun ActMain.listMemberAdd(
                 // リストメンバー追加
 
                 client.request(
-                    "/api/v1/lists/$list_id/accounts",
+                    "/api/v1/lists/$listId/accounts",
                     jsonObject {
                         put(
                             "account_ids",
@@ -103,9 +102,9 @@ fun ActMain.listMemberAdd(
                 val response = result?.response
                 val error = result?.error
 
-                fun isNotFollowed():Boolean{
+                fun isNotFollowed(): Boolean {
                     response ?: return false
-                    error?: return false
+                    error ?: return false
                     return when {
                         response.code == 422 && reFollowError422.matcher(error).find() -> true
                         response.code == 404 && reFollowError404.matcher(error).find() -> true
@@ -118,12 +117,12 @@ fun ActMain.listMemberAdd(
                     result == null -> {
                     }
                     result.jsonObject != null -> {
-                        for (column in app_state.columnList) {
+                        for (column in appState.columnList) {
                             // リストメンバー追加イベントをカラムに伝達
-                            column.onListMemberUpdated(access_info, list_id, local_who, true)
+                            column.onListMemberUpdated(accessInfo, listId, localWho, true)
                         }
                         // フォロー状態の更新を表示に反映させる
-                        if (bFollow) showColumnMatchAccount(access_info)
+                        if (bFollow) showColumnMatchAccount(accessInfo)
 
                         showToast(false, R.string.list_member_added)
 
@@ -136,13 +135,13 @@ fun ActMain.listMemberAdd(
                                 this@listMemberAdd,
                                 getString(
                                     R.string.list_retry_with_follow,
-                                    access_info.getFullAcct(local_who)
+                                    accessInfo.getFullAcct(localWho)
                                 )
                             ) {
                                 listMemberAdd(
-                                    access_info,
-                                    list_id,
-                                    local_who,
+                                    accessInfo,
+                                    listId,
+                                    localWho,
                                     bFollow = true,
                                     callback = callback
                                 )
@@ -166,25 +165,25 @@ fun ActMain.listMemberAdd(
 }
 
 fun ActMain.listMemberDelete(
-    access_info: SavedAccount,
-    list_id: EntityId,
-    local_who: TootAccount,
-    callback: ListMemberCallback?
+    accessInfo: SavedAccount,
+    listId: EntityId,
+    localWho: TootAccount,
+    callback: ListOnListMemberUpdatedCallback?,
 ) {
     launchMain {
-        runApiTask(access_info) { client ->
-            if (access_info.isMisskey) {
+        runApiTask(accessInfo) { client ->
+            if (accessInfo.isMisskey) {
                 client.request(
                     "/api/users/lists/pull",
-                    access_info.putMisskeyApiToken().apply {
-                        put("listId", list_id.toString())
-                        put("userId", local_who.id.toString())
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("listId", listId.toString())
+                        put("userId", localWho.id.toString())
                     }
                         .toPostRequestBuilder()
                 )
             } else {
                 client.request(
-                    "/api/v1/lists/${list_id}/accounts?account_ids[]=${local_who.id}",
+                    "/api/v1/lists/$listId/accounts?account_ids[]=${localWho.id}",
                     Request.Builder().delete()
                 )
             }
@@ -193,16 +192,16 @@ fun ActMain.listMemberDelete(
             var bSuccess = false
             try {
                 when {
-                    // cancelled.
                     result == null -> {
-
+                        // cancelled.
                     }
+
                     result.jsonObject == null ->
                         showToast(false, result.error)
 
                     else -> {
-                        for (column in app_state.columnList) {
-                            column.onListMemberUpdated(access_info, list_id, local_who, false)
+                        for (column in appState.columnList) {
+                            column.onListMemberUpdated(accessInfo, listId, localWho, false)
                         }
                         showToast(false, R.string.delete_succeeded)
                         bSuccess = true
@@ -214,4 +213,3 @@ fun ActMain.listMemberDelete(
         }
     }
 }
-

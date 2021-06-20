@@ -9,8 +9,8 @@ class StreamRelation(
     column: Column,
     val spec: StreamSpec
 ) {
-    companion object{
-        private val log =LogCategory("StreamDestination")
+    companion object {
+        private val log = LogCategory("StreamDestination")
     }
 
     val columnInternalId = column.internalId
@@ -30,4 +30,4 @@ class StreamRelation(
 }
 
 fun Column.getStreamDestination() =
-    streamSpec?.let { StreamRelation( spec = it, column = this ) }
+    streamSpec?.let { StreamRelation(spec = it, column = this) }

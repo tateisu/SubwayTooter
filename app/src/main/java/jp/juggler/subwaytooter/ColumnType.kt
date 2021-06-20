@@ -6,19 +6,19 @@ import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.search.MspHelper.loadingMSP
 import jp.juggler.subwaytooter.search.MspHelper.refreshMSP
 import jp.juggler.subwaytooter.search.NotestockHelper.loadingNotestock
 import jp.juggler.subwaytooter.search.NotestockHelper.refreshNotestock
 import jp.juggler.subwaytooter.search.TootsearchHelper.loadingTootsearch
 import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
+import jp.juggler.subwaytooter.streaming.StreamSpec
+import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
-import jp.juggler.subwaytooter.streaming.*
 
 /*
 カラム種別ごとの処理
@@ -30,7 +30,6 @@ loading,refresh,gap はそれぞれ this の種類が異なるので注意
 同じ関数を呼び出してるように見えても実際には異なるクラスの異なる関数を呼び出している場合がある
  
  */
-
 
 private val unsupportedRefresh: suspend ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? =
     { TootApiResult("edge reading not supported.") }
@@ -102,7 +101,7 @@ enum class ColumnType(
             if (instance == null) {
                 instanceResult
             } else {
-                val path = column.makeProfileStatusesUrl(column.profile_id)
+                val path = column.makeProfileStatusesUrl(column.profileId)
 
                 if (instance.versionGE(TootInstance.VERSION_1_6)
                 // 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
@@ -118,13 +117,13 @@ enum class ColumnType(
         refresh = { client ->
             getStatusList(
                 client,
-                column.makeProfileStatusesUrl(column.profile_id)
+                column.makeProfileStatusesUrl(column.profileId)
             )
         },
         gap = { client ->
             getStatusList(
                 client,
-                column.makeProfileStatusesUrl(column.profile_id),
+                column.makeProfileStatusesUrl(column.profileId),
                 mastodonFilterByIdRange = true,
             )
         },
@@ -138,9 +137,9 @@ enum class ColumnType(
 
         loading = { client ->
             // 固定トゥートの取得
-            val pinnedNotes = column.who_account?.get()?.pinnedNotes
+            val pinnedNotes = column.whoAccount?.get()?.pinnedNotes
             if (pinnedNotes != null) {
-                this.list_pinned = addWithFilterStatus(null, pinnedNotes)
+                this.listPinned = addWithFilterStatus(null, pinnedNotes)
             }
 
             // 通常トゥートの取得
@@ -177,20 +176,20 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profileId),
                 emptyMessage = context.getString(R.string.none_or_hidden_following)
             )
         },
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profile_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profileId)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profileId),
                 mastodonFilterByIdRange = false,
             )
         },
@@ -205,8 +204,8 @@ enum class ColumnType(
         loading = {
             column.idRecent = null
             column.idOld = null
-            list_tmp = addOne(
-                list_tmp,
+            listTmp = addOne(
+                listTmp,
                 TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
             )
             TootApiResult()
@@ -362,8 +361,8 @@ enum class ColumnType(
         loading = {
             column.idRecent = null
             column.idOld = null
-            list_tmp = addOne(
-                list_tmp,
+            listTmp = addOne(
+                listTmp,
                 TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
             )
             TootApiResult()
@@ -378,7 +377,7 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profileId),
                 emptyMessage = context.getString(R.string.none_or_hidden_followers)
             )
         },
@@ -386,13 +385,13 @@ enum class ColumnType(
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profileId)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profileId),
                 mastodonFilterByIdRange = false
             )
         },
@@ -440,28 +439,28 @@ enum class ColumnType(
 
         loading = { client ->
             val ra = getAnnouncements(client, force = true)
-            if (ra == null || ra.error != null)
-                ra
-            else
-                getStatusList(client, column.makeHomeTlUrl())
+            when {
+                ra == null || ra.error != null -> ra
+                else -> getStatusList(client, column.makeHomeTlUrl())
+            }
         },
         refresh = { client ->
             val ra = getAnnouncements(client)
-            if (ra == null || ra.error != null)
-                ra
-            else
-                getStatusList(client, column.makeHomeTlUrl())
+            when {
+                ra == null || ra.error != null -> ra
+                else -> getStatusList(client, column.makeHomeTlUrl())
+            }
         },
         gap = { client ->
             val ra = getAnnouncements(client)
-            if (ra == null || ra.error != null)
-                ra
-            else
-                getStatusList(
+            when {
+                ra == null || ra.error != null -> ra
+                else -> getStatusList(
                     client,
                     column.makeHomeTlUrl(),
                     mastodonFilterByIdRange = true
                 )
+            }
         },
         gapDirection = gapDirectionBoth,
         bAllowPseudo = false,
@@ -552,8 +551,8 @@ enum class ColumnType(
             when {
                 item !is TootStatus -> false
                 unmatchMastodonStream(stream, streamKeyFtl()) -> false
-                remote_only && item.account.acct == access_info.acct -> false
-                with_attachment && item.media_attachments.isNullOrEmpty() -> false
+                remoteOnly && item.account.acct == accessInfo.acct -> false
+                withAttachment && item.media_attachments.isNullOrEmpty() -> false
                 else -> true
             }
         },
@@ -598,7 +597,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.domain_timeline_of,
-                instance_uri.notEmpty() ?: "?"
+                instanceUri.notEmpty() ?: "?"
             )
         },
         bAllowPseudo = true, // サイドメニューから開けないのでこの値は参照されない
@@ -619,14 +618,14 @@ enum class ColumnType(
         canStreamingMisskey = streamingTypeYes,
 
         streamKeyMastodon = {
-            jsonObjectOf(StreamSpec.STREAM to streamKeyDomainTl(), "domain" to instance_uri)
+            jsonObjectOf(StreamSpec.STREAM to streamKeyDomainTl(), "domain" to instanceUri)
         },
 
         streamFilterMastodon = { stream, item ->
             when {
                 item !is TootStatus -> false
-                unmatchMastodonStream(stream, streamKeyDomainTl(), instance_uri) -> false
-                with_attachment && item.media_attachments.isNullOrEmpty() -> false
+                unmatchMastodonStream(stream, streamKeyDomainTl(), instanceUri) -> false
+                withAttachment && item.media_attachments.isNullOrEmpty() -> false
                 else -> true
             }
         }
@@ -639,7 +638,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.ltl_around_of,
-                status_id?.toString() ?: "null"
+                statusId?.toString() ?: "null"
             )
         },
 
@@ -657,7 +656,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.ftl_around_of,
-                status_id?.toString() ?: "null"
+                statusId?.toString() ?: "null"
             )
         },
 
@@ -673,34 +672,33 @@ enum class ColumnType(
         iconId = { R.drawable.ic_account_box },
         name1 = { it.getString(R.string.profile) },
         name2 = {
-            val who = who_account?.get()
+            val who = whoAccount?.get()
             context.getString(
                 R.string.profile_of,
-                if (who != null)
-                    AcctColor.getNickname(access_info, who)
-                else
-                    profile_id.toString()
+                when (who) {
+                    null -> profileId.toString()
+                    else -> AcctColor.getNickname(accessInfo, who)
+                }
             )
         },
         bAllowPseudo = false,
         headerType = HeaderType.Profile,
 
         loading = { client ->
-            val who_result = column.loadProfileAccount(client, parser, true)
-            if (client.isApiCancelled || column.who_account == null)
-                who_result
-            else
-                column.profile_tab.ct.loading(this, client)
-
+            val whoResult = column.loadProfileAccount(client, parser, true)
+            when {
+                client.isApiCancelled || column.whoAccount == null -> whoResult
+                else -> column.profileTab.ct.loading(this, client)
+            }
         },
 
         refresh = { client ->
             column.loadProfileAccount(client, parser, false)
-            column.profile_tab.ct.refresh(this, client)
+            column.profileTab.ct.refresh(this, client)
         },
 
-        gap = { column.profile_tab.ct.gap(this, it) },
-        gapDirection = { profile_tab.ct.gapDirection(this, it) },
+        gap = { column.profileTab.ct.gap(this, it) },
+        gapDirection = { profileTab.ct.gapDirection(this, it) },
 
         canStreamingMastodon = streamingTypeNo,
         canStreamingMisskey = streamingTypeNo,
@@ -760,7 +758,6 @@ enum class ColumnType(
         canStreamingMastodon = streamingTypeNo,
         canStreamingMisskey = streamingTypeNo,
     ),
-
 
     REACTIONS(
         42,
@@ -895,14 +892,14 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.notifications_from,
-                hashtag_acct
+                hashtagAcct
             ) + getNotificationTypeString()
         },
 
-        loading = { client -> getNotificationList(client, column.hashtag_acct) },
-        refresh = { client -> getNotificationList(client, column.hashtag_acct) },
+        loading = { client -> getNotificationList(client, column.hashtagAcct) },
+        refresh = { client -> getNotificationList(client, column.hashtagAcct) },
         gap = { client ->
-            getNotificationList(client, column.hashtag_acct, mastodonFilterByIdRange = true)
+            getNotificationList(client, column.hashtagAcct, mastodonFilterByIdRange = true)
         },
         gapDirection = gapDirectionBoth,
 
@@ -917,7 +914,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.conversation_around,
-                status_id?.toString() ?: "null"
+                statusId?.toString() ?: "null"
             )
         },
         loading = { client -> getConversation(client) },
@@ -998,7 +995,7 @@ enum class ColumnType(
                 item !is TootStatus -> false
                 //
                 unmatchMastodonStream(stream, streamKeyHashtagTl(), hashtag) -> false
-                instance_local && item.account.acct != access_info.acct -> false
+                instanceLocal && item.account.acct != accessInfo.acct -> false
                 else -> this.checkHashtagExtra(item)
             }
         },
@@ -1020,7 +1017,7 @@ enum class ColumnType(
                 context.getString(
                     R.string.hashtag_of_from,
                     hashtag.ellipsizeDot3(Column.HASHTAG_ELLIPSIZE),
-                    hashtag_acct
+                    hashtagAcct
                 )
             )
                 .appendHashtagExtra(this)
@@ -1062,7 +1059,7 @@ enum class ColumnType(
         name1 = { it.getString(R.string.search) },
         name2 = { long ->
             when {
-                long -> context.getString(R.string.search_of, search_query)
+                long -> context.getString(R.string.search_of, searchQuery)
                 else -> context.getString(R.string.search)
             }
         },
@@ -1094,10 +1091,9 @@ enum class ColumnType(
                     getAccountList(
                         client,
                         ApiPath.PATH_MISSKEY_MUTES,
-                        misskeyParams = access_info.putMisskeyApiToken(),
+                        misskeyParams = accessInfo.putMisskeyApiToken(),
                         listParser = misskeyCustomParserMutes
                     )
-
                 }
 
                 else -> getAccountList(client, ApiPath.PATH_MUTES)
@@ -1109,7 +1105,7 @@ enum class ColumnType(
                 isMisskey -> getAccountList(
                     client,
                     ApiPath.PATH_MISSKEY_MUTES,
-                    misskeyParams = access_info.putMisskeyApiToken(),
+                    misskeyParams = accessInfo.putMisskeyApiToken(),
                     arrayFinder = misskeyArrayFinderUsers,
                     listParser = misskeyCustomParserMutes
                 )
@@ -1123,7 +1119,7 @@ enum class ColumnType(
                     client,
                     ApiPath.PATH_MISSKEY_MUTES,
                     mastodonFilterByIdRange = false,
-                    misskeyParams = access_info.putMisskeyApiToken(),
+                    misskeyParams = accessInfo.putMisskeyApiToken(),
                     arrayFinder = misskeyArrayFinderUsers,
                     listParser = misskeyCustomParserMutes
                 )
@@ -1153,7 +1149,7 @@ enum class ColumnType(
                     getAccountList(
                         client,
                         ApiPath.PATH_MISSKEY_BLOCKS,
-                        misskeyParams = access_info.putMisskeyApiToken(),
+                        misskeyParams = accessInfo.putMisskeyApiToken(),
                         listParser = misskeyCustomParserBlocks
                     )
                 }
@@ -1168,7 +1164,7 @@ enum class ColumnType(
                     getAccountList(
                         client,
                         ApiPath.PATH_MISSKEY_BLOCKS,
-                        misskeyParams = access_info.putMisskeyApiToken(),
+                        misskeyParams = accessInfo.putMisskeyApiToken(),
                         listParser = misskeyCustomParserBlocks
                     )
                 }
@@ -1184,7 +1180,7 @@ enum class ColumnType(
                         client,
                         ApiPath.PATH_MISSKEY_BLOCKS,
                         mastodonFilterByIdRange = false,
-                        misskeyParams = access_info.putMisskeyApiToken(),
+                        misskeyParams = accessInfo.putMisskeyApiToken(),
                         listParser = misskeyCustomParserBlocks
                     )
                 }
@@ -1210,7 +1206,7 @@ enum class ColumnType(
                 getAccountList(
                     client,
                     ApiPath.PATH_MISSKEY_FOLLOW_REQUESTS,
-                    misskeyParams = access_info.putMisskeyApiToken(),
+                    misskeyParams = accessInfo.putMisskeyApiToken(),
                     listParser = misskeyCustomParserFollowRequest
                 )
             } else {
@@ -1222,7 +1218,7 @@ enum class ColumnType(
                 getAccountList(
                     client,
                     ApiPath.PATH_MISSKEY_FOLLOW_REQUESTS,
-                    misskeyParams = access_info.putMisskeyApiToken(),
+                    misskeyParams = accessInfo.putMisskeyApiToken(),
                     listParser = misskeyCustomParserFollowRequest
                 )
             } else {
@@ -1235,7 +1231,7 @@ enum class ColumnType(
                     client,
                     ApiPath.PATH_MISSKEY_FOLLOW_REQUESTS,
                     mastodonFilterByIdRange = false,
-                    misskeyParams = access_info.putMisskeyApiToken(),
+                    misskeyParams = accessInfo.putMisskeyApiToken(),
                     listParser = misskeyCustomParserFollowRequest
                 )
             } else {
@@ -1260,19 +1256,19 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, column.status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, column.statusId)
             )
         },
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, posted_status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, postedStatusId)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, column.status_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, column.statusId),
                 mastodonFilterByIdRange = false,
             )
         },
@@ -1289,19 +1285,19 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, column.status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, column.statusId)
             )
         },
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, posted_status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, postedStatusId)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, column.status_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, column.statusId),
                 mastodonFilterByIdRange = false,
             )
         },
@@ -1331,7 +1327,7 @@ enum class ColumnType(
         name1 = { it.getString(R.string.toot_search_msp) },
         name2 = { long ->
             when {
-                long -> context.getString(R.string.toot_search_msp_of, search_query)
+                long -> context.getString(R.string.toot_search_msp_of, searchQuery)
                 else -> context.getString(R.string.toot_search_msp)
             }
         },
@@ -1350,7 +1346,7 @@ enum class ColumnType(
         name1 = { it.getString(R.string.toot_search_ts) },
         name2 = { long ->
             when {
-                long -> context.getString(R.string.toot_search_ts_of, search_query)
+                long -> context.getString(R.string.toot_search_ts_of, searchQuery)
                 else -> context.getString(R.string.toot_search_ts)
             }
         },
@@ -1369,7 +1365,7 @@ enum class ColumnType(
         name1 = { it.getString(R.string.toot_search_notestock) },
         name2 = { long ->
             when {
-                long -> context.getString(R.string.toot_search_notestock_of, search_query)
+                long -> context.getString(R.string.toot_search_notestock_of, searchQuery)
                 else -> context.getString(R.string.toot_search_notestock)
             }
         },
@@ -1388,7 +1384,7 @@ enum class ColumnType(
         name1 = { it.getString(R.string.instance_information) },
         name2 = { long ->
             when {
-                long -> context.getString(R.string.instance_information_of, instance_uri)
+                long -> context.getString(R.string.instance_information_of, instanceUri)
                 else -> context.getString(R.string.instance_information)
             }
         },
@@ -1397,12 +1393,12 @@ enum class ColumnType(
         loading = { client ->
             val (ti, ri) = TootInstance.getEx(
                 client,
-                Host.parse(column.instance_uri),
+                Host.parse(column.instanceUri),
                 allowPixelfed = true,
                 forceUpdate = true
             )
             if (ti != null) {
-                column.instance_information = ti
+                column.instanceInformation = ti
                 column.handshake = ri?.response?.handshake
             }
             ri
@@ -1443,7 +1439,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.list_tl_of,
-                list_info?.title ?: profile_id.toString()
+                listInfo?.title ?: profileId.toString()
             )
         },
 
@@ -1454,7 +1450,7 @@ enum class ColumnType(
                     client,
                     column.makeListTlUrl(),
                     misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
-                        put("listId", column.profile_id)
+                        put("listId", column.profileId)
                     }
                 )
             } else {
@@ -1469,7 +1465,7 @@ enum class ColumnType(
                     client,
                     column.makeListTlUrl(),
                     misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
-                        put("listId", column.profile_id)
+                        put("listId", column.profileId)
                     }
                 )
             } else {
@@ -1484,7 +1480,7 @@ enum class ColumnType(
                     column.makeListTlUrl(),
                     mastodonFilterByIdRange = true,
                     misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
-                        put("listId", column.profile_id)
+                        put("listId", column.profileId)
                     }
                 )
             } else {
@@ -1499,20 +1495,20 @@ enum class ColumnType(
         canStreamingMisskey = streamingTypeYes,
 
         streamKeyMastodon = {
-            jsonObjectOf(StreamSpec.STREAM to "list", "list" to profile_id.toString())
+            jsonObjectOf(StreamSpec.STREAM to "list", "list" to profileId.toString())
         },
 
         streamFilterMastodon = { stream, item ->
             when {
                 item !is TootStatus -> false
-                unmatchMastodonStream(stream, "list", profile_id?.toString()) -> false
+                unmatchMastodonStream(stream, "list", profileId?.toString()) -> false
                 else -> true
             }
         },
 
         streamNameMisskey = "userList",
-        streamParamMisskey = { jsonObjectOf("listId" to profile_id.toString()) },
-        streamPathMisskey9 = { "/user-list?listId=${profile_id.toString()}" },
+        streamParamMisskey = { jsonObjectOf("listId" to profileId.toString()) },
+        streamPathMisskey9 = { "/user-list?listId=$profileId" },
 
         ),
 
@@ -1523,7 +1519,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.list_member_of,
-                list_info?.title ?: profile_id.toString()
+                listInfo?.title ?: profileId.toString()
             )
         },
 
@@ -1534,16 +1530,15 @@ enum class ColumnType(
                 getAccountList(
                     client,
                     "/api/users/show",
-                    misskeyParams = access_info.putMisskeyApiToken().apply {
-                        val list = column.list_info?.userIds?.map { it.toString() }?.toJsonArray()
+                    misskeyParams = accessInfo.putMisskeyApiToken().apply {
+                        val list = column.listInfo?.userIds?.map { it.toString() }?.toJsonArray()
                         if (list != null) put("userIds", list)
                     }
                 )
-
             } else {
                 getAccountList(
                     client,
-                    String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profile_id)
+                    String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profileId)
                 )
             }
         },
@@ -1552,7 +1547,7 @@ enum class ColumnType(
             column.loadListInfo(client, false)
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profile_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profileId)
             )
         },
 
@@ -1567,7 +1562,7 @@ enum class ColumnType(
 
         loading = { client ->
             column.useConversationSummaries = false
-            if (column.use_old_api) {
+            if (column.useOldApi) {
                 getStatusList(client, ApiPath.PATH_DIRECT_MESSAGES)
             } else {
                 // try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
@@ -1645,9 +1640,9 @@ enum class ColumnType(
             val result = client.request("/api/v1/trends")
             val src = parser.tagList(result?.jsonArray)
 
-            this.list_tmp = addAll(this.list_tmp, src)
-            this.list_tmp = addOne(
-                this.list_tmp, TootMessageHolder(
+            this.listTmp = addAll(this.listTmp, src)
+            this.listTmp = addOne(
+                this.listTmp, TootMessageHolder(
                     context.getString(R.string.trend_tag_desc),
                     gravity = Gravity.END
                 )
@@ -1672,7 +1667,7 @@ enum class ColumnType(
                 getAccountList(
                     client,
                     ApiPath.PATH_MISSKEY_FOLLOW_SUGGESTION,
-                    misskeyParams = access_info.putMisskeyApiToken()
+                    misskeyParams = accessInfo.putMisskeyApiToken()
                 )
             } else {
                 val (ti, ri) = TootInstance.get(client)
@@ -1695,7 +1690,7 @@ enum class ColumnType(
                 getAccountList(
                     client,
                     ApiPath.PATH_MISSKEY_FOLLOW_SUGGESTION,
-                    misskeyParams = access_info.putMisskeyApiToken()
+                    misskeyParams = accessInfo.putMisskeyApiToken()
                 )
             } else {
                 val (ti, ri) = TootInstance.get(client)
@@ -1719,7 +1714,7 @@ enum class ColumnType(
                     client,
                     ApiPath.PATH_MISSKEY_FOLLOW_SUGGESTION,
                     mastodonFilterByIdRange = false,
-                    misskeyParams = access_info.putMisskeyApiToken()
+                    misskeyParams = accessInfo.putMisskeyApiToken()
                 )
             } else {
                 val (ti, ri) = TootInstance.get(client)
@@ -1774,7 +1769,7 @@ enum class ColumnType(
         36,
         iconId = { R.drawable.ic_follow_plus },
         name1 = { it.getString(R.string.profile_directory) },
-        name2 = { context.getString(R.string.profile_directory_of, instance_uri) },
+        name2 = { context.getString(R.string.profile_directory_of, instanceUri) },
         bAllowPseudo = true,
         headerType = HeaderType.ProfileDirectory,
         loading = { client ->
@@ -1795,14 +1790,14 @@ enum class ColumnType(
         iconId = { R.drawable.ic_account_box },
         name1 = { it.getString(R.string.account_tl_around) },
         name2 = {
-            val id = status_id?.toString() ?: "null"
+            val id = statusId?.toString() ?: "null"
             context.getString(R.string.account_tl_around_of, id)
         },
 
         loading = { client -> getAccountTlAroundTime(client) },
 
         refresh = { client ->
-            getStatusList(client, column.makeProfileStatusesUrl(column.profile_id), useMinId = true)
+            getStatusList(client, column.makeProfileStatusesUrl(column.profileId), useMinId = true)
         },
 
         canStreamingMastodon = streamingTypeNo,
@@ -1859,11 +1854,11 @@ enum class ColumnType(
             if (result == null || result.error != null) {
                 result
             } else {
-                val a = parser.account(result.jsonObject) ?: access_info.loginAccount
+                val a = parser.account(result.jsonObject) ?: accessInfo.loginAccount
                 if (a == null) {
                     TootApiResult("can't parse account information")
                 } else {
-                    column.who_account = TootAccountRef(parser, a)
+                    column.whoAccount = TootAccountRef(parser, a)
                     getScheduledStatuses(client)
                 }
             }
@@ -1907,7 +1902,7 @@ enum class ColumnType(
         name2 = {
             context.getString(
                 R.string.antenna_timeline_of,
-                antenna_info?.name ?: profile_id.toString()
+                antennaInfo?.name ?: profileId.toString()
             )
         },
 
@@ -1919,7 +1914,7 @@ enum class ColumnType(
                     client,
                     column.makeAntennaTlUrl(),
                     misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
-                        put("antennaId", column.profile_id)
+                        put("antennaId", column.profileId)
                     }
                 )
             } else {
@@ -1934,7 +1929,7 @@ enum class ColumnType(
                     client,
                     column.makeAntennaTlUrl(),
                     misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
-                        put("antennaId", column.profile_id)
+                        put("antennaId", column.profileId)
                     }
                 )
             } else {
@@ -1949,7 +1944,7 @@ enum class ColumnType(
                     column.makeAntennaTlUrl(),
                     mastodonFilterByIdRange = true,
                     misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
-                        put("antennaId", column.profile_id)
+                        put("antennaId", column.profileId)
                     }
                 )
             } else {
@@ -1964,7 +1959,7 @@ enum class ColumnType(
         canStreamingMisskey = streamingTypeYes,
 
         streamNameMisskey = "antenna",
-        streamParamMisskey = { jsonObjectOf("antennaId" to profile_id.toString()) },
+        streamParamMisskey = { jsonObjectOf("antennaId" to profileId.toString()) },
         // Misskey10 にアンテナはない
     ),
 
@@ -1995,29 +1990,28 @@ enum class ColumnType(
     }
 }
 
-
 // public:local, public:local:media の2種類
 fun Column.streamKeyLtl() =
     "public:local"
-        .appendIf(":media", with_attachment)
+        .appendIf(":media", withAttachment)
 
 // public, public:remote, public:remote:media, public:media の4種類
 fun Column.streamKeyFtl() =
     "public"
-        .appendIf(":remote", remote_only)
-        .appendIf(":media", with_attachment)
+        .appendIf(":remote", remoteOnly)
+        .appendIf(":media", withAttachment)
 
 // public:domain, public:domain:media の2種類
 fun Column.streamKeyDomainTl() =
     "public:domain"
-        .appendIf(":media", with_attachment)
+        .appendIf(":media", withAttachment)
 
 // hashtag, hashtag:local
 // fedibirdだとhashtag:localは無効でイベントが発生しないが、
 // REST APIはフラグを無視するのでユーザからはストリーミングが動作していないように見える
 fun Column.streamKeyHashtagTl() =
     "hashtag"
-        .appendIf(":local", instance_local)
+        .appendIf(":local", instanceLocal)
 
 private fun unmatchMastodonStream(stream: JsonArray, name: String, expectArg: String? = null): Boolean {
 

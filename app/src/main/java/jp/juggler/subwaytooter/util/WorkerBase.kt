@@ -18,7 +18,7 @@ abstract class WorkerBase(
 
     suspend fun waitEx(ms: Long) = try {
         withTimeout(ms) { waiter.receive() }
-    } catch (ex: TimeoutCancellationException) {
+    } catch (ignored: TimeoutCancellationException) {
         null
     }
 

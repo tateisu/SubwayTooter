@@ -27,13 +27,15 @@ import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.padding
 import org.jetbrains.anko.textColor
 
-
 fun ColumnViewHolder.hideAnnouncements() {
     val column = column ?: return
 
-    if (column.announcementHideTime <= 0L)
+    if (column.announcementHideTime <= 0L) {
         column.announcementHideTime = System.currentTimeMillis()
-    activity.app_state.saveColumnList()
+    }
+
+    activity.appState.saveColumnList()
+
     showAnnouncements()
 }
 
@@ -41,13 +43,14 @@ fun ColumnViewHolder.toggleAnnouncements() {
     val column = column ?: return
 
     if (llAnnouncementsBox.visibility == View.VISIBLE) {
-        if (column.announcementHideTime <= 0L)
+        if (column.announcementHideTime <= 0L) {
             column.announcementHideTime = System.currentTimeMillis()
+        }
     } else {
         showColumnSetting(false)
         column.announcementHideTime = 0L
     }
-    activity.app_state.saveColumnList()
+    activity.appState.saveColumnList()
     showAnnouncements()
 }
 
@@ -60,10 +63,10 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     lastAnnouncementShown = SystemClock.elapsedRealtime()
 
     fun clearExtras() {
-        for (invalidator in extra_invalidator_list) {
+        for (invalidator in extraInvalidatorList) {
             invalidator.register(null)
         }
-        extra_invalidator_list.clear()
+        extraInvalidatorList.clear()
     }
     llAnnouncementExtra.removeAllViews()
     clearExtras()
@@ -94,7 +97,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         return
     }
 
-    val content_color = column.getContentColor()
+    val contentColor = column.getContentColor()
 
     val item = listShown.find { it.id == column.announcementId }
         ?: listShown[0]
@@ -109,7 +112,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         activity,
         btnAnnouncementsPrev,
         R.drawable.ic_arrow_start,
-        color = content_color,
+        color = contentColor,
         alphaMultiplier = alphaPrevNext
     )
 
@@ -117,10 +120,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         activity,
         btnAnnouncementsNext,
         R.drawable.ic_arrow_end,
-        color = content_color,
+        color = contentColor,
         alphaMultiplier = alphaPrevNext
     )
-
 
     btnAnnouncementsPrev.vg(expand)?.apply {
         isEnabledAlpha = enablePaging
@@ -129,27 +131,27 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         isEnabledAlpha = enablePaging
     }
 
-    tvAnnouncementsCaption.textColor = content_color
-    tvAnnouncementsIndex.textColor = content_color
-    tvAnnouncementPeriod.textColor = content_color
+    tvAnnouncementsCaption.textColor = contentColor
+    tvAnnouncementsIndex.textColor = contentColor
+    tvAnnouncementPeriod.textColor = contentColor
 
-    val f = activity.timeline_font_size_sp
+    val f = activity.timelineFontSizeSp
     if (!f.isNaN()) {
         tvAnnouncementsCaption.textSize = f
         tvAnnouncementsIndex.textSize = f
         tvAnnouncementPeriod.textSize = f
         tvAnnouncementContent.textSize = f
     }
-    val spacing = activity.timeline_spacing
+    val spacing = activity.timelineSpacing
     if (spacing != null) {
         tvAnnouncementPeriod.setLineSpacing(0f, spacing)
         tvAnnouncementContent.setLineSpacing(0f, spacing)
     }
     tvAnnouncementsCaption.typeface = ActMain.timeline_font_bold
-    val font_normal = ActMain.timeline_font
-    tvAnnouncementsIndex.typeface = font_normal
-    tvAnnouncementPeriod.typeface = font_normal
-    tvAnnouncementContent.typeface = font_normal
+    val fontNormal = ActMain.timelineFont
+    tvAnnouncementsIndex.typeface = fontNormal
+    tvAnnouncementPeriod.typeface = fontNormal
+    tvAnnouncementContent.typeface = fontNormal
 
     tvAnnouncementsIndex.vg(expand)?.text =
         activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
@@ -198,7 +200,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     val sb = periods
     tvAnnouncementPeriod.vg(sb != null)?.text = sb
 
-    tvAnnouncementContent.textColor = content_color
+    tvAnnouncementContent.textColor = contentColor
     tvAnnouncementContent.text = item.decoded_content
     tvAnnouncementContent.tag = this@showAnnouncements
     announcementContentInvalidator.register(item.decoded_content)
@@ -252,7 +254,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
             activity,
             b,
             R.drawable.ic_add,
-            color = content_color,
+            color = contentColor,
             alphaMultiplier = 1f
         )
 
@@ -265,10 +267,10 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
 
         val options = DecodeOptions(
             activity,
-            column.access_info,
+            column.accessInfo,
             decodeEmoji = true,
             enlargeEmoji = 1.5f,
-            mentionDefaultHostDomain = column.access_info
+            mentionDefaultHostDomain = column.accessInfo
         )
 
         val actMain = activity
@@ -305,10 +307,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
                     ContextCompat.getDrawable(actMain, R.drawable.btn_bg_transparent_round6dp)
                 }
 
-                btn.setTextColor(content_color)
+                btn.setTextColor(contentColor)
 
                 btn.setPadding(paddingH, paddingV, paddingH, paddingV)
-
 
                 btn.text = if (url == null) {
                     EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
@@ -323,7 +324,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
                         val invalidator =
                             NetworkEmojiInvalidator(actMain.handler, btn)
                         invalidator.register(sb)
-                        extra_invalidator_list.add(invalidator)
+                        extraInvalidatorList.add(invalidator)
                     }
                 }
 
@@ -343,7 +344,6 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
             }
             box.addView(b)
             lastButton = b
-
         }
 
         lastButton
@@ -355,11 +355,10 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     llAnnouncementExtra.addView(box)
 }
 
-
 fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) {
     val column = column ?: return
     if (sample == null) {
-        EmojiPicker(activity, column.access_info, closeOnSelected = true) { result ->
+        EmojiPicker(activity, column.accessInfo, closeOnSelected = true) { result ->
             val emoji = result.emoji
             val code = when (emoji) {
                 is UnicodeEmoji -> emoji.unifiedCode
@@ -373,7 +372,7 @@ fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) 
                 // 以下はカスタム絵文字のみ
                 if (emoji is CustomEmoji) {
                     putNotNull("url", emoji.url)
-                    putNotNull("static_url", emoji.static_url)
+                    putNotNull("static_url", emoji.staticUrl)
                 }
             }))
         }.show()
@@ -381,7 +380,7 @@ fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) 
     }
 
     launchMain {
-        activity.runApiTask(column.access_info) { client ->
+        activity.runApiTask(column.accessInfo) { client ->
             client.request(
                 "/api/v1/announcements/${item.id}/reactions/${sample.name.encodePercent()}",
                 JsonObject().toPutRequestBuilder()
@@ -415,7 +414,7 @@ fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) 
 fun ColumnViewHolder.reactionRemove(item: TootAnnouncement, name: String) {
     val column = column ?: return
     launchMain {
-        activity.runApiTask(column.access_info) { client ->
+        activity.runApiTask(column.accessInfo) { client ->
             client.request(
                 "/api/v1/announcements/${item.id}/reactions/${name.encodePercent()}",
                 JsonObject().toDeleteRequestBuilder()
@@ -439,7 +438,6 @@ fun ColumnViewHolder.reactionRemove(item: TootAnnouncement, name: String) {
                         column.announcementUpdated = SystemClock.elapsedRealtime()
                         showAnnouncements()
                     }
-
             }
         }
     }

@@ -12,7 +12,7 @@ private fun addLinkAndCaption(
     sb: StringBuilder,
     header: String?,
     url: String?,
-    caption: String?
+    caption: String?,
 ) {
 
     if (url.isNullOrEmpty() && caption.isNullOrEmpty()) return
@@ -39,7 +39,6 @@ private fun addLinkAndCaption(
     if (url != null && url.isNotEmpty()) {
         sb.append("</a>")
     }
-
 }
 
 fun ItemViewHolder.showPreviewCard(status: TootStatus) {
@@ -49,9 +48,9 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
     val card = status.card ?: return
 
     // 会話カラムで返信ステータスなら捏造したカードを表示しない
-    if (column.type == ColumnType.CONVERSATION
-        && card.originalStatus != null
-        && status.reply != null
+    if (column.type == ColumnType.CONVERSATION &&
+        card.originalStatus != null &&
+        status.reply != null
     ) {
         return
     }
@@ -62,7 +61,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
     fun showString() {
         if (sb.isNotEmpty()) {
             val text = DecodeOptions(
-                activity, access_info,
+                activity, accessInfo,
                 forceHtml = true,
                 mentionDefaultHostDomain = status.account
             ).decodeHTML(sb.toString())
@@ -128,10 +127,10 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             flCardImage.layoutParams.height = if (card.originalStatus != null) {
                 activity.avatarIconSize
             } else {
-                activity.app_state.media_thumb_height
+                activity.appState.mediaThumbHeight
             }
 
-            val imageUrl = access_info.supplyBaseUrl(image)
+            val imageUrl = accessInfo.supplyBaseUrl(image)
             ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
 
             btnCardImageShow.blurhash = card.blurhash
@@ -140,14 +139,14 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             bShowOuter = true
 
             // show about image content
-            val default_shown = when {
-                column.hide_media_default -> false
-                access_info.dont_hide_nsfw -> true
+            val defaultShown = when {
+                column.hideMediaDefault -> false
+                accessInfo.dont_hide_nsfw -> true
                 else -> !status.sensitive
             }
-            val is_shown = MediaShown.isShown(status, default_shown)
-            llCardImage.vg(is_shown)
-            btnCardImageShow.vg(!is_shown)
+            val isShown = MediaShown.isShown(status, defaultShown)
+            llCardImage.vg(isShown)
+            btnCardImageShow.vg(!isShown)
         }
     }
 

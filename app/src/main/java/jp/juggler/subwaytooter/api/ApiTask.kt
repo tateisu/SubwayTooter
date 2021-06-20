@@ -21,6 +21,7 @@ import java.text.NumberFormat
 */
 interface ApiTask {
     val isActive: Any
+
     companion object {
         val defaultProgressSetupCallback: (progress: ProgressDialogEx) -> Unit = { }
 
@@ -32,9 +33,9 @@ interface ApiTask {
 
 private class TootTaskRunner(
     context: Context,
-    private val progress_style: Int = ApiTask.PROGRESS_SPINNER,
-    private val progress_prefix: String? = null,
-    private val progressSetupCallback: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback
+    private val progressStyle: Int = ApiTask.PROGRESS_SPINNER,
+    private val progressPrefix: String? = null,
+    private val progressSetupCallback: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
 ) : TootApiCallback, ApiTask {
 
     companion object {
@@ -54,8 +55,8 @@ private class TootTaskRunner(
             if (!isMainThread) error("runApiTask: not main thread")
             val runner = TootTaskRunner(
                 context = context,
-                progress_style = progressStyle,
-                progress_prefix = progressPrefix,
+                progressStyle = progressStyle,
+                progressPrefix = progressPrefix,
                 progressSetupCallback = progressSetup
             )
             return runner.run {
@@ -64,12 +65,12 @@ private class TootTaskRunner(
                 withContext(SupervisorJob() + Dispatchers.Main) {
                     try {
                         openProgress()
-                        asyncIO{
+                        asyncIO {
                             backgroundBlock(context, client)
                         }.also {
                             task = it
                         }.await()
-                    } catch (ex: CancellationException) {
+                    } catch (ignored: CancellationException) {
                         null
                     } catch (ex: Throwable) {
                         TootApiResult(ex.withCaption("error"))
@@ -103,9 +104,9 @@ private class TootTaskRunner(
     private var progress: ProgressDialogEx? = null
     private var task: Deferred<TootApiResult?>? = null
     private val refContext = WeakReference(context)
-    private var last_message_shown: Long = 0
+    private var lastMessageShown = 0L
 
-    private val proc_progress_message = Runnable {
+    private val procProgressMessage = Runnable {
         if (progress?.isShowing == true) showProgressMessage()
     }
 
@@ -144,7 +145,7 @@ private class TootTaskRunner(
 
     private fun openProgress() {
         // open progress
-        if (progress_style != ApiTask.PROGRESS_NONE) {
+        if (progressStyle != ApiTask.PROGRESS_NONE) {
             val context = refContext.get()
             if (context != null && context is Activity) {
                 val progress = ProgressDialogEx(context)
@@ -152,7 +153,7 @@ private class TootTaskRunner(
                 progress.setCancelable(true)
                 progress.setOnCancelListener { task?.cancel() }
                 @Suppress("DEPRECATION")
-                progress.setProgressStyle(progress_style)
+                progress.setProgressStyle(progressStyle)
                 progressSetupCallback(progress)
                 showProgressMessage()
                 progress.show()
@@ -174,12 +175,12 @@ private class TootTaskRunner(
 
         synchronized(this) {
             val message = info.message.trim { it <= ' ' }
-            val progress_prefix = this.progress_prefix
+            val progressPrefix = this.progressPrefix
             progress.setMessageEx(
                 when {
-                    progress_prefix?.isNotEmpty() != true -> message
-                    message.isEmpty() -> progress_prefix
-                    else -> "$progress_prefix\n$message"
+                    progressPrefix?.isNotEmpty() != true -> message
+                    message.isEmpty() -> progressPrefix
+                    else -> "$progressPrefix\n$message"
                 }
             )
 
@@ -194,7 +195,7 @@ private class TootTaskRunner(
                 progress.setProgressPercentFormat(percent_format)
             }
 
-            last_message_shown = SystemClock.elapsedRealtime()
+            lastMessageShown = SystemClock.elapsedRealtime()
         }
     }
 
@@ -202,12 +203,12 @@ private class TootTaskRunner(
     // あまり頻繁に更新せず、しかし繰り返し呼ばれ続けても時々は更新したい
     // どのスレッドから呼ばれるか分からない
     private fun delayProgressMessage() {
-        var wait = 100L + last_message_shown - SystemClock.elapsedRealtime()
+        var wait = 100L + lastMessageShown - SystemClock.elapsedRealtime()
         wait = wait.clip(0L, 100L)
 
         synchronized(this) {
-            handler.removeCallbacks(proc_progress_message)
-            handler.postDelayed(proc_progress_message, wait)
+            handler.removeCallbacks(procProgressMessage)
+            handler.postDelayed(procProgressMessage, wait)
         }
     }
 }
@@ -226,7 +227,7 @@ suspend fun <A : Context> A.runApiTask(
     progressPrefix: String? = null,
     progressSetup: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
     backgroundBlock: suspend A.(client: TootApiClient) -> TootApiResult?,
-) = TootTaskRunner.runApiTask(this, null, apiHost, progressStyle, progressPrefix, progressSetup,  backgroundBlock)
+) = TootTaskRunner.runApiTask(this, null, apiHost, progressStyle, progressPrefix, progressSetup, backgroundBlock)
 
 suspend fun <A : Context> A.runApiTask(
     progressStyle: Int = ApiTask.PROGRESS_SPINNER,

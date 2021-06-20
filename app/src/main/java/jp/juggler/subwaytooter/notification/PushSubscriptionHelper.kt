@@ -16,7 +16,7 @@ import okhttp3.Request
 class PushSubscriptionHelper(
     val context: Context,
     val account: SavedAccount,
-    val verbose: Boolean = false
+    val verbose: Boolean = false,
 ) {
 
     companion object {
@@ -76,7 +76,7 @@ class PushSubscriptionHelper(
     private suspend fun updateServerKey(
         client: TootApiClient,
         clientIdentifier: String,
-        serverKey: String?
+        serverKey: String?,
     ): TootApiResult {
 
         if (serverKey == null) {
@@ -124,7 +124,7 @@ class PushSubscriptionHelper(
     private suspend fun registerEndpoint(
         client: TootApiClient,
         deviceId: String,
-        endpoint: String
+        endpoint: String,
     ): TootApiResult {
 
         if (account.last_push_endpoint == endpoint) return TootApiResult()
@@ -157,7 +157,7 @@ class PushSubscriptionHelper(
 
         // 現在の購読状態を取得できないので、毎回購読の更新を行う
         // FCMのデバイスIDを取得
-        val device_id = PollingWorker.getFirebaseMessagingToken(context)
+        val deviceId = PollingWorker.getFirebaseMessagingToken(context)
             ?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
 
         // アクセストークン
@@ -165,15 +165,15 @@ class PushSubscriptionHelper(
             ?: return TootApiResult(error = "missing misskeyApiToken.")
 
         // インストールIDを取得
-        val install_id = PollingWorker.prepareInstallId(context)
+        val installId = PollingWorker.prepareInstallId(context)
             ?: return TootApiResult(error = context.getString(R.string.missing_install_id))
 
         // クライアント識別子
-        val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
+        val clientIdentifier = "$accessToken$installId".digestSHA256Base64Url()
 
         // 購読が不要な場合
         // アプリサーバが410を返せるように状態を通知する
-        if (flags == 0) return registerEndpoint(client, device_id, "none").also {
+        if (flags == 0) return registerEndpoint(client, deviceId, "none").also {
             if (it.error == null && verbose) addLog(context.getString(R.string.push_subscription_updated))
         }
 
@@ -190,10 +190,10 @@ class PushSubscriptionHelper(
         // 2018/9/1 の上記コミット以降、Misskeyでもサーバ公開鍵を得られるようになった
 
         val endpoint =
-            "${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier/misskey"
+            "${PollingWorker.APP_SERVER}/webpushcallback/${deviceId.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier/misskey"
 
         // アプリサーバが過去のendpoint urlに410を返せるよう、状態を通知する
-        val r = registerEndpoint(client, device_id, endpoint.toUri().encodedPath!!)
+        val r = registerEndpoint(client, deviceId, endpoint.toUri().encodedPath!!)
         if (r.error != null) return r
 
         // 購読
@@ -254,8 +254,9 @@ class PushSubscriptionHelper(
 
             403 -> {
                 // アクセストークンにpushスコープがない
-                if (flags != 0 || verbose)
+                if (flags != 0 || verbose) {
                     addLog(context.getString(R.string.missing_push_scope))
+                }
                 return r
             }
 
@@ -270,7 +271,6 @@ class PushSubscriptionHelper(
             }
         }
 
-
         val oldSubscription = parseItem(::TootPushSubscription, r.jsonObject)
         if (oldSubscription == null) {
             log.i("${account.acct}: oldSubscription is null")
@@ -279,10 +279,11 @@ class PushSubscriptionHelper(
             ti ?: return result
 
             // 2.4.0rc1 未満にはプッシュ購読APIはない
-            if (!ti.versionGE(TootInstance.VERSION_2_4_0_rc1))
+            if (!ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {
                 return TootApiResult(
                     context.getString(R.string.instance_does_not_support_push_api, ti.version)
                 )
+            }
 
             if (subscription404 && flags == 0) {
                 when {
@@ -301,7 +302,7 @@ class PushSubscriptionHelper(
         }
 
         // FCMのデバイスIDを取得
-        val device_id = PollingWorker.getFirebaseMessagingToken(context)
+        val deviceId = PollingWorker.getFirebaseMessagingToken(context)
             ?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
 
         // アクセストークン
@@ -309,17 +310,17 @@ class PushSubscriptionHelper(
             ?: return TootApiResult(error = "missing access token.")
 
         // インストールIDを取得
-        val install_id = PollingWorker.prepareInstallId(context)
+        val installId = PollingWorker.prepareInstallId(context)
             ?: return TootApiResult(error = context.getString(R.string.missing_install_id))
 
         // アクセストークンのダイジェスト
         val tokenDigest = accessToken.digestSHA256Base64Url()
 
         // クライアント識別子
-        val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
+        val clientIdentifier = "$accessToken$installId".digestSHA256Base64Url()
 
         val endpoint =
-            "${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier"
+            "${PollingWorker.APP_SERVER}/webpushcallback/${deviceId.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier"
 
         val newAlerts = JsonObject().apply {
             put("follow", account.notification_follow)
@@ -387,7 +388,7 @@ class PushSubscriptionHelper(
                     "follow_request" -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
                     "status" -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
                     "emoji_reaction" -> ti.versionGE(TootInstance.VERSION_3_4_0_rc1) &&
-                        InstanceCapability.emojiReaction(account,ti)
+                        InstanceCapability.emojiReaction(account, ti)
 
                     else -> {
                         log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")
@@ -414,7 +415,7 @@ class PushSubscriptionHelper(
         r = client.http(
             jsonObject {
                 put("token_digest", tokenDigest)
-                put("install_id", install_id)
+                put("install_id", installId)
             }
                 .toPostRequestBuilder()
                 .url("${PollingWorker.APP_SERVER}/webpushtokencheck")
@@ -466,7 +467,6 @@ class PushSubscriptionHelper(
                     r
                 }
             }
-
         } else {
             // 通知設定が空ではないので購読を行いたい
 
@@ -559,8 +559,9 @@ class PushSubscriptionHelper(
 
                 subscribed || log.isEmpty() ->
                     // clear error text if succeeded or no error log
-                    if (account.last_subscription_error != null)
+                    if (account.last_subscription_error != null) {
                         account.updateSubscriptionError(null)
+                    }
 
                 else ->
                     // record error text

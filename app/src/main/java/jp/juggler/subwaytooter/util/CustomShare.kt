@@ -31,31 +31,31 @@ object CustomShare {
         "com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
 
     fun getCustomShareComponentName(
-		pref: SharedPreferences,
-		target: CustomShareTarget
-	): ComponentName? {
+        pref: SharedPreferences,
+        target: CustomShareTarget,
+    ): ComponentName? {
         val src: String
         val defaultComponentName: String?
         when (target) {
-			CustomShareTarget.Translate -> {
-				src = Pref.spTranslateAppComponent(pref)
-				defaultComponentName = translate_app_component_default
-			}
+            CustomShareTarget.Translate -> {
+                src = Pref.spTranslateAppComponent(pref)
+                defaultComponentName = translate_app_component_default
+            }
 
-			CustomShareTarget.CustomShare1 -> {
-				src = Pref.spCustomShare1(pref)
-				defaultComponentName = null
-			}
+            CustomShareTarget.CustomShare1 -> {
+                src = Pref.spCustomShare1(pref)
+                defaultComponentName = null
+            }
 
-			CustomShareTarget.CustomShare2 -> {
-				src = Pref.spCustomShare2(pref)
-				defaultComponentName = null
-			}
+            CustomShareTarget.CustomShare2 -> {
+                src = Pref.spCustomShare2(pref)
+                defaultComponentName = null
+            }
 
-			CustomShareTarget.CustomShare3 -> {
-				src = Pref.spCustomShare3(pref)
-				defaultComponentName = null
-			}
+            CustomShareTarget.CustomShare3 -> {
+                src = Pref.spCustomShare3(pref)
+                defaultComponentName = null
+            }
         }
         return src.cn() ?: defaultComponentName?.cn()
     }
@@ -98,10 +98,10 @@ object CustomShare {
     }
 
     fun invoke(
-		context: Context,
-		text: String,
-		target: CustomShareTarget
-	) {
+        context: Context,
+        text: String,
+        target: CustomShareTarget,
+    ) {
         // convert "pkgName/className" string to ComponentName object.
         val cn = getCustomShareComponentName(App1.pref, target)
         if (cn == null) {
@@ -133,15 +133,14 @@ object CustomShare {
             log.trace(ex)
             context.showToast(ex, "invoke() failed.")
         }
-
     }
 
     fun invoke(
-		context: Context,
-		access_info: SavedAccount,
-		status: TootStatus?,
-		target: CustomShareTarget
-	) {
+        context: Context,
+        accessInfo: SavedAccount,
+        status: TootStatus?,
+        target: CustomShareTarget,
+    ) {
         status ?: return
         try {
             // convert "pkgName/className" string to ComponentName object.
@@ -151,7 +150,7 @@ object CustomShare {
                 return
             }
 
-            val sv = TootTextEncoder.encodeStatusForTranslate(context, access_info, status)
+            val sv = TootTextEncoder.encodeStatusForTranslate(context, accessInfo, status)
             invoke(context, sv, target)
         } catch (ex: Throwable) {
             log.trace(ex)

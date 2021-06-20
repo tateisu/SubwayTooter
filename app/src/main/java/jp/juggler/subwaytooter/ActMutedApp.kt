@@ -85,7 +85,7 @@ class ActMutedApp : AppCompatActivity() {
 
             override fun onItemSwipeEnded(
                 item: ListSwipeItem?,
-                swipedDirection: ListSwipeItem.SwipeDirection?
+                swipedDirection: ListSwipeItem.SwipeDirection?,
             ) {
                 // 操作完了でリフレッシュ許可
                 // mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
@@ -104,24 +104,23 @@ class ActMutedApp : AppCompatActivity() {
 
     private fun loadData() {
 
-        val tmp_list = ArrayList<MyItem>()
+        val tmpList = ArrayList<MyItem>()
         try {
             MutedApp.createCursor().use { cursor ->
-                val idx_id = cursor.getColumnIndex(MutedApp.COL_ID)
-                val idx_name = cursor.getColumnIndex(MutedApp.COL_NAME)
+                val idxId = cursor.getColumnIndex(MutedApp.COL_ID)
+                val idxName = cursor.getColumnIndex(MutedApp.COL_NAME)
                 while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idx_id)
-                    val name = cursor.getString(idx_name)
+                    val id = cursor.getLong(idxId)
+                    val name = cursor.getString(idxName)
                     val item = MyItem(id, name)
-                    tmp_list.add(item)
+                    tmpList.add(item)
                 }
-
             }
         } catch (ex: Throwable) {
             log.trace(ex)
         }
 
-        listAdapter.itemList = tmp_list
+        listAdapter.itemList = tmpList
     }
 
     // リスト要素のデータ
@@ -142,23 +141,12 @@ class ActMutedApp : AppCompatActivity() {
                 viewRoot.setSwipeInStyle(ListSwipeItem.SwipeInStyle.SLIDE)
                 viewRoot.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
             }
-
-        } // View ID。 ここを押すとドラッグ操作をすぐに開始する
-        // 長押しでドラッグ開始するなら真
+        }
 
         fun bind(item: MyItem) {
             itemView.tag = item // itemView は親クラスのメンバ変数
             tvName.text = item.name
         }
-
-        //		@Override
-        //		public boolean onItemLongClicked( View view ){
-        //			return false;
-        //		}
-
-        //		@Override
-        //		public void onItemClicked( View view ){
-        //		}
     }
 
     // ドラッグ操作中のデータ
@@ -196,5 +184,4 @@ class ActMutedApp : AppCompatActivity() {
             return item.id
         }
     }
-
 }

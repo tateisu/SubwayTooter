@@ -35,7 +35,7 @@ import java.lang.reflect.Field
 @SuppressLint("ClickableViewAccessibility")
 class ColumnViewHolder(
     val activity: ActMain,
-    parent: ViewGroup
+    parent: ViewGroup,
 ) : View.OnClickListener,
     SwipyRefreshLayout.OnRefreshListener,
     CompoundButton.OnCheckedChangeListener, View.OnLongClickListener {
@@ -63,8 +63,8 @@ class ColumnViewHolder(
     }
 
     var column: Column? = null
-    var status_adapter: ItemListAdapter? = null
-    var page_idx: Int = 0
+    var statusAdapter: ItemListAdapter? = null
+    var pageIdx: Int = 0
 
     lateinit var llLoading: View
     lateinit var btnConfirmMail: Button
@@ -165,15 +165,15 @@ class ColumnViewHolder(
 
     var lastAnnouncementShown = 0L
 
-    var binding_busy: Boolean = false
+    var bindingBusy: Boolean = false
 
-    var last_image_uri: String? = null
-    var last_image_bitmap: Bitmap? = null
-    var last_image_task: Job? = null
+    var lastImageUri: String? = null
+    var lastImageBitmap: Bitmap? = null
+    var lastImageTask: Job? = null
 
     var bRefreshErrorWillShown = false
 
-    val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
+    val extraInvalidatorList = ArrayList<NetworkEmojiInvalidator>()
     val emojiQueryInvalidatorList = ArrayList<NetworkEmojiInvalidator>()
 
     val announcementContentInvalidator: NetworkEmojiInvalidator
@@ -199,16 +199,16 @@ class ColumnViewHolder(
     /////////////////////////////////
 
     private val procStartLoading: Runnable = Runnable {
-        if (binding_busy || isPageDestroyed) return@Runnable
+        if (bindingBusy || isPageDestroyed) return@Runnable
         column?.startLoading()
     }
 
     val procShowColumnHeader: Runnable = Runnable {
 
         val column = this.column
-        if (column == null || column.is_dispose.get()) return@Runnable
+        if (column == null || column.isDispose.get()) return@Runnable
 
-        val ac = AcctColor.load(column.access_info)
+        val ac = AcctColor.load(column.accessInfo)
 
         tvColumnContext.text = ac.nickname
         tvColumnContext.setTextColor(
@@ -217,7 +217,7 @@ class ColumnViewHolder(
         )
 
         tvColumnContext.setBackgroundColor(ac.color_bg)
-        tvColumnContext.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)
+        tvColumnContext.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
 
         tvColumnName.text = column.getColumnName(false)
 
@@ -226,7 +226,7 @@ class ColumnViewHolder(
         showAnnouncements(force = false)
     }
 
-    val proc_restoreScrollPosition = object : Runnable {
+    val procRestorescrollposition = object : Runnable {
         override fun run() {
             activity.handler.removeCallbacks(this)
 
@@ -237,17 +237,17 @@ class ColumnViewHolder(
 
             val column = this@ColumnViewHolder.column
             if (column == null) {
-                log.d("restoreScrollPosition [${page_idx}], column==null")
+                log.d("restoreScrollPosition [$pageIdx], column==null")
                 return
             }
 
-            if (column.is_dispose.get()) {
-                log.d("restoreScrollPosition [${page_idx}], column is disposed")
+            if (column.isDispose.get()) {
+                log.d("restoreScrollPosition [$pageIdx], column is disposed")
                 return
             }
 
             if (column.hasMultipleViewHolder()) {
-                log.d("restoreScrollPosition [${page_idx}] ${column.getColumnName(true)}, column has multiple view holder. retry later.")
+                log.d("restoreScrollPosition [$pageIdx] ${column.getColumnName(true)}, column has multiple view holder. retry later.")
 
                 // タブレットモードでカラムを追加/削除した際に発生する。
                 // このタイミングでスクロール位置を復元してもうまくいかないので延期する
@@ -256,7 +256,7 @@ class ColumnViewHolder(
             }
 
             //復元後にもここを通るがこれは正常である
-            val sp = column.scroll_save
+            val sp = column.scrollSave
             if (sp == null) {
                 //				val lvi = column.last_viewing_item_id
                 //				if( lvi != null ){
@@ -273,26 +273,25 @@ class ColumnViewHolder(
                 //					}
                 //				}
 
-                log.d("restoreScrollPosition [$page_idx] ${column.getColumnName(true)} , column has no saved scroll position.")
+                log.d("restoreScrollPosition [$pageIdx] ${column.getColumnName(true)} , column has no saved scroll position.")
                 return
             }
 
-            column.scroll_save = null
+            column.scrollSave = null
 
             if (listView.visibility != View.VISIBLE) {
-                log.d("restoreScrollPosition [$page_idx] ${column.getColumnName(true)} , listView is not visible. saved position ${sp.adapterIndex},${sp.offset} is dropped.")
+                log.d("restoreScrollPosition [$pageIdx] ${column.getColumnName(true)} , listView is not visible. saved position ${sp.adapterIndex},${sp.offset} is dropped.")
             } else {
-                log.d("restoreScrollPosition [${page_idx}] ${column.getColumnName(true)} , listView is visible. resume ${sp.adapterIndex},${sp.offset}")
+                log.d("restoreScrollPosition [$pageIdx] ${column.getColumnName(true)} , listView is visible. resume ${sp.adapterIndex},${sp.offset}")
                 sp.restore(this@ColumnViewHolder)
             }
-
         }
     }
 
     val procShowColumnStatus: Runnable = Runnable {
 
         val column = this.column
-        if (column == null || column.is_dispose.get()) return@Runnable
+        if (column == null || column.isDispose.get()) return@Runnable
 
         val sb = SpannableStringBuilder()
         try {
@@ -311,7 +310,7 @@ class ColumnViewHolder(
             }
             val streamStatus = column.getStreamingStatus()
             log.d(
-                "procShowColumnStatus: streamStatus=${streamStatus}, column=${column.access_info.acct}/${
+                "procShowColumnStatus: streamStatus=$streamStatus, column=${column.accessInfo.acct}/${
                     column.getColumnName(
                         true
                     )
@@ -329,9 +328,8 @@ class ColumnViewHolder(
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                 }
             }
-
         } finally {
-            log.d("showColumnStatus ${sb}")
+            log.d("showColumnStatus $sb")
             tvColumnStatus.text = sb
         }
     }
@@ -342,14 +340,12 @@ class ColumnViewHolder(
             try {
                 // ボタンではないTextViewのフォントを変更する
                 if (v is TextView && v !is Button) {
-                    v.typeface = ActMain.timeline_font
+                    v.typeface = ActMain.timelineFont
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
         }
-
-
 
         if (Pref.bpShareViewPool(activity.pref)) {
             listView.setRecycledViewPool(activity.viewPool)
@@ -360,7 +356,6 @@ class ColumnViewHolder(
         //		if( animator is DefaultItemAnimator){
         //			animator.supportsChangeAnimations = false
         //		}
-
 
         etListName.setOnEditorActionListener { _, actionId, _ ->
             var handled = false
@@ -399,9 +394,7 @@ class ColumnViewHolder(
             btnSearchClear,
             llColumnHeader,
             llRefreshError,
-
-            ).forEach { it.setOnClickListener(this) }
-
+        ).forEach { it.setOnClickListener(this) }
 
         btnColumnClose.setOnLongClickListener(this)
 
@@ -443,10 +436,10 @@ class ColumnViewHolder(
             }
         }
 
-        if (!activity.header_text_size_sp.isNaN()) {
-            tvColumnName.textSize = activity.header_text_size_sp
+        if (!activity.headerTextSizeSp.isNaN()) {
+            tvColumnName.textSize = activity.headerTextSizeSp
 
-            val acctSize = activity.header_text_size_sp * 0.857f
+            val acctSize = activity.headerTextSizeSp * 0.857f
             tvColumnContext.textSize = acctSize
             tvColumnStatus.textSize = acctSize
             tvColumnIndex.textSize = acctSize
@@ -479,7 +472,7 @@ class ColumnViewHolder(
         btnColumnClose.setPaddingRelative(pad, pad, pad, pad)
 
         etSearch.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
-            if (!binding_busy) {
+            if (!bindingBusy) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     btnSearch.performClick()
                     return@OnEditorActionListener true
@@ -490,34 +483,34 @@ class ColumnViewHolder(
 
         // 入力の追跡
         etRegexFilter.addTextChangedListener(CustomTextWatcher {
-            if (binding_busy || isPageDestroyed) return@CustomTextWatcher
+            if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
             if (!isRegexValid()) return@CustomTextWatcher
-            column?.regex_text = etRegexFilter.text.toString()
-            activity.app_state.saveColumnList()
+            column?.regexText = etRegexFilter.text.toString()
+            activity.appState.saveColumnList()
             activity.handler.removeCallbacks(procStartLoading)
             activity.handler.postDelayed(procStartLoading, 666L)
         })
 
         etHashtagExtraAny.addTextChangedListener(CustomTextWatcher {
-            if (binding_busy || isPageDestroyed) return@CustomTextWatcher
-            column?.hashtag_any = etHashtagExtraAny.text.toString()
-            activity.app_state.saveColumnList()
+            if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
+            column?.hashtagAny = etHashtagExtraAny.text.toString()
+            activity.appState.saveColumnList()
             activity.handler.removeCallbacks(procStartLoading)
             activity.handler.postDelayed(procStartLoading, 666L)
         })
 
         etHashtagExtraAll.addTextChangedListener(CustomTextWatcher {
-            if (binding_busy || isPageDestroyed) return@CustomTextWatcher
-            column?.hashtag_all = etHashtagExtraAll.text.toString()
-            activity.app_state.saveColumnList()
+            if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
+            column?.hashtagAll = etHashtagExtraAll.text.toString()
+            activity.appState.saveColumnList()
             activity.handler.removeCallbacks(procStartLoading)
             activity.handler.postDelayed(procStartLoading, 666L)
         })
 
         etHashtagExtraNone.addTextChangedListener(CustomTextWatcher {
-            if (binding_busy || isPageDestroyed) return@CustomTextWatcher
-            column?.hashtag_none = etHashtagExtraNone.text.toString()
-            activity.app_state.saveColumnList()
+            if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
+            column?.hashtagNone = etHashtagExtraNone.text.toString()
+            activity.appState.saveColumnList()
             activity.handler.removeCallbacks(procStartLoading)
             activity.handler.postDelayed(procStartLoading, 666L)
         })
@@ -526,7 +519,6 @@ class ColumnViewHolder(
             NetworkEmojiInvalidator(activity.handler, tvAnnouncementContent)
         tvAnnouncementContent.movementMethod = MyLinkMovementMethod
     }
-
 
     override fun onRefresh(direction: SwipyRefreshLayoutDirection) {
         val column = this.column ?: return
@@ -545,7 +537,6 @@ class ColumnViewHolder(
 
         column.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM)
     }
-
 
     override fun onClick(v: View?) = onClickImpl(v)
     override fun onLongClick(v: View?): Boolean = onLongClickImpl(v)
@@ -588,7 +579,6 @@ class ColumnViewHolder(
                         endPadding = dip(4)
                         textColor = context.attrColor(R.attr.colorColumnHeaderAcct)
                         textSize = 12f
-
                     }.lparams(0, wrapContent) {
                         weight = 1f
                     }
@@ -597,7 +587,6 @@ class ColumnViewHolder(
                         gravity = Gravity.END
                         textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         textSize = 12f
-
                     }.lparams(wrapContent, wrapContent) {
                         marginStart = dip(12)
                     }
@@ -606,7 +595,6 @@ class ColumnViewHolder(
                         gravity = Gravity.END
                         textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         textSize = 12f
-
                     }.lparams(wrapContent, wrapContent) {
                         marginStart = dip(4)
                     }
@@ -620,10 +608,8 @@ class ColumnViewHolder(
                     isBaselineAligned = false
 
                     ivColumnIcon = imageView {
-
                         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(dip(32), dip(32)) {
                         endMargin = dip(4)
                     }
@@ -643,11 +629,10 @@ class ColumnViewHolder(
                         clipChildren = false
 
                         btnAnnouncements = imageButton {
-                            background =
-                                ContextCompat.getDrawable(
-                                    context,
-                                    R.drawable.btn_bg_transparent_round6dp
-                                )
+                            background = ContextCompat.getDrawable(
+                                context,
+                                R.drawable.btn_bg_transparent_round6dp
+                            )
                             contentDescription = context.getString(R.string.announcements)
                             setImageResource(R.drawable.ic_info_outline)
                             padding = dip(8)
@@ -684,7 +669,6 @@ class ColumnViewHolder(
                             endMargin = dip(4)
                             topMargin = dip(4)
                         }
-
                     }
 
                     frameLayout {
@@ -729,7 +713,6 @@ class ColumnViewHolder(
                                 }
                             }
                         }.lparams(dip(40), dip(40))
-
                     }
 
                     btnColumnReload = imageButton {
@@ -742,28 +725,23 @@ class ColumnViewHolder(
                         setImageResource(R.drawable.ic_refresh)
                         padding = dip(8)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(dip(40), dip(40)) {
                         gravity = Gravity.CENTER_VERTICAL
                         startMargin = dip(2)
-
                     }
 
                     btnColumnClose = imageButton {
-                        background =
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.btn_bg_transparent_round6dp
-                            )
+                        background = ContextCompat.getDrawable(
+                            context,
+                            R.drawable.btn_bg_transparent_round6dp
+                        )
                         contentDescription = context.getString(R.string.close_column)
                         setImageResource(R.drawable.ic_close)
                         padding = dip(8)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(dip(40), dip(40)) {
                         gravity = Gravity.CENTER_VERTICAL
                         startMargin = dip(2)
-
                     }
                 }
             } // end of column header
@@ -924,22 +902,21 @@ class ColumnViewHolder(
                             weight = 1f
                             startMargin = dip(4)
                         }
-
                     }
+
                     etRegexFilter = editText {
                         id = View.generateViewId()
                         inputType = InputType.TYPE_CLASS_TEXT
                         maxLines = 1
                         setHorizontallyScrolling(true)
                         isHorizontalScrollBarEnabled = true
-
                     }.lparams(matchParent, wrapContent)
+
                     label?.labelFor = etRegexFilter.id
 
                     btnDeleteNotification = button {
                         isAllCaps = false
                         text = context.getString(R.string.notification_delete)
-
                     }.lparams(matchParent, wrapContent)
 
                     btnColor = button {
@@ -951,9 +928,7 @@ class ColumnViewHolder(
                         isAllCaps = false
                         text = context.getString(R.string.language_filter)
                     }.lparams(matchParent, wrapContent)
-
                 }
-
             } // end of column setting scroll view
 
             llAnnouncementsBox = verticalLayout {
@@ -969,8 +944,8 @@ class ColumnViewHolder(
 
                 linearLayout {
                     lparams(matchParent, wrapContent)
-                    val pad_lr = dip(6)
-                    setPadding(pad_lr, 0, pad_lr, 0)
+                    val padLr = dip(6)
+                    setPadding(padLr, 0, padLr, 0)
 
                     background = ContextCompat.getDrawable(
                         context,
@@ -987,7 +962,6 @@ class ColumnViewHolder(
                     }
 
                     btnAnnouncementsPrev = imageButton {
-
                         background = ContextCompat.getDrawable(
                             context,
                             R.drawable.btn_bg_transparent_round6dp
@@ -996,7 +970,6 @@ class ColumnViewHolder(
                         imageResource = R.drawable.ic_arrow_start
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(buttonHeight, buttonHeight) {
                         marginStart = dip(4)
                     }
@@ -1007,7 +980,6 @@ class ColumnViewHolder(
                     }
 
                     btnAnnouncementsNext = imageButton {
-
                         background = ContextCompat.getDrawable(
                             context,
                             R.drawable.btn_bg_transparent_round6dp
@@ -1016,7 +988,6 @@ class ColumnViewHolder(
                         imageResource = R.drawable.ic_arrow_end
                         setPadding(paddingH, paddingV, paddingH, paddingV)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-
                     }.lparams(buttonHeight, buttonHeight) {
                         marginStart = dip(4)
                     }
@@ -1027,9 +998,9 @@ class ColumnViewHolder(
                         topMargin = dip(1)
                     }
 
-                    val pad_lr = dip(6)
-                    val pad_tb = dip(2)
-                    setPadding(pad_lr, pad_tb, pad_lr, pad_tb)
+                    val padLr = dip(6)
+                    val padTb = dip(2)
+                    setPadding(padLr, padTb, padLr, padTb)
 
                     scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
                     isScrollbarFadingEnabled = false
@@ -1070,13 +1041,11 @@ class ColumnViewHolder(
                     isBaselineAligned = false
                     gravity = Gravity.CENTER
 
-
                     etSearch = editText {
                         id = View.generateViewId()
                         imeOptions = EditorInfo.IME_ACTION_SEARCH
                         inputType = InputType.TYPE_CLASS_TEXT
                         maxLines = 1
-
                     }.lparams(0, wrapContent) {
                         weight = 1f
                     }
@@ -1087,7 +1056,6 @@ class ColumnViewHolder(
                     }.lparams(0, wrapContent) {
                         weight = 1f
                     }
-
 
                     btnEmojiAdd = imageButton {
                         backgroundResource = R.drawable.btn_bg_transparent_round6dp
@@ -1132,7 +1100,6 @@ class ColumnViewHolder(
                     textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                     textSize = 12f
                 }.lparams(wrapContent, wrapContent)
-
             } // end of search bar
 
             llListList = linearLayout {
@@ -1223,7 +1190,6 @@ class ColumnViewHolder(
                         margin = 0
                     }
 
-
                     btnQuickFilterVote = imageButton {
                         backgroundResource = R.drawable.btn_bg_transparent_round6dp
                         contentDescription = context.getString(R.string.vote_polls)
@@ -1236,11 +1202,9 @@ class ColumnViewHolder(
             flColumnBackground = frameLayout {
 
                 ivColumnBackgroundImage = imageView {
-
                     importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                     scaleType = ImageView.ScaleType.CENTER_CROP
                     visibility = View.GONE
-
                 }.lparams(matchParent, matchParent)
 
                 llLoading = verticalLayout {
@@ -1274,9 +1238,7 @@ class ColumnViewHolder(
                     listView = recyclerView {
                         listLayoutManager = LinearLayoutManager(activity)
                         layoutManager = listLayoutManager
-
                     }.lparams(matchParent, matchParent) {
-
                     }
                 }
 
@@ -1291,12 +1253,10 @@ class ColumnViewHolder(
                     bottomPadding = dip(3)
 
                     ivRefreshError = imageView {
-
                         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                         scaleType = ImageView.ScaleType.FIT_CENTER
                         imageResource = R.drawable.ic_error
                         imageTintList = ColorStateList.valueOf(Color.RED)
-
                     }.lparams(dip(24), dip(24)) {
                         gravity = Gravity.START or Gravity.CENTER_VERTICAL
                         startMargin = dip(4)
@@ -1304,7 +1264,6 @@ class ColumnViewHolder(
 
                     tvRefreshError = textView {
                         textColor = Color.WHITE
-
                     }.lparams(matchParent, wrapContent) {
                         gravity = Gravity.TOP or Gravity.START
                         startMargin = dip(32)
@@ -1319,5 +1278,4 @@ class ColumnViewHolder(
         b.report()
         rv
     }
-
 }

@@ -53,10 +53,10 @@ class CustomEmoji(
     val apDomain: Host,
     val shortcode: String, // shortcode (コロンを含まない)
     val url: String, // 画像URL
-    val static_url: String?, // アニメーションなしの画像URL
+    val staticUrl: String?, // アニメーションなしの画像URL
     val aliases: ArrayList<String>? = null,
     val alias: String? = null,
-    val visible_in_picker: Boolean = true,
+    val visibleInPicker: Boolean = true,
     val category: String? = null
 ) : EmojiBase, Mappable<String> {
 
@@ -64,7 +64,7 @@ class CustomEmoji(
         apDomain = apDomain,
         shortcode = shortcode,
         url = url,
-        static_url = static_url,
+        staticUrl = staticUrl,
         alias = alias
     )
 
@@ -78,8 +78,8 @@ class CustomEmoji(
                 apDomain = apDomain,
                 shortcode = src.stringOrThrow("shortcode"),
                 url = src.stringOrThrow("url"),
-                static_url = src.string("static_url"),
-                visible_in_picker = src.optBoolean("visible_in_picker", true),
+                staticUrl = src.string("static_url"),
+                visibleInPicker = src.optBoolean("visible_in_picker", true),
                 category = src.string("category")
             )
         }
@@ -91,7 +91,7 @@ class CustomEmoji(
                 apDomain = apDomain,
                 shortcode = src.string("name") ?: error("missing name"),
                 url = url,
-                static_url = url,
+                staticUrl = url,
                 aliases = parseAliases(src.jsonArray("aliases"))
             )
         }

@@ -36,8 +36,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import okhttp3.MediaType
@@ -47,7 +45,6 @@ import okhttp3.RequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
-import ru.gildor.coroutines.okhttp.await
 import java.io.*
 import kotlin.math.max
 
@@ -113,7 +110,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private lateinit var btnPushSubscriptionNotForce: Button
     private lateinit var btnResetNotificationTracking: Button
 
-
     private lateinit var cbNotificationMention: CheckBox
     private lateinit var cbNotificationBoost: CheckBox
     private lateinit var cbNotificationFavourite: CheckBox
@@ -141,7 +137,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private lateinit var btnNotificationStyleEdit: Button
     private lateinit var btnNotificationStyleEditReply: Button
 
-    private var notification_sound_uri: String? = null
+    private var notificationSoundUri: String? = null
 
     private lateinit var ivProfileHeader: MyNetworkImageView
     private lateinit var ivProfileAvatar: MyNetworkImageView
@@ -154,12 +150,13 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private lateinit var btnNote: View
     private lateinit var etDefaultText: EditText
 
-    private lateinit var name_invalidator: NetworkEmojiInvalidator
-    private lateinit var note_invalidator: NetworkEmojiInvalidator
-    private lateinit var default_text_invalidator: NetworkEmojiInvalidator
+    private lateinit var nameInvalidator: NetworkEmojiInvalidator
+    private lateinit var noteInvalidator: NetworkEmojiInvalidator
+    private lateinit var defaultTextInvalidator: NetworkEmojiInvalidator
     internal lateinit var handler: Handler
 
-    internal var loading = false
+    private var loadingBusy = false
+    private var profileBusy = false
 
     private lateinit var listEtFieldName: List<EditText>
     private lateinit var listEtFieldValue: List<EditText>
@@ -187,7 +184,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
     internal var visibility = TootVisibility.Public
 
-
     ///////////////////////////////////////////////////////////////////
 
     private val arShowAcctColor = activityResultHandler { ar ->
@@ -201,7 +197,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             // RINGTONE_PICKERからの選択されたデータを取得する
             val uri = ar.data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             if (uri is Uri) {
-                notification_sound_uri = uri.toString()
+                notificationSoundUri = uri.toString()
                 saveUIToData()
                 //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
                 //			TextView ringView = (TextView) findViewById(R.id.ringtone);
@@ -214,9 +210,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
     }
 
-
     private val arAddAttachment = activityResultHandler { ar ->
-        if (ar?.resultCode == Activity.RESULT_OK)
+        if (ar?.resultCode == Activity.RESULT_OK) {
             ar.data
                 ?.handleGetContentResult(contentResolver)
                 ?.firstOrNull()
@@ -227,6 +222,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
                     )
                 }
+        }
     }
 
     private val arCameraImage = activityResultHandler { ar ->
@@ -247,7 +243,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     }
 
     ///////////////////////////////////////////////////
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -272,7 +267,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             finish()
             return
         }
-
 
         loadUIFromData(a)
 
@@ -362,7 +356,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         btnNote = findViewById(R.id.btnNote)
         cbLocked = findViewById(R.id.cbLocked)
 
-
         etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
         etMovieSizeMax = findViewById(R.id.etMovieSizeMax)
         spResizeImage = findViewById(R.id.spResizeImage)
@@ -433,9 +426,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
         btnNotificationStyleEditReply.vg(Pref.bpSeparateReplyNotificationGroup(pref))
 
-        name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
-        note_invalidator = NetworkEmojiInvalidator(handler, etNote)
-        default_text_invalidator = NetworkEmojiInvalidator(handler, etDefaultText)
+        nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
+        noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
+        defaultTextInvalidator = NetworkEmojiInvalidator(handler, etDefaultText)
 
         listFieldNameInvalidator = listEtFieldName.map {
             NetworkEmojiInvalidator(handler, it)
@@ -454,7 +447,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 s: CharSequence?,
                 start: Int,
                 count: Int,
-                after: Int
+                after: Int,
             ) {
             }
 
@@ -462,7 +455,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 s: CharSequence?,
                 start: Int,
                 before: Int,
-                count: Int
+                count: Int,
             ) {
             }
         })
@@ -472,7 +465,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 s: CharSequence?,
                 start: Int,
                 count: Int,
-                after: Int
+                after: Int,
             ) {
             }
 
@@ -480,7 +473,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 s: CharSequence?,
                 start: Int,
                 before: Int,
-                count: Int
+                count: Int,
             ) {
             }
 
@@ -545,14 +538,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         ).forEach { it.onItemSelectedListener = this }
     }
 
-    private fun EditText.parseInt(): Int? {
-        val sv = this.text?.toString() ?: return null
-        return try {
-            Integer.parseInt(sv, 10)
-        } catch (ex: Throwable) {
-            null
-        }
-    }
+    private fun EditText.parseInt(): Int? =
+        text?.toString()?.toIntOrNull()
 
     private fun loadUIFromData(a: SavedAccount) {
         this.account = a
@@ -562,7 +549,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
         this.visibility = a.visibility
 
-        loading = true
+        loadingBusy = true
 
         swNSFWOpen.isChecked = a.dont_hide_nsfw
         swDontShowTimeout.isChecked = a.dont_show_timeout
@@ -585,16 +572,15 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         cbConfirmUnboost.isChecked = a.confirm_unboost
         cbConfirmUnfavourite.isChecked = a.confirm_unfavourite
 
-
         cbConfirmToot.isChecked = a.confirm_post
         cbConfirmReaction.isChecked = a.confirm_reaction
 
-        notification_sound_uri = a.sound_uri
+        notificationSoundUri = a.sound_uri
 
         etDefaultText.setText(a.default_text)
         etMaxTootChars.setText(a.max_toot_chars.toString())
 
-        loading = false
+        loadingBusy = false
 
         val enabled = !a.isPseudo
 
@@ -679,7 +665,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private fun saveUIToData() {
         if (!::account.isInitialized) return
 
-        if (loading) return
+        if (loadingBusy) return
 
         account.visibility = visibility
         account.dont_hide_nsfw = swNSFWOpen.isChecked
@@ -695,7 +681,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         account.notification_vote = cbNotificationVote.isChecked
         account.notification_post = cbNotificationPost.isChecked
 
-        account.sound_uri = notification_sound_uri ?: ""
+        account.sound_uri = notificationSoundUri ?: ""
 
         account.confirm_follow = cbConfirmFollow.isChecked
         account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
@@ -726,12 +712,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
 
         account.saveSetting()
-
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (buttonView == cbLocked) {
-            if (!profile_busy) sendLocked(isChecked)
+            if (!profileBusy) sendLocked(isChecked)
         } else {
             saveUIToData()
         }
@@ -767,7 +752,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
 
             R.id.btnNotificationSoundReset -> {
-                notification_sound_uri = ""
+                notificationSoundUri = ""
                 saveUIToData()
             }
 
@@ -825,13 +810,13 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             )
         }
 
-        val caption_list = list.map {
+        val captionList = list.map {
             Styler.getVisibilityCaption(this, account.isMisskey, it)
         }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle(R.string.choose_visibility)
-            .setItems(caption_list) { _, which ->
+            .setItems(captionList) { _, which ->
                 if (which in list.indices) {
                     visibility = list[which]
                     showVisibility()
@@ -840,7 +825,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
-
     }
 
     private fun performLoadPreference() {
@@ -856,7 +840,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
                 var bChanged = false
                 try {
-                    loading = true
+                    loadingBusy = true
 
                     val tmpVisibility =
                         TootVisibility.parseMastodon(json.string("posting:default:visibility"))
@@ -883,9 +867,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         bChanged = true
                         swExpandCW.isChecked = tmpExpandCW
                     }
-
                 } finally {
-                    loading = false
+                    loadingBusy = false
                     if (bChanged) saveUIToData()
                 }
             }
@@ -949,23 +932,22 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 
-        notification_sound_uri.mayUri()?.let { uri ->
+        notificationSoundUri.mayUri()?.let { uri ->
             intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
         }
 
         val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
 
         arNotificationSound.launch(chooser)
-
     }
 
     //////////////////////////////////////////////////////////////////////////
 
     private fun initializeProfile() {
         // 初期状態
-        val question_id = R.drawable.wide_question
-        ivProfileAvatar.setErrorImage(defaultColorIcon(this, question_id))
-        ivProfileAvatar.setDefaultImage(defaultColorIcon(this, question_id))
+        val questionId = R.drawable.wide_question
+        ivProfileAvatar.setErrorImage(defaultColorIcon(this, questionId))
+        ivProfileAvatar.setDefaultImage(defaultColorIcon(this, questionId))
 
         val loadingText = when (account.isPseudo) {
             true -> "(disabled for pseudo account)"
@@ -1036,13 +1018,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
     }
 
-    var profile_busy: Boolean = false
-
     internal fun showProfile(src: TootAccount) {
 
         if (isDestroyed) return
 
-        profile_busy = true
+        profileBusy = true
         try {
             ivProfileAvatar.setImageUrl(
                 App1.pref,
@@ -1066,10 +1046,10 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 mentionDefaultHostDomain = account
             )
 
-            val display_name = src.display_name
-            val name = decodeOptions.decodeEmoji(display_name)
+            val displayName = src.display_name
+            val name = decodeOptions.decodeEmoji(displayName)
             etDisplayName.setText(name)
-            name_invalidator.register(name)
+            nameInvalidator.register(name)
 
             val noteString = src.source?.note ?: src.note
             val noteSpannable = when {
@@ -1083,7 +1063,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             }
 
             etNote.setText(noteSpannable)
-            note_invalidator.register(noteSpannable)
+            noteInvalidator.register(noteSpannable)
 
             cbLocked.isChecked = src.locked
 
@@ -1134,7 +1114,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         invalidator.register(text)
                     }
                 }
-
             } else {
                 val fields = src.fields
 
@@ -1154,7 +1133,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         val invalidator = NetworkEmojiInvalidator(handler, et)
                         invalidator.register(text)
                     }
-
                 }
 
                 listEtFieldValue.forEachIndexed { i, et ->
@@ -1173,9 +1151,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                     }
                 }
             }
-
         } finally {
-            profile_busy = false
+            profileBusy = false
         }
     }
 
@@ -1183,24 +1160,23 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         updateCredential(listOf(Pair(key, value)))
     }
 
-
     private suspend fun uploadImageMisskey(
         client: TootApiClient,
-        opener: InputStreamOpener
+        opener: InputStreamOpener,
     ): Pair<TootApiResult?, TootAttachment?> {
 
         val size = getStreamSize(true, opener.open())
 
-        val multipart_builder = MultipartBody.Builder()
+        val multipartBuilder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
 
         val apiKey =
             account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
         if (apiKey?.isNotEmpty() == true) {
-            multipart_builder.addFormDataPart("i", apiKey)
+            multipartBuilder.addFormDataPart("i", apiKey)
         }
 
-        multipart_builder.addFormDataPart(
+        multipartBuilder.addFormDataPart(
             "file",
             getDocumentName(contentResolver, opener.uri),
             object : RequestBody() {
@@ -1228,7 +1204,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         var ta: TootAttachment? = null
         val result = client.request(
             "/api/drive/files/create",
-            multipart_builder.build().toPost()
+            multipartBuilder.build().toPost()
         )?.also { result ->
             val jsonObject = result.jsonObject
             if (jsonObject != null) {
@@ -1259,7 +1235,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                                 "display_name" -> "name"
                                 "note" -> "description"
                                 "locked" -> "isLocked"
-                                else -> return@runApiTask TootApiResult("Misskey does not support property '${key}'")
+                                else -> return@runApiTask TootApiResult("Misskey does not support property '$key'")
                             }
 
                             when (value) {
@@ -1282,7 +1258,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                                 }
                             }
                     } else {
-                        val multipart_body_builder = MultipartBody.Builder()
+                        val multipartBodyBuilder = MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
 
                         for (arg in args) {
@@ -1290,18 +1266,17 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                             val value = arg.second
 
                             if (value is String) {
-                                multipart_body_builder.addFormDataPart(key, value)
+                                multipartBodyBuilder.addFormDataPart(key, value)
                             } else if (value is Boolean) {
-                                multipart_body_builder.addFormDataPart(
+                                multipartBodyBuilder.addFormDataPart(
                                     key,
                                     if (value) "true" else "false"
                                 )
-
                             } else if (value is InputStreamOpener) {
 
                                 val fileName = "%x".format(System.currentTimeMillis())
 
-                                multipart_body_builder.addFormDataPart(
+                                multipartBodyBuilder.addFormDataPart(
                                     key,
                                     fileName,
                                     object : RequestBody() {
@@ -1324,7 +1299,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
                         client.request(
                             "/api/v1/accounts/update_credentials",
-                            multipart_body_builder.build().toPatch()
+                            multipartBodyBuilder.build().toPatch()
                         )?.also { result ->
                             result.jsonObject?.let {
                                 resultAccount = TootParser(this@ActAccountSetting, account).account(it)
@@ -1332,7 +1307,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                             }
                         }
                     }
-
                 } finally {
                     for (arg in args) {
                         val value = arg.second
@@ -1349,9 +1323,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         val key = arg.first
                         val value = arg.second
                         if (key == "locked" && value is Boolean) {
-                            profile_busy = true
+                            profileBusy = true
                             cbLocked.isChecked = !value
-                            profile_busy = false
+                            profileBusy = false
                         }
                     }
                 }
@@ -1457,17 +1431,17 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         openPicker(PERMISSION_REQUEST_HEADER)
     }
 
-    private fun openPicker(permission_request_code: Int) {
+    private fun openPicker(requestCode: Int) {
         val permissionCheck = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            preparePermission(permission_request_code)
+            preparePermission(requestCode)
             return
         }
 
-        val propName = when (permission_request_code) {
+        val propName = when (requestCode) {
             PERMISSION_REQUEST_HEADER -> "header"
             else -> "avatar"
         }
@@ -1482,12 +1456,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         a.show(this, null)
     }
 
-    private fun preparePermission(request_code: Int) {
+    private fun preparePermission(requestCode: Int) {
         if (Build.VERSION.SDK_INT >= 23) {
             // No explanation needed, we can request the permission.
 
             ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), request_code
+                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), requestCode
             )
             return
         }
@@ -1495,7 +1469,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
     ) {
         when (requestCode) {
             PERMISSION_REQUEST_AVATAR, PERMISSION_REQUEST_HEADER ->
@@ -1514,12 +1490,10 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             state.propName = propName
             val intent = intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
             arAddAttachment.launch(intent)
-
         } catch (ex: Throwable) {
             log.trace(ex, "performAttachment failed.")
             showToast(ex, "performAttachment failed.")
         }
-
     }
 
     private fun performCamera(propName: String) {
@@ -1542,53 +1516,48 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             log.trace(ex, "opening camera app failed.")
             showToast(ex, "opening camera app failed.")
         }
-
     }
 
     internal interface InputStreamOpener {
-
         val mimeType: String
-
         val uri: Uri
-
         fun open(): InputStream
-
         fun deleteTempFile()
     }
 
-    private fun createOpener(uriArg: Uri, mime_type: String): InputStreamOpener {
+    private fun createOpener(uriArg: Uri, mimeType: String): InputStreamOpener {
 
         while (true) {
             try {
 
                 // 画像の種別
-                val is_jpeg = MIME_TYPE_JPEG == mime_type
-                val is_png = MIME_TYPE_PNG == mime_type
-                if (!is_jpeg && !is_png) {
+                val isJpeg = MIME_TYPE_JPEG == mimeType
+                val isPng = MIME_TYPE_PNG == mimeType
+                if (!isJpeg && !isPng) {
                     log.d("createOpener: source is not jpeg or png")
                     break
                 }
 
                 // 設定からリサイズ指定を読む
-                val resize_to = 1280
+                val resizeTo = 1280
 
-                val bitmap = createResizedBitmap(this, uriArg, resize_to)
+                val bitmap = createResizedBitmap(this, uriArg, resizeTo)
                 if (bitmap != null) {
                     try {
-                        val cache_dir = externalCacheDir
-                        if (cache_dir == null) {
+                        val cacheDir = externalCacheDir
+                        if (cacheDir == null) {
                             showToast(false, "getExternalCacheDir returns null.")
                             break
                         }
 
-                        cache_dir.mkdir()
+                        cacheDir.mkdir()
 
-                        val temp_file = File(
-                            cache_dir,
+                        val tempFile = File(
+                            cacheDir,
                             "tmp." + System.currentTimeMillis() + "." + Thread.currentThread().id
                         )
-                        FileOutputStream(temp_file).use { os ->
-                            if (is_jpeg) {
+                        FileOutputStream(tempFile).use { os ->
+                            if (isJpeg) {
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
                             } else {
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
@@ -1598,22 +1567,21 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         return object : InputStreamOpener {
 
                             override val mimeType: String
-                                get() = mime_type
+                                get() = mimeType
 
                             override val uri: Uri
                                 get() = uriArg
 
-                            override fun open() = FileInputStream(temp_file)
+                            override fun open() = FileInputStream(tempFile)
 
                             override fun deleteTempFile() {
-                                temp_file.delete()
+                                tempFile.delete()
                             }
                         }
                     } finally {
                         bitmap.recycle()
                     }
                 }
-
             } catch (ex: Throwable) {
                 log.trace(ex, "Resizing image failed.")
                 showToast(ex, "Resizing image failed.")
@@ -1625,7 +1593,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         return object : InputStreamOpener {
 
             override val mimeType: String
-                get() = mime_type
+                get() = mimeType
 
             override val uri: Uri
                 get() = uriArg
@@ -1635,19 +1603,18 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             }
 
             override fun deleteTempFile() {
-
             }
         }
     }
 
-    private fun addAttachment(propName: String, uri: Uri, mime_type: String?) {
+    private fun addAttachment(propName: String, uri: Uri, mimeType: String?) {
 
-        if (mime_type == null) {
+        if (mimeType == null) {
             showToast(false, "mime type is not provided.")
             return
         }
 
-        if (!mime_type.startsWith("image/")) {
+        if (!mimeType.startsWith("image/")) {
             showToast(false, "mime type is not image.")
             return
         }
@@ -1655,7 +1622,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         launchMain {
             runWithProgress(
                 "preparing image",
-                { createOpener(uri, mime_type) },
+                { createOpener(uri, mimeType) },
                 { updateCredential(propName, it) }
             )
         }
@@ -1678,4 +1645,3 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
     }
 }
-

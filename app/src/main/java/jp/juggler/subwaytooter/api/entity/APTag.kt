@@ -42,7 +42,7 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                                     apDomain = parser.apDomain,
                                     shortcode = shortcode,
                                     url = iconUrl,
-                                    static_url = iconUrl,
+                                    staticUrl = iconUrl,
                                 )
                             }
                         }
@@ -58,7 +58,6 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                                         acct = acct,  // may local
                                         username = acct.username
                                     ))
-
                                 }
                     }
                 } catch (ex: Throwable) {

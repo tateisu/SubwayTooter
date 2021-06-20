@@ -24,6 +24,7 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.activity.result.ActivityResult
+import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -63,7 +64,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
-
 class ActPost : AppCompatActivity(),
     View.OnClickListener,
     PostAttachment.Callback,
@@ -100,7 +100,6 @@ class ActPost : AppCompatActivity(),
 
         internal const val MIME_TYPE_JPEG = "image/jpeg"
         internal const val MIME_TYPE_PNG = "image/png"
-
 
         internal val acceptable_mime_types = HashSet<String>().apply {
             //
@@ -200,7 +199,7 @@ class ActPost : AppCompatActivity(),
             data: ByteArray,
             dataOffset: Int,
             sig: ByteArray,
-            sigSize: Int = sig.size
+            sigSize: Int = sig.size,
         ): Boolean {
             for (i in 0 until sigSize) {
                 if (data[dataOffset + i] != sig[i]) return false
@@ -210,7 +209,7 @@ class ActPost : AppCompatActivity(),
 
         private fun findMimeTypeByFileHeader(
             contentResolver: ContentResolver,
-            uri: Uri
+            uri: Uri,
         ): String? {
             try {
                 contentResolver.openInputStream(uri)?.use { inStream ->
@@ -236,7 +235,6 @@ class ActPost : AppCompatActivity(),
                         for (s in sigM4a) {
                             if (matchSig(data, i + 4, s)) return "audio/m4a"
                         }
-
                     }
 
                     // scan frame header
@@ -317,21 +315,21 @@ class ActPost : AppCompatActivity(),
         fun createIntent(
 
             activity: Activity,
-            account_db_id: Long,
+            accountDbId: Long,
 
             multiWindowMode: Boolean,
 
             // 再編集する投稿。アカウントと同一のタンスであること
-            redraft_status: TootStatus? = null,
+            redraftStatus: TootStatus? = null,
 
             // 返信対象の投稿。同一タンス上に同期済みであること
-            reply_status: TootStatus? = null,
+            replyStatus: TootStatus? = null,
 
             //初期テキスト
-            initial_text: String? = null,
+            initialText: String? = null,
 
             // 外部アプリから共有されたインテント
-            sent_intent: Intent? = null,
+            sharedIntent: Intent? = null,
 
             // 返信ではなく引用トゥートを作成する
             quote: Boolean = false,
@@ -343,23 +341,23 @@ class ActPost : AppCompatActivity(),
 
             putExtra(EXTRA_MULTI_WINDOW, multiWindowMode)
 
-            putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
+            putExtra(KEY_ACCOUNT_DB_ID, accountDbId)
 
-            if (redraft_status != null) {
-                putExtra(KEY_REDRAFT_STATUS, redraft_status.json.toString())
+            if (redraftStatus != null) {
+                putExtra(KEY_REDRAFT_STATUS, redraftStatus.json.toString())
             }
 
-            if (reply_status != null) {
-                putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
+            if (replyStatus != null) {
+                putExtra(KEY_REPLY_STATUS, replyStatus.json.toString())
                 putExtra(KEY_QUOTE, quote)
             }
 
-            if (initial_text != null) {
-                putExtra(KEY_INITIAL_TEXT, initial_text)
+            if (initialText != null) {
+                putExtra(KEY_INITIAL_TEXT, initialText)
             }
 
-            if (sent_intent != null) {
-                putExtra(KEY_SENT_INTENT, sent_intent)
+            if (sharedIntent != null) {
+                putExtra(KEY_SENT_INTENT, sharedIntent)
             }
 
             if (scheduledStatus != null) {
@@ -367,7 +365,7 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        internal suspend fun check_exist(url: String?): Boolean {
+        internal suspend fun checkExist(url: String?): Boolean {
             if (url?.isEmpty() != false) return false
             try {
                 val request = Request.Builder().url(url).build()
@@ -399,7 +397,7 @@ class ActPost : AppCompatActivity(),
 
     private lateinit var spEnquete: Spinner
     private lateinit var llEnquete: View
-    private lateinit var list_etChoice: List<MyEditText>
+    private lateinit var etChoices: List<MyEditText>
 
     private lateinit var cbMultipleChoice: CheckBox
     private lateinit var cbHideTotals: CheckBox
@@ -423,22 +421,22 @@ class ActPost : AppCompatActivity(),
     private lateinit var ibScheduleReset: ImageButton
 
     internal lateinit var pref: SharedPreferences
-    internal lateinit var app_state: AppState
-    private lateinit var post_helper: PostHelper
-    private var attachment_list = ArrayList<PostAttachment>()
+    internal lateinit var appState: AppState
+    private lateinit var postHelper: PostHelper
+    private var attachmentList = ArrayList<PostAttachment>()
     private var isPostComplete: Boolean = false
 
     internal var density: Float = 0f
 
-    private var account_list: ArrayList<SavedAccount> = ArrayList()
+    private var accountList: ArrayList<SavedAccount> = ArrayList()
 
-    private var redraft_status_id: EntityId? = null
+    private var redraftStatusId: EntityId? = null
 
     private var timeSchedule = 0L
 
     private var scheduledStatus: TootScheduled? = null
 
-    private val text_watcher: TextWatcher = object : TextWatcher {
+    private val textWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
         }
 
@@ -450,8 +448,8 @@ class ActPost : AppCompatActivity(),
         }
     }
 
-    private val scroll_listener: ViewTreeObserver.OnScrollChangedListener =
-        ViewTreeObserver.OnScrollChangedListener { post_helper.onScrollChanged() }
+    private val scrollListener: ViewTreeObserver.OnScrollChangedListener =
+        ViewTreeObserver.OnScrollChangedListener { postHelper.onScrollChanged() }
 
     val isMultiWindowPost: Boolean
         get() = intent.getBooleanExtra(EXTRA_MULTI_WINDOW, false)
@@ -470,79 +468,77 @@ class ActPost : AppCompatActivity(),
 
     /////////////////////////////////////////////////
 
-    internal var in_reply_to_id: EntityId? = null
-    private var in_reply_to_text: String? = null
-    private var in_reply_to_image: String? = null
-    private var in_reply_to_url: String? = null
-    private var mushroom_input: Int = 0
-    private var mushroom_start: Int = 0
-    private var mushroom_end: Int = 0
-
+    internal var inReplyToId: EntityId? = null
+    private var inReplyToText: String? = null
+    private var inReplyToImage: String? = null
+    private var inReplyToUrl: String? = null
+    private var mushroomInput: Int = 0
+    private var mushroomStart: Int = 0
+    private var mushroomEnd: Int = 0
 
     private val arAttachmentChooser = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data
                 ?.handleGetContentResult(contentResolver)
                 ?.let { checkAttachments(it) }
+        }
     }
 
     private val arCustomThumbnail = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data
                 ?.handleGetContentResult(contentResolver)
                 ?.let { uploadCustomThumbnail(it) }
+        }
     }
 
     private val arCamera = activityResultHandler { ar ->
         if (ar?.resultCode == RESULT_OK) {
             // 画像のURL
-            val uri = ar.data?.data ?: uriCameraImage
-            if (uri != null) {
-                addAttachment(uri)
-            } else {
-                showToast(false, "missing image uri")
+            when (val uri = ar.data?.data ?: uriCameraImage) {
+                null -> showToast(false, "missing image uri")
+                else -> addAttachment(uri)
             }
         } else {
             // 失敗したら DBからデータを削除
-            val uriCameraImage = this.uriCameraImage
-            if (uriCameraImage != null) {
-                contentResolver.delete(uriCameraImage, null, null)
-                this.uriCameraImage = null
+            uriCameraImage?.let { uri ->
+                contentResolver.delete(uri, null, null)
+                uriCameraImage = null
             }
         }
     }
 
     private val arCapture = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data?.data?.let { addAttachment(it) }
+        }
     }
 
     private val arMushroom = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data?.getStringExtra("replace_key")
                 ?.let { applyMushroomResult(it) }
+        }
     }
 
     ////////////////////////////////////////////////////////////////
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if(super.onKeyDown(keyCode, event)) return true
-        if(event!=null) {
-            if (event.isCtrlPressed) return true
+        return when {
+            super.onKeyDown(keyCode, event) -> true
+            event == null -> false
+            else -> event.isCtrlPressed
         }
-        return false
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         val rv = super.onKeyUp(keyCode, event)
-        if( event != null){
-            if( event.isCtrlPressed ){
-                ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
-                when(keyCode){
-                    KeyEvent.KEYCODE_T -> btnPost.performClick()
-                }
-                return true
+        if (event?.isCtrlPressed == true) {
+            ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
+            when (keyCode) {
+                KeyEvent.KEYCODE_T -> btnPost.performClick()
             }
+            return true
         }
         return rv
     }
@@ -561,8 +557,8 @@ class ActPost : AppCompatActivity(),
             R.id.btnRemoveReply -> removeReply()
             R.id.btnMore -> performMore()
             R.id.btnPlugin -> openMushroom()
-            R.id.btnEmojiPicker -> post_helper.openEmojiPickerFromMore()
-            R.id.btnFeaturedTag -> post_helper.openFeaturedTagList(
+            R.id.btnEmojiPicker -> postHelper.openEmojiPickerFromMore()
+            R.id.btnFeaturedTag -> postHelper.openFeaturedTagList(
                 featuredTagCache[account?.acct?.ascii ?: ""]?.list
             )
             R.id.ibSchedule -> performSchedule()
@@ -572,8 +568,9 @@ class ActPost : AppCompatActivity(),
 
     // unused? for REQUEST_CODE_ATTACHMENT
     private fun handleAttachmentResult(ar: ActivityResult?) {
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data?.handleGetContentResult(contentResolver)?.let { checkAttachments(it) }
+        }
     }
 
     override fun onBackPressed() {
@@ -603,7 +600,7 @@ class ActPost : AppCompatActivity(),
 
         super.onCreate(savedInstanceState)
 
-        if(isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
+        if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
 
         arCustomThumbnail.register(this, log)
         arAttachmentChooser.register(this, log)
@@ -613,8 +610,8 @@ class ActPost : AppCompatActivity(),
 
         App1.setActivityTheme(this, noActionBar = true)
 
-        app_state = App1.getAppState(this)
-        pref = app_state.pref
+        appState = App1.getAppState(this)
+        pref = appState.pref
 
         initUI()
 
@@ -623,23 +620,21 @@ class ActPost : AppCompatActivity(),
         } else {
             updateText(intent, confirmed = true, saveDraft = false)
         }
-
-
     }
 
     override fun onDestroy() {
-        post_helper.onDestroy()
-        attachment_worker?.cancel()
+        postHelper.onDestroy()
+        attachmentWorker?.cancel()
         super.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
-        outState.putInt(STATE_MUSHROOM_START, mushroom_start)
-        outState.putInt(STATE_MUSHROOM_END, mushroom_end)
-        redraft_status_id?.putTo(outState, STATE_REDRAFT_STATUS_ID)
+        outState.putInt(STATE_MUSHROOM_INPUT, mushroomInput)
+        outState.putInt(STATE_MUSHROOM_START, mushroomStart)
+        outState.putInt(STATE_MUSHROOM_END, mushroomEnd)
+        redraftStatusId?.putTo(outState, STATE_REDRAFT_STATUS_ID)
 
         outState.putLong(STATE_TIME_SCHEDULE, timeSchedule)
 
@@ -653,7 +648,7 @@ class ActPost : AppCompatActivity(),
             outState.putInt(KEY_VISIBILITY, it.id)
         }
 
-        val array = attachment_list
+        val array = attachmentList
             // アップロード完了したものだけ保持する
             .filter { it.status == PostAttachment.STATUS_UPLOADED }
             .mapNotNull { it.attachment?.encodeJson() }
@@ -662,10 +657,10 @@ class ActPost : AppCompatActivity(),
 
         if (array != null) outState.putString(KEY_ATTACHMENT_LIST, array.toString())
 
-        in_reply_to_id?.putTo(outState, KEY_IN_REPLY_TO_ID)
-        outState.putString(KEY_IN_REPLY_TO_TEXT, in_reply_to_text)
-        outState.putString(KEY_IN_REPLY_TO_IMAGE, in_reply_to_image)
-        outState.putString(KEY_IN_REPLY_TO_URL, in_reply_to_url)
+        inReplyToId?.putTo(outState, KEY_IN_REPLY_TO_ID)
+        outState.putString(KEY_IN_REPLY_TO_TEXT, inReplyToText)
+        outState.putString(KEY_IN_REPLY_TO_IMAGE, inReplyToImage)
+        outState.putString(KEY_IN_REPLY_TO_URL, inReplyToUrl)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -681,7 +676,7 @@ class ActPost : AppCompatActivity(),
 
     private fun appendContentText(
         src: String?,
-        selectBefore: Boolean = false
+        selectBefore: Boolean = false,
     ) {
         if (src?.isEmpty() != false) return
         val svEmoji = DecodeOptions(
@@ -706,8 +701,8 @@ class ActPost : AppCompatActivity(),
                 etContent.setSelection(sb.length)
             }
         } else {
-            if (editable.isNotEmpty()
-                && !CharacterGroup.isWhitespace(editable[editable.length - 1].code)
+            if (editable.isNotEmpty() &&
+                !CharacterGroup.isWhitespace(editable[editable.length - 1].code)
             ) {
                 editable.append(' ')
             }
@@ -754,7 +749,7 @@ class ActPost : AppCompatActivity(),
             parent.addView(bar, 0)
         }
 
-        if(!isMultiWindowPost){
+        if (!isMultiWindowPost) {
             Styler.fixHorizontalMargin(findViewById(R.id.scrollView))
             Styler.fixHorizontalMargin(findViewById(R.id.llFooterBar))
         }
@@ -771,8 +766,8 @@ class ActPost : AppCompatActivity(),
         etContentWarning = findViewById(R.id.etContentWarning)
         etContent = findViewById(R.id.etContent)
 
-        formRoot.callbackOnSizeChanged = {_,_,_,_ ->
-            if(Build.VERSION.SDK_INT >= 24 && isMultiWindowPost) saveWindowSize()
+        formRoot.callbackOnSizeChanged = { _, _, _, _ ->
+            if (Build.VERSION.SDK_INT >= 24 && isMultiWindowPost) saveWindowSize()
             // ビューのw,hはシステムバーその他を含まないので使わない
         }
 
@@ -780,7 +775,6 @@ class ActPost : AppCompatActivity(),
         // 早い段階で指定する必要がある
         etContent.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         etContent.imeOptions = EditorInfo.IME_ACTION_NONE
-
 
         cbQuote = findViewById(R.id.cbQuote)
 
@@ -807,7 +801,7 @@ class ActPost : AppCompatActivity(),
                     parent: AdapterView<*>?,
                     view: View?,
                     position: Int,
-                    id: Long
+                    id: Long,
                 ) {
                     showEnquete()
                     updateTextCount()
@@ -829,7 +823,7 @@ class ActPost : AppCompatActivity(),
             findViewById(R.id.ivMedia4)
         )
 
-        list_etChoice = listOf(
+        etChoices = listOf(
             findViewById(R.id.etChoice1),
             findViewById(R.id.etChoice2),
             findViewById(R.id.etChoice3),
@@ -849,8 +843,6 @@ class ActPost : AppCompatActivity(),
 
         ibSchedule.setOnClickListener(this)
         ibScheduleReset.setOnClickListener(this)
-
-
 
         btnAccount.setOnClickListener(this)
         btnVisibility.setOnClickListener(this)
@@ -877,9 +869,8 @@ class ActPost : AppCompatActivity(),
             updateContentWarning()
         }
 
-
-        post_helper = PostHelper(this, pref, app_state.handler)
-        post_helper.attachEditText(formRoot, etContent, false, object : PostHelper.Callback2 {
+        postHelper = PostHelper(this, pref, appState.handler)
+        postHelper.attachEditText(formRoot, etContent, false, object : PostHelper.Callback2 {
             override fun onTextUpdate() {
                 updateTextCount()
             }
@@ -889,13 +880,12 @@ class ActPost : AppCompatActivity(),
             }
         })
 
-        etContentWarning.addTextChangedListener(text_watcher)
-        for (et in list_etChoice) {
-            et.addTextChangedListener(text_watcher)
+        etContentWarning.addTextChangedListener(textWatcher)
+        for (et in etChoices) {
+            et.addTextChangedListener(textWatcher)
         }
 
-        scrollView.viewTreeObserver.addOnScrollChangedListener(scroll_listener)
-
+        scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
 
         etContent.contentMineTypeArray =
             acceptable_mime_types.toArray(arrayOfNulls<String>(acceptable_mime_types.size))
@@ -914,7 +904,7 @@ class ActPost : AppCompatActivity(),
                 // 情報がないか古いなら再取得
 
                 // 同時に実行するタスクは1つまで
-                if (jobMaxCharCount?.get()?.isActive != true)
+                if (jobMaxCharCount?.get()?.isActive != true) {
                     jobMaxCharCount = launchMain {
                         var newInfo: TootInstance? = null
                         runApiTask(account, progressStyle = ApiTask.PROGRESS_NONE) { client ->
@@ -925,6 +915,7 @@ class ActPost : AppCompatActivity(),
                         if (isFinishing || isDestroyed) return@launchMain
                         if (newInfo != null) updateTextCount()
                     }.wrapWeakReference
+                }
 
                 // fall thru
             }
@@ -949,17 +940,16 @@ class ActPost : AppCompatActivity(),
             EmojiDecoder.decodeShortCode(etContent.text.toString())
         )
 
-        length += TootAccount.countText(
-            if (cbContentWarning.isChecked)
+        if (cbContentWarning.isChecked) {
+            length += TootAccount.countText(
                 EmojiDecoder.decodeShortCode(etContentWarning.text.toString())
-            else
-                ""
-        )
+            )
+        }
 
         var max = getMaxCharCount()
 
         fun checkEnqueteLength() {
-            for (et in list_etChoice) {
+            for (et in etChoices) {
                 length += TootAccount.countText(
                     EmojiDecoder.decodeShortCode(et.text.toString())
                 )
@@ -980,17 +970,17 @@ class ActPost : AppCompatActivity(),
         tvCharCount.text = remain.toString()
         tvCharCount.setTextColor(
             attrColor(
-                if (remain < 0)
-                    R.attr.colorRegexFilterError
-                else
-                    android.R.attr.textColorPrimary
+                when {
+                    remain < 0 -> R.attr.colorRegexFilterError
+                    else -> android.R.attr.textColorPrimary
+                }
             )
         )
     }
 
     class FeaturedTagCache(
         val list: List<TootTag>,
-        val time: Long
+        val time: Long,
     )
 
     // key is SavedAccount.acctAscii
@@ -1009,9 +999,8 @@ class ActPost : AppCompatActivity(),
         if (cache != null && now - cache.time <= 300000L) return
 
         // 同時に実行するタスクは1つまで
-        if (jobFeaturedTag?.get()?.isActive != true)
+        if (jobFeaturedTag?.get()?.isActive != true) {
             jobFeaturedTag = launchMain {
-
                 runApiTask(
                     account,
                     progressStyle = ApiTask.PROGRESS_NONE,
@@ -1043,6 +1032,7 @@ class ActPost : AppCompatActivity(),
                 if (isFinishing || isDestroyed) return@launchMain
                 updateFeaturedTags()
             }.wrapWeakReference
+        }
     }
 
     private fun updateContentWarning() {
@@ -1052,7 +1042,7 @@ class ActPost : AppCompatActivity(),
     private fun selectAccount(a: SavedAccount?) {
         this.account = a
 
-        post_helper.setInstance(a)
+        postHelper.setInstance(a)
 
         if (a == null) {
             btnAccount.text = getString(R.string.not_selected)
@@ -1090,13 +1080,13 @@ class ActPost : AppCompatActivity(),
             return false
         }
 
-        if (attachment_list.isNotEmpty()) {
+        if (attachmentList.isNotEmpty()) {
             // 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
             showToast(false, R.string.cant_change_account_when_attachment_specified)
             return false
         }
 
-        if (redraft_status_id != null) {
+        if (redraftStatusId != null) {
             // 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
             showToast(false, R.string.cant_change_account_when_redraft)
             return false
@@ -1108,9 +1098,9 @@ class ActPost : AppCompatActivity(),
     private fun performAccountChooser() {
         if (!canSwitchAccount()) return
 
-        if(isMultiWindowPost) {
-            account_list = SavedAccount.loadAccountList(this)
-            SavedAccount.sort(account_list)
+        if (isMultiWindowPost) {
+            accountList = SavedAccount.loadAccountList(this)
+            SavedAccount.sort(accountList)
         }
 
         launchMain {
@@ -1120,7 +1110,7 @@ class ActPost : AppCompatActivity(),
                 message = getString(R.string.choose_account)
             )?.let { ai ->
                 // 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-                if (in_reply_to_id != null && ai.apiHost != account?.apiHost) {
+                if (inReplyToId != null && ai.apiHost != account?.apiHost) {
                     startReplyConversion(ai)
                 } else {
                     setAccountWithVisibilityConversion(ai)
@@ -1136,7 +1126,6 @@ class ActPost : AppCompatActivity(),
                 showToast(true, R.string.spoil_visibility_for_account)
                 this.visibility = a.visibility
             }
-
         } catch (ex: Throwable) {
             log.trace(ex)
         }
@@ -1146,11 +1135,11 @@ class ActPost : AppCompatActivity(),
     }
 
     @SuppressLint("StaticFieldLeak")
-    private fun startReplyConversion(access_info: SavedAccount) {
+    private fun startReplyConversion(accessInfo: SavedAccount) {
 
-        val in_reply_to_url = this.in_reply_to_url
+        val inReplyToUrl = this.inReplyToUrl
 
-        if (in_reply_to_url == null) {
+        if (inReplyToUrl == null) {
             // 下書きが古い形式の場合、URLがないので別タンスへの移動ができない
             AlertDialog.Builder(this@ActPost)
                 .setMessage(R.string.account_change_failed_old_draft_has_no_in_reply_to_url)
@@ -1161,10 +1150,10 @@ class ActPost : AppCompatActivity(),
         launchMain {
             var resultStatus: TootStatus? = null
             runApiTask(
-                access_info,
+                accessInfo,
                 progressPrefix = getString(R.string.progress_synchronize_toot)
             ) { client ->
-                val pair = client.syncStatus(access_info, in_reply_to_url)
+                val pair = client.syncStatus(accessInfo, inReplyToUrl)
                 resultStatus = pair.second
                 pair.first
             }?.let { result ->
@@ -1174,8 +1163,8 @@ class ActPost : AppCompatActivity(),
                         getString(R.string.in_reply_to_id_conversion_failed) + "\n" + result.error
                     )
                     else -> {
-                        in_reply_to_id = targetStatus.id
-                        setAccountWithVisibilityConversion(access_info)
+                        inReplyToId = targetStatus.id
+                        setAccountWithVisibilityConversion(accessInfo)
                     }
                 }
             }
@@ -1189,16 +1178,16 @@ class ActPost : AppCompatActivity(),
 
         if (isFinishing) return
 
-        llAttachment.vg(attachment_list.isNotEmpty())
-        ivMedia.forEachIndexed { i, v -> showAttachment_sub(v, i) }
+        llAttachment.vg(attachmentList.isNotEmpty())
+        ivMedia.forEachIndexed { i, v -> showAttachment1(v, i) }
     }
 
-    private fun showAttachment_sub(iv: MyNetworkImageView, idx: Int) {
-        if (idx >= attachment_list.size) {
+    private fun showAttachment1(iv: MyNetworkImageView, idx: Int) {
+        if (idx >= attachmentList.size) {
             iv.visibility = View.GONE
         } else {
             iv.visibility = View.VISIBLE
-            val pa = attachment_list[idx]
+            val pa = attachmentList[idx]
             val a = pa.attachment
             when {
 
@@ -1212,7 +1201,8 @@ class ActPost : AppCompatActivity(),
                     val defaultIconId = when (a.type) {
                         TootAttachmentType.Image -> R.drawable.ic_image
                         TootAttachmentType.Video,
-                        TootAttachmentType.GIFV -> R.drawable.ic_videocam
+                        TootAttachmentType.GIFV,
+                        -> R.drawable.ic_videocam
                         TootAttachmentType.Audio -> R.drawable.ic_music_note
                         else -> R.drawable.ic_clip
                     }
@@ -1227,7 +1217,7 @@ class ActPost : AppCompatActivity(),
     // 添付した画像をタップ
     private fun performAttachmentClick(idx: Int) {
         val pa = try {
-            attachment_list[idx]
+            attachmentList[idx]
         } catch (ex: Throwable) {
             showToast(false, ex.withCaption("can't get attachment item[$idx]."))
             return
@@ -1295,7 +1285,6 @@ class ActPost : AppCompatActivity(),
             .show()
     }
 
-
     private fun openCustomThumbnail(pa: PostAttachment) {
 
         lastPostAttachment = pa
@@ -1312,7 +1301,6 @@ class ActPost : AppCompatActivity(),
             arCustomThumbnail.launch(
                 intentGetContent(false, getString(R.string.pick_images), arrayOf("image/*"))
             )
-
         } catch (ex: Throwable) {
             log.trace(ex)
             showToast(ex, "ACTION_GET_CONTENT failed.")
@@ -1330,14 +1318,14 @@ class ActPost : AppCompatActivity(),
             return
         }
 
-        val mime_type = getMimeType(src.uri, src.mimeType)
-        if (mime_type?.isEmpty() != false) {
+        val mimeType = getMimeType(src.uri, src.mimeType)
+        if (mimeType?.isEmpty() != false) {
             showToast(false, R.string.mime_type_missing)
             return
         }
 
         val pa = lastPostAttachment
-        if (pa == null || !attachment_list.contains(pa)) {
+        if (pa == null || !attachmentList.contains(pa)) {
             showToast(true, "lost attachment information")
             return
         }
@@ -1350,25 +1338,25 @@ class ActPost : AppCompatActivity(),
 
                     val resizeConfig = ResizeConfig(ResizeType.SquarePixel, 400)
 
-                    val opener = createOpener(src.uri, mime_type, resizeConfig)
+                    val opener = createOpener(src.uri, mimeType, resizeConfig)
 
-                    val media_size_max = 1000000
+                    val mediaSizeMax = 1000000
 
-                    val content_length = getStreamSize(true, opener.open())
-                    if (content_length > media_size_max) {
+                    val contentLength = getStreamSize(true, opener.open())
+                    if (contentLength > mediaSizeMax) {
                         return@runApiTask TootApiResult(
                             getString(
                                 R.string.file_size_too_big,
-                                media_size_max / 1000000
+                                mediaSizeMax / 1000000
                             )
                         )
                     }
 
                     fun fixDocumentName(s: String): String {
-                        val s_length = s.length
+                        val sLength = s.length
                         val m = """([^\x20-\x7f])""".asciiPattern().matcher(s)
                         m.reset()
-                        val sb = StringBuilder(s_length)
+                        val sb = StringBuilder(sLength)
                         var lastEnd = 0
                         while (m.find()) {
                             sb.append(s.substring(lastEnd, m.start()))
@@ -1376,7 +1364,7 @@ class ActPost : AppCompatActivity(),
                             sb.append(escaped)
                             lastEnd = m.end()
                         }
-                        if (lastEnd < s_length) sb.append(s.substring(lastEnd, s_length))
+                        if (lastEnd < sLength) sb.append(s.substring(lastEnd, sLength))
                         return sb.toString()
                     }
 
@@ -1400,7 +1388,7 @@ class ActPost : AppCompatActivity(),
 
                                         @Throws(IOException::class)
                                         override fun contentLength(): Long {
-                                            return content_length
+                                            return contentLength
                                         }
 
                                         @Throws(IOException::class)
@@ -1431,7 +1419,6 @@ class ActPost : AppCompatActivity(),
                         }
                         result
                     }
-
                 } catch (ex: Throwable) {
                     return@runApiTask TootApiResult(ex.withCaption("read failed."))
                 }
@@ -1446,7 +1433,7 @@ class ActPost : AppCompatActivity(),
             .setTitle(R.string.confirm_delete_attachment)
             .setPositiveButton(R.string.ok) { _, _ ->
                 try {
-                    attachment_list.remove(pa)
+                    attachmentList.remove(pa)
                 } catch (ignored: Throwable) {
                 }
 
@@ -1454,7 +1441,6 @@ class ActPost : AppCompatActivity(),
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
-
     }
 
     private fun editAttachmentDescription(pa: PostAttachment) {
@@ -1481,13 +1467,13 @@ class ActPost : AppCompatActivity(),
 
     @SuppressLint("StaticFieldLeak")
     private fun setAttachmentDescription(pa: PostAttachment, dialog: Dialog, text: String) {
-        val attachment_id = pa.attachment?.id ?: return
+        val attachmentId = pa.attachment?.id ?: return
         val account = this@ActPost.account ?: return
         launchMain {
             var resultAttachment: TootAttachment? = null
             runApiTask(account) { client ->
                 client.request(
-                    "/api/v1/media/$attachment_id",
+                    "/api/v1/media/$attachmentId",
                     jsonObject {
                         put("description", text)
                     }
@@ -1511,7 +1497,7 @@ class ActPost : AppCompatActivity(),
 
     private fun openAttachment() {
 
-        if (attachment_list.size >= 4) {
+        if (attachmentList.size >= 4) {
             showToast(false, R.string.attachment_too_many)
             return
         }
@@ -1561,9 +1547,7 @@ class ActPost : AppCompatActivity(),
         }
 
         a.show(this, null)
-
     }
-
 
     private fun openAttachmentChooser(titleId: Int, vararg mimeTypes: String) {
         // SAFのIntentで開く
@@ -1588,17 +1572,17 @@ class ActPost : AppCompatActivity(),
 
     private fun createOpener(
         uri: Uri,
-        mime_type: String,
-        resizeConfig: ResizeConfig
+        mimeType: String,
+        resizeConfig: ResizeConfig,
     ): InputStreamOpener {
 
         while (true) {
             try {
 
                 // 画像の種別
-                val is_jpeg = MIME_TYPE_JPEG == mime_type
-                val is_png = MIME_TYPE_PNG == mime_type
-                if (!is_jpeg && !is_png) {
+                val isJpeg = MIME_TYPE_JPEG == mimeType
+                val isPng = MIME_TYPE_PNG == mimeType
+                if (!isJpeg && !isPng) {
                     log.d("createOpener: source is not jpeg or png")
                     break
                 }
@@ -1611,17 +1595,17 @@ class ActPost : AppCompatActivity(),
                 )
                 if (bitmap != null) {
                     try {
-                        val cache_dir = externalCacheDir
-                        if (cache_dir == null) {
+                        val cacheDir = externalCacheDir
+                        if (cacheDir == null) {
                             showToast(false, "getExternalCacheDir returns null.")
                             break
                         }
 
-                        cache_dir.mkdir()
+                        cacheDir.mkdir()
 
-                        val temp_file = File(cache_dir, "tmp." + Thread.currentThread().id)
-                        FileOutputStream(temp_file).use { os ->
-                            if (is_jpeg) {
+                        val tempFile = File(cacheDir, "tmp." + Thread.currentThread().id)
+                        FileOutputStream(tempFile).use { os ->
+                            if (isJpeg) {
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
                             } else {
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
@@ -1631,22 +1615,21 @@ class ActPost : AppCompatActivity(),
                         return object : InputStreamOpener {
 
                             override val mimeType: String
-                                get() = mime_type
+                                get() = mimeType
 
                             @Throws(IOException::class)
                             override fun open(): InputStream {
-                                return FileInputStream(temp_file)
+                                return FileInputStream(tempFile)
                             }
 
                             override fun deleteTempFile() {
-                                temp_file.delete()
+                                tempFile.delete()
                             }
                         }
                     } finally {
                         bitmap.recycle()
                     }
                 }
-
             } catch (ex: Throwable) {
                 log.trace(ex)
                 showToast(ex, "Resizing image failed.")
@@ -1658,7 +1641,7 @@ class ActPost : AppCompatActivity(),
         return object : InputStreamOpener {
 
             override val mimeType: String
-                get() = mime_type
+                get() = mimeType
 
             @Throws(IOException::class)
             override fun open(): InputStream {
@@ -1666,7 +1649,6 @@ class ActPost : AppCompatActivity(),
             }
 
             override fun deleteTempFile() {
-
             }
         }
     }
@@ -1707,27 +1689,27 @@ class ActPost : AppCompatActivity(),
         val pa: PostAttachment,
         val uri: Uri,
         val mimeType: String,
-        val onUploadEnd: () -> Unit
+        val onUploadEnd: () -> Unit,
     )
 
-    private val attachment_queue = ConcurrentLinkedQueue<AttachmentRequest>()
-    private var attachment_worker: AttachmentWorker? = null
+    private val attachmentQueue = ConcurrentLinkedQueue<AttachmentRequest>()
+    private var attachmentWorker: AttachmentWorker? = null
     private var lastAttachmentAdd: Long = 0L
     private var lastAttachmentComplete: Long = 0L
 
     fun updateStateAttachmentList() {
         if (isMultiWindowPost) return
-        app_state.attachment_list = this.attachment_list
+        appState.attachmentList = this.attachmentList
     }
 
     @SuppressLint("StaticFieldLeak")
     private fun addAttachment(
         uri: Uri,
         mimeTypeArg: String? = null,
-        onUploadEnd: () -> Unit = {}
+        onUploadEnd: () -> Unit = {},
     ) {
 
-        if (attachment_list.size >= 4) {
+        if (attachmentList.size >= 4) {
             showToast(false, R.string.attachment_too_many)
             return
         }
@@ -1738,25 +1720,25 @@ class ActPost : AppCompatActivity(),
             return
         }
 
-        val mime_type = getMimeType(uri, mimeTypeArg)
-        if (mime_type?.isEmpty() != false) {
+        val mimeType = getMimeType(uri, mimeTypeArg)
+        if (mimeType?.isEmpty() != false) {
             showToast(false, R.string.mime_type_missing)
             return
         }
 
         val instance = TootInstance.getCached(account)
         if (instance?.instanceType == InstanceType.Pixelfed) {
-            if (in_reply_to_id != null) {
+            if (inReplyToId != null) {
                 showToast(true, R.string.pixelfed_does_not_allow_reply_with_media)
                 return
             }
-            if (!acceptable_mime_types_pixelfed.contains(mime_type)) {
-                showToast(true, R.string.mime_type_not_acceptable, mime_type)
+            if (!acceptable_mime_types_pixelfed.contains(mimeType)) {
+                showToast(true, R.string.mime_type_not_acceptable, mimeType)
                 return
             }
         } else {
-            if (!acceptable_mime_types.contains(mime_type)) {
-                showToast(true, R.string.mime_type_not_acceptable, mime_type)
+            if (!acceptable_mime_types.contains(mimeType)) {
+                showToast(true, R.string.mime_type_not_acceptable, mimeType)
                 return
             }
         }
@@ -1764,7 +1746,7 @@ class ActPost : AppCompatActivity(),
         updateStateAttachmentList()
 
         val pa = PostAttachment(this)
-        attachment_list.add(pa)
+        attachmentList.add(pa)
         showMediaAttachment()
 
         // アップロード開始トースト(連発しない)
@@ -1777,11 +1759,11 @@ class ActPost : AppCompatActivity(),
         // マストドンは添付メディアをID順に表示するため
         // 画像が複数ある場合は一つずつ処理する必要がある
         // 投稿画面ごとに1スレッドだけ作成してバックグラウンド処理を行う
-        attachment_queue.add(AttachmentRequest(account, pa, uri, mime_type, onUploadEnd))
-        val oldWorker = attachment_worker
+        attachmentQueue.add(AttachmentRequest(account, pa, uri, mimeType, onUploadEnd))
+        val oldWorker = attachmentWorker
         if (oldWorker == null || !oldWorker.isAlive || oldWorker.isCancelled.get()) {
             oldWorker?.cancel()
-            attachment_worker = AttachmentWorker()
+            attachmentWorker = AttachmentWorker()
         } else {
             oldWorker.notifyEx()
         }
@@ -1799,7 +1781,7 @@ class ActPost : AppCompatActivity(),
         override suspend fun run() {
             try {
                 while (!isCancelled.get()) {
-                    val item = attachment_queue.poll()
+                    val item = attachmentQueue.poll()
                     if (item == null) {
                         waitEx(86400000L)
                         continue
@@ -1834,7 +1816,7 @@ class ActPost : AppCompatActivity(),
                 ti ?: return tiResult
 
                 if (ti.instanceType == InstanceType.Pixelfed) {
-                    if (in_reply_to_id != null) {
+                    if (inReplyToId != null) {
                         return TootApiResult(getString(R.string.pixelfed_does_not_allow_reply_with_media))
                     }
                     if (!acceptable_mime_types_pixelfed.contains(mimeType)) {
@@ -1846,7 +1828,7 @@ class ActPost : AppCompatActivity(),
 
                 val opener = createOpener(uri, mimeType, resizeConfig)
 
-                val media_size_max = when {
+                val mediaSizeMax = when {
                     mimeType.startsWith("video") || mimeType.startsWith("audio") ->
                         account.getMovieMaxBytes(ti)
 
@@ -1854,21 +1836,21 @@ class ActPost : AppCompatActivity(),
                         account.getImageMaxBytes(ti)
                 }
 
-                val content_length = getStreamSize(true, opener.open())
-                if (content_length > media_size_max) {
+                val contentLength = getStreamSize(true, opener.open())
+                if (contentLength > mediaSizeMax) {
                     return TootApiResult(
                         getString(
                             R.string.file_size_too_big,
-                            media_size_max / 1000000
+                            mediaSizeMax / 1000000
                         )
                     )
                 }
 
                 fun fixDocumentName(s: String): String {
-                    val s_length = s.length
+                    val sLength = s.length
                     val m = """([^\x20-\x7f])""".asciiPattern().matcher(s)
                     m.reset()
-                    val sb = StringBuilder(s_length)
+                    val sb = StringBuilder(sLength)
                     var lastEnd = 0
                     while (m.find()) {
                         sb.append(s.substring(lastEnd, m.start()))
@@ -1876,22 +1858,22 @@ class ActPost : AppCompatActivity(),
                         sb.append(escaped)
                         lastEnd = m.end()
                     }
-                    if (lastEnd < s_length) sb.append(s.substring(lastEnd, s_length))
+                    if (lastEnd < sLength) sb.append(s.substring(lastEnd, sLength))
                     return sb.toString()
                 }
 
                 val fileName = fixDocumentName(getDocumentName(contentResolver, uri))
 
                 return if (account.isMisskey) {
-                    val multipart_builder = MultipartBody.Builder()
+                    val multipartBuilder = MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
 
                     val apiKey = account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
                     if (apiKey?.isNotEmpty() == true) {
-                        multipart_builder.addFormDataPart("i", apiKey)
+                        multipartBuilder.addFormDataPart("i", apiKey)
                     }
 
-                    multipart_builder.addFormDataPart(
+                    multipartBuilder.addFormDataPart(
                         "file",
                         fileName,
                         object : RequestBody() {
@@ -1901,7 +1883,7 @@ class ActPost : AppCompatActivity(),
 
                             @Throws(IOException::class)
                             override fun contentLength(): Long {
-                                return content_length
+                                return contentLength
                             }
 
                             @Throws(IOException::class)
@@ -1920,7 +1902,7 @@ class ActPost : AppCompatActivity(),
 
                     val result = client.request(
                         "/api/drive/files/create",
-                        multipart_builder.build().toPost()
+                        multipartBuilder.build().toPost()
                     )
 
                     opener.deleteTempFile()
@@ -1951,7 +1933,7 @@ class ActPost : AppCompatActivity(),
 
                                     @Throws(IOException::class)
                                     override fun contentLength(): Long {
-                                        return content_length
+                                        return contentLength
                                     }
 
                                     @Throws(IOException::class)
@@ -1974,8 +1956,9 @@ class ActPost : AppCompatActivity(),
 
                     suspend fun postV2(): TootApiResult? {
                         // 3.1.3未満は v1 APIを使う
-                        if (!ti.versionGE(TootInstance.VERSION_3_1_3))
+                        if (!ti.versionGE(TootInstance.VERSION_3_1_3)) {
                             return postV1()
+                        }
 
                         // v2 APIを試す
                         val result = postMedia("/api/v2/media")
@@ -2012,9 +1995,9 @@ class ActPost : AppCompatActivity(),
                                 206 -> lastResponse = now
 
                                 // too many temporary error without 206 response.
-                                else ->
-                                    if (now - lastResponse >= 120000L)
-                                        return TootApiResult("timeout.")
+                                else -> if (now - lastResponse >= 120000L) {
+                                    return TootApiResult("timeout.")
+                                }
                             }
                         }
                     }
@@ -2025,16 +2008,13 @@ class ActPost : AppCompatActivity(),
 
                     val jsonObject = result?.jsonObject
                     if (jsonObject != null) {
-                        val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
-                        if (a == null) {
-                            result.error = "TootAttachment.parse failed"
-                        } else {
-                            pa.attachment = a
+                        when (val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)) {
+                            null -> result.error = "TootAttachment.parse failed"
+                            else -> pa.attachment = a
                         }
                     }
                     result
                 }
-
             } catch (ex: Throwable) {
                 return TootApiResult(ex.withCaption("read failed."))
             }
@@ -2060,7 +2040,7 @@ class ActPost : AppCompatActivity(),
 
     // 添付メディア投稿が完了したら呼ばれる
     override fun onPostAttachmentComplete(pa: PostAttachment) {
-        if (!attachment_list.contains(pa)) {
+        if (!attachmentList.contains(pa)) {
             // この添付メディアはリストにない
             return
         }
@@ -2068,7 +2048,7 @@ class ActPost : AppCompatActivity(),
         when (pa.status) {
             PostAttachment.STATUS_UPLOAD_FAILED -> {
                 // アップロード失敗
-                attachment_list.remove(pa)
+                attachmentList.remove(pa)
                 showMediaAttachment()
             }
 
@@ -2089,15 +2069,14 @@ class ActPost : AppCompatActivity(),
                         val selEnd = etContent.selectionEnd
                         val e = etContent.editableText
                         val len = e.length
-                        val last_char = if (len <= 0) ' ' else e[len - 1]
-                        if (!CharacterGroup.isWhitespace(last_char.code)) {
+                        val lastChar = if (len <= 0) ' ' else e[len - 1]
+                        if (!CharacterGroup.isWhitespace(lastChar.code)) {
                             e.append(" ").append(a.text_url)
                         } else {
                             e.append(a.text_url)
                         }
                         etContent.setSelection(selStart, selEnd)
                     }
-
                 }
 
                 showMediaAttachment()
@@ -2108,7 +2087,6 @@ class ActPost : AppCompatActivity(),
             }
         }
     }
-
 
     private fun performCamera() {
         try {
@@ -2122,16 +2100,12 @@ class ActPost : AppCompatActivity(),
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uriCameraImage)
 
-
-
             arCamera.launch(intent)
         } catch (ex: Throwable) {
             log.trace(ex)
             showToast(ex, "opening camera app failed.")
         }
-
     }
-
 
     private fun performCapture(action: String, errorCaption: String) {
         try {
@@ -2155,7 +2129,9 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
     ) {
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> {
@@ -2232,15 +2208,14 @@ class ActPost : AppCompatActivity(),
                     TootVisibility.PrivateFollowers,
                     TootVisibility.DirectSpecified
                 )
-
         }
-        val caption_list = list
+        val captionList = list
             .map { Styler.getVisibilityCaption(this, account?.isMisskey == true, it) }
             .toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle(R.string.choose_visibility)
-            .setItems(caption_list) { _, which ->
+            .setItems(captionList) { _, which ->
                 if (which in list.indices) {
                     visibility = list[which]
                     showVisibility()
@@ -2248,7 +2223,6 @@ class ActPost : AppCompatActivity(),
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
-
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -2257,7 +2231,7 @@ class ActPost : AppCompatActivity(),
         val dialog = ActionsDialog()
 
         dialog.addAction(getString(R.string.open_picker_emoji)) {
-            post_helper.openEmojiPickerFromMore()
+            postHelper.openEmojiPickerFromMore()
         }
 
         dialog.addAction(getString(R.string.clear_text)) {
@@ -2268,7 +2242,7 @@ class ActPost : AppCompatActivity(),
         dialog.addAction(getString(R.string.clear_text_and_media)) {
             etContent.setText("")
             etContentWarning.setText("")
-            attachment_list.clear()
+            attachmentList.clear()
             showMediaAttachment()
         }
 
@@ -2290,21 +2264,21 @@ class ActPost : AppCompatActivity(),
         val account = this.account ?: return
 
         // アップロード中は投稿できない
-        for (pa in attachment_list) {
+        for (pa in attachmentList) {
             if (pa.status == PostAttachment.STATUS_UPLOADING) {
                 showToast(false, R.string.media_attachment_still_uploading)
                 return
             }
         }
 
-        post_helper.content = etContent.text.toString().trim { it <= ' ' }
+        postHelper.content = etContent.text.toString().trim { it <= ' ' }
 
         fun copyEnqueteText() {
-            val enquete_items = ArrayList<String>()
-            for (et in list_etChoice) {
-                enquete_items.add(et.text.toString().trim { it <= ' ' })
+            val enqueteItems = ArrayList<String>()
+            for (et in etChoices) {
+                enqueteItems.add(et.text.toString().trim { it <= ' ' })
             }
-            post_helper.enquete_items = enquete_items
+            postHelper.enqueteItems = enqueteItems
         }
 
         fun getExpireSeconds(): Int {
@@ -2321,57 +2295,55 @@ class ActPost : AppCompatActivity(),
         when (spEnquete.selectedItemPosition) {
             1 -> {
                 copyEnqueteText()
-                post_helper.poll_type = TootPollsType.Mastodon
-                post_helper.poll_expire_seconds = getExpireSeconds()
-                post_helper.poll_hide_totals = cbHideTotals.isChecked
-                post_helper.poll_multiple_choice = cbMultipleChoice.isChecked
+                postHelper.pollType = TootPollsType.Mastodon
+                postHelper.pollExpireSeconds = getExpireSeconds()
+                postHelper.pollHideTotals = cbHideTotals.isChecked
+                postHelper.pollMultipleChoice = cbMultipleChoice.isChecked
             }
 
             2 -> {
                 copyEnqueteText()
-                post_helper.poll_type = TootPollsType.FriendsNico
-
+                postHelper.pollType = TootPollsType.FriendsNico
             }
 
             else -> {
-                post_helper.enquete_items = null
-                post_helper.poll_type = null
+                postHelper.enqueteItems = null
+                postHelper.pollType = null
             }
         }
 
-
         if (!cbContentWarning.isChecked) {
-            post_helper.spoiler_text = null // nullはCWチェックなしを示す
+            postHelper.spoilerText = null // nullはCWチェックなしを示す
         } else {
-            post_helper.spoiler_text = etContentWarning.text.toString().trim { it <= ' ' }
+            postHelper.spoilerText = etContentWarning.text.toString().trim { it <= ' ' }
         }
 
-        post_helper.visibility = this.visibility ?: TootVisibility.Public
-        post_helper.bNSFW = cbNSFW.isChecked
+        postHelper.visibility = this.visibility ?: TootVisibility.Public
+        postHelper.bNSFW = cbNSFW.isChecked
 
-        post_helper.in_reply_to_id = this.in_reply_to_id
+        postHelper.inReplyToId = this.inReplyToId
 
-        post_helper.attachment_list = this.attachment_list
+        postHelper.attachmentList = this.attachmentList
 
-        post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account)
+        postHelper.emojiMapCustom = App1.custom_emoji_lister.getMap(account)
 
-        post_helper.redraft_status_id = redraft_status_id
+        postHelper.redraftStatusId = redraftStatusId
 
-        post_helper.useQuoteToot = cbQuote.isChecked
+        postHelper.useQuoteToot = cbQuote.isChecked
 
-        post_helper.scheduledAt = timeSchedule
+        postHelper.scheduledAt = timeSchedule
 
-        post_helper.scheduledId = scheduledStatus?.id
+        postHelper.scheduledId = scheduledStatus?.id
 
-        post_helper.post(account, callback = object : PostHelper.PostCompleteCallback {
+        postHelper.post(account, callback = object : PostHelper.PostCompleteCallback {
             override fun onPostComplete(
-                target_account: SavedAccount,
-                status: TootStatus
+                targetAccount: SavedAccount,
+                status: TootStatus,
             ) {
                 val data = Intent()
-                data.putExtra(EXTRA_POSTED_ACCT, target_account.acct.ascii)
+                data.putExtra(EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
                 status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
-                redraft_status_id?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
+                redraftStatusId?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
                 status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
                 ActMain.refActMain?.get()?.onCompleteActPost(data)
 
@@ -2387,10 +2359,10 @@ class ActPost : AppCompatActivity(),
                 }
             }
 
-            override fun onScheduledPostComplete(target_account: SavedAccount) {
+            override fun onScheduledPostComplete(targetAccount: SavedAccount) {
                 showToast(false, getString(R.string.scheduled_status_sent))
                 val data = Intent()
-                data.putExtra(EXTRA_POSTED_ACCT, target_account.acct.ascii)
+                data.putExtra(EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
 
                 if (isMultiWindowPost) {
                     resetText()
@@ -2407,11 +2379,11 @@ class ActPost : AppCompatActivity(),
     }
 
     private fun showQuotedRenote() {
-        cbQuote.visibility = if (in_reply_to_id != null) View.VISIBLE else View.GONE
+        cbQuote.visibility = if (inReplyToId != null) View.VISIBLE else View.GONE
     }
 
     private fun showReplyTo() {
-        if (in_reply_to_id == null) {
+        if (inReplyToId == null) {
             llReply.visibility = View.GONE
         } else {
             llReply.visibility = View.VISIBLE
@@ -2421,62 +2393,61 @@ class ActPost : AppCompatActivity(),
                 short = true,
                 decodeEmoji = true,
                 mentionDefaultHostDomain = account ?: unknownHostAndDomain
-            ).decodeHTML(in_reply_to_text)
-            ivReply.setImageUrl(pref, Styler.calcIconRound(ivReply.layoutParams), in_reply_to_image)
+            ).decodeHTML(inReplyToText)
+            ivReply.setImageUrl(pref, Styler.calcIconRound(ivReply.layoutParams), inReplyToImage)
         }
     }
 
     private fun removeReply() {
-        in_reply_to_id = null
-        in_reply_to_text = null
-        in_reply_to_image = null
-        in_reply_to_url = null
+        inReplyToId = null
+        inReplyToText = null
+        inReplyToImage = null
+        inReplyToUrl = null
         showReplyTo()
         showQuotedRenote()
     }
 
+    // returns true if has content
     private fun hasContent(): Boolean {
         val content = etContent.text.toString()
-        val content_warning =
+        val contentWarning =
             if (cbContentWarning.isChecked) etContentWarning.text.toString() else ""
 
         val isEnquete = spEnquete.selectedItemPosition > 0
 
-        val str_choice = arrayOf(
-            if (isEnquete) list_etChoice[0].text.toString() else "",
-            if (isEnquete) list_etChoice[1].text.toString() else "",
-            if (isEnquete) list_etChoice[2].text.toString() else "",
-            if (isEnquete) list_etChoice[3].text.toString() else ""
+        val strChoice = arrayOf(
+            if (isEnquete) etChoices[0].text.toString() else "",
+            if (isEnquete) etChoices[1].text.toString() else "",
+            if (isEnquete) etChoices[2].text.toString() else "",
+            if (isEnquete) etChoices[3].text.toString() else ""
         )
 
-        val hasContent = when {
+        return when {
             content.isNotBlank() -> true
-            content_warning.isNotBlank() -> true
-            str_choice.any { it.isNotBlank() } -> true
+            contentWarning.isNotBlank() -> true
+            strChoice.any { it.isNotBlank() } -> true
             else -> false
         }
-
-        return hasContent
     }
 
     private fun saveDraft() {
         val content = etContent.text.toString()
-        val content_warning =
+        val contentWarning =
             if (cbContentWarning.isChecked) etContentWarning.text.toString() else ""
 
         val isEnquete = spEnquete.selectedItemPosition > 0
 
-        val str_choice = arrayOf(
-            if (isEnquete) list_etChoice[0].text.toString() else "",
-            if (isEnquete) list_etChoice[1].text.toString() else "",
-            if (isEnquete) list_etChoice[2].text.toString() else "",
-            if (isEnquete) list_etChoice[3].text.toString() else ""
+        val strChoice = arrayOf(
+            if (isEnquete) etChoices[0].text.toString() else "",
+            if (isEnquete) etChoices[1].text.toString() else "",
+            if (isEnquete) etChoices[2].text.toString() else "",
+            if (isEnquete) etChoices[3].text.toString() else ""
         )
 
         val hasContent = when {
             content.isNotBlank() -> true
-            content_warning.isNotBlank() -> true
-            str_choice.any { it.isNotBlank() } -> true
+            contentWarning.isNotBlank() -> true
+            strChoice.any { it.isNotBlank() } -> true
             else -> false
         }
 
@@ -2486,22 +2457,22 @@ class ActPost : AppCompatActivity(),
         }
 
         try {
-            val tmp_attachment_list = attachment_list
+            val tmpAttachmentList = attachmentList
                 .mapNotNull { it.attachment?.encodeJson() }
                 .toJsonArray()
 
             val json = JsonObject()
             json[DRAFT_CONTENT] = content
-            json[DRAFT_CONTENT_WARNING] = content_warning
+            json[DRAFT_CONTENT_WARNING] = contentWarning
             json[DRAFT_CONTENT_WARNING_CHECK] = cbContentWarning.isChecked
             json[DRAFT_NSFW_CHECK] = cbNSFW.isChecked
             visibility?.let { json.put(DRAFT_VISIBILITY, it.id.toString()) }
             json[DRAFT_ACCOUNT_DB_ID] = account?.db_id ?: -1L
-            json[DRAFT_ATTACHMENT_LIST] = tmp_attachment_list
-            in_reply_to_id?.putTo(json, DRAFT_REPLY_ID)
-            json[DRAFT_REPLY_TEXT] = in_reply_to_text
-            json[DRAFT_REPLY_IMAGE] = in_reply_to_image
-            json[DRAFT_REPLY_URL] = in_reply_to_url
+            json[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList
+            inReplyToId?.putTo(json, DRAFT_REPLY_ID)
+            json[DRAFT_REPLY_TEXT] = inReplyToText
+            json[DRAFT_REPLY_IMAGE] = inReplyToImage
+            json[DRAFT_REPLY_URL] = inReplyToUrl
 
             json[DRAFT_QUOTE] = cbQuote.isChecked
 
@@ -2516,14 +2487,12 @@ class ActPost : AppCompatActivity(),
             json[DRAFT_POLL_EXPIRE_HOUR] = etExpireHours.text.toString()
             json[DRAFT_POLL_EXPIRE_MINUTE] = etExpireMinutes.text.toString()
 
-            json[DRAFT_ENQUETE_ITEMS] = str_choice.toJsonArray()
+            json[DRAFT_ENQUETE_ITEMS] = strChoice.toJsonArray()
 
             PostDraft.save(System.currentTimeMillis(), json)
-
         } catch (ex: Throwable) {
             log.trace(ex)
         }
-
     }
 
     // poll type string to spinner index
@@ -2542,38 +2511,37 @@ class ActPost : AppCompatActivity(),
     private fun openDraftPicker() {
 
         DlgDraftPicker().open(this) { draft -> restoreDraft(draft) }
-
     }
 
     private fun restoreDraft(draft: JsonObject) {
 
         launchMain {
-            val list_warning = ArrayList<String>()
-            var target_account: SavedAccount? = null
+            val listWarning = ArrayList<String>()
+            var targetAccount: SavedAccount? = null
             runWithProgress(
                 "restore from draft",
                 doInBackground = { progress ->
                     fun isTaskCancelled() = !this.coroutineContext.isActive
 
                     var content = draft.string(DRAFT_CONTENT) ?: ""
-                    val account_db_id = draft.long(DRAFT_ACCOUNT_DB_ID) ?: -1L
-                    val tmp_attachment_list =
+                    val accountDbId = draft.long(DRAFT_ACCOUNT_DB_ID) ?: -1L
+                    val tmpAttachmentList =
                         draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
 
-                    val account = SavedAccount.loadAccount(this@ActPost, account_db_id)
+                    val account = SavedAccount.loadAccount(this@ActPost, accountDbId)
                     if (account == null) {
-                        list_warning.add(getString(R.string.account_in_draft_is_lost))
+                        listWarning.add(getString(R.string.account_in_draft_is_lost))
                         try {
-                            if (tmp_attachment_list != null) {
+                            if (tmpAttachmentList != null) {
                                 // 本文からURLを除去する
-                                tmp_attachment_list.forEach {
-                                    val text_url = TootAttachment.decodeJson(it).text_url
-                                    if (text_url?.isNotEmpty() == true) {
-                                        content = content.replace(text_url, "")
+                                tmpAttachmentList.forEach {
+                                    val textUrl = TootAttachment.decodeJson(it).text_url
+                                    if (textUrl?.isNotEmpty() == true) {
+                                        content = content.replace(textUrl, "")
                                     }
                                 }
-                                tmp_attachment_list.clear()
-                                draft[DRAFT_ATTACHMENT_LIST] = tmp_attachment_list.toJsonArray()
+                                tmpAttachmentList.clear()
+                                draft[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList.toJsonArray()
                                 draft[DRAFT_CONTENT] = content
                                 draft.remove(DRAFT_REPLY_ID)
                                 draft.remove(DRAFT_REPLY_TEXT)
@@ -2586,10 +2554,10 @@ class ActPost : AppCompatActivity(),
                         return@runWithProgress "OK"
                     }
 
-                    target_account = account
+                    targetAccount = account
 
                     // アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
-                    val api_client = TootApiClient(this@ActPost, callback = object : TootApiCallback {
+                    val apiClient = TootApiClient(this@ActPost, callback = object : TootApiCallback {
 
                         override val isApiCancelled: Boolean
                             get() = isTaskCancelled()
@@ -2599,39 +2567,39 @@ class ActPost : AppCompatActivity(),
                         }
                     })
 
-                    api_client.account = account
+                    apiClient.account = account
 
-                    if (in_reply_to_id != null) {
-                        val result = api_client.request("/api/v1/statuses/$in_reply_to_id")
+                    if (inReplyToId != null) {
+                        val result = apiClient.request("/api/v1/statuses/$inReplyToId")
                         if (isTaskCancelled()) return@runWithProgress null
                         val jsonObject = result?.jsonObject
                         if (jsonObject == null) {
-                            list_warning.add(getString(R.string.reply_to_in_draft_is_lost))
+                            listWarning.add(getString(R.string.reply_to_in_draft_is_lost))
                             draft.remove(DRAFT_REPLY_ID)
                             draft.remove(DRAFT_REPLY_TEXT)
                             draft.remove(DRAFT_REPLY_IMAGE)
                         }
                     }
                     try {
-                        if (tmp_attachment_list != null) {
+                        if (tmpAttachmentList != null) {
                             // 添付メディアの存在確認
                             var isSomeAttachmentRemoved = false
-                            val it = tmp_attachment_list.iterator()
+                            val it = tmpAttachmentList.iterator()
                             while (it.hasNext()) {
                                 if (isTaskCancelled()) return@runWithProgress null
                                 val ta = TootAttachment.decodeJson(it.next())
-                                if (check_exist(ta.url)) continue
+                                if (checkExist(ta.url)) continue
                                 it.remove()
                                 isSomeAttachmentRemoved = true
                                 // 本文からURLを除去する
-                                val text_url = ta.text_url
-                                if (text_url?.isNotEmpty() == true) {
-                                    content = content.replace(text_url, "")
+                                val textUrl = ta.text_url
+                                if (textUrl?.isNotEmpty() == true) {
+                                    content = content.replace(textUrl, "")
                                 }
                             }
                             if (isSomeAttachmentRemoved) {
-                                list_warning.add(getString(R.string.attachment_in_draft_is_lost))
-                                draft[DRAFT_ATTACHMENT_LIST] = tmp_attachment_list.toJsonArray()
+                                listWarning.add(getString(R.string.attachment_in_draft_is_lost))
+                                draft[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList.toJsonArray()
                                 draft[DRAFT_CONTENT] = content
                             }
                         }
@@ -2646,15 +2614,15 @@ class ActPost : AppCompatActivity(),
                     if (result == null) return@runWithProgress
 
                     val content = draft.string(DRAFT_CONTENT) ?: ""
-                    val content_warning = draft.string(DRAFT_CONTENT_WARNING) ?: ""
-                    val content_warning_checked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
-                    val nsfw_checked = draft.optBoolean(DRAFT_NSFW_CHECK)
-                    val tmp_attachment_list = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
-                    val reply_id = EntityId.from(draft, DRAFT_REPLY_ID)
-                    val reply_text = draft.string(DRAFT_REPLY_TEXT)
-                    val reply_image = draft.string(DRAFT_REPLY_IMAGE)
-                    val reply_url = draft.string(DRAFT_REPLY_URL)
-                    val draft_visibility = TootVisibility
+                    val contentWarning = draft.string(DRAFT_CONTENT_WARNING) ?: ""
+                    val contentWarningChecked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
+                    val nsfwChecked = draft.optBoolean(DRAFT_NSFW_CHECK)
+                    val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
+                    val replyId = EntityId.from(draft, DRAFT_REPLY_ID)
+                    val replyText = draft.string(DRAFT_REPLY_TEXT)
+                    val replyImage = draft.string(DRAFT_REPLY_IMAGE)
+                    val replyUrl = draft.string(DRAFT_REPLY_URL)
+                    val draftVisibility = TootVisibility
                         .parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
 
                     val evEmoji = DecodeOptions(
@@ -2663,11 +2631,11 @@ class ActPost : AppCompatActivity(),
                     ).decodeEmoji(content)
                     etContent.setText(evEmoji)
                     etContent.setSelection(evEmoji.length)
-                    etContentWarning.setText(content_warning)
-                    etContentWarning.setSelection(content_warning.length)
-                    cbContentWarning.isChecked = content_warning_checked
-                    cbNSFW.isChecked = nsfw_checked
-                    if (draft_visibility != null) this@ActPost.visibility = draft_visibility
+                    etContentWarning.setText(contentWarning)
+                    etContentWarning.setSelection(contentWarning.length)
+                    cbContentWarning.isChecked = contentWarningChecked
+                    cbNSFW.isChecked = nsfwChecked
+                    if (draftVisibility != null) this@ActPost.visibility = draftVisibility
 
                     cbQuote.isChecked = draft.optBoolean(DRAFT_QUOTE)
 
@@ -2688,33 +2656,33 @@ class ActPost : AppCompatActivity(),
 
                     val array = draft.jsonArray(DRAFT_ENQUETE_ITEMS)
                     if (array != null) {
-                        var src_index = 0
-                        for (et in list_etChoice) {
-                            if (src_index < array.size) {
-                                et.setText(array.optString(src_index))
-                                ++src_index
+                        var srcIndex = 0
+                        for (et in etChoices) {
+                            if (srcIndex < array.size) {
+                                et.setText(array.optString(srcIndex))
+                                ++srcIndex
                             } else {
                                 et.setText("")
                             }
                         }
                     }
 
-                    if (target_account != null) selectAccount(target_account)
+                    if (targetAccount != null) selectAccount(targetAccount)
 
-                    if (tmp_attachment_list?.isNotEmpty() == true) {
-                        attachment_list.clear()
-                        tmp_attachment_list.forEach {
+                    if (tmpAttachmentList?.isNotEmpty() == true) {
+                        attachmentList.clear()
+                        tmpAttachmentList.forEach {
                             if (it !is JsonObject) return@forEach
                             val pa = PostAttachment(TootAttachment.decodeJson(it))
-                            attachment_list.add(pa)
+                            attachmentList.add(pa)
                         }
                     }
 
-                    if (reply_id != null) {
-                        in_reply_to_id = reply_id
-                        in_reply_to_text = reply_text
-                        in_reply_to_image = reply_image
-                        in_reply_to_url = reply_url
+                    if (replyId != null) {
+                        inReplyToId = replyId
+                        inReplyToText = replyText
+                        inReplyToImage = replyImage
+                        inReplyToUrl = replyUrl
                     }
 
                     updateContentWarning()
@@ -2725,9 +2693,9 @@ class ActPost : AppCompatActivity(),
                     showEnquete()
                     showQuotedRenote()
 
-                    if (list_warning.isNotEmpty()) {
+                    if (listWarning.isNotEmpty()) {
                         val sb = StringBuilder()
-                        for (s in list_warning) {
+                        for (s in listWarning) {
                             if (sb.isNotEmpty()) sb.append("\n")
                             sb.append(s)
                         }
@@ -2742,10 +2710,10 @@ class ActPost : AppCompatActivity(),
     }
 
     private fun prepareMushroomText(et: EditText): String {
-        mushroom_start = et.selectionStart
-        mushroom_end = et.selectionEnd
-        return if (mushroom_end > mushroom_start) {
-            et.text.toString().substring(mushroom_start, mushroom_end)
+        mushroomStart = et.selectionStart
+        mushroomEnd = et.selectionEnd
+        return if (mushroomEnd > mushroomStart) {
+            et.text.toString().substring(mushroomStart, mushroomEnd)
         } else {
             ""
         }
@@ -2753,43 +2721,42 @@ class ActPost : AppCompatActivity(),
 
     private fun applyMushroomText(et: EditText, text: String) {
         val src = et.text.toString()
-        if (mushroom_start > src.length) mushroom_start = src.length
-        if (mushroom_end > src.length) mushroom_end = src.length
+        if (mushroomStart > src.length) mushroomStart = src.length
+        if (mushroomEnd > src.length) mushroomEnd = src.length
 
         val sb = StringBuilder()
-        sb.append(src.substring(0, mushroom_start))
+        sb.append(src.substring(0, mushroomStart))
         // int new_sel_start = sb.length();
         sb.append(text)
-        val new_sel_end = sb.length
-        sb.append(src.substring(mushroom_end))
+        val newSelEnd = sb.length
+        sb.append(src.substring(mushroomEnd))
         et.setText(sb)
-        et.setSelection(new_sel_end, new_sel_end)
+        et.setSelection(newSelEnd, newSelEnd)
     }
-
 
     private fun openMushroom() {
         try {
             var text: String? = null
             when {
                 etContentWarning.hasFocus() -> {
-                    mushroom_input = 1
+                    mushroomInput = 1
                     text = prepareMushroomText(etContentWarning)
                 }
 
                 etContent.hasFocus() -> {
-                    mushroom_input = 0
+                    mushroomInput = 0
                     text = prepareMushroomText(etContent)
                 }
 
                 else -> for (i in 0..3) {
-                    if (list_etChoice[i].hasFocus()) {
-                        mushroom_input = i + 2
-                        text = prepareMushroomText(list_etChoice[i])
+                    if (etChoices[i].hasFocus()) {
+                        mushroomInput = i + 2
+                        text = prepareMushroomText(etChoices[i])
                     }
                 }
             }
             if (text == null) {
-                mushroom_input = 0
+                mushroomInput = 0
                 text = prepareMushroomText(etContent)
             }
 
@@ -2811,16 +2778,15 @@ class ActPost : AppCompatActivity(),
             log.trace(ex)
             showRecommendedPlugin(getString(R.string.plugin_not_installed))
         }
-
     }
 
     private fun applyMushroomResult(text: String) {
-        when (mushroom_input) {
+        when (mushroomInput) {
             0 -> applyMushroomText(etContent, text)
             1 -> applyMushroomText(etContentWarning, text)
             else -> for (i in 0..3) {
-                if (mushroom_input == i + 2) {
-                    applyMushroomText(list_etChoice[i], text)
+                if (mushroomInput == i + 2) {
+                    applyMushroomText(etChoices[i], text)
                 }
             }
         }
@@ -2829,13 +2795,13 @@ class ActPost : AppCompatActivity(),
     @SuppressLint("InflateParams")
     private fun showRecommendedPlugin(title: String?) {
 
-        val res_id = when (getString(R.string.language_code)) {
+        @RawRes val resId = when (getString(R.string.language_code)) {
             "ja" -> R.raw.recommended_plugin_ja
             "fr" -> R.raw.recommended_plugin_fr
             else -> R.raw.recommended_plugin_en
         }
 
-        this.loadRawResource(res_id).let { data ->
+        this.loadRawResource(resId).let { data ->
             val text = data.decodeUTF8()
             val viewRoot = layoutInflater.inflate(R.layout.dlg_plugin_missing, null, false)
 
@@ -2861,9 +2827,7 @@ class ActPost : AppCompatActivity(),
                 .setCancelable(true)
                 .setNeutralButton(R.string.close, null)
                 .show()
-
         }
-
     }
 
     private fun showEnquete() {
@@ -2875,9 +2839,11 @@ class ActPost : AppCompatActivity(),
     }
 
     private val commitContentListener =
-        InputConnectionCompat.OnCommitContentListener { inputContentInfo: InputContentInfoCompat,
-                                                        flags: Int,
-                                                        _: Bundle? ->
+        InputConnectionCompat.OnCommitContentListener {
+                inputContentInfo: InputContentInfoCompat,
+                flags: Int,
+                _: Bundle?,
+            ->
 
             // Intercepts InputConnection#commitContent API calls.
             // - inputContentInfo : content to be committed
@@ -2890,13 +2856,14 @@ class ActPost : AppCompatActivity(),
 
             // read and display inputContentInfo asynchronously
 
-            if (Build.VERSION.SDK_INT >= 25
-                && flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0
+            if (Build.VERSION.SDK_INT >= 25 &&
+                flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0
             ) {
                 try {
                     inputContentInfo.requestPermission()
-                } catch (e: Exception) {
-                    return@OnCommitContentListener false // return false if failed
+                } catch (ignored: Exception) {
+                    // return false if failed
+                    return@OnCommitContentListener false
                 }
             }
 
@@ -2928,21 +2895,21 @@ class ActPost : AppCompatActivity(),
 
     fun resetText() {
         isPostComplete = false
-        in_reply_to_id = null
-        in_reply_to_text = null
-        in_reply_to_image = null
-        in_reply_to_url = null
-        mushroom_input = 0
-        mushroom_start = 0
-        mushroom_end = 0
+        inReplyToId = null
+        inReplyToText = null
+        inReplyToImage = null
+        inReplyToUrl = null
+        mushroomInput = 0
+        mushroomStart = 0
+        mushroomEnd = 0
 
-        redraft_status_id = null
+        redraftStatusId = null
         timeSchedule = 0L
         uriCameraImage = null
 
         scheduledStatus = null
 
-        attachment_list.clear()
+        attachmentList.clear()
 
         timeSchedule = 0L
 
@@ -2950,12 +2917,12 @@ class ActPost : AppCompatActivity(),
 
         etContent.setText("")
 
-        spEnquete.setSelection(0,false)
-        list_etChoice.forEach { it.setText("") }
+        spEnquete.setSelection(0, false)
+        etChoices.forEach { it.setText("") }
 
-        account_list = SavedAccount.loadAccountList(this@ActPost)
-        SavedAccount.sort(account_list)
-        if (account_list.isEmpty()) {
+        accountList = SavedAccount.loadAccountList(this@ActPost)
+        SavedAccount.sort(accountList)
+        if (accountList.isEmpty()) {
             showToast(true, R.string.please_add_account)
             finish()
             return
@@ -2983,16 +2950,15 @@ class ActPost : AppCompatActivity(),
     }
 
     fun decodeAttachments(sv: String) {
-        this.attachment_list.clear()
+        this.attachmentList.clear()
         try {
             sv.decodeJsonArray().objectList().forEach {
                 try {
-                    attachment_list.add(PostAttachment(TootAttachment.decodeJson(it)))
+                    attachmentList.add(PostAttachment(TootAttachment.decodeJson(it)))
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
             }
-
         } catch (ex: Throwable) {
             log.trace(ex)
         }
@@ -3001,10 +2967,10 @@ class ActPost : AppCompatActivity(),
     fun restoreText(savedInstanceState: Bundle) {
         resetText()
 
-        mushroom_input = savedInstanceState.getInt(STATE_MUSHROOM_INPUT, 0)
-        mushroom_start = savedInstanceState.getInt(STATE_MUSHROOM_START, 0)
-        mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
-        redraft_status_id = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
+        mushroomInput = savedInstanceState.getInt(STATE_MUSHROOM_INPUT, 0)
+        mushroomStart = savedInstanceState.getInt(STATE_MUSHROOM_START, 0)
+        mushroomEnd = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
+        redraftStatusId = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
         timeSchedule = savedInstanceState.getLong(STATE_TIME_SCHEDULE, 0L)
 
         savedInstanceState.getString(STATE_URI_CAMERA_IMAGE).mayUri()?.let {
@@ -3012,9 +2978,9 @@ class ActPost : AppCompatActivity(),
         }
 
         this.account = null
-        val account_db_id =
+        val accountDbId =
             savedInstanceState.getLong(KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
-        account_list.find { it.db_id == account_db_id }?.let { selectAccount(it) }
+        accountList.find { it.db_id == accountDbId }?.let { selectAccount(it) }
 
         this.visibility = TootVisibility.fromId(savedInstanceState.getInt(KEY_VISIBILITY, -1))
 
@@ -3031,12 +2997,12 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        val stateAttachmentList = app_state.attachment_list
+        val stateAttachmentList = appState.attachmentList
         if (!isMultiWindowPost && stateAttachmentList != null) {
             // static なデータが残ってるならそれを使う
-            this.attachment_list = stateAttachmentList
+            this.attachmentList = stateAttachmentList
             // コールバックを新しい画面に差し替える
-            for (pa in attachment_list) {
+            for (pa in attachmentList) {
                 pa.callback = this
             }
         } else {
@@ -3047,10 +3013,10 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        this.in_reply_to_id = EntityId.from(savedInstanceState, KEY_IN_REPLY_TO_ID)
-        this.in_reply_to_text = savedInstanceState.getString(KEY_IN_REPLY_TO_TEXT)
-        this.in_reply_to_image = savedInstanceState.getString(KEY_IN_REPLY_TO_IMAGE)
-        this.in_reply_to_url = savedInstanceState.getString(KEY_IN_REPLY_TO_URL)
+        this.inReplyToId = EntityId.from(savedInstanceState, KEY_IN_REPLY_TO_ID)
+        this.inReplyToText = savedInstanceState.getString(KEY_IN_REPLY_TO_TEXT)
+        this.inReplyToImage = savedInstanceState.getString(KEY_IN_REPLY_TO_IMAGE)
+        this.inReplyToUrl = savedInstanceState.getString(KEY_IN_REPLY_TO_URL)
 
         afterUpdateText()
     }
@@ -3059,7 +3025,7 @@ class ActPost : AppCompatActivity(),
         intent: Intent,
         confirmed: Boolean = false,
         saveDraft: Boolean = true,
-        resetAccount: Boolean = true
+        resetAccount: Boolean = true,
     ) {
         if (!canSwitchAccount()) return
 
@@ -3082,23 +3048,23 @@ class ActPost : AppCompatActivity(),
         // Android 9 から、明示的にフォーカスを当てる必要がある
         etContent.requestFocus()
 
-        this.attachment_list.clear()
+        this.attachmentList.clear()
         updateStateAttachmentList()
 
         if (resetAccount) {
             visibility = null
             this.account = null
-            val account_db_id = intent.getLongExtra(KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
-            account_list.find { it.db_id == account_db_id }?.let { selectAccount(it) }
+            val accountDbId = intent.getLongExtra(KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
+            accountList.find { it.db_id == accountDbId }?.let { selectAccount(it) }
         }
 
-        val sent_intent = intent.getParcelableExtra<Intent>(KEY_SENT_INTENT)
-        if (sent_intent != null) {
+        val sentIntent = intent.getParcelableExtra<Intent>(KEY_SENT_INTENT)
+        if (sentIntent != null) {
 
-            val hasUri = when (sent_intent.action) {
+            val hasUri = when (sentIntent.action) {
                 Intent.ACTION_VIEW -> {
-                    val uri = sent_intent.data
-                    val type = sent_intent.type
+                    val uri = sentIntent.data
+                    val type = sentIntent.type
                     if (uri != null) {
                         addAttachment(uri, type)
                         true
@@ -3108,8 +3074,8 @@ class ActPost : AppCompatActivity(),
                 }
 
                 Intent.ACTION_SEND -> {
-                    val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                    val type = sent_intent.type
+                    val uri = sentIntent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                    val type = sentIntent.type
                     if (uri != null) {
                         addAttachment(uri, type)
                         true
@@ -3119,11 +3085,11 @@ class ActPost : AppCompatActivity(),
                 }
 
                 Intent.ACTION_SEND_MULTIPLE -> {
-                    val list_uri =
-                        sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                    val listUri =
+                        sentIntent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
                             ?.filterNotNull()
-                    if (list_uri?.isNotEmpty() == true) {
-                        for (uri in list_uri) {
+                    if (listUri?.isNotEmpty() == true) {
+                        for (uri in listUri) {
                             addAttachment(uri)
                         }
                         true
@@ -3136,7 +3102,7 @@ class ActPost : AppCompatActivity(),
             }
 
             if (!hasUri || !Pref.bpIgnoreTextInSharedMedia(pref)) {
-                appendContentText(sent_intent)
+                appendContentText(sentIntent)
             }
         }
 
@@ -3147,55 +3113,54 @@ class ActPost : AppCompatActivity(),
         var sv = intent.getStringExtra(KEY_REPLY_STATUS)
         if (sv != null && account != null) {
             try {
-                val reply_status =
+                val replyStatus =
                     TootParser(this@ActPost, account).status(sv.decodeJsonObject())
 
                 val isQuote = intent.getBooleanExtra(KEY_QUOTE, false)
 
-                if (reply_status != null) {
+                if (replyStatus != null) {
 
                     if (isQuote) {
                         cbQuote.isChecked = true
 
                         // 引用リノートはCWやメンションを引き継がない
-
                     } else {
 
                         // CW をリプライ元に合わせる
-                        if (reply_status.spoiler_text.isNotEmpty()) {
+                        if (replyStatus.spoiler_text.isNotEmpty()) {
                             cbContentWarning.isChecked = true
-                            etContentWarning.setText(reply_status.spoiler_text)
+                            etContentWarning.setText(replyStatus.spoiler_text)
                         }
 
                         // 新しいメンションリスト
-                        val mention_list = ArrayList<Acct>()
+                        val mentionList = ArrayList<Acct>()
 
                         // 自己レス以外なら元レスへのメンションを追加
                         // 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
-                        if (!account.isMe(reply_status.account)) {
-                            mention_list.add(account.getFullAcct(reply_status.account))
+                        if (!account.isMe(replyStatus.account)) {
+                            mentionList.add(account.getFullAcct(replyStatus.account))
                         }
 
                         // 元レスに含まれていたメンションを複製
-                        reply_status.mentions?.forEach { mention ->
+                        replyStatus.mentions?.forEach { mention ->
 
-                            val who_acct = mention.acct
+                            val whoAcct = mention.acct
 
                             // 空データなら追加しない
-                            if (!who_acct.isValid) return@forEach
+                            if (!whoAcct.isValid) return@forEach
 
                             // 自分なら追加しない
-                            if (account.isMe(who_acct)) return@forEach
+                            if (account.isMe(whoAcct)) return@forEach
 
                             // 既出でないなら追加する
-                            val acct = account.getFullAcct(who_acct)
-                            if (!mention_list.contains(acct)) mention_list.add(acct)
+                            val acct = account.getFullAcct(whoAcct)
+                            if (!mentionList.contains(acct)) mentionList.add(acct)
                         }
 
-                        if (mention_list.isNotEmpty()) {
+                        if (mentionList.isNotEmpty()) {
                             appendContentText(
                                 StringBuilder().apply {
-                                    for (acct in mention_list) {
+                                    for (acct in mentionList) {
                                         if (isNotEmpty()) append(' ')
                                         append("@${acct.ascii}")
                                     }
@@ -3206,10 +3171,10 @@ class ActPost : AppCompatActivity(),
                     }
 
                     // リプライ表示をつける
-                    in_reply_to_id = reply_status.id
-                    in_reply_to_text = reply_status.content
-                    in_reply_to_image = reply_status.account.avatar_static
-                    in_reply_to_url = reply_status.url
+                    inReplyToId = replyStatus.id
+                    inReplyToText = replyStatus.content
+                    inReplyToImage = replyStatus.account.avatar_static
+                    inReplyToUrl = replyStatus.url
 
                     // 公開範囲
                     try {
@@ -3224,7 +3189,7 @@ class ActPost : AppCompatActivity(),
                             visibility = TootVisibility.PrivateFollowers
                         }
 
-                        val sample = when (val base = reply_status.visibility) {
+                        val sample = when (val base = replyStatus.visibility) {
                             TootVisibility.Unknown -> TootVisibility.PrivateFollowers
                             else -> base
                         }
@@ -3239,8 +3204,6 @@ class ActPost : AppCompatActivity(),
                             // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
                             this.visibility = sample
                         }
-
-
                     } catch (ex: Throwable) {
                         log.trace(ex)
                     }
@@ -3258,92 +3221,91 @@ class ActPost : AppCompatActivity(),
         sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
         if (sv != null && account != null) {
             try {
-                val base_status =
+                val baseStatus =
                     TootParser(this@ActPost, account).status(sv.decodeJsonObject())
-                if (base_status != null) {
+                if (baseStatus != null) {
 
-                    redraft_status_id = base_status.id
+                    redraftStatusId = baseStatus.id
 
-                    this.visibility = base_status.visibility
+                    this.visibility = baseStatus.visibility
 
-                    val src_attachments = base_status.media_attachments
-                    if (src_attachments?.isNotEmpty() == true) {
+                    val srcAttachments = baseStatus.media_attachments
+                    if (srcAttachments?.isNotEmpty() == true) {
                         updateStateAttachmentList()
-                        this.attachment_list.clear()
+                        this.attachmentList.clear()
                         try {
-                            for (src in src_attachments) {
+                            for (src in srcAttachments) {
                                 if (src is TootAttachment) {
                                     src.redraft = true
                                     val pa = PostAttachment(src)
                                     pa.status = PostAttachment.STATUS_UPLOADED
-                                    this.attachment_list.add(pa)
+                                    this.attachmentList.add(pa)
                                 }
                             }
-
                         } catch (ex: Throwable) {
                             log.trace(ex)
                         }
                     }
 
-                    cbNSFW.isChecked = base_status.sensitive == true
+                    cbNSFW.isChecked = baseStatus.sensitive == true
 
                     // 再編集の場合はdefault_textは反映されない
 
                     val decodeOptions = DecodeOptions(
                         this,
                         mentionFullAcct = true,
-                        mentions = base_status.mentions,
+                        mentions = baseStatus.mentions,
                         mentionDefaultHostDomain = account
                     )
 
                     var text: CharSequence = if (account.isMisskey) {
-                        base_status.content ?: ""
+                        baseStatus.content ?: ""
                     } else {
-                        decodeOptions.decodeHTML(base_status.content)
+                        decodeOptions.decodeHTML(baseStatus.content)
                     }
                     etContent.setText(text)
                     etContent.setSelection(text.length)
 
-                    text = decodeOptions.decodeEmoji(base_status.spoiler_text)
+                    text = decodeOptions.decodeEmoji(baseStatus.spoiler_text)
                     etContentWarning.setText(text)
                     etContentWarning.setSelection(text.length)
                     cbContentWarning.isChecked = text.isNotEmpty()
 
-                    val src_enquete = base_status.enquete
-                    val src_items = src_enquete?.items
+                    val srcEnquete = baseStatus.enquete
+                    val srcItems = srcEnquete?.items
                     when {
-                        src_items == null -> {
-
+                        srcItems == null -> {
+                            //
                         }
 
-                        src_enquete.pollType == TootPollsType.FriendsNico && src_enquete.type != TootPolls.TYPE_ENQUETE -> {
+                        srcEnquete.pollType == TootPollsType.FriendsNico && srcEnquete.type != TootPolls.TYPE_ENQUETE -> {
                             // フレニコAPIのアンケート結果は再編集の対象外
                         }
 
                         else -> {
                             spEnquete.setSelection(
-                                if (src_enquete.pollType == TootPollsType.FriendsNico) {
+                                if (srcEnquete.pollType == TootPollsType.FriendsNico) {
                                     2
                                 } else {
                                     1
                                 }
                             )
-                            text = decodeOptions.decodeHTML(src_enquete.question)
+                            text = decodeOptions.decodeHTML(srcEnquete.question)
                             etContent.text = text
                             etContent.setSelection(text.length)
 
-                            var src_index = 0
-                            loop@ for (et in list_etChoice) {
-                                if (src_index < src_items.size) {
-                                    val choice = src_items[src_index]
+                            var srcIndex = 0
+                            loop@ for (et in etChoices) {
+                                if (srcIndex < srcItems.size) {
+                                    val choice = srcItems[srcIndex]
                                     when {
-                                        src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14" -> {
+                                        srcIndex == srcItems.size - 1 && choice.text == "\uD83E\uDD14" -> {
                                             // :thinking_face: は再現しない
                                         }
 
                                         else -> {
                                             et.setText(decodeOptions.decodeEmoji(choice.text))
-                                            ++src_index
+                                            ++srcIndex
                                             continue@loop
                                         }
                                     }
@@ -3353,11 +3315,9 @@ class ActPost : AppCompatActivity(),
                         }
                     }
                 }
-
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
         }
 
         // 予約編集の再編集
@@ -3378,7 +3338,7 @@ class ActPost : AppCompatActivity(),
                     val text = item.text
                     etContent.setText(text)
 
-                    val cw = item.spoiler_text
+                    val cw = item.spoilerText
                     if (cw?.isNotEmpty() == true) {
                         etContentWarning.setText(cw)
                         cbContentWarning.isChecked = true
@@ -3389,17 +3349,17 @@ class ActPost : AppCompatActivity(),
 
                     // 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
                     // 2019/1/22 https://github.com/tootsuite/mastodon/pull/9894 で直った。
-                    val src_attachments = item.media_attachments
-                    if (src_attachments?.isNotEmpty() == true) {
+                    val srcAttachments = item.mediaAttachments
+                    if (srcAttachments?.isNotEmpty() == true) {
                         updateStateAttachmentList()
-                        this.attachment_list.clear()
+                        this.attachmentList.clear()
                         try {
-                            for (src in src_attachments) {
+                            for (src in srcAttachments) {
                                 if (src is TootAttachment) {
                                     src.redraft = true
                                     val pa = PostAttachment(src)
                                     pa.status = PostAttachment.STATUS_UPLOADED
-                                    this.attachment_list.add(pa)
+                                    this.attachmentList.add(pa)
                                 }
                             }
                         } catch (ex: Throwable) {
@@ -3419,5 +3379,4 @@ class ActPost : AppCompatActivity(),
     override fun onMyClickableSpanClicked(viewClicked: View, span: MyClickableSpan) {
         openBrowser(span.linkInfo.url)
     }
-
 }

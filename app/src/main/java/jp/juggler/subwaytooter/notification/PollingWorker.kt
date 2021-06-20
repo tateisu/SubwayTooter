@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 
-
 class PollingWorker private constructor(contextArg: Context) {
 
     companion object {
@@ -62,7 +61,6 @@ class PollingWorker private constructor(contextArg: Context) {
 
         val inject_queue = ConcurrentLinkedQueue<InjectData>()
 
-
         @SuppressLint("StaticFieldLeak")
         private var sInstance: PollingWorker? = null
 
@@ -73,7 +71,7 @@ class PollingWorker private constructor(contextArg: Context) {
         }
 
         suspend fun getFirebaseMessagingToken(context: Context): String? {
-            val prefDevice = PrefDevice.prefDevice(context)
+            val prefDevice = PrefDevice.from(context)
             // 設定ファイルに保持されていたらそれを使う
             prefDevice
                 .getString(PrefDevice.KEY_DEVICE_TOKEN, null)
@@ -102,15 +100,14 @@ class PollingWorker private constructor(contextArg: Context) {
             }
         }
 
-
         // インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
         // トークンがまだ生成されていない場合、このメソッドは null を返します。
         @Suppress("BlockingMethodInNonBlockingContext")
         suspend fun prepareInstallId(
             context: Context,
-            job: JobItem? = null
+            job: JobItem? = null,
         ): String? {
-            val prefDevice = PrefDevice.prefDevice(context)
+            val prefDevice = PrefDevice.from(context)
 
             var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
             if (sv?.isNotEmpty() == true) return sv
@@ -145,7 +142,6 @@ class PollingWorker private constructor(contextArg: Context) {
                 prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply()
 
                 return sv
-
             } catch (ex: Throwable) {
                 log.trace(ex, "prepareInstallId failed.")
             }
@@ -194,7 +190,6 @@ class PollingWorker private constructor(contextArg: Context) {
                 builder
                     .setPeriodicCompat(intervalMillis, flexMillis)
                     .setPersisted(true)
-
             } else {
                 builder
                     .setMinimumLatency(0)
@@ -213,7 +208,7 @@ class PollingWorker private constructor(contextArg: Context) {
             context: Context,
             removeOld: Boolean,
             taskId: TaskId,
-            taskDataInitializer: JsonObject.() -> Unit = {}
+            taskDataInitializer: JsonObject.() -> Unit = {},
         ) {
             try {
                 task_list.addLast(
@@ -228,7 +223,6 @@ class PollingWorker private constructor(contextArg: Context) {
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
         }
 
         fun queueUpdateNotification(context: Context) {
@@ -241,11 +235,10 @@ class PollingWorker private constructor(contextArg: Context) {
             }
         }
 
-
         fun injectData(
             context: Context,
             account: SavedAccount,
-            src: List<TootNotification>
+            src: List<TootNotification>,
         ) {
 
             if (src.isEmpty()) return
@@ -254,9 +247,9 @@ class PollingWorker private constructor(contextArg: Context) {
             addTask(context, true, TaskId.DataInjected)
         }
 
-        fun queueNotificationCleared(context: Context, db_id: Long) {
+        fun queueNotificationCleared(context: Context, dbId: Long) {
             addTask(context, true, TaskId.Clear) {
-                put(EXTRA_DB_ID, db_id)
+                put(EXTRA_DB_ID, dbId)
             }
         }
 
@@ -326,7 +319,7 @@ class PollingWorker private constructor(contextArg: Context) {
         suspend fun handleFCMMessage(
             context: Context,
             tag: String?,
-            progress: (String) -> Unit
+            progress: (String) -> Unit,
         ) {
             log.d("handleFCMMessage: start. tag=$tag")
 
@@ -357,7 +350,7 @@ class PollingWorker private constructor(contextArg: Context) {
                 // ジョブが完了した？
                 val now = SystemClock.elapsedRealtime()
                 if (!pw.hasJob(JobId.Push)) {
-                    log.d("handleFCMMessage: JOB_FCM completed. time=${String.format("%.2f", (now - time_start) / 1000f)}")
+                    log.d("handleFCMMessage: JOB_FCM completed. time=${(now - time_start).div(1000f).toString("%.2f")}")
                     break
                 }
 
@@ -378,17 +371,16 @@ class PollingWorker private constructor(contextArg: Context) {
         }
     }
 
-
     val context: Context
     val appState: AppState
     val pref: SharedPreferences
     private val connectivityManager: ConnectivityManager
-    val notification_manager: NotificationManager
+    val notificationManager: NotificationManager
     private val scheduler: JobScheduler
-    private val power_manager: PowerManager?
-    private val power_lock: PowerManager.WakeLock
-    private val wifi_manager: WifiManager?
-    private val wifi_lock: WifiManager.WifiLock
+    private val powerManager: PowerManager?
+    private val powerLock: PowerManager.WakeLock
+    private val wifiManager: WifiManager?
+    private val wifiLock: WifiManager.WifiLock
 
     private val startedJobList = LinkedList<JobItem>()
 
@@ -412,37 +404,36 @@ class PollingWorker private constructor(contextArg: Context) {
         this.connectivityManager = systemService(context)
             ?: error("missing ConnectivityManager system service")
 
-
-        this.notification_manager = systemService(context)
+        this.notificationManager = systemService(context)
             ?: error("missing NotificationManager system service")
 
         this.scheduler = systemService(context)
             ?: error("missing JobScheduler system service")
 
-        this.power_manager = systemService(context)
+        this.powerManager = systemService(context)
             ?: error("missing PowerManager system service")
 
         // WifiManagerの取得時はgetApplicationContext を使わないとlintに怒られる
-        this.wifi_manager = systemService(context.applicationContext)
+        this.wifiManager = systemService(context.applicationContext)
             ?: error("missing WifiManager system service")
 
-        power_lock = power_manager.newWakeLock(
+        powerLock = powerManager.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK,
             PollingWorker::class.java.name
         )
-        power_lock.setReferenceCounted(false)
+        powerLock.setReferenceCounted(false)
 
-        wifi_lock = if (Build.VERSION.SDK_INT >= 29) {
-            wifi_manager.createWifiLock(
+        wifiLock = if (Build.VERSION.SDK_INT >= 29) {
+            wifiManager.createWifiLock(
                 WifiManager.WIFI_MODE_FULL_HIGH_PERF,
                 PollingWorker::class.java.name
             )
         } else {
             @Suppress("DEPRECATION")
-            wifi_manager.createWifiLock(PollingWorker::class.java.name)
+            wifiManager.createWifiLock(PollingWorker::class.java.name)
         }
 
-        wifi_lock.setReferenceCounted(false)
+        wifiLock.setReferenceCounted(false)
 
         launchDefault { worker() }
     }
@@ -451,16 +442,16 @@ class PollingWorker private constructor(contextArg: Context) {
     private fun acquirePowerLock() {
         log.d("acquire power lock...")
         try {
-            if (!power_lock.isHeld) {
-                power_lock.acquire()
+            if (!powerLock.isHeld) {
+                powerLock.acquire()
             }
         } catch (ex: Throwable) {
             log.trace(ex)
         }
 
         try {
-            if (!wifi_lock.isHeld) {
-                wifi_lock.acquire()
+            if (!wifiLock.isHeld) {
+                wifiLock.acquire()
             }
         } catch (ex: Throwable) {
             log.trace(ex)
@@ -470,16 +461,16 @@ class PollingWorker private constructor(contextArg: Context) {
     private fun releasePowerLock() {
         log.d("release power lock...")
         try {
-            if (power_lock.isHeld) {
-                power_lock.release()
+            if (powerLock.isHeld) {
+                powerLock.release()
             }
         } catch (ex: Throwable) {
             log.trace(ex)
         }
 
         try {
-            if (wifi_lock.isHeld) {
-                wifi_lock.release()
+            if (wifiLock.isHeld) {
+                wifiLock.release()
             }
         } catch (ex: Throwable) {
             log.trace(ex)
@@ -494,8 +485,8 @@ class PollingWorker private constructor(contextArg: Context) {
                 while (true) {
                     handleJobItem(synchronized(startedJobList) {
                         for (ji in startedJobList) {
-                            if (ji.mJobCancelled_.get()) continue
-                            if (ji.mWorkerAttached.compareAndSet(false, true)) {
+                            if (ji.abJobCancelled.get()) continue
+                            if (ji.abWorkerAttached.compareAndSet(false, true)) {
                                 return@synchronized ji
                             }
                         }
@@ -504,7 +495,7 @@ class PollingWorker private constructor(contextArg: Context) {
                 }
                 try {
                     workerNotifier.receive()
-                } catch (ex: ClosedReceiveChannelException) {
+                } catch (ignored: ClosedReceiveChannelException) {
                 }
             }
         } finally {
@@ -600,7 +591,6 @@ class PollingWorker private constructor(contextArg: Context) {
         workerNotifier.trySend(Unit)
     }
 
-
     // JobService#onStopJob から呼ばれる
     // return True to indicate to the JobManager whether you'd like to reschedule this job based on the retry criteria provided at job creation-time.
     // return False to drop the job. Regardless of the value returned, your job must stop executing.
@@ -610,7 +600,7 @@ class PollingWorker private constructor(contextArg: Context) {
         // 同じジョブ番号がジョブリストにあるか？
         synchronized(startedJobList) {
             startedJobList.removeFirst { it.jobId == jobId }?.let { item ->
-                log.w("onStopJob: jobId=${jobId}, set cancel flag.")
+                log.w("onStopJob: jobId=$jobId, set cancel flag.")
                 // リソースがなくてStopされるのだからrescheduleはtrue
                 item.cancel(true)
                 return true // reschedule
@@ -618,24 +608,23 @@ class PollingWorker private constructor(contextArg: Context) {
         }
 
         // 該当するジョブを依頼されていない
-        log.w("onStopJob: jobId=${jobId}, not started..")
+        log.w("onStopJob: jobId=$jobId, not started..")
         return false
     }
 
     fun processInjectedData(injectedAccounts: HashSet<Long>) {
         while (true) {
             val data = inject_queue.poll() ?: break
-            val account = SavedAccount.loadAccount(context, data.account_db_id) ?: continue
+            val account = SavedAccount.loadAccount(context, data.accountDbId) ?: continue
             val list = data.list
             log.d("${account.acct} processInjectedData +${list.size}")
             if (list.isNotEmpty()) injectedAccounts.add(account.db_id)
-            NotificationCache(data.account_db_id).apply {
+            NotificationCache(data.accountDbId).apply {
                 load()
                 inject(account, list)
             }
         }
     }
-
 
     // ポーリングが完了した
     fun onPollingComplete(requiredNextPolling: Boolean) {
@@ -665,7 +654,7 @@ class PollingWorker private constructor(contextArg: Context) {
         // ジョブ終了報告
         item.refJobService?.get()?.let { jobService ->
             try {
-                val willReschedule = item.mReschedule.get()
+                val willReschedule = item.abReschedule.get()
                 log.d("sending jobFinished. willReschedule=$willReschedule")
                 jobService.jobFinished(item.jobParams, willReschedule)
             } catch (ex: Throwable) {
@@ -681,7 +670,7 @@ class PollingWorker private constructor(contextArg: Context) {
             TaskId.AppDataImportBefore -> {
 
                 // フォアグラウンドサービスの通知は消されないらしい
-                notification_manager.cancelAll()
+                notificationManager.cancelAll()
 
                 scheduler.cancelAll()
 
@@ -696,7 +685,6 @@ class PollingWorker private constructor(contextArg: Context) {
                 // fall
             }
         }
-
 
         // アプリデータのインポート処理がビジーな間、他のジョブは実行されない
         return when {

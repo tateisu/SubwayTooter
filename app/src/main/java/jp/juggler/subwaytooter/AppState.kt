@@ -116,14 +116,13 @@ class AppState(
                 else -> null
             }
         }
-
     }
 
     internal val density: Float
 
     internal val streamManager: StreamManager
 
-    internal var media_thumb_height: Int = 0
+    internal var mediaThumbHeight: Int = 0
 
     private val _columnList = ArrayList<Column>()
 
@@ -147,27 +146,26 @@ class AppState(
         }
     }
 
-
-    private val map_busy_fav = HashSet<String>()
-    private val map_busy_bookmark = HashSet<String>()
-    private val map_busy_boost = HashSet<String>()
-    internal var attachment_list: ArrayList<PostAttachment>? = null
+    private val mapBusyFav = HashSet<String>()
+    private val mapBusyBookmark = HashSet<String>()
+    private val mapBusyBoost = HashSet<String>()
+    internal var attachmentList: ArrayList<PostAttachment>? = null
 
     private var willSpeechEnabled: Boolean = false
     private var tts: TextToSpeech? = null
-    private var tts_status = TTS_STATUS_NONE
-    private var tts_speak_start = 0L
-    private var tts_speak_end = 0L
+    private var ttsStatus = TTS_STATUS_NONE
+    private var ttsSpeakStart = 0L
+    private var ttsSpeakEnd = 0L
 
-    private val voice_list = ArrayList<Voice>()
+    private val voiceList = ArrayList<Voice>()
 
-    private val tts_queue = LinkedList<String>()
+    private val ttsQueue = LinkedList<String>()
 
-    private val duplication_check = LinkedList<DedupItem>()
+    private val duplicationCheck = LinkedList<DedupItem>()
 
-    private var last_ringtone: WeakReference<Ringtone>? = null
+    private var lastRingtone: WeakReference<Ringtone>? = null
 
-    private var last_sound: Long = 0
+    private var lastSound: Long = 0
 
     val networkTracker: NetworkStateTracker
 
@@ -188,26 +186,26 @@ class AppState(
     // TextToSpeech
 
     private val isTextToSpeechRequired: Boolean
-        get() = columnList.any { it.enable_speech } || HighlightWord.hasTextToSpeechHighlightWord()
+        get() = columnList.any { it.enableSpeech } || HighlightWord.hasTextToSpeechHighlightWord()
 
-    private val tts_receiver = object : BroadcastReceiver() {
+    private val ttsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
             if (intent != null) {
                 if (TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED == intent.action) {
                     log.d("tts_receiver: speech completed.")
-                    tts_speak_end = SystemClock.elapsedRealtime()
-                    handler.post(proc_flushSpeechQueue)
+                    ttsSpeakEnd = SystemClock.elapsedRealtime()
+                    handler.post(procFlushSpeechQueue)
                 }
             }
         }
     }
 
-    private val proc_flushSpeechQueue = object : Runnable {
+    private val procFlushSpeechQueue = object : Runnable {
         override fun run() {
             try {
                 handler.removeCallbacks(this)
 
-                val queue_count = tts_queue.size
+                val queue_count = ttsQueue.size
                 if (queue_count <= 0) {
                     return
                 }
@@ -220,16 +218,16 @@ class AppState(
 
                 val now = SystemClock.elapsedRealtime()
 
-                if (tts_speak_start >= max(1L, tts_speak_end)) {
+                if (ttsSpeakStart >= max(1L, ttsSpeakEnd)) {
                     // まだ終了イベントを受け取っていない
-                    val expire_remain = tts_speak_wait_expire + tts_speak_start - now
+                    val expire_remain = tts_speak_wait_expire + ttsSpeakStart - now
                     if (expire_remain <= 0) {
                         log.d("proc_flushSpeechQueue: tts_speak wait expired.")
                         restartTTS()
                     } else {
                         log.d(
-                            "proc_flushSpeechQueue: tts is speaking. queue_count=${queue_count}, expire_remain=${
-                                String.format("%.3f",expire_remain / 1000f)
+                            "proc_flushSpeechQueue: tts is speaking. queue_count=$queue_count, expire_remain=${
+                                expire_remain.div(1000f).toString("%.3f")
                             }"
                         )
                         handler.postDelayed(this, expire_remain)
@@ -238,16 +236,16 @@ class AppState(
                     return
                 }
 
-                val sv = tts_queue.removeFirst()
-                log.d("proc_flushSpeechQueue: speak ${sv}")
+                val sv = ttsQueue.removeFirst()
+                log.d("proc_flushSpeechQueue: speak $sv")
 
-                val voice_count = voice_list.size
+                val voice_count = voiceList.size
                 if (voice_count > 0) {
                     val n = random.nextInt(voice_count)
-                    tts.voice = voice_list[n]
+                    tts.voice = voiceList[n]
                 }
 
-                tts_speak_start = now
+                ttsSpeakStart = now
                 tts.speak(
                     sv,
                     TextToSpeech.QUEUE_ADD,
@@ -259,14 +257,13 @@ class AppState(
                 log.e(ex, "proc_flushSpeechQueue catch exception.")
                 restartTTS()
             }
-
         }
 
         fun restartTTS() {
             log.d("restart TextToSpeech")
             tts?.shutdown()
             tts = null
-            tts_status = TTS_STATUS_NONE
+            ttsStatus = TTS_STATUS_NONE
             enableSpeech()
         }
     }
@@ -327,73 +324,73 @@ class AppState(
 
     fun isBusyFav(account: SavedAccount, status: TootStatus): Boolean {
         val key = account.acct.ascii + ":" + status.busyKey
-        return map_busy_fav.contains(key)
+        return mapBusyFav.contains(key)
     }
 
     fun setBusyFav(account: SavedAccount, status: TootStatus) {
         val key = account.acct.ascii + ":" + status.busyKey
-        map_busy_fav.add(key)
+        mapBusyFav.add(key)
     }
 
     fun resetBusyFav(account: SavedAccount, status: TootStatus) {
         val key = account.acct.ascii + ":" + status.busyKey
-        map_busy_fav.remove(key)
+        mapBusyFav.remove(key)
     }
 
     fun isBusyBookmark(account: SavedAccount, status: TootStatus): Boolean {
         val key = account.acct.ascii + ":" + status.busyKey
-        return map_busy_bookmark.contains(key)
+        return mapBusyBookmark.contains(key)
     }
 
     fun setBusyBookmark(account: SavedAccount, status: TootStatus) {
         val key = account.acct.ascii + ":" + status.busyKey
-        map_busy_bookmark.add(key)
+        mapBusyBookmark.add(key)
     }
 
     fun resetBusyBookmark(account: SavedAccount, status: TootStatus) {
         val key = account.acct.ascii + ":" + status.busyKey
-        map_busy_bookmark.remove(key)
+        mapBusyBookmark.remove(key)
     }
 
     fun isBusyBoost(account: SavedAccount, status: TootStatus): Boolean {
         val key = account.acct.ascii + ":" + status.busyKey
-        return map_busy_boost.contains(key)
+        return mapBusyBoost.contains(key)
     }
 
     fun setBusyBoost(account: SavedAccount, status: TootStatus) {
         val key = account.acct.ascii + ":" + status.busyKey
-        map_busy_boost.add(key)
+        mapBusyBoost.add(key)
     }
 
     fun resetBusyBoost(account: SavedAccount, status: TootStatus) {
         val key = account.acct.ascii + ":" + status.busyKey
-        map_busy_boost.remove(key)
+        mapBusyBoost.remove(key)
     }
 
     @SuppressLint("StaticFieldLeak")
     fun enableSpeech() {
         this.willSpeechEnabled = isTextToSpeechRequired
 
-        if (willSpeechEnabled && tts == null && tts_status == TTS_STATUS_NONE) {
-            tts_status = TTS_STATUS_INITIALIZING
+        if (willSpeechEnabled && tts == null && ttsStatus == TTS_STATUS_NONE) {
+            ttsStatus = TTS_STATUS_INITIALIZING
             context.showToast(false, R.string.text_to_speech_initializing)
             log.d("initializing TextToSpeech…")
 
             launchIO {
 
-                var tmp_tts: TextToSpeech? = null
+                var tmpTts: TextToSpeech? = null
 
-                val tts_init_listener: TextToSpeech.OnInitListener =
+                val ttsInitListener: TextToSpeech.OnInitListener =
                     TextToSpeech.OnInitListener { status ->
 
-                        val tts = tmp_tts
+                        val tts = tmpTts
                         if (tts == null || TextToSpeech.SUCCESS != status) {
                             context.showToast(
                                 false,
                                 R.string.text_to_speech_initialize_failed,
                                 status
                             )
-                            log.d("speech initialize failed. status=${status}" )
+                            log.d("speech initialize failed. status=$status")
                             return@OnInitListener
                         }
 
@@ -404,26 +401,26 @@ class AppState(
                                 tts.shutdown()
                             } else {
                                 this@AppState.tts = tts
-                                tts_status = TTS_STATUS_INITIALIZED
-                                tts_speak_start = 0L
-                                tts_speak_end = 0L
+                                ttsStatus = TTS_STATUS_INITIALIZED
+                                ttsSpeakStart = 0L
+                                ttsSpeakEnd = 0L
 
-                                voice_list.clear()
+                                voiceList.clear()
                                 try {
-                                    val voice_set = try {
+                                    val voiceSet = try {
                                         tts.voices
                                         // may raise NullPointerException is tts has no collection
                                     } catch (ignored: Throwable) {
                                         null
                                     }
-                                    if (voice_set == null || voice_set.isEmpty()) {
+                                    if (voiceSet == null || voiceSet.isEmpty()) {
                                         log.d("TextToSpeech.getVoices returns null or empty set.")
                                     } else {
                                         val lang = defaultLocale(context).toLanguageTag()
-                                        for (v in voice_set) {
-                                            log.d( "Voice ${ v.name} ${  v.locale.toLanguageTag()} ${lang}" )
+                                        for (v in voiceSet) {
+                                            log.d("Voice ${v.name} ${v.locale.toLanguageTag()} $lang")
                                             if (lang != v.locale.toLanguageTag()) continue
-                                            voice_list.add(v)
+                                            voiceList.add(v)
                                         }
                                     }
                                 } catch (ex: Throwable) {
@@ -431,10 +428,10 @@ class AppState(
                                     log.e(ex, "TextToSpeech.getVoices raises exception.")
                                 }
 
-                                handler.post(proc_flushSpeechQueue)
+                                handler.post(procFlushSpeechQueue)
 
                                 context.registerReceiver(
-                                    tts_receiver,
+                                    ttsReceiver,
                                     IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED)
                                 )
 
@@ -457,7 +454,7 @@ class AppState(
                         }
                     }
 
-                tmp_tts = TextToSpeech(context, tts_init_listener)
+                tmpTts = TextToSpeech(context, ttsInitListener)
             }
             return
         }
@@ -467,7 +464,7 @@ class AppState(
             log.d("shutdown TextToSpeech…")
             tts?.shutdown()
             tts = null
-            tts_status = TTS_STATUS_NONE
+            ttsStatus = TTS_STATUS_NONE
         }
     }
 
@@ -478,47 +475,47 @@ class AppState(
         val text = getStatusText(status)
         if (text == null || text.length == 0) return
 
-        val span_list = text.getSpans(0, text.length, MyClickableSpan::class.java)
-        if (span_list == null || span_list.isEmpty()) {
+        val spanList = text.getSpans(0, text.length, MyClickableSpan::class.java)
+        if (spanList == null || spanList.isEmpty()) {
             addSpeech(text.toString())
             return
         }
-        Arrays.sort(span_list) { a, b ->
-            val a_start = text.getSpanStart(a)
-            val b_start = text.getSpanStart(b)
-            a_start - b_start
+        Arrays.sort(spanList) { a, b ->
+            val aStart = text.getSpanStart(a)
+            val bStart = text.getSpanStart(b)
+            aStart - bStart
         }
-        val str_text = text.toString()
+        val strText = text.toString()
         val sb = StringBuilder()
-        var last_end = 0
-        var has_url = false
-        for (span in span_list) {
+        var lastEnd = 0
+        var hasUrl = false
+        for (span in spanList) {
             val start = text.getSpanStart(span)
             val end = text.getSpanEnd(span)
             //
-            if (start > last_end) {
-                sb.append(str_text.substring(last_end, start))
+            if (start > lastEnd) {
+                sb.append(strText.substring(lastEnd, start))
             }
-            last_end = end
+            lastEnd = end
             //
-            val span_text = str_text.substring(start, end)
-            if (span_text.isNotEmpty()) {
-                val c = span_text[0]
+            val spanText = strText.substring(start, end)
+            if (spanText.isNotEmpty()) {
+                val c = spanText[0]
                 if (c == '#' || c == '@') {
                     // #hashtag や @user はそのまま読み上げる
-                    sb.append(span_text)
+                    sb.append(spanText)
                 } else {
                     // それ以外はURL省略
-                    has_url = true
+                    hasUrl = true
                     sb.append(" ")
                 }
             }
         }
-        val text_end = str_text.length
-        if (text_end > last_end) {
-            sb.append(str_text.substring(last_end, text_end))
+        val textEnd = strText.length
+        if (textEnd > lastEnd) {
+            sb.append(strText.substring(lastEnd, textEnd))
         }
-        if (has_url) {
+        if (hasUrl) {
             sb.append(context.getString(R.string.url_omitted))
         }
         addSpeech(sb.toString())
@@ -533,10 +530,10 @@ class AppState(
 
         if (dedupMode != DedupMode.None) {
             synchronized(this) {
-                val check = duplication_check.find { it.text.equals(sv, ignoreCase = true) }
+                val check = duplicationCheck.find { it.text.equals(sv, ignoreCase = true) }
                 if (check == null) {
-                    duplication_check.addLast(DedupItem(sv))
-                    if (duplication_check.size > 60) duplication_check.removeFirst()
+                    duplicationCheck.addLast(DedupItem(sv))
+                    if (duplicationCheck.size > 60) duplicationCheck.removeFirst()
                 } else {
                     val now = SystemClock.elapsedRealtime()
                     val delta = now - check.time
@@ -549,21 +546,21 @@ class AppState(
             }
         }
 
-        tts_queue.add(sv)
-        if (tts_queue.size > 30) tts_queue.removeFirst()
+        ttsQueue.add(sv)
+        if (ttsQueue.size > 30) ttsQueue.removeFirst()
 
-        handler.post(proc_flushSpeechQueue)
+        handler.post(procFlushSpeechQueue)
     }
 
     private fun stopLastRingtone() {
-        val r = last_ringtone?.get()
+        val r = lastRingtone?.get()
         if (r != null) {
             try {
                 r.stop()
             } catch (ex: Throwable) {
                 log.trace(ex)
             } finally {
-                last_ringtone = null
+                lastRingtone = null
             }
         }
     }
@@ -571,8 +568,8 @@ class AppState(
     internal fun sound(item: HighlightWord) {
         // 短時間に何度もならないようにする
         val now = SystemClock.elapsedRealtime()
-        if (now - last_sound < 500L) return
-        last_sound = now
+        if (now - lastSound < 500L) return
+        lastSound = now
 
         stopLastRingtone()
 
@@ -582,7 +579,7 @@ class AppState(
             try {
                 if (this != null) {
                     RingtoneManager.getRingtone(context, this)?.let { ringTone ->
-                        last_ringtone = WeakReference(ringTone)
+                        lastRingtone = WeakReference(ringTone)
                         ringTone.play()
                         return true
                     }
@@ -605,6 +602,4 @@ class AppState(
         TootStatus.muted_word = MutedWord.nameSet
         columnList.forEach { it.onMuteUpdated() }
     }
-
-
 }

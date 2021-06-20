@@ -62,22 +62,22 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         internal const val STATE_LAST_VOLUME = "lastVolume"
 
         internal fun <T : TootAttachmentLike> encodeMediaList(list: ArrayList<T>?) =
-                list?.encodeJson()?.toString() ?: "[]"
+            list?.encodeJson()?.toString() ?: "[]"
 
         internal fun decodeMediaList(src: String?) =
-                ArrayList<TootAttachment>().apply {
-                    src?.decodeJsonArray()?.forEach {
-                        if (it !is JsonObject) return@forEach
-                        add(TootAttachment.decodeJson(it))
-                    }
+            ArrayList<TootAttachment>().apply {
+                src?.decodeJsonArray()?.forEach {
+                    if (it !is JsonObject) return@forEach
+                    add(TootAttachment.decodeJson(it))
                 }
+            }
 
         fun open(
-				activity: ActMain,
-				serviceType: ServiceType,
-				list: ArrayList<TootAttachmentLike>,
-				idx: Int
-		) {
+            activity: ActMain,
+            serviceType: ServiceType,
+            list: ArrayList<TootAttachmentLike>,
+            idx: Int,
+        ) {
             val intent = Intent(activity, ActMediaViewer::class.java)
             intent.putExtra(EXTRA_IDX, idx)
             intent.putExtra(EXTRA_SERVICE_TYPE, serviceType.ordinal)
@@ -88,7 +88,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     internal var idx: Int = 0
-    private lateinit var media_list: ArrayList<TootAttachment>
+    private lateinit var mediaList: ArrayList<TootAttachment>
     private lateinit var serviceType: ServiceType
 
     private lateinit var pbvImage: PinchBitmapView
@@ -103,14 +103,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private lateinit var cbMute: CheckBox
     private var lastVolume = Float.NaN
 
-    internal var buffering_last_shown: Long = 0
+    internal var bufferingLastShown: Long = 0
 
-    private val player_listener = object : Player.Listener {
+    private val playerListener = object : Player.Listener {
 
         override fun onTimelineChanged(
-				timeline: Timeline,
-				@TimelineChangeReason reason: Int
-		) {
+            timeline: Timeline,
+            @TimelineChangeReason reason: Int,
+        ) {
             log.d("exoPlayer onTimelineChanged reason=$reason")
         }
 
@@ -130,8 +130,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             // warning.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
             if (playWhenReady && playbackState == Player.STATE_BUFFERING) {
                 val now = SystemClock.elapsedRealtime()
-                if (now - buffering_last_shown >= short_limit && exoPlayer.duration >= short_limit) {
-                    buffering_last_shown = now
+                if (now - bufferingLastShown >= short_limit && exoPlayer.duration >= short_limit) {
+                    bufferingLastShown = now
                     showToast(false, R.string.video_buffering)
                 }
                 /*
@@ -141,7 +141,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun onRepeatModeChanged(repeatMode: Int) {
-            log.d("exoPlayer onRepeatModeChanged $repeatMode", )
+            log.d("exoPlayer onRepeatModeChanged $repeatMode")
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
@@ -161,7 +161,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         outState.putInt(EXTRA_IDX, idx)
         outState.putInt(EXTRA_SERVICE_TYPE, serviceType.ordinal)
-        outState.putString(EXTRA_DATA, encodeMediaList(media_list))
+        outState.putString(EXTRA_DATA, encodeMediaList(mediaList))
 
         outState.putLong(STATE_PLAYER_POS, exoPlayer.currentPosition)
         outState.putBoolean(STATE_PLAYER_PLAY_WHEN_READY, exoPlayer.playWhenReady)
@@ -178,16 +178,16 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         this.idx = savedInstanceState?.getInt(EXTRA_IDX) ?: intent.getIntExtra(EXTRA_IDX, idx)
 
         this.serviceType = ServiceType.values()[
-				savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
-						?: intent.getIntExtra(EXTRA_SERVICE_TYPE, 0)
-		]
+            savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
+                ?: intent.getIntExtra(EXTRA_SERVICE_TYPE, 0)
+        ]
 
-        this.media_list = decodeMediaList(
-				savedInstanceState?.getString(EXTRA_DATA)
-						?: intent.getStringExtra(EXTRA_DATA)
-		)
+        this.mediaList = decodeMediaList(
+            savedInstanceState?.getString(EXTRA_DATA)
+                ?: intent.getStringExtra(EXTRA_DATA)
+        )
 
-        if (idx < 0 || idx >= media_list.size) idx = 0
+        if (idx < 0 || idx >= mediaList.size) idx = 0
 
         initUI()
 
@@ -219,7 +219,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         tvStatus = findViewById(R.id.tvStatus)
         cbMute = findViewById(R.id.cbMute)
 
-        val enablePaging = media_list.size > 1
+        val enablePaging = mediaList.size > 1
         btnPrevious.isEnabledAlpha = enablePaging
         btnNext.isEnabledAlpha = enablePaging
 
@@ -245,45 +245,45 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
 
         pbvImage.setCallback(object : PinchBitmapView.Callback {
-			override fun onSwipe(deltaX: Int, deltaY: Int) {
-				if (isDestroyed) return
-				if (deltaX != 0) {
-					loadDelta(deltaX)
-				} else {
-					log.d("finish by vertical swipe")
-					finish()
-				}
-			}
+            override fun onSwipe(deltaX: Int, deltaY: Int) {
+                if (isDestroyed) return
+                if (deltaX != 0) {
+                    loadDelta(deltaX)
+                } else {
+                    log.d("finish by vertical swipe")
+                    finish()
+                }
+            }
 
-			override fun onMove(
-					bitmap_w: Float,
-					bitmap_h: Float,
-					tx: Float,
-					ty: Float,
-					scale: Float
-			) {
-				App1.getAppState(this@ActMediaViewer).handler.post(Runnable {
-					if (isDestroyed) return@Runnable
-					if (tvStatus.visibility == View.VISIBLE) {
-						tvStatus.text = getString(
-								R.string.zooming_of,
-								bitmap_w.toInt(),
-								bitmap_h.toInt(),
-								scale
-						)
-					}
-				})
-			}
-		})
+            override fun onMove(
+                bitmap_w: Float,
+                bitmapH: Float,
+                tx: Float,
+                ty: Float,
+                scale: Float,
+            ) {
+                App1.getAppState(this@ActMediaViewer).handler.post(Runnable {
+                    if (isDestroyed) return@Runnable
+                    if (tvStatus.visibility == View.VISIBLE) {
+                        tvStatus.text = getString(
+                            R.string.zooming_of,
+                            bitmap_w.toInt(),
+                            bitmapH.toInt(),
+                            scale
+                        )
+                    }
+                })
+            }
+        })
 
         exoPlayer = SimpleExoPlayer.Builder(this).build()
-        exoPlayer.addListener(player_listener)
+        exoPlayer.addListener(playerListener)
         exoView.player = exoPlayer
     }
 
     internal fun loadDelta(delta: Int) {
-        if (media_list.size < 2) return
-        val size = media_list.size
+        if (mediaList.size < 2) return
+        val size = mediaList.size
         idx = (idx + size + delta) % size
         load()
     }
@@ -297,11 +297,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         svDescription.visibility = View.GONE
         tvStatus.visibility = View.GONE
 
-        if (idx < 0 || idx >= media_list.size) {
+        if (idx < 0 || idx >= mediaList.size) {
             showError(getString(R.string.media_attachment_empty))
             return
         }
-        val ta = media_list[idx]
+        val ta = mediaList[idx]
         val description = ta.description
         if (description?.isNotEmpty() == true) {
             svDescription.visibility = View.VISIBLE
@@ -310,18 +310,18 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         when (ta.type) {
 
-			TootAttachmentType.Unknown ->
-				showError(getString(R.string.media_attachment_type_error, ta.type.id))
+            TootAttachmentType.Unknown ->
+                showError(getString(R.string.media_attachment_type_error, ta.type.id))
 
-			TootAttachmentType.Image ->
-				loadBitmap(ta)
+            TootAttachmentType.Image ->
+                loadBitmap(ta)
 
-			TootAttachmentType.Video,
-			TootAttachmentType.GIFV,
-			TootAttachmentType.Audio ->
-				loadVideo(ta, state)
+            TootAttachmentType.Video,
+            TootAttachmentType.GIFV,
+            TootAttachmentType.Audio,
+            ->
+                loadVideo(ta, state)
         }
-
     }
 
     private fun showError(message: String) {
@@ -329,7 +329,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         pbvImage.visibility = View.GONE
         tvError.visibility = View.VISIBLE
         tvError.text = message
-
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -355,18 +354,18 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         val extractorsFactory = DefaultExtractorsFactory()
 
         val dataSourceFactory = DefaultDataSourceFactory(
-				this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
-		)
+            this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
+        )
 
         val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
-                .createMediaSource(MediaItem.Builder().setUri(url.toUri()).build())
+            .createMediaSource(MediaItem.Builder().setUri(url.toUri()).build())
 
         mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)
 
         exoPlayer.setMediaSource(mediaSource)
         exoPlayer.prepare()
         exoPlayer.repeatMode = when (ta.type) {
-			TootAttachmentType.Video -> Player.REPEAT_MODE_OFF
+            TootAttachmentType.Video -> Player.REPEAT_MODE_OFF
             // GIFV or AUDIO
             else -> Player.REPEAT_MODE_ALL
         }
@@ -381,64 +380,64 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     private val mediaSourceEventListener = object : MediaSourceEventListener {
         override fun onLoadStarted(
-				windowIndex: Int,
-				mediaPeriodId: MediaSource.MediaPeriodId?,
-				loadEventInfo: LoadEventInfo,
-				mediaLoadData: MediaLoadData
-		) {
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+        ) {
             log.d("onLoadStarted")
         }
 
         override fun onDownstreamFormatChanged(
-				windowIndex: Int,
-				mediaPeriodId: MediaSource.MediaPeriodId?,
-				mediaLoadData: MediaLoadData
-		) {
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            mediaLoadData: MediaLoadData,
+        ) {
             log.d("onDownstreamFormatChanged")
         }
 
         override fun onUpstreamDiscarded(
-				windowIndex: Int,
-				mediaPeriodId: MediaSource.MediaPeriodId,
-				mediaLoadData: MediaLoadData
-		) {
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId,
+            mediaLoadData: MediaLoadData,
+        ) {
             log.d("onUpstreamDiscarded")
         }
 
         override fun onLoadCompleted(
-				windowIndex: Int,
-				mediaPeriodId: MediaSource.MediaPeriodId?,
-				loadEventInfo: LoadEventInfo,
-				mediaLoadData: MediaLoadData
-		) {
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+        ) {
             log.d("onLoadCompleted")
         }
 
         override fun onLoadCanceled(
-				windowIndex: Int,
-				mediaPeriodId: MediaSource.MediaPeriodId?,
-				loadEventInfo: LoadEventInfo,
-				mediaLoadData: MediaLoadData
-		) {
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+        ) {
             log.d("onLoadCanceled")
         }
 
         override fun onLoadError(
-				windowIndex: Int,
-				mediaPeriodId: MediaSource.MediaPeriodId?,
-				loadEventInfo: LoadEventInfo,
-				mediaLoadData: MediaLoadData,
-				error: IOException,
-				wasCanceled: Boolean
-		) {
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+            error: IOException,
+            wasCanceled: Boolean,
+        ) {
             showError(error.withCaption("load error."))
         }
     }
 
     private fun decodeBitmap(
-        options:BitmapFactory.Options,
+        options: BitmapFactory.Options,
         data: ByteArray,
-        @Suppress("SameParameterValue") pixel_max: Int
+        @Suppress("SameParameterValue") pixelMax: Int,
     ): Pair<Bitmap?, String?> {
 
         val orientation: Int? = ByteArrayInputStream(data).imageOrientation()
@@ -457,7 +456,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         // calc bits to reduce size
         var bits = 0
-        while (w > pixel_max || h > pixel_max) {
+        while (w > pixelMax || h > pixelMax) {
             ++bits
             w = w shr 1
             h = h shr 1
@@ -518,14 +517,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         try {
             bitmap1.recycle()
-        } catch (ex: Throwable) {
+        } catch (ignored: Throwable) {
         }
         return Pair(bitmap2, null)
     }
 
     private suspend fun getHttpCached(
         client: TootApiClient,
-        url: String
+        url: String,
     ): Pair<TootApiResult?, ByteArray?> {
         val result = TootApiResult.makeWithCaption(url)
 
@@ -560,14 +559,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             val ba = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
                 // 50MB以上のデータはキャンセルする
                 if (max(bytesRead, bytesTotal) >= 50000000) {
-                    throw RuntimeException("media attachment is larger than 50000000")
+                    error("media attachment is larger than 50000000")
                 }
                 client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
             }
             if (client.isApiCancelled) return Pair(null, null)
             return Pair(result, ba)
-        } catch (ex: Throwable) {
-            result.parseErrorResponse(  "?")
+        } catch (ignored: Throwable) {
+            result.parseErrorResponse("?")
             return Pair(result, null)
         }
     }
@@ -594,7 +593,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
             var resultBitmap: Bitmap? = null
 
-            runApiTask (progressStyle = ApiTask.PROGRESS_HORIZONTAL ){ client->
+            runApiTask(progressStyle = ApiTask.PROGRESS_HORIZONTAL) { client ->
                 if (urlList.isEmpty()) return@runApiTask TootApiResult("missing url")
                 var lastResult: TootApiResult? = null
                 for (url in urlList) {
@@ -603,7 +602,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                     if (ba != null) {
                         client.publishApiProgress("decoding image…")
 
-                        val (bitmap, error) = decodeBitmap(options,ba, 2048)
+                        val (bitmap, error) = decodeBitmap(options, ba, 2048)
                         if (bitmap != null) {
                             resultBitmap = bitmap
                             break
@@ -612,7 +611,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                     }
                 }
                 lastResult
-            }.let{ result-> // may null
+            }.let { result -> // may null
                 when (val bitmap = resultBitmap) {
                     null -> if (result != null) showToast(true, result.error)
                     else -> pbvImage.setBitmap(bitmap)
@@ -625,15 +624,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         try {
             when (v.id) {
 
-				R.id.btnPrevious -> loadDelta(-1)
-				R.id.btnNext -> loadDelta(+1)
-				R.id.btnDownload -> download(media_list[idx])
-				R.id.btnMore -> more(media_list[idx])
+                R.id.btnPrevious -> loadDelta(-1)
+                R.id.btnNext -> loadDelta(+1)
+                R.id.btnDownload -> download(mediaList[idx])
+                R.id.btnMore -> more(mediaList[idx])
             }
         } catch (ex: Throwable) {
             showToast(ex, "action failed.")
         }
-
     }
 
     internal class DownloadHistory(val time: Long, val url: String)
@@ -641,16 +639,16 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun download(ta: TootAttachmentLike) {
 
         val permissionCheck = ContextCompat.checkSelfPermission(
-				this,
-				Manifest.permission.WRITE_EXTERNAL_STORAGE
-		)
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
             preparePermission()
             return
         }
 
         val downLoadManager: DownloadManager = systemService(this)
-                ?: error("missing DownloadManager system service")
+            ?: error("missing DownloadManager system service")
 
         val url = if (ta is TootAttachment) {
             ta.getLargeUrl(App1.pref)
@@ -699,8 +697,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         if (fileName == null) {
             fileName = url
-                    .replaceFirst("https?://".asciiPattern(), "")
-                    .replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
+                .replaceFirst("https?://".asciiPattern(), "")
+                .replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
         }
         if (fileName.length >= 20) fileName = fileName.substring(fileName.length - 20)
 
@@ -739,12 +737,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         } catch (ex: Throwable) {
             showToast(ex, "can't open app.")
         }
-
     }
 
     internal fun copy(url: String) {
         val cm = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
-                ?: throw NotImplementedError("missing ClipboardManager system service")
+            ?: throw NotImplementedError("missing ClipboardManager system service")
 
         try {
             //クリップボードに格納するItemを作成
@@ -760,11 +757,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             cm.setPrimaryClip(cd)
 
             showToast(false, R.string.url_is_copied)
-
         } catch (ex: Throwable) {
             showToast(ex, "clipboard access failed.")
         }
-
     }
 
     internal fun more(ta: TootAttachmentLike) {
@@ -782,7 +777,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             addMoreMenu(ad, "preview_url", ta.preview_url, Intent.ACTION_VIEW)
             addMoreMenu(ad, "preview_remote_url", ta.preview_remote_url, Intent.ACTION_VIEW)
             addMoreMenu(ad, "text_url", ta.text_url, Intent.ACTION_VIEW)
-
         } else if (ta is TootAttachmentMSP) {
             val url = ta.preview_url
             ad.addAction(getString(R.string.open_in_browser)) { share(Intent.ACTION_VIEW, url) }
@@ -794,14 +788,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun addMoreMenu(
-			ad: ActionsDialog,
-			caption_prefix: String,
-			url: String?,
-			@Suppress("SameParameterValue") action: String
-	) {
+        ad: ActionsDialog,
+        captionPrefix: String,
+        url: String?,
+        @Suppress("SameParameterValue") action: String,
+    ) {
         val uri = url.mayUri() ?: return
 
-        val caption = getString(R.string.open_browser_of, caption_prefix)
+        val caption = getString(R.string.open_browser_of, captionPrefix)
 
         ad.addAction(caption) {
             try {
@@ -817,33 +811,35 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun preparePermission() {
         if (Build.VERSION.SDK_INT >= 23) {
             ActivityCompat.requestPermissions(
-					this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE
-			)
+                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE
+            )
         } else {
             showToast(true, R.string.missing_permission_to_access_media)
         }
     }
 
     override fun onRequestPermissionsResult(
-			requestCode: Int, permissions: Array<String>, grantResults: IntArray
-	) {
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
+    ) {
         when (requestCode) {
-			PERMISSION_REQUEST_CODE -> {
-				var bNotGranted = false
-				var i = 0
-				val ie = permissions.size
-				while (i < ie) {
-					if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-						bNotGranted = true
-					}
-					++i
-				}
-				if (bNotGranted) {
-					showToast(true, R.string.missing_permission_to_access_media)
-				} else {
-					download(media_list[idx])
-				}
-			}
+            PERMISSION_REQUEST_CODE -> {
+                var bNotGranted = false
+                var i = 0
+                val ie = permissions.size
+                while (i < ie) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        bNotGranted = true
+                    }
+                    ++i
+                }
+                if (bNotGranted) {
+                    showToast(true, R.string.missing_permission_to_access_media)
+                } else {
+                    download(mediaList[idx])
+                }
+            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }

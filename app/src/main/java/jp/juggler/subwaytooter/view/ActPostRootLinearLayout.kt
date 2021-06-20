@@ -6,16 +6,16 @@ import android.widget.LinearLayout
 
 class ActPostRootLinearLayout : LinearLayout {
 
-    constructor(context : Context) :
+    constructor(context: Context) :
         super(context)
 
-    constructor(context : Context, attrs : AttributeSet) :
+    constructor(context: Context, attrs: AttributeSet) :
         super(context, attrs)
 
-    constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) :
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
         super(context, attrs, defStyleAttr)
 
-    var callbackOnSizeChanged : (w: Int, h: Int, oldW: Int, oldH: Int)->Unit = {_,_,_,_->}
+    var callbackOnSizeChanged: (w: Int, h: Int, oldW: Int, oldH: Int) -> Unit = { _, _, _, _ -> }
 
     override fun onSizeChanged(w: Int, h: Int, oldW: Int, oldH: Int) {
         super.onSizeChanged(w, h, oldW, oldH)

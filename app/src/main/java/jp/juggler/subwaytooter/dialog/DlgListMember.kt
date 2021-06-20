@@ -27,7 +27,7 @@ import java.util.*
 class DlgListMember(
     private val activity: ActMain,
     who: TootAccount,
-    _list_owner: SavedAccount
+    listOwnerArg: SavedAccount,
 ) : View.OnClickListener {
 
     private val dialog: Dialog
@@ -35,22 +35,22 @@ class DlgListMember(
     private val btnListOwner: Button
     private val btnCreateList: Button
 
-    private val account_list: MutableList<SavedAccount>
-    private val target_user_full_acct: Acct
+    private val accountList: MutableList<SavedAccount>
+    private val targetUserFullAcct: Acct
 
-    private var list_owner: SavedAccount? = null
-    private var local_who: TootAccount? = null
+    private var listOwner: SavedAccount? = null
+    private var whoLocal: TootAccount? = null
 
     private val adapter: MyListAdapter
 
     init {
-        this.account_list = activity.accountListNonPseudo(null)
-        this.target_user_full_acct = _list_owner.getFullAcct(who)
+        this.accountList = activity.accountListNonPseudo(null)
+        this.targetUserFullAcct = listOwnerArg.getFullAcct(who)
 
-        this.list_owner = if (_list_owner.isPseudo) {
+        this.listOwner = if (listOwnerArg.isPseudo) {
             null
         } else {
-            _list_owner
+            listOwnerArg
         }
 
         val view = activity.layoutInflater.inflate(R.layout.dlg_list_member, null, false)
@@ -75,13 +75,13 @@ class DlgListMember(
             who.avatar_static,
             who.avatar
         )
-        val user_name_invalidator = NetworkEmojiInvalidator(activity.handler, tvUserName)
+        val userNameInvalidator = NetworkEmojiInvalidator(activity.handler, tvUserName)
         val name = who.decodeDisplayName(activity)
         tvUserName.text = name
-        user_name_invalidator.register(name)
-        tvUserAcct.text = target_user_full_acct.pretty
+        userNameInvalidator.register(name)
+        tvUserAcct.text = targetUserFullAcct.pretty
 
-        setListOwner(list_owner)
+        setListOwner(listOwner)
 
         dialog = Dialog(activity).apply {
             window?.apply {
@@ -94,7 +94,6 @@ class DlgListMember(
             setTitle(R.string.your_lists)
             setContentView(view)
         }
-
     }
 
     fun show() = dialog.apply {
@@ -115,7 +114,7 @@ class DlgListMember(
                     activity.pickAccount(
                         bAllowPseudo = false,
                         bAuto = false,
-                        accountListArg = account_list
+                        accountListArg = accountList
                     )?.let { setListOwner(it) }
                 }
 
@@ -126,13 +125,12 @@ class DlgListMember(
     // リストオーナボタンの文字列を更新する
     // リスト一覧を取得する
     private fun setListOwner(a: SavedAccount?) {
-        this.list_owner = a
+        this.listOwner = a
         if (a == null) {
             btnListOwner.setText(R.string.not_selected)
             btnListOwner.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
             btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
             //
-
         } else {
             val ac = AcctColor.load(a)
             btnListOwner.text = ac.nickname
@@ -151,65 +149,65 @@ class DlgListMember(
 
     // リストの一覧とターゲットユーザの登録状況を取得する
     private fun loadLists() {
-        val list_owner = this.list_owner
+        val listOwner = this.listOwner
 
-        if (list_owner == null) {
+        if (listOwner == null) {
             showList(null)
             return
         }
 
         launchMain {
             var resultList: ArrayList<TootList>? = null
-            val result = activity.runApiTask(list_owner) { client ->
+            val result = activity.runApiTask(listOwner) { client ->
 
                 // 現在の登録状況を知るため、対象ユーザの自タンスでのアカウントIDを取得する
                 // ドメインブロックなどの影響で同期できない場合があるが、
                 // 一覧そのものは取得できるのでこの段階ではエラーにはしない
-                val (r1, ar) = client.syncAccountByAcct(list_owner, target_user_full_acct)
+                val (r1, ar) = client.syncAccountByAcct(listOwner, targetUserFullAcct)
                 r1 ?: return@runApiTask null // cancelled.
 
-                val local_who = ar?.get() // may null
-                if (local_who == null) activity.showToast(true, r1.error)
+                val whoLocal = ar?.get() // may null
+                if (whoLocal == null) activity.showToast(true, r1.error)
 
-                this@DlgListMember.local_who = local_who
+                this@DlgListMember.whoLocal = whoLocal
 
-                if (list_owner.isMisskey) {
+                if (listOwner.isMisskey) {
                     // 今のmisskeyではリスト全スキャンしないとユーザの登録状況が分からない
                     client.request(
                         "/api/users/lists/list",
-                        list_owner
+                        listOwner
                             .putMisskeyApiToken()
                             .toPostRequestBuilder()
                     )?.also { result ->
                         resultList = parseList(
                             ::TootList,
-                            TootParser(activity, list_owner),
+                            TootParser(activity, listOwner),
                             result.jsonArray ?: return@also
                         ).apply {
-                            if (local_who != null) {
+                            if (whoLocal != null) {
                                 forEach { list ->
                                     list.isRegistered =
-                                        null != list.userIds?.find { it == local_who.id }
+                                        null != list.userIds?.find { it == whoLocal.id }
                                 }
                             }
                         }
                     }
                 } else {
 
-                    val set_registered = HashSet<EntityId>()
+                    val registeredSet = HashSet<EntityId>()
 
                     // メンバーを指定してリスト登録状況を取得
-                    if (local_who != null) client.request(
-                        "/api/v1/accounts/${local_who.id}/lists"
+                    if (whoLocal != null) client.request(
+                        "/api/v1/accounts/${whoLocal.id}/lists"
                     )?.also { result ->
                         val jsonArray = result.jsonArray
                             ?: return@runApiTask result
                         parseList(
                             ::TootList,
-                            TootParser(activity, list_owner),
+                            TootParser(activity, listOwner),
                             jsonArray
                         ).forEach {
-                            set_registered.add(it.id)
+                            registeredSet.add(it.id)
                         }
                     }
 
@@ -217,12 +215,12 @@ class DlgListMember(
                     client.request("/api/v1/lists")?.also { result ->
                         resultList = parseList(
                             ::TootList,
-                            TootParser(activity, list_owner),
+                            TootParser(activity, listOwner),
                             result.jsonArray ?: return@also
                         ).apply {
                             sort()
                             forEach {
-                                it.isRegistered = set_registered.contains(it.id)
+                                it.isRegistered = registeredSet.contains(it.id)
                             }
                         }
                     }
@@ -233,13 +231,13 @@ class DlgListMember(
         }
     }
 
-    private fun showList(_list: ArrayList<TootList>?) {
-        btnCreateList.isEnabledAlpha = _list != null
-        adapter.item_list.clear()
+    private fun showList(list: ArrayList<TootList>?) {
+        btnCreateList.isEnabledAlpha = list != null
+        adapter.itemList.clear()
         when {
-            _list == null -> adapter.item_list.add(ErrorItem(activity.getString(R.string.cant_access_list)))
-            _list.isEmpty() -> adapter.item_list.add(ErrorItem(activity.getString(R.string.list_not_created)))
-            else -> adapter.item_list.addAll(_list)
+            list == null -> adapter.itemList.add(ErrorItem(activity.getString(R.string.cant_access_list)))
+            list.isEmpty() -> adapter.itemList.add(ErrorItem(activity.getString(R.string.list_not_created)))
+            else -> adapter.itemList.addAll(list)
         }
         adapter.notifyDataSetChanged()
     }
@@ -256,7 +254,7 @@ class DlgListMember(
                 }
 
                 override fun onOK(dialog: Dialog, text: String) {
-                    val list_owner = this@DlgListMember.list_owner
+                    val list_owner = this@DlgListMember.listOwner
 
                     if (list_owner == null) {
                         activity.showToast(false, "list owner is not selected.")
@@ -268,7 +266,6 @@ class DlgListMember(
                         loadLists()
                     }
                 }
-
             })
     }
 
@@ -276,12 +273,12 @@ class DlgListMember(
 
     private inner class MyListAdapter : BaseAdapter() {
 
-        val item_list = ArrayList<Any>()
+        val itemList = ArrayList<Any>()
 
-        override fun getCount(): Int = item_list.size
+        override fun getCount(): Int = itemList.size
 
         override fun getItem(position: Int): Any? =
-            if (position >= 0 && position < item_list.size) item_list[position] else null
+            if (position >= 0 && position < itemList.size) itemList[position] else null
 
         override fun getItemId(position: Int): Long =
             0L
@@ -328,7 +325,8 @@ class DlgListMember(
             }
     }
 
-    internal inner class VH_List(view: View) : CompoundButton.OnCheckedChangeListener, ListMemberCallback {
+    @Suppress("ClassNaming")
+    internal inner class VH_List(view: View) : CompoundButton.OnCheckedChangeListener, ListOnListMemberUpdatedCallback {
 
         private val cbItem: CheckBox
         private var bBusy: Boolean = false
@@ -353,15 +351,15 @@ class DlgListMember(
             // ユーザ操作以外で変更されたなら何もしない
             if (bBusy) return
 
-            val list_owner = this@DlgListMember.list_owner
-            if (list_owner == null) {
+            val listOwner = this@DlgListMember.listOwner
+            if (listOwner == null) {
                 activity.showToast(false, "list owner is not selected")
                 revokeCheckedChanged(isChecked)
                 return
             }
 
-            val local_who = this@DlgListMember.local_who
-            if (local_who == null) {
+            val whoLocal = this@DlgListMember.whoLocal
+            if (whoLocal == null) {
                 activity.showToast(false, "target user is not synchronized")
                 revokeCheckedChanged(isChecked)
                 return
@@ -370,9 +368,9 @@ class DlgListMember(
             // 状態をサーバに伝える
             val item = this.item ?: return
             if (isChecked) {
-                activity.listMemberAdd(list_owner, item.id, local_who, callback = this)
+                activity.listMemberAdd(listOwner, item.id, whoLocal, callback = this)
             } else {
-                activity.listMemberDelete(list_owner, item.id, local_who, this)
+                activity.listMemberDelete(listOwner, item.id, whoLocal, this)
             }
         }
 
@@ -386,6 +384,7 @@ class DlgListMember(
         }
     }
 
+    @Suppress("ClassNaming")
     internal inner class VH_Error(view: View) {
         private val tvError: TextView = view.findViewById(R.id.tvError)
 

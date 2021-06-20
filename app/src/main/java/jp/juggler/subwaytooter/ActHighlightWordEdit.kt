@@ -35,12 +35,12 @@ class ActHighlightWordEdit
         private const val EXTRA_ITEM_ID = "itemId"
         private const val EXTRA_INITIAL_TEXT = "initialText"
 
-        fun createIntent(activity: Activity, itemId:Long) =
+        fun createIntent(activity: Activity, itemId: Long) =
             Intent(activity, ActHighlightWordEdit::class.java).apply {
-                putExtra(EXTRA_ITEM_ID,itemId)
+                putExtra(EXTRA_ITEM_ID, itemId)
             }
 
-        fun createIntent(activity: Activity, initialText:String) =
+        fun createIntent(activity: Activity, initialText: String) =
             Intent(activity, ActHighlightWordEdit::class.java).apply {
                 putExtra(EXTRA_INITIAL_TEXT, initialText)
             }
@@ -67,13 +67,12 @@ class ActHighlightWordEdit
         }
     }
 
-
     override fun onBackPressed() {
         AlertDialog.Builder(this)
             .setCancelable(true)
             .setMessage(R.string.discard_changes)
             .setPositiveButton(R.string.no, null)
-            .setNegativeButton(R.string.yes) { _,_ -> finish() }
+            .setNegativeButton(R.string.yes) { _, _ -> finish() }
             .show()
     }
 
@@ -85,7 +84,7 @@ class ActHighlightWordEdit
 
         setResult(RESULT_CANCELED)
 
-        fun loadData():HighlightWord? {
+        fun loadData(): HighlightWord? {
             savedInstanceState
                 ?.getString(STATE_ITEM)
                 ?.decodeJsonObject()
@@ -104,7 +103,7 @@ class ActHighlightWordEdit
         }
 
         val item = loadData()
-        if(item==null) {
+        if (item == null) {
             log.d("missing source data")
             finish()
             return
@@ -112,7 +111,7 @@ class ActHighlightWordEdit
 
         this.item = item
 
-        etName.setText( item.name )
+        etName.setText(item.name)
         showSound()
         showColor()
     }
@@ -122,12 +121,11 @@ class ActHighlightWordEdit
         try {
             // ui may not initialized yet.
             uiToData()
-        }catch(ex:Throwable) {
-            log.e(ex,"uiToData failed.")
+        } catch (ex: Throwable) {
+            log.e(ex, "uiToData failed.")
         }
-        item.encodeJson().toString().let{ outState.putString(STATE_ITEM,it) }
+        item.encodeJson().toString().let { outState.putString(STATE_ITEM, it) }
     }
-
 
     private fun initUI() {
         setContentView(R.layout.act_highlight_edit)
@@ -174,7 +172,7 @@ class ActHighlightWordEdit
             }
 
             R.id.btnBackgroundColorEdit ->
-                openColorPicker(COLOR_DIALOG_ID_BACKGROUND,item.color_bg)
+                openColorPicker(COLOR_DIALOG_ID_BACKGROUND, item.color_bg)
 
             R.id.btnBackgroundColorReset -> {
                 item.color_bg = 0
@@ -186,14 +184,13 @@ class ActHighlightWordEdit
 
             R.id.btnNotificationSoundReset -> {
                 item.sound_uri = null
-                item.sound_type = if (swSound.isChecked)
-                    HighlightWord.SOUND_TYPE_DEFAULT
-                else
-                    HighlightWord.SOUND_TYPE_NONE
+                item.sound_type = when {
+                    swSound.isChecked -> HighlightWord.SOUND_TYPE_DEFAULT
+                    else -> HighlightWord.SOUND_TYPE_NONE
+                }
                 showSound()
             }
         }
-
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
@@ -201,17 +198,16 @@ class ActHighlightWordEdit
         uiToData()
     }
 
-    private fun openColorPicker(id: Int, initial_color: Int) {
+    private fun openColorPicker(id: Int, initialColor: Int) {
         val builder = ColorPickerDialog.newBuilder()
             .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
             .setAllowPresets(true)
             .setShowAlphaSlider(id == COLOR_DIALOG_ID_BACKGROUND)
             .setDialogId(id)
 
-        if (initial_color != 0) builder.setColor(initial_color)
+        if (initialColor != 0) builder.setColor(initialColor)
 
         builder.show(this)
-
     }
 
     override fun onDialogDismissed(dialogId: Int) {}
@@ -226,7 +222,7 @@ class ActHighlightWordEdit
 
     //////////////////////////////////////////////////////////////////
 
-    private fun showSound(){
+    private fun showSound() {
         bBusy = true
         try {
             swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
@@ -236,7 +232,7 @@ class ActHighlightWordEdit
         }
     }
 
-    private fun showColor(){
+    private fun showColor() {
         bBusy = true
         try {
             etName.setBackgroundColor(item.color_bg) // may 0
@@ -261,8 +257,8 @@ class ActHighlightWordEdit
         arNotificationSound.launch(chooser)
     }
 
-    private fun uiToData(){
-        item.name = etName.text.toString().trim{ it <= ' ' || it == '　'}
+    private fun uiToData() {
+        item.name = etName.text.toString().trim { it <= ' ' || it == '　' }
 
         item.sound_type = when {
             !swSound.isChecked -> HighlightWord.SOUND_TYPE_NONE
@@ -276,22 +272,22 @@ class ActHighlightWordEdit
         }
     }
 
-    private fun save(){
+    private fun save() {
         uiToData()
 
-        if( item.name.isEmpty() ) {
+        if (item.name.isEmpty()) {
             showToast(true, R.string.cant_leave_empty_keyword)
             return
         }
 
         val other = HighlightWord.load(item.name)
-        if( other != null && other.id != item.id) {
+        if (other != null && other.id != item.id) {
             showToast(true, R.string.cant_save_duplicated_keyword)
             return
         }
 
         item.save(this)
-        showToast(false,R.string.saved)
+        showToast(false, R.string.saved)
         setResult(RESULT_OK)
         finish()
     }

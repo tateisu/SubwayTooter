@@ -15,20 +15,19 @@ import jp.juggler.util.launchMain
 import java.util.regex.Pattern
 
 val Column.isFilterEnabled: Boolean
-    get() = (with_attachment
-        || with_highlight
-        || regex_text.isNotEmpty()
-        || dont_show_normal_toot
-        || dont_show_non_public_toot
-        || quick_filter != Column.QUICK_FILTER_ALL
-        || dont_show_boost
-        || dont_show_favourite
-        || dont_show_follow
-        || dont_show_reply
-        || dont_show_reaction
-        || dont_show_vote
-        || (language_filter?.isNotEmpty() == true)
-        )
+    get() = withAttachment ||
+        withHighlight ||
+        regexText.isNotEmpty() ||
+        dontShowNormalToot ||
+        dontShowNonPublicToot ||
+        quickFilter != Column.QUICK_FILTER_ALL ||
+        dontShowBoost ||
+        dontShowFavourite ||
+        dontShowFollow ||
+        dontShowReply ||
+        dontShowReaction ||
+        dontShowVote ||
+        (languageFilter?.isNotEmpty() == true)
 
 // マストドン2.4.3rcのキーワードフィルタのコンテキスト
 fun Column.getFilterContext() = when (type) {
@@ -99,7 +98,6 @@ fun Column.canFilterNonPublicToot(): Boolean = when (type) {
     else -> false
 }
 
-
 fun Column.onFiltersChanged2(filterList: ArrayList<TootFilter>) {
     val newFilter = encodeFilterTree(filterList) ?: return
     this.keywordFilterTrees = newFilter
@@ -108,16 +106,16 @@ fun Column.onFiltersChanged2(filterList: ArrayList<TootFilter>) {
 
 fun Column.onFilterDeleted(filter: TootFilter, filterList: ArrayList<TootFilter>) {
     if (type == ColumnType.KEYWORD_FILTER) {
-        val tmp_list = ArrayList<TimelineItem>(list_data.size)
-        for (o in list_data) {
+        val tmpList = ArrayList<TimelineItem>(listData.size)
+        for (o in listData) {
             if (o is TootFilter) {
                 if (o.id == filter.id) continue
             }
-            tmp_list.add(o)
+            tmpList.add(o)
         }
-        if (tmp_list.size != list_data.size) {
-            list_data.clear()
-            list_data.addAll(tmp_list)
+        if (tmpList.size != listData.size) {
+            listData.clear()
+            listData.addAll(tmpList)
             fireShowContent(reason = "onFilterDeleted")
         }
     } else {
@@ -134,17 +132,17 @@ fun Column.onLanguageFilterChanged() {
 }
 
 fun Column.initFilter() {
-    column_regex_filter = Column.COLUMN_REGEX_FILTER_DEFAULT
-    val regex_text = this.regex_text
-    if (regex_text.isNotEmpty()) {
+    columnRegexFilter = Column.COLUMN_REGEX_FILTER_DEFAULT
+    val regexText = this.regexText
+    if (regexText.isNotEmpty()) {
         try {
-            val re = Pattern.compile(regex_text)
-            column_regex_filter =
+            val re = Pattern.compile(regexText)
+            columnRegexFilter =
                 { text: CharSequence? ->
-                    if (text?.isEmpty() != false)
-                        false
-                    else
-                        re.matcher(text).find()
+                    when {
+                        text?.isEmpty() != false -> false
+                        else -> re.matcher(text).find()
+                    }
                 }
         } catch (ex: Throwable) {
             Column.log.trace(ex)
@@ -152,16 +150,16 @@ fun Column.initFilter() {
     }
 
     favMuteSet = FavMute.acctSet
-    highlight_trie = HighlightWord.nameSet
+    highlightTrie = HighlightWord.nameSet
 }
 
 private fun Column.isFilteredByAttachment(status: TootStatus): Boolean {
     // オプションがどれも設定されていないならフィルタしない(false)
-    if (!(with_attachment || with_highlight)) return false
+    if (!(withAttachment || withHighlight)) return false
 
-    val matchMedia = with_attachment && status.reblog?.hasMedia() ?: status.hasMedia()
+    val matchMedia = withAttachment && status.reblog?.hasMedia() ?: status.hasMedia()
     val matchHighlight =
-        with_highlight && null != (status.reblog?.highlightAny ?: status.highlightAny)
+        withHighlight && null != (status.reblog?.highlightAny ?: status.highlightAny)
 
     // どれかの条件を満たすならフィルタしない(false)、どれも満たさないならフィルタする(true)
     return !(matchMedia || matchHighlight)
@@ -171,47 +169,47 @@ fun Column.isFiltered(status: TootStatus): Boolean {
 
     val filterTrees = keywordFilterTrees
     if (filterTrees != null) {
-        if (status.isKeywordFiltered(access_info, filterTrees.treeIrreversible)) {
+        if (status.isKeywordFiltered(accessInfo, filterTrees.treeIrreversible)) {
             Column.log.d("status filtered by treeIrreversible")
             return true
         }
 
         // just update _filtered flag for reversible filter
-        status.updateKeywordFilteredFlag(access_info, filterTrees)
+        status.updateKeywordFilteredFlag(accessInfo, filterTrees)
     }
 
     if (isFilteredByAttachment(status)) return true
 
     val reblog = status.reblog
 
-    if (dont_show_boost) {
+    if (dontShowBoost) {
         if (reblog != null) return true
     }
 
-    if (dont_show_reply) {
+    if (dontShowReply) {
         if (status.in_reply_to_id != null) return true
         if (reblog?.in_reply_to_id != null) return true
     }
 
-    if (dont_show_normal_toot) {
+    if (dontShowNormalToot) {
         if (status.in_reply_to_id == null && reblog == null) return true
     }
-    if (dont_show_non_public_toot) {
+    if (dontShowNonPublicToot) {
         if (!status.visibility.isPublic) return true
     }
 
-    if (column_regex_filter(status.decoded_content)) return true
-    if (column_regex_filter(reblog?.decoded_content)) return true
-    if (column_regex_filter(status.decoded_spoiler_text)) return true
-    if (column_regex_filter(reblog?.decoded_spoiler_text)) return true
+    if (columnRegexFilter(status.decoded_content)) return true
+    if (columnRegexFilter(reblog?.decoded_content)) return true
+    if (columnRegexFilter(status.decoded_spoiler_text)) return true
+    if (columnRegexFilter(reblog?.decoded_spoiler_text)) return true
 
     if (checkLanguageFilter(status)) return true
 
-    if (access_info.isPseudo) {
-        var r = UserRelation.loadPseudo(access_info.getFullAcct(status.account))
+    if (accessInfo.isPseudo) {
+        var r = UserRelation.loadPseudo(accessInfo.getFullAcct(status.account))
         if (r.muting || r.blocking) return true
         if (reblog != null) {
-            r = UserRelation.loadPseudo(access_info.getFullAcct(reblog.account))
+            r = UserRelation.loadPseudo(accessInfo.getFullAcct(reblog.account))
             if (r.muting || r.blocking) return true
         }
     }
@@ -222,7 +220,7 @@ fun Column.isFiltered(status: TootStatus): Boolean {
 // true if the status will be hidden
 private fun Column.checkLanguageFilter(status: TootStatus?): Boolean {
     status ?: return false
-    val languageFilter = language_filter ?: return false
+    val languageFilter = languageFilter ?: return false
 
     val allow = languageFilter.boolean(
         status.language ?: status.reblog?.language ?: TootStatus.LANGUAGE_CODE_UNKNOWN
@@ -235,59 +233,59 @@ private fun Column.checkLanguageFilter(status: TootStatus?): Boolean {
 
 fun Column.isFiltered(item: TootNotification): Boolean {
 
-    if (when (quick_filter) {
+    if (when (quickFilter) {
             Column.QUICK_FILTER_ALL -> when (item.type) {
-                TootNotification.TYPE_FAVOURITE -> dont_show_favourite
+                TootNotification.TYPE_FAVOURITE -> dontShowFavourite
 
                 TootNotification.TYPE_REBLOG,
                 TootNotification.TYPE_RENOTE,
-                TootNotification.TYPE_QUOTE -> dont_show_boost
+                TootNotification.TYPE_QUOTE -> dontShowBoost
 
                 TootNotification.TYPE_FOLLOW,
                 TootNotification.TYPE_UNFOLLOW,
                 TootNotification.TYPE_FOLLOW_REQUEST,
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> dont_show_follow
+                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> dontShowFollow
 
                 TootNotification.TYPE_MENTION,
-                TootNotification.TYPE_REPLY -> dont_show_reply
+                TootNotification.TYPE_REPLY -> dontShowReply
 
                 TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
                 TootNotification.TYPE_EMOJI_REACTION,
-                TootNotification.TYPE_REACTION -> dont_show_reaction
+                TootNotification.TYPE_REACTION -> dontShowReaction
 
                 TootNotification.TYPE_VOTE,
                 TootNotification.TYPE_POLL,
-                TootNotification.TYPE_POLL_VOTE_MISSKEY -> dont_show_vote
+                TootNotification.TYPE_POLL_VOTE_MISSKEY -> dontShowVote
 
-                TootNotification.TYPE_STATUS -> dont_show_normal_toot
+                TootNotification.TYPE_STATUS -> dontShowNormalToot
                 else -> false
             }
 
             else -> when (item.type) {
-                TootNotification.TYPE_FAVOURITE -> quick_filter != Column.QUICK_FILTER_FAVOURITE
+                TootNotification.TYPE_FAVOURITE -> quickFilter != Column.QUICK_FILTER_FAVOURITE
                 TootNotification.TYPE_REBLOG,
                 TootNotification.TYPE_RENOTE,
-                TootNotification.TYPE_QUOTE -> quick_filter != Column.QUICK_FILTER_BOOST
+                TootNotification.TYPE_QUOTE -> quickFilter != Column.QUICK_FILTER_BOOST
 
                 TootNotification.TYPE_FOLLOW,
                 TootNotification.TYPE_UNFOLLOW,
                 TootNotification.TYPE_FOLLOW_REQUEST,
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quick_filter != Column.QUICK_FILTER_FOLLOW
+                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quickFilter != Column.QUICK_FILTER_FOLLOW
 
                 TootNotification.TYPE_MENTION,
-                TootNotification.TYPE_REPLY -> quick_filter != Column.QUICK_FILTER_MENTION
+                TootNotification.TYPE_REPLY -> quickFilter != Column.QUICK_FILTER_MENTION
 
                 TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
                 TootNotification.TYPE_EMOJI_REACTION,
-                TootNotification.TYPE_REACTION -> quick_filter != Column.QUICK_FILTER_REACTION
+                TootNotification.TYPE_REACTION -> quickFilter != Column.QUICK_FILTER_REACTION
 
                 TootNotification.TYPE_VOTE,
                 TootNotification.TYPE_POLL,
-                TootNotification.TYPE_POLL_VOTE_MISSKEY -> quick_filter != Column.QUICK_FILTER_VOTE
+                TootNotification.TYPE_POLL_VOTE_MISSKEY -> quickFilter != Column.QUICK_FILTER_VOTE
 
-                TootNotification.TYPE_STATUS -> quick_filter != Column.QUICK_FILTER_POST
+                TootNotification.TYPE_STATUS -> quickFilter != Column.QUICK_FILTER_POST
                 else -> true
             }
         }
@@ -299,13 +297,13 @@ fun Column.isFiltered(item: TootNotification): Boolean {
     val status = item.status
     val filterTrees = keywordFilterTrees
     if (status != null && filterTrees != null) {
-        if (status.isKeywordFiltered(access_info, filterTrees.treeIrreversible)) {
+        if (status.isKeywordFiltered(accessInfo, filterTrees.treeIrreversible)) {
             Column.log.d("isFiltered: status muted by treeIrreversible.")
             return true
         }
 
         // just update _filtered flag for reversible filter
-        status.updateKeywordFilteredFlag(access_info, filterTrees)
+        status.updateKeywordFilteredFlag(accessInfo, filterTrees)
     }
     if (checkLanguageFilter(status)) return true
 
@@ -328,8 +326,8 @@ fun Column.isFiltered(item: TootNotification): Boolean {
         TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
         TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
             val who = item.account
-            if (who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
-                Column.log.d("${access_info.getFullAcct(who)} is in favMuteSet.")
+            if (who != null && favMuteSet?.contains(accessInfo.getFullAcct(who)) == true) {
+                Column.log.d("${accessInfo.getFullAcct(who)} is in favMuteSet.")
                 return true
             }
         }
@@ -340,9 +338,9 @@ fun Column.isFiltered(item: TootNotification): Boolean {
 
 // フィルタを読み直してリストを返す。またはnull
 suspend fun Column.loadFilter2(client: TootApiClient): ArrayList<TootFilter>? {
-    if (access_info.isPseudo || access_info.isMisskey) return null
-    val column_context = getFilterContext()
-    if (column_context == 0) return null
+    if (accessInfo.isPseudo || accessInfo.isMisskey) return null
+    val columnContext = getFilterContext()
+    if (columnContext == 0) return null
     val result = client.request(ApiPath.PATH_FILTERS)
 
     val jsonArray = result?.jsonArray ?: return null
@@ -350,13 +348,13 @@ suspend fun Column.loadFilter2(client: TootApiClient): ArrayList<TootFilter>? {
 }
 
 fun Column.encodeFilterTree(filterList: ArrayList<TootFilter>?): FilterTrees? {
-    val column_context = getFilterContext()
-    if (column_context == 0 || filterList == null) return null
+    val columnContext = getFilterContext()
+    if (columnContext == 0 || filterList == null) return null
     val result = FilterTrees()
     val now = System.currentTimeMillis()
     for (filter in filterList) {
         if (filter.time_expires_at > 0L && now >= filter.time_expires_at) continue
-        if ((filter.context and column_context) != 0) {
+        if ((filter.context and columnContext) != 0) {
 
             val validator = when (filter.whole_word) {
                 true -> WordTrieTree.WORD_VALIDATOR
@@ -378,12 +376,12 @@ fun Column.encodeFilterTree(filterList: ArrayList<TootFilter>?): FilterTrees? {
 fun Column.checkFiltersForListData(trees: FilterTrees?) {
     trees ?: return
     val changeList = ArrayList<AdapterChange>()
-    list_data.forEachIndexed { idx, item ->
+    listData.forEachIndexed { idx, item ->
         when (item) {
             is TootStatus -> {
-                val old_filtered = item.filtered
-                item.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
-                if (old_filtered != item.filtered) {
+                val oldFiltered = item.filtered
+                item.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible = true)
+                if (oldFiltered != item.filtered) {
                     changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
                 }
             }
@@ -391,9 +389,9 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
             is TootNotification -> {
                 val s = item.status
                 if (s != null) {
-                    val old_filtered = s.filtered
-                    s.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
-                    if (old_filtered != s.filtered) {
+                    val oldFiltered = s.filtered
+                    s.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible = true)
+                    if (oldFiltered != s.filtered) {
                         changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
                     }
                 }
@@ -403,12 +401,12 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
     fireShowContent(reason = "filter updated", changeList = changeList)
 }
 
-fun reloadFilter(context: Context, access_info: SavedAccount) {
+fun reloadFilter(context: Context, accessInfo: SavedAccount) {
     launchMain {
         var resultList: ArrayList<TootFilter>? = null
 
         context.runApiTask(
-            access_info,
+            accessInfo,
             progressStyle = ApiTask.PROGRESS_NONE
         ) { client ->
             client.request(ApiPath.PATH_FILTERS)?.also { result ->
@@ -419,9 +417,9 @@ fun reloadFilter(context: Context, access_info: SavedAccount) {
         }
 
         resultList?.let {
-            Column.log.d("update filters for ${access_info.acct.pretty}")
+            Column.log.d("update filters for ${accessInfo.acct.pretty}")
             for (column in App1.getAppState(context).columnList) {
-                if (column.access_info == access_info) {
+                if (column.accessInfo == accessInfo) {
                     column.onFiltersChanged2(it)
                 }
             }

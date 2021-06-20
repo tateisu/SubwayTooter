@@ -14,7 +14,6 @@ import org.jetbrains.anko.textColor
 fun ColumnViewHolder.showColumnHeader() {
     activity.handler.removeCallbacks(procShowColumnHeader)
     activity.handler.postDelayed(procShowColumnHeader, 50L)
-
 }
 
 fun ColumnViewHolder.showColumnStatus() {
@@ -24,7 +23,7 @@ fun ColumnViewHolder.showColumnStatus() {
 
 fun ColumnViewHolder.showColumnColor() {
     val column = this.column
-    if (column == null || column.is_dispose.get()) return
+    if (column == null || column.isDispose.get()) return
 
     // カラムヘッダ背景
     column.setHeaderBackground(llColumnHeader)
@@ -46,18 +45,18 @@ fun ColumnViewHolder.showColumnColor() {
 
     // カラム内部の背景色
     flColumnBackground.setBackgroundColor(
-        column.column_bg_color.notZero()
+        column.columnBgColor.notZero()
             ?: Column.defaultColorContentBg
     )
 
     // カラム内部の背景画像
-    ivColumnBackgroundImage.alpha = column.column_bg_image_alpha
-    loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
+    ivColumnBackgroundImage.alpha = column.columnBgImageAlpha
+    loadBackgroundImage(ivColumnBackgroundImage, column.columnBgImage)
 
     // エラー表示
     tvLoading.textColor = column.getContentColor()
 
-    status_adapter?.findHeaderViewHolder(listView)?.showColor()
+    statusAdapter?.findHeaderViewHolder(listView)?.showColor()
 
     // カラム色を変更したらクイックフィルタの色も変わる場合がある
     showQuickFilter()
@@ -73,11 +72,11 @@ fun ColumnViewHolder.showError(message: String) {
 
     llLoading.visibility = View.VISIBLE
     tvLoading.text = message
-    btnConfirmMail.vg(column?.access_info?.isConfirmed == false)
+    btnConfirmMail.vg(column?.accessInfo?.isConfirmed == false)
 }
 
 fun ColumnViewHolder.showColumnCloseButton() {
-    column?.dont_close?.let{ btnColumnClose.isEnabledAlpha = !it }
+    column?.dontClose?.let { btnColumnClose.isEnabledAlpha = !it }
 }
 
 internal fun ColumnViewHolder.showContent(
@@ -88,7 +87,7 @@ internal fun ColumnViewHolder.showContent(
     // クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
     // とりあえずリストデータ変更の通知だけは最優先で行っておく
     try {
-        status_adapter?.notifyChange(reason, changeList, reset)
+        statusAdapter?.notifyChange(reason, changeList, reset)
     } catch (ex: Throwable) {
         ColumnViewHolder.log.trace(ex)
     }
@@ -97,7 +96,7 @@ internal fun ColumnViewHolder.showContent(
     showColumnStatus()
 
     val column = this.column
-    if (column == null || column.is_dispose.get()) {
+    if (column == null || column.isDispose.get()) {
         showError("column was disposed.")
         return
     }
@@ -108,7 +107,7 @@ internal fun ColumnViewHolder.showContent(
     }
 
     if (column.bInitialLoading) {
-        var message: String? = column.task_progress
+        var message: String? = column.taskProgress
         if (message == null) message = "loading?"
         showError(message)
         return
@@ -120,9 +119,9 @@ internal fun ColumnViewHolder.showContent(
         return
     }
 
-    val status_adapter = this.status_adapter
+    val statusAdapter = this.statusAdapter
 
-    if (status_adapter == null || status_adapter.itemCount == 0) {
+    if (statusAdapter == null || statusAdapter.itemCount == 0) {
         showError(activity.getString(R.string.list_empty))
         return
     }
@@ -131,7 +130,7 @@ internal fun ColumnViewHolder.showContent(
 
     refreshLayout.visibility = View.VISIBLE
 
-    status_adapter.findHeaderViewHolder(listView)?.bindData(column)
+    statusAdapter.findHeaderViewHolder(listView)?.bindData(column)
 
     if (column.bRefreshLoading) {
         hideRefreshError()
@@ -139,8 +138,7 @@ internal fun ColumnViewHolder.showContent(
         refreshLayout.isRefreshing = false
         showRefreshError()
     }
-    proc_restoreScrollPosition.run()
-
+    procRestorescrollposition.run()
 }
 
 fun ColumnViewHolder.showColumnSetting(show: Boolean): Boolean {
@@ -148,7 +146,6 @@ fun ColumnViewHolder.showColumnSetting(show: Boolean): Boolean {
     llColumnHeader.invalidate()
     return show
 }
-
 
 fun ColumnViewHolder.showRefreshError() {
     val column = column
@@ -190,7 +187,6 @@ fun ColumnViewHolder.showRefreshError() {
         }
     }
 }
-
 
 fun ColumnViewHolder.hideRefreshError() {
     if (!bRefreshErrorWillShown) return

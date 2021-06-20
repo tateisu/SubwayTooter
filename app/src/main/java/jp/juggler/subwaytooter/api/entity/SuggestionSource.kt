@@ -2,16 +2,16 @@ package jp.juggler.subwaytooter.api.entity
 
 object SuggestionSource {
 
-    val map = HashMap<Long,HashMap<Acct,String>>()
+    val map = HashMap<Long, HashMap<Acct, String>>()
 
-    fun set(db_id:Long?, acct:Acct, source:String?){
-        synchronized(this){
-            db_id ?: return
+    fun set(dbId: Long?, acct: Acct, source: String?) {
+        synchronized(this) {
+            dbId ?: return
             source ?: return
-            var m2 = map[db_id]
-            if(m2 ==null){
-               m2 = HashMap()
-               map[db_id] = m2
+            var m2 = map[dbId]
+            if (m2 == null) {
+                m2 = HashMap()
+                map[dbId] = m2
             }
             m2[acct] = source
         }

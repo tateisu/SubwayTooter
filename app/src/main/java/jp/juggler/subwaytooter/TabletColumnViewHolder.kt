@@ -16,14 +16,14 @@ internal class TabletColumnViewHolder(
 
     private var pageIndex = -1
 
-    fun bind(column: Column, pageIndex: Int, column_count: Int) {
-        log.d("bind. ${this.pageIndex} => ${pageIndex}")
+    fun bind(column: Column, pageIndex: Int, columnCount: Int) {
+        log.d("bind. ${this.pageIndex} => $pageIndex")
 
         columnViewHolder.onPageDestroy(this.pageIndex)
 
         this.pageIndex = pageIndex
 
-        columnViewHolder.onPageCreate(column, pageIndex, column_count)
+        columnViewHolder.onPageCreate(column, pageIndex, columnCount)
 
         if (!column.bFirstInitialized) {
             column.startLoading()
@@ -31,7 +31,7 @@ internal class TabletColumnViewHolder(
     }
 
     fun onViewRecycled() {
-        log.d("onViewRecycled ${pageIndex}")
+        log.d("onViewRecycled $pageIndex")
         columnViewHolder.onPageDestroy(pageIndex)
     }
 }

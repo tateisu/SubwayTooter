@@ -59,20 +59,21 @@ object TootsearchHelper {
 
     suspend fun ColumnTask_Loading.loadingTootsearch(client: TootApiClient): TootApiResult? {
         column.idOld = null
-        val q = column.search_query.trim { it <= ' ' }
+        val q = column.searchQuery.trim { it <= ' ' }
         return if (q.isEmpty()) {
-            list_tmp = java.util.ArrayList()
+            listTmp = java.util.ArrayList()
             TootApiResult()
         } else {
-            client.search(column.search_query, null)?.also { result ->
+            client.search(column.searchQuery, null)?.also { result ->
                 result.jsonObject?.let { root ->
                     column.idOld = EntityId.mayNull(getNextId(root, 0))
-                    list_tmp = addWithFilterStatus(
+                    listTmp = addWithFilterStatus(
                         null,
                         parseList(parser, root)
                             .also {
-                                if (it.isEmpty())
+                                if (it.isEmpty()) {
                                     log.d("search result is empty. ${result.bodyString}")
+                                }
                             }
                     )
                 }
@@ -83,19 +84,18 @@ object TootsearchHelper {
     suspend fun ColumnTask_Refresh.refreshTootsearch(client: TootApiClient): TootApiResult? {
         if (!bBottom) return TootApiResult("head of list.")
 
-        val q = column.search_query.trim { it <= ' ' }
+        val q = column.searchQuery.trim { it <= ' ' }
         val oldSize = column.idOld?.toString()?.toInt()
         return if (q.isEmpty() || oldSize == null) {
-            list_tmp = ArrayList()
+            listTmp = ArrayList()
             TootApiResult(context.getString(R.string.end_of_list))
         } else {
             client.search(q, oldSize)?.also { result ->
                 result.jsonObject?.let { root ->
                     column.idOld = EntityId.mayNull(getNextId(root, oldSize))
-                    list_tmp = addWithFilterStatus(list_tmp, parseList(parser, root))
+                    listTmp = addWithFilterStatus(listTmp, parseList(parser, root))
                 }
             }
         }
     }
 }
-

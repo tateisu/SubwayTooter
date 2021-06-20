@@ -10,7 +10,7 @@ fun String.removeUrlSchema() = replace(reUrlSchema, "")
 
 class Host private constructor(
     val ascii: String,
-    val pretty: String = ascii
+    val pretty: String = ascii,
 ) : Comparable<Host> {
 
     override fun toString(): String = ascii
@@ -37,7 +37,6 @@ class Host private constructor(
         // declare this first!
         private val hostSet = ConcurrentHashMap<String, Host>()
 
-
         val EMPTY = Host("")
         val UNKNOWN = Host("?")
         val FRIENDS_NICO = Host("friends.nico")
@@ -57,7 +56,7 @@ class Host private constructor(
 
 class Acct private constructor(
     val username: String,
-    val host: Host?
+    val host: Host?,
 ) : Comparable<Acct> {
 
     val ascii: String = if (host == null) username else "$username@${host.ascii}"
@@ -90,7 +89,6 @@ class Acct private constructor(
 
     fun validFull(): Acct? = if (isValidFull) this else null
 
-
     companion object {
         // declare this first!
         private val acctSet = ConcurrentHashMap<String, Acct>()
@@ -103,11 +101,10 @@ class Acct private constructor(
 
             if (src.isEmpty()) return UNKNOWN
 
-            val pos = src.indexOf('@')
-            val acct = if (pos != -1)
-                Acct(src.substring(0, pos), Host.parse(src.substring(pos + 1)))
-            else
-                Acct(src, null)
+            val acct = when (val pos = src.indexOf('@')) {
+                -1 -> Acct(src, null)
+                else -> Acct(src.substring(0, pos), Host.parse(src.substring(pos + 1)))
+            }
 
             acctSet[src] = acct
             return acct

@@ -24,11 +24,23 @@ private val mailRegex =
         RegexOption.IGNORE_CASE
     )
 
+fun isAndroid7TlsBug(errorText: String) =
+    if (!errorText.contains("SSLHandshakeException")) {
+        false
+    } else {
+        val release = Build.VERSION.RELEASE
+        when {
+            release.startsWith("7.1.") -> false // 含まない 7.1.x
+            release.startsWith("7.1") -> true   // 含む 7.1
+            release.startsWith("7.0") -> true   // 含む 7.0
+            else -> false
+        }
+    }
 
 private fun ActMain.accountCreate(
     apiHost: Host,
-    client_info: JsonObject,
-    dialog_host: Dialog
+    clientInfo: JsonObject,
+    dialogHost: Dialog,
 ) {
     val activity = this
     DlgCreateAccount(
@@ -41,7 +53,7 @@ private fun ActMain.accountCreate(
             var resultApDomain: Host? = null
             runApiTask(apiHost) { client ->
                 val r1 = client.createUser2Mastodon(
-                    client_info,
+                    clientInfo,
                     username,
                     email,
                     password,
@@ -57,16 +69,16 @@ private fun ActMain.accountCreate(
                 )
 
                 // ここだけMastodon専用
-                val access_token = tokenJson.string("access_token")
+                val accessToken = tokenJson.string("access_token")
                     ?: return@runApiTask TootApiResult("can't get user access token")
 
                 client.apiHost = apiHost
-                val (ti, ri) = TootInstance.getEx(client, forceAccessToken = access_token)
+                val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
                 ti ?: return@runApiTask ri
 
                 resultApDomain = ti.uri?.let { Host.parse(it) }
 
-                client.getUserCredential(access_token, misskeyVersion = misskeyVersion)?.let { r2 ->
+                client.getUserCredential(accessToken, misskeyVersion = misskeyVersion)?.let { r2 ->
                     parser.account(r2.jsonObject)?.let {
                         resultTootAccount = it
                         return@runApiTask r2
@@ -87,7 +99,7 @@ private fun ActMain.accountCreate(
             }?.let { result ->
                 val sa: SavedAccount? = null
                 if (activity.afterAccountVerify(result, resultTootAccount, sa, apiHost, resultApDomain)) {
-                    dialog_host.dismissSafe()
+                    dialogHost.dismissSafe()
                     dialog_create.dismissSafe()
                 }
             }
@@ -136,7 +148,7 @@ fun ActMain.accountAdd() {
                     LoginForm.Action.Pseudo -> if (data is TootInstance) {
                         addPseudoAccount(instance, data)?.let { a ->
                             showToast(false, R.string.server_confirmed)
-                            val pos = activity.app_state.columnCount
+                            val pos = activity.appState.columnCount
                             addColumn(pos, a, ColumnType.LOCAL)
                             dialog.dismissSafe()
                         }
@@ -152,7 +164,7 @@ fun ActMain.accountAdd() {
                                 @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
                                 override fun onOK(
                                     dialog_token: Dialog,
-                                    text: String
+                                    text: String,
                                 ) {
 
                                     // dialog引数が二つあるのに注意
@@ -163,7 +175,6 @@ fun ActMain.accountAdd() {
                                         text,
                                         null
                                     )
-
                                 }
 
                                 override fun onEmptyError() {
@@ -177,12 +188,7 @@ fun ActMain.accountAdd() {
             }
 
             val errorText = result.error ?: "(no error information)"
-            if (errorText.contains("SSLHandshakeException")
-                && (Build.VERSION.RELEASE.startsWith("7.0")
-                    || Build.VERSION.RELEASE.startsWith("7.1")
-                    && !Build.VERSION.RELEASE.startsWith("7.1.")
-                    )
-            ) {
+            if (isAndroid7TlsBug(errorText)) {
                 AlertDialog.Builder(activity)
                     .setMessage(errorText + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
                     .setNeutralButton(R.string.close, null)
@@ -209,20 +215,23 @@ fun AppCompatActivity.accountRemove(account: SavedAccount) {
 private fun appServerUnregister(context: Context, account: SavedAccount) {
     launchIO {
         try {
-            val install_id = PrefDevice.prefDevice(context)
-                .getString(PrefDevice.KEY_INSTALL_ID, null)
-            if (install_id?.isEmpty() != false)
+            val installId = PrefDevice.from(context).getString(PrefDevice.KEY_INSTALL_ID, null)
+            if (installId?.isEmpty() != false) {
                 error("missing install_id")
+            }
 
             val tag = account.notification_tag
-            if (tag?.isEmpty() != false)
+            if (tag?.isEmpty() != false) {
                 error("missing notification_tag")
+            }
 
             val call = App1.ok_http_client.newCall(
-                ("instance_url=" + "https://${account.apiHost.ascii}".encodePercent()
-                    + "&app_id=" + context.packageName.encodePercent()
-                    + "&tag=" + tag
-                    )
+                "instance_url=${
+                    "https://${account.apiHost.ascii}".encodePercent()
+                }&app_id=${
+                    context.packageName.encodePercent()
+                }&tag=$tag"
+
                     .toFormRequestBody()
                     .toPost()
                     .url(PollingWorker.APP_SERVER + "/unregister")
@@ -231,7 +240,7 @@ private fun appServerUnregister(context: Context, account: SavedAccount) {
 
             val response = call.await()
 
-            log.e("appServerUnregister: ${response}")
+            log.e("appServerUnregister: $response")
         } catch (ex: Throwable) {
             log.trace(ex, "appServerUnregister failed.")
         }
@@ -251,7 +260,6 @@ fun ActMain.accountOpenSetting() {
     }
 }
 
-
 fun ActMain.accountResendConfirmMail(accessInfo: SavedAccount) {
     DlgConfirmMail(
         this,
@@ -260,8 +268,9 @@ fun ActMain.accountResendConfirmMail(accessInfo: SavedAccount) {
         launchMain {
             runApiTask(accessInfo) { client ->
                 email?.let {
-                    if (!mailRegex.matches(it))
+                    if (!mailRegex.matches(it)) {
                         return@runApiTask TootApiResult("email address is not valid.")
+                    }
                 }
 
                 client.request(
@@ -284,26 +293,26 @@ fun ActMain.accountResendConfirmMail(accessInfo: SavedAccount) {
 fun accountListReorder(
     src: List<SavedAccount>,
     pickupHost: Host?,
-    filter: (SavedAccount) -> Boolean = { true }
+    filter: (SavedAccount) -> Boolean = { true },
 ): MutableList<SavedAccount> {
-    val list_same_host = java.util.ArrayList<SavedAccount>()
-    val list_other_host = java.util.ArrayList<SavedAccount>()
+    val listSameHost = java.util.ArrayList<SavedAccount>()
+    val listOtherHost = java.util.ArrayList<SavedAccount>()
     for (a in src) {
         if (!filter(a)) continue
         when (pickupHost) {
-            null, a.apDomain, a.apiHost -> list_same_host
-            else -> list_other_host
+            null, a.apDomain, a.apiHost -> listSameHost
+            else -> listOtherHost
         }.add(a)
     }
-    SavedAccount.sort(list_same_host)
-    SavedAccount.sort(list_other_host)
-    list_same_host.addAll(list_other_host)
-    return list_same_host
+    SavedAccount.sort(listSameHost)
+    SavedAccount.sort(listOtherHost)
+    listSameHost.addAll(listOtherHost)
+    return listSameHost
 }
 
 // 疑似アカ以外のアカウントのリスト
 fun Context.accountListNonPseudo(
-    pickupHost: Host?
+    pickupHost: Host?,
 ) = accountListReorder(
     SavedAccount.loadAccountList(this),
     pickupHost
@@ -312,7 +321,7 @@ fun Context.accountListNonPseudo(
 // 条件でフィルタする。サーバ情報を読む場合がある。
 suspend fun Context.accountListWithFilter(
     pickupHost: Host?,
-    check: suspend (TootApiClient, SavedAccount) -> Boolean
+    check: suspend (TootApiClient, SavedAccount) -> Boolean,
 ): MutableList<SavedAccount>? {
     var resultList: MutableList<SavedAccount>? = null
     runApiTask { client ->
@@ -385,18 +394,18 @@ suspend fun ActMain.accountListCanSeeMyReactions(pickupHost: Host? = null) =
 
 // アクセストークンを手動で入力した場合
 fun ActMain.checkAccessToken(
-    dialog_host: Dialog?,
-    dialog_token: Dialog?,
+    dialogHost: Dialog?,
+    dialogToken: Dialog?,
     apiHost: Host,
-    access_token: String,
-    sa: SavedAccount?
+    accessToken: String,
+    sa: SavedAccount?,
 ) {
     launchMain {
         var resultAccount: TootAccount? = null
         var resultApDomain: Host? = null
 
         runApiTask(apiHost) { client ->
-            val (ti, ri) = TootInstance.getEx(client, forceAccessToken = access_token)
+            val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
             ti ?: return@runApiTask ri
 
             val apDomain = ti.uri?.let { Host.parse(it) }
@@ -404,7 +413,7 @@ fun ActMain.checkAccessToken(
 
             val misskeyVersion = ti.misskeyVersion
 
-            client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
+            client.getUserCredential(accessToken, misskeyVersion = misskeyVersion)
                 ?.also { result ->
                     resultApDomain = apDomain
                     resultAccount = TootParser(
@@ -418,17 +427,17 @@ fun ActMain.checkAccessToken(
                 }
         }?.let { result ->
             if (afterAccountVerify(result, resultAccount, sa, apiHost, resultApDomain)) {
-                dialog_host?.dismissSafe()
-                dialog_token?.dismissSafe()
+                dialogHost?.dismissSafe()
+                dialogToken?.dismissSafe()
             }
         }
     }
 }
 
 // アクセストークンの手動入力(更新)
-fun ActMain.checkAccessToken2(db_id: Long) {
+fun ActMain.checkAccessToken2(dbId: Long) {
 
-    val sa = SavedAccount.loadAccount(this, db_id) ?: return
+    val sa = SavedAccount.loadAccount(this, dbId) ?: return
 
     DlgTextInput.show(
         this,

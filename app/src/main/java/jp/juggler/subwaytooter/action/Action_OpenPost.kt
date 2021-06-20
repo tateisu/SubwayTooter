@@ -45,25 +45,25 @@ fun ActPost.saveWindowSize() {
 }
 
 fun ActMain.openActPostImpl(
-    account_db_id: Long,
+    accountDbId: Long,
 
     // 再編集する投稿。アカウントと同一のタンスであること
-    redraft_status: TootStatus? = null,
+    redraftStatus: TootStatus? = null,
 
     // 返信対象の投稿。同一タンス上に同期済みであること
-    reply_status: TootStatus? = null,
+    replyStatus: TootStatus? = null,
 
     //初期テキスト
-    initial_text: String? = null,
+    initialText: String? = null,
 
     // 外部アプリから共有されたインテント
-    sent_intent: Intent? = null,
+    sharedIntent: Intent? = null,
 
     // 返信ではなく引用トゥートを作成する
     quote: Boolean = false,
 
     //(Mastodon) 予約投稿の編集
-    scheduledStatus: TootScheduled? = null
+    scheduledStatus: TootScheduled? = null,
 ) {
 
     val useManyWindow = Pref.bpManyWindowPost(pref)
@@ -71,11 +71,11 @@ fun ActMain.openActPostImpl(
 
     val intent = ActPost.createIntent(
         activity = this,
-        account_db_id = account_db_id,
-        redraft_status = redraft_status,
-        reply_status = reply_status,
-        initial_text = initial_text,
-        sent_intent = sent_intent,
+        accountDbId = accountDbId,
+        redraftStatus = redraftStatus,
+        replyStatus = replyStatus,
+        initialText = initialText,
+        sharedIntent = sharedIntent,
         quote = quote,
         scheduledStatus = scheduledStatus,
         multiWindowMode = useMultiWindow
@@ -85,13 +85,14 @@ fun ActMain.openActPostImpl(
         arActPost.launch(intent)
     } else {
 
-        if (!useManyWindow)
+        if (!useManyWindow) {
             ActPost.refActPost?.get()
                 ?.takeIf { it.isLiveActivity }
                 ?.let {
                     it.updateText(intent)
                     return
                 }
+        }
         // fall thru
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
@@ -99,7 +100,7 @@ fun ActMain.openActPostImpl(
         var options = ActivityOptionsCompat.makeBasic()
         PrefDevice.loadPostWindowBound(this)
             ?.let {
-                log.d("ActPost launchBounds ${it}")
+                log.d("ActPost launchBounds $it")
                 options = options.setLaunchBounds(it)
             }
 
@@ -109,10 +110,10 @@ fun ActMain.openActPostImpl(
 
 // 投稿画面を開く。初期テキストを指定する
 fun ActMain.openPost(
-    initial_text: String? = quickTootText
+    initialText: String? = quickTootText,
 ) {
     launchMain {
-        post_helper.closeAcctPopup()
+        postHelper.closeAcctPopup()
 
         val account = currentPostTarget
             ?.takeIf { it.db_id != -1L && !it.isPseudo }
@@ -122,78 +123,77 @@ fun ActMain.openPost(
                 message = getString(R.string.account_picker_toot)
             )
 
-        account?.db_id?.let { openActPostImpl(it, initial_text = initial_text) }
+        account?.db_id?.let { openActPostImpl(it, initialText = initialText) }
     }
 }
 
 // メンションを含むトゥートを作る
 private fun ActMain.mention(
     account: SavedAccount,
-    initial_text: String
-) = openActPostImpl(account.db_id, initial_text = initial_text)
+    initialText: String,
+) = openActPostImpl(account.db_id, initialText = initialText)
 
 // メンションを含むトゥートを作る
 fun ActMain.mention(
     account: SavedAccount,
-    who: TootAccount
+    who: TootAccount,
 ) = mention(account, "@${account.getFullAcct(who).ascii} ")
 
 // メンションを含むトゥートを作る
 fun ActMain.mentionFromAnotherAccount(
-    access_info: SavedAccount,
-    who: TootAccount?
+    accessInfo: SavedAccount,
+    who: TootAccount?,
 ) {
     launchMain {
         who ?: return@launchMain
 
-        val initial_text = "@${access_info.getFullAcct(who).ascii} "
+        val initialText = "@${accessInfo.getFullAcct(who).ascii} "
         pickAccount(
             bAllowPseudo = false,
             bAuto = false,
             message = getString(R.string.account_picker_toot),
             accountListArg = accountListNonPseudo(who.apDomain)
-        )?.let { mention(it, initial_text) }
+        )?.let { mention(it, initialText) }
     }
 }
 
 fun ActMain.reply(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     status: TootStatus,
-    quote: Boolean = false
+    quote: Boolean = false,
 ) = openActPostImpl(
-    access_info.db_id,
-    reply_status = status,
+    accessInfo.db_id,
+    replyStatus = status,
     quote = quote
 )
 
 private fun ActMain.replyRemote(
-    access_info: SavedAccount,
-    remote_status_url: String?,
-    quote: Boolean = false
+    accessInfo: SavedAccount,
+    remoteStatusUrl: String?,
+    quote: Boolean = false,
 ) {
-    if (remote_status_url.isNullOrEmpty()) return
+    if (remoteStatusUrl.isNullOrEmpty()) return
     launchMain {
-        var local_status: TootStatus? = null
+        var localStatus: TootStatus? = null
         runApiTask(
-            access_info,
+            accessInfo,
             progressPrefix = getString(R.string.progress_synchronize_toot)
         ) { client ->
-            val (result, status) = client.syncStatus(access_info, remote_status_url)
-            local_status = status
+            val (result, status) = client.syncStatus(accessInfo, remoteStatusUrl)
+            localStatus = status
             result
         }?.let { result ->
-            when (val ls = local_status) {
+            when (val ls = localStatus) {
                 null -> showToast(true, result.error)
-                else -> reply(access_info, ls, quote = quote)
+                else -> reply(accessInfo, ls, quote = quote)
             }
         }
     }
-
 }
 
 fun ActMain.replyFromAnotherAccount(
-    timeline_account: SavedAccount,
-    status: TootStatus?
+    timelineAccount: SavedAccount,
+    status: TootStatus?,
 ) {
     status ?: return
     launchMain {
@@ -201,7 +201,7 @@ fun ActMain.replyFromAnotherAccount(
             bAllowPseudo = false,
             bAuto = false,
             message = getString(R.string.account_picker_reply),
-            accountListArg = accountListNonPseudo(timeline_account.apDomain),
+            accountListArg = accountListNonPseudo(timelineAccount.apDomain),
         )?.let { ai ->
             if (ai.matchHost(status.readerApDomain)) {
                 // アクセス元ホストが同じならステータスIDを使って返信できる
@@ -215,7 +215,7 @@ fun ActMain.replyFromAnotherAccount(
 }
 
 fun ActMain.quoteFromAnotherAccount(
-    timeline_account: SavedAccount,
+    timelineAccount: SavedAccount,
     status: TootStatus?,
 ) {
     status ?: return
@@ -226,7 +226,7 @@ fun ActMain.quoteFromAnotherAccount(
             bAllowMastodon = true,
             bAuto = true,
             message = getString(R.string.account_picker_quote_toot),
-            accountListArg = accountListCanQuote(timeline_account.apDomain)
+            accountListArg = accountListCanQuote(timelineAccount.apDomain)
         )?.let { ai ->
             if (ai.matchHost(status.readerApDomain)) {
                 // アクセス元ホストが同じならステータスIDを使って返信できる

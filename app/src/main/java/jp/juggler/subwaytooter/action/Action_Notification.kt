@@ -11,11 +11,11 @@ import jp.juggler.util.toFormRequestBody
 import jp.juggler.util.toPost
 
 fun ActMain.notificationDeleteOne(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     notification: TootNotification
 ) {
     launchMain {
-        runApiTask(access_info) { client ->
+        runApiTask(accessInfo) { client ->
             // https://github.com/tootsuite/mastodon/commit/30f5bcf3e749be9651ed39a07b893f70605f8a39
             // 2種類のAPIがあり、片方は除去された
 
@@ -40,8 +40,8 @@ fun ActMain.notificationDeleteOne(
                 null -> showToast(true, result.error)
                 else -> {
                     // 成功したら空オブジェクトが返される
-                    for (column in app_state.columnList) {
-                        column.removeNotificationOne(access_info, notification)
+                    for (column in appState.columnList) {
+                        column.removeNotificationOne(accessInfo, notification)
                     }
                     showToast(true, R.string.delete_succeeded)
                 }
@@ -51,7 +51,7 @@ fun ActMain.notificationDeleteOne(
 }
 
 fun ActMain.notificationDeleteAll(
-    target_account: SavedAccount,
+    targetAccount: SavedAccount,
     bConfirmed: Boolean = false
 ) {
     if (!bConfirmed) {
@@ -59,14 +59,14 @@ fun ActMain.notificationDeleteAll(
             .setMessage(R.string.confirm_delete_notification)
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.ok) { _, _ ->
-                notificationDeleteAll(target_account, true)
+                notificationDeleteAll(targetAccount, true)
             }
             .show()
         return
     }
 
     launchMain {
-        runApiTask(target_account) { client ->
+        runApiTask(targetAccount) { client ->
             client.request(
                 "/api/v1/notifications/clear",
                 "".toFormRequestBody().toPost()
@@ -77,8 +77,8 @@ fun ActMain.notificationDeleteAll(
 
                 else -> {
                     // ok. api have return empty object.
-                    for (column in app_state.columnList) {
-                        if (column.isNotificationColumn && column.access_info == target_account) {
+                    for (column in appState.columnList) {
+                        if (column.isNotificationColumn && column.accessInfo == targetAccount) {
                             column.removeNotifications()
                         }
                     }

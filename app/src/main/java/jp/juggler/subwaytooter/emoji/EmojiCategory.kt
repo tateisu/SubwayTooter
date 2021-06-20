@@ -18,5 +18,5 @@ enum class EmojiCategory(val special: Boolean = false) {
 
     ;
 
-    val emoji_list = ArrayList<UnicodeEmoji>()
+    val emojiList = ArrayList<UnicodeEmoji>()
 }

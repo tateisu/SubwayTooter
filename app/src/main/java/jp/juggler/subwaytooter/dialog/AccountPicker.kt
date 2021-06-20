@@ -31,9 +31,9 @@ suspend fun AppCompatActivity.pickAccount(
     bAuto: Boolean = false,
     message: String? = null,
     accountListArg: MutableList<SavedAccount>? = null,
-    dismiss_callback:  (dialog : DialogInterface) -> Unit ={},
-    extra_callback: (LinearLayout, Int, Int) -> Unit = { _, _, _ -> },
-):SavedAccount?{
+    dismissCallback: (dialog: DialogInterface) -> Unit = {},
+    extraCallback: (LinearLayout, Int, Int) -> Unit = { _, _, _ -> },
+): SavedAccount? {
     val activity = this
     var removeMastodon = 0
     var removedMisskey = 0
@@ -54,13 +54,13 @@ suspend fun AppCompatActivity.pickAccount(
         else -> 0
     }
 
-    val account_list: MutableList<SavedAccount> = accountListArg
+    val accountList: MutableList<SavedAccount> = accountListArg
         ?: SavedAccount.loadAccountList(activity)
             .filter { 0 == it.checkMastodon() + it.checkMisskey() + it.checkPseudo() }
             .toMutableList()
             .also { SavedAccount.sort(it) }
 
-    if (account_list.isEmpty()) {
+    if (accountList.isEmpty()) {
 
         val sb = StringBuilder()
 
@@ -85,8 +85,8 @@ suspend fun AppCompatActivity.pickAccount(
         return null
     }
 
-    if (bAuto && account_list.size == 1) {
-        return account_list[0]
+    if (bAuto && accountList.size == 1) {
+        return accountList[0]
     }
 
     return suspendCoroutine { continuation ->
@@ -95,8 +95,8 @@ suspend fun AppCompatActivity.pickAccount(
         val isResumed = AtomicBoolean(false)
 
         dialog.setOnDismissListener {
-            dismiss_callback(it)
-            if(isResumed.compareAndSet(false,true)){
+            dismissCallback(it)
+            if (isResumed.compareAndSet(false, true)) {
                 continuation.resume(null)
             }
         }
@@ -118,10 +118,10 @@ suspend fun AppCompatActivity.pickAccount(
         val density = activity.resources.displayMetrics.density
 
         val llAccounts: LinearLayout = viewRoot.findViewById(R.id.llAccounts)
-        val pad_se = (0.5f + 12f * density).toInt()
-        val pad_tb = (0.5f + 6f * density).toInt()
+        val padX = (0.5f + 12f * density).toInt()
+        val padY = (0.5f + 6f * density).toInt()
 
-        for (a in account_list) {
+        for (a in accountList) {
             val lp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -140,17 +140,17 @@ suspend fun AppCompatActivity.pickAccount(
                 b.textColor = ac.color_fg
             }
 
-            b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)
+            b.setPaddingRelative(padX, padY, padX, padY)
             b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
             b.isAllCaps = false
             b.layoutParams = lp
             b.minHeight = (0.5f + 32f * density).toInt()
 
             val sb = SpannableStringBuilder(ac.nickname)
-            if (a.last_notification_error?.isNotEmpty() == true) {
+            if (a.lastNotificationError?.isNotEmpty() == true) {
                 sb.append("\n")
                 val start = sb.length
-                sb.append(a.last_notification_error)
+                sb.append(a.lastNotificationError)
                 val end = sb.length
                 sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             } else if (a.last_subscription_error?.isNotEmpty() == true) {
@@ -163,7 +163,7 @@ suspend fun AppCompatActivity.pickAccount(
             b.text = sb
 
             b.setOnClickListener {
-                if(isResumed.compareAndSet(false,true)){
+                if (isResumed.compareAndSet(false, true)) {
                     continuation.resume(a)
                 }
                 dialog.dismissSafe()
@@ -171,7 +171,7 @@ suspend fun AppCompatActivity.pickAccount(
             llAccounts.addView(b)
         }
 
-        extra_callback(llAccounts, pad_se, pad_tb)
+        extraCallback(llAccounts, padX, padY)
 
         dialog.show()
     }

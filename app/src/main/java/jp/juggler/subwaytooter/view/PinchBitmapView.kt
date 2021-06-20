@@ -31,31 +31,31 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
 
         // ビューの幅と画像の描画サイズを元に描画位置をクリップする
         private fun clipTranslate(
-            view_w: Float // ビューの幅
-            , bitmap_w: Float // 画像の幅
-            , current_scale: Float // 画像の拡大率
-            , trans_x: Float // タッチ操作による表示位置
+            viewW: Float, // ビューの幅
+            bitmapW: Float, // 画像の幅
+            currentScale: Float, // 画像の拡大率
+            transX: Float, // タッチ操作による表示位置
         ): Float {
 
             // 余白(拡大率が小さい場合はプラス、拡大率が大きい場合はマイナス)
-            val padding = view_w - bitmap_w * current_scale
+            val padding = viewW - bitmapW * currentScale
 
             // 余白が>=0なら画像を中心に表示する。 <0なら操作された位置をクリップする。
-            return if (padding >= 0f) padding / 2f else clip(padding, 0f, trans_x)
+            return if (padding >= 0f) padding / 2f else clip(padding, 0f, transX)
         }
     }
 
     private var callback: Callback? = null
 
     private var bitmap: Bitmap? = null
-    private var bitmap_w: Float = 0.toFloat()
-    private var bitmap_h: Float = 0.toFloat()
-    private var bitmap_aspect: Float = 0.toFloat()
+    private var bitmapW: Float = 0.toFloat()
+    private var bitmapH: Float = 0.toFloat()
+    private var bitmapAspect: Float = 0.toFloat()
 
     // 画像を表示する位置と拡大率
-    private var current_trans_x: Float = 0.toFloat()
-    private var current_trans_y: Float = 0.toFloat()
-    private var current_scale: Float = 0.toFloat()
+    private var currentTransX: Float = 0.toFloat()
+    private var currentTransY: Float = 0.toFloat()
+    private var currentScale: Float = 0.toFloat()
 
     // 画像表示に使う構造体
     private val drawMatrix = Matrix()
@@ -68,42 +68,42 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
     private var bPointerCountChanged: Boolean = false
 
     // ページめくりに必要なスワイプ強度
-    private var swipe_velocity = 0f
-    private var swipe_velocity2 = 0f
+    private var swipeVelocity = 0f
+    private var swipeVelocity2 = 0f
 
     // 指を動かしたと判断する距離
-    private var drag_length = 0f
+    private var dragLength = 0f
 
-    private var time_touch_start = 0L
+    private var timeTouchStart = 0L
 
     // フリック操作の検出に使う
     private var velocityTracker: VelocityTracker? = null
 
-    private var click_time = 0L
-    private var click_count = 0
+    private var clickTime = 0L
+    private var clickCount = 0
 
     // 移動後の指の位置
     internal val pos = PointerAvg()
 
     // 移動開始時の指の位置
-    private val start_pos = PointerAvg()
+    private val posStart = PointerAvg()
 
     // 移動開始時の画像の位置
-    private var start_image_trans_x: Float = 0.toFloat()
-    private var start_image_trans_y: Float = 0.toFloat()
-    private var start_image_scale: Float = 0.toFloat()
+    private var startImageTransX: Float = 0.toFloat()
+    private var startImageTransY: Float = 0.toFloat()
+    private var startImageScale: Float = 0.toFloat()
 
-    private var scale_min: Float = 0.toFloat()
-    private var scale_max: Float = 0.toFloat()
+    private var scaleMin: Float = 0.toFloat()
+    private var scaleMax: Float = 0.toFloat()
 
-    private var view_w: Float = 0.toFloat()
-    private var view_h: Float = 0.toFloat()
-    private var view_aspect: Float = 0.toFloat()
+    private var viewW: Float = 0.toFloat()
+    private var viewH: Float = 0.toFloat()
+    private var viewAspect: Float = 0.toFloat()
 
-    private val tracking_matrix = Matrix()
-    private val tracking_matrix_inv = Matrix()
-    private val avg_on_image1 = FloatArray(2)
-    private val avg_on_image2 = FloatArray(2)
+    private val trackingMatrix = Matrix()
+    private val trackingMatrixInv = Matrix()
+    private val avgOnImage1 = FloatArray(2)
+    private val avgOnImage2 = FloatArray(2)
 
     constructor(context: Context) : this(context, null) {
         init(context)
@@ -121,9 +121,9 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
 
         // 定数をdpからpxに変換
         val density = context.resources.displayMetrics.density
-        swipe_velocity = 1000f * density
-        swipe_velocity2 = 250f * density
-        drag_length = 4f * density // 誤反応しがちなのでやや厳しめ
+        swipeVelocity = 1000f * density
+        swipeVelocity2 = 250f * density
+        dragLength = 4f * density // 誤反応しがちなのでやや厳しめ
     }
 
     // ページめくり操作のコールバック
@@ -131,7 +131,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
 
         fun onSwipe(deltaX: Int, deltaY: Int)
 
-        fun onMove(bitmap_w: Float, bitmap_h: Float, tx: Float, ty: Float, scale: Float)
+        fun onMove(bitmapW: Float, bitmapH: Float, tx: Float, ty: Float, scale: Float)
     }
 
     fun setCallback(callback: Callback?) {
@@ -154,10 +154,10 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
         if (bitmap != null && !bitmap.isRecycled) {
 
             drawMatrix.reset()
-            drawMatrix.postScale(current_scale, current_scale)
-            drawMatrix.postTranslate(current_trans_x, current_trans_y)
+            drawMatrix.postScale(currentScale, currentScale)
+            drawMatrix.postTranslate(currentTransX, currentTransY)
 
-            paint.isFilterBitmap = current_scale < 4f
+            paint.isFilterBitmap = currentScale < 4f
             canvas.drawBitmap(bitmap, drawMatrix, paint)
         }
     }
@@ -165,9 +165,9 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        view_w = max(1f, w.toFloat())
-        view_h = max(1f, h.toFloat())
-        view_aspect = view_w / view_h
+        viewW = max(1f, w.toFloat())
+        viewH = max(1f, h.toFloat())
+        viewAspect = viewW / viewH
 
         initializeScale()
     }
@@ -186,45 +186,45 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
     // 呼ばれるのは、ビットマップを変更した時、ビューのサイズが変わった時、画像をクリックした時
     private fun initializeScale() {
         val bitmap = this.bitmap
-        if (bitmap != null && !bitmap.isRecycled && view_w >= 1f) {
+        if (bitmap != null && !bitmap.isRecycled && viewW >= 1f) {
 
-            bitmap_w = max(1f, bitmap.width.toFloat())
-            bitmap_h = max(1f, bitmap.height.toFloat())
-            bitmap_aspect = bitmap_w / bitmap_h
+            bitmapW = max(1f, bitmap.width.toFloat())
+            bitmapH = max(1f, bitmap.height.toFloat())
+            bitmapAspect = bitmapW / bitmapH
 
-            if (view_aspect > bitmap_aspect) {
-                scale_min = view_h / bitmap_h / 2f
-                scale_max = view_w / bitmap_w * 8f
+            if (viewAspect > bitmapAspect) {
+                scaleMin = viewH / bitmapH / 2f
+                scaleMax = viewW / bitmapW * 8f
             } else {
-                scale_min = view_w / bitmap_w / 2f
-                scale_max = view_h / bitmap_h * 8f
+                scaleMin = viewW / bitmapW / 2f
+                scaleMax = viewH / bitmapH * 8f
             }
-            if (scale_max < scale_min) scale_max = scale_min * 16f
+            if (scaleMax < scaleMin) scaleMax = scaleMin * 16f
 
-            defaultScale = if (view_aspect > bitmap_aspect) {
-                view_h / bitmap_h
+            defaultScale = if (viewAspect > bitmapAspect) {
+                viewH / bitmapH
             } else {
-                view_w / bitmap_w
+                viewW / bitmapW
             }
 
-            val draw_w = bitmap_w * defaultScale
-            val draw_h = bitmap_h * defaultScale
+            val drawW = bitmapW * defaultScale
+            val drawH = bitmapH * defaultScale
 
-            current_scale = defaultScale
-            current_trans_x = (view_w - draw_w) / 2f
-            current_trans_y = (view_h - draw_h) / 2f
+            currentScale = defaultScale
+            currentTransX = (viewW - drawW) / 2f
+            currentTransY = (viewH - drawH) / 2f
 
-            callback?.onMove(bitmap_w, bitmap_h, current_trans_x, current_trans_y, current_scale)
+            callback?.onMove(bitmapW, bitmapH, currentTransX, currentTransY, currentScale)
         } else {
             defaultScale = 1f
-            scale_min = 1f
-            scale_max = 1f
+            scaleMin = 1f
+            scaleMax = 1f
 
-            current_scale = defaultScale
-            current_trans_y = 0f
-            current_trans_x = 0f
+            currentScale = defaultScale
+            currentTransY = 0f
+            currentTransX = 0f
 
-            callback?.onMove(0f, 0f, current_trans_x, current_trans_y, current_scale)
+            callback?.onMove(0f, 0f, currentTransX, currentTransY, currentScale)
         }
 
         // 画像がnullに変化した時も再描画が必要
@@ -235,16 +235,12 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
     override fun onTouchEvent(ev: MotionEvent): Boolean {
 
         val bitmap = this.bitmap
-        if (bitmap == null
-            || bitmap.isRecycled
-            || view_w < 1f
-        )
-            return false
+        if (bitmap == null || bitmap.isRecycled || viewW < 1f) return false
 
         val action = ev.action
 
         if (action == MotionEvent.ACTION_DOWN) {
-            time_touch_start = SystemClock.elapsedRealtime()
+            timeTouchStart = SystemClock.elapsedRealtime()
 
             velocityTracker?.clear()
             velocityTracker = VelocityTracker.obtain()
@@ -287,36 +283,36 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
 
             val now = SystemClock.elapsedRealtime()
 
-            if (now - time_touch_start >= 1000L) {
+            if (now - timeTouchStart >= 1000L) {
                 // ロングタップはタップカウントをリセットする
                 log.d("click count reset by long tap")
-                click_count = 0
+                clickCount = 0
                 return
             }
 
-            val delta = now - click_time
-            click_time = now
+            val delta = now - clickTime
+            clickTime = now
 
             if (delta > 334L) {
                 // 前回のタップからの時刻が長いとタップカウントをリセットする
                 log.d("click count reset by long interval")
-                click_count = 0
+                clickCount = 0
             }
 
-            ++click_count
+            ++clickCount
 
-            log.d("click ${click_count} ${delta}")
+            log.d("click $clickCount $delta")
 
-            if (click_count >= 2) {
+            if (clickCount >= 2) {
                 // ダブルタップでクリック操作
-                click_count = 0
+                clickCount = 0
                 performClick()
             }
 
             return
         }
 
-        click_count = 0
+        clickCount = 0
 
         val velocityTracker = this.velocityTracker
         if (!bPointerCountChanged && velocityTracker != null) {
@@ -324,12 +320,12 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
             // 指の数を変えていないならページめくり操作かもしれない
 
             // 「画像を動かした」かどうかのチェック
-            val image_moved = max(
-                abs(current_trans_x - start_image_trans_x),
-                abs(current_trans_y - start_image_trans_y)
+            val imageMoved = max(
+                abs(currentTransX - startImageTransX),
+                abs(currentTransY - startImageTransY)
             )
-            if (image_moved >= drag_length) {
-                log.d("image moved. not flick action. $image_moved")
+            if (imageMoved >= dragLength) {
+                log.d("image moved. not flick action. $imageMoved")
                 return
             }
 
@@ -341,7 +337,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
             val velocity = sqrt(vx * vx + vy * vy)
             val aspect = try {
                 avx / avy
-            } catch (ex: Throwable) {
+            } catch (ignored: Throwable) {
                 Float.MAX_VALUE
             }
 
@@ -350,8 +346,8 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
                     // 指を動かした方向が左右だった
 
                     val vMin = when {
-                        current_scale * bitmap_w <= view_w -> swipe_velocity2
-                        else -> swipe_velocity
+                        currentScale * bitmapW <= viewW -> swipeVelocity2
+                        else -> swipeVelocity
                     }
 
                     if (velocity < vMin) {
@@ -359,7 +355,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
                         return
                     }
 
-                    log.d("pagingX! m=$image_moved a=$aspect v=$velocity")
+                    log.d("pagingX! m=$imageMoved a=$aspect v=$velocity")
                     runOnMainLooper { callback?.onSwipe(if (vx >= 0f) -1 else 1, 0) }
                 }
 
@@ -367,8 +363,8 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
                     // 指を動かした方向が上下だった
 
                     val vMin = when {
-                        current_scale * bitmap_h <= view_h -> swipe_velocity2
-                        else -> swipe_velocity
+                        currentScale * bitmapH <= viewH -> swipeVelocity2
+                        else -> swipeVelocity
                     }
 
                     if (velocity < vMin) {
@@ -376,7 +372,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
                         return
                     }
 
-                    log.d("pagingY! m=$image_moved a=$aspect v=$velocity")
+                    log.d("pagingY! m=$imageMoved a=$aspect v=$velocity")
                     runOnMainLooper { callback?.onSwipe(0, if (vy >= 0f) -1 else 1) }
                 }
 
@@ -395,7 +391,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
         val avg = FloatArray(2)
 
         // 中心と、中心から最も離れたタッチ位置の間の距離
-        var max_radius: Float = 0.toFloat()
+        var maxRadius: Float = 0.toFloat()
 
         fun update(ev: MotionEvent) {
 
@@ -403,8 +399,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
             if (count <= 1) {
                 avg[0] = ev.x
                 avg[1] = ev.y
-                max_radius = 0f
-
+                maxRadius = 0f
             } else {
                 avg[0] = 0f
                 avg[1] = 0f
@@ -414,15 +409,15 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
                 }
                 avg[0] /= count.toFloat()
                 avg[1] /= count.toFloat()
-                max_radius = 0f
+                maxRadius = 0f
                 for (i in 0 until count) {
                     val dx = ev.getX(i) - avg[0]
                     val dy = ev.getY(i) - avg[1]
                     val radius = dx * dx + dy * dy
-                    if (radius > max_radius) max_radius = radius
+                    if (radius > maxRadius) maxRadius = radius
                 }
-                max_radius = sqrt(max_radius.toDouble()).toFloat()
-                if (max_radius < 1f) max_radius = 1f
+                maxRadius = sqrt(maxRadius.toDouble()).toFloat()
+                if (maxRadius < 1f) maxRadius = 1f
             }
         }
     }
@@ -430,28 +425,27 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
     private fun trackStart(ev: MotionEvent) {
 
         // 追跡開始時の指の位置
-        start_pos.update(ev)
+        posStart.update(ev)
 
         // 追跡開始時の画像の位置
-        start_image_trans_x = current_trans_x
-        start_image_trans_y = current_trans_y
-        start_image_scale = current_scale
-
+        startImageTransX = currentTransX
+        startImageTransY = currentTransY
+        startImageScale = currentScale
     }
 
     // 画面上の指の位置から画像中の指の位置を調べる
     private fun getCoordinateOnImage(dst: FloatArray, src: FloatArray) {
-        tracking_matrix.reset()
-        tracking_matrix.postScale(current_scale, current_scale)
-        tracking_matrix.postTranslate(current_trans_x, current_trans_y)
-        tracking_matrix.invert(tracking_matrix_inv)
-        tracking_matrix_inv.mapPoints(dst, src)
+        trackingMatrix.reset()
+        trackingMatrix.postScale(currentScale, currentScale)
+        trackingMatrix.postTranslate(currentTransX, currentTransY)
+        trackingMatrix.invert(trackingMatrixInv)
+        trackingMatrixInv.mapPoints(dst, src)
     }
 
     private fun trackNext(ev: MotionEvent) {
         pos.update(ev)
 
-        if (pos.count != start_pos.count) {
+        if (pos.count != posStart.count) {
             // タッチ操作中に指の数が変わった
             log.d("nextTracking: pointer count changed")
             bPointerCountChanged = true
@@ -464,44 +458,42 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
         if (pos.count > 1) {
 
             // タッチ位置にある絵柄の座標を調べる
-            getCoordinateOnImage(avg_on_image1, pos.avg)
+            getCoordinateOnImage(avgOnImage1, pos.avg)
 
             // ズーム率を変更する
-            current_scale = clip(
-                scale_min,
-                scale_max,
-                start_image_scale * pos.max_radius / start_pos.max_radius
+            currentScale = clip(
+                scaleMin,
+                scaleMax,
+                startImageScale * pos.maxRadius / posStart.maxRadius
             )
 
             // 再び調べる
-            getCoordinateOnImage(avg_on_image2, pos.avg)
+            getCoordinateOnImage(avgOnImage2, pos.avg)
 
             // ズーム変更の前後で位置がズレた分だけ移動させると、タッチ位置にある絵柄がズレない
-            start_image_trans_x += current_scale * (avg_on_image2[0] - avg_on_image1[0])
-            start_image_trans_y += current_scale * (avg_on_image2[1] - avg_on_image1[1])
-
+            startImageTransX += currentScale * (avgOnImage2[0] - avgOnImage1[0])
+            startImageTransY += currentScale * (avgOnImage2[1] - avgOnImage1[1])
         }
 
         // 平行移動
         run {
             // start時から指を動かした量
-            val move_x = pos.avg[0] - start_pos.avg[0]
-            val move_y = pos.avg[1] - start_pos.avg[1]
+            val moveX = pos.avg[0] - posStart.avg[0]
+            val moveY = pos.avg[1] - posStart.avg[1]
 
             // 「指を動かした」と判断したらフラグを立てる
-            if (abs(move_x) >= drag_length || abs(move_y) >= drag_length) {
+            if (abs(moveX) >= dragLength || abs(moveY) >= dragLength) {
                 bDrag = true
             }
 
             // 画像の表示位置を更新
-            current_trans_x =
-                clipTranslate(view_w, bitmap_w, current_scale, start_image_trans_x + move_x)
-            current_trans_y =
-                clipTranslate(view_h, bitmap_h, current_scale, start_image_trans_y + move_y)
+            currentTransX =
+                clipTranslate(viewW, bitmapW, currentScale, startImageTransX + moveX)
+            currentTransY =
+                clipTranslate(viewH, bitmapH, currentScale, startImageTransY + moveY)
         }
 
-        callback?.onMove(bitmap_w, bitmap_h, current_trans_x, current_trans_y, current_scale)
+        callback?.onMove(bitmapW, bitmapH, currentTransX, currentTransY, currentScale)
         invalidate()
     }
-
 }

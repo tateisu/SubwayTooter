@@ -19,11 +19,11 @@ fun ActMain.tagDialog(
     pos: Int,
     url: String,
     host: Host,
-    tag_without_sharp: String,
-    tag_list: ArrayList<String>?,
-    whoAcct: Acct?
+    tagWithoutSharp: String,
+    tagList: ArrayList<String>?,
+    whoAcct: Acct?,
 ) {
-    val tag_with_sharp = "#$tag_without_sharp"
+    val tagWithSharp = "#$tagWithoutSharp"
 
     val d = ActionsDialog()
         .addAction(getString(R.string.open_hashtag_column)) {
@@ -31,7 +31,7 @@ fun ActMain.tagDialog(
                 pos,
                 url,
                 host,
-                tag_without_sharp
+                tagWithoutSharp
             )
         }
 
@@ -47,52 +47,50 @@ fun ActMain.tagDialog(
         ) {
             tagTimelineFromAccount(
                 pos,
-                "https://${whoAcct.host?.ascii}/@${whoAcct.username}/tagged/${tag_without_sharp.encodePercent()}",
+                "https://${whoAcct.host?.ascii}/@${whoAcct.username}/tagged/${tagWithoutSharp.encodePercent()}",
                 host,
-                tag_without_sharp,
+                tagWithoutSharp,
                 whoAcct
             )
         }
     }
 
+    d.addAction(getString(R.string.open_in_browser)) { openCustomTab(url) }
+        .addAction(getString(R.string.quote_hashtag_of, tagWithSharp)) { openPost("$tagWithSharp ") }
 
-    d.addAction(getString(R.string.open_in_browser)){ openCustomTab(url) }
-        .addAction(getString(R.string.quote_hashtag_of, tag_with_sharp)){ openPost("$tag_with_sharp ") }
-
-
-    if (tag_list != null && tag_list.size > 1) {
+    if (tagList != null && tagList.size > 1) {
         val sb = StringBuilder()
-        for (s in tag_list) {
+        for (s in tagList) {
             if (sb.isNotEmpty()) sb.append(' ')
             sb.append(s)
         }
-        val tag_all = sb.toString()
+        val tagAll = sb.toString()
         d.addAction(
             getString(
                 R.string.quote_all_hashtag_of,
-                tag_all
+                tagAll
             )
-        ) { openPost("$tag_all ") }
+        ) { openPost("$tagAll ") }
     }
 
-    d.show(this, tag_with_sharp)
+    d.show(this, tagWithSharp)
 }
 
 // 検索カラムからハッシュタグを選んだ場合、カラムのアカウントでハッシュタグを開く
 fun ActMain.tagTimeline(
     pos: Int,
-    access_info: SavedAccount,
-    tag_without_sharp: String,
-    acctAscii: String? = null
+    accessInfo: SavedAccount,
+    tagWithoutSharp: String,
+    acctAscii: String? = null,
 ) {
     if (acctAscii == null) {
-        addColumn(pos, access_info, ColumnType.HASHTAG, tag_without_sharp)
+        addColumn(pos, accessInfo, ColumnType.HASHTAG, tagWithoutSharp)
     } else {
         addColumn(
             pos,
-            access_info,
+            accessInfo,
             ColumnType.HASHTAG_FROM_ACCT,
-            tag_without_sharp,
+            tagWithoutSharp,
             acctAscii
         )
     }
@@ -103,25 +101,25 @@ fun ActMain.tagTimelineFromAccount(
     pos: Int,
     url: String,
     host: Host,
-    tag_without_sharp: String,
-    acct: Acct? = null
+    tagWithoutSharp: String,
+    acct: Acct? = null,
 ) {
 
     val dialog = ActionsDialog()
 
-    val account_list = SavedAccount.loadAccountList(this)
-    SavedAccount.sort(account_list)
+    val accountList = SavedAccount.loadAccountList(this)
+    SavedAccount.sort(accountList)
 
     // 分類する
-    val list_original = ArrayList<SavedAccount>()
-    val list_original_pseudo = ArrayList<SavedAccount>()
-    val list_other = ArrayList<SavedAccount>()
-    for (a in account_list) {
+    val listOriginal = ArrayList<SavedAccount>()
+    val listOriginalPseudo = ArrayList<SavedAccount>()
+    val listOther = ArrayList<SavedAccount>()
+    for (a in accountList) {
         if (acct == null) {
             when {
-                !a.matchHost(host) -> list_other.add(a)
-                a.isPseudo -> list_original_pseudo.add(a)
-                else -> list_original.add(a)
+                !a.matchHost(host) -> listOther.add(a)
+                a.isPseudo -> listOriginalPseudo.add(a)
+                else -> listOriginal.add(a)
             }
         } else {
             when {
@@ -134,47 +132,49 @@ fun ActMain.tagTimelineFromAccount(
                 a.isMisskey -> {
                 }
 
-                !a.matchHost(host) -> list_other.add(a)
-                else -> list_original.add(a)
+                !a.matchHost(host) -> listOther.add(a)
+                else -> listOriginal.add(a)
             }
         }
     }
 
     // ブラウザで表示する
-    dialog.addAction(getString(R.string.open_web_on_host, host))
-    { openCustomTab(url) }
+    dialog.addAction(getString(R.string.open_web_on_host, host)) {
+        openCustomTab(url)
+    }
 
     // 同タンスのアカウントがない場合は疑似アカウントを作成して開く
     // ただし疑似アカウントではアカウントの同期ができないため、特定ユーザのタグTLは読めない)
-    if (acct == null && list_original.isEmpty() && list_original_pseudo.isEmpty()) {
+    if (acct == null && listOriginal.isEmpty() && listOriginalPseudo.isEmpty()) {
         dialog.addAction(getString(R.string.open_in_pseudo_account, "?@$host")) {
-            launchMain{
-                addPseudoAccount( host) ?.let{ tagTimeline( pos, it, tag_without_sharp) }
+            launchMain {
+                addPseudoAccount(host)?.let { tagTimeline(pos, it, tagWithoutSharp) }
             }
         }
     }
 
     // 分類した順に選択肢を追加する
-    for (a in list_original) {
+    for (a in listOriginal) {
         dialog.addAction(
             AcctColor.getStringWithNickname(
                 this,
                 R.string.open_in_account,
                 a.acct
             )
-        )
-        { tagTimeline( pos, a, tag_without_sharp, acct?.ascii) }
-    }
-    for (a in list_original_pseudo) {
-        dialog.addAction( AcctColor.getStringWithNickname( this, R.string.open_in_account, a.acct )){
-			tagTimeline( pos, a, tag_without_sharp, acct?.ascii)
+        ) {
+            tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
         }
     }
-    for (a in list_other) {
-        dialog.addAction(AcctColor.getStringWithNickname(this,R.string.open_in_account,a.acct) ){
-			tagTimeline( pos, a, tag_without_sharp, acct?.ascii)
+    for (a in listOriginalPseudo) {
+        dialog.addAction(AcctColor.getStringWithNickname(this, R.string.open_in_account, a.acct)) {
+            tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
+        }
+    }
+    for (a in listOther) {
+        dialog.addAction(AcctColor.getStringWithNickname(this, R.string.open_in_account, a.acct)) {
+            tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
         }
     }
 
-    dialog.show(this, "#$tag_without_sharp")
+    dialog.show(this, "#$tagWithoutSharp")
 }

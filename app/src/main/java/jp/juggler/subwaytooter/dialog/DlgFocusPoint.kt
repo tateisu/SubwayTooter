@@ -16,7 +16,7 @@ import jp.juggler.util.*
 @SuppressLint("InflateParams")
 class DlgFocusPoint(
     val activity: AppCompatActivity,
-    val attachment: TootAttachment
+    val attachment: TootAttachment,
 ) : View.OnClickListener {
 
     companion object {
@@ -62,7 +62,7 @@ class DlgFocusPoint(
 
         fun decodeBitmap(
             data: ByteArray,
-            @Suppress("SameParameterValue") pixel_max: Int
+            @Suppress("SameParameterValue") pixelMax: Int,
         ): Bitmap? {
             options.inJustDecodeBounds = true
             options.inScaled = false
@@ -76,7 +76,7 @@ class DlgFocusPoint(
                 return null
             }
             var bits = 0
-            while (w > pixel_max || h > pixel_max) {
+            while (w > pixelMax || h > pixelMax) {
                 ++bits
                 w = w shr 1
                 h = h shr 1
@@ -91,11 +91,11 @@ class DlgFocusPoint(
             val result = activity.runApiTask { client ->
                 try {
                     val (result, data) = client.getHttpBytes(url)
-					data?.let{
-						resultBitmap = decodeBitmap(it, 1024)
-							?:return@runApiTask TootApiResult("image decode failed.")
-					}
-					result
+                    data?.let {
+                        resultBitmap = decodeBitmap(it, 1024)
+                            ?: return@runApiTask TootApiResult("image decode failed.")
+                    }
+                    result
                 } catch (ex: Throwable) {
                     TootApiResult(ex.withCaption("preview loading failed."))
                 }

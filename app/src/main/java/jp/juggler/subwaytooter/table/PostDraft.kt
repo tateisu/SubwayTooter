@@ -29,7 +29,6 @@ class PostDraft {
             idx_json = cursor.getColumnIndex(COL_JSON)
             idx_hash = cursor.getColumnIndex(COL_HASH)
         }
-
     }
 
     fun delete() {
@@ -38,7 +37,6 @@ class PostDraft {
         } catch (ex: Throwable) {
             log.e(ex, "delete failed.")
         }
-
     }
 
     companion object : TableCompanion {
@@ -54,19 +52,15 @@ class PostDraft {
         override fun onDBCreate(db: SQLiteDatabase) {
             log.d("onDBCreate!")
             db.execSQL(
-                "create table if not exists " + table
-                    + "(" + COL_ID + " INTEGER PRIMARY KEY"
-                    + "," + COL_TIME_SAVE + " integer not null"
-                    + "," + COL_JSON + " text not null"
-                    + "," + COL_HASH + " text not null"
-                    + ")"
+                """create table if not exists $table
+                ($COL_ID INTEGER PRIMARY KEY
+                ,$COL_TIME_SAVE integer not null
+                ,$COL_JSON text not null
+                ,$COL_HASH text not null
+                )""".trimIndent()
             )
-            db.execSQL(
-                "create unique index if not exists " + table + "_hash on " + table + "(" + COL_HASH + ")"
-            )
-            db.execSQL(
-                "create index if not exists " + table + "_time on " + table + "(" + COL_TIME_SAVE + ")"
-            )
+            db.execSQL("create unique index if not exists ${table}_hash on $table($COL_HASH)")
+            db.execSQL("create index if not exists ${table}_time on $table($COL_TIME_SAVE)")
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -83,7 +77,6 @@ class PostDraft {
             } catch (ex: Throwable) {
                 log.e(ex, "deleteOld failed.")
             }
-
         }
 
         fun save(now: Long, json: JsonObject) {
@@ -111,7 +104,6 @@ class PostDraft {
             } catch (ex: Throwable) {
                 log.e(ex, "save failed.")
             }
-
         }
 
         fun hasDraft(): Boolean {
@@ -154,7 +146,7 @@ class PostDraft {
             val colIdx = colIdxArg ?: ColIdx(cursor)
 
             if (!cursor.moveToPosition(position)) {
-                log.d("loadFromCursor: move failed. position=${position}")
+                log.d("loadFromCursor: move failed. position=$position")
                 return null
             }
 
@@ -172,5 +164,4 @@ class PostDraft {
             return dst
         }
     }
-
 }

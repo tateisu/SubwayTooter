@@ -6,7 +6,6 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.StreamStatus
-import jp.juggler.subwaytooter.streaming.streamSpec
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.runOnMainLooper
 import kotlin.math.max
@@ -28,15 +27,15 @@ fun Column.canStreamingState() = when {
     else -> true
 }
 
-fun Column.canStreamingTypeSub():Boolean =
-    if(access_info.isMisskey)
-        type.canStreamingMisskey(this)
-    else
-        type.canStreamingMastodon(this)
+fun Column.canStreamingTypeSub(): Boolean =
+    when {
+        accessInfo.isMisskey -> type.canStreamingMisskey(this)
+        else -> type.canStreamingMastodon(this)
+    }
 
 fun Column.canStreamingType() = when {
-    access_info.isNA -> false
-    access_info.isPseudo -> isPublicStream && canStreamingTypeSub()
+    accessInfo.isNA -> false
+    accessInfo.isPseudo -> isPublicStream && canStreamingTypeSub()
     else -> canStreamingTypeSub()
 }
 
@@ -44,8 +43,7 @@ fun Column.canSpeech() =
     canStreamingType() && !isNotificationColumn
 
 fun Column.canHandleStreamingMessage() =
-    !is_dispose.get() && canStreamingState()
-
+    !isDispose.get() && canStreamingState()
 
 //
 // ストリーミングイベント経由で呼ばれるColumnメソッド
@@ -53,11 +51,11 @@ fun Column.canHandleStreamingMessage() =
 
 // ストリーミング経由でキューに溜まったデータをUIに反映する
 fun Column.mergeStreamingMessage() {
-    val handler = app_state.handler
+    val handler = appState.handler
 
     // 未初期化や初期ロード中ならキューをクリアして何もしない
     if (!canHandleStreamingMessage()) {
-        stream_data_queue.clear()
+        streamDataQueue.clear()
         handler.removeCallbacks(procMergeStreamingMessage)
         return
     }
@@ -65,7 +63,7 @@ fun Column.mergeStreamingMessage() {
     // 前回マージしてから暫くは待機してリトライ
     // カラムがビジー状態なら待機してリトライ
     val now = SystemClock.elapsedRealtime()
-    var remain = last_show_stream_data.get() + 333L - now
+    var remain = lastShowStreamData.get() + 333L - now
     if (bRefreshLoading) remain = max(333L, remain)
     if (remain > 0) {
         handler.removeCallbacks(procMergeStreamingMessage)
@@ -73,10 +71,10 @@ fun Column.mergeStreamingMessage() {
         return
     }
 
-    last_show_stream_data.set(now)
+    lastShowStreamData.set(now)
 
     val tmpList = ArrayList<TimelineItem>()
-    while (true) tmpList.add(stream_data_queue.poll() ?: break)
+    while (true) tmpList.add(streamDataQueue.poll() ?: break)
     if (tmpList.isEmpty()) return
 
     // キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
@@ -85,37 +83,37 @@ fun Column.mergeStreamingMessage() {
     // ストリーミングされるデータは全てID順に並んでいるはず
     tmpList.sortByDescending { it.getOrderId() }
 
-    val list_new = duplicate_map.filterDuplicate(tmpList)
-    if (list_new.isEmpty()) return
+    val listNew = duplicateMap.filterDuplicate(tmpList)
+    if (listNew.isEmpty()) return
 
-    for (item in list_new) {
-        if (enable_speech && item is TootStatus) {
-            app_state.addSpeech(item.reblog ?: item)
+    for (item in listNew) {
+        if (enableSpeech && item is TootStatus) {
+            appState.addSpeech(item.reblog ?: item)
         }
     }
 
     // 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
     if (isNotificationColumn) {
         val list = ArrayList<TootNotification>()
-        for (o in list_new) {
+        for (o in listNew) {
             if (o is TootNotification) {
                 list.add(o)
             }
         }
         if (list.isNotEmpty()) {
-            PollingWorker.injectData(context, access_info, list)
+            PollingWorker.injectData(context, accessInfo, list)
         }
     }
 
     // 最新のIDをsince_idとして覚える(ソートはしない)
-    var new_id_max: EntityId? = null
-    var new_id_min: EntityId? = null
-    for (o in list_new) {
+    var newIdMax: EntityId? = null
+    var newIdMin: EntityId? = null
+    for (o in listNew) {
         try {
             val id = o.getOrderId()
             if (id.toString().isEmpty()) continue
-            if (new_id_max == null || id > new_id_max) new_id_max = id
-            if (new_id_min == null || id < new_id_min) new_id_min = id
+            if (newIdMax == null || id > newIdMax) newIdMax = id
+            if (newIdMin == null || id < newIdMin) newIdMin = id
         } catch (ex: Throwable) {
             // IDを取得できないタイプのオブジェクトだった
             // ストリームに来るのは通知かステータスだから、多分ここは通らない
@@ -124,7 +122,7 @@ fun Column.mergeStreamingMessage() {
     }
 
     val tmpRecent = idRecent
-    val tmpNewMax = new_id_max
+    val tmpNewMax = newIdMax
 
     if (tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: -1) == -1) {
         idRecent = tmpNewMax
@@ -135,19 +133,20 @@ fun Column.mergeStreamingMessage() {
     val holder = viewHolder
 
     // 事前にスクロール位置を覚えておく
-    val holder_sp: ScrollPosition? = holder?.scrollPosition
+    val holderSp: ScrollPosition? = holder?.scrollPosition
 
     // idx番目の要素がListViewの上端から何ピクセル下にあるか
-    var restore_idx = -2
-    var restore_y = 0
+    var restoreIdx = -2
+    var restoreY = 0
     if (holder != null) {
-        if (list_data.size > 0) {
+        if (listData.size > 0) {
             try {
-                restore_idx = holder.findFirstVisibleListItem()
-                restore_y = holder.getListItemOffset(restore_idx)
+                restoreIdx = holder.findFirstVisibleListItem()
+                restoreY = holder.getListItemOffset(restoreIdx)
             } catch (ex: IndexOutOfBoundsException) {
-                restore_idx = -2
-                restore_y = 0
+                Column.log.w(ex, "findFirstVisibleListItem failed.")
+                restoreIdx = -2
+                restoreY = 0
             }
         }
     }
@@ -156,27 +155,26 @@ fun Column.mergeStreamingMessage() {
     if (bPutGap) {
         bPutGap = false
         try {
-            if (list_data.size > 0 && new_id_min != null) {
-                val since = list_data[0].getOrderId()
-                if (new_id_min > since) {
-                    val gap = TootGap(new_id_min, since)
-                    list_new.add(gap)
+            if (listData.size > 0 && newIdMin != null) {
+                val since = listData[0].getOrderId()
+                if (newIdMin > since) {
+                    val gap = TootGap(newIdMin, since)
+                    listNew.add(gap)
                 }
             }
         } catch (ex: Throwable) {
             Column.log.e(ex, "can't put gap.")
         }
-
     }
 
     val changeList = ArrayList<AdapterChange>()
 
-    replaceConversationSummary(changeList, list_new, list_data)
+    replaceConversationSummary(changeList, listNew, listData)
 
-    val added = list_new.size  // may 0
+    val added = listNew.size  // may 0
 
     var doneSound = false
-    for (o in list_new) {
+    for (o in listNew) {
         if (o is TootStatus) {
             o.highlightSound?.let {
                 if (!doneSound) {
@@ -185,31 +183,31 @@ fun Column.mergeStreamingMessage() {
                 }
             }
             o.highlightSpeech?.let {
-                app_state.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+                appState.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
             }
         }
     }
 
     changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
-    list_data.addAll(0, list_new)
+    listData.addAll(0, listNew)
 
     fireShowContent(reason = "mergeStreamingMessage", changeList = changeList)
 
     if (holder != null) {
         when {
-            holder_sp == null -> {
+            holderSp == null -> {
                 // スクロール位置が先頭なら先頭にする
                 Column.log.d("mergeStreamingMessage: has VH. missing scroll position.")
                 viewHolder?.scrollToTop()
             }
 
-            holder_sp.isHead -> {
+            holderSp.isHead -> {
                 // スクロール位置が先頭なら先頭にする
-                Column.log.d("mergeStreamingMessage: has VH. keep head. $holder_sp")
+                Column.log.d("mergeStreamingMessage: has VH. keep head. $holderSp")
                 holder.setScrollPosition(ScrollPosition())
             }
 
-            restore_idx < -1 -> {
+            restoreIdx < -1 -> {
                 // 可視範囲の検出に失敗
                 Column.log.d("mergeStreamingMessage: has VH. can't get visible range.")
             }
@@ -217,18 +215,18 @@ fun Column.mergeStreamingMessage() {
             else -> {
                 // 現在の要素が表示され続けるようにしたい
                 Column.log.d("mergeStreamingMessage: has VH. added=$added")
-                holder.setListItemTop(restore_idx + added, restore_y)
+                holder.setListItemTop(restoreIdx + added, restoreY)
             }
         }
     } else {
-        val scroll_save = this.scroll_save
+        val scrollSave = this.scrollSave
         when {
             // スクロール位置が先頭なら先頭のまま
-            scroll_save == null || scroll_save.isHead -> {
+            scrollSave == null || scrollSave.isHead -> {
             }
 
             // 現在の要素が表示され続けるようにしたい
-            else -> scroll_save.adapterIndex += added
+            else -> scrollSave.adapterIndex += added
         }
     }
 
@@ -243,10 +241,8 @@ fun Column.runOnMainLooperForStreamingEvent(proc: () -> Unit) {
 
 fun Column.onStreamStatusChanged(status: StreamStatus) {
     Column.log.d(
-        "onStreamStatusChanged status=${status}, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${access_info.acct}/${
-            getColumnName(
-                true
-            )
+        "onStreamStatusChanged status=$status, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${accessInfo.acct}/${
+            getColumnName(true)
         }"
     )
 
@@ -255,20 +251,20 @@ fun Column.onStreamStatusChanged(status: StreamStatus) {
     }
 
     runOnMainLooperForStreamingEvent {
-        if (is_dispose.get()) return@runOnMainLooperForStreamingEvent
+        if (isDispose.get()) return@runOnMainLooperForStreamingEvent
         fireShowColumnStatus()
     }
 }
 
 fun Column.onStreamingTimelineItem(item: TimelineItem) {
-    if (StreamManager.traceDelivery) Column.log.v("${access_info.acct} onTimelineItem")
+    if (StreamManager.traceDelivery) Column.log.v("${accessInfo.acct} onTimelineItem")
     if (!canHandleStreamingMessage()) return
 
     when (item) {
         is TootConversationSummary -> {
             if (type != ColumnType.DIRECT_MESSAGES) return
             if (isFiltered(item.last_status)) return
-            if (use_old_api) {
+            if (useOldApi) {
                 useConversationSummaryStreaming = false
                 return
             } else {
@@ -294,14 +290,14 @@ fun Column.onStreamingTimelineItem(item: TimelineItem) {
         }
     }
 
-    stream_data_queue.add(item)
-    app_state.handler.post(procMergeStreamingMessage)
+    streamDataQueue.add(item)
+    appState.handler.post(procMergeStreamingMessage)
 }
 
 private fun Column.scanStatusById(
     caption: String,
     statusId: EntityId,
-    block: (s: TootStatus) -> Boolean // データを変更したら真
+    block: (s: TootStatus) -> Boolean, // データを変更したら真
 ) {
     val changeList = ArrayList<AdapterChange>()
 
@@ -316,7 +312,7 @@ private fun Column.scanStatusById(
         scanStatus1(s.reply, idx)
     }
 
-    list_data.forEachIndexed { i,v ->
+    listData.forEachIndexed { i, v ->
         when (v) {
             is TootStatus -> scanStatus1(v, i)
             is TootNotification -> scanStatus1(v.status, i)
@@ -359,7 +355,7 @@ fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {
     // userId が自分かどうか調べる
     // アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
     // （でないとリアクションの2重カウントなどが発生してしまう)
-    val myId = EntityId.from(access_info.token_info, TootApiClient.KEY_USER_ID)
+    val myId = EntityId.from(accessInfo.token_info, TootApiClient.KEY_USER_ID)
     if (myId == null) {
         Column.log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
     }
@@ -428,8 +424,8 @@ fun Column.onAnnouncementDelete(id: EntityId) {
 // サーバ告知にリアクションがついたら、ストリーミングイベント経由で呼ばれる
 fun Column.onAnnouncementReaction(reaction: TootReaction) {
     // find announcement
-    val announcement_id = reaction.announcement_id ?: return
-    val announcement = announcements?.find { it.id == announcement_id } ?: return
+    val announcementId = reaction.announcement_id ?: return
+    val announcement = announcements?.find { it.id == announcementId } ?: return
 
     // find reaction
     val index = announcement.reactions?.indexOfFirst { it.name == reaction.name }

@@ -18,7 +18,6 @@ import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.util.*
 
-
 class ActText : AppCompatActivity() {
 
     companion object {
@@ -36,22 +35,21 @@ class ActText : AppCompatActivity() {
 
         fun createIntent(
             activity: ActMain,
-            access_info: SavedAccount,
-            status: TootStatus
+            accessInfo: SavedAccount,
+            status: TootStatus,
         ) = Intent(activity, ActText::class.java).apply {
-            putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
-            TootTextEncoder.encodeStatus(this, activity, access_info, status)
+            putExtra(EXTRA_ACCOUNT_DB_ID, accessInfo.db_id)
+            TootTextEncoder.encodeStatus(this, activity, accessInfo, status)
         }
 
         fun createIntent(
             activity: ActMain,
-            access_info: SavedAccount,
-            who: TootAccount
+            accessInfo: SavedAccount,
+            who: TootAccount,
         ) = Intent(activity, ActText::class.java).apply {
-            putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
-            TootTextEncoder.encodeAccount(this, activity, access_info, who)
+            putExtra(EXTRA_ACCOUNT_DB_ID, accessInfo.db_id)
+            TootTextEncoder.encodeAccount(this, activity, accessInfo, who)
         }
-
     }
 
     private var account: SavedAccount? = null
@@ -117,8 +115,8 @@ class ActText : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             val sv = intent.getStringExtra(EXTRA_TEXT) ?: ""
-            val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
-            val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
+            val contentStart = intent.getIntExtra(EXTRA_CONTENT_START, 0)
+            val contentEnd = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
             etText.setText(sv)
 
             // Android 9 以降ではフォーカスがないとsetSelectionできない
@@ -127,9 +125,8 @@ class ActText : AppCompatActivity() {
                 etText.hideKeyboard()
             }
 
-            etText.setSelection(content_start, content_end)
+            etText.setSelection(contentStart, contentEnd)
         }
-
     }
 
     internal fun initUI() {
@@ -154,7 +151,6 @@ class ActText : AppCompatActivity() {
                 intent.type = "text/plain"
                 intent.putExtra(Intent.EXTRA_TEXT, it)
                 startActivity(intent)
-
             } catch (ex: Throwable) {
                 log.trace(ex)
                 showToast(ex, "send failed.")
@@ -201,14 +197,13 @@ class ActText : AppCompatActivity() {
                 showToast(ex, "muteWord failed.")
             }
         }
-
     }
 
     private fun keywordFilter() {
         selection.trim().notEmpty()?.let { text ->
             val account = this.account
             if (account?.isPseudo == false && account.isMastodon) {
-                ActKeywordFilter.open(this, account, initial_phrase = text)
+                ActKeywordFilter.open(this, account, initialPhrase = text)
             } else {
                 launchMain {
                     pickAccount(
@@ -217,7 +212,7 @@ class ActText : AppCompatActivity() {
                         bAllowMastodon = true,
                         bAuto = false,
                     )?.let {
-                        ActKeywordFilter.open(this@ActText, it, initial_phrase = text)
+                        ActKeywordFilter.open(this@ActText, it, initialPhrase = text)
                     }
                 }
             }

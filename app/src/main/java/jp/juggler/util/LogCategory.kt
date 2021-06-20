@@ -5,7 +5,12 @@ import android.util.Log
 import androidx.annotation.StringRes
 
 fun Throwable.withCaption(caption: String) =
-	"${caption} :${javaClass.simpleName} ${message}"
+    "$caption :${javaClass.simpleName} $message"
+
+fun Throwable.withCaption(resources: Resources, stringId: Int, vararg args: Any) =
+    "${resources.getString(stringId, *args)}: ${javaClass.simpleName} $message"
+
+fun errorEx(ex: Throwable, caption: String): Nothing = throw IllegalStateException(caption, ex)
 
 class LogCategory(category: String) {
 
@@ -56,11 +61,11 @@ class LogCategory(category: String) {
     fun msg(priority: Int, ex: Throwable, caption: String = "exception.") =
         msg(priority, ex.withCaption(caption))
 
-    fun e(ex: Throwable, caption: String) = msg(Log.ERROR, ex, caption)
-    fun w(ex: Throwable, caption: String) = msg(Log.WARN, ex, caption)
-    fun i(ex: Throwable, caption: String) = msg(Log.INFO, ex, caption)
-    fun d(ex: Throwable, caption: String) = msg(Log.DEBUG, ex, caption)
-    fun v(ex: Throwable, caption: String) = msg(Log.VERBOSE, ex, caption)
+    fun e(ex: Throwable, caption: String = "exception") = msg(Log.ERROR, ex, caption)
+    fun w(ex: Throwable, caption: String = "exception") = msg(Log.WARN, ex, caption)
+    fun i(ex: Throwable, caption: String = "exception") = msg(Log.INFO, ex, caption)
+    fun d(ex: Throwable, caption: String = "exception") = msg(Log.DEBUG, ex, caption)
+    fun v(ex: Throwable, caption: String = "exception") = msg(Log.VERBOSE, ex, caption)
 
     ////////////////////////
     // stack trace

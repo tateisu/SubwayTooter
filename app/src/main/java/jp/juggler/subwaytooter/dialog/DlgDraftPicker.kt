@@ -48,7 +48,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
         parent: AdapterView<*>,
         view: View,
         position: Int,
-        id: Long
+        id: Long,
     ): Boolean {
 
         val draft = getPostDraft(position)
@@ -72,9 +72,9 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
     }
 
     @SuppressLint("InflateParams")
-    fun open(_activity: ActPost, _callback: (draft: JsonObject) -> Unit) {
-        this.activity = _activity
-        this.callback = _callback
+    fun open(activityArg: ActPost, callbackArg: (draft: JsonObject) -> Unit) {
+        this.activity = activityArg
+        this.callback = callbackArg
 
         adapter = MyAdapter()
 
@@ -115,12 +115,12 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
         // cancel old task
         task?.cancel()
 
-        task = launchMain{
+        task = launchMain {
             val cursor = try {
                 withContext(Dispatchers.IO) {
                     PostDraft.createCursor()
                 } ?: error("cursor is null")
-            } catch (ex: CancellationException) {
+            } catch (ignored: CancellationException) {
                 return@launchMain
             } catch (ex: Throwable) {
                 log.trace(ex)

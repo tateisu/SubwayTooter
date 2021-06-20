@@ -127,7 +127,7 @@ class SideMenuAdapter(
         private fun checkVersion(appContext: Context, handler: Handler) {
             val currentVersion = try {
                 appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName
-            } catch (ex: PackageManager.NameNotFoundException) {
+            } catch (ignored: PackageManager.NameNotFoundException) {
                 "??"
             }
 
@@ -336,11 +336,9 @@ class SideMenuAdapter(
         Item(title = R.string.setting),
 
         Item(icon = R.drawable.ic_settings, title = R.string.app_setting) {
-
             arAppSetting.launch(
                 ActAppSetting.createIntent(this)
             )
-
         },
 
         Item(icon = R.drawable.ic_settings, title = R.string.highlight_word) {
@@ -453,8 +451,8 @@ class SideMenuAdapter(
             dividerHeight = 0
             isScrollbarFadingEnabled = false
 
-            val pad_tb = (actMain.density * 12f + 0.5f).toInt()
-            setPadding(0, pad_tb, 0, pad_tb)
+            val padV = (actMain.density * 12f + 0.5f).toInt()
+            setPadding(0, padV, 0, padV)
             clipToPadding = false
             scrollBarStyle = ListView.SCROLLBARS_OUTSIDE_OVERLAY
 

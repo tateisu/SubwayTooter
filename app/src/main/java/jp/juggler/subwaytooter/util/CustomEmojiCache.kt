@@ -27,7 +27,7 @@ import kotlin.math.ceil
 
 class CustomEmojiCache(
     val context: Context,
-    private val handler: Handler
+    private val handler: Handler,
 ) {
 
     companion object {
@@ -50,7 +50,7 @@ class CustomEmojiCache(
     private class DbCache(
         val id: Long,
         val timeUsed: Long,
-        val data: ByteArray
+        val data: ByteArray,
     ) {
 
         companion object : TableCompanion {
@@ -73,14 +73,14 @@ class CustomEmojiCache(
 						,$COL_DATA blob not null
 						)""".trimIndent()
                 )
-                db.execSQL("create unique index if not exists ${table}_url on ${table}($COL_URL)")
-                db.execSQL("create index if not exists ${table}_old on ${table}($COL_TIME_USED)")
+                db.execSQL("create unique index if not exists ${table}_url on $table($COL_URL)")
+                db.execSQL("create index if not exists ${table}_old on $table($COL_TIME_USED)")
             }
 
             override fun onDBUpgrade(
                 db: SQLiteDatabase,
                 oldVersion: Int,
-                newVersion: Int
+                newVersion: Int,
             ) {
             }
 
@@ -89,10 +89,7 @@ class CustomEmojiCache(
                     "select $COL_ID,$COL_TIME_USED,$COL_DATA from $table where $COL_URL=?",
                     arrayOf(url)
                 )?.use { cursor ->
-                    if (cursor.count == 0)
-                        null
-                    else {
-                        cursor.moveToNext()
+                    if (cursor.moveToNext()) {
                         DbCache(
                             id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
                             timeUsed = cursor.getLong(cursor.getColumnIndex(COL_TIME_USED)),
@@ -109,6 +106,8 @@ class CustomEmojiCache(
                                 )
                             }
                         }
+                    } else {
+                        null
                     }
                 }
 
@@ -162,21 +161,21 @@ class CustomEmojiCache(
 
     private class CacheItem(val url: String, var frames: ApngFrames?) {
 
-        var time_used: Long = elapsedTime
+        var timeUsed: Long = elapsedTime
     }
 
     private class Request(
         val refTarget: WeakReference<Any>,
         val url: String,
-        val onLoadComplete: () -> Unit
+        val onLoadComplete: () -> Unit,
     )
 
     // APNGデコード済のキャッシュデータ
     private val cache = ConcurrentHashMap<String, CacheItem>()
 
     // エラーキャッシュ
-    private val cache_error = ConcurrentHashMap<String, Long>()
-    private val cache_error_item = CacheItem("error", null)
+    private val cacheError = ConcurrentHashMap<String, Long>()
+    private val cacheErrorItem = CacheItem("error", null)
 
     // リクエストキュー
     // キャンセル操作の都合上、アクセス時に排他が必要
@@ -194,7 +193,7 @@ class CustomEmojiCache(
 
     // DB処理を行い、SQLiteDatabaseCorruptExceptionを検出したらDBを削除してリトライする
     private fun <T : Any> useDbCache(block: (SQLiteDatabase) -> T?): T? {
-        for (nTry in (1..3)) {
+        for (ignored in (1..3)) {
             try {
                 val db = dbOpenHelper.writableDatabase ?: break
                 return block(db)
@@ -211,12 +210,12 @@ class CustomEmojiCache(
 
     // ネットワーク接続が切り替わったタイミングでエラーキャッシュをクリアする
     fun onNetworkChanged() {
-        cache_error.clear()
+        cacheError.clear()
     }
 
     // カラムのリロードボタンを押したタイミングでエラーキャッシュをクリアする
     fun clearErrorCache() {
-        cache_error.clear()
+        cacheError.clear()
     }
 
     // tag_target を持つリクエストまたはtagがGCされたリクエストをキューから除去する
@@ -239,14 +238,14 @@ class CustomEmojiCache(
         // 成功キャッシュ
         val item = cache[url]
         if (item != null) {
-            item.time_used = now
+            item.timeUsed = now
             return item
         }
 
         // エラーキャッシュ
-        val time_error = cache_error[url]
-        if (time_error != null && now < time_error + ERROR_EXPIRE) {
-            return cache_error_item
+        val timeError = cacheError[url]
+        if (timeError != null && now < timeError + ERROR_EXPIRE) {
+            return cacheErrorItem
         }
 
         return null
@@ -255,7 +254,7 @@ class CustomEmojiCache(
     fun getFrames(
         refDrawTarget: WeakReference<Any>?,
         url: String,
-        onLoadComplete: () -> Unit
+        onLoadComplete: () -> Unit,
     ): ApngFrames? {
         try {
             if (refDrawTarget?.get() == null) {
@@ -289,7 +288,7 @@ class CustomEmojiCache(
                 entry.value.frames?.dispose()
             }
             cache.clear()
-            cache_error.clear()
+            cacheError.clear()
         }
         dbOpenHelper.deleteDatabase()
     }
@@ -305,10 +304,10 @@ class CustomEmojiCache(
             var te: Long
             while (true) {
                 try {
-                    var queue_size: Int
+                    var queueSize: Int
                     val request = synchronized(queue) {
                         val x = if (queue.isNotEmpty()) queue.removeFirst() else null
-                        queue_size = queue.size
+                        queueSize = queue.size
                         x
                     }
 
@@ -334,8 +333,8 @@ class CustomEmojiCache(
                     request.refTarget.get() ?: continue
 
                     ts = elapsedTime
-                    var cache_size: Int = -1
-                    val cache_used = synchronized(cache) {
+                    var cacheSize: Int = -1
+                    val cacheUsed = synchronized(cache) {
                         val now = elapsedTime
                         val item = getCached(now, request.url)
                         if (item != null) {
@@ -344,16 +343,16 @@ class CustomEmojiCache(
                             }
                             return@synchronized true
                         }
-                        sweep_cache(now)
-                        cache_size = cache.size
+                        sweepCache(now)
+                        cacheSize = cache.size
                         return@synchronized false
                     }
                     te = elapsedTime
                     if (te - ts >= 200L) log.d("cache_used? ${te - ts}ms")
 
-                    if (cache_used) continue
+                    if (cacheUsed) continue
 
-                    if (DEBUG) log.d("start get image. queue_size=${queue_size}, cache_size=${cache_size} url=${request.url}")
+                    if (DEBUG) log.d("start get image. queue_size=$queueSize, cache_size=$cacheSize url=${request.url}")
 
                     val now = System.currentTimeMillis()
 
@@ -397,7 +396,7 @@ class CustomEmojiCache(
                     ts = elapsedTime
                     synchronized(cache) {
                         if (frames == null) {
-                            cache_error[request.url] = elapsedTime
+                            cacheError[request.url] = elapsedTime
                         } else {
                             var item: CacheItem? = cache[request.url]
                             if (item == null) {
@@ -431,7 +430,7 @@ class CustomEmojiCache(
             handler.post { request.onLoadComplete() }
         }
 
-        private fun sweep_cache(now: Long) {
+        private fun sweepCache(now: Long) {
 
             // キャッシュ限界を超過した数
             val over = cache.size - CACHE_MAX
@@ -443,11 +442,11 @@ class CustomEmojiCache(
             val list = ArrayList<CacheItem>()
             for (item in cache.values) {
                 // 最近使われていないものが掃除対象
-                if (now - item.time_used > 1000L) list.add(item)
+                if (now - item.timeUsed > 1000L) list.add(item)
             }
 
             // 昇順ソート
-            list.sortBy { it.time_used }
+            list.sortBy { it.timeUsed }
 
             // 古い物から順に捨てる
             var removed = 0
@@ -504,7 +503,7 @@ class CustomEmojiCache(
 
         private fun decodeBitmap(
             data: ByteArray,
-            @Suppress("SameParameterValue") pixel_max: Int
+            @Suppress("SameParameterValue") pixelMax: Int,
         ): Bitmap? {
             options.inJustDecodeBounds = true
             options.inScaled = false
@@ -518,7 +517,7 @@ class CustomEmojiCache(
                 return null
             }
             var bits = 0
-            while (w > pixel_max || h > pixel_max) {
+            while (w > pixelMax || h > pixelMax) {
                 ++bits
                 w = w shr 1
                 h = h shr 1
@@ -531,45 +530,45 @@ class CustomEmojiCache(
         private fun decodeSVG(
             url: String,
             data: ByteArray,
-            @Suppress("SameParameterValue") pixelMax: Float
+            @Suppress("SameParameterValue") pixelMax: Float,
         ): Bitmap? {
             try {
                 val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
 
-                val src_w =
-                    svg.documentWidth // the width in pixels, or -1 if there is no width available.
-                val src_h =
-                    svg.documentHeight // the height in pixels, or -1 if there is no height available.
-                val aspect = if (src_w <= 0f || src_h <= 0f) {
+                // the width in pixels, or -1 if there is no width available.
+                // the height in pixels, or -1 if there is no height available.
+                val srcW = svg.documentWidth
+                val srcH = svg.documentHeight
+                val aspect = if (srcW <= 0f || srcH <= 0f) {
                     // widthやheightの情報がない
                     1f
                 } else {
-                    src_w / src_h
+                    srcW / srcH
                 }
 
-                val dst_w: Float
-                val dst_h: Float
+                val dstW: Float
+                val dstH: Float
                 if (aspect >= 1f) {
-                    dst_w = pixelMax
-                    dst_h = pixelMax / aspect
+                    dstW = pixelMax
+                    dstH = pixelMax / aspect
                 } else {
-                    dst_h = pixelMax
-                    dst_w = pixelMax * aspect
+                    dstH = pixelMax
+                    dstW = pixelMax * aspect
                 }
-                val w_ceil = ceil(dst_w)
-                val h_ceil = ceil(dst_h)
+                val wCeil = ceil(dstW)
+                val hCeil = ceil(dstH)
 
                 // Create a Bitmap to render our SVG to
-                val b = Bitmap.createBitmap(w_ceil.toInt(), h_ceil.toInt(), Bitmap.Config.ARGB_8888)
+                val b = Bitmap.createBitmap(wCeil.toInt(), hCeil.toInt(), Bitmap.Config.ARGB_8888)
                 // Create a Canvas to use for rendering
                 val canvas = Canvas(b)
 
                 svg.renderToCanvas(
                     canvas,
                     if (aspect >= 1f) {
-                        RectF(0f, h_ceil - dst_h, dst_w, dst_h) // 後半はw,hを指定する
+                        RectF(0f, hCeil - dstH, dstW, dstH) // 後半はw,hを指定する
                     } else {
-                        RectF(w_ceil - dst_w, 0f, dst_w, dst_h) // 後半はw,hを指定する
+                        RectF(wCeil - dstW, 0f, dstW, dstH) // 後半はw,hを指定する
                     }
                 )
                 return b

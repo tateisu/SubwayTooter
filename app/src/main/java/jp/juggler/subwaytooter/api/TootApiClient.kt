@@ -15,7 +15,7 @@ class TootApiClient(
     val context: Context,
     val httpClient: SimpleHttpClient =
         SimpleHttpClientImpl(context, App1.ok_http_client),
-    val callback: TootApiCallback
+    val callback: TootApiCallback,
 ) {
     companion object {
 
@@ -108,16 +108,15 @@ class TootApiClient(
                         "vote-write"
 
                     )
-
                 }
                     // APIのエラーを回避するため、重複を排除する
                     .toMutableSet()
                     .forEach { add(it) }
             }
 
-        private fun encodeScopeArray(scope_array: JsonArray?): String? {
-            scope_array ?: return null
-            val list = scope_array.stringArrayList()
+        private fun encodeScopeArray(scopeArray: JsonArray?): String? {
+            scopeArray ?: return null
+            val list = scopeArray.stringArrayList()
             list.sort()
             return list.joinToString(",")
         }
@@ -129,7 +128,7 @@ class TootApiClient(
         fun formatResponse(
             response: Response,
             caption: String = "?",
-            bodyString: String? = null
+            bodyString: String? = null,
         ) = TootApiResult(
             response = response,
             caption = caption,
@@ -140,7 +139,7 @@ class TootApiClient(
             response: Response,
             caption: String = "?",
             bodyString: String = response.body?.string() ?: "",
-            jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+            jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
         ) = TootApiResult(
             response = response,
             caption = caption,
@@ -226,7 +225,7 @@ class TootApiClient(
         result: TootApiResult,
         progressPath: String? = null,
         tmpOkhttpClient: OkHttpClient? = null,
-        block: () -> Request
+        block: () -> Request,
     ): Boolean {
 
         result.response = null
@@ -247,7 +246,6 @@ class TootApiClient(
             result.response = response
 
             null == result.error
-
         } catch (ex: Throwable) {
             result.setError(
                 "${result.caption}: ${
@@ -266,7 +264,7 @@ class TootApiClient(
     internal suspend fun readBodyString(
         result: TootApiResult,
         progressPath: String? = null,
-        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): String? {
 
         if (isApiCancelled) return null
@@ -312,7 +310,7 @@ class TootApiClient(
     private suspend fun readBodyBytes(
         result: TootApiResult,
         progressPath: String? = null,
-        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): ByteArray? {
 
         if (isApiCancelled) return null
@@ -350,7 +348,7 @@ class TootApiClient(
     private suspend fun parseBytes(
         result: TootApiResult,
         progressPath: String? = null,
-        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): TootApiResult? {
         try {
             readBodyBytes(result, progressPath, jsonErrorParser)
@@ -365,7 +363,7 @@ class TootApiClient(
     internal suspend fun parseString(
         result: TootApiResult,
         progressPath: String? = null,
-        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): TootApiResult? {
         try {
             val bodyString = readBodyString(result, progressPath, jsonErrorParser)
@@ -380,12 +378,12 @@ class TootApiClient(
     }
 
     // レスポンスからJSONデータを読む
+    // 引数に指定したresultそのものか、キャンセルされたらnull を返す
     internal suspend fun parseJson(
         result: TootApiResult,
         progressPath: String? = null,
-        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
-    ): TootApiResult? // 引数に指定したresultそのものか、キャンセルされたらnull
-    {
+        jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
+    ): TootApiResult? {
         val response = result.response!! // nullにならないはず
 
         try {
@@ -396,15 +394,13 @@ class TootApiClient(
 
                 // 204 no content は 空オブジェクトと解釈する
                 result.data = JsonObject()
-
             } else if (reStartJsonArray.matcher(bodyString).find()) {
                 result.data = bodyString.decodeJsonArray()
-
             } else if (reStartJsonObject.matcher(bodyString).find()) {
                 val json = bodyString.decodeJsonObject()
-                val error_message = jsonErrorParser(json)
-                if (error_message != null) {
-                    result.error = error_message
+                val errorMessage = jsonErrorParser(json)
+                if (errorMessage != null) {
+                    result.error = errorMessage
                 } else {
                     result.data = json
                 }
@@ -435,13 +431,11 @@ class TootApiClient(
 
                 result.error = sb.toString()
             }
-
         } catch (ex: Throwable) {
             log.trace(ex)
             result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
-
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -481,7 +475,7 @@ class TootApiClient(
 
     suspend fun request(
         path: String,
-        request_builder: Request.Builder = Request.Builder(),
+        requestBuilder: Request.Builder = Request.Builder(),
         forceAccessToken: String? = null,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
@@ -494,14 +488,13 @@ class TootApiClient(
 
                     val url = "https://${apiHost?.ascii}$path"
 
-                    request_builder.url(url)
+                    requestBuilder.url(url)
 
                     (forceAccessToken ?: account?.getAccessToken())
-                        ?.notEmpty()?.let { request_builder.header("Authorization", "Bearer $it") }
+                        ?.notEmpty()?.let { requestBuilder.header("Authorization", "Bearer $it") }
 
-                    request_builder.build()
+                    requestBuilder.build()
                         .also { log.d("request: ${it.method} $url") }
-
                 }) return result
 
             return parseJson(result)
@@ -541,8 +534,6 @@ class TootApiClient(
             return null
         }
 
-
-
         if (!sendRequest(result) {
                 JsonObject().apply {
                     put("appSecret", appSecret)
@@ -576,7 +567,7 @@ class TootApiClient(
             return null
         }
 
-        val e = PrefDevice.prefDevice(context)
+        val e = PrefDevice.from(context)
             .edit()
             .putString(PrefDevice.LAST_AUTH_INSTANCE, apiHost?.ascii)
             .putString(PrefDevice.LAST_AUTH_SECRET, appSecret)
@@ -594,18 +585,18 @@ class TootApiClient(
     }
 
     private suspend fun registerClientMisskey(
-        scope_array: JsonArray,
-        client_name: String
+        scopeArray: JsonArray,
+        clientName: String,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
         if (sendRequest(result) {
                 JsonObject().apply {
                     put("nameId", "SubwayTooter")
-                    put("name", client_name)
+                    put("name", clientName)
                     put("description", "Android app for federated SNS")
                     put("callbackUrl", "subwaytooter://misskey/auth_callback")
-                    put("permission", scope_array)
+                    put("permission", scopeArray)
                 }
                     .toPostRequestBuilder()
                     .url("https://${apiHost?.ascii}/api/app/create")
@@ -618,48 +609,45 @@ class TootApiClient(
 
     private suspend fun authentication1Misskey(
         clientNameArg: String,
-        ti: TootInstance
+        ti: TootInstance,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(this.apiHost?.pretty)
         if (result.error != null) return result
         val instance = result.caption // same to instance
 
         // クライアントIDがアプリ上に保存されているか？
-        val client_name = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
-        val client_info = ClientInfo.load(instance, client_name)
+        val clientName = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
+        val clientInfo = ClientInfo.load(instance, clientName)
 
         // スコープ一覧を取得する
-        val scope_array = getScopeArrayMisskey(ti)
+        val scopeArray = getScopeArrayMisskey(ti)
 
-        if (client_info != null
-            && AUTH_VERSION == client_info.int(KEY_AUTH_VERSION)
-            && client_info.boolean(KEY_IS_MISSKEY) == true
+        if (clientInfo != null &&
+            AUTH_VERSION == clientInfo.int(KEY_AUTH_VERSION) &&
+            clientInfo.boolean(KEY_IS_MISSKEY) == true
         ) {
-            val appSecret = client_info.string(KEY_MISSKEY_APP_SECRET)
+            val appSecret = clientInfo.string(KEY_MISSKEY_APP_SECRET)
 
-            val r2 = getAppInfoMisskey(client_info.string("id"))
+            val r2 = getAppInfoMisskey(clientInfo.string("id"))
             val tmpClientInfo = r2?.jsonObject
             // tmpClientInfo はsecretを含まないので保存してはいけない
             when {
                 // アプリが登録済みで
                 // クライアント名が一致してて
                 // パーミッションが同じ
-                tmpClientInfo != null
-                    && client_name == tmpClientInfo.string("name")
-                    && compareScopeArray(scope_array, tmpClientInfo["permission"].cast())
-                    && appSecret?.isNotEmpty() == true -> {
+                tmpClientInfo != null &&
+                    clientName == tmpClientInfo.string("name") &&
+                    compareScopeArray(scopeArray, tmpClientInfo["permission"].cast()) &&
+                    appSecret?.isNotEmpty() == true -> {
                     // クライアント情報を再利用する
                     result.data = prepareBrowserUrlMisskey(appSecret)
                     return result
                 }
-
-                else -> {
-                    // XXX appSecretを使ってクライアント情報を削除できるようにするべきだが、該当するAPIが存在しない
-                }
             }
+            // XXX appSecretを使ってクライアント情報を削除できるようにするべきだが、該当するAPIが存在しない
         }
 
-        val r2 = registerClientMisskey(scope_array, client_name)
+        val r2 = registerClientMisskey(scopeArray, clientName)
         val jsonObject = r2?.jsonObject ?: return r2
 
         val appSecret = jsonObject.string(KEY_MISSKEY_APP_SECRET)
@@ -694,7 +682,7 @@ class TootApiClient(
 
         jsonObject[KEY_IS_MISSKEY] = true
         jsonObject[KEY_AUTH_VERSION] = AUTH_VERSION
-        ClientInfo.save(instance, client_name, jsonObject.toString())
+        ClientInfo.save(instance, clientName, jsonObject.toString())
         result.data = prepareBrowserUrlMisskey(appSecret)
 
         return result
@@ -704,18 +692,18 @@ class TootApiClient(
     suspend fun authentication2Misskey(
         clientNameArg: String,
         token: String,
-        misskeyVersion: Int
+        misskeyVersion: Int,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
         val instance = result.caption // same to instance
-        val client_name = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
+        val clientName = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
 
         @Suppress("UNUSED_VARIABLE")
-        val client_info = ClientInfo.load(instance, client_name)
+        val clientInfo = ClientInfo.load(instance, clientName)
             ?: return result.setError("missing client id")
 
-        val appSecret = client_info.string(KEY_MISSKEY_APP_SECRET)
+        val appSecret = clientInfo.string(KEY_MISSKEY_APP_SECRET)
         if (appSecret?.isEmpty() != false) {
             return result.setError(context.getString(R.string.cant_get_misskey_app_secret))
         }
@@ -735,30 +723,30 @@ class TootApiClient(
 
         parseJson(result) ?: return null
 
-        val token_info = result.jsonObject ?: return result
+        val tokenInfo = result.jsonObject ?: return result
 
         // {"accessToken":"...","user":{…}}
 
-        val access_token = token_info.string("accessToken")
-        if (access_token?.isEmpty() != false) {
+        val accessToken = tokenInfo.string("accessToken")
+        if (accessToken?.isEmpty() != false) {
             return result.setError("missing accessToken in the response.")
         }
 
-        val user = token_info["user"].cast<JsonObject>()
+        val user = tokenInfo["user"].cast<JsonObject>()
             ?: return result.setError("missing user in the response.")
 
-        token_info.remove("user")
+        tokenInfo.remove("user")
 
-        val apiKey = "$access_token$appSecret".encodeUTF8().digestSHA256().encodeHexLower()
+        val apiKey = "$accessToken$appSecret".encodeUTF8().digestSHA256().encodeHexLower()
 
         // ユーザ情報を読めたならtokenInfoを保存する
-        EntityId.mayNull(user.string("id"))?.putTo(token_info, KEY_USER_ID)
-        token_info[KEY_MISSKEY_VERSION] = misskeyVersion
-        token_info[KEY_AUTH_VERSION] = AUTH_VERSION
-        token_info[KEY_API_KEY_MISSKEY] = apiKey
+        EntityId.mayNull(user.string("id"))?.putTo(tokenInfo, KEY_USER_ID)
+        tokenInfo[KEY_MISSKEY_VERSION] = misskeyVersion
+        tokenInfo[KEY_AUTH_VERSION] = AUTH_VERSION
+        tokenInfo[KEY_API_KEY_MISSKEY] = apiKey
 
         // tokenInfoとユーザ情報の入ったresultを返す
-        result.tokenInfo = token_info
+        result.tokenInfo = tokenInfo
         result.data = user
         return result
     }
@@ -766,16 +754,18 @@ class TootApiClient(
     //////////////////////////////////////////////////////////////////////
 
     // クライアントをタンスに登録
-    suspend fun registerClient(scope_string: String, clientName: String): TootApiResult? {
+    suspend fun registerClient(scopeString: String, clientName: String): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
         val instance = result.caption // same to instance
         // OAuth2 クライアント登録
         if (!sendRequest(result) {
-                ("client_name=" + clientName.encodePercent()
-                    + "&redirect_uris=" + REDIRECT_URL.encodePercent()
-                    + "&scopes=$scope_string"
-                    ).toFormRequestBody().toPost()
+                "client_name=${
+                    clientName.encodePercent()
+                }&redirect_uris=${
+                    REDIRECT_URL.encodePercent()
+                }&scopes=$scopeString"
+                    .toFormRequestBody().toPost()
                     .url("https://$instance/api/v1/apps")
                     .build()
             }) return result
@@ -787,19 +777,19 @@ class TootApiClient(
     // oAuth2 Client Credentials の取得
     // https://github.com/doorkeeper-gem/doorkeeper/wiki/Client-Credentials-flow
     // このトークンはAPIを呼び出すたびに新しく生成される…
-    internal suspend fun getClientCredential(client_info: JsonObject): TootApiResult? {
+    internal suspend fun getClientCredential(clientInfo: JsonObject): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
 
         if (!sendRequest(result) {
 
-                val client_id = client_info.string("client_id")
+                val clientId = clientInfo.string("client_id")
                     ?: return result.setError("missing client_id")
 
-                val client_secret = client_info.string("client_secret")
+                val clientSecret = clientInfo.string("client_secret")
                     ?: return result.setError("missing client_secret")
 
-                "grant_type=client_credentials&scope=read+write&client_id=${client_id.encodePercent()}&client_secret=${client_secret.encodePercent()}"
+                "grant_type=client_credentials&scope=read+write&client_id=${clientId.encodePercent()}&client_secret=${clientSecret.encodePercent()}"
                     .toFormRequestBody().toPost()
                     .url("https://${apiHost?.ascii}/oauth/token")
                     .build()
@@ -808,7 +798,7 @@ class TootApiClient(
         val r2 = parseJson(result)
         val jsonObject = r2?.jsonObject ?: return r2
 
-        log.d("getClientCredential: ${jsonObject}")
+        log.d("getClientCredential: $jsonObject")
 
         val sv = jsonObject.string("access_token")?.notEmpty()
         if (sv != null) {
@@ -821,14 +811,14 @@ class TootApiClient(
     }
 
     // client_credentialがまだ有効か調べる
-    internal suspend fun verifyClientCredential(client_credential: String): TootApiResult? {
+    internal suspend fun verifyClientCredential(clientCredential: String): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
 
         if (!sendRequest(result) {
                 Request.Builder()
                     .url("https://${apiHost?.ascii}/api/v1/apps/verify_credentials")
-                    .header("Authorization", "Bearer $client_credential")
+                    .header("Authorization", "Bearer $clientCredential")
                     .build()
             }) return result
 
@@ -837,35 +827,38 @@ class TootApiClient(
 
     // client_credentialを無効にする
     private suspend fun revokeClientCredential(
-        client_info: JsonObject,
-        client_credential: String
+        clientInfo: JsonObject,
+        clientCredential: String,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
 
-        val client_id = client_info.string("client_id")
+        val clientId = clientInfo.string("client_id")
             ?: return result.setError("missing client_id")
 
-        val client_secret = client_info.string("client_secret")
+        val clientSecret = clientInfo.string("client_secret")
             ?: return result.setError("missing client_secret")
 
         if (!sendRequest(result) {
-                ("token=" + client_credential.encodePercent()
-                    + "&client_id=" + client_id.encodePercent()
-                    + "&client_secret=" + client_secret.encodePercent()
-                    ).toFormRequestBody().toPost()
+                "token=${
+                    clientCredential.encodePercent()
+                }&client_id=${
+                    clientId.encodePercent()
+                }&client_secret=${
+                    clientSecret.encodePercent()
+                }"
+                    .toFormRequestBody().toPost()
                     .url("https://${apiHost?.ascii}/oauth/revoke")
                     .build()
-
             }) return result
 
         return parseJson(result)
     }
 
     // 認証ページURLを作る
-    internal fun prepareBrowserUrl(scope_string: String, client_info: JsonObject): String? {
+    internal fun prepareBrowserUrl(scopeString: String, clientInfo: JsonObject): String? {
         val account = this.account
-        val client_id = client_info.string("client_id") ?: return null
+        val clientId = clientInfo.string("client_id") ?: return null
 
         val state = StringBuilder()
             .append((if (account != null) "db:${account.db_id}" else "host:${apiHost?.ascii}"))
@@ -873,24 +866,22 @@ class TootApiClient(
             .append("random:${System.currentTimeMillis()}")
             .toString()
 
-        return ("https://${apiHost?.ascii}/oauth/authorize"
-            + "?client_id=" + client_id.encodePercent()
-            + "&response_type=code"
-            + "&redirect_uri=" + REDIRECT_URL.encodePercent()
-            + "&scope=$scope_string"
-            + "&scopes=$scope_string"
-            + "&state=" + state.encodePercent()
-            + "&grant_type=authorization_code"
-            + "&approval_prompt=force"
-            + "&force_login=true"
-            //		+"&access_type=offline"
-            )
+        return "https://${
+            apiHost?.ascii
+        }/oauth/authorize?client_id=${
+            clientId.encodePercent()
+        }&response_type=code&redirect_uri=${
+            REDIRECT_URL.encodePercent()
+        }&scope=$scopeString&scopes=$scopeString&state=${
+            state.encodePercent()
+        }&grant_type=authorization_code&approval_prompt=force&force_login=true"
+        //		+"&access_type=offline"
     }
 
     private suspend fun prepareClientMastodon(
         clientNameArg: String,
         ti: TootInstance?,
-        forceUpdateClient: Boolean = false
+        forceUpdateClient: Boolean = false,
     ): TootApiResult? {
         // 前準備
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
@@ -898,55 +889,55 @@ class TootApiClient(
         val instance = result.caption // same to instance
 
         // クライアントIDがアプリ上に保存されているか？
-        val client_name = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
-        var client_info = ClientInfo.load(instance, client_name)
+        val clientName = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
+        var clientInfo = ClientInfo.load(instance, clientName)
 
         // スコープ一覧を取得する
-        val scope_string = getScopeString(ti)
+        val scopeString = getScopeString(ti)
 
         when {
-            AUTH_VERSION != client_info?.int(KEY_AUTH_VERSION) -> {
+            AUTH_VERSION != clientInfo?.int(KEY_AUTH_VERSION) -> {
                 // 古いクライアント情報は使わない。削除もしない。
             }
 
-            client_info.boolean(KEY_IS_MISSKEY) == true -> {
+            clientInfo.boolean(KEY_IS_MISSKEY) == true -> {
                 // Misskeyにはclient情報をまだ利用できるかどうか調べる手段がないので、再利用しない
             }
 
             else -> {
-                val old_scope = client_info.string(KEY_CLIENT_SCOPE)
+                val oldScope = clientInfo.string(KEY_CLIENT_SCOPE)
 
                 // client_credential をまだ取得していないなら取得する
-                var client_credential = client_info.string(KEY_CLIENT_CREDENTIAL)
-                if (client_credential?.isEmpty() != false) {
-                    val resultSub = getClientCredential(client_info)
-                    client_credential = resultSub?.string
-                    if (client_credential?.isNotEmpty() == true) {
+                var clientCredential = clientInfo.string(KEY_CLIENT_CREDENTIAL)
+                if (clientCredential?.isEmpty() != false) {
+                    val resultSub = getClientCredential(clientInfo)
+                    clientCredential = resultSub?.string
+                    if (clientCredential?.isNotEmpty() == true) {
                         try {
-                            client_info[KEY_CLIENT_CREDENTIAL] = client_credential
-                            ClientInfo.save(instance, client_name, client_info.toString())
+                            clientInfo[KEY_CLIENT_CREDENTIAL] = clientCredential
+                            ClientInfo.save(instance, clientName, clientInfo.toString())
                         } catch (ignored: JsonException) {
                         }
                     }
                 }
 
                 // client_credential があるならcredentialがまだ使えるか確認する
-                if (client_credential?.isNotEmpty() == true) {
-                    val resultSub = verifyClientCredential(client_credential)
+                if (clientCredential?.isNotEmpty() == true) {
+                    val resultSub = verifyClientCredential(clientCredential)
                     val currentCC = resultSub?.jsonObject
                     if (currentCC != null) {
-                        if (old_scope != scope_string || forceUpdateClient) {
+                        if (oldScope != scopeString || forceUpdateClient) {
                             // マストドン2.4でスコープが追加された
                             // 取得時のスコープ指定がマッチしない(もしくは記録されていない)ならクライアント情報を再利用してはいけない
-                            ClientInfo.delete(instance, client_name)
+                            ClientInfo.delete(instance, clientName)
 
                             // client credential をタンスから消去する
-                            revokeClientCredential(client_info, client_credential)
+                            revokeClientCredential(clientInfo, clientCredential)
 
                             // XXX クライアントアプリ情報そのものはまだサーバに残っているが、明示的に消す方法は現状存在しない
                         } else {
                             // クライアント情報を再利用する
-                            result.data = client_info
+                            result.data = clientInfo
                             return result
                         }
                     }
@@ -954,17 +945,17 @@ class TootApiClient(
             }
         }
 
-        val r2 = registerClient(scope_string, client_name)
-        client_info = r2?.jsonObject ?: return r2
+        val r2 = registerClient(scopeString, clientName)
+        clientInfo = r2?.jsonObject ?: return r2
 
         // {"id":999,"redirect_uri":"urn:ietf:wg:oauth:2.0:oob","client_id":"******","client_secret":"******"}
-        client_info[KEY_AUTH_VERSION] = AUTH_VERSION
-        client_info[KEY_CLIENT_SCOPE] = scope_string
+        clientInfo[KEY_AUTH_VERSION] = AUTH_VERSION
+        clientInfo[KEY_CLIENT_SCOPE] = scopeString
 
         // client_credential をまだ取得していないなら取得する
-        var client_credential = client_info.string(KEY_CLIENT_CREDENTIAL)
-        if (client_credential?.isEmpty() != false) {
-            getClientCredential(client_info).let { resultSub ->
+        var clientCredential = clientInfo.string(KEY_CLIENT_CREDENTIAL)
+        if (clientCredential?.isEmpty() != false) {
+            getClientCredential(clientInfo).let { resultSub ->
                 when {
                     // https://github.com/tateisu/SubwayTooter/issues/156
                     // some servers not support to get client_credentials.
@@ -976,8 +967,8 @@ class TootApiClient(
                     }
                     else -> {
                         resultSub.string?.notEmpty()?.let {
-                            client_credential = it
-                            client_info[KEY_CLIENT_CREDENTIAL] = it
+                            clientCredential = it
+                            clientInfo[KEY_CLIENT_CREDENTIAL] = it
                         }
                     }
                 }
@@ -985,17 +976,17 @@ class TootApiClient(
         }
 
         try {
-            ClientInfo.save(instance, client_name, client_info.toString())
+            ClientInfo.save(instance, clientName, clientInfo.toString())
         } catch (ignored: JsonException) {
         }
-        result.data = client_info
+        result.data = clientInfo
         return result
     }
 
     private suspend fun authentication1Mastodon(
         clientNameArg: String,
         ti: TootInstance?,
-        forceUpdateClient: Boolean = false
+        forceUpdateClient: Boolean = false,
     ): TootApiResult? {
 
         if (ti?.instanceType == InstanceType.Pixelfed) {
@@ -1003,9 +994,9 @@ class TootApiClient(
         }
 
         return prepareClientMastodon(clientNameArg, ti, forceUpdateClient)?.also { result ->
-            val client_info = result.jsonObject
-            if (client_info != null) {
-                result.data = prepareBrowserUrl(getScopeString(ti), client_info)
+            val clientInfo = result.jsonObject
+            if (clientInfo != null) {
+                result.data = prepareBrowserUrl(getScopeString(ti), clientInfo)
             }
         }
     }
@@ -1013,7 +1004,7 @@ class TootApiClient(
     // クライアントを登録してブラウザで開くURLを生成する
     suspend fun authentication1(
         clientNameArg: String,
-        forceUpdateClient: Boolean = false
+        forceUpdateClient: Boolean = false,
     ): TootApiResult? {
 
         val (ti, ri) = TootInstance.get(this)
@@ -1033,53 +1024,56 @@ class TootApiClient(
     suspend fun authentication2Mastodon(
         clientNameArg: String,
         code: String,
-        outAccessToken: AtomicReference<String>
+        outAccessToken: AtomicReference<String>,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
 
         val instance = result.caption // same to instance
-        val client_name = if (clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
-        val client_info =
-            ClientInfo.load(instance, client_name) ?: return result.setError("missing client id")
+        val clientName = if (clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
+        val clientInfo =
+            ClientInfo.load(instance, clientName) ?: return result.setError("missing client id")
 
         if (!sendRequest(result) {
 
-                val scope_string = client_info.string(KEY_CLIENT_SCOPE)
-                val client_id = client_info.string("client_id")
-                val client_secret = client_info.string("client_secret")
-                if (client_id == null) return result.setError("missing client_id ")
-                if (client_secret == null) return result.setError("missing client_secret")
+                val scopeString = clientInfo.string(KEY_CLIENT_SCOPE)
+                val clientId = clientInfo.string("client_id")
+                val clientSecret = clientInfo.string("client_secret")
+                if (clientId == null) return result.setError("missing client_id ")
+                if (clientSecret == null) return result.setError("missing client_secret")
 
-                val post_content = ("grant_type=authorization_code"
-                    + "&code=" + code.encodePercent()
-                    + "&client_id=" + client_id.encodePercent()
-                    + "&redirect_uri=" + REDIRECT_URL.encodePercent()
-                    + "&client_secret=" + client_secret.encodePercent()
-                    + "&scope=$scope_string"
-                    + "&scopes=$scope_string")
+                val postContent = "grant_type=authorization_code&code=${
+                    code.encodePercent()
+                }&client_id=${
+                    clientId.encodePercent()
+                }&redirect_uri=${
+                    REDIRECT_URL.encodePercent()
+                }&client_secret=${
+                    clientSecret.encodePercent()
+                }&scope=$scopeString&scopes=$scopeString"
 
-                post_content.toFormRequestBody().toPost()
+                postContent.toFormRequestBody().toPost()
                     .url("https://$instance/oauth/token")
                     .build()
-
             }) return result
 
         val r2 = parseJson(result)
-        val token_info = r2?.jsonObject ?: return r2
+        val tokenInfo = r2?.jsonObject ?: return r2
 
         // {"access_token":"******","token_type":"bearer","scope":"read","created_at":1492334641}
-        val access_token = token_info.string("access_token")
-        if (access_token?.isEmpty() != false) {
+        val accessToken = tokenInfo.string("access_token")
+        if (accessToken?.isEmpty() != false) {
             return result.setError("missing access_token in the response.")
         }
-        outAccessToken.set(access_token)
-        return getUserCredential(access_token, token_info)
+        outAccessToken.set(accessToken)
+        return getUserCredential(accessToken, tokenInfo)
     }
 
     // アクセストークン手動入力でアカウントを更新する場合、アカウントの情報を取得する
     suspend fun getUserCredential(
-        access_token: String, tokenInfo: JsonObject = JsonObject(), misskeyVersion: Int = 0
+        accessToken: String,
+        tokenInfo: JsonObject = JsonObject(),
+        misskeyVersion: Int = 0,
     ): TootApiResult? {
         if (misskeyVersion > 0) {
             val result = TootApiResult.makeWithCaption(apiHost?.pretty)
@@ -1088,7 +1082,7 @@ class TootApiClient(
             // 認証されたアカウントのユーザ情報を取得する
             if (!sendRequest(result) {
                     JsonObject().apply {
-                        put("i", access_token)
+                        put("i", accessToken)
                     }
                         .toPostRequestBuilder()
                         .url("https://${apiHost?.ascii}/api/i")
@@ -1099,12 +1093,11 @@ class TootApiClient(
             if (r2?.jsonObject != null) {
                 // ユーザ情報を読めたならtokenInfoを保存する
                 tokenInfo[KEY_AUTH_VERSION] = AUTH_VERSION
-                tokenInfo[KEY_API_KEY_MISSKEY] = access_token
+                tokenInfo[KEY_API_KEY_MISSKEY] = accessToken
                 tokenInfo[KEY_MISSKEY_VERSION] = misskeyVersion
                 result.tokenInfo = tokenInfo
             }
             return r2
-
         } else {
             val result = TootApiResult.makeWithCaption(apiHost?.pretty)
             if (result.error != null) return result
@@ -1113,7 +1106,7 @@ class TootApiClient(
             if (!sendRequest(result) {
                     Request.Builder()
                         .url("https://${apiHost?.ascii}/api/v1/accounts/verify_credentials")
-                        .header("Authorization", "Bearer $access_token")
+                        .header("Authorization", "Bearer $accessToken")
                         .build()
                 }) return result
 
@@ -1121,13 +1114,11 @@ class TootApiClient(
             if (r2?.jsonObject != null) {
                 // ユーザ情報を読めたならtokenInfoを保存する
                 tokenInfo[KEY_AUTH_VERSION] = AUTH_VERSION
-                tokenInfo["access_token"] = access_token
+                tokenInfo["access_token"] = accessToken
                 result.tokenInfo = tokenInfo
             }
             return r2
-
         }
-
     }
 
     suspend fun createUser1(clientNameArg: String): TootApiResult? {
@@ -1150,20 +1141,20 @@ class TootApiClient(
 
     // ユーザ名入力の後に呼ばれる
     suspend fun createUser2Mastodon(
-        client_info: JsonObject,
+        clientInfo: JsonObject,
         username: String,
         email: String,
         password: String,
         agreement: Boolean,
-        reason: String?
+        reason: String?,
     ): TootApiResult? {
 
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
 
-        log.d("createUser2Mastodon: client is : ${client_info}")
+        log.d("createUser2Mastodon: client is : $clientInfo")
 
-        val client_credential = client_info.string(KEY_CLIENT_CREDENTIAL)
+        val clientCredential = clientInfo.string(KEY_CLIENT_CREDENTIAL)
             ?: return result.setError("createUser2Mastodon(): missing client credential")
 
         if (!sendRequest(result) {
@@ -1172,21 +1163,19 @@ class TootApiClient(
                     add("username=${username.encodePercent()}")
                     add("email=${email.encodePercent()}")
                     add("password=${password.encodePercent()}")
-                    add("agreement=${agreement}")
+                    add("agreement=$agreement")
                     if (reason?.isNotEmpty() == true) add("reason=${reason.encodePercent()}")
                 }
 
                 params
                     .joinToString("&").toFormRequestBody().toPost()
                     .url("https://${apiHost?.ascii}/api/v1/accounts")
-                    .header("Authorization", "Bearer ${client_credential}")
+                    .header("Authorization", "Bearer $clientCredential")
                     .build()
-
             }) return result
 
         return parseJson(result)
     }
-
 
     ////////////////////////////////////////////////////////////////////////
     // JSONデータ以外を扱うリクエスト
@@ -1228,7 +1217,7 @@ class TootApiClient(
 
     suspend fun webSocket(
         path: String,
-        ws_listener: WebSocketListener
+        wsListener: WebSocketListener,
     ): Pair<TootApiResult?, WebSocket?> {
         var ws: WebSocket? = null
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
@@ -1237,7 +1226,7 @@ class TootApiClient(
         try {
             var url = "wss://${apiHost?.ascii}$path"
 
-            val request_builder = Request.Builder()
+            val requestBuilder = Request.Builder()
 
             if (account.isMisskey) {
                 val accessToken = account.misskeyApiToken
@@ -1246,16 +1235,16 @@ class TootApiClient(
                     url = "$url${delm}i=${accessToken.encodePercent()}"
                 }
             } else {
-                val access_token = account.getAccessToken()
-                if (access_token?.isNotEmpty() == true) {
+                val accessToken = account.getAccessToken()
+                if (accessToken?.isNotEmpty() == true) {
                     val delm = if (-1 != url.indexOf('?')) '&' else '?'
-                    url = "$url${delm}access_token=${access_token.encodePercent()}"
+                    url = "$url${delm}access_token=${accessToken.encodePercent()}"
                 }
             }
 
-            val request = request_builder.url(url).build()
+            val request = requestBuilder.url(url).build()
             publishApiProgress(context.getString(R.string.request_api, request.method, path))
-            ws = httpClient.getWebSocket(request, ws_listener)
+            ws = httpClient.getWebSocket(request, wsListener)
             if (isApiCancelled) {
                 ws.cancel()
                 return Pair(null, null)
@@ -1266,14 +1255,13 @@ class TootApiClient(
                 "${result.caption}: ${ex.withCaption(context.resources, R.string.network_error)}"
         }
         return Pair(result, ws)
-
     }
 
-    fun copy() =TootApiClient(
+    fun copy() = TootApiClient(
         context,
         httpClient,
         callback
-    ).also{dst->
+    ).also { dst ->
         dst.account = account
         dst.apiHost = apiHost
     }
@@ -1282,7 +1270,7 @@ class TootApiClient(
 // query: query_string after ? ( ? itself is excluded )
 suspend fun TootApiClient.requestMastodonSearch(
     parser: TootParser,
-    query: String
+    query: String,
 ): Pair<TootApiResult?, TootResults?> {
 
     var searchApiVersion = 2
@@ -1293,7 +1281,6 @@ suspend fun TootApiClient.requestMastodonSearch(
         searchApiVersion = 1
         apiResult = request("/api/v1/search?$query")
             ?: return Pair(null, null)
-
     }
 
     val searchResult = parser.results(apiResult.jsonObject)
@@ -1305,11 +1292,11 @@ suspend fun TootApiClient.requestMastodonSearch(
 // result.data に TootAccountRefを格納して返す。もしくはエラーかキャンセル
 suspend fun TootApiClient.syncAccountByUrl(
     accessInfo: SavedAccount,
-    who_url: String
+    whoUrl: String,
 ): Pair<TootApiResult?, TootAccountRef?> {
 
     // misskey由来のアカウントURLは https://host/@user@instance などがある
-    val m = TootAccount.reAccountUrl.matcher(who_url)
+    val m = TootAccount.reAccountUrl.matcher(whoUrl)
     if (m.find()) {
         // val host = m.group(1)
         val user = m.groupEx(2)!!.decodePercent()
@@ -1323,7 +1310,7 @@ suspend fun TootApiClient.syncAccountByUrl(
 
     return if (accessInfo.isMisskey) {
 
-        val acct = TootAccount.getAcctFromUrl(who_url)
+        val acct = TootAccount.getAcctFromUrl(whoUrl)
             ?: return Pair(
                 TootApiResult(context.getString(R.string.user_id_conversion_failed)),
                 null
@@ -1347,7 +1334,7 @@ suspend fun TootApiClient.syncAccountByUrl(
     } else {
         val (apiResult, searchResult) = requestMastodonSearch(
             parser,
-            "q=${who_url.encodePercent()}&resolve=true"
+            "q=${whoUrl.encodePercent()}&resolve=true"
         )
         val ar = searchResult?.accounts?.firstOrNull()
         if (apiResult != null && apiResult.error == null && ar == null) {
@@ -1359,12 +1346,12 @@ suspend fun TootApiClient.syncAccountByUrl(
 
 suspend fun TootApiClient.syncAccountByAcct(
     accessInfo: SavedAccount,
-    acctArg: String
+    acctArg: String,
 ): Pair<TootApiResult?, TootAccountRef?> = syncAccountByAcct(accessInfo, Acct.parse(acctArg))
 
 suspend fun TootApiClient.syncAccountByAcct(
     accessInfo: SavedAccount,
-    acct: Acct
+    acct: Acct,
 ): Pair<TootApiResult?, TootAccountRef?> {
 
     val parser = TootParser(context, accessInfo)
@@ -1397,12 +1384,11 @@ suspend fun TootApiClient.syncAccountByAcct(
         }
         Pair(apiResult, ar)
     }
-
 }
 
 suspend fun TootApiClient.syncStatus(
     accessInfo: SavedAccount,
-    urlArg: String
+    urlArg: String,
 ): Pair<TootApiResult?, TootStatus?> {
 
     var url = urlArg
@@ -1436,7 +1422,6 @@ suspend fun TootApiClient.syncStatus(
                         }
                         uri.letNotEmpty { url = it }
                     }
-
             }
             ?: return Pair(null, null) // cancelled.
     }
@@ -1470,12 +1455,11 @@ suspend fun TootApiClient.syncStatus(
         }
         Pair(apiResult, targetStatus)
     }
-
 }
 
 suspend fun TootApiClient.syncStatus(
     accessInfo: SavedAccount,
-    statusRemote: TootStatus
+    statusRemote: TootStatus,
 ): Pair<TootApiResult?, TootStatus?> {
 
     // URL->URIの順に試す

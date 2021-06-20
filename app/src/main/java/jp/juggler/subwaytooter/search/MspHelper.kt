@@ -20,7 +20,7 @@ object MspHelper {
     private fun getNextId(array: JsonArray, old: String?) =
         array.lastOrNull().cast<JsonObject>()?.string("msp_id")?.notEmpty() ?: old
 
-    private suspend fun TootApiClient.search(query: String, max_id: String?): TootApiResult? {
+    private suspend fun TootApiClient.search(query: String, maxId: String?): TootApiResult? {
 
         // ユーザトークンを読む
         var user_token: String? = Pref.spMspUserToken(pref)
@@ -58,7 +58,6 @@ object MspHelper {
                 } else {
                     pref.edit().put(Pref.spMspUserToken, user_token).apply()
                 }
-
             }
 
             // ユーザトークンを使って検索APIを呼び出す
@@ -71,7 +70,7 @@ object MspHelper {
                         .append("?apikey=").append(mspApiKey.encodePercent())
                         .append("&utoken=").append(user_token.encodePercent())
                         .append("&q=").append(query.encodePercent())
-                        .append("&max=").append(max_id?.encodePercent() ?: "")
+                        .append("&max=").append(maxId?.encodePercent() ?: "")
 
                     Request.Builder().url(url.toString()).build()
                 }) return result
@@ -102,15 +101,15 @@ object MspHelper {
 
     suspend fun ColumnTask_Loading.loadingMSP(client: TootApiClient): TootApiResult? {
         column.idOld = null
-        val q = column.search_query.trim { it <= ' ' }
+        val q = column.searchQuery.trim { it <= ' ' }
         return if (q.isEmpty()) {
-            list_tmp = java.util.ArrayList()
+            listTmp = java.util.ArrayList()
             TootApiResult()
         } else {
-            client.search(column.search_query, column.idOld?.toString())?.also { result ->
+            client.search(column.searchQuery, column.idOld?.toString())?.also { result ->
                 result.jsonArray?.let { root ->
                     column.idOld = EntityId.mayNull(getNextId(root, null))
-                    list_tmp = addWithFilterStatus(null, parseList(parser, root))
+                    listTmp = addWithFilterStatus(null, parseList(parser, root))
                 }
             }
         }
@@ -119,16 +118,16 @@ object MspHelper {
     suspend fun ColumnTask_Refresh.refreshMSP(client: TootApiClient): TootApiResult? {
         if (!bBottom) return TootApiResult("head of list.")
 
-        val q = column.search_query.trim()
+        val q = column.searchQuery.trim()
         val old = column.idOld?.toString()
         return if (q.isEmpty() || old == null) {
-            list_tmp = ArrayList()
+            listTmp = ArrayList()
             TootApiResult(context.getString(R.string.end_of_list))
         } else {
             client.search(q, old)?.also { result ->
                 result.jsonArray?.let { root ->
                     column.idOld = EntityId.mayNull(getNextId(root, column.idOld?.toString()))
-                    list_tmp = addWithFilterStatus(list_tmp, parseList(parser, root))
+                    listTmp = addWithFilterStatus(listTmp, parseList(parser, root))
                 }
             }
         }

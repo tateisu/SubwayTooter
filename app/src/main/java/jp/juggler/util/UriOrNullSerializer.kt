@@ -14,7 +14,7 @@ object UriOrNullSerializer : KSerializer<Uri?> {
         PrimitiveSerialDescriptor("UriOrNull", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Uri?) =
-        encoder.encodeString(value?.toString() ?:"" )
+        encoder.encodeString(value?.toString() ?: "")
 
     override fun deserialize(decoder: Decoder): Uri? =
         decoder.decodeString().mayUri()

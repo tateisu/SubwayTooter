@@ -51,7 +51,6 @@ class TaskList {
         } catch (ex: Throwable) {
             log.trace(ex, "TaskList: saveArray failed.size=${list.size}")
         }
-
     }
 
     @Synchronized
@@ -81,5 +80,4 @@ class TaskList {
         saveArray(context)
         return item
     }
-
 }

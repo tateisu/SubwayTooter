@@ -13,9 +13,9 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 
 fun ColumnViewHolder.clickQuickFilter(filter: Int) {
-    column?.quick_filter = filter
+    column?.quickFilter = filter
     showQuickFilter()
-    activity.app_state.saveColumnList()
+    activity.appState.saveColumnList()
     column?.startLoading()
 }
 
@@ -89,48 +89,48 @@ fun ColumnViewHolder.showQuickFilter() {
     showQuickFilterButton(
         btnQuickFilterAll,
         0,
-        column.quick_filter == Column.QUICK_FILTER_ALL
+        column.quickFilter == Column.QUICK_FILTER_ALL
     )
 
     showQuickFilterButton(
         btnQuickFilterMention,
         R.drawable.ic_reply,
-        column.quick_filter == Column.QUICK_FILTER_MENTION
+        column.quickFilter == Column.QUICK_FILTER_MENTION
     )
 
     showQuickFilterButton(
         btnQuickFilterFavourite,
         R.drawable.ic_star,
-        column.quick_filter == Column.QUICK_FILTER_FAVOURITE
+        column.quickFilter == Column.QUICK_FILTER_FAVOURITE
     )
 
     showQuickFilterButton(
         btnQuickFilterBoost,
         R.drawable.ic_repeat,
-        column.quick_filter == Column.QUICK_FILTER_BOOST
+        column.quickFilter == Column.QUICK_FILTER_BOOST
     )
 
     showQuickFilterButton(
         btnQuickFilterFollow,
         R.drawable.ic_follow_plus,
-        column.quick_filter == Column.QUICK_FILTER_FOLLOW
+        column.quickFilter == Column.QUICK_FILTER_FOLLOW
     )
 
     showQuickFilterButton(
         btnQuickFilterPost,
         R.drawable.ic_send,
-        column.quick_filter == Column.QUICK_FILTER_POST
+        column.quickFilter == Column.QUICK_FILTER_POST
     )
 
     showQuickFilterButton(
         btnQuickFilterReaction,
         R.drawable.ic_add,
-        column.quick_filter == Column.QUICK_FILTER_REACTION
+        column.quickFilter == Column.QUICK_FILTER_REACTION
     )
 
     showQuickFilterButton(
         btnQuickFilterVote,
         R.drawable.ic_vote,
-        column.quick_filter == Column.QUICK_FILTER_VOTE
+        column.quickFilter == Column.QUICK_FILTER_VOTE
     )
 }

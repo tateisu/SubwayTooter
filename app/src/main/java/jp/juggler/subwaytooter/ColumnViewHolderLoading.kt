@@ -41,7 +41,7 @@ private class ErrorFlickListener(
         e1: MotionEvent?,
         e2: MotionEvent?,
         distanceX: Float,
-        distanceY: Float
+        distanceY: Float,
     ): Boolean {
         return true
     }
@@ -50,7 +50,7 @@ private class ErrorFlickListener(
         e1: MotionEvent?,
         e2: MotionEvent?,
         velocityX: Float,
-        velocityY: Float
+        velocityY: Float,
     ): Boolean {
 
         val vx = velocityX.abs()
@@ -76,17 +76,17 @@ private class ErrorFlickListener(
 
 private class AdapterItemHeightWorkarea(
     val listView: RecyclerView,
-    val adapter: ItemListAdapter
+    val adapter: ItemListAdapter,
 ) : Closeable {
 
-    private val item_width: Int
+    private val itemWidth: Int
     private val widthSpec: Int
     var lastViewType: Int = -1
     var lastViewHolder: RecyclerView.ViewHolder? = null
 
     init {
-        this.item_width = listView.width - listView.paddingLeft - listView.paddingRight
-        this.widthSpec = View.MeasureSpec.makeMeasureSpec(item_width, View.MeasureSpec.EXACTLY)
+        this.itemWidth = listView.width - listView.paddingLeft - listView.paddingRight
+        this.widthSpec = View.MeasureSpec.makeMeasureSpec(itemWidth, View.MeasureSpec.EXACTLY)
     }
 
     override fun close() {
@@ -137,7 +137,7 @@ fun ColumnViewHolder.initLoadingTextView() {
 fun ColumnViewHolder.setListItemTop(listIndex: Int, yArg: Int) {
     var adapterIndex = column?.toAdapterIndex(listIndex) ?: return
 
-    val adapter = status_adapter
+    val adapter = statusAdapter
     if (adapter == null) {
         ColumnViewHolder.log.e("setListItemTop: missing status adapter")
         return
@@ -172,17 +172,11 @@ fun ColumnViewHolder.getListItemOffset(listIndex: Int): Int {
         ?: 0)
 }
 
-fun ColumnViewHolder.findFirstVisibleListItem(): Int {
-
-    val adapterIndex = listLayoutManager.findFirstVisibleItemPosition()
-
-    if (adapterIndex == RecyclerView.NO_POSITION)
-        throw IndexOutOfBoundsException()
-
-    return column?.toListIndex(adapterIndex)
-        ?: throw IndexOutOfBoundsException()
-
-}
+fun ColumnViewHolder.findFirstVisibleListItem(): Int =
+    when (val adapterIndex = listLayoutManager.findFirstVisibleItemPosition()) {
+        RecyclerView.NO_POSITION -> throw IndexOutOfBoundsException()
+        else -> column?.toListIndex(adapterIndex) ?: throw IndexOutOfBoundsException()
+    }
 
 fun ColumnViewHolder.scrollToTop() {
     try {
@@ -198,37 +192,36 @@ fun ColumnViewHolder.scrollToTop() {
 }
 
 fun ColumnViewHolder.scrollToTop2() {
-    val status_adapter = this.status_adapter
-    if (binding_busy || status_adapter == null) return
-    if (status_adapter.itemCount > 0) {
+    val statusAdapter = this.statusAdapter
+    if (bindingBusy || statusAdapter == null) return
+    if (statusAdapter.itemCount > 0) {
         scrollToTop()
     }
 }
-
 
 fun ColumnViewHolder.saveScrollPosition(): Boolean {
     val column = this.column
     when {
         column == null ->
-            ColumnViewHolder.log.d("saveScrollPosition [${page_idx}] , column==null")
+            ColumnViewHolder.log.d("saveScrollPosition [$pageIdx] , column==null")
 
-        column.is_dispose.get() ->
-            ColumnViewHolder.log.d("saveScrollPosition [${page_idx}] , column is disposed")
+        column.isDispose.get() ->
+            ColumnViewHolder.log.d("saveScrollPosition [$pageIdx] , column is disposed")
 
         listView.visibility != View.VISIBLE -> {
-            val scroll_save = ScrollPosition()
-            column.scroll_save = scroll_save
+            val scrollSave = ScrollPosition()
+            column.scrollSave = scrollSave
             ColumnViewHolder.log.d(
-                "saveScrollPosition [${page_idx}] ${column.getColumnName(true)} , listView is not visible, save ${scroll_save.adapterIndex},${scroll_save.offset}"
+                "saveScrollPosition [$pageIdx] ${column.getColumnName(true)} , listView is not visible, save ${scrollSave.adapterIndex},${scrollSave.offset}"
             )
             return true
         }
 
         else -> {
-            val scroll_save = ScrollPosition(this)
-            column.scroll_save = scroll_save
+            val scrollSave = ScrollPosition(this)
+            column.scrollSave = scrollSave
             ColumnViewHolder.log.d(
-                "saveScrollPosition [${page_idx}] ${column.getColumnName(true)} , listView is visible, save ${scroll_save.adapterIndex},${scroll_save.offset}"
+                "saveScrollPosition [$pageIdx] ${column.getColumnName(true)} , listView is visible, save ${scrollSave.adapterIndex},${scrollSave.offset}"
             )
             return true
         }
@@ -237,15 +230,15 @@ fun ColumnViewHolder.saveScrollPosition(): Boolean {
 }
 
 fun ColumnViewHolder.setScrollPosition(sp: ScrollPosition, deltaDp: Float = 0f) {
-    val last_adapter = listView.adapter
-    if (column == null || last_adapter == null) return
+    val lastAdapter = listView.adapter
+    if (column == null || lastAdapter == null) return
 
     sp.restore(this)
 
     // 復元した後に意図的に少し上下にずらしたい
     val dy = (deltaDp * activity.density + 0.5f).toInt()
     if (dy != 0) listView.postDelayed(Runnable {
-        if (column == null || listView.adapter !== last_adapter) return@Runnable
+        if (column == null || listView.adapter !== lastAdapter) return@Runnable
 
         try {
             val recycler = ColumnViewHolder.fieldRecycler.get(listView) as RecyclerView.Recycler
@@ -258,7 +251,6 @@ fun ColumnViewHolder.setScrollPosition(sp: ScrollPosition, deltaDp: Float = 0f) 
     }, 20L)
 }
 
-
 // 相対時刻を更新する
 fun ColumnViewHolder.updateRelativeTime() = rebindAdapterItems()
 
@@ -266,6 +258,6 @@ fun ColumnViewHolder.rebindAdapterItems() {
     for (childIndex in 0 until listView.childCount) {
         val adapterIndex = listView.getChildAdapterPosition(listView.getChildAt(childIndex))
         if (adapterIndex == RecyclerView.NO_POSITION) continue
-        status_adapter?.notifyItemChanged(adapterIndex)
+        statusAdapter?.notifyItemChanged(adapterIndex)
     }
 }

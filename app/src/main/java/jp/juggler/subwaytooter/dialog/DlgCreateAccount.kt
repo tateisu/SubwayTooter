@@ -21,121 +21,120 @@ import jp.juggler.util.showToast
 import jp.juggler.util.vg
 
 class DlgCreateAccount(
-	val activity : AppCompatActivity,
-	val apiHost : Host,
-	val onClickOk : (
-		dialog : Dialog,
-		username : String,
-		email : String,
-		password : String,
-		agreement : Boolean,
-		reason : String?
-	) -> Unit
+    val activity: AppCompatActivity,
+    val apiHost: Host,
+    val onClickOk: (
+        dialog: Dialog,
+        username: String,
+        email: String,
+        password: String,
+        agreement: Boolean,
+        reason: String?
+    ) -> Unit
 ) : View.OnClickListener {
-	
-	companion object {
-		// private val log = LogCategory("DlgCreateAccount")
-	}
-	
-	@SuppressLint("InflateParams")
-	private val viewRoot = activity.layoutInflater
-		.inflate(R.layout.dlg_account_create, null, false)
-	
-	private val etUserName : EditText = viewRoot.findViewById(R.id.etUserName)
-	private val etEmail : EditText = viewRoot.findViewById(R.id.etEmail)
-	private val etPassword : EditText = viewRoot.findViewById(R.id.etPassword)
-	private val cbAgreement : CheckBox = viewRoot.findViewById(R.id.cbAgreement)
-	private val tvDescription : TextView = viewRoot.findViewById(R.id.tvDescription)
-	private val etReason : EditText = viewRoot.findViewById(R.id.etReason)
-	private val tvReasonCaption : TextView = viewRoot.findViewById(R.id.tvReasonCaption)
-	
-	private val dialog = Dialog(activity)
-	
-	init {
-		viewRoot.findViewById<TextView>(R.id.tvInstance).text = apiHost.pretty
-		
-		arrayOf(
-			R.id.btnRules,
-			R.id.btnTerms,
-			R.id.btnCancel,
-			R.id.btnOk
-		).forEach {
-			viewRoot.findViewById<Button>(it)?.setOnClickListener(this)
-		}
-		
-		val instanceInfo = TootInstance.getCached(apiHost)
-		
-		tvDescription.text =
-			DecodeOptions(
-				activity,
-				linkHelper = LinkHelper.create(
-					apiHost,
-					misskeyVersion = instanceInfo?.misskeyVersion ?: 0
-				)
-			).decodeHTML(
-				instanceInfo?.short_description?.notBlank()
-					?: instanceInfo?.description?.notBlank()
-					?: TootInstance.DESCRIPTION_DEFAULT
-			).neatSpaces()
-		
-		val showReason = instanceInfo?.approval_required ?: false
-		tvReasonCaption.vg(showReason)
-		etReason.vg(showReason)
-		
-	}
-	
-	fun show() {
-		dialog.setContentView(viewRoot)
-		
-		dialog.window?.setLayout(
-			WindowManager.LayoutParams.MATCH_PARENT,
-			WindowManager.LayoutParams.WRAP_CONTENT
-		)
-		dialog.show()
-	}
-	
-	override fun onClick(v : View?) {
-		when(v?.id) {
-			R.id.btnRules ->
-				activity.openCustomTab("https://$apiHost/about/more")
-			
-			R.id.btnTerms ->
-				activity.openCustomTab("https://$apiHost/terms")
-			
-			R.id.btnCancel ->
-				dialog.cancel()
-			
-			R.id.btnOk -> {
-				val username = etUserName.text.toString().trim()
-				val email = etEmail.text.toString().trim()
-				val password = etPassword.text.toString().trim()
-				
-				when {
-					username.isEmpty() ->
-						activity.showToast(true, R.string.username_empty)
-					
-					email.isEmpty() ->
-						activity.showToast(true, R.string.email_empty)
-					
-					password.isEmpty() ->
-						activity.showToast(true, R.string.password_empty)
-					
-					username.contains("/") || username.contains("@") ->
-						activity.showToast(true, R.string.username_not_need_atmark)
-					
-					else -> onClickOk(
-						dialog,
-						username,
-						email,
-						password,
-						cbAgreement.isChecked,
-						when(etReason.visibility) {
-							View.VISIBLE -> etReason.text.toString().trim()
-							else -> null
-						}
-					)
-				}
-			}
-		}
-	}
+
+    companion object {
+        // private val log = LogCategory("DlgCreateAccount")
+    }
+
+    @SuppressLint("InflateParams")
+    private val viewRoot = activity.layoutInflater
+        .inflate(R.layout.dlg_account_create, null, false)
+
+    private val etUserName: EditText = viewRoot.findViewById(R.id.etUserName)
+    private val etEmail: EditText = viewRoot.findViewById(R.id.etEmail)
+    private val etPassword: EditText = viewRoot.findViewById(R.id.etPassword)
+    private val cbAgreement: CheckBox = viewRoot.findViewById(R.id.cbAgreement)
+    private val tvDescription: TextView = viewRoot.findViewById(R.id.tvDescription)
+    private val etReason: EditText = viewRoot.findViewById(R.id.etReason)
+    private val tvReasonCaption: TextView = viewRoot.findViewById(R.id.tvReasonCaption)
+
+    private val dialog = Dialog(activity)
+
+    init {
+        viewRoot.findViewById<TextView>(R.id.tvInstance).text = apiHost.pretty
+
+        arrayOf(
+            R.id.btnRules,
+            R.id.btnTerms,
+            R.id.btnCancel,
+            R.id.btnOk
+        ).forEach {
+            viewRoot.findViewById<Button>(it)?.setOnClickListener(this)
+        }
+
+        val instanceInfo = TootInstance.getCached(apiHost)
+
+        tvDescription.text =
+            DecodeOptions(
+                activity,
+                linkHelper = LinkHelper.create(
+                    apiHost,
+                    misskeyVersion = instanceInfo?.misskeyVersion ?: 0
+                )
+            ).decodeHTML(
+                instanceInfo?.short_description?.notBlank()
+                    ?: instanceInfo?.description?.notBlank()
+                    ?: TootInstance.DESCRIPTION_DEFAULT
+            ).neatSpaces()
+
+        val showReason = instanceInfo?.approval_required ?: false
+        tvReasonCaption.vg(showReason)
+        etReason.vg(showReason)
+    }
+
+    fun show() {
+        dialog.setContentView(viewRoot)
+
+        dialog.window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+        dialog.show()
+    }
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.btnRules ->
+                activity.openCustomTab("https://$apiHost/about/more")
+
+            R.id.btnTerms ->
+                activity.openCustomTab("https://$apiHost/terms")
+
+            R.id.btnCancel ->
+                dialog.cancel()
+
+            R.id.btnOk -> {
+                val username = etUserName.text.toString().trim()
+                val email = etEmail.text.toString().trim()
+                val password = etPassword.text.toString().trim()
+
+                when {
+                    username.isEmpty() ->
+                        activity.showToast(true, R.string.username_empty)
+
+                    email.isEmpty() ->
+                        activity.showToast(true, R.string.email_empty)
+
+                    password.isEmpty() ->
+                        activity.showToast(true, R.string.password_empty)
+
+                    username.contains("/") || username.contains("@") ->
+                        activity.showToast(true, R.string.username_not_need_atmark)
+
+                    else -> onClickOk(
+                        dialog,
+                        username,
+                        email,
+                        password,
+                        cbAgreement.isChecked,
+                        when (etReason.visibility) {
+                            View.VISIBLE -> etReason.text.toString().trim()
+                            else -> null
+                        }
+                    )
+                }
+            }
+        }
+    }
 }

@@ -36,14 +36,14 @@ private val log = LogCategory("AppOpener")
 // returns true if activity is opened.
 // returns false if fallback required
 private fun Activity.openBrowserExcludeMe(
-    pref:SharedPreferences,
+    pref: SharedPreferences,
     intent: Intent,
     startAnimationBundle: Bundle? = null
 ): Boolean {
     try {
-        if( intent.component == null){
+        if (intent.component == null) {
             val cn = Pref.spWebBrowser(pref).cn()
-            if( cn?.exists(this) == true){
+            if (cn?.exists(this) == true) {
                 intent.component = cn
             }
         }
@@ -113,7 +113,7 @@ private fun Activity.openBrowserExcludeMe(
     }
 }
 
-fun Activity.openBrowser(uri: Uri? , pref:SharedPreferences = pref()) {
+fun Activity.openBrowser(uri: Uri?, pref: SharedPreferences = pref()) {
     uri ?: return
     val rv = openBrowserExcludeMe(
         pref,
@@ -123,10 +123,10 @@ fun Activity.openBrowser(uri: Uri? , pref:SharedPreferences = pref()) {
     if (!rv) showToast(true, "there is no app that can open $uri")
 }
 
-fun Activity.openBrowser(url: String?, pref:SharedPreferences = pref()) = openBrowser(url.mayUri(),pref)
+fun Activity.openBrowser(url: String?, pref: SharedPreferences = pref()) = openBrowser(url.mayUri(), pref)
 
 // Chrome Custom Tab を開く
-fun Activity.openCustomTab(url: String?, pref:SharedPreferences = pref()) {
+fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
     url ?: return
 
     if (url.isEmpty()) {
@@ -135,7 +135,7 @@ fun Activity.openCustomTab(url: String?, pref:SharedPreferences = pref()) {
     }
 
     if (Pref.bpDontUseCustomTabs(pref)) {
-        openBrowser(url,pref)
+        openBrowser(url, pref)
         return
     }
 
@@ -177,7 +177,6 @@ fun Activity.openCustomTab(url: String?, pref:SharedPreferences = pref()) {
         // Chromeがないようなのでcomponent指定なしでリトライ
         if (startCustomTabIntent(null)) return
         showToast(true, "the browser app is not installed.")
-
     } catch (ex: Throwable) {
         log.trace(ex)
         val scheme = url.mayUri()?.scheme ?: url
@@ -265,7 +264,7 @@ fun openCustomTab(
                                     accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
                                     acct = fullAcct,
                                     userUrl = mention.url,
-                                    original_url = url,
+                                    originalUrl = url,
                                 )
                         }
                         return
@@ -297,9 +296,9 @@ fun openCustomTab(
                             activity.userProfile(
                                 pos,
                                 null, // Misskeyだと疑似アカが必要なんだっけ…？
-                                acct = Acct.parse(user,instanceHost),
+                                acct = Acct.parse(user, instanceHost),
                                 userUrl = "https://$instance/@$user",
-                                original_url = url,
+                                originalUrl = url,
                             )
                         }
                     }
@@ -307,7 +306,7 @@ fun openCustomTab(
                     activity.userProfile(
                         pos,
                         accessInfo,
-                        Acct.parse(user,host),
+                        Acct.parse(user, host),
                         url
                     )
                 }
@@ -322,19 +321,16 @@ fun openCustomTab(
                 activity.userProfile(
                     pos,
                     accessInfo,
-                    Acct.parse(user,host),
+                    Acct.parse(user, host),
                     url,
                 )
                 return
             }
-
         }
 
         activity.openCustomTab(url)
-
     } catch (ex: Throwable) {
         log.trace(ex)
         log.e(ex, "openCustomTab failed. $url")
     }
 }
-

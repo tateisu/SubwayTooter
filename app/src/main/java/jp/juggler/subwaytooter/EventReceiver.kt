@@ -8,25 +8,25 @@ import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.util.LogCategory
 
 class EventReceiver : BroadcastReceiver() {
-	
-	companion object {
-		internal val log = LogCategory("EventReceiver")
-		const val ACTION_NOTIFICATION_DELETE = "notification_delete"
-	}
-	
-	override fun onReceive(context : Context, intent : Intent?) {
-		when(val action = intent?.action) {
 
-			Intent.ACTION_BOOT_COMPLETED ->
-				PollingWorker.queueBootCompleted(context)
+    companion object {
+        internal val log = LogCategory("EventReceiver")
+        const val ACTION_NOTIFICATION_DELETE = "notification_delete"
+    }
 
-			Intent.ACTION_MY_PACKAGE_REPLACED ->
-				PollingWorker.queuePackageReplaced(context)
-			
-			ACTION_NOTIFICATION_DELETE ->
-				PollingWorker.queueNotificationDeleted( context,intent.data)
-			
-			else -> log.e("onReceive: unsupported action ${action}")
-		}
-	}
+    override fun onReceive(context: Context, intent: Intent?) {
+        when (val action = intent?.action) {
+
+            Intent.ACTION_BOOT_COMPLETED ->
+                PollingWorker.queueBootCompleted(context)
+
+            Intent.ACTION_MY_PACKAGE_REPLACED ->
+                PollingWorker.queuePackageReplaced(context)
+
+            ACTION_NOTIFICATION_DELETE ->
+                PollingWorker.queueNotificationDeleted(context, intent.data)
+
+            else -> log.e("onReceive: unsupported action $action")
+        }
+    }
 }

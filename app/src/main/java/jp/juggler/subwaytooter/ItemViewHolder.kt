@@ -26,7 +26,7 @@ import jp.juggler.util.attrColor
 import org.jetbrains.anko.*
 
 class ItemViewHolder(
-    val activity: ActMain
+    val activity: ActMain,
 ) : View.OnClickListener, View.OnLongClickListener {
 
     companion object {
@@ -36,7 +36,6 @@ class ItemViewHolder(
         var toot_color_follower: Int = 0
         var toot_color_direct_user: Int = 0
         var toot_color_direct_me: Int = 0
-
     }
 
     val viewRoot: View
@@ -45,7 +44,7 @@ class ItemViewHolder(
 
     lateinit var column: Column
 
-    internal lateinit var list_adapter: ItemListAdapter
+    internal lateinit var listAdapter: ItemListAdapter
 
     lateinit var llBoosted: View
     lateinit var ivBoosted: ImageView
@@ -142,32 +141,32 @@ class ItemViewHolder(
 
     lateinit var tvLastStatusAt: TextView
 
-    lateinit var access_info: SavedAccount
+    lateinit var accessInfo: SavedAccount
 
-    var buttons_for_status: StatusButtons? = null
+    var buttonsForStatus: StatusButtons? = null
 
     var item: TimelineItem? = null
 
-    var status_showing: TootStatus? = null
-    var status_reply: TootStatus? = null
-    var status_account: TootAccountRef? = null
-    var boost_account: TootAccountRef? = null
-    var follow_account: TootAccountRef? = null
+    var statusShowing: TootStatus? = null
+    var statusReply: TootStatus? = null
+    var statusAccount: TootAccountRef? = null
+    var boostAccount: TootAccountRef? = null
+    var followAccount: TootAccountRef? = null
 
-    var boost_time: Long = 0L
+    var boostTime: Long = 0L
 
-    var content_color: Int = 0
-    var acct_color: Int = 0
-    var content_color_csl: ColorStateList = ColorStateList.valueOf(0)
+    var contentColor: Int = 0
+    var acctColor: Int = 0
+    var contentColorCsl: ColorStateList = ColorStateList.valueOf(0)
 
-    val boost_invalidator: NetworkEmojiInvalidator
-    val reply_invalidator: NetworkEmojiInvalidator
-    val follow_invalidator: NetworkEmojiInvalidator
-    val name_invalidator: NetworkEmojiInvalidator
-    val content_invalidator: NetworkEmojiInvalidator
-    val spoiler_invalidator: NetworkEmojiInvalidator
-    val lastActive_invalidator: NetworkEmojiInvalidator
-    val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
+    val boostInvalidator: NetworkEmojiInvalidator
+    val replyInvalidator: NetworkEmojiInvalidator
+    val followInvalidator: NetworkEmojiInvalidator
+    val nameInvalidator: NetworkEmojiInvalidator
+    val contentInvalidator: NetworkEmojiInvalidator
+    val spoilerInvalidator: NetworkEmojiInvalidator
+    val lastActiveInvalidator: NetworkEmojiInvalidator
+    val extraInvalidatorList = ArrayList<NetworkEmojiInvalidator>()
 
     var boostedAction: ItemViewHolder.() -> Unit = defaultBoostedAction
 
@@ -227,7 +226,7 @@ class ItemViewHolder(
 
         var f: Float
 
-        f = activity.timeline_font_size_sp
+        f = activity.timelineFontSizeSp
         if (!f.isNaN()) {
             tvFollowerName.textSize = f
             tvName.textSize = f
@@ -248,13 +247,13 @@ class ItemViewHolder(
             tvConversationParticipants.textSize = f
         }
 
-        f = activity.notification_tl_font_size_sp
+        f = activity.notificationTlFontSizeSp
         if (!f.isNaN()) {
             tvBoosted.textSize = f
             tvReply.textSize = f
         }
 
-        f = activity.acct_font_size_sp
+        f = activity.acctFontSizeSp
         if (!f.isNaN()) {
             tvBoostedAcct.textSize = f
             tvBoostedTime.textSize = f
@@ -266,7 +265,7 @@ class ItemViewHolder(
             tvFilterDetail.textSize = f
         }
 
-        val spacing = activity.timeline_spacing
+        val spacing = activity.timelineSpacing
         if (spacing != null) {
             tvFollowerName.setLineSpacing(0f, spacing)
             tvName.setLineSpacing(0f, spacing)
@@ -303,13 +302,13 @@ class ItemViewHolder(
         s = activity.notificationTlIconSize
         ivBoosted.layoutParams.height = s
 
-        this.content_invalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
-        this.spoiler_invalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
-        this.boost_invalidator = NetworkEmojiInvalidator(activity.handler, tvBoosted)
-        this.reply_invalidator = NetworkEmojiInvalidator(activity.handler, tvReply)
-        this.follow_invalidator = NetworkEmojiInvalidator(activity.handler, tvFollowerName)
-        this.name_invalidator = NetworkEmojiInvalidator(activity.handler, tvName)
-        this.lastActive_invalidator = NetworkEmojiInvalidator(activity.handler, tvLastStatusAt)
+        this.contentInvalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
+        this.spoilerInvalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
+        this.boostInvalidator = NetworkEmojiInvalidator(activity.handler, tvBoosted)
+        this.replyInvalidator = NetworkEmojiInvalidator(activity.handler, tvReply)
+        this.followInvalidator = NetworkEmojiInvalidator(activity.handler, tvFollowerName)
+        this.nameInvalidator = NetworkEmojiInvalidator(activity.handler, tvName)
+        this.lastActiveInvalidator = NetworkEmojiInvalidator(activity.handler, tvLastStatusAt)
 
         val cardBackground = llCardOuter.background
         if (cardBackground is PreviewCardBorder) {
@@ -340,7 +339,7 @@ class ItemViewHolder(
     fun onViewRecycled() {
     }
 
-    fun getAccount() = status_account ?: boost_account ?: follow_account
+    fun getAccount() = statusAccount ?: boostAccount ?: followAccount
 
     /////////////////////////////////////////////////////////////////////
 
@@ -402,7 +401,6 @@ class ItemViewHolder(
                             // tools:ignore="RtlSymmetry"
                             // tools:text="2017-04-16 09:37:14"
                         }.lparams(wrapContent, wrapContent)
-
                     }
 
                     tvBoosted = textView {
@@ -467,10 +465,8 @@ class ItemViewHolder(
                         // tools:src="?attr/ic_followed_by"
                         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                     }.lparams(matchParent, matchParent)
-
                 }
             }
-
 
             llStatus = verticalLayout {
                 lparams(matchParent, wrapContent)
@@ -495,7 +491,6 @@ class ItemViewHolder(
                         // tools:ignore="RtlSymmetry"
                         // tools:text="2017-04-16 09:37:14"
                     }.lparams(wrapContent, wrapContent)
-
                 }
 
                 linearLayout {
@@ -574,7 +569,6 @@ class ItemViewHolder(
                             gravity = Gravity.CENTER_VERTICAL
 
                             btnContentWarning = button {
-
                                 backgroundDrawable =
                                     ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
                                 minWidthCompat = dip(40)
@@ -596,9 +590,7 @@ class ItemViewHolder(
                                 }.lparams(matchParent, wrapContent) {
                                     topMargin = dip(3)
                                 }
-
                             }
-
                         }
 
                         llContents = verticalLayout {
@@ -611,7 +603,7 @@ class ItemViewHolder(
                                 topMargin = dip(3)
                             }
 
-                            val thumbnailHeight = activity.app_state.media_thumb_height
+                            val thumbnailHeight = activity.appState.mediaThumbHeight
                             val verticalArrangeThumbnails =
                                 Pref.bpVerticalArrangeThumbnails(activity.pref)
 
@@ -624,7 +616,6 @@ class ItemViewHolder(
                                         lparams(matchParent, matchParent)
 
                                         btnHideMedia = imageButton {
-
                                             background = ContextCompat.getDrawable(
                                                 context,
                                                 R.drawable.btn_bg_transparent_round6dp
@@ -636,77 +627,44 @@ class ItemViewHolder(
                                         }
 
                                         ivMedia1 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(matchParent, thumbnailHeight) {
                                             topMargin = dip(3)
                                         }
 
                                         ivMedia2 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(matchParent, thumbnailHeight) {
                                             topMargin = dip(3)
                                         }
 
                                         ivMedia3 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(matchParent, thumbnailHeight) {
                                             topMargin = dip(3)
                                         }
 
                                         ivMedia4 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(matchParent, thumbnailHeight) {
                                             topMargin = dip(3)
                                         }
                                     }
 
                                     btnShowMedia = blurhashView {
-
-                                        errorColor = context.attrColor(
-                                            R.attr.colorShowMediaBackground
-                                        )
+                                        errorColor = context.attrColor(R.attr.colorShowMediaBackground)
                                         gravity = Gravity.CENTER
-
-                                        textColor = context.attrColor(
-                                            R.attr.colorShowMediaText
-                                        )
-
+                                        textColor = context.attrColor(R.attr.colorShowMediaText)
                                         minHeightCompat = dip(48)
-
                                     }.lparams(matchParent, thumbnailHeight)
-
                                 }
                             } else {
                                 frameLayout {
@@ -717,7 +675,6 @@ class ItemViewHolder(
                                         lparams(matchParent, matchParent)
 
                                         ivMedia1 = myNetworkImageView {
-
                                             background = ContextCompat.getDrawable(
                                                 context,
                                                 R.drawable.bg_thumbnail
@@ -725,62 +682,40 @@ class ItemViewHolder(
                                             contentDescription =
                                                 context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(0, matchParent) {
                                             weight = 1f
                                         }
 
                                         ivMedia2 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(0, matchParent) {
                                             startMargin = dip(8)
                                             weight = 1f
                                         }
 
                                         ivMedia3 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(0, matchParent) {
                                             startMargin = dip(8)
                                             weight = 1f
                                         }
 
                                         ivMedia4 = myNetworkImageView {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
+                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                                            contentDescription = context.getString(R.string.thumbnail)
                                             scaleType = ImageView.ScaleType.CENTER_CROP
-
                                         }.lparams(0, matchParent) {
                                             startMargin = dip(8)
                                             weight = 1f
                                         }
 
                                         btnHideMedia = imageButton {
-
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.btn_bg_transparent_round6dp
-                                            )
+                                            background =
+                                                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
                                             contentDescription = context.getString(R.string.hide)
                                             imageResource = R.drawable.ic_close
                                         }.lparams(dip(32), matchParent) {
@@ -789,7 +724,6 @@ class ItemViewHolder(
                                     }
 
                                     btnShowMedia = blurhashView {
-
                                         errorColor = context.attrColor(
                                             R.attr.colorShowMediaBackground
                                         )
@@ -798,7 +732,6 @@ class ItemViewHolder(
                                         textColor = context.attrColor(
                                             R.attr.colorShowMediaText
                                         )
-
                                     }.lparams(matchParent, matchParent)
                                 }
                             }
@@ -821,7 +754,7 @@ class ItemViewHolder(
                                 }
 
                                 flCardImage = frameLayout {
-                                    lparams(matchParent, activity.app_state.media_thumb_height) {
+                                    lparams(matchParent, activity.appState.mediaThumbHeight) {
                                         topMargin = dip(3)
                                     }
 
@@ -829,15 +762,13 @@ class ItemViewHolder(
                                         lparams(matchParent, matchParent)
 
                                         ivCardImage = myNetworkImageView {
-
                                             contentDescription =
                                                 context.getString(R.string.thumbnail)
 
-                                            scaleType = if (Pref.bpDontCropMediaThumb(App1.pref))
-                                                ImageView.ScaleType.FIT_CENTER
-                                            else
-                                                ImageView.ScaleType.CENTER_CROP
-
+                                            scaleType = when {
+                                                Pref.bpDontCropMediaThumb(App1.pref) -> ImageView.ScaleType.FIT_CENTER
+                                                else -> ImageView.ScaleType.CENTER_CROP
+                                            }
                                         }.lparams(0, matchParent) {
                                             weight = 1f
                                         }
@@ -854,7 +785,6 @@ class ItemViewHolder(
                                     }
 
                                     btnCardImageShow = blurhashView {
-
                                         errorColor = context.attrColor(
                                             R.attr.colorShowMediaBackground
                                         )
@@ -863,12 +793,9 @@ class ItemViewHolder(
                                         textColor = context.attrColor(
                                             R.attr.colorShowMediaText
                                         )
-
                                     }.lparams(matchParent, matchParent)
                                 }
-
                             }
-
 
                             llExtra = verticalLayout {
                                 lparams(matchParent, wrapContent) {
@@ -895,9 +822,7 @@ class ItemViewHolder(
                             gravity = Gravity.END
                         }.lparams(matchParent, wrapContent)
                     }
-
                 }
-
             }
 
             llConversationIcons = linearLayout {
@@ -933,9 +858,7 @@ class ItemViewHolder(
                     endMargin = dip(3)
                 }
 
-                tvConversationIconsMore = textView {
-
-                }.lparams(wrapContent, wrapContent)
+                tvConversationIconsMore = textView {}.lparams(wrapContent, wrapContent)
             }
 
             llSearchTag = linearLayout {
@@ -950,7 +873,6 @@ class ItemViewHolder(
                 }
 
                 btnGapHead = imageButton {
-
                     background = ContextCompat.getDrawable(
                         context,
                         R.drawable.btn_bg_transparent_round6dp
@@ -984,24 +906,19 @@ class ItemViewHolder(
                     lparams(0, wrapContent) {
                         weight = 1f
                     }
-                    tvTrendTagName = textView {
-                    }.lparams(matchParent, wrapContent)
+
+                    tvTrendTagName = textView {}.lparams(matchParent, wrapContent)
 
                     tvTrendTagDesc = textView {
                         textSize = 12f // SP
                     }.lparams(matchParent, wrapContent)
                 }
-                tvTrendTagCount = textView {
-
-                }.lparams(wrapContent, wrapContent) {
+                tvTrendTagCount = textView {}.lparams(wrapContent, wrapContent) {
                     startMargin = dip(6)
                     endMargin = dip(6)
                 }
 
-                cvTagHistory = trendTagHistoryView {
-
-                }.lparams(dip(64), dip(32))
-
+                cvTagHistory = trendTagHistoryView {}.lparams(dip(64), dip(32))
             }
 
             llList = linearLayout {
@@ -1020,7 +937,6 @@ class ItemViewHolder(
                 }
 
                 btnListMore = imageButton {
-
                     background =
                         ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
                     imageResource = R.drawable.ic_more

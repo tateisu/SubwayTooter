@@ -1,7 +1,6 @@
 package jp.juggler.util
 
 import android.content.Context
-import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import android.text.Spannable
@@ -38,7 +37,6 @@ object StringUtils {
         //	private const val LRM = 0x200E.toChar() //	Left-to-right mark (LRM)
         //	private const val RLM = 0x200F.toChar() //	Right-to-left mark (RLM)
     }
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +55,7 @@ fun ByteArray.startWith(
     key: ByteArray,
     thisOffset: Int = 0,
     keyOffset: Int = 0,
-    length: Int = key.size - keyOffset
+    length: Int = key.size - keyOffset,
 ): Boolean {
     if (this.size - thisOffset >= length && key.size - keyOffset >= length) {
         for (i in 0 until length) {
@@ -96,9 +94,9 @@ fun CharSequence.replaceAll(pattern: Pattern, replacement: String): String =
     pattern.matcher(this).replaceAll(replacement)
 
 // %1$s を含む文字列リソースを利用して装飾テキストの前後に文字列を追加する
-fun CharSequence?.intoStringResource(context: Context, string_id: Int): Spannable {
+fun CharSequence?.intoStringResource(context: Context, stringId: Int): Spannable {
 
-    val s = context.getString(string_id)
+    val s = context.getString(stringId)
     val end = s.length
     val pos = s.indexOf("%1\$s")
     if (pos == -1) return SpannableString(s)
@@ -122,8 +120,9 @@ fun CharSequence.codePointBefore(index: Int): Int {
     val c2 = this[index - 1]
     if (Character.isLowSurrogate(c2) && index > 1) {
         val c1 = this[index - 2]
-        if (Character.isHighSurrogate(c1))
+        if (Character.isHighSurrogate(c1)) {
             return Character.toCodePoint(c1, c2)
+        }
     }
     return c2.code
 }
@@ -144,10 +143,7 @@ fun <S : CharSequence> S?.notBlank(): S? = if (this?.isNotBlank() == true) this 
 fun CharSequence.toUri(): Uri = Uri.parse(toString())
 
 fun CharSequence?.mayUri(): Uri? = try {
-    if (this?.isNotEmpty() == true)
-        toUri()
-    else
-        null
+    this?.notEmpty()?.toUri()
 } catch (ignored: Throwable) {
     null
 }
@@ -297,22 +293,6 @@ fun String.decodePercent(): String =
     Uri.decode(replace("+", "%20"))
 
 ////////////////////////////////////////////////////////////////////
-// Throwable
-
-fun Throwable.withCaption(fmt: String?, vararg args: Any) =
-    "${
-        if (fmt == null || args.isEmpty())
-            fmt
-        else
-            String.format(fmt, *args)
-    }: ${this.javaClass.simpleName} ${this.message}"
-
-fun Throwable.withCaption(resources: Resources, string_id: Int, vararg args: Any) =
-    "${
-        resources.getString(string_id, *args)
-    }: ${this.javaClass.simpleName} ${this.message}"
-
-////////////////////////////////////////////////////////////////////
 // Bundle
 
 //fun Bundle.parseString(key : String) : String? {
@@ -329,7 +309,7 @@ fun Throwable.withCaption(resources: Resources, string_id: Int, vararg args: Any
 fun Matcher.groupEx(g: Int): String? =
     try {
         group(g)
-    } catch (ex: Throwable) {
+    } catch (ignored: Throwable) {
         null
     }
 
@@ -348,3 +328,9 @@ fun defaultLocale(context: Context): Locale =
     }
 
 fun Matcher.findOrNull() = if (find()) this else null
+
+fun String.formatEx(vararg args: Any?): String =
+    java.lang.String.format(Locale.JAPANESE, this, *args)
+
+fun Float.toString(format: String): String =
+    java.lang.String.format(Locale.JAPANESE, format, this)

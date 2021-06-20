@@ -14,7 +14,7 @@ object TootPayload {
         parser: TootParser,
         event: String,
         parent: JsonObject,
-        parent_text: String
+        parentText: String,
     ): Any? {
         try {
             val payload = parent["payload"] ?: return null
@@ -30,12 +30,12 @@ object TootPayload {
 
                     // ここを通るケースはまだ確認できていない
                     else -> {
-                        log.e("unknown payload(1). message=${parent_text}")
+                        log.e("unknown payload(1). message=$parentText")
                         null
                     }
                 }
             } else if (payload is JsonArray) {
-                log.e("unknown payload(1b). message=${parent_text}")
+                log.e("unknown payload(1b). message=$parentText")
                 return null
             }
 
@@ -60,15 +60,16 @@ object TootPayload {
                         "announcement" -> parseItem(::TootAnnouncement, parser, src)
 
                         "emoji_reaction",
-                        "announcement.reaction" -> parseItem(TootReaction::parseFedibird, src)
+                        "announcement.reaction",
+                        -> parseItem(TootReaction::parseFedibird, src)
 
                         else -> {
-                            log.e("unknown payload(2). message=${parent_text}")
+                            log.e("unknown payload(2). message=$parentText")
                             // ここを通るケースはまだ確認できていない
                         }
                     }
                 } else if (payload[0] == '[') {
-                    log.e("unknown payload(2b). message=${parent_text}")
+                    log.e("unknown payload(2b). message=$parentText")
                     return null
                 }
 
@@ -80,8 +81,7 @@ object TootPayload {
             }
 
             // ここを通るケースはまだ確認できていない
-            log.e("unknown payload(3). message=${parent_text}")
-
+            log.e("unknown payload(3). message=$parentText")
         } catch (ex: Throwable) {
             log.trace(ex)
         }

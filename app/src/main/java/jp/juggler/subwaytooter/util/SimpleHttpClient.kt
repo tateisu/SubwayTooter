@@ -18,20 +18,20 @@ interface SimpleHttpClient {
 //		tmpOkhttpClient: OkHttpClient? = null
 //	): Response
 
-	suspend fun getResponse(
-		request: Request,
-		tmpOkhttpClient: OkHttpClient? = null
-	): Response
+    suspend fun getResponse(
+        request: Request,
+        tmpOkhttpClient: OkHttpClient? = null
+    ): Response
 
     fun getWebSocket(
-		request: Request,
-		webSocketListener: WebSocketListener
-	): WebSocket
+        request: Request,
+        webSocketListener: WebSocketListener
+    ): WebSocket
 }
 
 class SimpleHttpClientImpl(
-	val context: Context,
-	private val okHttpClient: OkHttpClient
+    val context: Context,
+    private val okHttpClient: OkHttpClient
 ) : SimpleHttpClient {
 
     companion object {
@@ -50,23 +50,21 @@ class SimpleHttpClientImpl(
 //        return call.execute()
 //    }
 
-	override suspend fun getResponse(
-		request: Request,
-		tmpOkhttpClient: OkHttpClient?
-	): Response {
-		App1.getAppState(context).networkTracker.checkNetworkState()
-		val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
-		onCallCreated(call)
-		return call.await()
-	}
+    override suspend fun getResponse(
+        request: Request,
+        tmpOkhttpClient: OkHttpClient?
+    ): Response {
+        App1.getAppState(context).networkTracker.checkNetworkState()
+        val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
+        onCallCreated(call)
+        return call.await()
+    }
 
     override fun getWebSocket(
-		request: Request,
-		webSocketListener: WebSocketListener
-	): WebSocket {
+        request: Request,
+        webSocketListener: WebSocketListener
+    ): WebSocket {
         App1.getAppState(context).networkTracker.checkNetworkState()
         return okHttpClient.newWebSocket(request, webSocketListener)
     }
-
-
 }

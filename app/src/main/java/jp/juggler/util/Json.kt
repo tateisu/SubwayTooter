@@ -10,7 +10,7 @@ class JsonException : RuntimeException {
     constructor(cause: Throwable) : super(cause.message, cause)
 }
 
-private const val char0 = '\u0000'
+private const val CHAR0 = '\u0000'
 
 // Tests if the value should be tried as a decimal.
 // It makes no test if there are actual digits.
@@ -59,18 +59,17 @@ private fun String.stringToNumber(): Number {
                 }
             }
         }
-
     }
     throw NumberFormatException("val [$this] is not a valid number.")
 }
 
 private fun Any?.asNumber(defaultValue: Number): Number =
     when (this) {
-		null -> defaultValue
-		is Number -> this
+        null -> defaultValue
+        is Number -> this
         else -> try {
             toString().stringToNumber()
-        } catch (e: Exception) {
+        } catch (ignored: Throwable) {
             defaultValue
         }
     }
@@ -110,6 +109,8 @@ class JsonArray : ArrayList<Any?> {
     fun double(key: Int): Double? = JsonObject.castDouble(this[key])
 
     fun jsonObject(key: Int) = this[key].cast<JsonObject>()
+
+    @Suppress("MemberNameEqualsClassName")
     fun jsonArray(key: Int) = this[key].cast<JsonArray>()
 
     fun optString(key: Int, defVal: String = "") = string(key) ?: defVal
@@ -144,34 +145,34 @@ class JsonObject : LinkedHashMap<String, Any?>() {
 
         fun castBoolean(o: Any?): Boolean? =
             when (o) {
-				null -> null
-				is Boolean -> o
-				is Int -> o != 0
-				is Long -> o != 0L
-				is Float -> !(o.isFinite() && o == 0f)
-				is Double -> !(o.isFinite() && o == 0.0)
+                null -> null
+                is Boolean -> o
+                is Int -> o != 0
+                is Long -> o != 0L
+                is Float -> !(o.isFinite() && o == 0f)
+                is Double -> !(o.isFinite() && o == 0.0)
 
-				is String -> when (o) {
-					"", "0", "false", "False" -> false
-					else -> true
-				}
+                is String -> when (o) {
+                    "", "0", "false", "False" -> false
+                    else -> true
+                }
 
-				is JsonArray -> o.isNotEmpty()
-				is JsonObject -> o.isNotEmpty()
+                is JsonArray -> o.isNotEmpty()
+                is JsonObject -> o.isNotEmpty()
 
                 else -> true
             }
 
         fun castLong(o: Any?): Long? =
             when (o) {
-				is Long -> o
-				is Number -> o.toLong()
+                is Long -> o
+                is Number -> o.toLong()
 
-				is String -> try {
-					o.stringToNumber().toLong()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is String -> try {
+                    o.stringToNumber().toLong()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
                 else -> null // may null or JsonObject.NULL or object,array,boolean
             }
@@ -179,19 +180,19 @@ class JsonObject : LinkedHashMap<String, Any?>() {
         fun castInt(o: Any?): Int? =
             when (o) {
 
-				is Int -> o
+                is Int -> o
 
-				is Number -> try {
-					o.toInt()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is Number -> try {
+                    o.toInt()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
-				is String -> try {
-					o.stringToNumber().toInt()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is String -> try {
+                    o.stringToNumber().toInt()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
                 else -> null // may null or JsonObject.NULL or object,array,boolean
             }
@@ -199,19 +200,19 @@ class JsonObject : LinkedHashMap<String, Any?>() {
         fun castDouble(o: Any?): Double? =
             when (o) {
 
-				is Double -> o
+                is Double -> o
 
-				is Number -> try {
-					o.toDouble()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is Number -> try {
+                    o.toDouble()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
-				is String -> try {
-					o.stringToNumber().toDouble()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is String -> try {
+                    o.stringToNumber().toDouble()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
                 else -> null // may null or JsonObject.NULL or object,array,boolean
             }
@@ -219,19 +220,19 @@ class JsonObject : LinkedHashMap<String, Any?>() {
         fun castFloat(o: Any?): Float? =
             when (o) {
 
-				is Float -> o
+                is Float -> o
 
-				is Number -> try {
-					o.toFloat()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is Number -> try {
+                    o.toFloat()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
-				is String -> try {
-					o.stringToNumber().toFloat()
-				} catch (_: NumberFormatException) {
-					null
-				}
+                is String -> try {
+                    o.stringToNumber().toFloat()
+                } catch (_: NumberFormatException) {
+                    null
+                }
 
                 else -> null // may null or JsonObject.NULL or object,array,boolean
             }
@@ -252,6 +253,8 @@ class JsonObject : LinkedHashMap<String, Any?>() {
     fun long(key: String): Long? = castLong(this[key])
     fun float(key: String): Float? = castFloat(this[key])
     fun double(key: String): Double? = castDouble(this[key])
+
+    @Suppress("MemberNameEqualsClassName")
     fun jsonObject(name: String) = this[name].cast<JsonObject>()
     fun jsonArray(name: String) = this[name].cast<JsonArray>()
 
@@ -336,7 +339,7 @@ class JsonTokenizer(reader: Reader) {
     private var line = 1L
 
     /** previous character read from the input.  */
-    private var previous = char0
+    private var previous = CHAR0
 
     /** Reader for the input.  */
     private val reader = if (reader.markSupported()) reader else BufferedReader(reader)
@@ -432,7 +435,7 @@ class JsonTokenizer(reader: Reader) {
             }
             if (i <= 0) { // End of stream
                 eof = true
-                return char0
+                return CHAR0
             }
             c = i.toChar()
         }
@@ -447,22 +450,22 @@ class JsonTokenizer(reader: Reader) {
      * @param c the current character read.
      */
     private fun incrementIndexes(c: Char) {
-        if (c == char0) return
+        if (c == CHAR0) return
         index++
         when (c) {
-			'\r' -> {
-				line++
-				characterPreviousLine = character
-				character = 0
-			}
+            '\r' -> {
+                line++
+                characterPreviousLine = character
+                character = 0
+            }
 
-			'\n' -> {
-				if (previous != '\r') {
-					line++
-					characterPreviousLine = character
-				}
-				character = 0
-			}
+            '\n' -> {
+                if (previous != '\r') {
+                    line++
+                    characterPreviousLine = character
+                }
+                character = 0
+            }
 
             else -> {
                 character++
@@ -524,7 +527,7 @@ class JsonTokenizer(reader: Reader) {
     private fun nextClean(): Char {
         while (true) {
             val c = this.next()
-            if (c == char0 || c > ' ') {
+            if (c == CHAR0 || c > ' ') {
                 return c
             }
         }
@@ -546,29 +549,29 @@ class JsonTokenizer(reader: Reader) {
         while (true) {
             var c: Char = this.next()
             when (c) {
-				char0, '\n', '\r' ->
-					throw this.syntaxError("Unterminated string")
+                CHAR0, '\n', '\r' ->
+                    throw this.syntaxError("Unterminated string")
 
-				quote ->
-					return sb.toString()
+                quote ->
+                    return sb.toString()
 
-				'\\' -> {
-					c = this.next()
-					when (c) {
-						'b' -> sb.append('\b')
-						't' -> sb.append('\t')
-						'n' -> sb.append('\n')
-						'f' -> sb.append('\u000c')
-						'r' -> sb.append('\r')
-						'u' -> try {
-							sb.append(this.next(4).toInt(16).toChar())
-						} catch (e: NumberFormatException) {
-							throw syntaxError("Illegal escape.", e)
-						}
-						'"', '\'', '\\', '/' -> sb.append(c)
-						else -> throw syntaxError("Illegal escape.")
-					}
-				}
+                '\\' -> {
+                    c = this.next()
+                    when (c) {
+                        'b' -> sb.append('\b')
+                        't' -> sb.append('\t')
+                        'n' -> sb.append('\n')
+                        'f' -> sb.append('\u000c')
+                        'r' -> sb.append('\r')
+                        'u' -> try {
+                            sb.append(this.next(4).toInt(16).toChar())
+                        } catch (e: NumberFormatException) {
+                            throw syntaxError("Illegal escape.", e)
+                        }
+                        '"', '\'', '\\', '/' -> sb.append(c)
+                        else -> throw syntaxError("Illegal escape.")
+                    }
+                }
 
                 else -> sb.append(c)
             }
@@ -630,17 +633,17 @@ class JsonTokenizer(reader: Reader) {
         var c = nextClean()
         val string: String
         when (c) {
-			'"', '\'' -> return nextString(c)
+            '"', '\'' -> return nextString(c)
 
-			'{' -> {
-				back()
-				return parseInto(JsonObject())
-			}
+            '{' -> {
+                back()
+                return parseInto(JsonObject())
+            }
 
-			'[' -> {
-				back()
-				return parseInto(JsonArray())
-			}
+            '[' -> {
+                back()
+                return parseInto(JsonArray())
+            }
         }
         /*
          * Handle unquoted text. This could be the values true, false, or
@@ -728,9 +731,9 @@ class JsonTokenizer(reader: Reader) {
      * @return  A JsonException object, suitable for throwing
      */
     private fun syntaxError(
-		@Suppress("SameParameterValue") message: String,
-		causedBy: Throwable?
-	) = JsonException(message + toString(), causedBy)
+        @Suppress("SameParameterValue") message: String,
+        causedBy: Throwable?
+    ) = JsonException(message + toString(), causedBy)
 
     /**
      * Make a printable string of this JSONTokener.
@@ -742,16 +745,15 @@ class JsonTokenizer(reader: Reader) {
 
     private fun parseInto(dst: JsonObject): JsonObject {
 
-        if (nextClean() != '{')
-            throw syntaxError("A JsonObject text must begin with '{'")
+        if (nextClean() != '{') throw syntaxError("A JsonObject text must begin with '{'")
 
         while (true) {
             var c: Char = nextClean()
             val key: String = when (c) {
-				char0 ->
-					throw syntaxError("A JsonObject text must end with '}'")
-				'}' ->
-					return dst
+                CHAR0 ->
+                    throw syntaxError("A JsonObject text must end with '}'")
+                '}' ->
+                    return dst
 
                 else -> {
                     back()
@@ -760,41 +762,36 @@ class JsonTokenizer(reader: Reader) {
             }
             // The key is followed by ':'.
             c = nextClean()
-            if (c != ':')
-                throw syntaxError("Expected a ':' after a key")
+            if (c != ':') throw syntaxError("Expected a ':' after a key")
 
             // Use syntaxError(..) to include error location
             // Check if key exists
 
             // key already exists
-            if (dst.contains(key))
-                throw syntaxError("Duplicate key \"$key\"")
+            if (dst.contains(key)) throw syntaxError("Duplicate key \"$key\"")
 
             // Only add value if non-null
             dst[key] = nextValue()
             when (nextClean()) {
-				';', ',' -> {
-					if (nextClean() == '}') {
-						return dst
-					}
-					back()
-				}
+                ';', ',' -> {
+                    if (nextClean() == '}') return dst
+                    back()
+                }
 
-				'}' -> return dst
+                '}' -> return dst
                 else -> throw syntaxError("Expected a ',' or '}'")
             }
         }
     }
 
     private fun parseInto(dst: JsonArray): JsonArray {
-        if (nextClean() != '[')
-            throw syntaxError("A JsonArray text must start with '['")
+        if (nextClean() != '[') throw syntaxError("A JsonArray text must start with '['")
 
         when (nextClean()) {
             // array is unclosed. No ']' found, instead EOF
-			char0 -> throw syntaxError("Expected a ',' or ']'")
+            CHAR0 -> throw syntaxError("Expected a ',' or ']'")
             // empty array
-			']' -> return dst
+            ']' -> return dst
 
             else -> {
                 back()
@@ -807,14 +804,14 @@ class JsonTokenizer(reader: Reader) {
                         dst.add(nextValue())
                     }
                     when (nextClean()) {
-						char0 -> throw syntaxError("Expected a ',' or ']'")
-						']' -> return dst
-						',' -> when (nextClean()) {
-							// array is unclosed. No ']' found, instead EOF
-							char0 -> throw syntaxError("Expected a ',' or ']'")
-							']' -> return dst
-							else -> back()
-						}
+                        CHAR0 -> throw syntaxError("Expected a ',' or ']'")
+                        ']' -> return dst
+                        ',' -> when (nextClean()) {
+                            // array is unclosed. No ']' found, instead EOF
+                            CHAR0 -> throw syntaxError("Expected a ',' or ']'")
+                            ']' -> return dst
+                            else -> back()
+                        }
                         else -> throw syntaxError("Expected a ',' or ']'")
                     }
                 }
@@ -830,33 +827,33 @@ private fun Writer.writeQuote(string: String): Writer {
         write("\"\"")
     } else {
         append('"')
-        var previousChar: Char = char0
+        var previousChar: Char = CHAR0
         for (c in string) {
             when (c) {
-				'\\', '"' -> {
-					append('\\')
-					append(c)
-				}
+                '\\', '"' -> {
+                    append('\\')
+                    append(c)
+                }
 
-				'/' -> {
-					if (previousChar == '<') append('\\')
-					append(c)
-				}
+                '/' -> {
+                    if (previousChar == '<') append('\\')
+                    append(c)
+                }
 
-				'\b' -> append("\\b")
-				'\t' -> append("\\t")
-				'\n' -> append("\\n")
-				'\u000c' -> append("\\f")
-				'\r' -> append("\\r")
+                '\b' -> append("\\b")
+                '\t' -> append("\\t")
+                '\n' -> append("\\n")
+                '\u000c' -> append("\\f")
+                '\r' -> append("\\r")
 
-				in char0 until ' ',
-				in '\u0080' until '\u00a0',
-				in '\u2000' until '\u2100' -> {
-					write("\\u")
-					val hexCode: String = Integer.toHexString(c.code)
-					write("0000", 0, 4 - hexCode.length)
-					write(hexCode)
-				}
+                in CHAR0 until ' ',
+                in '\u0080' until '\u00a0',
+                in '\u2000' until '\u2100' -> {
+                    write("\\u")
+                    val hexCode: String = Integer.toHexString(c.code)
+                    write("0000", 0, 4 - hexCode.length)
+                    write(hexCode)
+                }
 
                 else -> append(c)
             }
@@ -870,10 +867,8 @@ private fun Writer.writeQuote(string: String): Writer {
 private fun Number.toJsonString(): String {
 
     when (this) {
-		is Double -> if (isInfinite() || isNaN())
-			throw JsonException("JSON does not allow non-finite numbers.")
-		is Float -> if (isInfinite() || isNaN())
-			throw JsonException("JSON does not allow non-finite numbers.")
+        is Double -> if (isInfinite() || isNaN()) throw JsonException("JSON does not allow non-finite numbers.")
+        is Float -> if (isInfinite() || isNaN()) throw JsonException("JSON does not allow non-finite numbers.")
     }
 
     // Shave off trailing zeros and decimal point, if possible.
@@ -904,14 +899,14 @@ private fun Writer.writeCollection(indentFactor: Int, indent: Int, src: Collecti
     try {
         append('[')
         when (src.size) {
-			0 -> {
-			}
+            0 -> {
+            }
 
-			1 -> try {
-				writeJsonValue(indentFactor, indent, src.iterator().next(), sort)
-			} catch (e: Exception) {
-				throw JsonException("Unable to write JsonArray value at index: 0", e)
-			}
+            1 -> try {
+                writeJsonValue(indentFactor, indent, src.iterator().next(), sort)
+            } catch (e: Exception) {
+                throw JsonException("Unable to write JsonArray value at index: 0", e)
+            }
 
             else -> {
                 val newIndent = indent + indentFactor
@@ -937,15 +932,15 @@ private fun Writer.writeArray(indentFactor: Int, indent: Int, src: Any, sort: Bo
     try {
         append('[')
         when (val size = java.lang.reflect.Array.getLength(src)) {
-			0 -> {
-			}
+            0 -> {
+            }
 
-			1 -> try {
-				val value = java.lang.reflect.Array.get(src, 0)
-				writeJsonValue(indentFactor, indent, value, sort)
-			} catch (e: Exception) {
-				throw JsonException("Unable to write JsonArray value at index: 0", e)
-			}
+            1 -> try {
+                val value = java.lang.reflect.Array.get(src, 0)
+                writeJsonValue(indentFactor, indent, value, sort)
+            } catch (e: Exception) {
+                throw JsonException("Unable to write JsonArray value at index: 0", e)
+            }
 
             else -> {
                 val newIndent = indent + indentFactor
@@ -972,23 +967,23 @@ private fun Writer.writeMap(indentFactor: Int, indent: Int, src: Map<*, *>, sort
     try {
         append('{')
         when (src.size) {
-			0 -> {
-			}
+            0 -> {
+            }
 
-			1 -> {
-				val entry = src.entries.first()
-				writeJsonValue(indentFactor, indent, entry.key, sort)
-				append(':')
-				if (indentFactor > 0) append(' ')
-				try {
-					writeJsonValue(indentFactor, indent, entry.value, sort)
-				} catch (ex: Throwable) {
-					throw JsonException(
-						"Unable to write JsonObject value for key: ${entry.key}",
-						ex
-					)
-				}
-			}
+            1 -> {
+                val entry = src.entries.first()
+                writeJsonValue(indentFactor, indent, entry.key, sort)
+                append(':')
+                if (indentFactor > 0) append(' ')
+                try {
+                    writeJsonValue(indentFactor, indent, entry.value, sort)
+                } catch (ex: Throwable) {
+                    throw JsonException(
+                        "Unable to write JsonObject value for key: ${entry.key}",
+                        ex
+                    )
+                }
+            }
 
             else -> {
                 val newIndent = indent + indentFactor
@@ -1008,9 +1003,9 @@ private fun Writer.writeMap(indentFactor: Int, indent: Int, src: Map<*, *>, sort
                         writeJsonValue(indentFactor, newIndent, entry.value, sort)
                     } catch (ex: Exception) {
                         throw JsonException(
-							"Unable to write JsonObject value for key: ${entry.key}",
-							ex
-						)
+                            "Unable to write JsonObject value for key: ${entry.key}",
+                            ex
+                        )
                     }
                     needsComma = true
                 }
@@ -1024,10 +1019,10 @@ private fun Writer.writeMap(indentFactor: Int, indent: Int, src: Map<*, *>, sort
     }
 
 fun Writer.writeJsonValue(
-	indentFactor: Int,
-	indent: Int,
-	value: Any?,
-	sort: Boolean
+    indentFactor: Int,
+    indent: Int,
+    value: Any?,
+    sort: Boolean
 ): Writer {
     when {
         value == null -> write("null")
@@ -1062,7 +1057,7 @@ fun Writer.writeJsonValue(
 /////////////////////////////////////////////////////////////////////////////
 
 fun notEmptyOrThrow(name: String, value: String?) =
-    if (value?.isNotEmpty() == true) value else throw RuntimeException("$name is empty")
+    if (value?.isNotEmpty() == true) value else error("$name is empty")
 
 private val log = LogCategory("Json")
 

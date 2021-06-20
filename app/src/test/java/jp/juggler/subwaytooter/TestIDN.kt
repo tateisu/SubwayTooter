@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.net.IDN
 
+@Suppress("MemberNameEqualsClassName")
 class TestIDN {
 
     @Test

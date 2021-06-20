@@ -15,7 +15,7 @@ fun ActMain.openColumnList() =
 // アプリをミュートする
 fun ActMain.appMute(
     application: TootApplication,
-    confirmed: Boolean = false
+    confirmed: Boolean = false,
 ) {
     if (!confirmed) {
         AlertDialog.Builder(this)
@@ -28,9 +28,6 @@ fun ActMain.appMute(
         return
     }
     MutedApp.save(application.name)
-    app_state.onMuteUpdated()
+    appState.onMuteUpdated()
     showToast(false, R.string.app_was_muted)
-
 }
-
-

@@ -8,16 +8,16 @@ import java.util.regex.Pattern
 
 open class TootTag constructor(
 
-	// The hashtag, not including the preceding #
-	val name: String,
+    // The hashtag, not including the preceding #
+    val name: String,
 
-	// The URL of the hashtag. may null if generated from TootContext
-	val url: String? = null,
+    // The URL of the hashtag. may null if generated from TootContext
+    val url: String? = null,
 
-	// Mastodon /api/v2/search provides history.
-	val history: ArrayList<History>? = null
+    // Mastodon /api/v2/search provides history.
+    val history: ArrayList<History>? = null,
 
-) : TimelineItem() {
+    ) : TimelineItem() {
 
     val countDaily: Int
     val countWeekly: Int
@@ -26,7 +26,7 @@ open class TootTag constructor(
 
     init {
         countDaily = history?.first()?.uses ?: 0
-        countWeekly = history?.sumOf{ it.uses } ?: 0
+        countWeekly = history?.sumOf { it.uses } ?: 0
 
         accountDaily = history?.first()?.accounts ?: 0
         accountWeekly = history?.map { it.accounts }?.maxOrNull() ?: accountDaily
@@ -39,14 +39,10 @@ open class TootTag constructor(
         val accounts: Int
 
         init {
-            day = src.long("day")
-                ?: throw RuntimeException("TootTrendTag.History: missing day")
-            uses = src.int("uses")
-                ?: throw RuntimeException("TootTrendTag.History: missing uses")
-            accounts = src.int("accounts")
-                ?: throw RuntimeException("TootTrendTag.History: missing accounts")
+            day = src.long("day") ?: error("TootTrendTag.History: missing day")
+            uses = src.int("uses") ?: error("TootTrendTag.History: missing uses")
+            accounts = src.int("accounts") ?: error("TootTrendTag.History: missing accounts")
         }
-
     }
 
     companion object {
@@ -62,23 +58,23 @@ open class TootTag constructor(
             if (parser.linkHelper.isMisskey) {
                 val name = src.stringOrThrow("tag").replaceFirst(reHeadSharp, "")
                 TootTag(
-					name = name,
-					url = "https://${parser.apiHost}/tags/${Uri.encode(name)}"
-				)
+                    name = name,
+                    url = "https://${parser.apiHost}/tags/${Uri.encode(name)}"
+                )
             } else {
                 // /api/v1/accounts/$id/featured_tags の場合、
                 // name部分は先頭に#がついているかもしれない。必要なら除去するべき。
                 // url部分はユーザのタグTLになる。 https://nightly.fedibird.com/@noellabo/tagged/fedibird
                 // STはメニューから選べるので、URLは普通のタグURLの方が望ましい https://nightly.fedibird.com/tags/fedibird
                 TootTag(
-					name = src.stringOrThrow("name").replaceFirst(reHeadSharp, ""),
+                    name = src.stringOrThrow("name").replaceFirst(reHeadSharp, ""),
                     // mastodonではurl,notestockではhref
                     // notestockではタグのURLは https://mastodon.juggler.jp/explore/subwaytooter のようになる
-					url = (src.string("url")?: src.string("href"))
+                    url = (src.string("url") ?: src.string("href"))
                         ?.replaceFirst(reUserTagUrl, "/tags/")
                         ?.replaceFirst(reNotestockTagUrl, "/tags/"),
-					history = parseHistories(src.jsonArray("history"))
-				)
+                    history = parseHistories(src.jsonArray("history"))
+                )
             }
 
         private fun parseHistories(src: JsonArray?): ArrayList<History>? {
@@ -99,10 +95,10 @@ open class TootTag constructor(
             array?.mapNotNull { src ->
                 try {
                     when (src) {
-						null -> null
-						"" -> null
-						is String -> TootTag(name = src)
-						is JsonObject -> parse(parser, src)
+                        null -> null
+                        "" -> null
+                        is String -> TootTag(name = src)
+                        is JsonObject -> parse(parser, src)
                         else -> null
                     }
                 } catch (ex: Throwable) {
@@ -113,7 +109,6 @@ open class TootTag constructor(
 
         fun parseList(parser: TootParser, array: JsonArray?) =
             parseListOrNull(parser, array) ?: emptyList()
-
 
         private const val w = TootAccount.reRubyWord
         private const val a = TootAccount.reRubyAlpha

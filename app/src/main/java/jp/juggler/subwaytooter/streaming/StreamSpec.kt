@@ -32,7 +32,6 @@ private fun StringWriter.appendValue(v: Any?) {
     }
 }
 
-
 class StreamSpec(
     val params: JsonObject,
     val path: String,
@@ -77,7 +76,6 @@ private fun encodeStreamNameMastodon(root: JsonObject) = StringWriter()
         }
     }.toString()
 
-
 private fun Column.streamSpecMastodon(): StreamSpec? {
 
     val root = type.streamKeyMastodon(this) ?: return null
@@ -111,7 +109,7 @@ private fun encodeStreamNameMisskey(root: JsonObject) =
 fun Column.streamSpecMisskey(): StreamSpec? {
 
     // 認証トークンがないなら認証トークン必須のカラムにはアクセスできない
-    if (access_info.misskeyApiToken == null &&
+    if (accessInfo.misskeyApiToken == null &&
         when (type) {
             ColumnType.HOME,
             ColumnType.MISSKEY_HYBRID,
@@ -144,8 +142,8 @@ val Column.streamSpec: StreamSpec?
     get() = when {
         // 疑似アカウントではストリーミングAPIを利用できない
         // 2.1 では公開ストリームのみ利用できるらしい
-        (access_info.isNA || access_info.isPseudo && !isPublicStream) -> null
-        access_info.isMastodon -> streamSpecMastodon()
-        access_info.isMisskey -> streamSpecMisskey()
+        (accessInfo.isNA || accessInfo.isPseudo && !isPublicStream) -> null
+        accessInfo.isMastodon -> streamSpecMastodon()
+        accessInfo.isMisskey -> streamSpecMisskey()
         else -> null
     }

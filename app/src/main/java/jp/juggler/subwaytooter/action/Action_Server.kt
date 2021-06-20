@@ -91,7 +91,7 @@ fun ActMain.serverProfileDirectoryFromInstanceInformation(
     host: Host,
     instance: TootInstance? = null
 ) = serverProfileDirectory(
-    currentColumn.access_info,
+    currentColumn.accessInfo,
     host,
     instance = instance,
     pos = nextPosition(currentColumn)
@@ -109,21 +109,20 @@ fun ActMain.serverInformation(
     host
 )
 
-
 // ドメインブロック
 fun ActMain.domainBlock(
-    access_info: SavedAccount,
+    accessInfo: SavedAccount,
     domain: Host,
     bBlock: Boolean
 ) {
 
-    if (access_info.matchHost(domain)) {
+    if (accessInfo.matchHost(domain)) {
         showToast(false, R.string.it_is_you)
         return
     }
 
     launchMain {
-        runApiTask(access_info) { client ->
+        runApiTask(accessInfo) { client ->
             client.request(
                 "/api/v1/domain_blocks",
                 "domain=${domain.ascii.encodePercent()}"
@@ -134,8 +133,8 @@ fun ActMain.domainBlock(
             when (result.jsonObject) {
                 null -> showToast(false, result.error)
                 else -> {
-                    for (column in app_state.columnList) {
-                        column.onDomainBlockChanged(access_info, domain, bBlock)
+                    for (column in appState.columnList) {
+                        column.onDomainBlockChanged(accessInfo, domain, bBlock)
                     }
                     showToast(
                         false,

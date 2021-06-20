@@ -5,6 +5,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 
 // 通知領域に表示したいデータ
 class NotificationData(
-    val access_info: SavedAccount,
-    val notification: TootNotification
-    )
+    val accessInfo: SavedAccount,
+    val notification: TootNotification,
+)

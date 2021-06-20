@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class CustomEmojiLister(
     val context: Context,
-    private val handler: Handler
+    private val handler: Handler,
 ) {
 
     companion object {
@@ -34,24 +34,24 @@ class CustomEmojiLister(
         var list: ArrayList<CustomEmoji>? = null,
         var listWithAliases: ArrayList<CustomEmoji>? = null,
         // ロードした時刻
-        var time_update: Long = elapsedTime,
+        var timeUpdate: Long = elapsedTime,
         // 参照された時刻
-        var time_used: Long = time_update
+        var timeUsed: Long = timeUpdate,
     )
 
     internal class Request(
         val accessInfo: SavedAccount,
         val reportWithAliases: Boolean = false,
-        val onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit?
+        val onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit?,
     )
 
     // 成功キャッシュ
     internal val cache = ConcurrentHashMap<String, CacheItem>()
 
     // エラーキャッシュ
-    internal val cache_error = ConcurrentHashMap<String, Long>()
+    internal val cacheError = ConcurrentHashMap<String, Long>()
 
-    private val cache_error_item = CacheItem("error")
+    private val cacheErrorItem = CacheItem("error")
 
     // ロード要求
     internal val queue = ConcurrentLinkedQueue<Request>()
@@ -64,7 +64,7 @@ class CustomEmojiLister(
 
     // ネットワーク接続が変化したらエラーキャッシュをクリア
     fun onNetworkChanged() {
-        cache_error.clear()
+        cacheError.clear()
     }
 
     private fun getCached(now: Long, accessInfo: SavedAccount): CacheItem? {
@@ -72,15 +72,15 @@ class CustomEmojiLister(
 
         // 成功キャッシュ
         val item = cache[host]
-        if (item != null && now - item.time_update <= ERROR_EXPIRE) {
-            item.time_used = now
+        if (item != null && now - item.timeUpdate <= ERROR_EXPIRE) {
+            item.timeUsed = now
             return item
         }
 
         // エラーキャッシュ
-        val time_error = cache_error[host]
-        if (time_error != null && now < time_error + ERROR_EXPIRE) {
-            return cache_error_item
+        val timeError = cacheError[host]
+        if (timeError != null && now < timeError + ERROR_EXPIRE) {
+            return cacheErrorItem
         }
 
         return null
@@ -88,7 +88,7 @@ class CustomEmojiLister(
 
     fun getList(
         accessInfo: SavedAccount,
-        onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit
+        onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit,
     ): ArrayList<CustomEmoji>? {
         try {
             synchronized(cache) {
@@ -106,7 +106,7 @@ class CustomEmojiLister(
 
     fun getListWithAliases(
         accessInfo: SavedAccount,
-        onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit
+        onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit,
     ): ArrayList<CustomEmoji>? {
         try {
             synchronized(cache) {
@@ -169,7 +169,7 @@ class CustomEmojiLister(
                             true
                         } else {
                             // キャッシュにはなかった
-                            sweep_cache()
+                            sweepCache()
                             false
                         }
                     }
@@ -182,14 +182,14 @@ class CustomEmojiLister(
                     try {
                         val data = if (accessInfo.isMisskey) {
                             App1.getHttpCachedString(
-                                "https://${cacheKey}/api/meta",
+                                "https://$cacheKey/api/meta",
                                 accessInfo = accessInfo
                             ) { builder ->
                                 builder.post(JsonObject().toRequestBody())
                             }
                         } else {
                             App1.getHttpCachedString(
-                                "https://${cacheKey}/api/v1/custom_emojis",
+                                "https://$cacheKey/api/v1/custom_emojis",
                                 accessInfo = accessInfo
                             )
                         }
@@ -199,7 +199,6 @@ class CustomEmojiLister(
                             list = a
                             listWithAlias = makeListWithAlias(a)
                         }
-
                     } catch (ex: Throwable) {
                         log.trace(ex)
                     }
@@ -207,7 +206,7 @@ class CustomEmojiLister(
                     synchronized(cache) {
                         val now = elapsedTime
                         if (list == null || listWithAlias == null) {
-                            cache_error.put(cacheKey, now)
+                            cacheError.put(cacheKey, now)
                         } else {
                             var item: CacheItem? = cache[cacheKey]
                             if (item == null) {
@@ -216,7 +215,7 @@ class CustomEmojiLister(
                             } else {
                                 item.list = list
                                 item.listWithAliases = listWithAlias
-                                item.time_update = now
+                                item.timeUpdate = now
                             }
                             fireCallback(request, list, listWithAlias)
                         }
@@ -231,7 +230,7 @@ class CustomEmojiLister(
         private fun fireCallback(
             request: Request,
             list: ArrayList<CustomEmoji>,
-            listWithAliases: ArrayList<CustomEmoji>
+            listWithAliases: ArrayList<CustomEmoji>,
         ) {
             handler.post {
                 request.onListLoaded(
@@ -245,7 +244,7 @@ class CustomEmojiLister(
         }
 
         // キャッシュの掃除
-        private fun sweep_cache() {
+        private fun sweepCache() {
             // 超過してる数
             val over = cache.size - CACHE_MAX
             if (over <= 0) return
@@ -254,11 +253,11 @@ class CustomEmojiLister(
             val now = elapsedTime
             val list = ArrayList<CacheItem>(over)
             for (item in cache.values) {
-                if (now - item.time_used > 1000L) list.add(item)
+                if (now - item.timeUsed > 1000L) list.add(item)
             }
 
             // 昇順ソート
-            list.sortBy { it.time_used }
+            list.sortBy { it.timeUsed }
 
             // 古い物から順に捨てる
             var removed = 0
@@ -270,7 +269,7 @@ class CustomEmojiLister(
 
         private fun decodeEmojiList(
             data: String,
-            accessInfo: SavedAccount
+            accessInfo: SavedAccount,
         ): ArrayList<CustomEmoji>? {
             return try {
                 val list = if (accessInfo.isMisskey) {
@@ -310,5 +309,4 @@ class CustomEmojiLister(
             return dst
         }
     }
-
 }

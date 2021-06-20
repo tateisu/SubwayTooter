@@ -22,19 +22,19 @@ import org.jetbrains.anko.dip
 
 fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     val reactionSet = status.reactionSet
-    if ( reactionSet?.hasReaction() != true ){
-        if(!TootReaction.canReaction(access_info) || !Pref.bpKeepReactionSpace(activity.pref))  return
+    if (reactionSet?.hasReaction() != true) {
+        if (!TootReaction.canReaction(accessInfo) || !Pref.bpKeepReactionSpace(activity.pref)) return
     }
 
     val density = activity.density
 
-    fun Float.round() = (this+0.5f).toInt()
+    fun Float.round() = (this + 0.5f).toInt()
 
     val imageScale = 1.5f
     val buttonHeight = ActMain.boostButtonSize // px
-    val marginBetween = (buttonHeight * 0.05f ).round()
-    val paddingH = (buttonHeight *0.1f).round()
-    val textHeight = (buttonHeight * 0.7f)/imageScale
+    val marginBetween = (buttonHeight * 0.05f).round()
+    val paddingH = (buttonHeight * 0.1f).round()
+    val textHeight = (buttonHeight * 0.7f) / imageScale
 
     val act = this@makeReactionsView.activity // not Button(View).getActivity()
 
@@ -51,15 +51,15 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
     if (reactionSet?.isEmpty() != false) {
         val v = View(act).apply {
-            layoutParams = FlexboxLayout.LayoutParams(0,buttonHeight)
-            setPadding(paddingH,0,paddingH,0)
+            layoutParams = FlexboxLayout.LayoutParams(0, buttonHeight)
+            setPadding(paddingH, 0, paddingH, 0)
         }
         box.addView(v)
     }
 
     val options = DecodeOptions(
         act,
-        access_info,
+        accessInfo,
         decodeEmoji = true,
         enlargeEmoji = imageScale,
         enlargeCustomEmoji = imageScale,
@@ -67,7 +67,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
     reactionSet?.forEachIndexed { index, reaction ->
 
-        if( reaction.count <= 0 ) return@forEachIndexed
+        if (reaction.count <= 0) return@forEachIndexed
 
         val ssb = reaction.toSpannableStringBuilder(options, status)
             .also { it.append(" ${reaction.count}") }
@@ -83,7 +83,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             gravity = Gravity.CENTER
             minWidthCompat = buttonHeight
 
-            background = if (reactionSet.isMyReaction(reaction) ) {
+            background = if (reactionSet.isMyReaction(reaction)) {
                 // 自分がリアクションしたやつは背景を変える
                 getAdaptiveRippleDrawableRound(
                     act,
@@ -98,8 +98,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 )
             }
 
-            setTextColor(content_color)
-            setPadding(paddingH,0,paddingH,0)
+            setTextColor(contentColor)
+            setPadding(paddingH, 0, paddingH, 0)
 
             text = ssb
             setTextSize(TypedValue.COMPLEX_UNIT_PX, textHeight)
@@ -108,18 +108,18 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             tag = reaction
             setOnClickListener {
                 val taggedReaction = it.tag as? TootReaction
-                if ( status.reactionSet?.isMyReaction(taggedReaction) == true ) {
-                    act.reactionRemove( column, status,taggedReaction)
+                if (status.reactionSet?.isMyReaction(taggedReaction) == true) {
+                    act.reactionRemove(column, status, taggedReaction)
                 } else {
-                    act.reactionAdd( column, status, taggedReaction?.name, taggedReaction?.static_url)
+                    act.reactionAdd(column, status, taggedReaction?.name, taggedReaction?.static_url)
                 }
             }
 
             setOnLongClickListener {
                 val taggedReaction = it.tag as? TootReaction
                 act.reactionFromAnotherAccount(
-                    access_info,
-                    status_showing,
+                    accessInfo,
+                    statusShowing,
                     taggedReaction
                 )
                 true
@@ -127,11 +127,10 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             // カスタム絵文字の場合、アニメーション等のコールバックを処理する必要がある
             val invalidator = NetworkEmojiInvalidator(act.handler, this)
             invalidator.register(ssb)
-            extra_invalidator_list.add(invalidator)
+            extraInvalidatorList.add(invalidator)
         }
         box.addView(b)
     }
 
     llExtra.addView(box)
 }
-

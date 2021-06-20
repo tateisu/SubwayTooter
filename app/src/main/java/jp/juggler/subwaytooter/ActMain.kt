@@ -17,6 +17,7 @@ import android.util.JsonReader
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -56,11 +57,11 @@ import kotlin.math.max
 import kotlin.math.min
 
 val benchmarkLimitDefault = if (BuildConfig.DEBUG) 10L else 100L
-private fun <T:Any?> benchmark(
+private fun <T : Any?> benchmark(
     caption: String,
     limit: Long = benchmarkLimitDefault,
-    block: () -> T
-) :T {
+    block: () -> T,
+): T {
     val start = SystemClock.elapsedRealtime()
     val rv = block()
     val duration = SystemClock.elapsedRealtime() - start
@@ -77,15 +78,15 @@ class ActMain : AppCompatActivity(),
     class PhoneEnv {
 
         internal lateinit var pager: MyViewPager
-        internal lateinit var pager_adapter: ColumnPagerAdapter
+        internal lateinit var pagerAdapter: ColumnPagerAdapter
     }
 
     class TabletEnv {
 
-        internal lateinit var tablet_pager: RecyclerView
-        internal lateinit var tablet_pager_adapter: TabletColumnPagerAdapter
-        internal lateinit var tablet_layout_manager: LinearLayoutManager
-        internal lateinit var tablet_snap_helper: GravitySnapHelper
+        internal lateinit var tabletPager: RecyclerView
+        internal lateinit var tabletPagerAdapter: TabletColumnPagerAdapter
+        internal lateinit var tabletLayoutManager: LinearLayoutManager
+        internal lateinit var tabletSnapHelper: GravitySnapHelper
     }
 
     companion object {
@@ -119,7 +120,7 @@ class ActMain : AppCompatActivity(),
         var headerIconSize = 1
         var stripIconSize = 1
         var screenBottomPadding = 0
-        var timeline_font: Typeface = Typeface.DEFAULT
+        var timelineFont: Typeface = Typeface.DEFAULT
         var timeline_font_bold: Typeface = Typeface.DEFAULT_BOLD
 
         private fun Float.clipFontSize(): Float =
@@ -128,12 +129,12 @@ class ActMain : AppCompatActivity(),
 
     // アプリ設定のキャッシュ
     var density = 0f
-    var acct_pad_lr = 0
-    var timeline_font_size_sp = Float.NaN
-    var acct_font_size_sp = Float.NaN
-    var notification_tl_font_size_sp = Float.NaN
-    var header_text_size_sp = Float.NaN
-    var timeline_spacing: Float? = null
+    var acctPadLr = 0
+    var timelineFontSizeSp = Float.NaN
+    var acctFontSizeSp = Float.NaN
+    var notificationTlFontSizeSp = Float.NaN
+    var headerTextSizeSp = Float.NaN
+    var timelineSpacing: Float? = null
     var avatarIconSize: Int = 0
     var notificationTlIconSize: Int = 0
 
@@ -144,14 +145,14 @@ class ActMain : AppCompatActivity(),
     private var isResumed = false
 
     // onStart() .. onStop() の間なら真
-    private var isStart_ = false
+    private var isStartedEx = false
 
     // onActivityResultで設定されてonResumeで消化される
     // 状態保存の必要なし
-    private var posted_acct: Acct? = null // acctAscii
-    private var posted_status_id: EntityId? = null
-    private var posted_reply_id: EntityId? = null
-    private var posted_redraft_id: EntityId? = null
+    private var postedAcct: Acct? = null // acctAscii
+    private var postedStatusId: EntityId? = null
+    private var postedReplyId: EntityId? = null
+    private var postedRedraftId: EntityId? = null
 
     // 画面上のUI操作で生成されて
     // onPause,onPageDestroy 等のタイミングで閉じられる
@@ -188,59 +189,62 @@ class ActMain : AppCompatActivity(),
 
     lateinit var drawer: MyDrawerLayout
 
-    lateinit var post_helper: PostHelper
+    lateinit var postHelper: PostHelper
 
     lateinit var pref: SharedPreferences
     lateinit var handler: Handler
-    lateinit var app_state: AppState
+    lateinit var appState: AppState
 
     //////////////////////////////////////////////////////////////////
     // 読み取り専用のプロパティ
 
-    val follow_complete_callback: () -> Unit = {
+    val followCompleteCallback: () -> Unit = {
         showToast(false, R.string.follow_succeeded)
     }
 
-    val unfollow_complete_callback: () -> Unit = {
+    val unfollowCompleteCallback: () -> Unit = {
         showToast(false, R.string.unfollow_succeeded)
     }
-    val cancel_follow_request_complete_callback: () -> Unit = {
+
+    val cancelFollowRequestCompleteCallback: () -> Unit = {
         showToast(false, R.string.follow_request_cancelled)
     }
 
-    val favourite_complete_callback: () -> Unit = {
+    val favouriteCompleteCallback: () -> Unit = {
         showToast(false, R.string.favourite_succeeded)
     }
-    val unfavourite_complete_callback: () -> Unit = {
+
+    val unfavouriteCompleteCallback: () -> Unit = {
         showToast(false, R.string.unfavourite_succeeded)
     }
 
-    val bookmark_complete_callback: () -> Unit = {
+    val bookmarkCompleteCallback: () -> Unit = {
         showToast(false, R.string.bookmark_succeeded)
     }
-    val unbookmark_complete_callback: () -> Unit = {
+
+    val unbookmarkCompleteCallback: () -> Unit = {
         showToast(false, R.string.unbookmark_succeeded)
     }
 
-    val boost_complete_callback: () -> Unit = {
+    val boostCompleteCallback: () -> Unit = {
         showToast(false, R.string.boost_succeeded)
     }
 
-    val unboost_complete_callback: () -> Unit = {
+    val unboostCompleteCallback: () -> Unit = {
         showToast(false, R.string.unboost_succeeded)
     }
 
-    val reaction_complete_callback: () -> Unit = {
+    val reactionCompleteCallback: () -> Unit = {
         showToast(false, R.string.reaction_succeeded)
     }
 
     // 相対時刻の表記を定期的に更新する
-    private val proc_updateRelativeTime = object : Runnable {
+    private val procUpdateRelativeTime = object : Runnable {
         override fun run() {
             handler.removeCallbacks(this)
-            if (!isStart_) return
+            if (!isStartedEx) return
             if (Pref.bpRelativeTimestamp(pref)) {
-                app_state.columnList.forEach { it.fireRelativeTime() }
+                appState.columnList.forEach { it.fireRelativeTime() }
                 handler.postDelayed(this, 10000L)
             }
         }
@@ -306,13 +310,12 @@ class ActMain : AppCompatActivity(),
             this,
             nextPosition(column),
             linkInfo.url,
-            accessInfo = column?.access_info,
+            accessInfo = column?.accessInfo,
             tagList = hashtagList.notEmpty(),
             whoRef = whoRef,
             linkInfo = linkInfo
         )
     }
-
 
     private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
 
@@ -362,16 +365,16 @@ class ActMain : AppCompatActivity(),
 
     private val TabletEnv.visibleColumnsIndices: IntRange
         get() {
-            var vs = tablet_layout_manager.findFirstVisibleItemPosition()
-            var ve = tablet_layout_manager.findLastVisibleItemPosition()
+            var vs = tabletLayoutManager.findFirstVisibleItemPosition()
+            var ve = tabletLayoutManager.findLastVisibleItemPosition()
             if (vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
                 return IntRange(-1, -2) // empty and less than zero
             }
 
-            val child = tablet_layout_manager.findViewByPosition(vs)
-            val slide_ratio =
+            val child = tabletLayoutManager.findViewByPosition(vs)
+            val slideRatio =
                 clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
-            if (slide_ratio >= 0.95f) {
+            if (slideRatio >= 0.95f) {
                 ++vs
                 ++ve
             }
@@ -380,7 +383,7 @@ class ActMain : AppCompatActivity(),
 
     private val TabletEnv.visibleColumns: List<Column>
         get() {
-            val list = app_state.columnList
+            val list = appState.columnList
             return visibleColumnsIndices.mapNotNull { list.elementAtOrNull(it) }
         }
 
@@ -388,24 +391,24 @@ class ActMain : AppCompatActivity(),
     val currentPostTarget: SavedAccount?
         get() = phoneTab(
             { env ->
-                val c = env.pager_adapter.getColumn(env.pager.currentItem)
+                val c = env.pagerAdapter.getColumn(env.pager.currentItem)
                 return when {
-                    c == null || c.access_info.isPseudo -> null
-                    else -> c.access_info
+                    c == null || c.accessInfo.isPseudo -> null
+                    else -> c.accessInfo
                 }
             },
             { env ->
 
-                val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
-                if (db_id != -1L) {
-                    val a = SavedAccount.loadAccount(this@ActMain, db_id)
+                val dbId = Pref.lpTabletTootDefaultAccount(App1.pref)
+                if (dbId != -1L) {
+                    val a = SavedAccount.loadAccount(this@ActMain, dbId)
                     if (a != null && !a.isPseudo) return a
                 }
 
                 val accounts = ArrayList<SavedAccount>()
                 for (c in env.visibleColumns) {
                     try {
-                        val a = c.access_info
+                        val a = c.accessInfo
                         // 画面内に疑似アカウントがあれば常にアカウント選択が必要
                         if (a.isPseudo) {
                             accounts.clear()
@@ -413,8 +416,7 @@ class ActMain : AppCompatActivity(),
                         }
                         // 既出でなければ追加する
                         if (null == accounts.find { it == a }) accounts.add(a)
-                    } catch (ex: Throwable) {
-
+                    } catch (ignored: Throwable) {
                     }
                 }
 
@@ -433,9 +435,9 @@ class ActMain : AppCompatActivity(),
     val arColumnColor = activityResultHandler { ar ->
         val data = ar?.data
         if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            app_state.saveColumnList()
+            appState.saveColumnList()
             val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-            app_state.column(idx)?.let {
+            appState.column(idx)?.let {
                 it.fireColumnColor()
                 it.fireShowContent(
                     reason = "ActMain column color changed",
@@ -449,17 +451,16 @@ class ActMain : AppCompatActivity(),
     val arLanguageFilter = activityResultHandler { ar ->
         val data = ar?.data
         if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            app_state.saveColumnList()
+            appState.saveColumnList()
             val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
-            app_state.column(idx)?.onLanguageFilterChanged()
-
+            appState.column(idx)?.onLanguageFilterChanged()
         }
     }
 
     val arNickname = activityResultHandler { ar ->
         if (ar?.resultCode == Activity.RESULT_OK) {
             updateColumnStrip()
-            app_state.columnList.forEach { it.fireShowColumnHeader() }
+            appState.columnList.forEach { it.fireShowColumnHeader() }
         }
     }
 
@@ -487,7 +488,7 @@ class ActMain : AppCompatActivity(),
 
     val arAccountSetting = activityResultHandler { ar ->
         updateColumnStrip()
-        app_state.columnList.forEach { it.fireShowColumnHeader() }
+        appState.columnList.forEach { it.fireShowColumnHeader() }
         when (ar?.resultCode) {
             RESULT_OK -> ar.data?.data?.let { openBrowser(it) }
 
@@ -507,7 +508,7 @@ class ActMain : AppCompatActivity(),
             }
 
             val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, -1)
-            if (select in 0 until app_state.columnCount) {
+            if (select in 0 until appState.columnCount) {
                 scrollToColumn(select)
             }
         }
@@ -535,34 +536,34 @@ class ActMain : AppCompatActivity(),
         App1.setActivityTheme(this, noActionBar = true)
 
         handler = App1.getAppState(this).handler
-        app_state = App1.getAppState(this)
+        appState = App1.getAppState(this)
         pref = App1.pref
 
         EmojiDecoder.handleUnicodeEmoji = Pref.bpInAppUnicodeEmoji(pref)
 
-        density = app_state.density
-        acct_pad_lr = (0.5f + 4f * density).toInt()
+        density = appState.density
+        acctPadLr = (0.5f + 4f * density).toInt()
 
-        timeline_font_size_sp = Pref.fpTimelineFontSize(pref).clipFontSize()
-        acct_font_size_sp = Pref.fpAcctFontSize(pref).clipFontSize()
-        notification_tl_font_size_sp = Pref.fpNotificationTlFontSize(pref).clipFontSize()
-        header_text_size_sp = Pref.fpHeaderTextSize(pref).clipFontSize()
+        timelineFontSizeSp = Pref.fpTimelineFontSize(pref).clipFontSize()
+        acctFontSizeSp = Pref.fpAcctFontSize(pref).clipFontSize()
+        notificationTlFontSizeSp = Pref.fpNotificationTlFontSize(pref).clipFontSize()
+        headerTextSizeSp = Pref.fpHeaderTextSize(pref).clipFontSize()
 
         val fv = Pref.spTimelineSpacing(pref).toFloatOrNull()
-        timeline_spacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
+        timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
 
         initUI()
 
         updateColumnStrip()
 
-        if (app_state.columnCount > 0) {
+        if (appState.columnCount > 0) {
 
-            val column_pos = Pref.ipLastColumnPos(pref)
-            log.d("ipLastColumnPos load $column_pos")
+            val columnPos = Pref.ipLastColumnPos(pref)
+            log.d("ipLastColumnPos load $columnPos")
 
             // 前回最後に表示していたカラムの位置にスクロールする
-            if (column_pos in 0 until app_state.columnCount) {
-                scrollToColumn(column_pos, false)
+            if (columnPos in 0 until appState.columnCount) {
+                scrollToColumn(columnPos, false)
             }
 
             // 表示位置に合わせたイベントを発行
@@ -585,7 +586,7 @@ class ActMain : AppCompatActivity(),
         log.d("onDestroy")
         super.onDestroy()
         refActMain = null
-        post_helper.onDestroy()
+        postHelper.onDestroy()
 
         // 子画面を全て閉じる
         closeList.forEach {
@@ -598,7 +599,7 @@ class ActMain : AppCompatActivity(),
         closeList.clear()
 
         // このアクティビティに関連する ColumnViewHolder への参照を全カラムから除去する
-        app_state.columnList.forEach {
+        appState.columnList.forEach {
             it.removeColumnViewHolderByActivity(this)
         }
     }
@@ -624,13 +625,13 @@ class ActMain : AppCompatActivity(),
         phoneTab(
             { env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
             { env ->
-                env.tablet_layout_manager.findLastVisibleItemPosition()
+                env.tabletLayoutManager.findLastVisibleItemPosition()
                     .takeIf { it != RecyclerView.NO_POSITION }
                     ?.let { outState.putInt(STATE_CURRENT_PAGE, it) }
             }
         )
 
-        app_state.columnList.forEach { it.saveScrollPosition() }
+        appState.columnList.forEach { it.saveScrollPosition() }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -638,21 +639,20 @@ class ActMain : AppCompatActivity(),
         super.onRestoreInstanceState(savedInstanceState)
         val pos = savedInstanceState.getInt(STATE_CURRENT_PAGE)
         // 注意：開始は0じゃなく1
-        if (pos in 1 until app_state.columnCount) {
+        if (pos in 1 until appState.columnCount) {
             phoneTab(
                 { env -> env.pager.currentItem = pos },
                 { env ->
-                    env.tablet_layout_manager
-                        .smoothScrollToPosition(env.tablet_pager, null, pos)
+                    env.tabletLayoutManager
+                        .smoothScrollToPosition(env.tabletPager, null, pos)
                 }
             )
         }
     }
 
-
     override fun onStart() {
         log.d("onStart")
-        isStart_ = true
+        isStartedEx = true
         super.onStart()
 
         benchmark("onStart total") {
@@ -675,9 +675,9 @@ class ActMain : AppCompatActivity(),
             benchmark("reload timezone") {
                 try {
                     var tz = TimeZone.getDefault()
-                    val tz_id = Pref.spTimeZone(pref)
-                    if (tz_id.isNotEmpty()) {
-                        tz = TimeZone.getTimeZone(tz_id)
+                    val tzId = Pref.spTimeZone(pref)
+                    if (tzId.isNotEmpty()) {
+                        tz = TimeZone.getTimeZone(tzId)
                     }
                     TootStatus.date_format.timeZone = tz
                 } catch (ex: Throwable) {
@@ -702,7 +702,7 @@ class ActMain : AppCompatActivity(),
                 }
             }
 
-            val newAccounts = benchmark("loadAccountList"){
+            val newAccounts = benchmark("loadAccountList") {
                 SavedAccount.loadAccountList(this)
             }
 
@@ -711,20 +711,20 @@ class ActMain : AppCompatActivity(),
                 val setDbId = newAccounts.map { it.db_id }.toSet()
 
                 // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-                app_state.columnList
+                appState.columnList
                     .mapIndexedNotNull { index, column ->
-                        when{
-                            column.access_info.isNA -> index
-                            setDbId.contains(column.access_info.db_id) -> index
+                        when {
+                            column.accessInfo.isNA -> index
+                            setDbId.contains(column.accessInfo.db_id) -> index
                             else -> null
                         }
-                    }.takeIf { it.size != app_state.columnCount }
+                    }.takeIf { it.size != appState.columnCount }
                     ?.let { setOrder(it) }
             }
 
             benchmark("fireColumnColor") {
                 // 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
-                app_state.columnList.forEach { column ->
+                appState.columnList.forEach { column ->
                     column.viewHolder?.lastAnnouncementShown = 0L
                     column.fireColumnColor()
                 }
@@ -741,18 +741,18 @@ class ActMain : AppCompatActivity(),
             }
             benchmark("column.onActivityStart") {
                 // 画面復帰時に再取得などを行う
-                app_state.columnList.forEach { it.onActivityStart() }
+                appState.columnList.forEach { it.onActivityStart() }
             }
             benchmark("streamManager.onScreenStart") {
                 // 画面復帰時にストリーミング接続を開始する
-                app_state.streamManager.onScreenStart()
+                appState.streamManager.onScreenStart()
             }
             benchmark("updateColumnStripSelection") {
                 // カラムの表示範囲インジケータを更新
                 updateColumnStripSelection(-1, -1f)
             }
             benchmark("fireShowContent") {
-                app_state.columnList.forEach {
+                appState.columnList.forEach {
                     it.fireShowContent(
                         reason = "ActMain onStart",
                         reset = true
@@ -762,33 +762,32 @@ class ActMain : AppCompatActivity(),
 
             benchmark("proc_updateRelativeTime") {
                 // 相対時刻表示の更新
-                proc_updateRelativeTime.run()
+                procUpdateRelativeTime.run()
             }
             benchmark("enableSpeech") {
                 // スピーチの開始
-                app_state.enableSpeech()
+                appState.enableSpeech()
             }
         }
     }
 
     override fun onStop() {
         log.d("onStop")
-        isStart_ = false
+        isStartedEx = false
         handler.removeCallbacks(onStartAfter)
-        handler.removeCallbacks(proc_updateRelativeTime)
+        handler.removeCallbacks(procUpdateRelativeTime)
 
-        post_helper.closeAcctPopup()
+        postHelper.closeAcctPopup()
 
         closeListItemPopup()
 
-        app_state.streamManager.onScreenStop()
+        appState.streamManager.onScreenStop()
 
-        app_state.columnList.forEach { it.saveScrollPosition() }
+        appState.columnList.forEach { it.saveScrollPosition() }
 
-        app_state.saveColumnList(bEnableSpeech = false)
+        appState.saveColumnList(bEnableSpeech = false)
 
         super.onStop()
-
     }
 
     override fun onResume() {
@@ -848,15 +847,15 @@ class ActMain : AppCompatActivity(),
         isResumed = false
 
         // 最後に表示していたカラムの位置
-        val last_pos = phoneTab(
+        val lastPos = phoneTab(
             { env -> env.pager.currentItem },
             { env -> env.visibleColumnsIndices.first })
-        log.d("ipLastColumnPos save $last_pos")
-        pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
+        log.d("ipLastColumnPos save $lastPos")
+        pref.edit().put(Pref.ipLastColumnPos, lastPos).apply()
 
-        app_state.columnList.forEach { it.saveScrollPosition() }
+        appState.columnList.forEach { it.saveScrollPosition() }
 
-        app_state.saveColumnList(bEnableSpeech = false)
+        appState.saveColumnList(bEnableSpeech = false)
 
         super.onPause()
     }
@@ -870,22 +869,22 @@ class ActMain : AppCompatActivity(),
     override fun onPageScrolled(
         position: Int,
         positionOffset: Float,
-        positionOffsetPixels: Int
+        positionOffsetPixels: Int,
     ) {
         updateColumnStripSelection(position, positionOffset)
     }
 
     override fun onPageSelected(position: Int) {
         handler.post {
-            app_state.column(position)?.let { column ->
+            appState.column(position)?.let { column ->
                 if (!column.bFirstInitialized) {
                     column.startLoading()
                 }
                 scrollColumnStrip(position)
-                post_helper.setInstance(
+                postHelper.setInstance(
                     when {
-                        column.access_info.isNA -> null
-                        else -> column.access_info
+                        column.accessInfo.isNA -> null
+                        else -> column.accessInfo
                     }
                 )
             }
@@ -909,16 +908,11 @@ class ActMain : AppCompatActivity(),
     // スマホモードとタブレットモードでコードを切り替える
     private inline fun <R> phoneTab(
         codePhone: (PhoneEnv) -> R,
-        codeTablet: (TabletEnv) -> R
+        codeTablet: (TabletEnv) -> R,
     ): R {
-
-        val pe = phoneEnv
-        if (pe != null) return codePhone(pe)
-
-        val te = tabletEnv
-        if (te != null) return codeTablet(te)
-
-        throw RuntimeException("missing phoneEnv or tabletEnv")
+        phoneEnv?.let { return codePhone(it) }
+        tabletEnv?.let { return codeTablet(it) }
+        error("missing phoneEnv or tabletEnv")
     }
 
     // スマホモードならラムダを実行する。タブレットモードならnullを返す
@@ -937,7 +931,7 @@ class ActMain : AppCompatActivity(),
     // 新しいカラムをどこに挿入するか
     // カラムの次の位置か、現在のページの次の位置か、終端
     fun nextPosition(column: Column?): Int =
-        app_state.columnIndex(column)?.let { it + 1 } ?: defaultInsertPosition
+        appState.columnIndex(column)?.let { it + 1 } ?: defaultInsertPosition
 
     private fun showQuickTootVisibility() {
         btnQuickTootMenu.imageResource =
@@ -950,7 +944,6 @@ class ActMain : AppCompatActivity(),
     private fun performQuickTootMenu() {
         dlgQuickTootMenu.toggle()
     }
-
 
     val arActPost = activityResultHandler { ar ->
         ar?.data?.let { data ->
@@ -965,60 +958,59 @@ class ActMain : AppCompatActivity(),
     // 通常モードでは activityResultHandler 経由で呼ばれる
     fun onCompleteActPost(data: Intent) {
         if (!isLiveActivity) return
-        posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
+        postedAcct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
         if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
-            posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
-            posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
-            posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+            postedStatusId = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
+            postedReplyId = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
+            postedRedraftId = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
         } else {
-            posted_status_id = null
+            postedStatusId = null
         }
-        if (isStart_) refreshAfterPost()
+        if (isStartedEx) refreshAfterPost()
     }
 
     // 簡易投稿なら直接呼ばれる
     // ActPost経由なら画面復帰タイミングや onCompleteActPost から呼ばれる
     private fun refreshAfterPost() {
-        val posted_acct = this.posted_acct
-        val posted_status_id = this.posted_status_id
+        val postedAcct = this.postedAcct
+        val postedStatusId = this.postedStatusId
 
-        if (posted_acct != null && posted_status_id == null) {
+        if (postedAcct != null && postedStatusId == null) {
             // 予約投稿なら予約投稿リストをリロードする
-            app_state.columnList.forEach { column ->
-                if (column.type == ColumnType.SCHEDULED_STATUS
-                    && column.access_info.acct == posted_acct
+            appState.columnList.forEach { column ->
+                if (column.type == ColumnType.SCHEDULED_STATUS &&
+                    column.accessInfo.acct == postedAcct
                 ) {
                     column.startLoading()
                 }
             }
-        } else if (posted_acct != null && posted_status_id != null) {
-            val posted_redraft_id = this.posted_redraft_id
-            if (posted_redraft_id != null) {
-                val host = posted_acct.host
+        } else if (postedAcct != null && postedStatusId != null) {
+            val postedRedraftId = this.postedRedraftId
+            if (postedRedraftId != null) {
+                val host = postedAcct.host
                 if (host != null) {
-                    app_state.columnList.forEach {
-                        it.onStatusRemoved(host, posted_redraft_id)
+                    appState.columnList.forEach {
+                        it.onStatusRemoved(host, postedRedraftId)
                     }
                 }
-                this.posted_redraft_id = null
+                this.postedRedraftId = null
             }
 
-            val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
-            if (refresh_after_toot != Pref.RAT_DONT_REFRESH) {
-                app_state.columnList
-                    .filter { it.access_info.acct == posted_acct }
+            val refreshAfterToot = Pref.ipRefreshAfterToot(pref)
+            if (refreshAfterToot != Pref.RAT_DONT_REFRESH) {
+                appState.columnList
+                    .filter { it.accessInfo.acct == postedAcct }
                     .forEach {
                         it.startRefreshForPost(
-                            refresh_after_toot,
-                            posted_status_id,
-                            posted_reply_id
+                            refreshAfterToot,
+                            postedStatusId,
+                            postedReplyId
                         )
                     }
-
             }
         }
-        this.posted_acct = null
-        this.posted_status_id = null
+        this.postedAcct = null
+        this.postedStatusId = null
     }
 
     private fun handleSentIntent(intent: Intent) {
@@ -1032,7 +1024,7 @@ class ActMain : AppCompatActivity(),
                 message = getString(R.string.account_picker_toot),
             )
             sent_intent2 = null
-            ai?.let { openActPostImpl(it.db_id, sent_intent = intent) }
+            ai?.let { openActPostImpl(it.db_id, sharedIntent = intent) }
         }
     }
 
@@ -1069,50 +1061,48 @@ class ActMain : AppCompatActivity(),
             return
         }
 
-        post_helper.content = etQuickToot.text.toString().trim { it <= ' ' }
-        post_helper.spoiler_text = null
+        postHelper.content = etQuickToot.text.toString().trim { it <= ' ' }
+        postHelper.spoilerText = null
 
-        post_helper.visibility = when (quickTootVisibility) {
+        postHelper.visibility = when (quickTootVisibility) {
             TootVisibility.AccountSetting -> account.visibility
             else -> quickTootVisibility
         }
 
-        post_helper.bNSFW = false
-        post_helper.in_reply_to_id = null
-        post_helper.attachment_list = null
-        post_helper.emojiMapCustom =
+        postHelper.bNSFW = false
+        postHelper.inReplyToId = null
+        postHelper.attachmentList = null
+        postHelper.emojiMapCustom =
             App1.custom_emoji_lister.getMap(account)
-
 
         etQuickToot.hideKeyboard()
 
-        post_helper.post(account, callback = object : PostHelper.PostCompleteCallback {
+        postHelper.post(account, callback = object : PostHelper.PostCompleteCallback {
             override fun onPostComplete(
-                target_account: SavedAccount,
-                status: TootStatus
+                targetAccount: SavedAccount,
+                status: TootStatus,
             ) {
                 etQuickToot.setText("")
-                posted_acct = target_account.acct
-                posted_status_id = status.id
-                posted_reply_id = status.in_reply_to_id
-                posted_redraft_id = null
+                postedAcct = targetAccount.acct
+                postedStatusId = status.id
+                postedReplyId = status.in_reply_to_id
+                postedRedraftId = null
                 refreshAfterPost()
             }
 
-            override fun onScheduledPostComplete(target_account: SavedAccount) {
+            override fun onScheduledPostComplete(targetAccount: SavedAccount) {
                 // will not happen
             }
         })
     }
 
-    fun isOrderChanged(new_order: List<Int>): Boolean {
-        if (new_order.size != app_state.columnCount) return true
-        for (i in new_order.indices) {
-            if (new_order[i] != i) return true
+    fun isOrderChanged(newOrder: List<Int>): Boolean {
+        if (newOrder.size != appState.columnCount) return true
+        for (i in newOrder.indices) {
+            if (newOrder[i] != i) return true
         }
         return false
     }
-
 
     private val arActText = activityResultHandler { ar ->
         when (ar?.resultCode) {
@@ -1127,7 +1117,6 @@ class ActMain : AppCompatActivity(),
 
     fun launchActText(intent: Intent) = arActText.launch(intent)
 
-
     override fun onBackPressed() {
 
         // メニューが開いていたら閉じる
@@ -1137,7 +1126,7 @@ class ActMain : AppCompatActivity(),
         }
 
         // カラムが0個ならアプリを終了する
-        if (app_state.columnCount == 0) {
+        if (appState.columnCount == 0) {
             finish()
             return
         }
@@ -1151,15 +1140,15 @@ class ActMain : AppCompatActivity(),
             val visibleColumnList = ArrayList<Column>()
             phoneTab({ env ->
                 try {
-                    app_state.column(env.pager.currentItem)?.addTo(visibleColumnList)
+                    appState.column(env.pager.currentItem)?.addTo(visibleColumnList)
                 } catch (ex: Throwable) {
+                    log.w(ex)
                 }
             }, { env ->
                 visibleColumnList.addAll(env.visibleColumns)
             })
 
-            return visibleColumnList.filter { !it.dont_close }
-
+            return visibleColumnList.filter { !it.dontClose }
         }
 
         // カラムが1個以上ある場合は設定に合わせて挙動を変える
@@ -1174,8 +1163,8 @@ class ActMain : AppCompatActivity(),
                 val closeableColumnList = getClosableColumnList()
                 when (closeableColumnList.size) {
                     0 -> {
-                        if (Pref.bpExitAppWhenCloseProtectedColumn(pref)
-                            && Pref.bpDontConfirmBeforeCloseColumn(pref)
+                        if (Pref.bpExitAppWhenCloseProtectedColumn(pref) &&
+                            Pref.bpDontConfirmBeforeCloseColumn(pref)
                         ) {
                             this@ActMain.finish()
                         } else {
@@ -1203,7 +1192,6 @@ class ActMain : AppCompatActivity(),
 
                 val dialog = ActionsDialog()
 
-
                 if (closeableColumnList.size == 1) {
                     val column = closeableColumnList.first()
                     dialog.addAction(getString(R.string.close_column)) {
@@ -1226,13 +1214,12 @@ class ActMain : AppCompatActivity(),
             TootVisibility.parseSavedVisibility(Pref.spQuickTootVisibility(pref))
                 ?: quickTootVisibility
 
-
         Column.reloadDefaultColor(this, pref)
 
         var sv = Pref.spTimelineFont(pref)
         if (sv.isNotEmpty()) {
             try {
-                timeline_font = Typeface.createFromFile(sv)
+                timelineFont = Typeface.createFromFile(sv)
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
@@ -1245,27 +1232,26 @@ class ActMain : AppCompatActivity(),
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
         } else {
             try {
-                timeline_font_bold = Typeface.create(timeline_font, Typeface.BOLD)
+                timeline_font_bold = Typeface.create(timelineFont, Typeface.BOLD)
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
         }
 
         fun parseIconSize(stringPref: StringPref, minDp: Float = 1f): Int {
-            var icon_size_dp = stringPref.defVal.toFloat()
+            var iconSizeDp = stringPref.defVal.toFloat()
             try {
                 sv = stringPref(pref)
                 val fv = if (sv.isEmpty()) Float.NaN else sv.toFloat()
                 if (fv.isFinite() && fv >= minDp) {
-                    icon_size_dp = fv
+                    iconSizeDp = fv
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-            return (0.5f + icon_size_dp * density).toInt()
+            return (0.5f + iconSizeDp * density).toInt()
         }
 
         avatarIconSize = parseIconSize(Pref.spAvatarIconSize)
@@ -1277,30 +1263,30 @@ class ActMain : AppCompatActivity(),
         screenBottomPadding = parseIconSize(Pref.spScreenBottomPadding, minDp = 0f)
 
         run {
-            var round_ratio = 33f
+            var roundRatio = 33f
             try {
                 if (Pref.bpDontRound(pref)) {
-                    round_ratio = 0f
+                    roundRatio = 0f
                 } else {
                     sv = Pref.spRoundRatio(pref)
                     if (sv.isNotEmpty()) {
                         val fv = sv.toFloat()
                         if (fv.isFinite()) {
-                            round_ratio = fv
+                            roundRatio = fv
                         }
                     }
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-            Styler.round_ratio = clipRange(0f, 1f, round_ratio / 100f) * 0.5f
+            Styler.round_ratio = clipRange(0f, 1f, roundRatio / 100f) * 0.5f
         }
 
         run {
-            var boost_alpha = 0.8f
+            var boostAlpha = 0.8f
             try {
                 val f = (Pref.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
-                boost_alpha = when {
+                boostAlpha = when {
                     f >= 1f -> 1f
                     f < 0f -> 0.66f
                     else -> f
@@ -1308,7 +1294,7 @@ class ActMain : AppCompatActivity(),
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-            Styler.boost_alpha = boost_alpha
+            Styler.boostAlpha = boostAlpha
         }
 
         llEmpty = findViewById(R.id.llEmpty)
@@ -1317,10 +1303,6 @@ class ActMain : AppCompatActivity(),
         drawer.addDrawerListener(this)
 
         drawer.setExclusionSize(stripIconSize)
-
-
-
-
 
         SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
 
@@ -1339,7 +1321,7 @@ class ActMain : AppCompatActivity(),
 
         llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
 
-        etQuickToot.typeface = timeline_font
+        etQuickToot.typeface = timelineFont
 
         when (Pref.ipJustifyWindowContentPortrait(pref)) {
             Pref.JWCP_START -> {
@@ -1410,46 +1392,43 @@ class ActMain : AppCompatActivity(),
 
         svColumnStrip.isHorizontalFadingEdgeEnabled = true
 
-        post_helper = PostHelper(this, pref, app_state.handler)
+        postHelper = PostHelper(this, pref, appState.handler)
 
         val dm = resources.displayMetrics
 
         val density = dm.density
 
-        var media_thumb_height = 64
+        var mediaThumbHeightDp = 64
         sv = Pref.spMediaThumbHeight(pref)
         if (sv.isNotEmpty()) {
             try {
                 val iv = Integer.parseInt(sv)
                 if (iv >= 32) {
-                    media_thumb_height = iv
+                    mediaThumbHeightDp = iv
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
         }
-        app_state.media_thumb_height = (0.5f + media_thumb_height * density).toInt()
+        appState.mediaThumbHeight = (0.5f + mediaThumbHeightDp * density).toInt()
 
-        var column_w_min_dp = COLUMN_WIDTH_MIN_DP
+        var columnWMinDp = COLUMN_WIDTH_MIN_DP
         sv = Pref.spColumnWidth(pref)
         if (sv.isNotEmpty()) {
             try {
                 val iv = Integer.parseInt(sv)
                 if (iv >= 100) {
-                    column_w_min_dp = iv
+                    columnWMinDp = iv
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
         }
-        val column_w_min = (0.5f + column_w_min_dp * density).toInt()
+        val columnWMin = (0.5f + columnWMinDp * density).toInt()
 
         val sw = dm.widthPixels
 
-
-        if (Pref.bpDisableTabletMode(pref) || sw < column_w_min * 2) {
+        if (Pref.bpDisableTabletMode(pref) || sw < columnWMin * 2) {
             // SmartPhone mode
             phoneEnv = PhoneEnv()
         } else {
@@ -1463,44 +1442,42 @@ class ActMain : AppCompatActivity(),
         phoneTab({ env ->
             tmpTabletPager.visibility = View.GONE
             env.pager = tmpPhonePager
-            env.pager_adapter = ColumnPagerAdapter(this)
-            env.pager.adapter = env.pager_adapter
+            env.pagerAdapter = ColumnPagerAdapter(this)
+            env.pager.adapter = env.pagerAdapter
             env.pager.addOnPageChangeListener(this)
 
             resizeAutoCW(sw)
-
         }, { env ->
             tmpPhonePager.visibility = View.GONE
-            env.tablet_pager = tmpTabletPager
-            env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
-            env.tablet_layout_manager =
+            env.tabletPager = tmpTabletPager
+            env.tabletPagerAdapter = TabletColumnPagerAdapter(this)
+            env.tabletLayoutManager =
                 LinearLayoutManager(
                     this,
                     LinearLayoutManager.HORIZONTAL,
                     false
                 )
 
-            if (env.tablet_pager.itemDecorationCount == 0) {
-                env.tablet_pager.addItemDecoration(TabletColumnDivider(this@ActMain))
+            if (env.tabletPager.itemDecorationCount == 0) {
+                env.tabletPager.addItemDecoration(TabletColumnDivider(this@ActMain))
             }
 
-
-            env.tablet_pager.adapter = env.tablet_pager_adapter
-            env.tablet_pager.layoutManager = env.tablet_layout_manager
-            env.tablet_pager.addOnScrollListener(object :
+            env.tabletPager.adapter = env.tabletPagerAdapter
+            env.tabletPager.layoutManager = env.tabletLayoutManager
+            env.tabletPager.addOnScrollListener(object :
                 RecyclerView.OnScrollListener() {
 
                 override fun onScrollStateChanged(
                     recyclerView: RecyclerView,
-                    newState: Int
+                    newState: Int,
                 ) {
                     super.onScrollStateChanged(recyclerView, newState)
 
-                    val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-                    val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
+                    val vs = env.tabletLayoutManager.findFirstVisibleItemPosition()
+                    val ve = env.tabletLayoutManager.findLastVisibleItemPosition()
                     // 端に近い方に合わせる
                     val distance_left = abs(vs)
-                    val distance_right = abs(app_state.columnCount - 1 - ve)
+                    val distance_right = abs(appState.columnCount - 1 - ve)
                     if (distance_left < distance_right) {
                         scrollColumnStrip(vs)
                     } else {
@@ -1511,27 +1488,26 @@ class ActMain : AppCompatActivity(),
                 override fun onScrolled(
                     recyclerView: RecyclerView,
                     dx: Int,
-                    dy: Int
+                    dy: Int,
                 ) {
                     super.onScrolled(recyclerView, dx, dy)
                     updateColumnStripSelection(-1, -1f)
                 }
             })
 
-            env.tablet_pager.itemAnimator = null
+            env.tabletPager.itemAnimator = null
             //			val animator = env.tablet_pager.itemAnimator
             //			if( animator is DefaultItemAnimator){
             //				animator.supportsChangeAnimations = false
             //			}
 
-            env.tablet_snap_helper = GravitySnapHelper(Gravity.START)
-            env.tablet_snap_helper.attachToRecyclerView(env.tablet_pager)
-
+            env.tabletSnapHelper = GravitySnapHelper(Gravity.START)
+            env.tabletSnapHelper.attachToRecyclerView(env.tabletPager)
         })
 
         showFooterColor()
 
-        post_helper.attachEditText(
+        postHelper.attachEditText(
             llFormRoot,
             etQuickToot,
             true,
@@ -1556,7 +1532,7 @@ class ActMain : AppCompatActivity(),
     )
 
     private fun updateColumnStrip() {
-        llEmpty.vg(app_state.columnCount == 0)
+        llEmpty.vg(appState.columnCount == 0)
 
         val iconSize = stripIconSize
         val rootW = (iconSize * 1.25f + 0.5f).toInt()
@@ -1574,8 +1550,7 @@ class ActMain : AppCompatActivity(),
         }
 
         llColumnStrip.removeAllViews()
-        app_state.columnList.forEachIndexed { index, column ->
-
+        appState.columnList.forEachIndexed { index, column ->
 
             val viewRoot = layoutInflater.inflate(R.layout.lv_column_strip, llColumnStrip, false)
             val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
@@ -1616,7 +1591,7 @@ class ActMain : AppCompatActivity(),
             ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
 
             //
-            val ac = AcctColor.load(column.access_info)
+            val ac = AcctColor.load(column.accessInfo)
             if (AcctColor.hasColorForeground(ac)) {
                 vAcctColor.setBackgroundColor(ac.color_fg)
             } else {
@@ -1628,14 +1603,13 @@ class ActMain : AppCompatActivity(),
         }
         svColumnStrip.requestLayout()
         updateColumnStripSelection(-1, -1f)
-
     }
 
     private fun updateColumnStripSelection(position: Int, positionOffset: Float) {
         handler.post(Runnable {
             if (isFinishing) return@Runnable
 
-            if (app_state.columnCount == 0) {
+            if (appState.columnCount == 0) {
                 llColumnStrip.setVisibleRange(-1, -1, 0f)
             } else {
                 phoneTab({ env ->
@@ -1645,54 +1619,52 @@ class ActMain : AppCompatActivity(),
                         val c = env.pager.currentItem
                         llColumnStrip.setVisibleRange(c, c, 0f)
                     }
-
                 }, { env ->
-                    val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-                    val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
+                    val vs = env.tabletLayoutManager.findFirstVisibleItemPosition()
+                    val ve = env.tabletLayoutManager.findLastVisibleItemPosition()
                     val vr = if (vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
                         IntRange(-1, -2) // empty and less than zero
                     } else {
                         IntRange(vs, min(ve, vs + nScreenColumn - 1))
                     }
-                    var slide_ratio = 0f
+                    var slideRatio = 0f
                     if (vr.first <= vr.last) {
-                        val child = env.tablet_layout_manager.findViewByPosition(vr.first)
-                        slide_ratio =
+                        val child = env.tabletLayoutManager.findViewByPosition(vr.first)
+                        slideRatio =
                             clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
                     }
 
-                    llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
+                    llColumnStrip.setVisibleRange(vr.first, vr.last, slideRatio)
                 })
             }
         })
     }
 
     private fun scrollColumnStrip(select: Int) {
-        val child_count = llColumnStrip.childCount
-        if (select < 0 || select >= child_count) {
+        val childCount = llColumnStrip.childCount
+        if (select < 0 || select >= childCount) {
             return
         }
 
         val icon = llColumnStrip.getChildAt(select)
 
-        val sv_width = (llColumnStrip.parent as View).width
-        val ll_width = llColumnStrip.width
-        val icon_width = icon.width
-        val icon_left = icon.left
+        val svWidth = (llColumnStrip.parent as View).width
+        val llWidth = llColumnStrip.width
+        val iconWidth = icon.width
+        val iconLeft = icon.left
 
-        if (sv_width == 0 || ll_width == 0 || icon_width == 0) {
+        if (svWidth == 0 || llWidth == 0 || iconWidth == 0) {
             handler.postDelayed({ scrollColumnStrip(select) }, 20L)
         }
 
-        val sx = icon_left + icon_width / 2 - sv_width / 2
+        val sx = iconLeft + iconWidth / 2 - svWidth / 2
         svColumnStrip.smoothScrollTo(sx, 0)
-
     }
 
     // ActOAuthCallbackで受け取ったUriを処理する
     private fun handleIntentUri(uri: Uri) {
 
-        log.d("handleIntentUri ${uri}")
+        log.d("handleIntentUri $uri")
 
         when (uri.scheme) {
             "subwaytooter", "misskeyclientproto" -> return try {
@@ -1731,7 +1703,7 @@ class ActMain : AppCompatActivity(),
                     null,
                     Acct.parse(user, instance),
                     userUrl = "https://$instance/@$user",
-                    original_url = url
+                    originalUrl = url
                 )
             } else {
                 userProfile(
@@ -1763,10 +1735,10 @@ class ActMain : AppCompatActivity(),
         // 外部ブラウザを開きなおそうとすると無限ループの恐れがある
         // アプリケーションチューザーを表示する
 
-        val error_message = getString(R.string.cant_handle_uri_of, url)
+        val errorMessage = getString(R.string.cant_handle_uri_of, url)
 
         try {
-            val query_flag = if (Build.VERSION.SDK_INT >= 23) {
+            val queryFlag = if (Build.VERSION.SDK_INT >= 23) {
                 // Android 6.0以降
                 // MATCH_DEFAULT_ONLY だと標準の設定に指定されたアプリがあるとソレしか出てこない
                 // MATCH_ALL を指定すると 以前と同じ挙動になる
@@ -1780,16 +1752,14 @@ class ActMain : AppCompatActivity(),
             val intent = Intent(Intent.ACTION_VIEW, "https://dummy.subwaytooter.club/".toUri())
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
-            val my_name = packageName
-            val resolveInfoList = packageManager.queryIntentActivities(intent, query_flag)
-                .filter { my_name != it.activityInfo.packageName }
+            val myName = packageName
+            val resolveInfoList = packageManager.queryIntentActivities(intent, queryFlag)
+                .filter { myName != it.activityInfo.packageName }
 
-            if (resolveInfoList.isEmpty()) {
-                throw RuntimeException("resolveInfoList is empty.")
-            }
+            if (resolveInfoList.isEmpty()) error("resolveInfoList is empty.")
 
             // このアプリ以外の選択肢を集める
-            val choice_list = resolveInfoList
+            val choiceList = resolveInfoList
                 .map {
                     Intent(Intent.ACTION_VIEW, uri).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1798,9 +1768,9 @@ class ActMain : AppCompatActivity(),
                     }
                 }.toMutableList()
 
-            val chooser = Intent.createChooser(choice_list.removeAt(0), error_message)
+            val chooser = Intent.createChooser(choiceList.removeAt(0), errorMessage)
             // 2つめ以降はEXTRAに渡す
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, choice_list.toTypedArray())
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, choiceList.toTypedArray())
 
             // 指定した選択肢でチューザーを作成して開く
             startActivity(chooser)
@@ -1811,10 +1781,9 @@ class ActMain : AppCompatActivity(),
 
         AlertDialog.Builder(this)
             .setCancelable(true)
-            .setMessage(error_message)
+            .setMessage(errorMessage)
             .setPositiveButton(R.string.close, null)
             .show()
-
     }
 
     private fun handleNotificationClick(uri: Uri, dataIdString: String) {
@@ -1827,11 +1796,11 @@ class ActMain : AppCompatActivity(),
 
             PollingWorker.queueNotificationClicked(this, uri)
 
-            val columnList = app_state.columnList
+            val columnList = appState.columnList
             val column = columnList.firstOrNull {
                 it.type == ColumnType.NOTIFICATIONS &&
-                    it.access_info == account &&
-                    !it.system_notification_not_related
+                    it.accessInfo == account &&
+                    !it.systemNotificationNotRelated
             }?.also {
                 scrollToColumn(columnList.indexOf(it))
             } ?: addColumn(
@@ -1857,30 +1826,30 @@ class ActMain : AppCompatActivity(),
             runApiTask { client ->
 
                 val uriStr = uri.toString()
-                if (uriStr.startsWith("subwaytooter://misskey/auth_callback")
-                    || uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
+                if (uriStr.startsWith("subwaytooter://misskey/auth_callback") ||
+                    uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
                 ) {
 
                     // Misskey 認証コールバック
                     val token = uri.getQueryParameter("token")?.notBlank()
                         ?: return@runApiTask TootApiResult("missing token in callback URL")
 
-                    val prefDevice = PrefDevice.prefDevice(this)
+                    val prefDevice = PrefDevice.from(this)
 
                     val hostStr = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)?.notBlank()
                         ?: return@runApiTask TootApiResult("missing instance name.")
 
                     val instance = Host.parse(hostStr)
 
-                    when (val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
+                    when (val dbId = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
 
                         // new registration
                         -1L -> client.apiHost = instance
 
                         // update access token
                         else -> try {
-                            val sa = SavedAccount.loadAccount(this@ActMain, db_id)
-                                ?: return@runApiTask TootApiResult("missing account db_id=$db_id")
+                            val sa = SavedAccount.loadAccount(this@ActMain, dbId)
+                                ?: return@runApiTask TootApiResult("missing account db_id=$dbId")
                             resultSavedAccount = sa
                             client.account = sa
                         } catch (ex: Throwable) {
@@ -1910,7 +1879,6 @@ class ActMain : AppCompatActivity(),
                     )?.also {
                         resultTootAccount = parser.account(it.jsonObject)
                     }
-
                 } else {
                     // Mastodon 認証コールバック
 
@@ -1920,12 +1888,12 @@ class ActMain : AppCompatActivity(),
                     // &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
                     // &state=db%3A3
                     val error = uri.getQueryParameter("error")
-                    val error_description = uri.getQueryParameter("error_description")
-                    if (error != null || error_description != null)
+                    val errorDescription = uri.getQueryParameter("error_description")
+                    if (error != null || errorDescription != null) {
                         return@runApiTask TootApiResult(
-                            error_description.notBlank() ?: error.notBlank()
-                            ?: "?"
+                            errorDescription.notBlank() ?: error.notBlank() ?: "?"
                         )
+                    }
 
                     // subwaytooter://oauth(\d*)/
                     //    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
@@ -1962,7 +1930,6 @@ class ActMain : AppCompatActivity(),
                     val apiHost = client.apiHost
                         ?: return@runApiTask TootApiResult("missing instance in callback url.")
                     resultApiHost = apiHost
-
 
                     val parser = TootParser(
                         this@ActMain,
@@ -2016,19 +1983,19 @@ class ActMain : AppCompatActivity(),
         ta: TootAccount?,
         sa: SavedAccount?,
         apiHost: Host?,
-        apDomain: Host?
+        apDomain: Host?,
     ): Boolean {
         result ?: return false
 
         val jsonObject = result.jsonObject
-        val token_info = result.tokenInfo
+        val tokenInfo = result.tokenInfo
         val error = result.error
 
         when {
             error != null ->
                 showToast(true, "${result.error} ${result.requestInfo}".trim())
 
-            token_info == null ->
+            tokenInfo == null ->
                 showToast(true, "can't get access token.")
 
             jsonObject == null ->
@@ -2046,14 +2013,14 @@ class ActMain : AppCompatActivity(),
                 showToast(false, R.string.access_token_updated_for, sa.acct.pretty)
 
                 // DBの情報を更新する
-                sa.updateTokenInfo(token_info)
+                sa.updateTokenInfo(tokenInfo)
 
                 // 各カラムの持つアカウント情報をリロードする
                 reloadAccountSetting()
 
                 // 自動でリロードする
-                app_state.columnList
-                    .filter { it.access_info == sa }
+                appState.columnList
+                    .filter { it.accessInfo == sa }
                     .forEach { it.startLoading() }
 
                 // 通知の更新が必要かもしれない
@@ -2066,15 +2033,15 @@ class ActMain : AppCompatActivity(),
                 // アカウント追加時
                 val user = Acct.parse(ta.username, apDomain ?: apiHost)
 
-                val row_id = SavedAccount.insert(
+                val rowId = SavedAccount.insert(
                     acct = user.ascii,
                     host = apiHost.ascii,
                     domain = (apDomain ?: apiHost).ascii,
                     account = jsonObject,
-                    token = token_info,
-                    misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
+                    token = tokenInfo,
+                    misskeyVersion = TootInstance.parseMisskeyVersion(tokenInfo)
                 )
-                val account = SavedAccount.loadAccount(this@ActMain, row_id)
+                val account = SavedAccount.loadAccount(this@ActMain, rowId)
                 if (account != null) {
                     var bModified = false
 
@@ -2123,31 +2090,30 @@ class ActMain : AppCompatActivity(),
         return false
     }
 
-
     private fun reloadAccountSetting(
-        newAccounts:ArrayList<SavedAccount> = SavedAccount.loadAccountList(this)
+        newAccounts: ArrayList<SavedAccount> = SavedAccount.loadAccountList(this),
     ) {
-        for (column in app_state.columnList) {
-            val a = column.access_info
-            if (!a.isNA) a.reloadSetting(this,newAccounts.find{ it.acct == a.acct })
+        for (column in appState.columnList) {
+            val a = column.accessInfo
+            if (!a.isNA) a.reloadSetting(this, newAccounts.find { it.acct == a.acct })
             column.fireShowColumnHeader()
         }
     }
 
     fun reloadAccountSetting(account: SavedAccount) {
-        val newData = SavedAccount.loadAccount(this,account.db_id)
+        val newData = SavedAccount.loadAccount(this, account.db_id)
             ?: return
-        for (column in app_state.columnList) {
-            val a = column.access_info
+        for (column in appState.columnList) {
+            val a = column.accessInfo
             if (a.acct != newData.acct) continue
-            if (!a.isNA) a.reloadSetting(this,newData)
+            if (!a.isNA) a.reloadSetting(this, newData)
             column.fireShowColumnHeader()
         }
     }
 
     fun closeColumn(column: Column, bConfirmed: Boolean = false) {
 
-        if (column.dont_close) {
+        if (column.dontClose) {
             showToast(false, R.string.column_has_dont_close_option)
             return
         }
@@ -2161,16 +2127,15 @@ class ActMain : AppCompatActivity(),
             return
         }
 
-        app_state.columnIndex(column)?.let { page_delete ->
+        appState.columnIndex(column)?.let { page_delete ->
             phoneTab({ env ->
-                val page_showing = env.pager.currentItem
+                val pageShowing = env.pager.currentItem
 
                 removeColumn(column)
 
-                if (page_showing == page_delete) {
-                    scrollAndLoad(page_showing - 1)
+                if (pageShowing == page_delete) {
+                    scrollAndLoad(pageShowing - 1)
                 }
-
             }, {
                 removeColumn(column)
                 scrollAndLoad(page_delete - 1)
@@ -2179,40 +2144,40 @@ class ActMain : AppCompatActivity(),
     }
 
     fun closeColumnAll(
-        _lastColumnIndex: Int = -1,
-        bConfirmed: Boolean = false
+        oldColumnIndex: Int = -1,
+        bConfirmed: Boolean = false,
     ) {
 
         if (!bConfirmed) {
             AlertDialog.Builder(this)
                 .setMessage(R.string.confirm_close_column_all)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok) { _, _ -> closeColumnAll(_lastColumnIndex, true) }
+                .setPositiveButton(R.string.ok) { _, _ -> closeColumnAll(oldColumnIndex, true) }
                 .show()
             return
         }
 
-        var lastColumnIndex = when (_lastColumnIndex) {
+        var lastColumnIndex = when (oldColumnIndex) {
             -1 -> phoneTab(
                 { it.pager.currentItem },
                 { 0 }
             )
-            else -> _lastColumnIndex
+            else -> oldColumnIndex
         }
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.editColumnList { list ->
+        appState.editColumnList { list ->
             for (i in list.indices.reversed()) {
                 val column = list[i]
-                if (column.dont_close) continue
+                if (column.dontClose) continue
                 list.removeAt(i).dispose()
                 if (lastColumnIndex >= i) --lastColumnIndex
             }
         }
 
         phoneTab(
-            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> env.pager.adapter = env.pagerAdapter },
             { env -> resizeColumnWidth(env) }
         )
 
@@ -2222,7 +2187,7 @@ class ActMain : AppCompatActivity(),
     }
 
     private fun scrollAndLoad(idx: Int) {
-        val c = app_state.column(idx) ?: return
+        val c = appState.column(idx) ?: return
         scrollToColumn(idx)
         if (!c.bFirstInitialized) c.startLoading()
     }
@@ -2234,7 +2199,7 @@ class ActMain : AppCompatActivity(),
         indexArg: Int,
         ai: SavedAccount,
         type: ColumnType,
-        vararg params: Any
+        vararg params: Any,
     ): Column {
         return addColumn(
             Pref.bpAllowColumnDuplication(pref),
@@ -2250,11 +2215,11 @@ class ActMain : AppCompatActivity(),
         indexArg: Int,
         ai: SavedAccount,
         type: ColumnType,
-        vararg params: Any
+        vararg params: Any,
     ): Column {
         if (!allowColumnDuplication) {
             // 既に同じカラムがあればそこに移動する
-            app_state.columnList.forEachIndexed { i, column ->
+            appState.columnList.forEachIndexed { i, column ->
                 if (ColumnSpec.isSameSpec(column, ai, type, params)) {
                     scrollToColumn(i)
                     return column
@@ -2263,15 +2228,15 @@ class ActMain : AppCompatActivity(),
         }
 
         //
-        val col = Column(app_state, ai, type.id, *params)
+        val col = Column(appState, ai, type.id, *params)
         val index = addColumn(col, indexArg)
         scrollAndLoad(index)
         return col
     }
 
     fun showColumnMatchAccount(account: SavedAccount) {
-        app_state.columnList.forEach { column ->
-            if (account == column.access_info) {
+        appState.columnList.forEach { column ->
+            if (account == column.accessInfo) {
                 column.fireRebindAdapterItems()
             }
         }
@@ -2279,22 +2244,22 @@ class ActMain : AppCompatActivity(),
 
     fun showFooterColor() {
 
-        val footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
-        val footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
-        val footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
-        val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
-        val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
+        val footerButtonBgColor = Pref.ipFooterButtonBgColor(pref)
+        val footerButtonFgColor = Pref.ipFooterButtonFgColor(pref)
+        val footerTabBgColor = Pref.ipFooterTabBgColor(pref)
+        val footerTabDividerColor = Pref.ipFooterTabDividerColor(pref)
+        val footerTabIndicatorColor = Pref.ipFooterTabIndicatorColor(pref)
 
-        val colorColumnStripBackground = footer_tab_bg_color.notZero()
+        val colorColumnStripBackground = footerTabBgColor.notZero()
             ?: attrColor(R.attr.colorColumnStripBackground)
 
         svColumnStrip.setBackgroundColor(colorColumnStripBackground)
         llQuickTootBar.setBackgroundColor(colorColumnStripBackground)
 
-        val colorButtonBg = footer_button_bg_color.notZero()
+        val colorButtonBg = footerButtonBgColor.notZero()
             ?: colorColumnStripBackground
 
-        val colorButtonFg = footer_button_fg_color.notZero()
+        val colorButtonFg = footerButtonFgColor.notZero()
             ?: attrColor(R.attr.colorRippleEffect)
 
         btnMenu.backgroundDrawable =
@@ -2307,7 +2272,7 @@ class ActMain : AppCompatActivity(),
             getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 
         val csl = ColorStateList.valueOf(
-            footer_button_fg_color.notZero()
+            footerButtonFgColor.notZero()
                 ?: attrColor(R.attr.colorVectorDrawable)
         )
         btnToot.imageTintList = csl
@@ -2315,12 +2280,12 @@ class ActMain : AppCompatActivity(),
         btnQuickToot.imageTintList = csl
         btnQuickTootMenu.imageTintList = csl
 
-        val c = footer_tab_divider_color.notZero()
+        val c = footerTabDividerColor.notZero()
             ?: colorColumnStripBackground
         vFooterDivider1.setBackgroundColor(c)
         vFooterDivider2.setBackgroundColor(c)
 
-        llColumnStrip.indicatorColor = footer_tab_indicator_color.notZero()
+        llColumnStrip.indicatorColor = footerTabIndicatorColor.notZero()
             ?: attrColor(R.attr.colorAccent)
     }
 
@@ -2329,17 +2294,17 @@ class ActMain : AppCompatActivity(),
 
     private fun closeColumnSetting(): Boolean {
         phoneTab({ env ->
-            val vh = env.pager_adapter.getColumnViewHolder(env.pager.currentItem)
+            val vh = env.pagerAdapter.getColumnViewHolder(env.pager.currentItem)
             if (vh?.isColumnSettingShown == true) {
                 vh.showColumnSetting(false)
                 return@closeColumnSetting true
             }
         }, { env ->
-            for (i in 0 until env.tablet_layout_manager.childCount) {
+            for (i in 0 until env.tabletLayoutManager.childCount) {
 
-                val columnViewHolder = when (val v = env.tablet_layout_manager.getChildAt(i)) {
+                val columnViewHolder = when (val v = env.tabletLayoutManager.getChildAt(i)) {
                     null -> null
-                    else -> (env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
+                    else -> (env.tabletPager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
                 }
 
                 if (columnViewHolder?.isColumnSettingShown == true) {
@@ -2352,19 +2317,18 @@ class ActMain : AppCompatActivity(),
     }
 
     private fun addColumn(column: Column, indexArg: Int): Int {
-        val index = indexArg.clip(0, app_state.columnCount)
+        val index = indexArg.clip(0, appState.columnCount)
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.editColumnList {
+        appState.editColumnList {
             it.add(index, column)
         }
 
         phoneTab(
-            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> env.pager.adapter = env.pagerAdapter },
             { env -> resizeColumnWidth(env) }
         )
-
 
         updateColumnStrip()
 
@@ -2372,110 +2336,109 @@ class ActMain : AppCompatActivity(),
     }
 
     private fun removeColumn(column: Column) {
-        val idx_column = app_state.columnIndex(column) ?: return
+        val idxColumn = appState.columnIndex(column) ?: return
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.editColumnList {
-            it.removeAt(idx_column).dispose()
+        appState.editColumnList {
+            it.removeAt(idxColumn).dispose()
         }
 
         phoneTab(
-            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> env.pager.adapter = env.pagerAdapter },
             { env -> resizeColumnWidth(env) }
         )
 
         updateColumnStrip()
     }
 
-    fun setOrder(new_order: List<Int>) {
+    fun setOrder(newOrder: List<Int>) {
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.editColumnList { list ->
+        appState.editColumnList { list ->
             // columns with new order
-            val tmp_list = new_order.mapNotNull { i -> list.elementAtOrNull(i) }
-            val used_set = new_order.toSet()
+            val tmpList = newOrder.mapNotNull { i -> list.elementAtOrNull(i) }
+            val usedSet = newOrder.toSet()
             list.forEachIndexed { i, v ->
-                if (!used_set.contains(i)) v.dispose()
+                if (!usedSet.contains(i)) v.dispose()
             }
             list.clear()
-            list.addAll(tmp_list)
+            list.addAll(tmpList)
         }
 
         phoneTab(
-            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> env.pager.adapter = env.pagerAdapter },
             { env -> resizeColumnWidth(env) }
         )
 
-        app_state.saveColumnList()
+        appState.saveColumnList()
         updateColumnStrip()
     }
 
     private fun resizeColumnWidth(env: TabletEnv) {
 
-        var column_w_min_dp = COLUMN_WIDTH_MIN_DP
+        var columnWMinDp = COLUMN_WIDTH_MIN_DP
         val sv = Pref.spColumnWidth(pref)
         if (sv.isNotEmpty()) {
             try {
                 val iv = Integer.parseInt(sv)
                 if (iv >= 100) {
-                    column_w_min_dp = iv
+                    columnWMinDp = iv
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
         }
 
         val dm = resources.displayMetrics
 
-        val screen_width = dm.widthPixels
+        val screenWidth = dm.widthPixels
 
         val density = dm.density
-        var column_w_min = (0.5f + column_w_min_dp * density).toInt()
-        if (column_w_min < 1) column_w_min = 1
+        var columnWMin = (0.5f + columnWMinDp * density).toInt()
+        if (columnWMin < 1) columnWMin = 1
 
-        var column_w: Int
+        var columnW: Int
 
-        if (screen_width < column_w_min * 2) {
+        if (screenWidth < columnWMin * 2) {
             // 最小幅で2つ表示できないのなら1カラム表示
             nScreenColumn = 1
-            column_w = screen_width
+            columnW = screenWidth
         } else {
 
             // カラム最小幅から計算した表示カラム数
-            nScreenColumn = screen_width / column_w_min
+            nScreenColumn = screenWidth / columnWMin
             if (nScreenColumn < 1) nScreenColumn = 1
 
             // データのカラム数より大きくならないようにする
             // (でも最小は1)
-            val column_count = app_state.columnCount
-            if (column_count > 0 && column_count < nScreenColumn) {
-                nScreenColumn = column_count
+            val columnCount = appState.columnCount
+            if (columnCount > 0 && columnCount < nScreenColumn) {
+                nScreenColumn = columnCount
             }
 
             // 表示カラム数から計算したカラム幅
-            column_w = screen_width / nScreenColumn
+            columnW = screenWidth / nScreenColumn
 
             // 最小カラム幅の1.5倍よりは大きくならないようにする
-            val column_w_max = (0.5f + column_w_min * 1.5f).toInt()
-            if (column_w > column_w_max) {
-                column_w = column_w_max
+            val columnWMax = (0.5f + columnWMin * 1.5f).toInt()
+            if (columnW > columnWMax) {
+                columnW = columnWMax
             }
         }
 
-        nColumnWidth = column_w // dividerの幅を含む
+        nColumnWidth = columnW // dividerの幅を含む
 
-        val divider_width = (0.5f + 1f * density).toInt()
-        column_w -= divider_width
-        env.tablet_pager_adapter.columnWidth = column_w // dividerの幅を含まない
+        val dividerWidth = (0.5f + 1f * density).toInt()
+        columnW -= dividerWidth
+        env.tabletPagerAdapter.columnWidth = columnW // dividerの幅を含まない
         // env.tablet_snap_helper.columnWidth = column_w //使われていない
 
-        resizeAutoCW(column_w) // dividerの幅を含まない
+        resizeAutoCW(columnW) // dividerの幅を含まない
 
         // 並べ直す
-        env.tablet_pager_adapter.notifyDataSetChanged()
+        env.tabletPagerAdapter.notifyDataSetChanged()
     }
 
     fun scrollToColumn(index: Int, smoothScroll: Boolean = true) {
@@ -2491,7 +2454,7 @@ class ActMain : AppCompatActivity(),
             // タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
             { env ->
                 log.d("ipLastColumnPos beforeScroll=${env.visibleColumnsIndices.first}")
-                env.tablet_pager.scrollToPosition(index)
+                env.tabletPager.scrollToPosition(index)
             }
         )
     }
@@ -2505,13 +2468,13 @@ class ActMain : AppCompatActivity(),
             // remove all columns
             phoneOnly { env -> env.pager.adapter = null }
 
-            app_state.editColumnList(save = false) { list ->
+            appState.editColumnList(save = false) { list ->
                 list.forEach { it.dispose() }
                 list.clear()
             }
 
             phoneTab(
-                { env -> env.pager.adapter = env.pager_adapter },
+                { env -> env.pager.adapter = env.pagerAdapter },
                 { env -> resizeColumnWidth(env) }
             )
 
@@ -2612,13 +2575,13 @@ class ActMain : AppCompatActivity(),
                     try {
                         phoneOnly { env -> env.pager.adapter = null }
 
-                        app_state.editColumnList { list ->
+                        appState.editColumnList { list ->
                             list.clear()
                             list.addAll(it)
                         }
 
                         phoneTab(
-                            { env -> env.pager.adapter = env.pager_adapter },
+                            { env -> env.pager.adapter = env.pagerAdapter },
                             { env -> resizeColumnWidth(env) }
                         )
                         updateColumnStrip()
@@ -2641,29 +2604,29 @@ class ActMain : AppCompatActivity(),
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-        post_helper.closeAcctPopup()
+        postHelper.closeAcctPopup()
     }
 
     override fun onDrawerOpened(drawerView: View) {
-        post_helper.closeAcctPopup()
+        postHelper.closeAcctPopup()
     }
 
     override fun onDrawerClosed(drawerView: View) {
-        post_helper.closeAcctPopup()
+        postHelper.closeAcctPopup()
     }
 
     override fun onDrawerStateChanged(newState: Int) {
-        post_helper.closeAcctPopup()
+        postHelper.closeAcctPopup()
     }
 
-    private fun resizeAutoCW(column_w: Int) {
+    private fun resizeAutoCW(columnW: Int) {
         val sv = Pref.spAutoCWLines(pref)
         nAutoCwLines = sv.optInt() ?: -1
         if (nAutoCwLines > 0) {
-            val lv_pad = (0.5f + 12 * density).toInt()
-            val icon_width = avatarIconSize
-            val icon_end = (0.5f + 4 * density).toInt()
-            nAutoCwCellWidth = column_w - lv_pad * 2 - icon_width - icon_end
+            val lvPad = (0.5f + 12 * density).toInt()
+            val iconWidth = avatarIconSize
+            val iconEnd = (0.5f + 4 * density).toInt()
+            nAutoCwCellWidth = columnW - lvPad * 2 - iconWidth - iconEnd
         }
         // この後各カラムは再描画される
     }
@@ -2675,36 +2638,36 @@ class ActMain : AppCompatActivity(),
             return
         }
 
-        var auto_cw = status.auto_cw
-        if (auto_cw != null &&
-            auto_cw.refActivity?.get() === this@ActMain &&
-            auto_cw.cell_width == nAutoCwCellWidth
+        var autoCw = status.auto_cw
+        if (autoCw != null &&
+            autoCw.refActivity?.get() === this@ActMain &&
+            autoCw.cellWidth == nAutoCwCellWidth
         ) {
             // 以前に計算した値がまだ使える
             return
         }
 
-        if (auto_cw == null) {
-            auto_cw = TootStatus.AutoCW()
-            status.auto_cw = auto_cw
+        if (autoCw == null) {
+            autoCw = TootStatus.AutoCW()
+            status.auto_cw = autoCw
         }
 
         // 計算時の条件(文字フォント、文字サイズ、カラム幅）を覚えておいて、再利用時に同じか確認する
-        auto_cw.refActivity = WeakReference(this@ActMain)
-        auto_cw.cell_width = nAutoCwCellWidth
-        auto_cw.decoded_spoiler_text = null
+        autoCw.refActivity = WeakReference(this@ActMain)
+        autoCw.cellWidth = nAutoCwCellWidth
+        autoCw.decodedSpoilerText = null
 
         // テキストをレイアウトして行数を測定
         val tv = TextView(this).apply {
-            layoutParams =
-                LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
-            if (!timeline_font_size_sp.isNaN())
-                textSize = timeline_font_size_sp
+            layoutParams = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
+            if (!timelineFontSizeSp.isNaN()) {
+                textSize = timelineFontSizeSp
+            }
 
-            val fv = timeline_spacing
+            val fv = timelineSpacing
             if (fv != null) setLineSpacing(0f, fv)
 
-            typeface = timeline_font
+            typeface = timelineFont
             this.text = text
         }
 
@@ -2714,12 +2677,12 @@ class ActMain : AppCompatActivity(),
         )
         val l = tv.layout
         if (l != null) {
-            auto_cw.originalLineCount = l.lineCount
-            val line_count = auto_cw.originalLineCount
+            autoCw.originalLineCount = l.lineCount
+            val lineCount = autoCw.originalLineCount
 
-            if ((nAutoCwLines > 0 && line_count > nAutoCwLines)
-                && status.spoiler_text.isEmpty()
-                && (status.mentions?.size ?: 0) <= nAutoCwLines
+            if ((nAutoCwLines > 0 && lineCount > nAutoCwLines) &&
+                status.spoiler_text.isEmpty() &&
+                (status.mentions?.size ?: 0) <= nAutoCwLines
             ) {
                 val sb = SpannableStringBuilder()
                 sb.append(getString(R.string.auto_cw_prefix))
@@ -2737,7 +2700,7 @@ class ActMain : AppCompatActivity(),
                     sb.delete(last, sb.length)
                 }
                 sb.append('…')
-                auto_cw.decoded_spoiler_text = sb
+                autoCw.decodedSpoilerText = sb
             }
         }
     }
@@ -2747,14 +2710,14 @@ class ActMain : AppCompatActivity(),
         // 既に表示中かもしれない
         if (dlgPrivacyPolicy?.get()?.isShowing == true) return
 
-        val res_id = when (getString(R.string.language_code)) {
+        @RawRes val resId = when (getString(R.string.language_code)) {
             "ja" -> R.raw.privacy_policy_ja
             "fr" -> R.raw.privacy_policy_fr
             else -> R.raw.privacy_policy_en
         }
 
         // プライバシーポリシーデータの読み込み
-        val bytes = loadRawResource(res_id)
+        val bytes = loadRawResource(resId)
         if (bytes.isEmpty()) return
 
         // 同意ずみなら表示しない

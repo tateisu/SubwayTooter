@@ -29,13 +29,13 @@ class ActKeywordFilter
         fun open(
             activity: Activity,
             ai: SavedAccount,
-            filter_id: EntityId? = null,
-            initial_phrase: String? = null
+            filterId: EntityId? = null,
+            initialPhrase: String? = null,
         ) {
             val intent = Intent(activity, ActKeywordFilter::class.java)
             intent.putExtra(EXTRA_ACCOUNT_DB_ID, ai.db_id)
-            filter_id?.putTo(intent, EXTRA_FILTER_ID)
-            if (initial_phrase != null) intent.putExtra(EXTRA_INITIAL_PHRASE, initial_phrase)
+            filterId?.putTo(intent, EXTRA_FILTER_ID)
+            initialPhrase?.notEmpty()?.let { intent.putExtra(EXTRA_INITIAL_PHRASE, it) }
             activity.startActivity(intent)
         }
 
@@ -52,7 +52,6 @@ class ActKeywordFilter
             86400,
             86400 * 7
         )
-
     }
 
     private lateinit var account: SavedAccount
@@ -72,8 +71,8 @@ class ActKeywordFilter
 
     private var loading = false
     private var density: Float = 1f
-    private var filter_id: EntityId? = null
-    private var filter_expire: Long = 0L
+    private var filterId: EntityId? = null
+    private var filterExpire: Long = 0L
 
     ///////////////////////////////////////////////////
 
@@ -84,7 +83,7 @@ class ActKeywordFilter
         val intent = this.intent
 
         // filter ID の有無はUIに影響するのでinitUIより先に初期化する
-        this.filter_id = EntityId.from(intent, EXTRA_FILTER_ID)
+        this.filterId = EntityId.from(intent, EXTRA_FILTER_ID)
 
         val a = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, -1L))
         if (a == null) {
@@ -98,7 +97,7 @@ class ActKeywordFilter
         showAccount()
 
         if (savedInstanceState == null) {
-            if (filter_id != null) {
+            if (filterId != null) {
                 startLoading()
             } else {
                 spExpire.setSelection(1)
@@ -109,7 +108,7 @@ class ActKeywordFilter
             if (iv != -1) {
                 spExpire.setSelection(iv)
             }
-            filter_expire = savedInstanceState.getLong(STATE_EXPIRE_AT, filter_expire)
+            filterExpire = savedInstanceState.getLong(STATE_EXPIRE_AT, filterExpire)
         }
     }
 
@@ -117,16 +116,16 @@ class ActKeywordFilter
         super.onSaveInstanceState(outState)
         if (!loading) {
             outState.putInt(STATE_EXPIRE_SPINNER, spExpire.selectedItemPosition)
-            outState.putLong(STATE_EXPIRE_AT, filter_expire)
+            outState.putLong(STATE_EXPIRE_AT, filterExpire)
         }
     }
 
     private fun initUI() {
         title = getString(
-            if (filter_id == null)
-                R.string.keyword_filter_new
-            else
-                R.string.keyword_filter_edit
+            when (filterId) {
+                null -> R.string.keyword_filter_new
+                else -> R.string.keyword_filter_edit
+            }
         )
 
         this.density = resources.displayMetrics.density
@@ -149,7 +148,7 @@ class ActKeywordFilter
 
         findViewById<View>(R.id.btnSave).setOnClickListener(this)
 
-        val caption_list = arrayOf(
+        val captionList = arrayOf(
             getString(R.string.dont_change),
             getString(R.string.filter_expire_unlimited),
             getString(R.string.filter_expire_30min),
@@ -159,7 +158,7 @@ class ActKeywordFilter
             getString(R.string.filter_expire_1day),
             getString(R.string.filter_expire_1week)
         )
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, captionList)
         adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
         spExpire.adapter = adapter
     }
@@ -174,7 +173,7 @@ class ActKeywordFilter
         launchMain {
             var resultFilter: TootFilter? = null
             runApiTask(account) { client ->
-                client.request("${ApiPath.PATH_FILTERS}/${filter_id}")
+                client.request("${ApiPath.PATH_FILTERS}/$filterId")
                     ?.also { result ->
                         result.jsonObject?.let {
                             resultFilter = TootFilter(it)
@@ -197,7 +196,7 @@ class ActKeywordFilter
     private fun onLoadComplete(filter: TootFilter) {
         loading = false
 
-        filter_expire = filter.time_expires_at
+        filterExpire = filter.time_expires_at
 
         etPhrase.setText(filter.phrase)
         setContextChecked(filter, cbContextHome, TootFilter.CONTEXT_HOME)
@@ -243,7 +242,6 @@ class ActKeywordFilter
                 putContextChecked(cbContextPublic, "public")
                 putContextChecked(cbContextThread, "thread")
                 putContextChecked(cbContextProfile, "account")
-
             })
 
             put("irreversible", cbFilterIrreversible.isChecked)
@@ -265,28 +263,27 @@ class ActKeywordFilter
                 // unlimited
                 0 -> when {
                     // already unlimited. don't change.
-                    filter_expire <= 0L -> {
+                    filterExpire <= 0L -> {
                     }
-                    // FIXME: currently there is no way to remove expires from existing filter.
+                    // XXX: currently there is no way to remove expires from existing filter.
                     else -> put("expires_in", Int.MAX_VALUE)
                 }
 
                 // set seconds
                 else -> put("expires_in", seconds)
             }
-
         }
 
         launchMain {
             runApiTask(account) { client ->
-                if (filter_id == null) {
+                if (filterId == null) {
                     client.request(
                         ApiPath.PATH_FILTERS,
                         params.toPostRequestBuilder()
                     )
                 } else {
                     client.request(
-                        "${ApiPath.PATH_FILTERS}/$filter_id",
+                        "${ApiPath.PATH_FILTERS}/$filterId",
                         params.toRequestBody().toPut()
                     )
                 }
@@ -295,10 +292,10 @@ class ActKeywordFilter
                 if (error != null) {
                     showToast(true, result.error)
                 } else {
-                    val app_state = App1.prepare(applicationContext, "ActKeywordFilter.save()")
-                    for (column in app_state.columnList) {
-                        if (column.type == ColumnType.KEYWORD_FILTER && column.access_info == account) {
-                            column.filter_reload_required = true
+                    val appState = App1.prepare(applicationContext, "ActKeywordFilter.save()")
+                    for (column in appState.columnList) {
+                        if (column.type == ColumnType.KEYWORD_FILTER && column.accessInfo == account) {
+                            column.filterReloadRequired = true
                         }
                     }
                     finish()
@@ -307,4 +304,3 @@ class ActKeywordFilter
         }
     }
 }
-

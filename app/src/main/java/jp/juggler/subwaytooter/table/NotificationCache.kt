@@ -47,7 +47,7 @@ class NotificationCache(private val account_db_id: Long) {
         override fun onDBCreate(db: SQLiteDatabase) {
 
             db.execSQL(
-				"""
+                """
 				create table if not exists $table
 				($COL_ID INTEGER PRIMARY KEY
 				,$COL_ACCOUNT_DB_ID integer not null
@@ -56,10 +56,10 @@ class NotificationCache(private val account_db_id: Long) {
 				,$COL_SINCE_ID text
 				)
 				"""
-			)
+            )
             db.execSQL(
-				"create unique index if not exists ${table}_a on $table ($COL_ACCOUNT_DB_ID)"
-			)
+                "create unique index if not exists ${table}_a on $table ($COL_ACCOUNT_DB_ID)"
+            )
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -73,11 +73,11 @@ class NotificationCache(private val account_db_id: Long) {
 
         private const val KEY_TIME_CREATED_AT = "<>KEY_TIME_CREATED_AT"
 
-        fun resetLastLoad(db_id: Long) {
+        fun resetLastLoad(dbId: Long) {
             try {
                 val cv = ContentValues()
                 cv.put(COL_LAST_LOAD, 0L)
-                App1.database.update(table, cv, WHERE_AID, arrayOf(db_id.toString()))
+                App1.database.update(table, cv, WHERE_AID, arrayOf(dbId.toString()))
             } catch (ex: Throwable) {
                 log.e(ex, "resetLastLoad(db_id) failed.")
             }
@@ -91,7 +91,6 @@ class NotificationCache(private val account_db_id: Long) {
             } catch (ex: Throwable) {
                 log.e(ex, "resetLastLoad() failed.")
             }
-
         }
 
         fun getEntityOrderId(account: SavedAccount, src: JsonObject): EntityId =
@@ -99,7 +98,7 @@ class NotificationCache(private val account_db_id: Long) {
                 // 今のMisskeyはIDをIDとして使っても問題ないのだが、
                 // ST的には既読チェックの値の内容が大幅に変わると困るのだった
                 when (val created_at = src.string("createdAt")) {
-					null -> EntityId.DEFAULT
+                    null -> EntityId.DEFAULT
                     else -> EntityId(TootStatus.parseTime(created_at).toString())
                 }
             } else {
@@ -107,17 +106,17 @@ class NotificationCache(private val account_db_id: Long) {
             }
 
         private fun makeNotificationUrl(
-			accessInfo: SavedAccount,
-			flags: Int,
-			since_id: EntityId?
-		) = when {
+            accessInfo: SavedAccount,
+            flags: Int,
+            sinceId: EntityId?,
+        ) = when {
             // MisskeyはsinceIdを指定すると未読範囲の古い方から読んでしまう？
             accessInfo.isMisskey -> "/api/i/notifications"
 
             else -> {
                 val sb = StringBuilder(ApiPath.PATH_NOTIFICATIONS) // always contain "?limit=XX"
 
-                if (since_id != null) sb.append("&since_id=$since_id")
+                if (sinceId != null) sb.append("&since_id=$sinceId")
 
                 fun noBit(v: Int, mask: Int) = (v and mask) != mask
 
@@ -161,14 +160,14 @@ class NotificationCache(private val account_db_id: Long) {
     fun load() {
         try {
             App1.database.query(
-				table,
-				null,
-				WHERE_AID,
-				arrayOf(account_db_id.toString()),
-				null,
-				null,
-				null
-			)?.use { cursor ->
+                table,
+                null,
+                WHERE_AID,
+                arrayOf(account_db_id.toString()),
+                null,
+                null,
+                null
+            )?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     this.id = cursor.getLong(COL_ID)
                     this.last_load = cursor.getLong(COL_LAST_LOAD)
@@ -248,16 +247,15 @@ class NotificationCache(private val account_db_id: Long) {
             }
             typeCount[type] = count
         }
-
     }
 
     suspend fun requestAsync(
-		client: TootApiClient,
-		account: SavedAccount,
-		flags: Int,
-		onError: (TootApiResult) -> Unit,
-		isCancelled: () -> Boolean
-	) {
+        client: TootApiClient,
+        account: SavedAccount,
+        flags: Int,
+        onError: (TootApiResult) -> Unit,
+        isCancelled: () -> Boolean,
+    ) {
         val now = System.currentTimeMillis()
 
         // 前回の更新から一定時刻が経過するまでは処理しない
@@ -332,7 +330,7 @@ class NotificationCache(private val account_db_id: Long) {
     inline fun filterLatestId(account: SavedAccount, predicate: (JsonObject) -> Boolean) =
         data
             .filter { predicate(it) }
-			.mapNotNull { getEntityOrderId(account, it).takeIf { id -> !id.isDefault } }
+            .mapNotNull { getEntityOrderId(account, it).takeIf { id -> !id.isDefault } }
             .reduceOrNull { a, b -> maxComparable(a, b) }
 
     fun inject(account: SavedAccount, list: List<TootNotification>) {
@@ -375,5 +373,4 @@ class NotificationCache(private val account_db_id: Long) {
     //		}
     //
     //	}
-
 }

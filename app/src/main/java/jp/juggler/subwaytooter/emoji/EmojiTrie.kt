@@ -24,9 +24,9 @@ class EmojiTrie<T> {
 
     fun get(src: String, offset: Int, end: Int): Result<T>? {
         // 長い方を優先するので、先に子を調べる
-        if (offset < end)
-            map[src[offset].code]?.get(src, offset + 1, end)
-                ?.let { return it }
+        if (offset < end) {
+            map[src[offset].code]?.get(src, offset + 1, end)?.let { return it }
+        }
         return this.data?.let { Result(it, offset) }
     }
 }

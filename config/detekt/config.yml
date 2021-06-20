@@ -165,7 +165,7 @@ empty-blocks:
   EmptyForBlock:
     active: true
   EmptyFunctionBlock:
-    active: true
+    active: false
     ignoreOverridden: false
   EmptyIfBlock:
     active: true
@@ -223,7 +223,7 @@ exceptions:
   ThrowingNewInstanceOfSameException:
     active: true
   TooGenericExceptionCaught:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     exceptionNames:
      - ArrayIndexOutOfBoundsException
@@ -311,7 +311,7 @@ formatting:
     active: true
     autoCorrect: true
   NoMultipleSpaces:
-    active: true
+    active: false
     autoCorrect: true
   NoSemicolons:
     active: true
@@ -326,12 +326,12 @@ formatting:
     active: true
     autoCorrect: true
   NoWildcardImports:
-    active: true
+    active: false
   PackageName:
     active: true
     autoCorrect: true
   ParameterListWrapping:
-    active: true
+    active: false
     autoCorrect: true
     indentSize: 4
     maxLineLength: 120
@@ -339,7 +339,7 @@ formatting:
     active: false
     autoCorrect: true
   SpacingAroundColon:
-    active: true
+    active: false
     autoCorrect: true
   SpacingAroundComma:
     active: true
@@ -386,11 +386,19 @@ naming:
     classPattern: '[A-Z][a-zA-Z0-9]*'
   ConstructorParameterNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     parameterPattern: '[a-z][A-Za-z0-9]*'
     privateParameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
     ignoreOverridden: true
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/entity/**'
+      - '**/table/**'
   EnumNaming:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
@@ -461,7 +469,15 @@ naming:
     minimumVariableNameLength: 1
   VariableNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/entity/**'
+      - '**/table/**'
     variablePattern: '[a-z][A-Za-z0-9]*'
     privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
@@ -475,7 +491,7 @@ performance:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   SpreadOperator:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   UnnecessaryTemporaryInstantiation:
     active: true
@@ -586,8 +602,20 @@ style:
     imports: []
     forbiddenPatterns: ''
   ForbiddenMethodCall:
-    active: false
-    methods: ['kotlin.io.println', 'kotlin.io.print']
+    active: true
+    methods: 
+      - 'kotlin.io.println'
+      - 'kotlin.io.print'
+      - 'java.lang.String.format'
+      - 'kotlin.text.String.format'
+      - 'kotlin.text.String.Companion.format'
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
   ForbiddenPublicDataClass:
     active: true
     excludes: ['**']
@@ -630,8 +658,8 @@ style:
   MandatoryBracesLoops:
     active: false
   MaxLineLength:
-    active: true
-    maxLineLength: 120
+    active: false
+    maxLineLength: 130
     excludePackageStatements: true
     excludeImportStatements: true
     excludeCommentStatements: false
@@ -644,7 +672,7 @@ style:
   NestedClassesVisibility:
     active: true
   NewLineAtEndOfFile:
-    active: true
+    active: false
   NoTabs:
     active: false
   ObjectLiteralToLambda:
@@ -666,7 +694,7 @@ style:
   RedundantVisibilityModifierRule:
     active: false
   ReturnCount:
-    active: tru
+    active: false
     max: 10
     excludedFunctions: 'equals'
     excludeLabeled: false
@@ -687,7 +715,7 @@ style:
     active: false
     acceptableDecimalLength: 5
   UnnecessaryAbstractClass:
-    active: true
+    active: false
     excludeAnnotatedClasses: ['dagger.Module']
   UnnecessaryAnnotationUseSiteTarget:
     active: false
@@ -708,7 +736,7 @@ style:
   UnusedPrivateClass:
     active: true
   UnusedPrivateMember:
-    active: true
+    active: false
     allowedNames: '(_|ignored|expected|serialVersionUID)'
   UseArrayLiteralsInAnnotations:
     active: false
@@ -739,7 +767,7 @@ style:
   UtilityClassWithPublicConstructor:
     active: true
   VarCouldBeVal:
-    active: true
+    active: false
   WildcardImport:
     active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']

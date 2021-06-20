@@ -17,14 +17,12 @@ import jp.juggler.util.*
 import org.conscrypt.OpenSSLX509Certificate
 
 internal class ViewHolderHeaderInstance(
-    arg_activity: ActMain,
-    viewRoot: View
-) : ViewHolderHeaderBase(arg_activity, viewRoot), View.OnClickListener {
+    activityArg: ActMain,
+    viewRoot: View,
+) : ViewHolderHeaderBase(activityArg, viewRoot), View.OnClickListener {
 
     companion object {
-
         private val log = LogCategory("ViewHolderHeaderInstance")
-
     }
 
     private val btnInstance: TextView = viewRoot.findViewById(R.id.btnInstance)
@@ -77,7 +75,7 @@ internal class ViewHolderHeaderInstance(
 
     override fun bindData(column: Column) {
         super.bindData(column)
-        val instance = column.instance_information
+        val instance = column.instanceInformation
         val handshake = column.handshake
         this.instance = instance
 
@@ -120,11 +118,11 @@ internal class ViewHolderHeaderInstance(
             btnEmail.text = email
             btnEmail.isEnabledAlpha = email.isNotEmpty()
 
-            val contact_acct =
+            val contactAcct =
                 instance.contact_account?.let { who -> "@${who.username}@${who.apDomain.pretty}" }
                     ?: ""
-            btnContact.text = contact_acct
-            btnContact.isEnabledAlpha = contact_acct.isNotEmpty()
+            btnContact.text = contactAcct
+            btnContact.isEnabledAlpha = contactAcct.isNotEmpty()
 
             tvLanguages.text = instance.languages?.joinToString(", ") ?: ""
             tvInvitesEnabled.text = when (instance.invites_enabled) {
@@ -135,9 +133,9 @@ internal class ViewHolderHeaderInstance(
 
             val options = DecodeOptions(
                 activity,
-                access_info,
+                accessInfo,
                 decodeEmoji = true,
-                mentionDefaultHostDomain = access_info
+                mentionDefaultHostDomain = accessInfo
             )
 
             tvShortDescription.text = options
@@ -157,7 +155,6 @@ internal class ViewHolderHeaderInstance(
                 tvUserCount.text = stats.user_count.toString(10)
                 tvTootCount.text = stats.status_count.toString(10)
                 tvDomainCount.text = stats.domain_count.toString(10)
-
             }
 
             val thumbnail = instance.thumbnail?.let {
@@ -198,7 +195,6 @@ internal class ViewHolderHeaderInstance(
 						issuer : ${cert.issuerX500Principal}
 						end : ${cert.notAfter}
 						""".trimIndent()
-
                     } else {
                         cert.javaClass.name + "\n" + cert.toString()
                     }
@@ -212,7 +208,7 @@ internal class ViewHolderHeaderInstance(
     }
 
     override fun onClick(v: View) {
-        val host = Host.parse(column.instance_uri)
+        val host = Host.parse(column.instanceUri)
         when (v.id) {
 
             R.id.btnEmail -> instance?.email?.let { email ->
@@ -226,12 +222,10 @@ internal class ViewHolderHeaderInstance(
                         intent.putExtra(Intent.EXTRA_TEXT, email)
                         activity.startActivity(intent)
                     }
-
                 } catch (ex: Throwable) {
                     log.e(ex, "startActivity failed. mail=$email")
                     activity.showToast(true, R.string.missing_mail_app)
                 }
-
             }
 
             R.id.btnContact -> instance?.contact_account?.let { who ->
@@ -264,5 +258,4 @@ internal class ViewHolderHeaderInstance(
 
     override fun onViewRecycled() {
     }
-
 }

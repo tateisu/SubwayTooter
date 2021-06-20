@@ -73,24 +73,26 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private lateinit var adapter: MyAdapter
     private lateinit var etSearch: EditText
 
-
     private val arNoop = activityResultHandler { }
 
     private val arImportAppData = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data?.handleGetContentResult(contentResolver)
                 ?.firstOrNull()
                 ?.uri?.let { importAppData2(false, it) }
+        }
     }
 
     val arTimelineFont = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT, it, "TimelineFont") }
+        }
     }
 
     val arTimelineFontBold = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK)
+        if (ar?.resultCode == RESULT_OK) {
             ar.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, it, "TimelineFontBold") }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,7 +152,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     p0: CharSequence?,
                     p1: Int,
                     p2: Int,
-                    p3: Int
+                    p3: Int,
                 ) {
                 }
 
@@ -158,7 +160,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     p0: CharSequence?,
                     p1: Int,
                     p2: Int,
-                    p3: Int
+                    p3: Int,
                 ) {
                 }
             })
@@ -189,7 +191,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
         // Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
         PollingWorker.onAppSettingStop(this)
-
     }
 
     override fun onBackPressed() {
@@ -332,7 +333,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 is AppSettingItem -> item.type.id
                 is String -> SettingType.Path.id
                 divider -> SettingType.Divider.id
-                else -> error("can't generate view for type ${item}")
+                else -> error("can't generate view for type $item")
             }
 
         // true if the item at the specified position is not a separator.
@@ -347,7 +348,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     getViewSettingItem(item, convertView, parent)
                 is String -> getViewPath(item, convertView)
                 divider -> getViewDivider(convertView)
-                else -> error("can't generate view for type ${item}")
+                else -> error("can't generate view for type $item")
             }
     }
 
@@ -367,9 +368,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     AbsListView.LayoutParams.MATCH_PARENT,
                     dip(1)
                 ).apply {
-                    val margin_lr = 0
-                    val margin_tb = dip(6)
-                    setMargins(margin_lr, margin_tb, margin_lr, margin_tb)
+                    val marginX = 0
+                    val marginY = dip(6)
+                    setMargins(marginX, marginY, marginX, marginY)
                 }
                 setBackgroundColor(context.attrColor(R.attr.colorSettingDivider))
             })
@@ -381,10 +382,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 AbsListView.LayoutParams.MATCH_PARENT,
                 AbsListView.LayoutParams.WRAP_CONTENT
             )
-            val pad_lr = 0
-            val pad_tb = dip(3)
+            val padX = 0
+            val padY = dip(3)
             setTypeface(typeface, Typeface.BOLD)
-            setPaddingRelative(pad_lr, pad_tb, pad_lr, pad_tb)
+            setPaddingRelative(padX, padY, padX, padY)
         }
         tv.text = path
         return tv
@@ -393,7 +394,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private fun getViewSettingItem(
         item: AppSettingItem,
         convertView: View?,
-        parent: ViewGroup?
+        parent: ViewGroup?,
     ): View {
         val view: View
         val holder: ViewHolderSettingItem
@@ -571,7 +572,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                                 .setDialogId(COLOR_DIALOG_ID)
                             if (color != 0) builder.setColor(color)
                             builder.show(activity)
-
                         }
                         btnReset.setOnClickListener {
                             pref.edit().remove(ip).apply()
@@ -682,7 +682,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             } else {
                 sample.setLineSpacing(0f, spacing)
             }
-
         }
 
         private fun updateErrorView() {
@@ -741,7 +740,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             parent: AdapterView<*>?,
             view: View?,
             position: Int,
-            id: Long
+            id: Long,
         ) {
             if (bindingBusy) return
             val item = item ?: return
@@ -782,12 +781,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             runWithProgress(
                 "export app data",
                 doInBackground = {
-                    val cache_dir = cacheDir
+                    val cacheDir = activity.cacheDir
 
-                    cache_dir.mkdir()
+                    cacheDir.mkdir()
 
                     val file = File(
-                        cache_dir,
+                        cacheDir,
                         "SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
                     )
 
@@ -926,13 +925,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     }
 
     fun showTimelineFont(item: AppSettingItem, tv: TextView) {
-        val font_url = item.pref.cast<StringPref>()!!.invoke(this)
+        val fontUrl = item.pref.cast<StringPref>()!!.invoke(this)
         try {
-            if (font_url.isNotEmpty()) {
+            if (fontUrl.isNotEmpty()) {
                 tv.typeface = Typeface.DEFAULT
-                val face = Typeface.createFromFile(font_url)
+                val face = Typeface.createFromFile(fontUrl)
                 tv.typeface = face
-                tv.text = font_url
+                tv.text = fontUrl
                 return
             }
         } catch (ex: Throwable) {
@@ -944,7 +943,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         tv.typeface = Typeface.DEFAULT
     }
 
-    private fun saveTimelineFont(uri: Uri?, file_name: String): File? {
+    private fun saveTimelineFont(uri: Uri?, fileName: String): File? {
         try {
             if (uri == null) {
                 showToast(false, "missing uri.")
@@ -957,7 +956,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
             dir.mkdir()
 
-            val tmp_file = File(dir, "$file_name.tmp")
+            val tmpFile = File(dir, "$fileName.tmp")
 
             val source: InputStream? = contentResolver.openInputStream(uri)
             if (source == null) {
@@ -965,20 +964,20 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 return null
             } else {
                 source.use { inStream ->
-                    FileOutputStream(tmp_file).use { outStream ->
+                    FileOutputStream(tmpFile).use { outStream ->
                         IOUtils.copy(inStream, outStream)
                     }
                 }
             }
 
-            val face = Typeface.createFromFile(tmp_file)
+            val face = Typeface.createFromFile(tmpFile)
             if (face == null) {
                 showToast(false, "Typeface.createFromFile() failed.")
                 return null
             }
 
-            val file = File(dir, file_name)
-            if (!tmp_file.renameTo(file)) {
+            val file = File(dir, fileName)
+            if (!tmpFile.renameTo(file)) {
                 showToast(false, "File operation failed.")
                 return null
             }
@@ -989,7 +988,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             showToast(ex, "saveTimelineFont failed.")
             return null
         }
-
     }
 
     //////////////////////////////////////////////////////
@@ -1024,44 +1022,34 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 parent,
                 false
             )
-            view.findViewById<TextView>(android.R.id.text1).text =
-                if (position == 0)
-                    getString(R.string.ask_always)
-                else
-                    AcctColor.getNickname(list[position - 1])
+            view.findViewById<TextView>(android.R.id.text1).text = when (position) {
+                0 -> getString(R.string.ask_always)
+                else -> AcctColor.getNickname(list[position - 1])
+            }
             return view
         }
 
         override fun getDropDownView(position: Int, viewOld: View?, parent: ViewGroup): View {
-            val view =
-                viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
-            view.findViewById<TextView>(android.R.id.text1).text =
-                if (position == 0)
-                    getString(R.string.ask_always)
-                else
-                    AcctColor.getNickname(list[position - 1])
+            val view = viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
+            view.findViewById<TextView>(android.R.id.text1).text = when (position) {
+                0 -> getString(R.string.ask_always)
+                else -> AcctColor.getNickname(list[position - 1])
+            }
             return view
         }
 
-        internal fun getIndexFromId(db_id: Long): Int {
-            var i = 0
-            val ie = list.size
-            while (i < ie) {
-                if (list[i].db_id == db_id) return i + 1
-                ++i
-            }
-            return 0
-        }
+        // 見つからなければ0,見つかったら1以上
+        internal fun getIndexFromId(dbId: Long): Int =
+            1 + list.indexOfFirst { it.db_id == dbId }
 
-        internal fun getIdFromIndex(position: Int): Long {
-            return if (position > 0) list[position - 1].db_id else -1L
-        }
+        internal fun getIdFromIndex(position: Int): Long =
+            if (position > 0) list[position - 1].db_id else -1L
     }
 
     private class Item(
         val id: String,
         val caption: String,
-        val offset: Int
+        val offset: Int,
     )
 
     inner class TimeZoneAdapter internal constructor() : BaseAdapter() {
@@ -1086,22 +1074,20 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
                 var offset = tz.rawOffset.toLong()
                 val caption = when (offset) {
-                    0L -> String.format("(UTC\u00B100:00) %s %s", tz.id, tz.displayName)
+                    0L -> "(UTC\u00B100:00) ${tz.id} ${tz.displayName}"
 
                     else -> {
 
-                        val format = if (offset > 0)
-                            "(UTC+%02d:%02d) %s %s"
-                        else
-                            "(UTC-%02d:%02d) %s %s"
+                        val format = when {
+                            offset > 0 -> "(UTC+%02d:%02d) %s %s"
+                            else -> "(UTC-%02d:%02d) %s %s"
+                        }
 
                         offset = abs(offset)
 
                         val hours = TimeUnit.MILLISECONDS.toHours(offset)
                         val minutes =
                             TimeUnit.MILLISECONDS.toMinutes(offset) - TimeUnit.HOURS.toMinutes(hours)
-
-
 
                         String.format(format, hours, minutes, tz.id, tz.displayName)
                     }
@@ -1149,8 +1135,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             return view
         }
 
-        internal fun getIndexFromId(tz_id: String): Int {
-            val index = list.indexOfFirst { it.id == tz_id }
+        internal fun getIndexFromId(tzId: String): Int {
+            val index = list.indexOfFirst { it.id == tzId }
             return if (index == -1) 0 else index
         }
 

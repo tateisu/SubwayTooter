@@ -6,9 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
@@ -156,8 +154,7 @@ object OpenSticker {
             val value = entry.value.cast<JsonObject>() ?: continue
             val fontColor = value.string("fontColor")?.parseColor()
             val bgColor = value.jsonArray("bgColor")?.parseBgColor()
-            if (fontColor != null && bgColor != null)
-                defaults[key] = Default(fontColor, bgColor)
+            if (fontColor != null && bgColor != null) defaults[key] = Default(fontColor, bgColor)
         }
 
         val list = ConcurrentHashMap<String, Item>()

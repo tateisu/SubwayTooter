@@ -34,21 +34,13 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         fun createIntent(
             activity: Activity,
             fullAcct: Acct,
-            bShowNotificationSound: Boolean
+            bShowNotificationSound: Boolean,
         ) = Intent(activity, ActNickname::class.java).apply {
             putExtra(EXTRA_ACCT_ASCII, fullAcct.ascii)
             putExtra(EXTRA_ACCT_PRETTY, fullAcct.pretty)
             putExtra(EXTRA_SHOW_NOTIFICATION_SOUND, bShowNotificationSound)
         }
-
     }
-
-    private var show_notification_sound: Boolean = false
-    private lateinit var acctAscii: String
-    private lateinit var acctPretty: String
-    private var color_fg: Int = 0
-    private var color_bg: Int = 0
-    private var notification_sound_uri: String? = null
 
     private lateinit var tvPreview: TextView
     private lateinit var tvAcct: TextView
@@ -62,14 +54,20 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     private lateinit var btnNotificationSoundEdit: Button
     private lateinit var btnNotificationSoundReset: Button
 
-    private var bLoading = false
+    private var showNotificationSound = false
+    private lateinit var acctAscii: String
+    private lateinit var acctPretty: String
+    private var colorFg = 0
+    private var colorBg = 0
+    private var notificationSoundUri: String? = null
+    private var loadingBusy = false
 
     private val arNotificationSound = activityResultHandler { ar ->
         if (ar?.resultCode == RESULT_OK) {
             // RINGTONE_PICKERからの選択されたデータを取得する
             val uri = ar.data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             if (uri is Uri) {
-                notification_sound_uri = uri.toString()
+                notificationSoundUri = uri.toString()
             }
         }
     }
@@ -87,7 +85,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         val intent = intent
         this.acctAscii = intent.getStringExtra(EXTRA_ACCT_ASCII)!!
         this.acctPretty = intent.getStringExtra(EXTRA_ACCT_PRETTY)!!
-        this.show_notification_sound = intent.getBooleanExtra(EXTRA_SHOW_NOTIFICATION_SOUND, false)
+        this.showNotificationSound = intent.getBooleanExtra(EXTRA_SHOW_NOTIFICATION_SOUND, false)
 
         initUI()
 
@@ -97,10 +95,10 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     private fun initUI() {
 
         title = getString(
-            if (show_notification_sound)
-                R.string.nickname_and_color_and_notification_sound
-            else
-                R.string.nickname_and_color
+            when {
+                showNotificationSound -> R.string.nickname_and_color_and_notification_sound
+                else -> R.string.nickname_and_color
+            }
         )
         setContentView(R.layout.act_nickname)
         App1.initEdgeToEdge(this)
@@ -140,13 +138,11 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
                 s: CharSequence,
                 start: Int,
                 count: Int,
-                after: Int
+                after: Int,
             ) {
-
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-
             }
 
             override fun afterTextChanged(s: Editable) {
@@ -156,40 +152,40 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     }
 
     private fun load() {
-        bLoading = true
+        loadingBusy = true
 
         findViewById<View>(R.id.llNotificationSound).visibility =
-            if (show_notification_sound) View.VISIBLE else View.GONE
+            if (showNotificationSound) View.VISIBLE else View.GONE
 
         tvAcct.text = acctPretty
 
         val ac = AcctColor.load(acctAscii, acctPretty)
-        color_bg = ac.color_bg
-        color_fg = ac.color_fg
+        colorBg = ac.color_bg
+        colorFg = ac.color_fg
         etNickname.setText(ac.nickname)
-        notification_sound_uri = ac.notification_sound
+        notificationSoundUri = ac.notification_sound
 
-        bLoading = false
+        loadingBusy = false
         show()
     }
 
     private fun save() {
-        if (bLoading) return
+        if (loadingBusy) return
         AcctColor(
             acctAscii,
             acctPretty,
             etNickname.text.toString().trim { it <= ' ' },
-            color_fg,
-            color_bg,
-            notification_sound_uri
+            colorFg,
+            colorBg,
+            notificationSoundUri
         ).save(System.currentTimeMillis())
     }
 
     private fun show() {
         val s = etNickname.text.toString().trim { it <= ' ' }
         tvPreview.text = s.notEmpty() ?: acctPretty
-        tvPreview.textColor = color_fg.notZero() ?: attrColor(R.attr.colorTimeSmall)
-        tvPreview.backgroundColor = color_bg
+        tvPreview.textColor = colorFg.notZero() ?: attrColor(R.attr.colorTimeSmall)
+        tvPreview.backgroundColor = colorBg
     }
 
     override fun onClick(v: View) {
@@ -202,12 +198,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
                     .setAllowPresets(true)
                     .setShowAlphaSlider(false)
                     .setDialogId(1)
-                if (color_fg != 0) builder.setColor(color_fg)
+                if (colorFg != 0) builder.setColor(colorFg)
                 builder.show(this)
             }
 
             R.id.btnTextColorReset -> {
-                color_fg = 0
+                colorFg = 0
                 show()
             }
 
@@ -218,12 +214,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
                     .setAllowPresets(true)
                     .setShowAlphaSlider(false)
                     .setDialogId(2)
-                if (color_bg != 0) builder.setColor(color_bg)
+                if (colorBg != 0) builder.setColor(colorBg)
                 builder.show(this)
             }
 
             R.id.btnBackgroundColorReset -> {
-                color_bg = 0
+                colorBg = 0
                 show()
             }
 
@@ -240,14 +236,14 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 
             R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
 
-            R.id.btnNotificationSoundReset -> notification_sound_uri = ""
+            R.id.btnNotificationSoundReset -> notificationSoundUri = ""
         }
     }
 
     override fun onColorSelected(dialogId: Int, @ColorInt color: Int) {
         when (dialogId) {
-            1 -> color_fg = -0x1000000 or color
-            2 -> color_bg = -0x1000000 or color
+            1 -> colorFg = -0x1000000 or color
+            2 -> colorBg = -0x1000000 or color
         }
         show()
     }
@@ -260,16 +256,10 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-        notification_sound_uri.mayUri()?.let {
+        notificationSoundUri.mayUri()?.let {
             intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, it)
         }
-
         val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
-
-
-
         arNotificationSound.launch(chooser)
     }
-
-
 }

@@ -113,7 +113,6 @@ class WordTrieTree {
 		
 		var node = node_root
 		while(true) {
-			
 			// match_wordが定義されたノードは単語の終端を示す
 			val match_word = node.match_word
 			// マッチ候補はvalidatorで単語区切りなどの検査を行う

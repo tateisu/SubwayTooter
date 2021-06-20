@@ -4,6 +4,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
+apply plugin: "io.gitlab.arturbosch.detekt"
 
 android {
 
@@ -98,6 +99,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version")
+
     // implementation project(':exif')
     implementation project(':colorpicker')
     implementation project(':emoji')
@@ -124,7 +128,7 @@ dependencies {
     implementation "androidx.browser:browser:1.3.0"
 
     // Recyclerview
-    implementation "androidx.recyclerview:recyclerview:1.2.0"
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
 
     kapt 'androidx.annotation:annotation:1.2.0'
 
@@ -203,3 +207,43 @@ repositories {
 
 apply plugin: 'com.google.gms.google-services'
 
+
+detekt {
+    // relative path from module path.
+    basePath = projectDir
+
+    // preconfigure defaults
+    buildUponDefaultConfig = true
+
+    // activate all available (even unstable) rules.
+    allRules = false
+
+    // a way of suppressing issues before introducing detekt
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+
+    // point to your custom config defining rules to run, overwriting default behavior
+    config = files("$rootDir/config/detekt/config.yml")
+
+    reports {
+        // checkstyle like format mainly for integrations like Jenkins
+        xml {
+            enabled = true
+            destination = file("detektReport/${name}.xml")
+        }
+        // observe findings in your browser with structure and code snippets
+        html {
+            enabled = true
+            destination = file("detektReport/${name}.html")
+        }
+        // similar to the console output, contains issue signature to manually edit baseline files
+        txt {
+            enabled = true
+            destination = file("detektReport/${name}.txt")
+        }
+        // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations with Github Code Scanning
+        sarif {
+            enabled = true
+            destination = file("detektReport/${name}.sarif")
+        }
+    }
+}

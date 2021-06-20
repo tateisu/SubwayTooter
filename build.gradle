@@ -13,6 +13,8 @@ buildscript {
 
     ext.junit_version='4.13.2'
 
+    ext.detekt_version='1.17.1'
+
     repositories {
         google()
         mavenCentral()
@@ -28,6 +30,8 @@ buildscript {
         classpath "com.github.bjoernq:unmockplugin:0.7.6"
 
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detekt_version"
     }
 }
 
@@ -41,6 +45,8 @@ allprojects {
 
         maven { url 'https://dl.bintray.com/google/exoplayer/' }
         maven { url 'https://dl.bintray.com/google/flexbox-layout/' }
+
+        maven { url "https://plugins.gradle.org/m2/" } // detekt
     }
 }
 

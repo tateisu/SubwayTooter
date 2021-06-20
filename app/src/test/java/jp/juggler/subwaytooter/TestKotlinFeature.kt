@@ -84,8 +84,8 @@ class TestKotlinFeature {
 	@Test
 	fun testObjectExpression() {
 		// 定義例(文脈あり)
+		@Suppress("UnnecessaryAbstractClass")
 		abstract class Base {
-
 			abstract fun method(x : Int) : Int
 		}
 
@@ -234,7 +234,7 @@ class TestKotlinFeature {
 		println(b.joinToString(","))
 
 		// 可変長引数で初期化するライブラリ関数
-		var b2 = intArrayOf(0, 1, 2, 3)
+		val b2 = intArrayOf(0, 1, 2, 3)
 
 		// 参照型の配列だと初期化ラムダが必須
 		val c = Array<CharSequence>(4) { (it * 4).toString() }
@@ -247,8 +247,7 @@ class TestKotlinFeature {
 		println(e.joinToString(","))
 
 		// 可変長引数で初期化するライブラリ関数
-		var e2 = arrayOf(null, 1, null, 2)
-
+		val e2 = arrayOf(null, 1, null, 2)
 	}
 
 	@Test

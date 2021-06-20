@@ -36,3 +36,5 @@ _Emoji/drawable-nodpi
 _Emoji/*.json
 _Emoji/*.log
 _Emoji/*.txt
+
+detektReport/

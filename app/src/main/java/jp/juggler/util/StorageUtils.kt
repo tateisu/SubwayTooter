@@ -180,24 +180,20 @@ private val mimeTypeExMap: HashMap<String, String> by lazy {
 
 @Suppress("unused")
 fun getMimeType(log: LogCategory?, src: String): String {
-    var ext = MimeTypeMap.getFileExtensionFromUrl(src)
-    if (ext != null && ext.isNotEmpty()) {
-        ext = ext.lowercase()
+    MimeTypeMap.getFileExtensionFromUrl(src)
+        ?.notEmpty()?.lowercase()?.let { ext ->
+            MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+                ?.notEmpty()?.let { return it }
 
-        //
-        var mime_type: String? = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
-        if (mime_type?.isNotEmpty() == true) return mime_type
+            val mimeType = mimeTypeExMap[ext]
+            mimeType?.notEmpty()?.let { return it }
 
-        //
-        mime_type = mimeTypeExMap[ext]
-        if (mime_type?.isNotEmpty() == true) return mime_type
-
-        // 戻り値が空文字列の場合とnullの場合があり、空文字列の場合は既知なのでログ出力しない
-
-        if (mime_type == null && log != null) {
-            log.w("getMimeType(): unknown file extension '${ext}'")
+            // 戻り値が空文字列の場合とnullの場合があり、空文字列の場合は既知なのでログ出力しない
+            if (mimeType == null && log != null) {
+                log.w("getMimeType(): unknown file extension '${ext}'")
+            }
         }
-    }
+
     return MIME_TYPE_APPLICATION_OCTET_STREAM
 }
 

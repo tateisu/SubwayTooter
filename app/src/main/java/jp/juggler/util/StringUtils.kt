@@ -54,10 +54,10 @@ fun ByteArray.digestSHA256(): ByteArray {
 }
 
 fun ByteArray.startWith(
-	key: ByteArray,
-	thisOffset: Int = 0,
-	keyOffset: Int = 0,
-	length: Int = key.size - keyOffset
+    key: ByteArray,
+    thisOffset: Int = 0,
+    keyOffset: Int = 0,
+    length: Int = key.size - keyOffset
 ): Boolean {
     if (this.size - thisOffset >= length && key.size - keyOffset >= length) {
         for (i in 0 until length) {
@@ -118,16 +118,14 @@ fun CharSequence?.intoStringResource(context: Context, string_id: Int): Spannabl
 //}
 
 fun CharSequence.codePointBefore(index: Int): Int {
-    if (index > 0) {
-        val c2 = this[index - 1]
-        if (Character.isLowSurrogate(c2) && index > 1) {
-            val c1 = this[index - 2]
-            if (Character.isHighSurrogate(c1)) return Character.toCodePoint(c1, c2)
-        }
-        return c2.code
-    } else {
-        return -1
+    if (index <= 0) return -1
+    val c2 = this[index - 1]
+    if (Character.isLowSurrogate(c2) && index > 1) {
+        val c1 = this[index - 2]
+        if (Character.isHighSurrogate(c1))
+            return Character.toCodePoint(c1, c2)
     }
+    return c2.code
 }
 
 inline fun <S : CharSequence, Z : Any?> S?.letNotEmpty(block: (S) -> Z?): Z? =

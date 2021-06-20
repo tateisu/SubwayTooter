@@ -29,8 +29,8 @@ class TestMisskeyMention {
 		// val a="""[[ ]""".toRegex()
 		
 		// IDEで警告が出るが、Androidは正規表現エンジンが異なるので仕方ない
+		@Suppress("RegExpRedundantNestedCharacterClass")
 		assertEquals(true, """[[ ]]][ ]""".toRegex().matches(" ] "))
-		
 	}
 	
 	@Test
@@ -91,5 +91,4 @@ class TestMisskeyMention {
 			findMention("@tateisu@xn--3-pfuzbe6htf.juggler.jp")
 		)
 	}
-	
 }

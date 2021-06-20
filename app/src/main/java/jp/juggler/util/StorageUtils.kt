@@ -257,7 +257,7 @@ fun intentOpenDocument(mimeType: String): Intent {
 fun intentGetContent(
     allowMultiple: Boolean,
     caption: String,
-    mimeTypes: Array<out String>
+    mimeTypes: Array<out String>,
 ): Intent {
     val intent = Intent(Intent.ACTION_GET_CONTENT)
     intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -286,7 +286,7 @@ fun intentGetContent(
 data class GetContentResultEntry(
     val uri: Uri,
     val mimeType: String? = null,
-    var time: Long? = null
+    var time: Long? = null,
 )
 
 // returns list of pair of uri and mime-type.
@@ -297,13 +297,10 @@ fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<G
         urlList.add(GetContentResultEntry(it, this.type))
     }
     // 複数選択
-    val cd = this.clipData
-    if (cd != null) {
-        for (i in 0 until cd.itemCount) {
-            cd.getItemAt(i)?.uri?.let { uri ->
-                if (null == urlList.find { it.uri == uri }) {
-                    urlList.add(GetContentResultEntry(uri))
-                }
+    this.clipData?.let { clipData ->
+        (0 until clipData.itemCount).mapNotNull { clipData.getItemAt(it)?.uri }.forEach { uri ->
+            if (null == urlList.find { it.uri == uri }) {
+                urlList.add(GetContentResultEntry(uri))
             }
         }
     }

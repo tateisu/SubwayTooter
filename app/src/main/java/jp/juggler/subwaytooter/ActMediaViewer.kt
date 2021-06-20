@@ -256,7 +256,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }
 
             override fun onMove(
-                bitmap_w: Float,
+                bitmapW: Float,
                 bitmapH: Float,
                 tx: Float,
                 ty: Float,
@@ -267,7 +267,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                     if (tvStatus.visibility == View.VISIBLE) {
                         tvStatus.text = getString(
                             R.string.zooming_of,
-                            bitmap_w.toInt(),
+                            bitmapW.toInt(),
                             bitmapH.toInt(),
                             scale
                         )

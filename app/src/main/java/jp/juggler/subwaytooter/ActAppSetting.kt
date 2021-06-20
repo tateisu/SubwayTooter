@@ -960,7 +960,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
             val source: InputStream? = contentResolver.openInputStream(uri)
             if (source == null) {
-                showToast(false, "openInputStream returns null. uri=%s", uri)
+                showToast(false, "openInputStream returns null. uri=$uri")
                 return null
             } else {
                 source.use { inStream ->

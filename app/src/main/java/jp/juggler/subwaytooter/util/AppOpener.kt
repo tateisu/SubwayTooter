@@ -180,7 +180,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
     } catch (ex: Throwable) {
         log.trace(ex)
         val scheme = url.mayUri()?.scheme ?: url
-        showToast(true, "can't open browser app for %s", scheme)
+        showToast(true, "can't open browser app for $scheme")
     }
 }
 

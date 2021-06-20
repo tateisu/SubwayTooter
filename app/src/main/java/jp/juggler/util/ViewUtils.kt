@@ -250,14 +250,16 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
                 @Suppress("DEPRECATION")
                 val bit = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                 @Suppress("DEPRECATION")
-                decorView.systemUiVisibility =
-                    if (rgbToLab(c).first >= 50f) {
+                decorView.systemUiVisibility = when {
+                    rgbToLab(c).first >= 50f -> {
                         //Dark Text to show up on your light status bar
                         decorView.systemUiVisibility or bit
-                    } else {
+                    }
+                    else -> {
                         //Light Text to show up on your dark status bar
                         decorView.systemUiVisibility and bit.inv()
                     }
+                }
             }
         } // else: need restart app.
     }

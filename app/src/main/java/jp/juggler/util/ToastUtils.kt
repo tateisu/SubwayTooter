@@ -44,13 +44,12 @@ object ToastUtils {
     }
 }
 
-fun Context.showToast(bLong: Boolean, fmt: String?, vararg args: Any) {
-    val msg = if (fmt == null) "(null)" else if (args.isEmpty()) fmt else String.format(fmt, *args)
-    ToastUtils.showToastImpl(this, bLong, msg)
+fun Context.showToast(bLong: Boolean, caption: String?) {
+    ToastUtils.showToastImpl(this, bLong, caption ?: "(null)")
 }
 
-fun Context.showToast(ex: Throwable, fmt: String?, vararg args: Any) {
-    ToastUtils.showToastImpl(this, true, ex.withCaption(fmt, *args))
+fun Context.showToast(ex: Throwable, caption: String) {
+    ToastUtils.showToastImpl(this, true, ex.withCaption(caption))
 }
 
 fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any) {

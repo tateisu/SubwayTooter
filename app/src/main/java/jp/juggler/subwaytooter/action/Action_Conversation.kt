@@ -259,13 +259,8 @@ fun ActMain.conversationOtherInstance(
     pos: Int,
     status: TootStatus?,
 ) {
-    if (status == null) return
-    val url = status.url
-
-    if (url == null || url.isEmpty()) {
-        // URLが不明なトゥートというのはreblogの外側のアレ
-        return
-    }
+    // URLが不明なトゥートというのはreblogの外側のアレ
+    val url = status?.url?.notEmpty() ?: return
 
     when {
 
@@ -312,8 +307,10 @@ fun ActMain.conversationOtherInstance(
 
 fun ActMain.conversationMute(
     accessInfo: SavedAccount,
-    status: TootStatus,
+    status: TootStatus?,
 ) {
+    status ?: return
+
     // toggle change
     val bMute = !status.muted
 

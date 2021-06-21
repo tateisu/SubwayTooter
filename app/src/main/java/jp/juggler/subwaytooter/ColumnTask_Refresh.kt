@@ -282,10 +282,14 @@ class ColumnTask_Refresh(
         // MisskeyはsinceIdを指定するとID昇順のデータが得られるので、ID降順に並べ直す
         listTmp?.sortByDescending { it.getOrderId() }
 
-        if (!isCancelled &&
-            listTmp?.isNotEmpty() == true &&
-            (willAddGap || Pref.bpForceGap(context))
-        ) {
+        fun doesAddGap() = when {
+            isCancelled -> false
+            listTmp?.isNotEmpty() != true -> false
+            willAddGap -> true
+            else -> Pref.bpForceGap(App1.pref)
+        }
+
+        if (doesAddGap()) {
             addOne(listTmp, TootGap.mayNull(null, column.idRecent), head = addToHead)
         }
 

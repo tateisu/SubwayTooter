@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.emoji
 
 import androidx.annotation.DrawableRes
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.Mappable
 import jp.juggler.util.JsonArray
@@ -8,7 +10,7 @@ import jp.juggler.util.JsonObject
 import jp.juggler.util.notEmpty
 import java.util.*
 
-sealed interface  EmojiBase
+sealed interface EmojiBase
 
 class UnicodeEmoji(
     // SVGの場合はasset resourceの名前
@@ -57,7 +59,7 @@ class CustomEmoji(
     val aliases: ArrayList<String>? = null,
     val alias: String? = null,
     val visibleInPicker: Boolean = true,
-    val category: String? = null
+    val category: String? = null,
 ) : EmojiBase, Mappable<String> {
 
     fun makeAlias(alias: String) = CustomEmoji(
@@ -70,6 +72,11 @@ class CustomEmoji(
 
     override val mapKey: String
         get() = shortcode
+
+    fun chooseUrl() = when {
+        Pref.bpDisableEmojiAnimation(App1.pref) -> staticUrl
+        else -> url
+    }
 
     companion object {
 

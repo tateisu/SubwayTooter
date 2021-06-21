@@ -76,16 +76,21 @@ enum class TootVisibility(
     fun isTagAllowed(isMisskey: Boolean) =
         when {
             isMisskey -> when (this) {
+
                 // 以下の二つの指定ではチェックを行えないので許可扱いにする
                 AccountSetting, WebSetting -> true
+
                 // Misskeyは公開とホームに書いたタグはタグTLに出る
                 Public, LocalPublic, UnlistedHome, LocalHome -> true
 
                 else -> false
             }
+
             else -> when (this) {
+
                 // 以下の二つの指定ではチェックを行えないので許可扱いにする
                 AccountSetting, WebSetting -> true
+
                 // Mastodon は公開のみタグTLに出る
                 Public, LocalPublic -> true
 

@@ -23,7 +23,6 @@ import android.text.method.LinkMovementMethod
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import androidx.activity.result.ActivityResult
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -422,7 +421,7 @@ class ActPost : AppCompatActivity(),
 
     internal lateinit var pref: SharedPreferences
     internal lateinit var appState: AppState
-    private lateinit var postHelper: PostHelper
+    private lateinit var completionHelper: CompletionHelper
     private var attachmentList = ArrayList<PostAttachment>()
     private var isPostComplete: Boolean = false
 
@@ -449,7 +448,7 @@ class ActPost : AppCompatActivity(),
     }
 
     private val scrollListener: ViewTreeObserver.OnScrollChangedListener =
-        ViewTreeObserver.OnScrollChangedListener { postHelper.onScrollChanged() }
+        ViewTreeObserver.OnScrollChangedListener { completionHelper.onScrollChanged() }
 
     val isMultiWindowPost: Boolean
         get() = intent.getBooleanExtra(EXTRA_MULTI_WINDOW, false)
@@ -557,8 +556,8 @@ class ActPost : AppCompatActivity(),
             R.id.btnRemoveReply -> removeReply()
             R.id.btnMore -> performMore()
             R.id.btnPlugin -> openMushroom()
-            R.id.btnEmojiPicker -> postHelper.openEmojiPickerFromMore()
-            R.id.btnFeaturedTag -> postHelper.openFeaturedTagList(
+            R.id.btnEmojiPicker -> completionHelper.openEmojiPickerFromMore()
+            R.id.btnFeaturedTag -> completionHelper.openFeaturedTagList(
                 featuredTagCache[account?.acct?.ascii ?: ""]?.list
             )
             R.id.ibSchedule -> performSchedule()
@@ -567,11 +566,11 @@ class ActPost : AppCompatActivity(),
     }
 
     // unused? for REQUEST_CODE_ATTACHMENT
-    private fun handleAttachmentResult(ar: ActivityResult?) {
-        if (ar?.resultCode == RESULT_OK) {
-            ar.data?.handleGetContentResult(contentResolver)?.let { checkAttachments(it) }
-        }
-    }
+//    private fun handleAttachmentResult(ar: ActivityResult?) {
+//        if (ar?.resultCode == RESULT_OK) {
+//            ar.data?.handleGetContentResult(contentResolver)?.let { checkAttachments(it) }
+//        }
+//    }
 
     override fun onBackPressed() {
         saveDraft()
@@ -581,7 +580,6 @@ class ActPost : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         refActPost = WeakReference(this)
-        // TODO MyClickableSpan.link_callback = WeakReference(link_click_listener)
     }
 
     override fun onPause() {
@@ -623,7 +621,7 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun onDestroy() {
-        postHelper.onDestroy()
+        completionHelper.onDestroy()
         attachmentWorker?.cancel()
         super.onDestroy()
     }
@@ -869,8 +867,8 @@ class ActPost : AppCompatActivity(),
             updateContentWarning()
         }
 
-        postHelper = PostHelper(this, pref, appState.handler)
-        postHelper.attachEditText(formRoot, etContent, false, object : PostHelper.Callback2 {
+        completionHelper = CompletionHelper(this, pref, appState.handler)
+        completionHelper.attachEditText(formRoot, etContent, false, object : CompletionHelper.Callback2 {
             override fun onTextUpdate() {
                 updateTextCount()
             }
@@ -1042,7 +1040,7 @@ class ActPost : AppCompatActivity(),
     private fun selectAccount(a: SavedAccount?) {
         this.account = a
 
-        postHelper.setInstance(a)
+        completionHelper.setInstance(a)
 
         if (a == null) {
             btnAccount.text = getString(R.string.not_selected)
@@ -2231,7 +2229,7 @@ class ActPost : AppCompatActivity(),
         val dialog = ActionsDialog()
 
         dialog.addAction(getString(R.string.open_picker_emoji)) {
-            postHelper.openEmojiPickerFromMore()
+            completionHelper.openEmojiPickerFromMore()
         }
 
         dialog.addAction(getString(R.string.clear_text)) {
@@ -2260,9 +2258,16 @@ class ActPost : AppCompatActivity(),
     ///////////////////////////////////////////////////////////////////////////////////////
     // post
 
-    private fun performPost() {
-        val account = this.account ?: return
+    private fun Double?.finiteOrZero(): Double = if (this?.isFinite() == true) this else 0.0
 
+    private fun getExpireSeconds(): Int {
+        val d = etExpireDays.text.toString().trim().toDoubleOrNull().finiteOrZero()
+        val h = etExpireHours.text.toString().trim().toDoubleOrNull().finiteOrZero()
+        val m = etExpireMinutes.text.toString().trim().toDoubleOrNull().finiteOrZero()
+        return (d * 86400.0 + h * 3600.0 + m * 60.0).toInt()
+    }
+
+    private fun performPost() {
         // アップロード中は投稿できない
         for (pa in attachmentList) {
             if (pa.status == PostAttachment.STATUS_UPLOADING) {
@@ -2271,111 +2276,94 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        postHelper.content = etContent.text.toString().trim { it <= ' ' }
+        val account = this.account ?: return
 
-        fun copyEnqueteText() {
-            val enqueteItems = ArrayList<String>()
+        fun makeEnqueteText() = ArrayList<String>().apply {
             for (et in etChoices) {
-                enqueteItems.add(et.text.toString().trim { it <= ' ' })
+                et.text.toString().trim { it <= ' ' }.notEmpty()?.let { add(it) }
             }
-            postHelper.enqueteItems = enqueteItems
         }
 
-        fun getExpireSeconds(): Int {
-
-            fun Double?.finiteOrZero(): Double = if (this?.isFinite() == true) this else 0.0
-
-            val d = etExpireDays.text.toString().trim().toDoubleOrNull().finiteOrZero()
-            val h = etExpireHours.text.toString().trim().toDoubleOrNull().finiteOrZero()
-            val m = etExpireMinutes.text.toString().trim().toDoubleOrNull().finiteOrZero()
-
-            return (d * 86400.0 + h * 3600.0 + m * 60.0).toInt()
-        }
-
+        var pollType: TootPollsType? = null
+        var pollItems: ArrayList<String>? = null
+        var pollExpireSeconds = 0
+        var pollHideTotals = false
+        var pollMultipleChoice = false
         when (spEnquete.selectedItemPosition) {
             1 -> {
-                copyEnqueteText()
-                postHelper.pollType = TootPollsType.Mastodon
-                postHelper.pollExpireSeconds = getExpireSeconds()
-                postHelper.pollHideTotals = cbHideTotals.isChecked
-                postHelper.pollMultipleChoice = cbMultipleChoice.isChecked
+                pollType = TootPollsType.Mastodon
+                pollItems = makeEnqueteText()
+                pollExpireSeconds = getExpireSeconds()
+                pollHideTotals = cbHideTotals.isChecked
+                pollMultipleChoice = cbMultipleChoice.isChecked
             }
-
             2 -> {
-                copyEnqueteText()
-                postHelper.pollType = TootPollsType.FriendsNico
-            }
-
-            else -> {
-                postHelper.enqueteItems = null
-                postHelper.pollType = null
+                pollType = TootPollsType.FriendsNico
+                pollItems = makeEnqueteText()
             }
         }
 
-        if (!cbContentWarning.isChecked) {
-            postHelper.spoilerText = null // nullはCWチェックなしを示す
-        } else {
-            postHelper.spoilerText = etContentWarning.text.toString().trim { it <= ' ' }
-        }
-
-        postHelper.visibility = this.visibility ?: TootVisibility.Public
-        postHelper.bNSFW = cbNSFW.isChecked
-
-        postHelper.inReplyToId = this.inReplyToId
-
-        postHelper.attachmentList = this.attachmentList
-
-        postHelper.emojiMapCustom = App1.custom_emoji_lister.getMap(account)
-
-        postHelper.redraftStatusId = redraftStatusId
-
-        postHelper.useQuoteToot = cbQuote.isChecked
-
-        postHelper.scheduledAt = timeSchedule
-
-        postHelper.scheduledId = scheduledStatus?.id
-
-        postHelper.post(account, callback = object : PostHelper.PostCompleteCallback {
-            override fun onPostComplete(
-                targetAccount: SavedAccount,
-                status: TootStatus,
-            ) {
-                val data = Intent()
-                data.putExtra(EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
-                status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
-                redraftStatusId?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
-                status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
-                ActMain.refActMain?.get()?.onCompleteActPost(data)
-
-                if (isMultiWindowPost) {
-                    resetText()
-                    updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
-                    afterUpdateText()
-                } else {
-                    // ActMainの復元が必要な場合に備えてintentのdataでも渡す
-                    setResult(RESULT_OK, data)
-                    isPostComplete = true
-                    this@ActPost.finish()
-                }
-            }
-
-            override fun onScheduledPostComplete(targetAccount: SavedAccount) {
-                showToast(false, getString(R.string.scheduled_status_sent))
-                val data = Intent()
-                data.putExtra(EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
-
-                if (isMultiWindowPost) {
-                    resetText()
-                    updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
-                    afterUpdateText()
+        PostImpl(
+            activity = this,
+            account = account,
+            content = etContent.text.toString().trim { it <= ' ' },
+            spoilerText = when {
+                !cbContentWarning.isChecked -> null
+                else -> etContentWarning.text.toString().trim { it <= ' ' }
+            },
+            visibilityArg = this.visibility ?: TootVisibility.Public,
+            bNSFW = cbNSFW.isChecked,
+            inReplyToId = this.inReplyToId,
+            attachmentListArg = this.attachmentList,
+            enqueteItemsArg = pollItems,
+            pollType = pollType,
+            pollExpireSeconds = pollExpireSeconds,
+            pollHideTotals = pollHideTotals,
+            pollMultipleChoice = pollMultipleChoice,
+            scheduledAt = timeSchedule,
+            scheduledId = scheduledStatus?.id,
+            redraftStatusId = redraftStatusId,
+            emojiMapCustom = App1.custom_emoji_lister.getMap(account),
+            useQuoteToot = cbQuote.isChecked,
+            callback = object : PostCompleteCallback {
+                override fun onPostComplete(targetAccount: SavedAccount, status: TootStatus) {
+                    val data = Intent()
+                    data.putExtra(EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
+                    status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
+                    redraftStatusId?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
+                    status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
                     ActMain.refActMain?.get()?.onCompleteActPost(data)
-                } else {
-                    setResult(RESULT_OK, data)
-                    isPostComplete = true
-                    this@ActPost.finish()
+
+                    if (isMultiWindowPost) {
+                        resetText()
+                        updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
+                        afterUpdateText()
+                    } else {
+                        // ActMainの復元が必要な場合に備えてintentのdataでも渡す
+                        setResult(RESULT_OK, data)
+                        isPostComplete = true
+                        this@ActPost.finish()
+                    }
+                }
+
+                override fun onScheduledPostComplete(targetAccount: SavedAccount) {
+                    showToast(false, getString(R.string.scheduled_status_sent))
+                    val data = Intent()
+                    data.putExtra(EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
+
+                    if (isMultiWindowPost) {
+                        resetText()
+                        updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
+                        afterUpdateText()
+                        ActMain.refActMain?.get()?.onCompleteActPost(data)
+                    } else {
+                        setResult(RESULT_OK, data)
+                        isPostComplete = true
+                        this@ActPost.finish()
+                    }
                 }
             }
-        })
+        ).run()
     }
 
     private fun showQuotedRenote() {

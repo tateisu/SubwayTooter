@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.action
 
+import android.content.Intent
+import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -12,6 +14,76 @@ import okhttp3.Request
 import java.util.*
 import kotlin.math.max
 
+fun ActMain.clickBoostWithVisibility(
+    accessInfo: SavedAccount,
+    status: TootStatus?,
+) {
+    status ?: return
+    val list = if (accessInfo.isMisskey) {
+        arrayOf(
+            TootVisibility.Public,
+            TootVisibility.UnlistedHome,
+            TootVisibility.PrivateFollowers,
+            TootVisibility.LocalPublic,
+            TootVisibility.LocalHome,
+            TootVisibility.LocalFollowers,
+            TootVisibility.DirectSpecified,
+            TootVisibility.DirectPrivate
+        )
+    } else {
+        arrayOf(
+            TootVisibility.Public,
+            TootVisibility.UnlistedHome,
+            TootVisibility.PrivateFollowers
+        )
+    }
+    val captionList = list
+        .map { Styler.getVisibilityCaption(this, accessInfo.isMisskey, it) }
+        .toTypedArray()
+
+    AlertDialog.Builder(this)
+        .setTitle(R.string.choose_visibility)
+        .setItems(captionList) { _, which ->
+            if (which in list.indices) {
+                boost(
+                    accessInfo,
+                    status,
+                    accessInfo.getFullAcct(status.account),
+                    CrossAccountMode.SameAccount,
+                    visibility = list[which],
+                    callback = boostCompleteCallback,
+                )
+            }
+        }
+        .setNegativeButton(R.string.cancel, null)
+        .show()
+}
+
+fun ActMain.clickBoostBy(
+    pos: Int,
+    accessInfo: SavedAccount,
+    status: TootStatus?,
+    columnType: ColumnType = ColumnType.BOOSTED_BY,
+) {
+    status ?: return
+    addColumn(false, pos, accessInfo, columnType, status.id)
+}
+
+fun ActMain.clickStatusDelete(
+    accessInfo: SavedAccount,
+    status: TootStatus?,
+) {
+    status ?: return
+    AlertDialog.Builder(this)
+        .setMessage(getString(R.string.confirm_delete_status))
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.ok) { _, _ -> statusDelete(accessInfo, status.id) }
+        .show()
+}
+
+fun ActMain.launchActText(intent: Intent) = arActText.launch(intent)
+
+///////////////////////////////////////////////////////////////
 // お気に入りの非同期処理
 fun ActMain.favourite(
     accessInfo: SavedAccount,
@@ -660,9 +732,11 @@ fun ActMain.statusDelete(
 
 fun ActMain.statusPin(
     accessInfo: SavedAccount,
-    status: TootStatus,
+    status: TootStatus?,
     bSet: Boolean,
 ) {
+    status ?: return
+
     launchMain {
         var resultStatus: TootStatus? = null
         runApiTask(
@@ -700,9 +774,11 @@ fun ActMain.statusPin(
 // 投稿画面を開く。初期テキストを指定する
 fun ActMain.statusRedraft(
     accessInfo: SavedAccount,
-    status: TootStatus,
+    status: TootStatus?,
 ) {
-    postHelper.closeAcctPopup()
+    status ?: return
+
+    completionHelper.closeAcctPopup()
 
     when {
         accessInfo.isMisskey ->

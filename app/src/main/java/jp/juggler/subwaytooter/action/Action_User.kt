@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.matchHost
@@ -19,6 +20,72 @@ import jp.juggler.util.*
 import kotlinx.coroutines.*
 import okhttp3.Request
 import java.lang.StringBuilder
+import java.util.*
+
+private val log = LogCategory("Action_User")
+
+fun ActMain.clickMute(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+    relation: UserRelation,
+) = when {
+    relation.muting -> userUnmute(accessInfo, who, accessInfo)
+    else -> userMuteConfirm(accessInfo, who, accessInfo)
+}
+
+fun ActMain.clickBlock(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+    relation: UserRelation,
+) = when {
+    relation.blocking -> userBlock(accessInfo, who, accessInfo, false)
+    else -> userBlockConfirm(accessInfo, who, accessInfo)
+}
+
+fun ActMain.clickNicknameCustomize(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+) = arNickname.launch(ActNickname.createIntent(this, accessInfo.getFullAcct(who), true))
+
+fun ActMain.openAvatarImage(who: TootAccount) {
+    openCustomTab(when {
+        who.avatar.isNullOrEmpty() -> who.avatar_static
+        else -> who.avatar
+    })
+}
+
+fun ActMain.clickHideFavourite(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+) {
+    val acct = accessInfo.getFullAcct(who)
+    FavMute.save(acct)
+    showToast(false, R.string.changed)
+    for (column in appState.columnList) {
+        column.onHideFavouriteNotification(acct)
+    }
+}
+
+fun ActMain.clickShowFavourite(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+) {
+    FavMute.delete(accessInfo.getFullAcct(who))
+    showToast(false, R.string.changed)
+}
+
+fun ActMain.clickStatusNotification(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+    relation: UserRelation,
+) {
+    if (!accessInfo.isPseudo &&
+        accessInfo.isMastodon &&
+        relation.following
+    ) {
+        userSetStatusNotification(accessInfo, who.id, enabled = !relation.notifying)
+    }
+}
 
 // ユーザをミュート/ミュート解除する
 private fun ActMain.userMute(
@@ -266,9 +333,10 @@ fun ActMain.userMuteConfirm(
 }
 
 fun ActMain.userMuteFromAnotherAccount(
-    who: TootAccount,
+    who: TootAccount?,
     whoAccessInfo: SavedAccount,
 ) {
+    who ?: return
     launchMain {
         pickAccount(
             bAllowPseudo = false,
@@ -449,9 +517,10 @@ fun ActMain.userBlockConfirm(
 }
 
 fun ActMain.userBlockFromAnotherAccount(
-    who: TootAccount,
+    who: TootAccount?,
     whoAccessInfo: SavedAccount,
 ) {
+    who ?: return
     launchMain {
         pickAccount(
             bAllowPseudo = false,

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.DisplayMetrics
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.app.ShareCompat
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootScheduled
@@ -18,6 +19,7 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.isLiveActivity
 import jp.juggler.util.launchMain
 import jp.juggler.util.showToast
+import java.util.*
 
 private val log = LogCategory("Action_OpenPost")
 
@@ -112,8 +114,10 @@ fun ActMain.openActPostImpl(
 fun ActMain.openPost(
     initialText: String? = quickTootText,
 ) {
+    initialText ?: return
+
     launchMain {
-        postHelper.closeAcctPopup()
+        completionHelper.closeAcctPopup()
 
         val account = currentPostTarget
             ?.takeIf { it.db_id != -1L && !it.isPseudo }
@@ -237,4 +241,25 @@ fun ActMain.quoteFromAnotherAccount(
             }
         }
     }
+}
+
+fun ActMain.quoteName(who: TootAccount) {
+    var sv = who.display_name
+    try {
+        val fmt = Pref.spQuoteNameFormat(pref)
+        if (fmt.contains("%1\$s")) {
+            sv = String.format(Locale.getDefault(), fmt, sv)
+        }
+    } catch (ex: Throwable) {
+        log.trace(ex)
+    }
+    openPost(sv)
+}
+
+fun ActMain.shareText(text: String?) {
+    text ?: return
+    ShareCompat.IntentBuilder(this)
+        .setText(text)
+        .setType("text/plain")
+        .startChooser()
 }

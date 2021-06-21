@@ -1,8 +1,10 @@
 package jp.juggler.subwaytooter.action
 
+import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.InstanceType
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.dialog.pickAccount
@@ -16,7 +18,7 @@ private fun ActMain.serverProfileDirectory(
     accessInfo: SavedAccount,
     host: Host,
     instance: TootInstance? = null,
-    pos: Int = defaultInsertPosition
+    pos: Int = defaultInsertPosition,
 ) {
     when {
         // インスタンスのバージョン情報がなければ取得してやり直し
@@ -89,7 +91,7 @@ fun ActMain.serverProfileDirectoryFromSideMenu() {
 fun ActMain.serverProfileDirectoryFromInstanceInformation(
     currentColumn: Column,
     host: Host,
-    instance: TootInstance? = null
+    instance: TootInstance? = null,
 ) = serverProfileDirectory(
     currentColumn.accessInfo,
     host,
@@ -100,7 +102,7 @@ fun ActMain.serverProfileDirectoryFromInstanceInformation(
 // インスタンス情報カラムを開く
 fun ActMain.serverInformation(
     pos: Int,
-    host: Host
+    host: Host,
 ) = addColumn(
     false,
     pos,
@@ -109,11 +111,38 @@ fun ActMain.serverInformation(
     host
 )
 
+fun ActMain.clickDomainBlock(
+    accessInfo: SavedAccount,
+    who: TootAccount,
+) {
+    // 疑似アカウントではドメインブロックできない
+    if (accessInfo.isPseudo) {
+        showToast(false, R.string.domain_block_from_pseudo)
+        return
+    }
+
+    val whoApDomain = who.apDomain
+
+    // 自分のドメインではブロックできない
+    if (accessInfo.matchHost(whoApDomain)) {
+        showToast(false, R.string.domain_block_from_local)
+        return
+    }
+
+    AlertDialog.Builder(this)
+        .setMessage(getString(R.string.confirm_block_domain, whoApDomain))
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.ok) { _, _ ->
+            domainBlock(accessInfo, whoApDomain, true)
+        }
+        .show()
+}
+
 // ドメインブロック
 fun ActMain.domainBlock(
     accessInfo: SavedAccount,
     domain: Host,
-    bBlock: Boolean
+    bBlock: Boolean,
 ) {
 
     if (accessInfo.matchHost(domain)) {

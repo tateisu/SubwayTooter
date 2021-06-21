@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.ColumnType
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
@@ -198,3 +199,30 @@ fun ActMain.timelineAroundByStatusAnotherAccount(
         }
     }
 }
+
+fun ActMain.clickAroundAccountTL(accessInfo: SavedAccount, pos: Int, who: TootAccount, status: TootStatus?) =
+    timelineAroundByStatusAnotherAccount(
+        accessInfo,
+        pos,
+        who.apiHost,
+        status,
+        ColumnType.ACCOUNT_AROUND, allowPseudo = false
+    )
+
+fun ActMain.clickAroundLTL(accessInfo: SavedAccount, pos: Int, who: TootAccount, status: TootStatus?) =
+    timelineAroundByStatusAnotherAccount(
+        accessInfo,
+        pos,
+        who.apiHost,
+        status,
+        ColumnType.LOCAL_AROUND
+    )
+
+fun ActMain.clickAroundFTL(accessInfo: SavedAccount, pos: Int, who: TootAccount, status: TootStatus?) =
+    timelineAroundByStatusAnotherAccount(
+        accessInfo,
+        pos,
+        who.apiHost,
+        status,
+        ColumnType.FEDERATED_AROUND
+    )

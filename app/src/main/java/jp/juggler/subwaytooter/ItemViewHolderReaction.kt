@@ -111,7 +111,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 if (status.reactionSet?.isMyReaction(taggedReaction) == true) {
                     act.reactionRemove(column, status, taggedReaction)
                 } else {
-                    act.reactionAdd(column, status, taggedReaction?.name, taggedReaction?.static_url)
+                    act.reactionAdd(column, status, taggedReaction?.name, taggedReaction?.staticUrl)
                 }
             }
 

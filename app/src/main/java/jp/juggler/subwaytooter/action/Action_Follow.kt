@@ -11,6 +11,41 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
 
+fun ActMain.clickFollow(
+    pos: Int,
+    accessInfo: SavedAccount,
+    who: TootAccount,
+    whoRef: TootAccountRef,
+    relation: UserRelation,
+) {
+    when {
+        accessInfo.isPseudo ->
+            followFromAnotherAccount(pos, accessInfo, who)
+
+        accessInfo.isMisskey &&
+            relation.getRequested(who) &&
+            !relation.getFollowing(who) ->
+            followRequestDelete(
+                pos, accessInfo, whoRef,
+                callback = cancelFollowRequestCompleteCallback
+            )
+
+        else -> {
+            val bSet = !(relation.getRequested(who) || relation.getFollowing(who))
+            follow(
+                pos,
+                accessInfo,
+                whoRef,
+                bFollow = bSet,
+                callback = when (bSet) {
+                    true -> followCompleteCallback
+                    else -> unfollowCompleteCallback
+                }
+            )
+        }
+    }
+}
+
 fun ActMain.follow(
     pos: Int,
     accessInfo: SavedAccount,

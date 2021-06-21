@@ -2,18 +2,40 @@ package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.launchMain
 import jp.juggler.util.showToast
 import jp.juggler.util.toFormRequestBody
 import jp.juggler.util.toPost
 
+fun ActMain.clickNotificationFrom(
+    pos: Int,
+    accessInfo: SavedAccount,
+    who: TootAccount,
+) {
+    if (accessInfo.isMisskey) {
+        showToast(false, R.string.misskey_account_not_supported)
+    } else {
+        accessInfo.getFullAcct(who).validFull()?.let {
+            addColumn(
+                pos,
+                accessInfo,
+                ColumnType.NOTIFICATION_FROM_ACCT,
+                it
+            )
+        }
+    }
+}
+
 fun ActMain.notificationDeleteOne(
     accessInfo: SavedAccount,
-    notification: TootNotification
+    notification: TootNotification?,
 ) {
+    notification ?: return
+
     launchMain {
         runApiTask(accessInfo) { client ->
             // https://github.com/tootsuite/mastodon/commit/30f5bcf3e749be9651ed39a07b893f70605f8a39
@@ -52,7 +74,7 @@ fun ActMain.notificationDeleteOne(
 
 fun ActMain.notificationDeleteAll(
     targetAccount: SavedAccount,
-    bConfirmed: Boolean = false
+    bConfirmed: Boolean = false,
 ) {
     if (!bConfirmed) {
         AlertDialog.Builder(this)

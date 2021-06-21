@@ -5,7 +5,6 @@ import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.ColumnViewHolder
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -20,7 +19,7 @@ class TootReaction(
 
     // カスタム絵文字の場合は定義される
     val url: String? = null,
-    val static_url: String? = null,
+    val staticUrl: String? = null,
 
     // (fedibird絵文字リアクション) 通知オブジェクト直下ではcountは常に0)
     var count: Long = 0,
@@ -49,7 +48,7 @@ class TootReaction(
             // (fedibird絵文字リアクション)  リモートのカスタム絵文字の場合はdomainが指定される
             name = appendDomain(src.string("name") ?: "?", src.string("domain")),
             url = src.string("url"),
-            static_url = src.string("static_url"),
+            staticUrl = src.string("static_url"),
             count = src.long("count") ?: 0,
             me = src.boolean("me") ?: false,
             announcement_id = EntityId.mayNull(src.string("announcement_id")),
@@ -158,6 +157,16 @@ class TootReaction(
 
             return EmojiDecoder.decodeEmoji(options, code)
         }
+
+        private fun isSameDomain(accessInfo: SavedAccount, domain: String?) = when (domain) {
+            null, "", ".", accessInfo.apDomain.ascii -> true
+            else -> false
+        }
+    }
+
+    fun chooseUrl() = when {
+        Pref.bpDisableEmojiAnimation(App1.pref) -> staticUrl
+        else -> url
     }
 
     fun splitEmojiDomain() =
@@ -180,11 +189,6 @@ class TootReaction(
 
         val code = this.name
 
-        fun CustomEmoji.chooseUrl() = when {
-            Pref.bpDisableEmojiAnimation(App1.pref) -> staticUrl
-            else -> url
-        }
-
         if (options.linkHelper?.isMisskey == true) {
 
             // 古い形式の絵文字はUnicode絵文字にする
@@ -206,30 +210,21 @@ class TootReaction(
                 val cols = customCode.split("@", limit = 2)
                 val key = cols.elementAtOrNull(0)
                 val domain = cols.elementAtOrNull(1)
-                if (key != null) {
-                    if (domain == null || domain == "" || domain == "." || domain == accessInfo?.apDomain?.ascii) {
-                        // デコードオプションのアカウント情報と同じドメインの絵文字なら、
-                        // そのドメインの絵文字一覧を取得済みなら
-                        // それを使う
-                        if (accessInfo != null) {
-                            App1.custom_emoji_lister
-                                .getMap(accessInfo)
-                                ?.get(key)
-                                ?.chooseUrl()
-                                ?.notEmpty()
-                                ?.let { return urlToSpan(options, code, it) }
-                        }
-                    }
-                    // 見つからない場合もある
+                if (key != null && accessInfo != null && isSameDomain(accessInfo, domain)) {
+                    // デコードオプションのアカウント情報と同じドメインの絵文字なら、
+                    // そのドメインの絵文字一覧を取得済みなら
+                    // それを使う
+                    App1.custom_emoji_lister
+                        .getMap(accessInfo)
+                        ?.get(key)
+                        ?.chooseUrl()
+                        ?.notEmpty()
+                        ?.let { return urlToSpan(options, code, it) }
                 }
+                // 見つからない場合もある
             }
         } else {
-            val url = if (Pref.bpDisableEmojiAnimation(App1.pref)) {
-                static_url
-            } else {
-                url
-            }
-            url?.notEmpty()?.let { return urlToSpan(options, code, url) }
+            chooseUrl()?.notEmpty()?.let { return urlToSpan(options, code, it) }
             // 見つからない場合はあるのだろうか…？
         }
         // フォールバック
@@ -243,7 +238,7 @@ class TootReaction(
         put("name", basename ?: name)
         putNotNull("domain", domain)
         putNotNull("url", url)
-        putNotNull("static_url", static_url)
+        putNotNull("static_url", staticUrl)
     }
 }
 

@@ -279,9 +279,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         for (reaction in reactions) {
 
             val url = if (disableEmojiAnimation) {
-                reaction.static_url.notEmpty() ?: reaction.url.notEmpty()
+                reaction.staticUrl.notEmpty() ?: reaction.url.notEmpty()
             } else {
-                reaction.url.notEmpty() ?: reaction.static_url.notEmpty()
+                reaction.url.notEmpty() ?: reaction.staticUrl.notEmpty()
             }
 
             val b = Button(activity).also { btn ->
@@ -337,7 +337,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
                             put("count", 1)
                             put("me", true)
                             putNotNull("url", reaction.url)
-                            putNotNull("static_url", reaction.static_url)
+                            putNotNull("static_url", reaction.staticUrl)
                         }))
                     }
                 }

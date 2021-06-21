@@ -14,9 +14,10 @@ fun ActMain.openColumnList() =
 
 // アプリをミュートする
 fun ActMain.appMute(
-    application: TootApplication,
+    application: TootApplication?,
     confirmed: Boolean = false,
 ) {
+    application ?: return
     if (!confirmed) {
         AlertDialog.Builder(this)
             .setMessage(getString(R.string.mute_application_confirm, application.name))

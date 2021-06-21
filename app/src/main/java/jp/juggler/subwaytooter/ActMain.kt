@@ -189,7 +189,7 @@ class ActMain : AppCompatActivity(),
 
     lateinit var drawer: MyDrawerLayout
 
-    lateinit var postHelper: PostHelper
+    lateinit var completionHelper: CompletionHelper
 
     lateinit var pref: SharedPreferences
     lateinit var handler: Handler
@@ -514,6 +514,14 @@ class ActMain : AppCompatActivity(),
         }
     }
 
+    val arActText = activityResultHandler { ar ->
+        when (ar?.resultCode) {
+            ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(ar.data, ColumnType.SEARCH_MSP)
+            ActText.RESULT_SEARCH_TS -> searchFromActivityResult(ar.data, ColumnType.SEARCH_TS)
+            ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(ar.data, ColumnType.SEARCH_NOTESTOCK)
+        }
+    }
+
     //////////////////////////////////////////////////////////////////
     // アクティビティイベント
 
@@ -586,7 +594,7 @@ class ActMain : AppCompatActivity(),
         log.d("onDestroy")
         super.onDestroy()
         refActMain = null
-        postHelper.onDestroy()
+        completionHelper.onDestroy()
 
         // 子画面を全て閉じる
         closeList.forEach {
@@ -777,7 +785,7 @@ class ActMain : AppCompatActivity(),
         handler.removeCallbacks(onStartAfter)
         handler.removeCallbacks(procUpdateRelativeTime)
 
-        postHelper.closeAcctPopup()
+        completionHelper.closeAcctPopup()
 
         closeListItemPopup()
 
@@ -881,7 +889,7 @@ class ActMain : AppCompatActivity(),
                     column.startLoading()
                 }
                 scrollColumnStrip(position)
-                postHelper.setInstance(
+                completionHelper.setInstance(
                     when {
                         column.accessInfo.isNA -> null
                         else -> column.accessInfo
@@ -1061,39 +1069,42 @@ class ActMain : AppCompatActivity(),
             return
         }
 
-        postHelper.content = etQuickToot.text.toString().trim { it <= ' ' }
-        postHelper.spoilerText = null
-
-        postHelper.visibility = when (quickTootVisibility) {
-            TootVisibility.AccountSetting -> account.visibility
-            else -> quickTootVisibility
-        }
-
-        postHelper.bNSFW = false
-        postHelper.inReplyToId = null
-        postHelper.attachmentList = null
-        postHelper.emojiMapCustom =
-            App1.custom_emoji_lister.getMap(account)
-
         etQuickToot.hideKeyboard()
 
-        postHelper.post(account, callback = object : PostHelper.PostCompleteCallback {
-            override fun onPostComplete(
-                targetAccount: SavedAccount,
-                status: TootStatus,
-            ) {
-                etQuickToot.setText("")
-                postedAcct = targetAccount.acct
-                postedStatusId = status.id
-                postedReplyId = status.in_reply_to_id
-                postedRedraftId = null
-                refreshAfterPost()
+        PostImpl(
+            activity = this,
+            account = account,
+            content = etQuickToot.text.toString().trim { it <= ' ' },
+            spoilerText = null,
+            visibilityArg = when (quickTootVisibility) {
+                TootVisibility.AccountSetting -> account.visibility
+                else -> quickTootVisibility
+            },
+            bNSFW = false,
+            inReplyToId = null,
+            attachmentListArg = null,
+            enqueteItemsArg = null,
+            pollType = null,
+            pollExpireSeconds = 0,
+            pollHideTotals = false,
+            pollMultipleChoice = false,
+            scheduledAt = 0L,
+            scheduledId = null,
+            redraftStatusId = null,
+            emojiMapCustom = App1.custom_emoji_lister.getMap(account),
+            useQuoteToot = false,
+            callback = object : PostCompleteCallback {
+                override fun onScheduledPostComplete(targetAccount: SavedAccount) {}
+                override fun onPostComplete(targetAccount: SavedAccount, status: TootStatus) {
+                    etQuickToot.setText("")
+                    postedAcct = targetAccount.acct
+                    postedStatusId = status.id
+                    postedReplyId = status.in_reply_to_id
+                    postedRedraftId = null
+                    refreshAfterPost()
+                }
             }
-
-            override fun onScheduledPostComplete(targetAccount: SavedAccount) {
-                // will not happen
-            }
-        })
+        ).run()
     }
 
     fun isOrderChanged(newOrder: List<Int>): Boolean {
@@ -1103,19 +1114,6 @@ class ActMain : AppCompatActivity(),
         }
         return false
     }
-
-    private val arActText = activityResultHandler { ar ->
-        when (ar?.resultCode) {
-            ActText.RESULT_SEARCH_MSP ->
-                searchFromActivityResult(ar.data, ColumnType.SEARCH_MSP)
-            ActText.RESULT_SEARCH_TS ->
-                searchFromActivityResult(ar.data, ColumnType.SEARCH_TS)
-            ActText.RESULT_SEARCH_NOTESTOCK ->
-                searchFromActivityResult(ar.data, ColumnType.SEARCH_NOTESTOCK)
-        }
-    }
-
-    fun launchActText(intent: Intent) = arActText.launch(intent)
 
     override fun onBackPressed() {
 
@@ -1392,7 +1390,7 @@ class ActMain : AppCompatActivity(),
 
         svColumnStrip.isHorizontalFadingEdgeEnabled = true
 
-        postHelper = PostHelper(this, pref, appState.handler)
+        completionHelper = CompletionHelper(this, pref, appState.handler)
 
         val dm = resources.displayMetrics
 
@@ -1507,11 +1505,11 @@ class ActMain : AppCompatActivity(),
 
         showFooterColor()
 
-        postHelper.attachEditText(
+        completionHelper.attachEditText(
             llFormRoot,
             etQuickToot,
             true,
-            object : PostHelper.Callback2 {
+            object : CompletionHelper.Callback2 {
                 override fun onTextUpdate() {}
 
                 override fun canOpenPopup(): Boolean {
@@ -2604,19 +2602,19 @@ class ActMain : AppCompatActivity(),
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-        postHelper.closeAcctPopup()
+        completionHelper.closeAcctPopup()
     }
 
     override fun onDrawerOpened(drawerView: View) {
-        postHelper.closeAcctPopup()
+        completionHelper.closeAcctPopup()
     }
 
     override fun onDrawerClosed(drawerView: View) {
-        postHelper.closeAcctPopup()
+        completionHelper.closeAcctPopup()
     }
 
     override fun onDrawerStateChanged(newState: Int) {
-        postHelper.closeAcctPopup()
+        completionHelper.closeAcctPopup()
     }
 
     private fun resizeAutoCW(columnW: Int) {

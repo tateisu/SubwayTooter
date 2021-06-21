@@ -8,8 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -35,10 +33,9 @@ internal class DlgContextMenu(
     private val contentTextView: TextView? = null,
 ) : View.OnClickListener, View.OnLongClickListener {
 
-    companion object {
-
-        private val log = LogCategory("DlgContextMenu")
-    }
+//    companion object {
+//        private val log = LogCategory("DlgContextMenu")
+//    }
 
     private val accessInfo = column.accessInfo
     private val relation: UserRelation
@@ -558,11 +555,11 @@ internal class DlgContextMenu(
             else -> whoHost
         }
 
-    private fun updateGroup(btn: Button, group: View, toggle: Boolean = false) {
+    private fun updateGroup(btn: Button, group: View, toggle: Boolean = false): Boolean {
 
         if (btn.visibility != View.VISIBLE) {
             group.vg(false)
-            return
+            return true
         }
 
         when {
@@ -584,513 +581,164 @@ internal class DlgContextMenu(
         val iconColor = activity.attrColor(R.attr.colorTimeSmall)
         val drawable = createColoredDrawable(activity, iconId, iconColor, 1f)
         btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+        return true
+    }
+
+    fun onClickUpdateGroup(v: View): Boolean = when (v.id) {
+        R.id.btnCrossAccountActionsForStatus -> updateGroup(
+            btnCrossAccountActionsForStatus,
+            llCrossAccountActionsForStatus,
+            toggle = true
+        )
+
+        R.id.btnCrossAccountActionsForAccount -> updateGroup(
+            btnCrossAccountActionsForAccount,
+            llCrossAccountActionsForAccount,
+            toggle = true
+        )
+        R.id.btnAroundThisToot -> updateGroup(
+            btnAroundThisToot,
+            llAroundThisToot,
+            toggle = true
+        )
+        R.id.btnYourToot -> updateGroup(
+            btnYourToot,
+            llYourToot,
+            toggle = true
+        )
+        R.id.btnStatusExtraAction -> updateGroup(
+            btnStatusExtraAction,
+            llStatusExtraAction,
+            toggle = true
+        )
+        R.id.btnAccountExtraAction -> updateGroup(
+            btnAccountExtraAction,
+            llAccountExtraAction,
+            toggle = true
+        )
+        else -> false
+    }
+
+    private fun ActMain.onClickUserAndStatus(
+        v: View,
+        pos: Int,
+        who: TootAccount,
+        status: TootStatus,
+    ): Boolean {
+        when (v.id) {
+            R.id.btnAroundAccountTL -> clickAroundAccountTL(accessInfo, pos, who, status)
+            R.id.btnAroundLTL -> clickAroundLTL(accessInfo, pos, who, status)
+            R.id.btnAroundFTL -> clickAroundFTL(accessInfo, pos, who, status)
+            R.id.btnReportStatus -> userReportForm(accessInfo, who, status)
+            else -> return false
+        }
+        return true
+    }
+
+    private fun ActMain.onClickUser(v: View, pos: Int, who: TootAccount, whoRef: TootAccountRef): Boolean {
+        when (v.id) {
+            R.id.btnReportUser -> userReportForm(accessInfo, who)
+            R.id.btnFollow -> clickFollow(pos, accessInfo, who, whoRef, relation)
+            R.id.btnMute -> clickMute(accessInfo, who, relation)
+            R.id.btnBlock -> clickBlock(accessInfo, who, relation)
+            R.id.btnAccountText -> launchActText(ActText.createIntent(activity, accessInfo, who))
+            R.id.btnProfile -> userProfileLocal(pos, accessInfo, who)
+            R.id.btnSendMessage -> mention(accessInfo, who)
+            R.id.btnAccountWebPage -> openCustomTab(who.url)
+            R.id.btnFollowRequestOK -> followRequestAuthorize(accessInfo, whoRef, true)
+            R.id.btnDeleteSuggestion -> userSuggestionDelete(accessInfo, who)
+            R.id.btnFollowRequestNG -> followRequestAuthorize(accessInfo, whoRef, false)
+            R.id.btnFollowFromAnotherAccount -> followFromAnotherAccount(pos, accessInfo, who)
+            R.id.btnSendMessageFromAnotherAccount -> mentionFromAnotherAccount(accessInfo, who)
+            R.id.btnOpenProfileFromAnotherAccount -> userProfileFromAnotherAccount(pos, accessInfo, who)
+            R.id.btnNickname -> clickNicknameCustomize(accessInfo, who)
+            R.id.btnAccountQrCode -> DlgQRCode.open(activity, whoRef.decoded_display_name, who.getUserUrl())
+            R.id.btnDomainBlock -> clickDomainBlock(accessInfo, who)
+            R.id.btnOpenTimeline -> who.apiHost.valid()?.let { timelineLocal(pos, it) }
+            R.id.btnDomainTimeline -> who.apiHost.valid()?.let { timelineDomain(pos, accessInfo, it) }
+            R.id.btnAvatarImage -> openAvatarImage(who)
+            R.id.btnQuoteName -> quoteName(who)
+            R.id.btnHideBoost -> userSetShowBoosts(accessInfo, who, false)
+            R.id.btnShowBoost -> userSetShowBoosts(accessInfo, who, true)
+            R.id.btnHideFavourite -> clickHideFavourite(accessInfo, who)
+            R.id.btnShowFavourite -> clickShowFavourite(accessInfo, who)
+            R.id.btnListMemberAddRemove -> DlgListMember(activity, who, accessInfo).show()
+            R.id.btnInstanceInformation -> serverInformation(pos, getUserApiHost())
+            R.id.btnProfileDirectory -> serverProfileDirectoryFromInstanceInformation(column, getUserApiHost())
+            R.id.btnEndorse -> userEndorsement(accessInfo, who, !relation.endorsed)
+            R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
+            R.id.btnOpenAccountInAdminWebUi -> openBrowser("https://${accessInfo.apiHost.ascii}/admin/accounts/${who.id}")
+            R.id.btnOpenInstanceInAdminWebUi -> openBrowser("https://${accessInfo.apiHost.ascii}/admin/instances/${who.apDomain.ascii}")
+            R.id.btnNotificationFrom -> clickNotificationFrom(pos, accessInfo, who)
+            R.id.btnPostNotification -> clickStatusNotification(accessInfo, who, relation)
+            R.id.btnQuoteUrlAccount -> openPost(who.url?.notEmpty())
+            R.id.btnShareUrlAccount -> shareText(who.url?.notEmpty())
+            else -> return false
+        }
+        return true
+    }
+
+    private fun ActMain.onClickStatus(v: View, pos: Int, status: TootStatus): Boolean {
+        when (v.id) {
+            R.id.btnBoostWithVisibility -> clickBoostWithVisibility(accessInfo, status)
+            R.id.btnStatusWebPage -> openCustomTab(status.url)
+            R.id.btnText -> launchActText(ActText.createIntent(this, accessInfo, status))
+            R.id.btnFavouriteAnotherAccount -> favouriteFromAnotherAccount(accessInfo, status)
+            R.id.btnBookmarkAnotherAccount -> bookmarkFromAnotherAccount(accessInfo, status)
+            R.id.btnBoostAnotherAccount -> boostFromAnotherAccount(accessInfo, status)
+            R.id.btnReactionAnotherAccount -> reactionFromAnotherAccount(accessInfo, status)
+            R.id.btnReplyAnotherAccount -> replyFromAnotherAccount(accessInfo, status)
+            R.id.btnQuoteAnotherAccount -> quoteFromAnotherAccount(accessInfo, status)
+            R.id.btnQuoteTootBT -> quoteFromAnotherAccount(accessInfo, status.reblogParent)
+            R.id.btnConversationAnotherAccount -> conversationOtherInstance(pos, status)
+            R.id.btnDelete -> clickStatusDelete(accessInfo, status)
+            R.id.btnRedraft -> statusRedraft(accessInfo, status)
+            R.id.btnMuteApp -> appMute(status.application)
+            R.id.btnBoostedBy -> clickBoostBy(pos, accessInfo, status, ColumnType.BOOSTED_BY)
+            R.id.btnFavouritedBy -> clickBoostBy(pos, accessInfo, status, ColumnType.FAVOURITED_BY)
+            R.id.btnTranslate -> CustomShare.invoke(activity, accessInfo, status, CustomShareTarget.Translate)
+            R.id.btnQuoteUrlStatus -> openPost(status.url?.notEmpty())
+            R.id.btnShareUrlStatus -> shareText(status.url?.notEmpty())
+            R.id.btnConversationMute -> conversationMute(accessInfo, status)
+            R.id.btnProfilePin -> statusPin(accessInfo, status, true)
+            R.id.btnProfileUnpin -> statusPin(accessInfo, status, false)
+            else -> return false
+        }
+        return true
+    }
+
+    private fun ActMain.onClickOther(v: View) {
+        when (v.id) {
+            R.id.btnNotificationDelete -> notificationDeleteOne(accessInfo, notification)
+            R.id.btnCancel -> dialog.cancel()
+        }
     }
 
     override fun onClick(v: View) {
-
-        // ダイアログを閉じない操作
-        when (v.id) {
-            R.id.btnCrossAccountActionsForStatus ->
-                return updateGroup(
-                    btnCrossAccountActionsForStatus,
-                    llCrossAccountActionsForStatus,
-                    toggle = true
-                )
-
-            R.id.btnCrossAccountActionsForAccount ->
-                return updateGroup(
-                    btnCrossAccountActionsForAccount,
-                    llCrossAccountActionsForAccount,
-                    toggle = true
-                )
-            R.id.btnAroundThisToot ->
-                return updateGroup(
-                    btnAroundThisToot,
-                    llAroundThisToot,
-                    toggle = true
-                )
-            R.id.btnYourToot ->
-                return updateGroup(
-                    btnYourToot,
-                    llYourToot,
-                    toggle = true
-                )
-            R.id.btnStatusExtraAction ->
-                return updateGroup(
-                    btnStatusExtraAction,
-                    llStatusExtraAction,
-                    toggle = true
-                )
-            R.id.btnAccountExtraAction ->
-                return updateGroup(
-                    btnAccountExtraAction,
-                    llAccountExtraAction,
-                    toggle = true
-                )
-        }
+        if (onClickUpdateGroup(v)) return // ダイアログを閉じない操作
 
         dialog.dismissSafe()
 
         val pos = activity.nextPosition(column)
-
+        val status = this.status
         val whoRef = this.whoRef
         val who = whoRef?.get()
 
+        if (status != null && activity.onClickStatus(v, pos, status)) return
+
         if (whoRef != null && who != null) {
-            when (v.id) {
-
-                R.id.btnReportStatus -> if (status is TootStatus) {
-                    activity.userReportForm(accessInfo, who, status)
-                }
-
-                R.id.btnReportUser ->
-                    activity.userReportForm(accessInfo, who)
-
-                R.id.btnFollow ->
-                    when {
-
-                        accessInfo.isPseudo -> activity.followFromAnotherAccount(
-
-                            pos,
-                            accessInfo,
-                            who
-                        )
-
-                        accessInfo.isMisskey &&
-                            relation.getRequested(who) &&
-                            !relation.getFollowing(who) ->
-                            activity.followRequestDelete(
-                                pos, accessInfo, whoRef,
-                                callback = activity.cancelFollowRequestCompleteCallback
-                            )
-
-                        else -> {
-                            val bSet = !(relation.getRequested(who) || relation.getFollowing(who))
-                            activity.follow(
-                                pos,
-                                accessInfo,
-                                whoRef,
-                                bFollow = bSet,
-                                callback = when (bSet) {
-                                    true -> activity.followCompleteCallback
-                                    else -> activity.unfollowCompleteCallback
-                                }
-                            )
-                        }
-                    }
-
-                R.id.btnAccountText -> {
-                    activity.launchActText(ActText.createIntent(activity, accessInfo, who))
-                }
-
-                R.id.btnMute -> when {
-                    relation.muting -> activity.userUnmute(
-                        accessInfo,
-                        who,
-                        accessInfo
-                    )
-                    else -> activity.userMuteConfirm(
-                        accessInfo,
-                        who,
-                        accessInfo
-                    )
-                }
-
-                R.id.btnBlock -> when {
-                    relation.blocking -> activity.userBlock(
-                        accessInfo,
-                        who,
-                        accessInfo,
-                        false
-                    )
-                    else -> activity.userBlockConfirm(accessInfo, who, accessInfo)
-                }
-
-                R.id.btnProfile ->
-                    activity.userProfileLocal(pos, accessInfo, who)
-
-                R.id.btnSendMessage ->
-                    activity.mention(accessInfo, who)
-
-                R.id.btnAccountWebPage -> who.url?.let { url ->
-                    activity.openCustomTab(url)
-                }
-
-                R.id.btnFollowRequestOK ->
-                    activity.followRequestAuthorize(accessInfo, whoRef, true)
-
-                R.id.btnDeleteSuggestion ->
-                    activity.userSuggestionDelete(accessInfo, who)
-
-                R.id.btnFollowRequestNG ->
-                    activity.followRequestAuthorize(accessInfo, whoRef, false)
-
-                R.id.btnFollowFromAnotherAccount ->
-                    activity.followFromAnotherAccount(pos, accessInfo, who)
-
-                R.id.btnSendMessageFromAnotherAccount ->
-                    activity.mentionFromAnotherAccount(accessInfo, who)
-
-                R.id.btnOpenProfileFromAnotherAccount ->
-                    activity.userProfileFromAnotherAccount(pos, accessInfo, who)
-
-                R.id.btnNickname -> {
-                    activity.arNickname.launch(
-                        ActNickname.createIntent(
-                            activity,
-                            accessInfo.getFullAcct(who),
-                            true
-                        )
-                    )
-                }
-
-                R.id.btnAccountQrCode ->
-                    DlgQRCode.open(
-                        activity,
-                        whoRef.decoded_display_name,
-                        who.getUserUrl()
-                    )
-
-                R.id.btnDomainBlock ->
-                    if (accessInfo.isPseudo) {
-                        // 疑似アカウントではドメインブロックできない
-                        activity.showToast(false, R.string.domain_block_from_pseudo)
-                        return
-                    } else {
-                        val whoApDomain = who.apDomain
-                        // 自分のドメインではブロックできない
-                        if (accessInfo.matchHost(whoApDomain)) {
-                            activity.showToast(false, R.string.domain_block_from_local)
-                            return
-                        }
-                        AlertDialog.Builder(activity)
-                            .setMessage(
-                                activity.getString(
-                                    R.string.confirm_block_domain,
-                                    whoApDomain
-                                )
-                            )
-                            .setNegativeButton(R.string.cancel, null)
-                            .setPositiveButton(R.string.ok) { _, _ ->
-                                activity.domainBlock(
-                                    accessInfo,
-                                    whoApDomain,
-                                    true
-                                )
-                            }
-                            .show()
-                    }
-
-                R.id.btnOpenTimeline -> {
-                    who.apiHost.valid()?.let {
-                        activity.timelineLocal(pos, it)
-                    }
-                }
-
-                R.id.btnDomainTimeline -> {
-                    who.apiHost.valid()?.let {
-                        activity.timelineDomain(pos, accessInfo, it)
-                    }
-                }
-
-                R.id.btnAvatarImage -> {
-                    val url = if (!who.avatar.isNullOrEmpty()) who.avatar else who.avatar_static
-                    activity.openCustomTab(url)
-                    // XXX: 設定によっては内蔵メディアビューアで開けないか？
-                }
-
-                R.id.btnQuoteName -> {
-                    var sv = who.display_name
-                    try {
-                        val fmt = Pref.spQuoteNameFormat(activity.pref)
-                        if (fmt.contains("%1\$s")) {
-                            sv = String.format(fmt, sv)
-                        }
-                    } catch (ex: Throwable) {
-                        log.trace(ex)
-                    }
-
-                    activity.openPost(sv)
-                }
-
-                R.id.btnHideBoost ->
-                    activity.userSetShowBoosts(accessInfo, who, false)
-
-                R.id.btnShowBoost ->
-                    activity.userSetShowBoosts(accessInfo, who, true)
-
-                R.id.btnHideFavourite -> {
-                    val acct = accessInfo.getFullAcct(who)
-                    FavMute.save(acct)
-                    activity.showToast(false, R.string.changed)
-                    for (column in activity.appState.columnList) {
-                        column.onHideFavouriteNotification(acct)
-                    }
-                }
-
-                R.id.btnShowFavourite -> {
-                    FavMute.delete(accessInfo.getFullAcct(who))
-                    activity.showToast(false, R.string.changed)
-                }
-
-                R.id.btnListMemberAddRemove ->
-                    DlgListMember(activity, who, accessInfo).show()
-
-                R.id.btnInstanceInformation -> {
-                    activity.serverInformation(pos, getUserApiHost())
-                }
-
-                R.id.btnProfileDirectory -> {
-                    activity.serverProfileDirectoryFromInstanceInformation(
-
-                        column,
-                        getUserApiHost()
-                    )
-                }
-
-                R.id.btnEndorse -> activity.userEndorsement(
-                    accessInfo,
-                    who,
-                    !relation.endorsed
-                )
-
-                R.id.btnAroundAccountTL -> activity.timelineAroundByStatusAnotherAccount(
-
-                    accessInfo,
-                    pos,
-                    who.apiHost,
-                    status,
-                    ColumnType.ACCOUNT_AROUND, allowPseudo = false
-                )
-
-                R.id.btnAroundLTL -> activity.timelineAroundByStatusAnotherAccount(
-
-                    accessInfo,
-                    pos,
-                    who.apiHost,
-                    status,
-                    ColumnType.LOCAL_AROUND
-                )
-
-                R.id.btnAroundFTL -> activity.timelineAroundByStatusAnotherAccount(
-
-                    accessInfo,
-                    pos,
-                    who.apiHost,
-                    status,
-                    ColumnType.FEDERATED_AROUND
-                )
-
-                R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
-
-                R.id.btnOpenAccountInAdminWebUi ->
-                    activity.openBrowser(
-                        "https://${accessInfo.apiHost.ascii}/admin/accounts/${who.id}"
-                    )
-
-                R.id.btnOpenInstanceInAdminWebUi ->
-                    activity.openBrowser(
-                        "https://${accessInfo.apiHost.ascii}/admin/instances/${who.apDomain.ascii}"
-                    )
-
-                R.id.btnBoostWithVisibility -> {
-                    val status = this.status ?: return
-                    val list = if (accessInfo.isMisskey) {
-                        arrayOf(
-                            TootVisibility.Public,
-                            TootVisibility.UnlistedHome,
-                            TootVisibility.PrivateFollowers,
-                            TootVisibility.LocalPublic,
-                            TootVisibility.LocalHome,
-                            TootVisibility.LocalFollowers,
-                            TootVisibility.DirectSpecified,
-                            TootVisibility.DirectPrivate
-                        )
-                    } else {
-                        arrayOf(
-                            TootVisibility.Public,
-                            TootVisibility.UnlistedHome,
-                            TootVisibility.PrivateFollowers
-                        )
-                    }
-                    val captionList = list
-                        .map { Styler.getVisibilityCaption(activity, accessInfo.isMisskey, it) }
-                        .toTypedArray()
-
-                    AlertDialog.Builder(activity)
-                        .setTitle(R.string.choose_visibility)
-                        .setItems(captionList) { _, which ->
-                            if (which in list.indices) {
-                                activity.boost(
-                                    accessInfo,
-                                    status,
-                                    accessInfo.getFullAcct(status.account),
-                                    CrossAccountMode.SameAccount,
-                                    visibility = list[which],
-                                    callback = activity.boostCompleteCallback,
-                                )
-                            }
-                        }
-                        .setNegativeButton(R.string.cancel, null)
-                        .show()
-                }
-
-                R.id.btnNotificationFrom -> {
-                    if (accessInfo.isMisskey) {
-                        activity.showToast(false, R.string.misskey_account_not_supported)
-                    } else {
-                        accessInfo.getFullAcct(who).validFull()?.let {
-                            activity.addColumn(
-                                pos,
-                                accessInfo,
-                                ColumnType.NOTIFICATION_FROM_ACCT,
-                                it
-                            )
-                        }
-                    }
-                }
-
-                R.id.btnPostNotification ->
-                    if (!accessInfo.isPseudo &&
-                        accessInfo.isMastodon &&
-                        relation.following
-                    ) {
-                        activity.userSetStatusNotification(accessInfo, who.id, enabled = !relation.notifying)
-                    }
+            when {
+                activity.onClickUser(v, pos, who, whoRef) -> return
+                status != null && activity.onClickUserAndStatus(v, pos, who, status) -> return
             }
         }
 
-        when (v.id) {
-
-            R.id.btnStatusWebPage ->
-                activity.openCustomTab(status?.url)
-
-            R.id.btnText -> if (status != null) {
-                activity.launchActText(ActText.createIntent(activity, accessInfo, status))
-            }
-
-            R.id.btnFavouriteAnotherAccount -> activity.favouriteFromAnotherAccount(
-                accessInfo,
-                status
-            )
-
-            R.id.btnBookmarkAnotherAccount -> activity.bookmarkFromAnotherAccount(
-                accessInfo,
-                status
-            )
-
-            R.id.btnBoostAnotherAccount -> activity.boostFromAnotherAccount(
-                accessInfo,
-                status
-            )
-
-            R.id.btnReactionAnotherAccount -> activity.reactionFromAnotherAccount(
-
-                accessInfo,
-                status
-            )
-
-            R.id.btnReplyAnotherAccount -> activity.replyFromAnotherAccount(
-                accessInfo,
-                status
-            )
-
-            R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(
-                accessInfo,
-                status
-            )
-
-            R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(
-                accessInfo,
-                status?.reblogParent
-            )
-
-            R.id.btnConversationAnotherAccount -> status?.let { status ->
-                activity.conversationOtherInstance(pos, status)
-            }
-
-            R.id.btnDelete -> status?.let { status ->
-                AlertDialog.Builder(activity)
-                    .setMessage(activity.getString(R.string.confirm_delete_status))
-                    .setNegativeButton(R.string.cancel, null)
-                    .setPositiveButton(R.string.ok) { _, _ ->
-                        activity.statusDelete(
-
-                            accessInfo,
-                            status.id
-                        )
-                    }
-                    .show()
-            }
-            R.id.btnRedraft -> status?.let { status ->
-                activity.statusRedraft(accessInfo, status)
-            }
-
-            R.id.btnMuteApp -> status?.application?.let {
-                activity.appMute(it)
-            }
-
-            R.id.btnBoostedBy -> status?.let {
-                activity.addColumn(false, pos, accessInfo, ColumnType.BOOSTED_BY, it.id)
-            }
-
-            R.id.btnFavouritedBy -> status?.let {
-                activity.addColumn(false, pos, accessInfo, ColumnType.FAVOURITED_BY, it.id)
-            }
-
-            R.id.btnCancel -> dialog.cancel()
-
-            R.id.btnTranslate -> CustomShare.invoke(
-                activity,
-                accessInfo,
-                status,
-                CustomShareTarget.Translate
-            )
-
-            R.id.btnQuoteUrlStatus -> status?.url?.let { url ->
-                if (url.isNotEmpty()) activity.openPost(url)
-            }
-
-            R.id.btnQuoteUrlAccount -> who?.url?.let { url ->
-                if (url.isNotEmpty()) activity.openPost(url)
-            }
-            R.id.btnShareUrlStatus -> status?.url?.let { url ->
-                if (url.isNotEmpty()) shareText(activity, url)
-            }
-
-            R.id.btnShareUrlAccount -> who?.url?.let { url ->
-                if (url.isNotEmpty()) shareText(activity, url)
-            }
-            R.id.btnNotificationDelete -> notification?.let { notification ->
-                activity.notificationDeleteOne(accessInfo, notification)
-            }
-
-            R.id.btnConversationMute -> status?.let { status ->
-                activity.conversationMute(accessInfo, status)
-            }
-
-            R.id.btnProfilePin -> status?.let { status ->
-                activity.statusPin(accessInfo, status, true)
-            }
-
-            R.id.btnProfileUnpin -> status?.let { status ->
-                activity.statusPin(accessInfo, status, false)
-            }
-        }
-    }
-
-    private fun shareText(activity: ActMain, text: String) {
-        ShareCompat.IntentBuilder(activity)
-            .setText(text)
-            .setType("text/plain")
-            .startChooser()
+        activity.onClickOther(v)
     }
 
     override fun onLongClick(v: View): Boolean {
-
         val whoRef = this.whoRef
         val who = whoRef?.get()
-
         when (v.id) {
             R.id.btnFollow -> {
                 dialog.dismissSafe()
@@ -1115,9 +763,8 @@ internal class DlgContextMenu(
                 activity.mentionFromAnotherAccount(accessInfo, who)
             }
 
-            R.id.btnMute -> who?.let { activity.userMuteFromAnotherAccount(it, accessInfo) }
-            R.id.btnBlock -> who?.let { activity.userBlockFromAnotherAccount(it, accessInfo) }
-
+            R.id.btnMute ->  activity.userMuteFromAnotherAccount(who, accessInfo)
+            R.id.btnBlock -> activity.userBlockFromAnotherAccount(who, accessInfo)
             R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(accessInfo, status)
             R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(accessInfo, status?.reblogParent)
 

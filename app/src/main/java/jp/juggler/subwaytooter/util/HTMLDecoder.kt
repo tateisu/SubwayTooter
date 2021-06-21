@@ -16,7 +16,6 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.math.max
 import kotlin.math.min
 
 object HTMLDecoder {
@@ -346,9 +345,6 @@ object HTMLDecoder {
             nestLevelQuote + 1
         )
 
-        val indent: String
-            get() = " ".repeat(2 * max(0, nestLevelOrdered + nestLevelUnordered + nestLevelDefinition - 1))
-
         fun increment() = when (type) {
             ListType.Ordered -> "${++order}. "
             ListType.Unordered -> "${listMarkers[nestLevelUnordered % listMarkers.size]} "
@@ -463,6 +459,25 @@ object HTMLDecoder {
                 }
             }
             if (DEBUG_HTML_PARSER) log.d("addChild: $indent)$tag")
+        }
+
+        fun String.tagsCanRemoveNearSpaces() = when (this) {
+            "li", "ol", "ul", "dl", "dt", "dd", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6",
+            "table", "tbody", "thead", "tfoot", "tr", "td", "th",
+            -> true
+            else -> false
+        }
+
+        fun canSkipEncode(isBlockParent: Boolean, parent: Node, prev: Node?, next: Node?) = when {
+            !isBlockParent -> false
+            tag != TAG_TEXT -> false
+            text.isNotBlank() -> false
+            else -> when {
+                prev?.tag?.tagsCanRemoveNearSpaces() == true -> true
+                next?.tag?.tagsCanRemoveNearSpaces() == true -> true
+                parent.tag.tagsCanRemoveNearSpaces() && (prev == null || next == null) -> true
+                else -> false
+            }
         }
 
         fun encodeSpan(
@@ -738,26 +753,16 @@ object HTMLDecoder {
                 else -> listContext
             }
 
-            fun String.tagsCanRemoveNearSpaces() = when (this) {
-                "li", "ol", "ul", "dl", "dt", "dd", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6",
-                "table", "tbody", "thead", "tfoot", "tr", "td", "th",
-                -> true
-                else -> false
-            }
-
-            val childLast = child_nodes.size - 1
             child_nodes.forEachIndexed { i, child ->
-                if (child.tag == TAG_TEXT && child.text.isBlank() && isBlock) {
-                    val preNode = child_nodes.elementAtOrNull(i - 1)
-                    val nextNode = child_nodes.elementAtOrNull(i + 1)
-                    if (preNode?.tag?.tagsCanRemoveNearSpaces() == true ||
-                        nextNode?.tag?.tagsCanRemoveNearSpaces() == true ||
-                        ((i == 0 || i == childLast) && tag.tagsCanRemoveNearSpaces())
-                    ) {
-                        return@forEachIndexed
-                    }
+                if (!canSkipEncode(
+                        isBlock,
+                        parent = this,
+                        prev = child_nodes.elementAtOrNull(i - 1),
+                        next = child_nodes.elementAtOrNull(i + 1)
+                    )
+                ) {
+                    child.encodeSpan(options, sb_tmp, childListContext)
                 }
-                child.encodeSpan(options, sb_tmp, childListContext)
             }
 
             tmpFlusher(sb_tmp)

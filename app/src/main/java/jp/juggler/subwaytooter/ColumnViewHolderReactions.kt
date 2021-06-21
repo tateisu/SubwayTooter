@@ -22,7 +22,7 @@ fun ColumnViewHolder.addEmojiQuery(reaction: TootReaction? = null) {
                 is CustomEmoji -> TootReaction(
                     name = emoji.shortcode,
                     url = emoji.url,
-                    static_url = emoji.staticUrl
+                    staticUrl = emoji.staticUrl
                 )
             }
             addEmojiQuery(newReaction)

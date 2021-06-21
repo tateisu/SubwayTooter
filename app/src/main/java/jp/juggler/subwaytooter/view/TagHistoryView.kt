@@ -123,7 +123,6 @@ class TagHistoryView : View {
 
                 // 終端
                 size - 1 -> {
-
                     // 制御点1
                     val c1x = lastX + controlXStep
                     val c1y = clipRange(yMin, yMax, lastY + controlXStep * lastSlope)
@@ -143,16 +142,18 @@ class TagHistoryView : View {
 
                     // 制御点2
                     val nextY = yWorkarea[i + 1]
-                    val slope = if ((lastY < y && y < nextY) || (lastY > y && y > nextY)) {
-                        // 点の前後で勾配の符号が変わらず、平坦でもない
-                        // 前後の勾配の平均を使う
-                        val slope1 = (y - lastY) / xStep
-                        val slope2 = (nextY - y) / xStep
-                        (slope1 + slope2) / 2f
-                    } else {
-                        // 極値であるか、前後のどちらかが平坦であるなら
+
+                    val slope = when {
+                        // 部分的な極値であるか、前後のどちらかが平坦であるなら
                         // オーバーランを防ぐため勾配は0とみなす
-                        0f
+                        !isSlopeContinued(lastY, y, nextY) -> 0f
+                        else -> {
+                            // 点の前後で勾配の符号が変わらず、平坦でもない
+                            // 前後の勾配の平均を使う
+                            val slope1 = (y - lastY) / xStep
+                            val slope2 = (nextY - y) / xStep
+                            (slope1 + slope2) / 2f
+                        }
                     }
                     val c2x = x - controlXStep
                     val c2y = clipRange(yMin, yMax, y - controlXStep * slope)
@@ -166,5 +167,14 @@ class TagHistoryView : View {
             x += xStep
         }
         canvas.drawPath(path, paint)
+    }
+
+    companion object {
+        // 点の前後で勾配の符号が変わらず、平坦でもないなら真
+        private fun isSlopeContinued(last: Float, curr: Float, next: Float) = when {
+            last < curr && curr < next -> true
+            last > curr && curr > next -> true
+            else -> false
+        }
     }
 }

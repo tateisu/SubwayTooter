@@ -21,9 +21,15 @@ private fun String.isDecimalNotation(): Boolean =
         indexOf('E') > -1 ||
         this == "-0"
 
+private fun isNumberStart(initial: Char?) = when (initial) {
+    in '0'..'9' -> true
+    '-' -> true
+    else -> false
+}
+
 private fun String.stringToNumber(): Number {
     val initial = this.firstOrNull()
-    if (initial != null && (initial >= '0' && initial <= '9' || initial == '-')) {
+    if (isNumberStart(initial)) {
         val length = this.length
         when {
             isDecimalNotation() -> return if (length > 14) {
@@ -732,7 +738,7 @@ class JsonTokenizer(reader: Reader) {
      */
     private fun syntaxError(
         @Suppress("SameParameterValue") message: String,
-        causedBy: Throwable?
+        causedBy: Throwable?,
     ) = JsonException(message + toString(), causedBy)
 
     /**
@@ -848,7 +854,8 @@ private fun Writer.writeQuote(string: String): Writer {
 
                 in CHAR0 until ' ',
                 in '\u0080' until '\u00a0',
-                in '\u2000' until '\u2100' -> {
+                in '\u2000' until '\u2100',
+                -> {
                     write("\\u")
                     val hexCode: String = Integer.toHexString(c.code)
                     write("0000", 0, 4 - hexCode.length)
@@ -1022,7 +1029,7 @@ fun Writer.writeJsonValue(
     indentFactor: Int,
     indent: Int,
     value: Any?,
-    sort: Boolean
+    sort: Boolean,
 ): Writer {
     when {
         value == null -> write("null")

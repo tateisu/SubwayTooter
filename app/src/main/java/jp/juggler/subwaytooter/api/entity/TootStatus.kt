@@ -6,7 +6,7 @@ import androidx.annotation.StringRes
 import android.text.Spannable
 import android.text.SpannableString
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.emoji.CustomEmoji
@@ -498,7 +498,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     TootCard(parser, quote)
                     // content中のQTの表現が四角括弧の有無とか色々あるみたいだし
                     // 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
-                    // removeQt = ! Pref.bpDontShowPreviewCard(Pref.pref(parser.context))
+                    // removeQt = ! PrefB.bpDontShowPreviewCard(Pref.pref(parser.context))
                 } else {
                     null
                 }
@@ -712,7 +712,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     card = TootCard(parser, quote)
                     // content中のQTの表現が四角括弧の有無とか色々あるみたいだし
                     // 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
-                    // removeQt = ! Pref.bpDontShowPreviewCard(Pref.pref(parser.context))
+                    // removeQt = ! PrefB.bpDontShowPreviewCard(Pref.pref(parser.context))
                 }
 
                 // content
@@ -1050,7 +1050,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     fun markDeleted(context: Context, deletedAt: Long?): Boolean {
 
-        if (Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return false
+        if (PrefB.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return false
 
         var sv = if (deletedAt != null) {
             context.getString(R.string.status_deleted_at, formatTime(context, deletedAt, false))
@@ -1281,7 +1281,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
             }
 
-            if (bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
+            if (bAllowRelative && PrefB.bpRelativeTimestamp(App1.pref)) {
 
                 delta = abs(delta)
 

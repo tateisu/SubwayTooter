@@ -7,7 +7,7 @@ import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
@@ -34,7 +34,7 @@ object EmojiDecoder {
 
     var handleUnicodeEmoji = true
 
-    fun customEmojiSeparator(pref: SharedPreferences) = if (Pref.bpCustomEmojiSeparatorZwsp(pref)) {
+    fun customEmojiSeparator(pref: SharedPreferences) = if (PrefB.bpCustomEmojiSeparatorZwsp(pref)) {
         '\u200B'
     } else {
         ' '
@@ -351,7 +351,7 @@ object EmojiDecoder {
 
         val useEmojioneShortcode = when (val context = options.context) {
             null -> false
-            else -> Pref.bpEmojioneShortcode(context.pref())
+            else -> PrefB.bpEmojioneShortcode(context.pref())
         }
 
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
@@ -376,7 +376,7 @@ object EmojiDecoder {
                 val emojiCustom = emojiMapCustom?.get(name)
                 if (emojiCustom != null) {
                     val url = when {
-                        Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl
+                        PrefB.bpDisableEmojiAnimation(App1.pref) && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl
                         else -> emojiCustom.url
                     }
                     builder.addNetworkEmojiSpan(part, url)
@@ -421,7 +421,7 @@ object EmojiDecoder {
         s: String,
         emojiMapCustom: HashMap<String, CustomEmoji>? = null
     ): String {
-        val decodeEmojioneShortcode = Pref.bpEmojioneShortcode(App1.pref)
+        val decodeEmojioneShortcode = PrefB.bpEmojioneShortcode(App1.pref)
 
         val sb = StringBuilder()
 

@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.AppState
 import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.Acct
@@ -69,7 +69,7 @@ class StreamManager(val appState: AppState) {
             return acctGroup
         }
 
-        if (isScreenOn && !Pref.bpDontUseStreaming(appState.pref)) {
+        if (isScreenOn && !PrefB.bpDontUseStreaming(appState.pref)) {
             for (column in appState.columnList) {
                 val accessInfo = column.accessInfo
                 if (column.isDispose.get() || column.dontStreaming || accessInfo.isNA) continue

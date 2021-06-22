@@ -120,12 +120,12 @@ class DlgQuickTootMenu(
     }
 
     private fun loadStrings() =
-        Pref.spQuickTootMacro(activity.pref).split("\n")
+        PrefS.spQuickTootMacro(activity.pref).split("\n")
 
     private fun saveStrings() = activity.pref
         .edit()
         .put(
-            Pref.spQuickTootMacro,
+            PrefS.spQuickTootMacro,
             etText.joinToString("\n") {
                 (it?.text?.toString() ?: "").replace("\n", " ")
             }

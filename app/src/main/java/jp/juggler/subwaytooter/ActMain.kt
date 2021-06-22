@@ -243,7 +243,7 @@ class ActMain : AppCompatActivity(),
         override fun run() {
             handler.removeCallbacks(this)
             if (!isStartedEx) return
-            if (Pref.bpRelativeTimestamp(pref)) {
+            if (PrefB.bpRelativeTimestamp(pref)) {
                 appState.columnList.forEach { it.fireRelativeTime() }
                 handler.postDelayed(this, 10000L)
             }
@@ -324,7 +324,7 @@ class ActMain : AppCompatActivity(),
             set(value) {
                 if (value != quickTootVisibility) {
                     quickTootVisibility = value
-                    pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
+                    pref.edit().put(PrefS.spQuickTootVisibility, value.id.toString()).apply()
                     showQuickTootVisibility()
                 }
             }
@@ -399,7 +399,7 @@ class ActMain : AppCompatActivity(),
             },
             { env ->
 
-                val dbId = Pref.lpTabletTootDefaultAccount(App1.pref)
+                val dbId = PrefL.lpTabletTootDefaultAccount(App1.pref)
                 if (dbId != -1L) {
                     val a = SavedAccount.loadAccount(this@ActMain, dbId)
                     if (a != null && !a.isPseudo) return a
@@ -547,17 +547,17 @@ class ActMain : AppCompatActivity(),
         appState = App1.getAppState(this)
         pref = App1.pref
 
-        EmojiDecoder.handleUnicodeEmoji = Pref.bpInAppUnicodeEmoji(pref)
+        EmojiDecoder.handleUnicodeEmoji = PrefB.bpInAppUnicodeEmoji(pref)
 
         density = appState.density
         acctPadLr = (0.5f + 4f * density).toInt()
 
-        timelineFontSizeSp = Pref.fpTimelineFontSize(pref).clipFontSize()
-        acctFontSizeSp = Pref.fpAcctFontSize(pref).clipFontSize()
-        notificationTlFontSizeSp = Pref.fpNotificationTlFontSize(pref).clipFontSize()
-        headerTextSizeSp = Pref.fpHeaderTextSize(pref).clipFontSize()
+        timelineFontSizeSp = PrefF.fpTimelineFontSize(pref).clipFontSize()
+        acctFontSizeSp = PrefF.fpAcctFontSize(pref).clipFontSize()
+        notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize(pref).clipFontSize()
+        headerTextSizeSp = PrefF.fpHeaderTextSize(pref).clipFontSize()
 
-        val fv = Pref.spTimelineSpacing(pref).toFloatOrNull()
+        val fv = PrefS.spTimelineSpacing(pref).toFloatOrNull()
         timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
 
         initUI()
@@ -566,7 +566,7 @@ class ActMain : AppCompatActivity(),
 
         if (appState.columnCount > 0) {
 
-            val columnPos = Pref.ipLastColumnPos(pref)
+            val columnPos = PrefI.ipLastColumnPos(pref)
             log.d("ipLastColumnPos load $columnPos")
 
             // 前回最後に表示していたカラムの位置にスクロールする
@@ -667,14 +667,14 @@ class ActMain : AppCompatActivity(),
 
             benchmark("reload color") {
                 // カラーカスタマイズを読み直す
-                ListDivider.color = Pref.ipListDividerColor(pref)
-                TabletColumnDivider.color = Pref.ipListDividerColor(pref)
-                ItemViewHolder.toot_color_unlisted = Pref.ipTootColorUnlisted(pref)
-                ItemViewHolder.toot_color_follower = Pref.ipTootColorFollower(pref)
-                ItemViewHolder.toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
-                ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
-                MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
-                MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
+                ListDivider.color = PrefI.ipListDividerColor(pref)
+                TabletColumnDivider.color = PrefI.ipListDividerColor(pref)
+                ItemViewHolder.toot_color_unlisted = PrefI.ipTootColorUnlisted(pref)
+                ItemViewHolder.toot_color_follower = PrefI.ipTootColorFollower(pref)
+                ItemViewHolder.toot_color_direct_user = PrefI.ipTootColorDirectUser(pref)
+                ItemViewHolder.toot_color_direct_me = PrefI.ipTootColorDirectMe(pref)
+                MyClickableSpan.showLinkUnderline = PrefB.bpShowLinkUnderline(pref)
+                MyClickableSpan.defaultLinkColor = PrefI.ipLinkColor(pref).notZero()
                     ?: attrColor(R.attr.colorLink)
 
                 CustomShare.reloadCache(this, pref)
@@ -683,7 +683,7 @@ class ActMain : AppCompatActivity(),
             benchmark("reload timezone") {
                 try {
                     var tz = TimeZone.getDefault()
-                    val tzId = Pref.spTimeZone(pref)
+                    val tzId = PrefS.spTimeZone(pref)
                     if (tzId.isNotEmpty()) {
                         tz = TimeZone.getTimeZone(tzId)
                     }
@@ -831,7 +831,7 @@ class ActMain : AppCompatActivity(),
 
         // TODO MyClickableSpan.link_callback = WeakReference(link_click_listener)
 
-        if (Pref.bpDontScreenOff(pref)) {
+        if (PrefB.bpDontScreenOff(pref)) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -859,7 +859,7 @@ class ActMain : AppCompatActivity(),
             { env -> env.pager.currentItem },
             { env -> env.visibleColumnsIndices.first })
         log.d("ipLastColumnPos save $lastPos")
-        pref.edit().put(Pref.ipLastColumnPos, lastPos).apply()
+        pref.edit().put(PrefI.ipLastColumnPos, lastPos).apply()
 
         appState.columnList.forEach { it.saveScrollPosition() }
 
@@ -1004,8 +1004,8 @@ class ActMain : AppCompatActivity(),
                 this.postedRedraftId = null
             }
 
-            val refreshAfterToot = Pref.ipRefreshAfterToot(pref)
-            if (refreshAfterToot != Pref.RAT_DONT_REFRESH) {
+            val refreshAfterToot = PrefI.ipRefreshAfterToot(pref)
+            if (refreshAfterToot != PrefI.RAT_DONT_REFRESH) {
                 appState.columnList
                     .filter { it.accessInfo.acct == postedAcct }
                     .forEach {
@@ -1046,7 +1046,7 @@ class ActMain : AppCompatActivity(),
 
     private fun performQuickPost(account: SavedAccount?) {
         if (account == null) {
-            val a = if (tabletEnv != null && !Pref.bpQuickTootOmitAccountSelection(pref)) {
+            val a = if (tabletEnv != null && !PrefB.bpQuickTootOmitAccountSelection(pref)) {
                 // タブレットモードでオプションが無効なら
                 // 簡易投稿は常にアカウント選択する
                 null
@@ -1150,19 +1150,19 @@ class ActMain : AppCompatActivity(),
         }
 
         // カラムが1個以上ある場合は設定に合わせて挙動を変える
-        when (Pref.ipBackButtonAction(pref)) {
+        when (PrefI.ipBackButtonAction(pref)) {
 
-            Pref.BACK_EXIT_APP -> this@ActMain.finish()
+            PrefI.BACK_EXIT_APP -> this@ActMain.finish()
 
-            Pref.BACK_OPEN_COLUMN_LIST -> openColumnList()
+            PrefI.BACK_OPEN_COLUMN_LIST -> openColumnList()
 
-            Pref.BACK_CLOSE_COLUMN -> {
+            PrefI.BACK_CLOSE_COLUMN -> {
 
                 val closeableColumnList = getClosableColumnList()
                 when (closeableColumnList.size) {
                     0 -> {
-                        if (Pref.bpExitAppWhenCloseProtectedColumn(pref) &&
-                            Pref.bpDontConfirmBeforeCloseColumn(pref)
+                        if (PrefB.bpExitAppWhenCloseProtectedColumn(pref) &&
+                            PrefB.bpDontConfirmBeforeCloseColumn(pref)
                         ) {
                             this@ActMain.finish()
                         } else {
@@ -1209,12 +1209,12 @@ class ActMain : AppCompatActivity(),
         App1.initEdgeToEdge(this)
 
         quickTootVisibility =
-            TootVisibility.parseSavedVisibility(Pref.spQuickTootVisibility(pref))
+            TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility(pref))
                 ?: quickTootVisibility
 
         Column.reloadDefaultColor(this, pref)
 
-        var sv = Pref.spTimelineFont(pref)
+        var sv = PrefS.spTimelineFont(pref)
         if (sv.isNotEmpty()) {
             try {
                 timelineFont = Typeface.createFromFile(sv)
@@ -1223,7 +1223,7 @@ class ActMain : AppCompatActivity(),
             }
         }
 
-        sv = Pref.spTimelineFontBold(pref)
+        sv = PrefS.spTimelineFontBold(pref)
         if (sv.isNotEmpty()) {
             try {
                 timeline_font_bold = Typeface.createFromFile(sv)
@@ -1252,21 +1252,21 @@ class ActMain : AppCompatActivity(),
             return (0.5f + iconSizeDp * density).toInt()
         }
 
-        avatarIconSize = parseIconSize(Pref.spAvatarIconSize)
-        notificationTlIconSize = parseIconSize(Pref.spNotificationTlIconSize)
-        boostButtonSize = parseIconSize(Pref.spBoostButtonSize)
-        replyIconSize = parseIconSize(Pref.spReplyIconSize)
-        headerIconSize = parseIconSize(Pref.spHeaderIconSize)
-        stripIconSize = parseIconSize(Pref.spStripIconSize)
-        screenBottomPadding = parseIconSize(Pref.spScreenBottomPadding, minDp = 0f)
+        avatarIconSize = parseIconSize(PrefS.spAvatarIconSize)
+        notificationTlIconSize = parseIconSize(PrefS.spNotificationTlIconSize)
+        boostButtonSize = parseIconSize(PrefS.spBoostButtonSize)
+        replyIconSize = parseIconSize(PrefS.spReplyIconSize)
+        headerIconSize = parseIconSize(PrefS.spHeaderIconSize)
+        stripIconSize = parseIconSize(PrefS.spStripIconSize)
+        screenBottomPadding = parseIconSize(PrefS.spScreenBottomPadding, minDp = 0f)
 
         run {
             var roundRatio = 33f
             try {
-                if (Pref.bpDontRound(pref)) {
+                if (PrefB.bpDontRound(pref)) {
                     roundRatio = 0f
                 } else {
-                    sv = Pref.spRoundRatio(pref)
+                    sv = PrefS.spRoundRatio(pref)
                     if (sv.isNotEmpty()) {
                         val fv = sv.toFloat()
                         if (fv.isFinite()) {
@@ -1283,7 +1283,7 @@ class ActMain : AppCompatActivity(),
         run {
             var boostAlpha = 0.8f
             try {
-                val f = (Pref.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
+                val f = (PrefS.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
                 boostAlpha = when {
                     f >= 1f -> 1f
                     f < 0f -> 0.66f
@@ -1321,8 +1321,8 @@ class ActMain : AppCompatActivity(),
 
         etQuickToot.typeface = timelineFont
 
-        when (Pref.ipJustifyWindowContentPortrait(pref)) {
-            Pref.JWCP_START -> {
+        when (PrefI.ipJustifyWindowContentPortrait(pref)) {
+            PrefI.JWCP_START -> {
                 val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
                 val padding = resources.displayMetrics.widthPixels / 2 - iconW
 
@@ -1339,7 +1339,7 @@ class ActMain : AppCompatActivity(),
                 )
             }
 
-            Pref.JWCP_END -> {
+            PrefI.JWCP_END -> {
                 val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
                 val borderWidth = (1f * density + 0.5f).toInt()
                 val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
@@ -1358,7 +1358,7 @@ class ActMain : AppCompatActivity(),
             }
         }
 
-        if (!Pref.bpQuickTootBar(pref)) {
+        if (!PrefB.bpQuickTootBar(pref)) {
             llQuickTootBar.visibility = View.GONE
         }
 
@@ -1367,7 +1367,7 @@ class ActMain : AppCompatActivity(),
         btnQuickToot.setOnClickListener(this)
         btnQuickTootMenu.setOnClickListener(this)
 
-        if (Pref.bpDontUseActionButtonWithQuickTootBar(pref)) {
+        if (PrefB.bpDontUseActionButtonWithQuickTootBar(pref)) {
             etQuickToot.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
             etQuickToot.imeOptions = EditorInfo.IME_ACTION_NONE
             // 最後に指定する必要がある？
@@ -1397,7 +1397,7 @@ class ActMain : AppCompatActivity(),
         val density = dm.density
 
         var mediaThumbHeightDp = 64
-        sv = Pref.spMediaThumbHeight(pref)
+        sv = PrefS.spMediaThumbHeight(pref)
         if (sv.isNotEmpty()) {
             try {
                 val iv = Integer.parseInt(sv)
@@ -1411,7 +1411,7 @@ class ActMain : AppCompatActivity(),
         appState.mediaThumbHeight = (0.5f + mediaThumbHeightDp * density).toInt()
 
         var columnWMinDp = COLUMN_WIDTH_MIN_DP
-        sv = Pref.spColumnWidth(pref)
+        sv = PrefS.spColumnWidth(pref)
         if (sv.isNotEmpty()) {
             try {
                 val iv = Integer.parseInt(sv)
@@ -1426,7 +1426,7 @@ class ActMain : AppCompatActivity(),
 
         val sw = dm.widthPixels
 
-        if (Pref.bpDisableTabletMode(pref) || sw < columnWMin * 2) {
+        if (PrefB.bpDisableTabletMode(pref) || sw < columnWMin * 2) {
             // SmartPhone mode
             phoneEnv = PhoneEnv()
         } else {
@@ -1571,7 +1571,7 @@ class ActMain : AppCompatActivity(),
             viewRoot.tag = index
             viewRoot.setOnClickListener { v ->
                 val idx = v.tag as Int
-                if (Pref.bpScrollTopFromColumnStrip(pref) && isVisibleColumn(idx)) {
+                if (PrefB.bpScrollTopFromColumnStrip(pref) && isVisibleColumn(idx)) {
                     column.viewHolder?.scrollToTop2()
                     return@setOnClickListener
                 }
@@ -1871,7 +1871,7 @@ class ActMain : AppCompatActivity(),
                     )
 
                     client.authentication2Misskey(
-                        Pref.spClientName(pref),
+                        PrefS.spClientName(pref),
                         token,
                         ti.misskeyVersion
                     )?.also {
@@ -1936,7 +1936,7 @@ class ActMain : AppCompatActivity(),
 
                     val refToken = AtomicReference<String>(null)
                     client.authentication2Mastodon(
-                        Pref.spClientName(pref),
+                        PrefS.spClientName(pref),
                         code,
                         outAccessToken = refToken
                     )?.also { result ->
@@ -2116,7 +2116,7 @@ class ActMain : AppCompatActivity(),
             return
         }
 
-        if (!bConfirmed && !Pref.bpDontConfirmBeforeCloseColumn(pref)) {
+        if (!bConfirmed && !PrefB.bpDontConfirmBeforeCloseColumn(pref)) {
             AlertDialog.Builder(this)
                 .setMessage(R.string.confirm_close_column)
                 .setNegativeButton(R.string.cancel, null)
@@ -2200,7 +2200,7 @@ class ActMain : AppCompatActivity(),
         vararg params: Any,
     ): Column {
         return addColumn(
-            Pref.bpAllowColumnDuplication(pref),
+            PrefB.bpAllowColumnDuplication(pref),
             indexArg,
             ai,
             type,
@@ -2242,11 +2242,11 @@ class ActMain : AppCompatActivity(),
 
     fun showFooterColor() {
 
-        val footerButtonBgColor = Pref.ipFooterButtonBgColor(pref)
-        val footerButtonFgColor = Pref.ipFooterButtonFgColor(pref)
-        val footerTabBgColor = Pref.ipFooterTabBgColor(pref)
-        val footerTabDividerColor = Pref.ipFooterTabDividerColor(pref)
-        val footerTabIndicatorColor = Pref.ipFooterTabIndicatorColor(pref)
+        val footerButtonBgColor = PrefI.ipFooterButtonBgColor(pref)
+        val footerButtonFgColor = PrefI.ipFooterButtonFgColor(pref)
+        val footerTabBgColor = PrefI.ipFooterTabBgColor(pref)
+        val footerTabDividerColor = PrefI.ipFooterTabDividerColor(pref)
+        val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor(pref)
 
         val colorColumnStripBackground = footerTabBgColor.notZero()
             ?: attrColor(R.attr.colorColumnStripBackground)
@@ -2377,7 +2377,7 @@ class ActMain : AppCompatActivity(),
     private fun resizeColumnWidth(env: TabletEnv) {
 
         var columnWMinDp = COLUMN_WIDTH_MIN_DP
-        val sv = Pref.spColumnWidth(pref)
+        val sv = PrefS.spColumnWidth(pref)
         if (sv.isNotEmpty()) {
             try {
                 val iv = Integer.parseInt(sv)
@@ -2618,7 +2618,7 @@ class ActMain : AppCompatActivity(),
     }
 
     private fun resizeAutoCW(columnW: Int) {
-        val sv = Pref.spAutoCWLines(pref)
+        val sv = PrefS.spAutoCWLines(pref)
         nAutoCwLines = sv.optInt() ?: -1
         if (nAutoCwLines > 0) {
             val lvPad = (0.5f + 12 * density).toInt()
@@ -2720,7 +2720,7 @@ class ActMain : AppCompatActivity(),
 
         // 同意ずみなら表示しない
         val digest = bytes.digestSHA256().encodeBase64Url()
-        if (digest == Pref.spAgreedPrivacyPolicyDigest(pref)) return
+        if (digest == PrefS.spAgreedPrivacyPolicyDigest(pref)) return
 
         val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.privacy_policy)
@@ -2732,7 +2732,7 @@ class ActMain : AppCompatActivity(),
                 finish()
             }
             .setPositiveButton(R.string.agree) { _, _ ->
-                pref.edit().put(Pref.spAgreedPrivacyPolicyDigest, digest).apply()
+                pref.edit().put(PrefS.spAgreedPrivacyPolicyDigest, digest).apply()
             }
             .create()
         dlgPrivacyPolicy = WeakReference(dialog)

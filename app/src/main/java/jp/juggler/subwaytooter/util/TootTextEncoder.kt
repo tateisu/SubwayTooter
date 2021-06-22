@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.ActText
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -302,7 +302,7 @@ object TootTextEncoder {
         addHeader(context, sb, R.string.send_header_account_created_at, who.created_at)
         addHeader(context, sb, R.string.send_header_account_statuses_count, who.statuses_count)
 
-        if (!Pref.bpHideFollowCount(App1.getAppState(context).pref)) {
+        if (!PrefB.bpHideFollowCount(App1.getAppState(context).pref)) {
             addHeader(
                 context,
                 sb,

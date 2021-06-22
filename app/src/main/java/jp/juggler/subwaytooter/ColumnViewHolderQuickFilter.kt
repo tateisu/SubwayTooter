@@ -27,7 +27,7 @@ fun ColumnViewHolder.showQuickFilter() {
     btnQuickFilterReaction.vg(column.isMisskey)
     btnQuickFilterFavourite.vg(!column.isMisskey)
 
-    val insideColumnSetting = Pref.bpMoveNotificationsQuickFilter(activity.pref)
+    val insideColumnSetting = PrefB.bpMoveNotificationsQuickFilter(activity.pref)
 
     val showQuickFilterButton: (btn: View, iconId: Int, selected: Boolean) -> Unit
 

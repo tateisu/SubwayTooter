@@ -11,40 +11,57 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
 
+fun ActMain.clickFollowInfo(
+    pos: Int,
+    accessInfo: SavedAccount,
+    whoRef: TootAccountRef?,
+    forceMenu: Boolean = false,
+    contextMenuOpener: ActMain.(whoRef: TootAccountRef) -> Unit,
+) {
+    whoRef ?: return
+    if (forceMenu || accessInfo.isPseudo) {
+        contextMenuOpener(this, whoRef)
+    } else {
+        userProfileLocal(pos, accessInfo, whoRef.get())
+    }
+}
+
 fun ActMain.clickFollow(
     pos: Int,
     accessInfo: SavedAccount,
-    who: TootAccount,
     whoRef: TootAccountRef,
-    relation: UserRelation,
+    relation: UserRelation?,
 ) {
+    relation ?: return
+    val who = whoRef.get()
     when {
         accessInfo.isPseudo ->
             followFromAnotherAccount(pos, accessInfo, who)
-
-        accessInfo.isMisskey &&
-            relation.getRequested(who) &&
-            !relation.getFollowing(who) ->
-            followRequestDelete(
-                pos, accessInfo, whoRef,
-                callback = cancelFollowRequestCompleteCallback
-            )
-
-        else -> {
-            val bSet = !(relation.getRequested(who) || relation.getFollowing(who))
-            follow(
-                pos,
-                accessInfo,
-                whoRef,
-                bFollow = bSet,
-                callback = when (bSet) {
-                    true -> followCompleteCallback
-                    else -> unfollowCompleteCallback
-                }
-            )
-        }
+        relation.blocking || relation.muting ->
+            Unit // 何もしない
+        accessInfo.isMisskey && relation.getRequested(who) && !relation.getFollowing(who) ->
+            followRequestDelete(pos, accessInfo, whoRef, callback = cancelFollowRequestCompleteCallback)
+        relation.getFollowing(who) || relation.getRequested(who) ->
+            follow(pos, accessInfo, whoRef, bFollow = false, callback = unfollowCompleteCallback)
+        else ->
+            follow(pos, accessInfo, whoRef, bFollow = true, callback = followCompleteCallback)
     }
 }
+
+fun ActMain.clickFollowRequestAccept(accessInfo: SavedAccount, whoRef: TootAccountRef?, accept: Boolean) {
+    val who = whoRef?.get() ?: return
+    DlgConfirm.openSimple(
+        this,
+        getString(
+            if (accept) R.string.follow_accept_confirm else R.string.follow_deny_confirm,
+            AcctColor.getNickname(accessInfo, who)
+        )
+    ) {
+        followRequestAuthorize(accessInfo, whoRef, accept)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun ActMain.follow(
     pos: Int,

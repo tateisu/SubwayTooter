@@ -43,7 +43,7 @@ private fun addLinkAndCaption(
 
 fun ItemViewHolder.showPreviewCard(status: TootStatus) {
 
-    if (Pref.bpDontShowPreviewCard(activity.pref)) return
+    if (PrefB.bpDontShowPreviewCard(activity.pref)) return
 
     val card = status.card ?: return
 
@@ -107,7 +107,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
         if (description != null && description.isNotEmpty()) {
             if (sb.isNotEmpty()) sb.append("<br>")
 
-            val limit = Pref.spCardDescriptionLength.toInt(activity.pref)
+            val limit = PrefS.spCardDescriptionLength.toInt(activity.pref)
 
             sb.append(
                 HTMLDecoder.encodeEntity(

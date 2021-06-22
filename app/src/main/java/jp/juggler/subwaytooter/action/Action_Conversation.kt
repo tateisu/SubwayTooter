@@ -1,16 +1,10 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ColumnType
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.subwaytooter.api.entity.TootConversationSummary
-import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.findStatus
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
@@ -19,6 +13,77 @@ import jp.juggler.util.*
 import java.util.*
 
 private val log = LogCategory("Action_Conversation")
+
+fun ActMain.clickConversation(
+    pos: Int,
+    accessInfo: SavedAccount,
+
+    // optional. 未読表示のクリアに使う
+    listAdapter: ItemListAdapter? = null,
+
+    // どちらか非nullであること
+    status: TootStatus? = null,
+    summary: TootConversationSummary? = null,
+) {
+    // 未読クリアと表示の更新
+    (summary ?: status?.conversationSummary)?.let {
+        if (conversationUnreadClear(accessInfo, it)) {
+            listAdapter?.notifyChange(
+                reason = "ConversationSummary reset unread",
+                reset = true
+            )
+        }
+    }
+    // 会話カラムを開く
+    (status ?: summary?.last_status)?.let {
+        conversation(pos, accessInfo, it)
+    }
+}
+
+// プレビューカードのイメージは返信かもしれない
+fun ActMain.clickCardImage(pos: Int, accessInfo: SavedAccount, card: TootCard?, longClick: Boolean = false) {
+    card ?: return
+    card.originalStatus?.let {
+        if (longClick) {
+            conversationOtherInstance(pos, it)
+        } else {
+            conversation(pos, accessInfo, it)
+        }
+        return
+    }
+    card.url?.notEmpty()?.let {
+        openCustomTab(this, pos, it, accessInfo = accessInfo)
+    }
+}
+
+// 「～からの返信」の表記を押した
+fun ActMain.clickReplyInfo(
+    pos: Int,
+    accessInfo: SavedAccount,
+    columnType: ColumnType,
+    statusReply: TootStatus?,
+    statusShowing: TootStatus?,
+    longClick: Boolean = false,
+    contextMenuOpener: ActMain.(status: TootStatus) -> Unit = {},
+) {
+    when {
+        statusReply != null ->
+            if (longClick) {
+                contextMenuOpener(this, statusReply)
+            } else {
+                conversation(pos, accessInfo, statusReply)
+            }
+
+        // tootsearchは返信元のIDを取得するのにひと手間必要
+        columnType == ColumnType.SEARCH_TS ||
+            columnType == ColumnType.SEARCH_NOTESTOCK ->
+            conversationFromTootsearch(pos, statusShowing)
+
+        else ->
+            statusShowing?.in_reply_to_id
+                ?.let { conversationLocal(pos, accessInfo, it) }
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // open conversation

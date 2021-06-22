@@ -269,7 +269,7 @@ object AppDataExporter {
                 continue
             }
 
-            when (val prefItem = Pref.map[k]) {
+            when (val prefItem = BasePref.allPref[k]) {
                 is BooleanPref -> e.putBoolean(k, reader.nextBoolean())
                 is IntPref -> e.putInt(k, reader.nextInt())
                 is LongPref -> e.putLong(k, reader.nextLong())
@@ -395,10 +395,10 @@ object AppDataExporter {
         }
 
         run {
-            val old_id = Pref.lpTabletTootDefaultAccount(app_state.pref)
+            val old_id = PrefL.lpTabletTootDefaultAccount(app_state.pref)
             if (old_id != -1L) {
                 val new_id = account_id_map[old_id]
-                app_state.pref.edit().put(Pref.lpTabletTootDefaultAccount, new_id ?: -1L).apply()
+                app_state.pref.edit().put(PrefL.lpTabletTootDefaultAccount, new_id ?: -1L).apply()
             }
         }
 

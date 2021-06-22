@@ -61,22 +61,12 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         return
     }
     lastAnnouncementShown = SystemClock.elapsedRealtime()
-
-    fun clearExtras() {
-        for (invalidator in extraInvalidatorList) {
-            invalidator.register(null)
-        }
-        extraInvalidatorList.clear()
-    }
     llAnnouncementExtra.removeAllViews()
     clearExtras()
 
     val listShown = TootAnnouncement.filterShown(column.announcements)
     if (listShown?.isEmpty() != false) {
-        btnAnnouncements.vg(false)
-        llAnnouncementsBox.vg(false)
-        btnAnnouncementsBadge.vg(false)
-        llColumnHeader.invalidate()
+        showAnnouncementsEmpty()
         return
     }
 
@@ -97,15 +87,41 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         return
     }
 
-    val contentColor = column.getContentColor()
-
     val item = listShown.find { it.id == column.announcementId }
         ?: listShown[0]
 
     val itemIndex = listShown.indexOf(item)
 
     val enablePaging = listShown.size > 1
+    val contentColor = column.getContentColor()
 
+    showAnnouncementColors(expand, enablePaging, contentColor)
+    showAnnouncementFonts()
+
+    tvAnnouncementsIndex.vg(expand)?.text =
+        activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
+
+    llAnnouncements.vg(expand)
+
+    showAnnouncementContent(item, contentColor)
+    showReactionBox(column, item, contentColor)
+}
+
+private fun ColumnViewHolder.clearExtras() {
+    for (invalidator in extraInvalidatorList) {
+        invalidator.register(null)
+    }
+    extraInvalidatorList.clear()
+}
+
+private fun ColumnViewHolder.showAnnouncementsEmpty() {
+    btnAnnouncements.vg(false)
+    llAnnouncementsBox.vg(false)
+    btnAnnouncementsBadge.vg(false)
+    llColumnHeader.invalidate()
+}
+
+private fun ColumnViewHolder.showAnnouncementColors(expand: Boolean, enablePaging: Boolean, contentColor: Int) {
     val alphaPrevNext = if (enablePaging) 1f else 0.3f
 
     setIconDrawableId(
@@ -134,7 +150,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     tvAnnouncementsCaption.textColor = contentColor
     tvAnnouncementsIndex.textColor = contentColor
     tvAnnouncementPeriod.textColor = contentColor
+}
 
+private fun ColumnViewHolder.showAnnouncementFonts() {
     val f = activity.timelineFontSizeSp
     if (!f.isNaN()) {
         tvAnnouncementsCaption.textSize = f
@@ -152,11 +170,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     tvAnnouncementsIndex.typeface = fontNormal
     tvAnnouncementPeriod.typeface = fontNormal
     tvAnnouncementContent.typeface = fontNormal
+}
 
-    tvAnnouncementsIndex.vg(expand)?.text =
-        activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
-    llAnnouncements.vg(expand)
-
+private fun ColumnViewHolder.showAnnouncementContent(item: TootAnnouncement, contentColor: Int) {
     var periods: StringBuilder? = null
     fun String.appendPeriod() {
         val sb = periods
@@ -168,14 +184,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         }
     }
 
-    val (strStart, strEnd) = TootStatus.formatTimeRange(
-        item.starts_at,
-        item.ends_at,
-        item.all_day
-    )
+    val (strStart, strEnd) = TootStatus.formatTimeRange(item.starts_at, item.ends_at, item.all_day)
 
     when {
-
         // no periods.
         strStart == "" && strEnd == "" -> {
         }
@@ -199,19 +210,23 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
 
     val sb = periods
     tvAnnouncementPeriod.vg(sb != null)?.text = sb
-
     tvAnnouncementContent.textColor = contentColor
     tvAnnouncementContent.text = item.decoded_content
-    tvAnnouncementContent.tag = this@showAnnouncements
+    tvAnnouncementContent.tag = this
     announcementContentInvalidator.register(item.decoded_content)
+}
 
+private fun ColumnViewHolder.showReactionBox(
+    column: Column,
+    item: TootAnnouncement,
+    contentColor: Int,
+) {
     // リアクションの表示
 
     val density = activity.density
 
     val buttonHeight = ActMain.boostButtonSize
     val marginBetween = (buttonHeight.toFloat() * 0.2f + 0.5f).toInt()
-    val marginBottom = (buttonHeight.toFloat() * 0.2f + 0.5f).toInt()
 
     val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
     val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
@@ -226,133 +241,153 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
             topMargin = (0.5f + density * 3f).toInt()
         }
     }
-
     // +ボタン
-    run {
-        val b = ImageButton(activity)
-        val blp = FlexboxLayout.LayoutParams(
-            buttonHeight,
-            buttonHeight
-        ).apply {
-            bottomMargin = marginBottom
-            endMargin = marginBetween
-        }
-        b.layoutParams = blp
-        b.background = ContextCompat.getDrawable(
-            activity,
-            R.drawable.btn_bg_transparent_round6dp
-        )
-
-        b.contentDescription = activity.getString(R.string.reaction_add)
-        b.scaleType = ImageView.ScaleType.FIT_CENTER
-        b.padding = paddingV
-        b.setOnClickListener {
-            reactionAdd(item, null)
-        }
-
-        setIconDrawableId(
-            activity,
-            b,
-            R.drawable.ic_add,
-            color = contentColor,
-            alphaMultiplier = 1f
-        )
-
-        box.addView(b)
-    }
-    val reactions = item.reactions?.filter { it.count > 0L }?.notEmpty()
-    if (reactions != null) {
-
-        var lastButton: View? = null
-
-        val options = DecodeOptions(
-            activity,
-            column.accessInfo,
-            decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            mentionDefaultHostDomain = column.accessInfo
-        )
-
-        val actMain = activity
-        val disableEmojiAnimation = Pref.bpDisableEmojiAnimation(actMain.pref)
-
-        for (reaction in reactions) {
-
-            val url = if (disableEmojiAnimation) {
-                reaction.staticUrl.notEmpty() ?: reaction.url.notEmpty()
-            } else {
-                reaction.url.notEmpty() ?: reaction.staticUrl.notEmpty()
-            }
-
-            val b = Button(activity).also { btn ->
-                btn.layoutParams = FlexboxLayout.LayoutParams(
-                    FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                    buttonHeight
-                ).apply {
-                    endMargin = marginBetween
-                    bottomMargin = marginBottom
-                }
-                btn.minWidthCompat = buttonHeight
-
-                btn.allCaps = false
-                btn.tag = reaction
-
-                btn.background = if (reaction.me) {
-                    getAdaptiveRippleDrawableRound(
-                        actMain,
-                        actMain.attrColor(R.attr.colorButtonBgCw),
-                        actMain.attrColor(R.attr.colorRippleEffect)
-                    )
-                } else {
-                    ContextCompat.getDrawable(actMain, R.drawable.btn_bg_transparent_round6dp)
-                }
-
-                btn.setTextColor(contentColor)
-
-                btn.setPadding(paddingH, paddingV, paddingH, paddingV)
-
-                btn.text = if (url == null) {
-                    EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
-                } else {
-                    SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
-                        sb.setSpan(
-                            NetworkEmojiSpan(url, scale = 1.5f),
-                            0,
-                            reaction.name.length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        val invalidator =
-                            NetworkEmojiInvalidator(actMain.handler, btn)
-                        invalidator.register(sb)
-                        extraInvalidatorList.add(invalidator)
-                    }
-                }
-
-                btn.setOnClickListener {
-                    if (reaction.me) {
-                        reactionRemove(item, reaction.name)
-                    } else {
-                        reactionAdd(item, TootReaction.parseFedibird(jsonObject {
-                            put("name", reaction.name)
-                            put("count", 1)
-                            put("me", true)
-                            putNotNull("url", reaction.url)
-                            putNotNull("static_url", reaction.staticUrl)
-                        }))
-                    }
-                }
-            }
-            box.addView(b)
-            lastButton = b
-        }
-
-        lastButton
-            ?.layoutParams
-            ?.cast<ViewGroup.MarginLayoutParams>()
-            ?.endMargin = 0
-    }
-
+    showReactionPlus(box, item, buttonHeight, marginBetween, contentColor, paddingV)
+    item.reactions?.filter { it.count > 0L }
+        ?.notEmpty()
+        ?.let { showReactions(box, item, it, column, buttonHeight, marginBetween, contentColor, paddingH, paddingV) }
     llAnnouncementExtra.addView(box)
+}
+
+private fun ColumnViewHolder.showReactionPlus(
+    box: FlexboxLayout,
+    item: TootAnnouncement,
+    buttonHeight: Int,
+    marginBetween: Int,
+    contentColor: Int,
+    paddingV: Int,
+) {
+    val b = ImageButton(activity)
+    val blp = FlexboxLayout.LayoutParams(
+        buttonHeight,
+        buttonHeight
+    ).apply {
+        bottomMargin = marginBottom
+        endMargin = marginBetween
+    }
+    b.layoutParams = blp
+    b.background = ContextCompat.getDrawable(
+        activity,
+        R.drawable.btn_bg_transparent_round6dp
+    )
+
+    b.contentDescription = activity.getString(R.string.reaction_add)
+    b.scaleType = ImageView.ScaleType.FIT_CENTER
+    b.padding = paddingV
+    b.setOnClickListener {
+        reactionAdd(item, null)
+    }
+
+    setIconDrawableId(
+        activity,
+        b,
+        R.drawable.ic_add,
+        color = contentColor,
+        alphaMultiplier = 1f
+    )
+
+    box.addView(b)
+}
+
+private fun ColumnViewHolder.showReactions(
+    box: FlexboxLayout,
+    item: TootAnnouncement,
+    reactions: List<TootReaction>,
+    column: Column,
+    buttonHeight: Int,
+    marginBetween: Int,
+    contentColor: Int,
+    paddingH: Int,
+    paddingV: Int,
+) {
+
+    var lastButton: View? = null
+
+    val options = DecodeOptions(
+        activity,
+        column.accessInfo,
+        decodeEmoji = true,
+        enlargeEmoji = 1.5f,
+        mentionDefaultHostDomain = column.accessInfo
+    )
+
+    val actMain = activity
+    val disableEmojiAnimation = PrefB.bpDisableEmojiAnimation(actMain.pref)
+
+    for (reaction in reactions) {
+
+        val url = if (disableEmojiAnimation) {
+            reaction.staticUrl.notEmpty() ?: reaction.url.notEmpty()
+        } else {
+            reaction.url.notEmpty() ?: reaction.staticUrl.notEmpty()
+        }
+
+        val b = Button(activity).also { btn ->
+            btn.layoutParams = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                buttonHeight
+            ).apply {
+                endMargin = marginBetween
+                bottomMargin = marginBottom
+            }
+            btn.minWidthCompat = buttonHeight
+
+            btn.allCaps = false
+            btn.tag = reaction
+
+            btn.background = if (reaction.me) {
+                getAdaptiveRippleDrawableRound(
+                    actMain,
+                    actMain.attrColor(R.attr.colorButtonBgCw),
+                    actMain.attrColor(R.attr.colorRippleEffect)
+                )
+            } else {
+                ContextCompat.getDrawable(actMain, R.drawable.btn_bg_transparent_round6dp)
+            }
+
+            btn.setTextColor(contentColor)
+
+            btn.setPadding(paddingH, paddingV, paddingH, paddingV)
+
+            btn.text = if (url == null) {
+                EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
+            } else {
+                SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
+                    sb.setSpan(
+                        NetworkEmojiSpan(url, scale = 1.5f),
+                        0,
+                        reaction.name.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    val invalidator =
+                        NetworkEmojiInvalidator(actMain.handler, btn)
+                    invalidator.register(sb)
+                    extraInvalidatorList.add(invalidator)
+                }
+            }
+
+            btn.setOnClickListener {
+                if (reaction.me) {
+                    reactionRemove(item, reaction.name)
+                } else {
+                    reactionAdd(item, TootReaction.parseFedibird(jsonObject {
+                        put("name", reaction.name)
+                        put("count", 1)
+                        put("me", true)
+                        putNotNull("url", reaction.url)
+                        putNotNull("static_url", reaction.staticUrl)
+                    }))
+                }
+            }
+        }
+        box.addView(b)
+        lastButton = b
+    }
+
+    lastButton
+        ?.layoutParams
+        ?.cast<ViewGroup.MarginLayoutParams>()
+        ?.endMargin = 0
 }
 
 fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) {

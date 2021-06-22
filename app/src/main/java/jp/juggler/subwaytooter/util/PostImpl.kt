@@ -4,7 +4,7 @@ import android.os.SystemClock
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -131,7 +131,6 @@ class PostImpl(
             return false
         }
 
-
         return true
     }
 
@@ -156,7 +155,7 @@ class PostImpl(
             return false
         }
 
-        if (!bConfirmTagCharacter && Pref.bpWarnHashtagAsciiAndNonAscii(App1.pref)) {
+        if (!bConfirmTagCharacter && PrefB.bpWarnHashtagAsciiAndNonAscii(App1.pref)) {
             val tags = TootTag.findHashtags(content, account.isMisskey)
             val badTags = tags
                 ?.filter {
@@ -565,7 +564,7 @@ class PostImpl(
 
                 val requestBuilder = bodyString.toRequestBody(MEDIA_TYPE_JSON).toPost()
 
-                if (!Pref.bpDontDuplicationCheck(App1.pref)) {
+                if (!PrefB.bpDontDuplicationCheck(App1.pref)) {
                     val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
                     requestBuilder.header("Idempotency-Key", digest)
                 }

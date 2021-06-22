@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.ColumnType
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -13,6 +14,15 @@ import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.encodePercent
 import jp.juggler.util.launchMain
 import java.util.*
+
+fun ActMain.longClickTootTag(pos: Int, accessInfo: SavedAccount, item: TootTag) {
+    tagTimelineFromAccount(
+        pos = pos,
+        url = "https://${accessInfo.apiHost.ascii}/tags/${item.name.encodePercent()}",
+        host = accessInfo.apiHost,
+        tagWithoutSharp = item.name
+    )
+}
 
 // ハッシュタグへの操作を選択する
 fun ActMain.tagDialog(

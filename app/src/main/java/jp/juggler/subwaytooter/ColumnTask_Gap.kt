@@ -112,12 +112,11 @@ class ColumnTask_Gap(
                 return
             }
 
-            val iv = if (isHead) {
-                Pref.ipGapHeadScrollPosition
-            } else {
-                Pref.ipGapTailScrollPosition
+            val iv = when {
+                isHead -> PrefI.ipGapHeadScrollPosition
+                else -> PrefI.ipGapTailScrollPosition
             }.invoke(pref)
-            val scrollHead = iv == Pref.GSP_HEAD
+            val scrollHead = iv == PrefI.GSP_HEAD
 
             if (scrollHead) {
                 // ギャップを頭から読んだ場合、スクロール位置の調整は不要

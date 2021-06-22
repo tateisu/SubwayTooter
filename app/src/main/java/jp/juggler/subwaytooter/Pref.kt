@@ -12,12 +12,17 @@ fun Context.pref(): SharedPreferences =
 @Suppress("EqualsOrHashCode")
 abstract class BasePref<T>(val key: String, val defVal: T) {
 
+    companion object {
+        // キー名と設定項目のマップ。インポートやアプリ設定で使う
+        val allPref = HashMap<String, BasePref<*>>()
+    }
+
     init {
         when {
-            Pref.map[key] != null -> error("Preference key duplicate: $key")
+            allPref[key] != null -> error("Preference key duplicate: $key")
             else -> {
                 @Suppress("LeakingThis")
-                Pref.map[key] = this
+                allPref[key] = this
             }
         }
     }
@@ -122,11 +127,7 @@ fun SharedPreferences.Editor.put(item: LongPref, v: Long) =
 fun SharedPreferences.Editor.put(item: FloatPref, v: Float) =
     this.apply { item.put(this, v) }
 
-object Pref {
-
-    // キー名と設定項目のマップ。インポートやアプリ設定で使う
-    val map = HashMap<String, BasePref<*>>()
-
+object PrefB {
     // boolean
 
     val bpDisableEmojiAnimation = BooleanPref(
@@ -461,7 +462,9 @@ object Pref {
         "ManyWindowPost",
         false
     )
+}
 
+object PrefI {
     // int
 
     val ipBackButtonAction = IntPref("back_button_action", 0)
@@ -481,6 +484,7 @@ object Pref {
 
     @Suppress("unused")
     const val RC_NONE = 2
+
     val ipRepliesCount = IntPref("RepliesCount", RC_SIMPLE)
     val ipBoostsCount = IntPref("BoostsCount", RC_ACTUAL)
     val ipFavouritesCount = IntPref("FavouritesCount", RC_ACTUAL)
@@ -498,13 +502,7 @@ object Pref {
     const val VS_MISSKEY = 2
     val ipVisibilityStyle = IntPref("ipVisibilityStyle", VS_BY_ACCOUNT)
 
-    const val ABP_TOP = 0
-
-    @Suppress("unused")
-    const val ABP_BOTTOM = 1
-    const val ABP_START = 2
-    const val ABP_END = 3
-    val ipAdditionalButtonsPosition = IntPref("AdditionalButtonsPosition", ABP_END)
+    val ipAdditionalButtonsPosition = IntPref("AdditionalButtonsPosition", AdditionalButtonsPosition.End.idx)
 
     val ipFooterButtonBgColor = IntPref("footer_button_bg_color", 0)
     val ipFooterButtonFgColor = IntPref("footer_button_fg_color", 0)
@@ -574,6 +572,9 @@ object Pref {
     //	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
     //	const val TTCS_WEEKLY = 0
     //	const val TTCS_DAILY = 1
+}
+
+object PrefS {
 
     // string
     val spColumnWidth = StringPref("ColumnWidth", "")
@@ -620,17 +621,21 @@ object Pref {
     val spWebBrowser = StringPref("WebBrowser", "")
 
     val spTimelineSpacing = StringPref("TimelineSpacing", "")
+}
+
+object PrefL {
 
     // long
     val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", -1L)
+}
 
+object PrefF {
     // float
 
     val fpTimelineFontSize = FloatPref("timeline_font_size", Float.NaN)
     val fpAcctFontSize = FloatPref("acct_font_size", Float.NaN)
     val fpNotificationTlFontSize = FloatPref("notification_tl_font_size", Float.NaN)
     val fpHeaderTextSize = FloatPref("HeaderTextSize", Float.NaN)
-
     internal const val default_timeline_font_size = 14f
     internal const val default_acct_font_size = 12f
     internal const val default_notification_tl_font_size = 14f

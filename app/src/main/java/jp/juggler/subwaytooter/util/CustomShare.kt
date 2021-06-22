@@ -5,7 +5,7 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -38,22 +38,22 @@ object CustomShare {
         val defaultComponentName: String?
         when (target) {
             CustomShareTarget.Translate -> {
-                src = Pref.spTranslateAppComponent(pref)
+                src = PrefS.spTranslateAppComponent(pref)
                 defaultComponentName = translate_app_component_default
             }
 
             CustomShareTarget.CustomShare1 -> {
-                src = Pref.spCustomShare1(pref)
+                src = PrefS.spCustomShare1(pref)
                 defaultComponentName = null
             }
 
             CustomShareTarget.CustomShare2 -> {
-                src = Pref.spCustomShare2(pref)
+                src = PrefS.spCustomShare2(pref)
                 defaultComponentName = null
             }
 
             CustomShareTarget.CustomShare3 -> {
-                src = Pref.spCustomShare3(pref)
+                src = PrefS.spCustomShare3(pref)
                 defaultComponentName = null
             }
         }

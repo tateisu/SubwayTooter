@@ -84,7 +84,7 @@ class ActPost : AppCompatActivity(),
         internal const val KEY_REPLY_STATUS = "reply_status"
         internal const val KEY_REDRAFT_STATUS = "redraft_status"
         internal const val KEY_INITIAL_TEXT = "initial_text"
-        internal const val KEY_SENT_INTENT = "sent_intent"
+        internal const val KEY_SHARED_INTENT = "sent_intent"
         internal const val KEY_QUOTE = "quote"
         internal const val KEY_SCHEDULED_STATUS = "scheduled_status"
 
@@ -356,7 +356,7 @@ class ActPost : AppCompatActivity(),
             }
 
             if (sharedIntent != null) {
-                putExtra(KEY_SENT_INTENT, sharedIntent)
+                putExtra(KEY_SHARED_INTENT, sharedIntent)
             }
 
             if (scheduledStatus != null) {
@@ -740,7 +740,7 @@ class ActPost : AppCompatActivity(),
         setContentView(R.layout.act_post)
         App1.initEdgeToEdge(this)
 
-        if (Pref.bpPostButtonBarTop(this)) {
+        if (PrefB.bpPostButtonBarTop(this)) {
             val bar = findViewById<View>(R.id.llFooterBar)
             val parent = bar.parent as ViewGroup
             parent.removeView(bar)
@@ -2061,7 +2061,7 @@ class ActPost : AppCompatActivity(),
                     }
                     lastAttachmentComplete = now
 
-                    if (Pref.bpAppendAttachmentUrlToContent(pref)) {
+                    if (PrefB.bpAppendAttachmentUrlToContent(pref)) {
                         // 投稿欄の末尾に追記する
                         val selStart = etContent.selectionStart
                         val selEnd = etContent.selectionEnd
@@ -3046,13 +3046,42 @@ class ActPost : AppCompatActivity(),
             accountList.find { it.db_id == accountDbId }?.let { selectAccount(it) }
         }
 
-        val sentIntent = intent.getParcelableExtra<Intent>(KEY_SENT_INTENT)
-        if (sentIntent != null) {
+        val sharedIntent = intent.getParcelableExtra<Intent>(KEY_SHARED_INTENT)
+        if (sharedIntent != null) {
+            initializeFromSharedIntent(sharedIntent)
+        }
 
-            val hasUri = when (sentIntent.action) {
+        appendContentText(intent.getStringExtra(KEY_INITIAL_TEXT))
+
+        val account = this.account
+
+        if (account != null) {
+            intent.getStringExtra(KEY_REPLY_STATUS)
+                ?.let { initializeFromReplyStatus(account, it) }
+        }
+
+        appendContentText(account?.default_text, selectBefore = true)
+        cbNSFW.isChecked = account?.default_sensitive ?: false
+
+        if (account != null) {
+            // 再編集
+            intent.getStringExtra(KEY_REDRAFT_STATUS)
+                ?.let { initializeFromRedraftStatus(account, it) }
+
+            // 予約編集の再編集
+            intent.getStringExtra(KEY_SCHEDULED_STATUS)
+                ?.let { initializeFromScheduledStatus(account, it) }
+        }
+
+        afterUpdateText()
+    }
+
+    private fun initializeFromSharedIntent(sharedIntent: Intent) {
+        try {
+            val hasUri = when (sharedIntent.action) {
                 Intent.ACTION_VIEW -> {
-                    val uri = sentIntent.data
-                    val type = sentIntent.type
+                    val uri = sharedIntent.data
+                    val type = sharedIntent.type
                     if (uri != null) {
                         addAttachment(uri, type)
                         true
@@ -3062,8 +3091,8 @@ class ActPost : AppCompatActivity(),
                 }
 
                 Intent.ACTION_SEND -> {
-                    val uri = sentIntent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                    val type = sentIntent.type
+                    val uri = sharedIntent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                    val type = sharedIntent.type
                     if (uri != null) {
                         addAttachment(uri, type)
                         true
@@ -3074,7 +3103,7 @@ class ActPost : AppCompatActivity(),
 
                 Intent.ACTION_SEND_MULTIPLE -> {
                     val listUri =
-                        sentIntent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                        sharedIntent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
                             ?.filterNotNull()
                     if (listUri?.isNotEmpty() == true) {
                         for (uri in listUri) {
@@ -3089,279 +3118,262 @@ class ActPost : AppCompatActivity(),
                 else -> false
             }
 
-            if (!hasUri || !Pref.bpIgnoreTextInSharedMedia(pref)) {
-                appendContentText(sentIntent)
+            if (!hasUri || !PrefB.bpIgnoreTextInSharedMedia(pref)) {
+                appendContentText(sharedIntent)
             }
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
+    }
 
-        appendContentText(intent.getStringExtra(KEY_INITIAL_TEXT))
+    private fun initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
+        try {
+            val replyStatus =
+                TootParser(this@ActPost, account).status(jsonText.decodeJsonObject())
+                    ?: error("initializeFromReplyStatus: parse failed.")
 
-        val account = this.account
+            val isQuote = intent.getBooleanExtra(KEY_QUOTE, false)
+            if (isQuote) {
+                cbQuote.isChecked = true
 
-        var sv = intent.getStringExtra(KEY_REPLY_STATUS)
-        if (sv != null && account != null) {
+                // 引用リノートはCWやメンションを引き継がない
+            } else {
+
+                // CW をリプライ元に合わせる
+                if (replyStatus.spoiler_text.isNotEmpty()) {
+                    cbContentWarning.isChecked = true
+                    etContentWarning.setText(replyStatus.spoiler_text)
+                }
+
+                // 新しいメンションリスト
+                val mentionList = ArrayList<Acct>()
+
+                // 自己レス以外なら元レスへのメンションを追加
+                // 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
+                if (!account.isMe(replyStatus.account)) {
+                    mentionList.add(account.getFullAcct(replyStatus.account))
+                }
+
+                // 元レスに含まれていたメンションを複製
+                replyStatus.mentions?.forEach { mention ->
+
+                    val whoAcct = mention.acct
+
+                    // 空データなら追加しない
+                    if (!whoAcct.isValid) return@forEach
+
+                    // 自分なら追加しない
+                    if (account.isMe(whoAcct)) return@forEach
+
+                    // 既出でないなら追加する
+                    val acct = account.getFullAcct(whoAcct)
+                    if (!mentionList.contains(acct)) mentionList.add(acct)
+                }
+
+                if (mentionList.isNotEmpty()) {
+                    appendContentText(
+                        StringBuilder().apply {
+                            for (acct in mentionList) {
+                                if (isNotEmpty()) append(' ')
+                                append("@${acct.ascii}")
+                            }
+                            append(' ')
+                        }.toString()
+                    )
+                }
+            }
+
+            // リプライ表示をつける
+            inReplyToId = replyStatus.id
+            inReplyToText = replyStatus.content
+            inReplyToImage = replyStatus.account.avatar_static
+            inReplyToUrl = replyStatus.url
+
+            // 公開範囲
             try {
-                val replyStatus =
-                    TootParser(this@ActPost, account).status(sv.decodeJsonObject())
+                // 比較する前にデフォルトの公開範囲を計算する
 
-                val isQuote = intent.getBooleanExtra(KEY_QUOTE, false)
+                visibility = visibility
+                    ?: account.visibility
+                //	?: TootVisibility.Public
+                // VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 
-                if (replyStatus != null) {
+                if (visibility == TootVisibility.Unknown) {
+                    visibility = TootVisibility.PrivateFollowers
+                }
 
-                    if (isQuote) {
-                        cbQuote.isChecked = true
+                val sample = when (val base = replyStatus.visibility) {
+                    TootVisibility.Unknown -> TootVisibility.PrivateFollowers
+                    else -> base
+                }
 
-                        // 引用リノートはCWやメンションを引き継がない
-                    } else {
-
-                        // CW をリプライ元に合わせる
-                        if (replyStatus.spoiler_text.isNotEmpty()) {
-                            cbContentWarning.isChecked = true
-                            etContentWarning.setText(replyStatus.spoiler_text)
-                        }
-
-                        // 新しいメンションリスト
-                        val mentionList = ArrayList<Acct>()
-
-                        // 自己レス以外なら元レスへのメンションを追加
-                        // 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
-                        if (!account.isMe(replyStatus.account)) {
-                            mentionList.add(account.getFullAcct(replyStatus.account))
-                        }
-
-                        // 元レスに含まれていたメンションを複製
-                        replyStatus.mentions?.forEach { mention ->
-
-                            val whoAcct = mention.acct
-
-                            // 空データなら追加しない
-                            if (!whoAcct.isValid) return@forEach
-
-                            // 自分なら追加しない
-                            if (account.isMe(whoAcct)) return@forEach
-
-                            // 既出でないなら追加する
-                            val acct = account.getFullAcct(whoAcct)
-                            if (!mentionList.contains(acct)) mentionList.add(acct)
-                        }
-
-                        if (mentionList.isNotEmpty()) {
-                            appendContentText(
-                                StringBuilder().apply {
-                                    for (acct in mentionList) {
-                                        if (isNotEmpty()) append(' ')
-                                        append("@${acct.ascii}")
-                                    }
-                                    append(' ')
-                                }.toString()
-                            )
-                        }
-                    }
-
-                    // リプライ表示をつける
-                    inReplyToId = replyStatus.id
-                    inReplyToText = replyStatus.content
-                    inReplyToImage = replyStatus.account.avatar_static
-                    inReplyToUrl = replyStatus.url
-
-                    // 公開範囲
-                    try {
-                        // 比較する前にデフォルトの公開範囲を計算する
-
-                        visibility = visibility
-                            ?: account.visibility
-                        //	?: TootVisibility.Public
-                        // VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
-
-                        if (visibility == TootVisibility.Unknown) {
-                            visibility = TootVisibility.PrivateFollowers
-                        }
-
-                        val sample = when (val base = replyStatus.visibility) {
-                            TootVisibility.Unknown -> TootVisibility.PrivateFollowers
-                            else -> base
-                        }
-
-                        if (TootVisibility.WebSetting == visibility) {
-                            // 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
-                            this.visibility = sample
-                        } else if (TootVisibility.isVisibilitySpoilRequired(
-                                this.visibility, sample
-                            )
-                        ) {
-                            // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
-                            this.visibility = sample
-                        }
-                    } catch (ex: Throwable) {
-                        log.trace(ex)
-                    }
+                if (TootVisibility.WebSetting == visibility) {
+                    // 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
+                    this.visibility = sample
+                } else if (TootVisibility.isVisibilitySpoilRequired(
+                        this.visibility, sample
+                    )
+                ) {
+                    // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
+                    this.visibility = sample
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
+    }
 
-        appendContentText(account?.default_text, selectBefore = true)
+    private fun initializeFromRedraftStatus(account: SavedAccount, jsonText: String) {
+        try {
+            val baseStatus =
+                TootParser(this@ActPost, account).status(jsonText.decodeJsonObject())
+                    ?: error("initializeFromRedraftStatus: parse failed.")
 
-        cbNSFW.isChecked = account?.default_sensitive ?: false
+            redraftStatusId = baseStatus.id
 
-        // 再編集
-        sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
-        if (sv != null && account != null) {
-            try {
-                val baseStatus =
-                    TootParser(this@ActPost, account).status(sv.decodeJsonObject())
-                if (baseStatus != null) {
+            this.visibility = baseStatus.visibility
 
-                    redraftStatusId = baseStatus.id
-
-                    this.visibility = baseStatus.visibility
-
-                    val srcAttachments = baseStatus.media_attachments
-                    if (srcAttachments?.isNotEmpty() == true) {
-                        updateStateAttachmentList()
-                        this.attachmentList.clear()
-                        try {
-                            for (src in srcAttachments) {
-                                if (src is TootAttachment) {
-                                    src.redraft = true
-                                    val pa = PostAttachment(src)
-                                    pa.status = PostAttachment.STATUS_UPLOADED
-                                    this.attachmentList.add(pa)
-                                }
-                            }
-                        } catch (ex: Throwable) {
-                            log.trace(ex)
+            val srcAttachments = baseStatus.media_attachments
+            if (srcAttachments?.isNotEmpty() == true) {
+                updateStateAttachmentList()
+                this.attachmentList.clear()
+                try {
+                    for (src in srcAttachments) {
+                        if (src is TootAttachment) {
+                            src.redraft = true
+                            val pa = PostAttachment(src)
+                            pa.status = PostAttachment.STATUS_UPLOADED
+                            this.attachmentList.add(pa)
                         }
                     }
+                } catch (ex: Throwable) {
+                    log.trace(ex)
+                }
+            }
 
-                    cbNSFW.isChecked = baseStatus.sensitive == true
+            cbNSFW.isChecked = baseStatus.sensitive == true
 
-                    // 再編集の場合はdefault_textは反映されない
+            // 再編集の場合はdefault_textは反映されない
 
-                    val decodeOptions = DecodeOptions(
-                        this,
-                        mentionFullAcct = true,
-                        mentions = baseStatus.mentions,
-                        mentionDefaultHostDomain = account
+            val decodeOptions = DecodeOptions(
+                this,
+                mentionFullAcct = true,
+                mentions = baseStatus.mentions,
+                mentionDefaultHostDomain = account
+            )
+
+            var text: CharSequence = if (account.isMisskey) {
+                baseStatus.content ?: ""
+            } else {
+                decodeOptions.decodeHTML(baseStatus.content)
+            }
+            etContent.setText(text)
+            etContent.setSelection(text.length)
+
+            text = decodeOptions.decodeEmoji(baseStatus.spoiler_text)
+            etContentWarning.setText(text)
+            etContentWarning.setSelection(text.length)
+            cbContentWarning.isChecked = text.isNotEmpty()
+
+            val srcEnquete = baseStatus.enquete
+            val srcItems = srcEnquete?.items
+            when {
+                srcItems == null -> {
+                    //
+                }
+
+                srcEnquete.pollType == TootPollsType.FriendsNico &&
+                    srcEnquete.type != TootPolls.TYPE_ENQUETE -> {
+                    // フレニコAPIのアンケート結果は再編集の対象外
+                }
+
+                else -> {
+                    spEnquete.setSelection(
+                        if (srcEnquete.pollType == TootPollsType.FriendsNico) {
+                            2
+                        } else {
+                            1
+                        }
                     )
-
-                    var text: CharSequence = if (account.isMisskey) {
-                        baseStatus.content ?: ""
-                    } else {
-                        decodeOptions.decodeHTML(baseStatus.content)
-                    }
-                    etContent.setText(text)
+                    text = decodeOptions.decodeHTML(srcEnquete.question)
+                    etContent.text = text
                     etContent.setSelection(text.length)
 
-                    text = decodeOptions.decodeEmoji(baseStatus.spoiler_text)
-                    etContentWarning.setText(text)
-                    etContentWarning.setSelection(text.length)
-                    cbContentWarning.isChecked = text.isNotEmpty()
-
-                    val srcEnquete = baseStatus.enquete
-                    val srcItems = srcEnquete?.items
-                    when {
-                        srcItems == null -> {
-                            //
-                        }
-
-                        srcEnquete.pollType == TootPollsType.FriendsNico && srcEnquete.type != TootPolls.TYPE_ENQUETE -> {
-                            // フレニコAPIのアンケート結果は再編集の対象外
-                        }
-
-                        else -> {
-                            spEnquete.setSelection(
-                                if (srcEnquete.pollType == TootPollsType.FriendsNico) {
-                                    2
-                                } else {
-                                    1
+                    var srcIndex = 0
+                    for (et in etChoices) {
+                        if (srcIndex < srcItems.size) {
+                            val choice = srcItems[srcIndex]
+                            when {
+                                srcIndex == srcItems.size - 1 && choice.text == "\uD83E\uDD14" -> {
+                                    // :thinking_face: は再現しない
                                 }
-                            )
-                            text = decodeOptions.decodeHTML(srcEnquete.question)
-                            etContent.text = text
-                            etContent.setSelection(text.length)
 
-                            var srcIndex = 0
-                            loop@ for (et in etChoices) {
-                                if (srcIndex < srcItems.size) {
-                                    val choice = srcItems[srcIndex]
-                                    when {
-                                        srcIndex == srcItems.size - 1 && choice.text == "\uD83E\uDD14" -> {
-                                            // :thinking_face: は再現しない
-                                        }
-
-                                        else -> {
-                                            et.setText(decodeOptions.decodeEmoji(choice.text))
-                                            ++srcIndex
-                                            continue@loop
-                                        }
-                                    }
-                                }
-                                et.setText("")
-                            }
-                        }
-                    }
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-        }
-
-        // 予約編集の再編集
-        sv = intent.getStringExtra(KEY_SCHEDULED_STATUS)
-        if (sv != null && account != null) {
-            try {
-                val item = parseItem(
-                    ::TootScheduled,
-                    TootParser(this@ActPost, account),
-                    sv.decodeJsonObject(),
-                    log
-                )
-                if (item != null) {
-                    scheduledStatus = item
-
-                    timeSchedule = item.timeScheduledAt
-
-                    val text = item.text
-                    etContent.setText(text)
-
-                    val cw = item.spoilerText
-                    if (cw?.isNotEmpty() == true) {
-                        etContentWarning.setText(cw)
-                        cbContentWarning.isChecked = true
-                    } else {
-                        cbContentWarning.isChecked = false
-                    }
-                    visibility = item.visibility
-
-                    // 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
-                    // 2019/1/22 https://github.com/tootsuite/mastodon/pull/9894 で直った。
-                    val srcAttachments = item.mediaAttachments
-                    if (srcAttachments?.isNotEmpty() == true) {
-                        updateStateAttachmentList()
-                        this.attachmentList.clear()
-                        try {
-                            for (src in srcAttachments) {
-                                if (src is TootAttachment) {
-                                    src.redraft = true
-                                    val pa = PostAttachment(src)
-                                    pa.status = PostAttachment.STATUS_UPLOADED
-                                    this.attachmentList.add(pa)
+                                else -> {
+                                    et.setText(decodeOptions.decodeEmoji(choice.text))
+                                    ++srcIndex
+                                    continue
                                 }
                             }
-                        } catch (ex: Throwable) {
-                            log.trace(ex)
+                        }
+                        et.setText("")
+                    }
+                }
+            }
+        } catch (ex: Throwable) {
+            log.trace(ex)
+        }
+    }
+
+    private fun initializeFromScheduledStatus(account: SavedAccount, jsonText: String) {
+        try {
+            val item = parseItem(
+                ::TootScheduled,
+                TootParser(this@ActPost, account),
+                jsonText.decodeJsonObject(),
+                log
+            ) ?: error("initializeFromScheduledStatus: parse failed.")
+
+            scheduledStatus = item
+
+            timeSchedule = item.timeScheduledAt
+
+            val text = item.text
+            etContent.setText(text)
+
+            val cw = item.spoilerText
+            if (cw?.isNotEmpty() == true) {
+                etContentWarning.setText(cw)
+                cbContentWarning.isChecked = true
+            } else {
+                cbContentWarning.isChecked = false
+            }
+            visibility = item.visibility
+
+            // 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
+            // 2019/1/22 https://github.com/tootsuite/mastodon/pull/9894 で直った。
+            val srcAttachments = item.mediaAttachments
+            if (srcAttachments?.isNotEmpty() == true) {
+                updateStateAttachmentList()
+                this.attachmentList.clear()
+                try {
+                    for (src in srcAttachments) {
+                        if (src is TootAttachment) {
+                            src.redraft = true
+                            val pa = PostAttachment(src)
+                            pa.status = PostAttachment.STATUS_UPLOADED
+                            this.attachmentList.add(pa)
                         }
                     }
-                    cbNSFW.isChecked = item.sensitive
+                } catch (ex: Throwable) {
+                    log.trace(ex)
                 }
-            } catch (ex: Throwable) {
-                log.trace(ex)
             }
+            cbNSFW.isChecked = item.sensitive
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
-
-        afterUpdateText()
     }
 
     override fun onMyClickableSpanClicked(viewClicked: View, span: MyClickableSpan) {

@@ -326,7 +326,7 @@ class DlgListMember(
     }
 
     @Suppress("ClassNaming")
-    internal inner class VH_List(view: View) : CompoundButton.OnCheckedChangeListener, ListOnListMemberUpdatedCallback {
+    internal inner class VH_List(view: View) : CompoundButton.OnCheckedChangeListener {
 
         private val cbItem: CheckBox
         private var bBusy: Boolean = false
@@ -368,14 +368,14 @@ class DlgListMember(
             // 状態をサーバに伝える
             val item = this.item ?: return
             if (isChecked) {
-                activity.listMemberAdd(listOwner, item.id, whoLocal, callback = this)
+                activity.listMemberAdd(listOwner, item.id, whoLocal) { willRegistered, bSuccess ->
+                    if (!bSuccess) revokeCheckedChanged(willRegistered)
+                }
             } else {
-                activity.listMemberDelete(listOwner, item.id, whoLocal, this)
+                activity.listMemberDelete(listOwner, item.id, whoLocal) { willRegistered, bSuccess ->
+                    if (!bSuccess) revokeCheckedChanged(willRegistered)
+                }
             }
-        }
-
-        override fun onListMemberUpdated(willRegistered: Boolean, bSuccess: Boolean) {
-            if (!bSuccess) revokeCheckedChanged(willRegistered)
         }
 
         private fun revokeCheckedChanged(willRegistered: Boolean) {

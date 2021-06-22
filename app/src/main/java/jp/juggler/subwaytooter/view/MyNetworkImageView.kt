@@ -23,7 +23,7 @@ import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.util.LogCategory
 import jp.juggler.util.clipRange
 
@@ -80,7 +80,7 @@ class MyNetworkImageView : AppCompatImageView {
 
         mCornerRadius = r
 
-        val gifUrl = if (Pref.bpEnableGifAnimation(pref)) gifUrlArg else null
+        val gifUrl = if (PrefB.bpEnableGifAnimation(pref)) gifUrlArg else null
 
         if (gifUrl?.isNotEmpty() == true) {
             mUrl = gifUrl

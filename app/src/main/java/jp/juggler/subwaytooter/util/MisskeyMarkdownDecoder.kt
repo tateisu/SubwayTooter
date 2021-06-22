@@ -13,7 +13,7 @@ import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.span.*
@@ -860,7 +860,7 @@ object MisskeyMarkdownDecoder {
             // リンク表記はユーザの記述やアプリ設定の影響を受ける
             val caption = "@${
                 when {
-                    Pref.bpMentionFullAcct(App1.pref) -> fullAcct
+                    PrefB.bpMentionFullAcct(App1.pref) -> fullAcct
                     else -> rawAcct
                 }.pretty
             }"

@@ -7,7 +7,7 @@ import android.text.style.ForegroundColorSpan
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -436,7 +436,7 @@ class CompletionHelper(
     private val openPickerEmoji: Runnable = Runnable {
         EmojiPicker(
             activity, accessInfo,
-            closeOnSelected = Pref.bpEmojiPickerCloseOnSelected(pref)
+            closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected(pref)
         ) { result ->
             val et = this.et ?: return@EmojiPicker
 
@@ -469,7 +469,7 @@ class CompletionHelper(
     fun openEmojiPickerFromMore() {
         EmojiPicker(
             activity, accessInfo,
-            closeOnSelected = Pref.bpEmojiPickerCloseOnSelected(pref)
+            closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected(pref)
         ) { result ->
             val et = this.et ?: return@EmojiPicker
 

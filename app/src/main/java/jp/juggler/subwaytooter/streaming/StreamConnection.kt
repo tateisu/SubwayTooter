@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -139,7 +139,7 @@ class StreamConnection(
     }
 
     private fun fireDeleteId(id: EntityId) {
-        if (Pref.bpDontRemoveDeletedToot.invoke(manager.appState.pref)) return
+        if (PrefB.bpDontRemoveDeletedToot.invoke(manager.appState.pref)) return
         val timelineHost = acctGroup.account.apiHost
         manager.appState.columnList.forEach {
             runOnMainLooper {

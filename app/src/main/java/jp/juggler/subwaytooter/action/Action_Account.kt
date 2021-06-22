@@ -116,10 +116,10 @@ fun ActMain.accountAdd() {
                 when (action) {
 
                     LoginForm.Action.Existing ->
-                        client.authentication1(Pref.spClientName(pref))
+                        client.authentication1(PrefS.spClientName(pref))
 
                     LoginForm.Action.Create ->
-                        client.createUser1(Pref.spClientName(pref))
+                        client.createUser1(PrefS.spClientName(pref))
 
                     LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
                         val (ti, ri) = TootInstance.get(client)
@@ -204,8 +204,8 @@ fun AppCompatActivity.accountRemove(account: SavedAccount) {
     // if account is default account of tablet mode,
     // reset default.
     val pref = pref()
-    if (account.db_id == Pref.lpTabletTootDefaultAccount(pref)) {
-        pref.edit().put(Pref.lpTabletTootDefaultAccount, -1L).apply()
+    if (account.db_id == PrefL.lpTabletTootDefaultAccount(pref)) {
+        pref.edit().put(PrefL.lpTabletTootDefaultAccount, -1L).apply()
     }
 
     account.delete()

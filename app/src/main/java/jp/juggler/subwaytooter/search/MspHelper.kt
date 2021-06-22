@@ -23,7 +23,7 @@ object MspHelper {
     private suspend fun TootApiClient.search(query: String, maxId: String?): TootApiResult? {
 
         // ユーザトークンを読む
-        var user_token: String? = Pref.spMspUserToken(pref)
+        var user_token: String? = PrefS.spMspUserToken(pref)
 
         for (nTry in 0 until 3) {
             if (callback.isApiCancelled) return null
@@ -56,7 +56,7 @@ object MspHelper {
                 if (user_token?.isEmpty() != false) {
                     return result.setError("Can't get MSP user token. response=${result.bodyString}")
                 } else {
-                    pref.edit().put(Pref.spMspUserToken, user_token).apply()
+                    pref.edit().put(PrefS.spMspUserToken, user_token).apply()
                 }
             }
 

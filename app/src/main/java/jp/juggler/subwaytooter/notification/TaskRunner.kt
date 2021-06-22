@@ -9,7 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.EventReceiver
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -339,7 +339,7 @@ class TaskRunner(
 
                 this.parser = TootParser(context, account)
 
-                if (Pref.bpSeparateReplyNotificationGroup(pref)) {
+                if (PrefB.bpSeparateReplyNotificationGroup(pref)) {
                     var tr = TrackingRunner(
                         trackingType = TrackingType.NotReply,
                         trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
@@ -474,7 +474,7 @@ class TaskRunner(
                 val first = dataList.firstOrNull()
                 if (first == null) {
                     log.d("showNotification[${account.acct.pretty}/$notificationTag] cancel notification.")
-                    if (Build.VERSION.SDK_INT >= 23 && Pref.bpDivideNotification(pref)) {
+                    if (Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref)) {
                         notificationManager.activeNotifications?.forEach {
                             if (it != null &&
                                 it.id == PollingWorker.NOTIFICATION_ID &&
@@ -501,7 +501,7 @@ class TaskRunner(
                     return
                 }
 
-                if (Build.VERSION.SDK_INT >= 23 && Pref.bpDivideNotification(pref)) {
+                if (Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref)) {
                     val activeNotificationMap = HashMap<String, StatusBarNotification>().apply {
                         notificationManager.activeNotifications?.forEach {
                             if (it != null &&
@@ -554,7 +554,7 @@ class TaskRunner(
                             if (Build.VERSION.SDK_INT < 26) {
                                 var iv = 0
 
-                                if (Pref.bpNotificationSound(pref)) {
+                                if (PrefB.bpNotificationSound(pref)) {
 
                                     var soundUri: Uri? = null
 
@@ -583,11 +583,11 @@ class TaskRunner(
                                     }
                                 }
 
-                                if (Pref.bpNotificationVibration(pref)) {
+                                if (PrefB.bpNotificationVibration(pref)) {
                                     iv = iv or NotificationCompat.DEFAULT_VIBRATE
                                 }
 
-                                if (Pref.bpNotificationLED(pref)) {
+                                if (PrefB.bpNotificationLED(pref)) {
                                     iv = iv or NotificationCompat.DEFAULT_LIGHTS
                                 }
 
@@ -629,7 +629,7 @@ class TaskRunner(
 
                             var iv = 0
 
-                            if (Pref.bpNotificationSound(pref)) {
+                            if (PrefB.bpNotificationSound(pref)) {
 
                                 var soundUri: Uri? = null
 
@@ -659,11 +659,11 @@ class TaskRunner(
                                 }
                             }
 
-                            if (Pref.bpNotificationVibration(pref)) {
+                            if (PrefB.bpNotificationVibration(pref)) {
                                 iv = iv or NotificationCompat.DEFAULT_VIBRATE
                             }
 
-                            if (Pref.bpNotificationLED(pref)) {
+                            if (PrefB.bpNotificationLED(pref)) {
                                 iv = iv or NotificationCompat.DEFAULT_LIGHTS
                             }
 
@@ -829,7 +829,7 @@ class TaskRunner(
 
     private fun NotificationData.getNotificationLine(): String {
 
-        val name = when (Pref.bpShowAcctInSystemNotification(pref)) {
+        val name = when (PrefB.bpShowAcctInSystemNotification(pref)) {
             false -> notification.accountRef?.decoded_display_name
 
             true -> {

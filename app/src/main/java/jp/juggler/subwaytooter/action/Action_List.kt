@@ -1,18 +1,56 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.MisskeyAntenna
+import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
-import jp.juggler.subwaytooter.onListListUpdated
-import jp.juggler.subwaytooter.onListNameUpdated
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Request
+
+fun ActMain.clickListTl(pos: Int, accessInfo: SavedAccount, item: TimelineItem?) {
+    when (item) {
+        is TootList -> addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
+        is MisskeyAntenna -> addColumn(pos, accessInfo, ColumnType.MISSKEY_ANTENNA_TL, item.id)
+    }
+}
+
+fun ActMain.clickListMoreButton(pos: Int, accessInfo: SavedAccount, item: TimelineItem?) {
+    when (item) {
+        is TootList -> {
+            ActionsDialog()
+                .addAction(getString(R.string.list_timeline)) {
+                    addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
+                }
+                .addAction(getString(R.string.list_member)) {
+                    addColumn(
+                        false,
+                        pos,
+                        accessInfo,
+                        ColumnType.LIST_MEMBER,
+                        item.id
+                    )
+                }
+                .addAction(getString(R.string.rename)) {
+                    listRename(accessInfo, item)
+                }
+                .addAction(getString(R.string.delete)) {
+                    listDelete(accessInfo, item)
+                }
+                .show(this, item.title)
+        }
+
+        is MisskeyAntenna -> {
+            // XXX
+        }
+    }
+}
 
 fun interface ListOnCreatedCallback {
     fun onCreated(list: TootList)

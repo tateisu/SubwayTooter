@@ -29,8 +29,21 @@ import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
     activity: ActMain,
-    viewRoot: View
+    viewRoot: View,
 ) : ViewHolderHeaderBase(activity, viewRoot), View.OnClickListener, View.OnLongClickListener {
+
+    companion object {
+        private fun SpannableStringBuilder.appendSpan(text: String, span: Any) {
+            val start = length
+            append(text)
+            setSpan(
+                span,
+                start,
+                length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
 
     private val ivBackground: MyNetworkImageView
     private val tvCreated: TextView
@@ -72,6 +85,9 @@ internal class ViewHolderHeaderProfile(
 
     private val tvPersonalNotes: TextView
     private val btnPersonalNotesEdit: ImageButton
+
+    private var contentColor = 0
+    private var relation: UserRelation? = null
 
     init {
         ivBackground = viewRoot.findViewById(R.id.ivBackground)
@@ -136,6 +152,38 @@ internal class ViewHolderHeaderProfile(
         ivBackground.measureProfileBg = true
     }
 
+    override fun getAccount(): TootAccountRef? = whoRef
+
+    override fun onViewRecycled() {
+    }
+
+    //	fun updateRelativeTime() {
+    //		val who = whoRef?.get()
+    //		if(who != null) {
+    //			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
+    //		}
+    //	}
+
+    override fun bindData(column: Column) {
+        super.bindData(column)
+
+        bindFonts()
+        bindColors()
+
+        llMoved.visibility = View.GONE
+        tvMoved.visibility = View.GONE
+        llFields.visibility = View.GONE
+        llFields.removeAllViews()
+
+        val whoRef = column.whoAccount
+        this.whoRef = whoRef
+        when (val who = whoRef?.get()) {
+            null -> bindAccountNull()
+            else -> bindAccount(who, whoRef)
+        }
+    }
+
+    // カラム設定から戻った際に呼ばれる
     override fun showColor() {
         llProfile.setBackgroundColor(
             when (val c = column.columnBgColor) {
@@ -145,36 +193,8 @@ internal class ViewHolderHeaderProfile(
         )
     }
 
-    private var contentColor = 0
-
-    private var relation: UserRelation? = null
-
-    override fun bindData(column: Column) {
-        super.bindData(column)
-
-        var f: Float
-
-        f = activity.timelineFontSizeSp
-        if (!f.isNaN()) {
-            tvMovedName.textSize = f
-            tvMoved.textSize = f
-            tvPersonalNotes.textSize = f
-            tvFeaturedTags.textSize = f
-        }
-
-        f = activity.acctFontSizeSp
-        if (!f.isNaN()) {
-            tvMovedAcct.textSize = f
-            tvCreated.textSize = f
-            tvLastStatusAt.textSize = f
-        }
-
-        val spacing = activity.timelineSpacing
-        if (spacing != null) {
-            tvMovedName.setLineSpacing(0f, spacing)
-            tvMoved.setLineSpacing(0f, spacing)
-        }
-
+    // bind時に呼ばれる
+    private fun bindColors() {
         val contentColor = column.getContentColor()
         this.contentColor = contentColor
 
@@ -210,313 +230,140 @@ internal class ViewHolderHeaderProfile(
         tvMovedAcct.textColor = acctColor
         tvLastStatusAt.textColor = acctColor
 
-        val whoRef = column.whoAccount
-        this.whoRef = whoRef
-        val who = whoRef?.get()
+        showColor()
+    }
+
+    private fun bindFonts() {
+        var f: Float
+
+        f = activity.timelineFontSizeSp
+        if (!f.isNaN()) {
+            tvMovedName.textSize = f
+            tvMoved.textSize = f
+            tvPersonalNotes.textSize = f
+            tvFeaturedTags.textSize = f
+        }
+
+        f = activity.acctFontSizeSp
+        if (!f.isNaN()) {
+            tvMovedAcct.textSize = f
+            tvCreated.textSize = f
+            tvLastStatusAt.textSize = f
+        }
+
+        val spacing = activity.timelineSpacing
+        if (spacing != null) {
+            tvMovedName.setLineSpacing(0f, spacing)
+            tvMoved.setLineSpacing(0f, spacing)
+        }
+    }
+
+    private fun bindAccountNull() {
+        relation = null
+        tvCreated.text = ""
+        tvLastStatusAt.vg(false)
+        tvFeaturedTags.vg(false)
+        ivBackground.setImageDrawable(null)
+        ivAvatar.setImageDrawable(null)
+
+        tvAcct.text = "@"
+
+        tvDisplayName.text = ""
+        nameInvalidator1.register(null)
+
+        tvNote.text = ""
+        tvMisskeyExtra.text = ""
+        noteInvalidator.register(null)
+
+        btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
+        btnFollowing.text = activity.getString(R.string.following) + "\n" + "?"
+        btnFollowers.text = activity.getString(R.string.followers) + "\n" + "?"
+
+        btnFollow.setImageDrawable(null)
+        tvRemoteProfileWarning.visibility = View.GONE
+    }
+
+    private fun bindAccount(who: TootAccount, whoRef: TootAccountRef) {
 
         // Misskeyの場合はNote中のUserエンティティと /api/users/show の情報量がかなり異なる
-        val whoDetail = if (who == null) {
-            null
-        } else {
-            MisskeyAccountDetailMap.get(accessInfo, who.id)
+        val whoDetail = MisskeyAccountDetailMap.get(accessInfo, who.id)
+
+        tvCreated.text =
+            TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
+
+        who.setAccountExtra(
+            accessInfo,
+            tvLastStatusAt,
+            invalidator = null,
+            fromProfileHeader = true
+        )
+
+        val featuredTagsText = formatFeaturedTags()
+        tvFeaturedTags.vg(featuredTagsText != null)?.let {
+            it.text = featuredTagsText!!
+            it.movementMethod = MyLinkMovementMethod
         }
 
-        showColor()
+        ivBackground.setImageUrl(activity.pref, 0f, accessInfo.supplyBaseUrl(who.header_static))
 
-        llMoved.visibility = View.GONE
-        tvMoved.visibility = View.GONE
-        llFields.visibility = View.GONE
-        llFields.removeAllViews()
+        ivAvatar.setImageUrl(
+            activity.pref,
+            Styler.calcIconRound(ivAvatar.layoutParams),
+            accessInfo.supplyBaseUrl(who.avatar_static),
+            accessInfo.supplyBaseUrl(who.avatar)
+        )
 
-        if (who == null) {
-            relation = null
-            tvCreated.text = ""
-            tvLastStatusAt.vg(false)
-            tvFeaturedTags.vg(false)
-            ivBackground.setImageDrawable(null)
-            ivAvatar.setImageDrawable(null)
+        val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
+        tvDisplayName.text = name
+        nameInvalidator1.register(name)
 
-            tvAcct.text = "@"
+        tvRemoteProfileWarning.vg(column.accessInfo.isRemoteUser(who))
 
-            tvDisplayName.text = ""
-            nameInvalidator1.register(null)
+        tvAcct.text = encodeAcctText(who, whoDetail)
 
-            tvNote.text = ""
-            tvMisskeyExtra.text = ""
-            noteInvalidator.register(null)
+        val note = whoRef.decoded_note
+        tvNote.text = note
+        noteInvalidator.register(note)
 
-            btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
-            btnFollowing.text = activity.getString(R.string.following) + "\n" + "?"
-            btnFollowers.text = activity.getString(R.string.followers) + "\n" + "?"
+        tvMisskeyExtra.text = encodeMisskeyExtra(whoDetail)
+        tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
 
-            btnFollow.setImageDrawable(null)
-            tvRemoteProfileWarning.visibility = View.GONE
-        } else {
-            tvCreated.text =
-                TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
+        btnStatusCount.text =
+            "${activity.getString(R.string.statuses)}\n${
+                whoDetail?.statuses_count ?: who.statuses_count
+            }"
 
-            who.setAccountExtra(
-                accessInfo,
-                tvLastStatusAt,
-                invalidator = null,
-                fromProfileHeader = true
-            )
+        val hideFollowCount = PrefB.bpHideFollowCount(activity.pref)
 
-            val featuredTagsText = column.whoFeaturedTags?.notEmpty()?.let { tagList ->
-                SpannableStringBuilder().apply {
-                    append(activity.getString(R.string.featured_hashtags))
-                    append(":")
-                    tagList.forEach { tag ->
-                        append(" ")
-                        val tagWithSharp = "#" + tag.name
-                        val start = length
-                        append(tagWithSharp)
-                        val end = length
-                        tag.url?.notEmpty()?.let { url ->
-                            val span = MyClickableSpan(
-                                LinkInfo(url = url, tag = tag.name, caption = tagWithSharp)
-                            )
-                            setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        }
-                    }
-                }
-            }
-            tvFeaturedTags.vg(featuredTagsText != null)?.let {
-                it.text = featuredTagsText!!
-                it.movementMethod = MyLinkMovementMethod
-            }
-
-            ivBackground.setImageUrl(
-                activity.pref,
-                0f,
-                accessInfo.supplyBaseUrl(who.header_static)
-            )
-
-            ivAvatar.setImageUrl(
-                activity.pref,
-                Styler.calcIconRound(ivAvatar.layoutParams),
-                accessInfo.supplyBaseUrl(who.avatar_static),
-                accessInfo.supplyBaseUrl(who.avatar)
-            )
-
-            val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
-            tvDisplayName.text = name
-            nameInvalidator1.register(name)
-
-            tvRemoteProfileWarning.visibility =
-                if (column.accessInfo.isRemoteUser(who)) View.VISIBLE else View.GONE
-
-            fun SpannableStringBuilder.appendSpan(text: String, span: Any) {
-                val start = length
-                append(text)
-                setSpan(
-                    span,
-                    start,
-                    length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-
-            tvAcct.text = SpannableStringBuilder().apply {
-
-                append("@")
-
-                append(accessInfo.getFullAcct(who).pretty)
-
-                if (whoDetail?.locked ?: who.locked) {
-                    append(" ")
-                    val emoji = EmojiMap.shortNameMap["lock"]
-                    if (emoji != null) {
-                        appendSpan("locked", emoji.createSpan(activity))
-                    } else {
-                        append("locked")
-                    }
-                }
-
-                if (who.bot) {
-                    append(" ")
-                    val emoji = EmojiMap.shortNameMap["robot_face"]
-                    if (emoji != null) {
-                        appendSpan("bot", emoji.createSpan(activity))
-                    } else {
-                        append("bot")
-                    }
-                }
-
-                if (who.suspended) {
-                    append(" ")
-                    val emoji = EmojiMap.shortNameMap["cross_mark"]
-                    if (emoji != null) {
-                        appendSpan("suspended", emoji.createSpan(activity))
-                    } else {
-                        append("suspended")
-                    }
-                }
-            }
-
-            val note = whoRef.decoded_note
-            tvNote.text = note
-            noteInvalidator.register(note)
-
-            tvMisskeyExtra.text = SpannableStringBuilder().apply {
-                var s = whoDetail?.location
-                if (s?.isNotEmpty() == true) {
-                    if (isNotEmpty()) append('\n')
-                    appendSpan(
-                        activity.getString(R.string.location),
-                        EmojiImageSpan(
-                            activity,
-                            R.drawable.ic_location,
-                            useColorShader = true
-                        )
-                    )
-                    append(' ')
-                    append(s)
-                }
-                s = whoDetail?.birthday
-                if (s?.isNotEmpty() == true) {
-                    if (isNotEmpty()) append('\n')
-                    appendSpan(
-                        activity.getString(R.string.birthday),
-                        EmojiImageSpan(
-                            activity,
-                            R.drawable.ic_cake,
-                            useColorShader = true
-                        )
-                    )
-                    append(' ')
-                    append(s)
-                }
-            }
-            tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
-
-            btnStatusCount.text =
-                "${activity.getString(R.string.statuses)}\n${
-                    whoDetail?.statuses_count
-                        ?: who.statuses_count
-                }"
-
-            if (Pref.bpHideFollowCount(activity.pref)) {
-                btnFollowing.text = activity.getString(R.string.following)
-                btnFollowers.text = activity.getString(R.string.followers)
-            } else {
-                btnFollowing.text =
-                    "${activity.getString(R.string.following)}\n${
-                        whoDetail?.following_count ?: who.following_count
-                    }"
-                btnFollowers.text =
-                    "${activity.getString(R.string.followers)}\n${
-                        whoDetail?.followers_count ?: who.followers_count
-                    }"
-            }
-
-            val relation = UserRelation.load(accessInfo.db_id, who.id)
-            this.relation = relation
-
-            Styler.setFollowIcon(
-                activity,
-                btnFollow,
-                ivFollowedBy,
-                relation,
-                who,
-                contentColor,
-                alphaMultiplier = Styler.boostAlpha
-            )
-
-            tvPersonalNotes.text = relation.note ?: ""
-
-            showMoved(who, who.movedRef)
-
-            val fields = whoDetail?.fields ?: who.fields
-            if (fields != null) {
-
-                llFields.visibility = View.VISIBLE
-
-                // fieldsのnameにはカスタム絵文字が適用されるようになった
-                // https://github.com/tootsuite/mastodon/pull/11350
-                // fieldsのvalueはMisskeyならMFM、MastodonならHTML
-                val fieldDecodeOptions = DecodeOptions(
-                    context = activity,
-                    decodeEmoji = true,
-                    linkHelper = accessInfo,
-                    short = true,
-                    emojiMapCustom = who.custom_emojis,
-                    emojiMapProfile = who.profile_emojis,
-                    mentionDefaultHostDomain = who
-                )
-
-                val nameTypeface = ActMain.timeline_font_bold
-                val valueTypeface = ActMain.timelineFont
-
-                for (item in fields) {
-
-                    //
-                    val nameView = MyTextView(activity)
-                    val nameLp = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
-                    val nameText = fieldDecodeOptions.decodeEmoji(item.name)
-                    val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
-                    nameInvalidator.register(nameText)
-
-                    nameLp.topMargin = (density * 6f).toInt()
-                    nameView.layoutParams = nameLp
-                    nameView.text = nameText
-                    nameView.setTextColor(contentColor)
-                    nameView.typeface = nameTypeface
-                    nameView.movementMethod = MyLinkMovementMethod
-                    llFields.addView(nameView)
-
-                    // 値の方はHTMLエンコードされている
-                    val valueView = MyTextView(activity)
-                    val valueLp = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
-
-                    val valueText = fieldDecodeOptions.decodeHTML(item.value)
-                    if (item.verified_at > 0L) {
-                        valueText.append('\n')
-
-                        val start = valueText.length
-                        valueText.append(activity.getString(R.string.verified_at))
-                        valueText.append(": ")
-                        valueText.append(TootStatus.formatTime(activity, item.verified_at, false))
-                        val end = valueText.length
-
-                        val linkFgColor = Pref.ipVerifiedLinkFgColor(activity.pref).notZero()
-                            ?: (Color.BLACK or 0x7fbc99)
-
-                        valueText.setSpan(
-                            ForegroundColorSpan(linkFgColor),
-                            start,
-                            end,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-
-                    val valueInvalidator = NetworkEmojiInvalidator(activity.handler, valueView)
-                    valueInvalidator.register(valueText)
-
-                    valueLp.startMargin = (density * 32f).toInt()
-                    valueView.layoutParams = valueLp
-                    valueView.text = valueText
-                    valueView.setTextColor(contentColor)
-                    valueView.typeface = valueTypeface
-                    valueView.movementMethod = MyLinkMovementMethod
-
-                    if (item.verified_at > 0L) {
-                        val linkBgColor = Pref.ipVerifiedLinkBgColor(activity.pref).notZero()
-                            ?: (0x337fbc99)
-
-                        valueView.setBackgroundColor(linkBgColor)
-                    }
-
-                    llFields.addView(valueView)
-                }
-            }
+        var caption = activity.getString(R.string.following)
+        btnFollowing.text = when {
+            hideFollowCount -> caption
+            else -> "${caption}\n${whoDetail?.following_count ?: who.following_count}"
         }
+
+        caption = activity.getString(R.string.followers)
+        btnFollowers.text = when {
+            hideFollowCount -> caption
+            else -> "${caption}\n${whoDetail?.followers_count ?: who.followers_count}"
+        }
+
+        val relation = UserRelation.load(accessInfo.db_id, who.id)
+        this.relation = relation
+        Styler.setFollowIcon(
+            activity,
+            btnFollow,
+            ivFollowedBy,
+            relation,
+            who,
+            contentColor,
+            alphaMultiplier = Styler.boostAlpha
+        )
+
+        tvPersonalNotes.text = relation.note ?: ""
+
+        showMoved(who, who.movedRef)
+
+        (whoDetail?.fields ?: who.fields)?.notEmpty()?.let { showFields(who, it) }
     }
 
     private fun showMoved(who: TootAccount, movedRef: TootAccountRef?) {
@@ -555,20 +402,6 @@ internal class ViewHolderHeaderProfile(
             contentColor,
             alphaMultiplier = Styler.boostAlpha
         )
-    }
-
-    private fun setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAccount) {
-        val ac = AcctColor.load(accessInfo, who)
-        tv.text = when {
-            AcctColor.hasNickname(ac) -> ac.nickname
-            Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
-            else -> "@${ac.nickname}"
-        }
-
-        tv.textColor = ac.color_fg.notZero() ?: column.getAcctColor()
-
-        tv.setBackgroundColor(ac.color_bg) // may 0
-        tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
     }
 
     override fun onClick(v: View) {
@@ -695,15 +528,190 @@ internal class ViewHolderHeaderProfile(
         return false
     }
 
-    override fun onViewRecycled() {
+    private fun setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAccount) {
+        val ac = AcctColor.load(accessInfo, who)
+        tv.text = when {
+            AcctColor.hasNickname(ac) -> ac.nickname
+            PrefB.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
+            else -> "@${ac.nickname}"
+        }
+
+        tv.textColor = ac.color_fg.notZero() ?: column.getAcctColor()
+
+        tv.setBackgroundColor(ac.color_bg) // may 0
+        tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
     }
 
-    //	fun updateRelativeTime() {
-    //		val who = whoRef?.get()
-    //		if(who != null) {
-    //			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
-    //		}
-    //	}
+    private fun formatFeaturedTags() = column.whoFeaturedTags?.notEmpty()?.let { tagList ->
+        SpannableStringBuilder().apply {
+            append(activity.getString(R.string.featured_hashtags))
+            append(":")
+            tagList.forEach { tag ->
+                append(" ")
+                val tagWithSharp = "#" + tag.name
+                val start = length
+                append(tagWithSharp)
+                val end = length
+                tag.url?.notEmpty()?.let { url ->
+                    val span = MyClickableSpan(
+                        LinkInfo(url = url, tag = tag.name, caption = tagWithSharp)
+                    )
+                    setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            }
+        }
+    }
 
-    override fun getAccount(): TootAccountRef? = whoRef
+    private fun encodeAcctText(who: TootAccount, whoDetail: TootAccount?) = SpannableStringBuilder().apply {
+        append("@")
+        append(accessInfo.getFullAcct(who).pretty)
+        if (whoDetail?.locked ?: who.locked) {
+            append(" ")
+            val emoji = EmojiMap.shortNameMap["lock"]
+            if (emoji != null) {
+                appendSpan("locked", emoji.createSpan(activity))
+            } else {
+                append("locked")
+            }
+        }
+
+        if (who.bot) {
+            append(" ")
+            val emoji = EmojiMap.shortNameMap["robot_face"]
+            if (emoji != null) {
+                appendSpan("bot", emoji.createSpan(activity))
+            } else {
+                append("bot")
+            }
+        }
+
+        if (who.suspended) {
+            append(" ")
+            val emoji = EmojiMap.shortNameMap["cross_mark"]
+            if (emoji != null) {
+                appendSpan("suspended", emoji.createSpan(activity))
+            } else {
+                append("suspended")
+            }
+        }
+    }
+
+    private fun encodeMisskeyExtra(whoDetail: TootAccount?) = SpannableStringBuilder().apply {
+        var s = whoDetail?.location
+        if (s?.isNotEmpty() == true) {
+            if (isNotEmpty()) append('\n')
+            appendSpan(
+                activity.getString(R.string.location),
+                EmojiImageSpan(
+                    activity,
+                    R.drawable.ic_location,
+                    useColorShader = true
+                )
+            )
+            append(' ')
+            append(s)
+        }
+        s = whoDetail?.birthday
+        if (s?.isNotEmpty() == true) {
+            if (isNotEmpty()) append('\n')
+            appendSpan(
+                activity.getString(R.string.birthday),
+                EmojiImageSpan(
+                    activity,
+                    R.drawable.ic_cake,
+                    useColorShader = true
+                )
+            )
+            append(' ')
+            append(s)
+        }
+    }
+
+    private fun showFields(who: TootAccount, fields: List<TootAccount.Field>) {
+        llFields.visibility = View.VISIBLE
+
+        // fieldsのnameにはカスタム絵文字が適用されるようになった
+        // https://github.com/tootsuite/mastodon/pull/11350
+        // fieldsのvalueはMisskeyならMFM、MastodonならHTML
+        val fieldDecodeOptions = DecodeOptions(
+            context = activity,
+            decodeEmoji = true,
+            linkHelper = accessInfo,
+            short = true,
+            emojiMapCustom = who.custom_emojis,
+            emojiMapProfile = who.profile_emojis,
+            mentionDefaultHostDomain = who
+        )
+
+        val nameTypeface = ActMain.timeline_font_bold
+        val valueTypeface = ActMain.timelineFont
+
+        for (item in fields) {
+
+            //
+            val nameView = MyTextView(activity)
+            val nameLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            val nameText = fieldDecodeOptions.decodeEmoji(item.name)
+            val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
+            nameInvalidator.register(nameText)
+
+            nameLp.topMargin = (density * 6f).toInt()
+            nameView.layoutParams = nameLp
+            nameView.text = nameText
+            nameView.setTextColor(contentColor)
+            nameView.typeface = nameTypeface
+            nameView.movementMethod = MyLinkMovementMethod
+            llFields.addView(nameView)
+
+            // 値の方はHTMLエンコードされている
+            val valueView = MyTextView(activity)
+            val valueLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            val valueText = fieldDecodeOptions.decodeHTML(item.value)
+            if (item.verified_at > 0L) {
+                valueText.append('\n')
+
+                val start = valueText.length
+                valueText.append(activity.getString(R.string.verified_at))
+                valueText.append(": ")
+                valueText.append(TootStatus.formatTime(activity, item.verified_at, false))
+                val end = valueText.length
+
+                val linkFgColor = PrefI.ipVerifiedLinkFgColor(activity.pref).notZero()
+                    ?: (Color.BLACK or 0x7fbc99)
+
+                valueText.setSpan(
+                    ForegroundColorSpan(linkFgColor),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+
+            val valueInvalidator = NetworkEmojiInvalidator(activity.handler, valueView)
+            valueInvalidator.register(valueText)
+
+            valueLp.startMargin = (density * 32f).toInt()
+            valueView.layoutParams = valueLp
+            valueView.text = valueText
+            valueView.setTextColor(contentColor)
+            valueView.typeface = valueTypeface
+            valueView.movementMethod = MyLinkMovementMethod
+
+            if (item.verified_at > 0L) {
+                val linkBgColor = PrefI.ipVerifiedLinkBgColor(activity.pref).notZero()
+                    ?: (0x337fbc99)
+
+                valueView.setBackgroundColor(linkBgColor)
+            }
+
+            llFields.addView(valueView)
+        }
+    }
 }

@@ -216,7 +216,7 @@ class App1 : Application() {
             "SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
 
         private fun getUserAgent(): String {
-            val userAgentCustom = Pref.spUserAgent(pref)
+            val userAgentCustom = PrefS.spUserAgent(pref)
             return when {
                 userAgentCustom.isNotEmpty() && !reNotAllowedInUserAgent.matcher(userAgentCustom)
                     .find() -> userAgentCustom
@@ -384,7 +384,7 @@ class App1 : Application() {
                     .build()
 
                 // 内蔵メディアビューア用のHTTP設定はタイムアウトを調整可能
-                val mediaReadTimeout = max(3, Pref.spMediaReadTimeout.toInt(pref))
+                val mediaReadTimeout = max(3, PrefS.spMediaReadTimeout.toInt(pref))
                 ok_http_client_media_viewer = prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
                     .cache(cache)
                     .build()
@@ -513,7 +513,7 @@ class App1 : Application() {
 
             prepare(activity.applicationContext, "setActivityTheme")
 
-            val theme_idx = Pref.ipUiTheme(pref)
+            val theme_idx = PrefI.ipUiTheme(pref)
             activity.setTheme(
                 if (forceDark || theme_idx == 1) {
                     if (noActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark

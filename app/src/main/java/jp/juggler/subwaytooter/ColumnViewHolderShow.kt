@@ -138,7 +138,7 @@ internal fun ColumnViewHolder.showContent(
         refreshLayout.isRefreshing = false
         showRefreshError()
     }
-    procRestorescrollposition.run()
+    procRestoreScrollPosition.run()
 }
 
 fun ColumnViewHolder.showColumnSetting(show: Boolean): Boolean {

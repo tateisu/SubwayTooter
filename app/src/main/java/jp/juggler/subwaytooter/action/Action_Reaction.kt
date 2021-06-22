@@ -523,3 +523,20 @@ fun ActMain.reactionFromAnotherAccount(
         }
     }
 }
+
+fun ActMain.clickReaction(accessInfo: SavedAccount, column: Column, status: TootStatus) {
+    val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
+    val hasMyReaction = status.reactionSet?.hasMyReaction() == true
+    val bRemoveButton = hasMyReaction && !canMultipleReaction
+    when {
+        !TootReaction.canReaction(accessInfo) ->
+            reactionFromAnotherAccount(
+                accessInfo,
+                status
+            )
+        bRemoveButton ->
+            reactionRemove(column, status)
+        else ->
+            reactionAdd(column, status)
+    }
+}

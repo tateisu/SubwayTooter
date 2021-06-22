@@ -161,7 +161,7 @@ class ColumnTask_Refresh(
                 column.listData.addAll(0, listNew)
                 column.fireShowContent(reason = "refresh updated head", changeList = changeList)
 
-                if (statusIndex >= 0 && refreshAfterToot == Pref.RAT_REFRESH_SCROLL) {
+                if (statusIndex >= 0 && refreshAfterToot == PrefI.RAT_REFRESH_SCROLL) {
                     // 投稿後にその投稿にスクロールする
                     if (holder != null) {
                         holder.setScrollPosition(
@@ -286,7 +286,7 @@ class ColumnTask_Refresh(
             isCancelled -> false
             listTmp?.isNotEmpty() != true -> false
             willAddGap -> true
-            else -> Pref.bpForceGap(App1.pref)
+            else -> PrefB.bpForceGap(App1.pref)
         }
 
         if (doesAddGap()) {
@@ -474,7 +474,7 @@ class ColumnTask_Refresh(
 
         if (!isCancelled &&
             listTmp?.isNotEmpty() == true &&
-            (willAddGap || Pref.bpForceGap(context))
+            (willAddGap || PrefB.bpForceGap(context))
         ) {
             addOne(listTmp, TootGap.mayNull(maxId, lastSinceId), head = addToHead)
         }
@@ -561,7 +561,7 @@ class ColumnTask_Refresh(
 
         if (!isCancelled &&
             listTmp?.isNotEmpty() == true &&
-            (willAddGap || Pref.bpForceGap(context))
+            (willAddGap || PrefB.bpForceGap(context))
         ) {
             addOne(listTmp, TootGap.mayNull(maxId, lastSinceId), head = addToHead)
         }

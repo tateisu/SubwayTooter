@@ -206,15 +206,15 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         group(R.string.notification_style_before_oreo) {
 
-            checkbox(Pref.bpNotificationSound, R.string.sound) {
+            checkbox(PrefB.bpNotificationSound, R.string.sound) {
                 enabled = Build.VERSION.SDK_INT < 26
             }
 
-            checkbox(Pref.bpNotificationVibration, R.string.vibration) {
+            checkbox(PrefB.bpNotificationVibration, R.string.vibration) {
                 enabled = Build.VERSION.SDK_INT < 26
             }
 
-            checkbox(Pref.bpNotificationLED, R.string.led) {
+            checkbox(PrefB.bpNotificationLED, R.string.led) {
                 enabled = Build.VERSION.SDK_INT < 26
             }
 
@@ -222,26 +222,26 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         text(
-            Pref.spPullNotificationCheckInterval,
+            PrefS.spPullNotificationCheckInterval,
             R.string.pull_notification_check_interval,
             InputTypeEx.number
         )
 
-        sw(Pref.bpShowAcctInSystemNotification, R.string.show_acct_in_system_notification)
+        sw(PrefB.bpShowAcctInSystemNotification, R.string.show_acct_in_system_notification)
 
-        sw(Pref.bpSeparateReplyNotificationGroup, R.string.separate_notification_group_for_reply) {
+        sw(PrefB.bpSeparateReplyNotificationGroup, R.string.separate_notification_group_for_reply) {
             enabled = Build.VERSION.SDK_INT >= 26
         }
 
-        sw(Pref.bpDivideNotification, R.string.divide_notification)
+        sw(PrefB.bpDivideNotification, R.string.divide_notification)
     }
 
     section(R.string.behavior) {
 
-        sw(Pref.bpDontConfirmBeforeCloseColumn, R.string.dont_confirm_before_close_column)
+        sw(PrefB.bpDontConfirmBeforeCloseColumn, R.string.dont_confirm_before_close_column)
 
         spinner(
-            Pref.ipBackButtonAction,
+            PrefI.ipBackButtonAction,
             R.string.back_button_action,
             R.string.ask_always,
             R.string.close_column,
@@ -249,15 +249,15 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.app_exit
         )
 
-        sw(Pref.bpExitAppWhenCloseProtectedColumn, R.string.exit_app_when_close_protected_column)
-        sw(Pref.bpScrollTopFromColumnStrip, R.string.scroll_top_from_column_strip)
-        sw(Pref.bpDontScreenOff, R.string.dont_screen_off)
-        sw(Pref.bpDontUseCustomTabs, R.string.dont_use_custom_tabs)
-        sw(Pref.bpPriorChrome, R.string.prior_chrome_custom_tabs)
+        sw(PrefB.bpExitAppWhenCloseProtectedColumn, R.string.exit_app_when_close_protected_column)
+        sw(PrefB.bpScrollTopFromColumnStrip, R.string.scroll_top_from_column_strip)
+        sw(PrefB.bpDontScreenOff, R.string.dont_screen_off)
+        sw(PrefB.bpDontUseCustomTabs, R.string.dont_use_custom_tabs)
+        sw(PrefB.bpPriorChrome, R.string.prior_chrome_custom_tabs)
 
         item(
             SettingType.TextWithSelector,
-            Pref.spWebBrowser,
+            PrefS.spWebBrowser,
             R.string.web_browser
         ) {
             onClickEdit = {
@@ -292,23 +292,23 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             }
         }
 
-        sw(Pref.bpAllowColumnDuplication, R.string.allow_column_duplication)
-        sw(Pref.bpForceGap, R.string.force_gap_when_refresh)
+        sw(PrefB.bpAllowColumnDuplication, R.string.allow_column_duplication)
+        sw(PrefB.bpForceGap, R.string.force_gap_when_refresh)
         spinner(
-            Pref.ipGapHeadScrollPosition,
+            PrefI.ipGapHeadScrollPosition,
             R.string.scroll_position_after_read_gap_from_head,
             R.string.gap_head,
             R.string.gap_tail,
         )
         spinner(
-            Pref.ipGapTailScrollPosition,
+            PrefI.ipGapTailScrollPosition,
             R.string.scroll_position_after_read_gap_from_tail,
             R.string.gap_head,
             R.string.gap_tail,
         )
-        text(Pref.spClientName, R.string.client_name, InputTypeEx.text)
+        text(PrefS.spClientName, R.string.client_name, InputTypeEx.text)
 
-        text(Pref.spUserAgent, R.string.user_agent, InputTypeEx.textMultiLine) {
+        text(PrefS.spUserAgent, R.string.user_agent, InputTypeEx.textMultiLine) {
             hint = App1.userAgentDefault
             filter = { it.replace(ActAppSetting.reLinefeed, " ").trim() }
             getError = {
@@ -320,13 +320,13 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             }
         }
 
-        sw(Pref.bpDontRemoveDeletedToot, R.string.dont_remove_deleted_toot_from_timeline)
-        sw(Pref.bpCustomEmojiSeparatorZwsp, R.string.custom_emoji_separator_zwsp)
-        sw(Pref.bpShowTranslateButton, R.string.show_translate_button)
+        sw(PrefB.bpDontRemoveDeletedToot, R.string.dont_remove_deleted_toot_from_timeline)
+        sw(PrefB.bpCustomEmojiSeparatorZwsp, R.string.custom_emoji_separator_zwsp)
+        sw(PrefB.bpShowTranslateButton, R.string.show_translate_button)
 
         item(
             SettingType.TextWithSelector,
-            Pref.spTranslateAppComponent,
+            PrefS.spTranslateAppComponent,
             R.string.translation_app
         ) {
             val target = CustomShareTarget.Translate
@@ -337,7 +337,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         item(
             SettingType.TextWithSelector,
-            Pref.spCustomShare1,
+            PrefS.spCustomShare1,
             R.string.custom_share_button_1
         ) {
             val target = CustomShareTarget.CustomShare1
@@ -348,7 +348,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         item(
             SettingType.TextWithSelector,
-            Pref.spCustomShare2,
+            PrefS.spCustomShare2,
             R.string.custom_share_button_2
         ) {
             val target = CustomShareTarget.CustomShare2
@@ -358,7 +358,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
         item(
             SettingType.TextWithSelector,
-            Pref.spCustomShare3,
+            PrefS.spCustomShare3,
             R.string.custom_share_button_3
         ) {
             val target = CustomShareTarget.CustomShare3
@@ -368,22 +368,19 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         spinner(
-            Pref.ipAdditionalButtonsPosition,
+            PrefI.ipAdditionalButtonsPosition,
             R.string.additional_buttons_position,
-            R.string.top,
-            R.string.bottom,
-            R.string.start,
-            R.string.end
+            *(AdditionalButtonsPosition.values().sortedBy { it.idx }.map { it.captionId }.toIntArray())
         )
 
-        sw(Pref.bpEnablePixelfed, R.string.enable_connect_to_pixelfed_server)
-        sw(Pref.bpShowFilteredWord, R.string.show_filtered_word)
-        sw(Pref.bpEnableDomainTimeline, R.string.enable_domain_timeline)
+        sw(PrefB.bpEnablePixelfed, R.string.enable_connect_to_pixelfed_server)
+        sw(PrefB.bpShowFilteredWord, R.string.show_filtered_word)
+        sw(PrefB.bpEnableDomainTimeline, R.string.enable_domain_timeline)
     }
 
     section(R.string.post) {
 
-//        spinner(Pref.ipResizeImage, R.string.resize_image) { activity ->
+//        spinner(PrefI.ipResizeImage, R.string.resize_image) { activity ->
 //            ActPost.resizeConfigList.map {
 //                when (it.type) {
 //					ResizeType.None -> activity.getString(R.string.dont_resize)
@@ -397,67 +394,67 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 //            }
 //        }
 //
-//        text(Pref.spMediaSizeMax, R.string.media_attachment_max_byte_size, InputTypeEx.number)
-//        text(Pref.spMovieSizeMax, R.string.media_attachment_max_byte_size_movie, InputTypeEx.number)
+//        text(PrefS.spMediaSizeMax, R.string.media_attachment_max_byte_size, InputTypeEx.number)
+//        text(PrefS.spMovieSizeMax, R.string.media_attachment_max_byte_size_movie, InputTypeEx.number)
 //        text(
-//			Pref.spMediaSizeMaxPixelfed,
+//			PrefS.spMediaSizeMaxPixelfed,
 //			R.string.media_attachment_max_byte_size_pixelfed,
 //			InputTypeEx.number
 //		)
 
         spinner(
-            Pref.ipRefreshAfterToot,
+            PrefI.ipRefreshAfterToot,
             R.string.refresh_after_toot,
             R.string.refresh_scroll_to_toot,
             R.string.refresh_no_scroll,
             R.string.dont_refresh
         )
 
-        sw(Pref.bpPostButtonBarTop, R.string.show_post_button_bar_top)
+        sw(PrefB.bpPostButtonBarTop, R.string.show_post_button_bar_top)
 
         sw(
-            Pref.bpDontDuplicationCheck,
+            PrefB.bpDontDuplicationCheck,
             R.string.dont_add_duplication_check_header
         )
 
-        sw(Pref.bpQuickTootBar, R.string.show_quick_toot_bar)
+        sw(PrefB.bpQuickTootBar, R.string.show_quick_toot_bar)
 
         sw(
-            Pref.bpDontUseActionButtonWithQuickTootBar,
+            PrefB.bpDontUseActionButtonWithQuickTootBar,
             R.string.dont_use_action_button_with_quick_toot_bar
         )
 
-        text(Pref.spQuoteNameFormat, R.string.format_of_quote_name, InputTypeEx.text) {
+        text(PrefS.spQuoteNameFormat, R.string.format_of_quote_name, InputTypeEx.text) {
             filter = { it } // don't trim
         }
 
         sw(
-            Pref.bpAppendAttachmentUrlToContent,
+            PrefB.bpAppendAttachmentUrlToContent,
             R.string.append_attachment_url_to_content
         )
 
         sw(
-            Pref.bpWarnHashtagAsciiAndNonAscii,
+            PrefB.bpWarnHashtagAsciiAndNonAscii,
             R.string.warn_hashtag_ascii_and_non_ascii
         )
 
         sw(
-            Pref.bpEmojiPickerCloseOnSelected,
+            PrefB.bpEmojiPickerCloseOnSelected,
             R.string.close_emoji_picker_when_selected
         )
 
-        sw(Pref.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
+        sw(PrefB.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
     }
 
     section(R.string.tablet_mode) {
 
-        sw(Pref.bpDisableTabletMode, R.string.disable_tablet_mode)
+        sw(PrefB.bpDisableTabletMode, R.string.disable_tablet_mode)
 
-        text(Pref.spColumnWidth, R.string.minimum_column_width, InputTypeEx.number)
+        text(PrefS.spColumnWidth, R.string.minimum_column_width, InputTypeEx.number)
 
         item(
             SettingType.Spinner,
-            Pref.lpTabletTootDefaultAccount,
+            PrefL.lpTabletTootDefaultAccount,
             R.string.toot_button_default_account
         ) {
             val lp = pref.cast<LongPref>()!!
@@ -474,12 +471,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         sw(
-            Pref.bpQuickTootOmitAccountSelection,
+            PrefB.bpQuickTootOmitAccountSelection,
             R.string.quick_toot_omit_account_selection
         )
 
         spinner(
-            Pref.ipJustifyWindowContentPortrait,
+            PrefI.ipJustifyWindowContentPortrait,
             R.string.justify_window_content_portrait,
             R.string.default_,
             R.string.start,
@@ -487,39 +484,39 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         )
 
         sw(
-            Pref.bpMultiWindowPost,
+            PrefB.bpMultiWindowPost,
             R.string.multi_window_post
         )
         sw(
-            Pref.bpManyWindowPost,
+            PrefB.bpManyWindowPost,
             R.string.many_window_post
         )
     }
 
     section(R.string.media_attachment) {
-        sw(Pref.bpUseInternalMediaViewer, R.string.use_internal_media_viewer)
-        sw(Pref.bpPriorLocalURL, R.string.prior_local_url_when_open_attachment)
-        text(Pref.spMediaThumbHeight, R.string.media_thumbnail_height, InputTypeEx.number)
-        sw(Pref.bpDontCropMediaThumb, R.string.dont_crop_media_thumbnail)
-        sw(Pref.bpVerticalArrangeThumbnails, R.string.thumbnails_arrange_vertically)
+        sw(PrefB.bpUseInternalMediaViewer, R.string.use_internal_media_viewer)
+        sw(PrefB.bpPriorLocalURL, R.string.prior_local_url_when_open_attachment)
+        text(PrefS.spMediaThumbHeight, R.string.media_thumbnail_height, InputTypeEx.number)
+        sw(PrefB.bpDontCropMediaThumb, R.string.dont_crop_media_thumbnail)
+        sw(PrefB.bpVerticalArrangeThumbnails, R.string.thumbnails_arrange_vertically)
     }
 
     section(R.string.animation) {
-        sw(Pref.bpEnableGifAnimation, R.string.enable_gif_animation)
-        sw(Pref.bpDisableEmojiAnimation, R.string.disable_custom_emoji_animation)
+        sw(PrefB.bpEnableGifAnimation, R.string.enable_gif_animation)
+        sw(PrefB.bpDisableEmojiAnimation, R.string.disable_custom_emoji_animation)
     }
 
     section(R.string.appearance) {
-        sw(Pref.bpSimpleList, R.string.simple_list)
-        sw(Pref.bpShowFollowButtonInButtonBar, R.string.show_follow_button_in_button_bar)
-        sw(Pref.bpDontShowPreviewCard, R.string.dont_show_preview_card)
-        sw(Pref.bpShortAcctLocalUser, R.string.short_acct_local_user)
-        sw(Pref.bpMentionFullAcct, R.string.mention_full_acct)
-        sw(Pref.bpRelativeTimestamp, R.string.relative_timestamp)
+        sw(PrefB.bpSimpleList, R.string.simple_list)
+        sw(PrefB.bpShowFollowButtonInButtonBar, R.string.show_follow_button_in_button_bar)
+        sw(PrefB.bpDontShowPreviewCard, R.string.dont_show_preview_card)
+        sw(PrefB.bpShortAcctLocalUser, R.string.short_acct_local_user)
+        sw(PrefB.bpMentionFullAcct, R.string.mention_full_acct)
+        sw(PrefB.bpRelativeTimestamp, R.string.relative_timestamp)
 
         item(
             SettingType.Spinner,
-            Pref.spTimeZone,
+            PrefS.spTimeZone,
             R.string.timezone
         ) {
             val sp: StringPref = pref.cast()!!
@@ -535,27 +532,27 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             }
         }
 
-        sw(Pref.bpShowAppName, R.string.always_show_application)
-        sw(Pref.bpShowLanguage, R.string.always_show_language)
-        text(Pref.spAutoCWLines, R.string.auto_cw, InputTypeEx.number)
-        text(Pref.spCardDescriptionLength, R.string.card_description_length, InputTypeEx.number)
+        sw(PrefB.bpShowAppName, R.string.always_show_application)
+        sw(PrefB.bpShowLanguage, R.string.always_show_language)
+        text(PrefS.spAutoCWLines, R.string.auto_cw, InputTypeEx.number)
+        text(PrefS.spCardDescriptionLength, R.string.card_description_length, InputTypeEx.number)
 
         spinner(
-            Pref.ipRepliesCount,
+            PrefI.ipRepliesCount,
             R.string.display_replies_count,
             R.string.replies_count_simple,
             R.string.replies_count_actual,
             R.string.replies_count_none
         )
         spinner(
-            Pref.ipBoostsCount,
+            PrefI.ipBoostsCount,
             R.string.display_boost_count,
             R.string.replies_count_simple,
             R.string.replies_count_actual,
             R.string.replies_count_none
         )
         spinner(
-            Pref.ipFavouritesCount,
+            PrefI.ipFavouritesCount,
             R.string.display_favourite_count,
             R.string.replies_count_simple,
             R.string.replies_count_actual,
@@ -563,7 +560,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         )
 
         spinner(
-            Pref.ipVisibilityStyle,
+            PrefI.ipVisibilityStyle,
             R.string.visibility_style,
             R.string.visibility_style_by_account,
             R.string.mastodon,
@@ -572,7 +569,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         AppSettingItem.TIMELINE_FONT = item(
             SettingType.TextWithSelector,
-            Pref.spTimelineFont,
+            PrefS.spTimelineFont,
             R.string.timeline_font
         ) {
             val item = this
@@ -593,7 +590,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         AppSettingItem.TIMELINE_FONT_BOLD = item(
             SettingType.TextWithSelector,
-            Pref.spTimelineFontBold,
+            PrefS.spTimelineFontBold,
             R.string.timeline_font_bold
         ) {
             val item = this
@@ -613,7 +610,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         AppSettingItem.FONT_SIZE_TIMELINE = textX(
-            Pref.fpTimelineFontSize,
+            PrefF.fpTimelineFontSize,
             R.string.timeline_font_size,
             InputTypeEx.numberDecimal
         ) {
@@ -627,20 +624,20 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             captionFontSize = {
                 val fv = fp(pref)
                 when {
-                    !fv.isFinite() -> Pref.default_timeline_font_size
+                    !fv.isFinite() -> PrefF.default_timeline_font_size
                     fv < 1f -> 1f
                     else -> fv
                 }
             }
             captionSpacing = {
-                Pref.spTimelineSpacing(pref).toFloatOrNull()
+                PrefS.spTimelineSpacing(pref).toFloatOrNull()
             }
             changed = {
                 findItemViewHolder(item)?.updateCaption()
             }
         }
 
-        textX(Pref.fpAcctFontSize, R.string.acct_font_size, InputTypeEx.numberDecimal) {
+        textX(PrefF.fpAcctFontSize, R.string.acct_font_size, InputTypeEx.numberDecimal) {
             val item = this
             val fp: FloatPref = item.pref.cast()!!
 
@@ -650,7 +647,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             captionFontSize = {
                 val fv = fp(pref)
                 when {
-                    !fv.isFinite() -> Pref.default_acct_font_size
+                    !fv.isFinite() -> PrefF.default_acct_font_size
                     fv < 1f -> 1f
                     else -> fv
                 }
@@ -660,7 +657,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         AppSettingItem.FONT_SIZE_NOTIFICATION_TL = textX(
-            Pref.fpNotificationTlFontSize,
+            PrefF.fpNotificationTlFontSize,
             R.string.notification_tl_font_size,
             InputTypeEx.numberDecimal
         ) {
@@ -673,13 +670,13 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             captionFontSize = {
                 val fv = fp(pref)
                 when {
-                    !fv.isFinite() -> Pref.default_notification_tl_font_size
+                    !fv.isFinite() -> PrefF.default_notification_tl_font_size
                     fv < 1f -> 1f
                     else -> fv
                 }
             }
             captionSpacing = {
-                Pref.spTimelineSpacing(pref).toFloatOrNull()
+                PrefS.spTimelineSpacing(pref).toFloatOrNull()
             }
             changed = {
                 findItemViewHolder(item)?.updateCaption()
@@ -687,34 +684,34 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         text(
-            Pref.spNotificationTlIconSize,
+            PrefS.spNotificationTlIconSize,
             R.string.notification_tl_icon_size,
             InputTypeEx.numberDecimal
         )
 
-        text(Pref.spTimelineSpacing, R.string.timeline_line_spacing, InputTypeEx.numberDecimal) {
+        text(PrefS.spTimelineSpacing, R.string.timeline_line_spacing, InputTypeEx.numberDecimal) {
             changed = {
                 findItemViewHolder(AppSettingItem.FONT_SIZE_TIMELINE)?.updateCaption()
                 findItemViewHolder(AppSettingItem.FONT_SIZE_NOTIFICATION_TL)?.updateCaption()
             }
         }
 
-        text(Pref.spBoostButtonSize, R.string.boost_button_size, InputTypeEx.numberDecimal)
+        text(PrefS.spBoostButtonSize, R.string.boost_button_size, InputTypeEx.numberDecimal)
 
         spinner(
-            Pref.ipBoostButtonJustify,
+            PrefI.ipBoostButtonJustify,
             R.string.boost_button_alignment,
             R.string.start,
             R.string.center,
             R.string.end
         )
 
-        text(Pref.spAvatarIconSize, R.string.avatar_icon_size, InputTypeEx.numberDecimal)
-        text(Pref.spRoundRatio, R.string.avatar_icon_round_ratio, InputTypeEx.numberDecimal)
-        sw(Pref.bpDontRound, R.string.avatar_icon_dont_round)
-        text(Pref.spReplyIconSize, R.string.reply_icon_size, InputTypeEx.numberDecimal)
-        text(Pref.spHeaderIconSize, R.string.header_icon_size, InputTypeEx.numberDecimal)
-        textX(Pref.fpHeaderTextSize, R.string.header_text_size, InputTypeEx.numberDecimal) {
+        text(PrefS.spAvatarIconSize, R.string.avatar_icon_size, InputTypeEx.numberDecimal)
+        text(PrefS.spRoundRatio, R.string.avatar_icon_round_ratio, InputTypeEx.numberDecimal)
+        sw(PrefB.bpDontRound, R.string.avatar_icon_dont_round)
+        text(PrefS.spReplyIconSize, R.string.reply_icon_size, InputTypeEx.numberDecimal)
+        text(PrefS.spHeaderIconSize, R.string.header_icon_size, InputTypeEx.numberDecimal)
+        textX(PrefF.fpHeaderTextSize, R.string.header_text_size, InputTypeEx.numberDecimal) {
             val item = this
             val fp: FloatPref = item.pref.cast()!!
 
@@ -724,7 +721,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             captionFontSize = {
                 val fv = fp(pref)
                 when {
-                    !fv.isFinite() -> Pref.default_header_font_size
+                    !fv.isFinite() -> PrefF.default_header_font_size
                     fv < 1f -> 1f
                     else -> fv
                 }
@@ -735,95 +732,95 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             }
         }
 
-        text(Pref.spStripIconSize, R.string.strip_icon_size, InputTypeEx.numberDecimal)
+        text(PrefS.spStripIconSize, R.string.strip_icon_size, InputTypeEx.numberDecimal)
 
-        text(Pref.spScreenBottomPadding, R.string.screen_bottom_padding, InputTypeEx.numberDecimal)
+        text(PrefS.spScreenBottomPadding, R.string.screen_bottom_padding, InputTypeEx.numberDecimal)
 
-        sw(Pref.bpOpenSticker, R.string.show_open_sticker) {
+        sw(PrefB.bpOpenSticker, R.string.show_open_sticker) {
             desc = R.string.powered_by_open_sticker
             descClick = { openBrowser("https://github.com/cutls/OpenSticker") }
         }
 
-        sw(Pref.bpLinksInContextMenu, R.string.show_links_in_context_menu)
-        sw(Pref.bpShowLinkUnderline, R.string.show_link_underline)
+        sw(PrefB.bpLinksInContextMenu, R.string.show_links_in_context_menu)
+        sw(PrefB.bpShowLinkUnderline, R.string.show_link_underline)
         sw(
-            Pref.bpMoveNotificationsQuickFilter,
+            PrefB.bpMoveNotificationsQuickFilter,
             R.string.move_notifications_quick_filter_to_column_setting
         )
-        sw(Pref.bpShowSearchClear, R.string.show_clear_button_in_search_bar)
+        sw(PrefB.bpShowSearchClear, R.string.show_clear_button_in_search_bar)
         sw(
-            Pref.bpDontShowColumnBackgroundImage,
+            PrefB.bpDontShowColumnBackgroundImage,
             R.string.dont_show_column_background_image
         )
 
         group(R.string.show_in_directory) {
-            checkbox(Pref.bpDirectoryLastActive, R.string.last_active)
-            checkbox(Pref.bpDirectoryFollowers, R.string.followers)
-            checkbox(Pref.bpDirectoryTootCount, R.string.toot_count)
-            checkbox(Pref.bpDirectoryNote, R.string.note)
+            checkbox(PrefB.bpDirectoryLastActive, R.string.last_active)
+            checkbox(PrefB.bpDirectoryFollowers, R.string.followers)
+            checkbox(PrefB.bpDirectoryTootCount, R.string.toot_count)
+            checkbox(PrefB.bpDirectoryNote, R.string.note)
         }
 
         sw(
-            Pref.bpAlwaysExpandContextMenuItems,
+            PrefB.bpAlwaysExpandContextMenuItems,
             R.string.always_expand_context_menu_sub_items
         )
-        sw(Pref.bpShowBookmarkButton, R.string.show_bookmark_button)
-        sw(Pref.bpHideFollowCount, R.string.hide_followers_count)
-        sw(Pref.bpEmojioneShortcode, R.string.emojione_shortcode_support) {
+        sw(PrefB.bpShowBookmarkButton, R.string.show_bookmark_button)
+        sw(PrefB.bpHideFollowCount, R.string.hide_followers_count)
+        sw(PrefB.bpEmojioneShortcode, R.string.emojione_shortcode_support) {
             desc = R.string.emojione_shortcode_support_desc
         }
-        sw(Pref.bpInAppUnicodeEmoji, R.string.in_app_unicode_emoji)
+        sw(PrefB.bpInAppUnicodeEmoji, R.string.in_app_unicode_emoji)
 
-        sw(Pref.bpKeepReactionSpace, R.string.keep_reaction_space)
+        sw(PrefB.bpKeepReactionSpace, R.string.keep_reaction_space)
     }
 
     section(R.string.color) {
 
         spinner(
-            Pref.ipUiTheme,
+            PrefI.ipUiTheme,
             R.string.ui_theme,
             R.string.theme_light,
             R.string.theme_dark
         )
 
-        colorAlpha(Pref.ipListDividerColor, R.string.list_divider_color)
-        colorAlpha(Pref.ipLinkColor, R.string.link_color)
+        colorAlpha(PrefI.ipListDividerColor, R.string.list_divider_color)
+        colorAlpha(PrefI.ipLinkColor, R.string.link_color)
 
         group(R.string.toot_background_color) {
-            colorAlpha(Pref.ipTootColorUnlisted, R.string.unlisted_visibility)
-            colorAlpha(Pref.ipTootColorFollower, R.string.followers_visibility)
-            colorAlpha(Pref.ipTootColorDirectUser, R.string.direct_with_user_visibility)
-            colorAlpha(Pref.ipTootColorDirectMe, R.string.direct_only_me_visibility)
+            colorAlpha(PrefI.ipTootColorUnlisted, R.string.unlisted_visibility)
+            colorAlpha(PrefI.ipTootColorFollower, R.string.followers_visibility)
+            colorAlpha(PrefI.ipTootColorDirectUser, R.string.direct_with_user_visibility)
+            colorAlpha(PrefI.ipTootColorDirectMe, R.string.direct_only_me_visibility)
         }
 
         group(R.string.event_background_color) {
-            colorAlpha(Pref.ipEventBgColorBoost, R.string.boost)
-            colorAlpha(Pref.ipEventBgColorFavourite, R.string.favourites)
-            colorAlpha(Pref.ipEventBgColorBookmark, R.string.bookmarks)
-            colorAlpha(Pref.ipEventBgColorMention, R.string.reply)
-            colorAlpha(Pref.ipEventBgColorFollow, R.string.follow)
-            colorAlpha(Pref.ipEventBgColorUnfollow, R.string.unfollow_misskey)
-            colorAlpha(Pref.ipEventBgColorFollowRequest, R.string.follow_request)
-            colorAlpha(Pref.ipEventBgColorReaction, R.string.reaction)
-            colorAlpha(Pref.ipEventBgColorQuote, R.string.quote_renote)
-            colorAlpha(Pref.ipEventBgColorVote, R.string.vote_polls)
-            colorAlpha(Pref.ipEventBgColorStatus, R.string.status)
+            colorAlpha(PrefI.ipEventBgColorBoost, R.string.boost)
+            colorAlpha(PrefI.ipEventBgColorFavourite, R.string.favourites)
+            colorAlpha(PrefI.ipEventBgColorBookmark, R.string.bookmarks)
+            colorAlpha(PrefI.ipEventBgColorMention, R.string.reply)
+            colorAlpha(PrefI.ipEventBgColorFollow, R.string.follow)
+            colorAlpha(PrefI.ipEventBgColorUnfollow, R.string.unfollow_misskey)
+            colorAlpha(PrefI.ipEventBgColorFollowRequest, R.string.follow_request)
+            colorAlpha(PrefI.ipEventBgColorReaction, R.string.reaction)
+            colorAlpha(PrefI.ipEventBgColorQuote, R.string.quote_renote)
+            colorAlpha(PrefI.ipEventBgColorVote, R.string.vote_polls)
+            colorAlpha(PrefI.ipEventBgColorStatus, R.string.status)
 
             colorAlpha(
-                Pref.ipConversationMainTootBgColor,
+                PrefI.ipConversationMainTootBgColor,
                 R.string.conversation_main_toot_background_color
             )
 
-            colorAlpha(Pref.ipEventBgColorGap, R.string.gap)
+            colorAlpha(PrefI.ipEventBgColorGap, R.string.gap)
         }
 
         group(R.string.button_accent_color) {
-            colorAlpha(Pref.ipButtonBoostedColor, R.string.boost)
-            colorAlpha(Pref.ipButtonFavoritedColor, R.string.favourites)
-            colorAlpha(Pref.ipButtonBookmarkedColor, R.string.bookmarks)
-            colorAlpha(Pref.ipButtonFollowingColor, R.string.follow)
-            colorAlpha(Pref.ipButtonFollowRequestColor, R.string.follow_request)
-            colorAlpha(Pref.ipButtonReactionedColor, R.string.reaction)
+            colorAlpha(PrefI.ipButtonBoostedColor, R.string.boost)
+            colorAlpha(PrefI.ipButtonFavoritedColor, R.string.favourites)
+            colorAlpha(PrefI.ipButtonBookmarkedColor, R.string.bookmarks)
+            colorAlpha(PrefI.ipButtonFollowingColor, R.string.follow)
+            colorAlpha(PrefI.ipButtonFollowRequestColor, R.string.follow_request)
+            colorAlpha(PrefI.ipButtonReactionedColor, R.string.reaction)
         }
 
         group(R.string.column_color_default) {
@@ -834,8 +831,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val ivColumnHeader: ImageView = viewRoot.findViewById(R.id.ivColumnHeader)
                     val tvColumnName: TextView = viewRoot.findViewById(R.id.tvColumnName)
 
-                    val colorColumnHeaderBg = Pref.ipCcdHeaderBg(activity.pref)
-                    val colorColumnHeaderFg = Pref.ipCcdHeaderFg(activity.pref)
+                    val colorColumnHeaderBg = PrefI.ipCcdHeaderBg(activity.pref)
+                    val colorColumnHeaderFg = PrefI.ipCcdHeaderFg(activity.pref)
 
                     val headerBg = when {
                         colorColumnHeaderBg != 0 -> colorColumnHeaderBg
@@ -854,10 +851,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     ivColumnHeader.imageTintList = ColorStateList.valueOf(headerFg)
                 }
 
-            colorOpaque(Pref.ipCcdHeaderBg, R.string.header_background_color) {
+            colorOpaque(PrefI.ipCcdHeaderBg, R.string.header_background_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_CCD_HEADER) }
             }
-            colorOpaque(Pref.ipCcdHeaderFg, R.string.header_foreground_color) {
+            colorOpaque(PrefI.ipCcdHeaderFg, R.string.header_foreground_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_CCD_HEADER) }
             }
 
@@ -867,9 +864,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val tvSampleAcct: TextView = viewRoot.findViewById(R.id.tvSampleAcct)
                     val tvSampleContent: TextView = viewRoot.findViewById(R.id.tvSampleContent)
 
-                    val colorColumnBg = Pref.ipCcdContentBg(activity.pref)
-                    val colorColumnAcct = Pref.ipCcdContentAcct(activity.pref)
-                    val colorColumnText = Pref.ipCcdContentText(activity.pref)
+                    val colorColumnBg = PrefI.ipCcdContentBg(activity.pref)
+                    val colorColumnAcct = PrefI.ipCcdContentAcct(activity.pref)
+                    val colorColumnText = PrefI.ipCcdContentText(activity.pref)
 
                     flColumnBackground.setBackgroundColor(colorColumnBg) // may 0
 
@@ -884,18 +881,18 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     )
                 }
 
-            colorOpaque(Pref.ipCcdContentBg, R.string.content_background_color) {
+            colorOpaque(PrefI.ipCcdContentBg, R.string.content_background_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_CCD_BODY) }
             }
-            colorAlpha(Pref.ipCcdContentAcct, R.string.content_acct_color) {
+            colorAlpha(PrefI.ipCcdContentAcct, R.string.content_acct_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_CCD_BODY) }
             }
-            colorAlpha(Pref.ipCcdContentText, R.string.content_text_color) {
+            colorAlpha(PrefI.ipCcdContentText, R.string.content_text_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_CCD_BODY) }
             }
         }
 
-        text(Pref.spBoostAlpha, R.string.boost_button_alpha, InputTypeEx.numberDecimal)
+        text(PrefS.spBoostAlpha, R.string.boost_button_alpha, InputTypeEx.numberDecimal)
 
         group(R.string.footer_color) {
             AppSettingItem.SAMPLE_FOOTER =
@@ -908,11 +905,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val vFooterDivider2: View = viewRoot.findViewById(R.id.vFooterDivider2)
                     val vIndicator: View = viewRoot.findViewById(R.id.vIndicator)
 
-                    val footerButtonBgColor = Pref.ipFooterButtonBgColor(pref)
-                    val footerButtonFgColor = Pref.ipFooterButtonFgColor(pref)
-                    val footerTabBgColor = Pref.ipFooterTabBgColor(pref)
-                    val footerTabDividerColor = Pref.ipFooterTabDividerColor(pref)
-                    val footerTabIndicatorColor = Pref.ipFooterTabIndicatorColor(pref)
+                    val footerButtonBgColor = PrefI.ipFooterButtonBgColor(pref)
+                    val footerButtonFgColor = PrefI.ipFooterButtonFgColor(pref)
+                    val footerTabBgColor = PrefI.ipFooterTabBgColor(pref)
+                    val footerTabDividerColor = PrefI.ipFooterTabDividerColor(pref)
+                    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor(pref)
 
                     val colorColumnStripBackground = footerTabBgColor.notZero()
                         ?: activity.attrColor(R.attr.colorColumnStripBackground)
@@ -948,46 +945,46 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     )
                 }
 
-            colorOpaque(Pref.ipFooterButtonBgColor, R.string.button_background_color) {
+            colorOpaque(PrefI.ipFooterButtonBgColor, R.string.button_background_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_FOOTER) }
             }
-            colorOpaque(Pref.ipFooterButtonFgColor, R.string.button_foreground_color) {
+            colorOpaque(PrefI.ipFooterButtonFgColor, R.string.button_foreground_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_FOOTER) }
             }
-            colorOpaque(Pref.ipFooterTabBgColor, R.string.quick_toot_bar_background_color) {
+            colorOpaque(PrefI.ipFooterTabBgColor, R.string.quick_toot_bar_background_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_FOOTER) }
             }
-            colorOpaque(Pref.ipFooterTabDividerColor, R.string.tab_divider_color) {
+            colorOpaque(PrefI.ipFooterTabDividerColor, R.string.tab_divider_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_FOOTER) }
             }
-            colorAlpha(Pref.ipFooterTabIndicatorColor, R.string.tab_indicator_color) {
+            colorAlpha(PrefI.ipFooterTabIndicatorColor, R.string.tab_indicator_color) {
                 changed = { showSample(AppSettingItem.SAMPLE_FOOTER) }
             }
         }
 
-        colorOpaque(Pref.ipSwitchOnColor, R.string.switch_button_color) {
+        colorOpaque(PrefI.ipSwitchOnColor, R.string.switch_button_color) {
             changed = { setSwitchColor() }
         }
 
-        colorOpaque(Pref.ipStatusBarColor, R.string.status_bar_color) {
+        colorOpaque(PrefI.ipStatusBarColor, R.string.status_bar_color) {
             changed = { setStatusBarColor() }
         }
 
-        colorOpaque(Pref.ipNavigationBarColor, R.string.navigation_bar_color) {
+        colorOpaque(PrefI.ipNavigationBarColor, R.string.navigation_bar_color) {
             changed = { setStatusBarColor() }
         }
 
-        colorOpaque(Pref.ipSearchBgColor, R.string.search_bar_background_color)
-        colorAlpha(Pref.ipAnnouncementsBgColor, R.string.announcement_background_color)
-        colorAlpha(Pref.ipVerifiedLinkBgColor, R.string.verified_link_background_color)
-        colorAlpha(Pref.ipVerifiedLinkFgColor, R.string.verified_link_foreground_color)
+        colorOpaque(PrefI.ipSearchBgColor, R.string.search_bar_background_color)
+        colorAlpha(PrefI.ipAnnouncementsBgColor, R.string.announcement_background_color)
+        colorAlpha(PrefI.ipVerifiedLinkBgColor, R.string.verified_link_background_color)
+        colorAlpha(PrefI.ipVerifiedLinkFgColor, R.string.verified_link_foreground_color)
     }
 
     section(R.string.performance) {
-        sw(Pref.bpShareViewPool, R.string.share_view_pool)
-        sw(Pref.bpDontUseStreaming, R.string.dont_use_streaming_api)
-        sw(Pref.bpDontRefreshOnResume, R.string.dont_refresh_on_activity_resume)
-        text(Pref.spMediaReadTimeout, R.string.timeout_for_embed_media_viewer, InputTypeEx.number)
+        sw(PrefB.bpShareViewPool, R.string.share_view_pool)
+        sw(PrefB.bpDontUseStreaming, R.string.dont_use_streaming_api)
+        sw(PrefB.bpDontRefreshOnResume, R.string.dont_refresh_on_activity_resume)
+        text(PrefS.spMediaReadTimeout, R.string.timeout_for_embed_media_viewer, InputTypeEx.number)
         action(R.string.delete_custom_emoji_cache) {
             action = {
                 App1.custom_emoji_cache.delete()
@@ -996,9 +993,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     }
 
     section(R.string.developer_options) {
-        sw(Pref.bpCheckBetaVersion, R.string.check_beta_release)
+        sw(PrefB.bpCheckBetaVersion, R.string.check_beta_release)
 
-        sw(Pref.bpEmojiPickerCategoryOther, R.string.show_emoji_picker_other_category)
+        sw(PrefB.bpEmojiPickerCategoryOther, R.string.show_emoji_picker_other_category)
         action(R.string.drawable_list) {
             action = { startActivity(Intent(this, ActDrawableList::class.java)) }
         }

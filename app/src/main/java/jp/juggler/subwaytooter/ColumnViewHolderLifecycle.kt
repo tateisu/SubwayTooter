@@ -31,7 +31,7 @@ fun ColumnViewHolder.closeBitmaps() {
 
 fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
     try {
-        if (url == null || url.isEmpty() || Pref.bpDontShowColumnBackgroundImage(activity.pref)) {
+        if (url == null || url.isEmpty() || PrefB.bpDontShowColumnBackgroundImage(activity.pref)) {
             // 指定がないなら閉じる
             closeBitmaps()
             return
@@ -111,7 +111,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         ColumnViewHolder.log.d("onPageCreate [$pageIdx] ${column.getColumnName(true)}")
 
         val bSimpleList =
-            column.type != ColumnType.CONVERSATION && Pref.bpSimpleList(activity.pref)
+            column.type != ColumnType.CONVERSATION && PrefB.bpSimpleList(activity.pref)
 
         tvColumnIndex.text = activity.getString(R.string.column_index, pageIdx + 1, pageCount)
         tvColumnStatus.text = "?"
@@ -203,7 +203,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
                 btnEmojiAdd.vg(false)
 
                 etSearch.vg(true)
-                btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
+                btnSearchClear.vg(PrefB.bpShowSearchClear(activity.pref))
                 cbResolve.vg(column.type == ColumnType.SEARCH)
             }
 
@@ -254,7 +254,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         listView.adapter = statusAdapter
 
         //XXX FastScrollerのサポートを諦める。ライブラリはいくつかあるんだけど、設定でON/OFFできなかったり頭文字バブルを無効にできなかったり
-        // listView.isFastScrollEnabled = ! Pref.bpDisableFastScroller(Pref.pref(activity))
+        // listView.isFastScrollEnabled = ! PrefB.bpDisableFastScroller(Pref.pref(activity))
 
         column.addColumnViewHolder(this)
 
@@ -263,7 +263,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         fun dip(dp: Int): Int = (activity.density * dp + 0.5f).toInt()
         val context = activity
 
-        val announcementsBgColor = Pref.ipAnnouncementsBgColor(App1.pref).notZero()
+        val announcementsBgColor = PrefI.ipAnnouncementsBgColor(App1.pref).notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
         btnAnnouncementsCutout.apply {
@@ -276,7 +276,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
             setPadding(0, padV, 0, padV)
         }
 
-        val searchBgColor = Pref.ipSearchBgColor(App1.pref).notZero()
+        val searchBgColor = PrefI.ipSearchBgColor(App1.pref).notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
         llSearch.apply {

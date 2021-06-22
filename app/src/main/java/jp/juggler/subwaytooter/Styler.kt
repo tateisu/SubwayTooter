@@ -36,9 +36,9 @@ object Styler {
         }
 
     fun getVisibilityIconId(isMisskeyData: Boolean, visibility: TootVisibility): Int {
-        val isMisskey = when (Pref.ipVisibilityStyle(App1.pref)) {
-            Pref.VS_MASTODON -> false
-            Pref.VS_MISSKEY -> true
+        val isMisskey = when (PrefI.ipVisibilityStyle(App1.pref)) {
+            PrefI.VS_MASTODON -> false
+            PrefI.VS_MISSKEY -> true
             else -> isMisskeyData
         }
         return when {
@@ -84,9 +84,9 @@ object Styler {
         isMisskeyData: Boolean,
         visibility: TootVisibility
     ): String {
-        val isMisskey = when (Pref.ipVisibilityStyle(App1.pref)) {
-            Pref.VS_MASTODON -> false
-            Pref.VS_MISSKEY -> true
+        val isMisskey = when (PrefI.ipVisibilityStyle(App1.pref)) {
+            PrefI.VS_MASTODON -> false
+            PrefI.VS_MISSKEY -> true
             else -> isMisskeyData
         }
         return context.getString(
@@ -174,11 +174,11 @@ object Styler {
         alphaMultiplier: Float
     ) {
         fun colorAccent() =
-            Pref.ipButtonFollowingColor(context.pref()).notZero()
+            PrefI.ipButtonFollowingColor(context.pref()).notZero()
                 ?: context.attrColor(R.attr.colorImageButtonAccent)
 
         fun colorError() =
-            Pref.ipButtonFollowRequestColor(context.pref()).notZero()
+            PrefI.ipButtonFollowRequestColor(context.pref()).notZero()
                 ?: context.attrColor(R.attr.colorRegexFilterError)
 
         // 被フォロー状態
@@ -299,13 +299,13 @@ object Styler {
         val widthDp = dm.widthPixels / dm.density
         if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
             val pad_lr = (0.5f + dpDelta * dm.density).toInt()
-            when (Pref.ipJustifyWindowContentPortrait(App1.pref)) {
-                Pref.JWCP_START -> {
+            when (PrefI.ipJustifyWindowContentPortrait(App1.pref)) {
+                PrefI.JWCP_START -> {
                     v.setPaddingRelative(pad_lr, pad_t, pad_lr + dm.widthPixels / 2, pad_b)
                     return
                 }
 
-                Pref.JWCP_END -> {
+                PrefI.JWCP_END -> {
                     v.setPaddingRelative(pad_lr + dm.widthPixels / 2, pad_t, pad_lr, pad_b)
                     return
                 }
@@ -328,14 +328,14 @@ object Styler {
             log.d("fixHorizontalMargin: orientation=$orientationString, w=${widthDp}dp, h=${dm.heightPixels / dm.density}")
 
             if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                when (Pref.ipJustifyWindowContentPortrait(App1.pref)) {
-                    Pref.JWCP_START -> {
+                when (PrefI.ipJustifyWindowContentPortrait(App1.pref)) {
+                    PrefI.JWCP_START -> {
                         lp.marginStart = 0
                         lp.marginEnd = dm.widthPixels / 2
                         return
                     }
 
-                    Pref.JWCP_END -> {
+                    PrefI.JWCP_END -> {
                         lp.marginStart = dm.widthPixels / 2
                         lp.marginEnd = 0
                         return

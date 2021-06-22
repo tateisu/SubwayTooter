@@ -424,7 +424,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         btnNotificationSoundReset = findViewById(R.id.btnNotificationSoundReset)
         btnNotificationStyleEdit = findViewById(R.id.btnNotificationStyleEdit)
         btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
-        btnNotificationStyleEditReply.vg(Pref.bpSeparateReplyNotificationGroup(pref))
+        btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup(pref))
 
         nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
         noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -894,7 +894,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         launchMain {
             runApiTask(account) { client ->
                 client.authentication1(
-                    Pref.spClientName(this@ActAccountSetting),
+                    PrefS.spClientName(this@ActAccountSetting),
                     forceUpdateClient = true
                 )
             }?.let { result ->

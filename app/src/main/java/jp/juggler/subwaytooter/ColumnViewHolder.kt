@@ -226,7 +226,7 @@ class ColumnViewHolder(
         showAnnouncements(force = false)
     }
 
-    val procRestorescrollposition = object : Runnable {
+    val procRestoreScrollPosition = object : Runnable {
         override fun run() {
             activity.handler.removeCallbacks(this)
 
@@ -347,7 +347,7 @@ class ColumnViewHolder(
             }
         }
 
-        if (Pref.bpShareViewPool(activity.pref)) {
+        if (PrefB.bpShareViewPool(activity.pref)) {
             listView.setRecycledViewPool(activity.viewPool)
         }
         listView.itemAnimator = null
@@ -420,7 +420,7 @@ class ColumnViewHolder(
             cbWithHighlight,
         ).forEach { it.setOnCheckedChangeListener(this) }
 
-        if (Pref.bpMoveNotificationsQuickFilter(activity.pref)) {
+        if (PrefB.bpMoveNotificationsQuickFilter(activity.pref)) {
             (svQuickFilter.parent as? ViewGroup)?.removeView(svQuickFilter)
             llColumnSettingInside.addView(svQuickFilter, 0)
 
@@ -543,9 +543,738 @@ class ColumnViewHolder(
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) =
         onCheckedChangedImpl(buttonView, isChecked)
 
-    fun inflate(activity: ActMain, parent: ViewGroup) = with(activity.UI {}) {
-        val b = Benchmark(log, "Item-Inflate", 40L)
+    private fun _LinearLayout.inflateColumnHeader() {
+        llColumnHeader = customView<OutsideDrawerLayout> {
+            lparams(matchParent, wrapContent)
+
+            orientation = LinearLayout.VERTICAL
+
+            background = ContextCompat.getDrawable(context, R.drawable.bg_column_header)
+            startPadding = dip(12)
+            endPadding = dip(12)
+            topPadding = dip(3)
+            bottomPadding = dip(3)
+
+            linearLayout {
+                lparams(matchParent, wrapContent)
+                gravity = Gravity.BOTTOM
+
+                tvColumnContext = textView {
+                    gravity = Gravity.END
+                    startPadding = dip(4)
+                    endPadding = dip(4)
+                    textColor = context.attrColor(R.attr.colorColumnHeaderAcct)
+                    textSize = 12f
+                }.lparams(0, wrapContent) {
+                    weight = 1f
+                }
+
+                tvColumnStatus = textView {
+                    gravity = Gravity.END
+                    textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                    textSize = 12f
+                }.lparams(wrapContent, wrapContent) {
+                    marginStart = dip(12)
+                }
+
+                tvColumnIndex = textView {
+                    gravity = Gravity.END
+                    textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                    textSize = 12f
+                }.lparams(wrapContent, wrapContent) {
+                    marginStart = dip(4)
+                }
+            }
+
+            linearLayout {
+                lparams(matchParent, wrapContent) {
+                    topMargin = dip(0)
+                }
+                gravity = Gravity.CENTER_VERTICAL
+                isBaselineAligned = false
+
+                ivColumnIcon = imageView {
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                }.lparams(dip(32), dip(32)) {
+                    endMargin = dip(4)
+                }
+
+                tvColumnName = textView {
+                    // Kannada語の  "ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್" の上下が途切れることがあるらしい
+                    // GS10+では再現しなかった
+                }.lparams(dip(0), wrapContent) {
+                    weight = 1f
+                }
+
+                frameLayout {
+                    lparams(wrapContent, wrapContent) {
+                        gravity = Gravity.CENTER_VERTICAL
+                        startMargin = dip(2)
+                    }
+                    clipChildren = false
+
+                    btnAnnouncements = imageButton {
+                        background = ContextCompat.getDrawable(
+                            context,
+                            R.drawable.btn_bg_transparent_round6dp
+                        )
+                        contentDescription = context.getString(R.string.announcements)
+                        setImageResource(R.drawable.ic_info_outline)
+                        padding = dip(8)
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+
+                        btnAnnouncementsCutout = Paint().apply {
+                            isAntiAlias = true
+                        }
+                        val path = Path()
+                        addOutsideDrawer(this) { canvas, parent, view, left, top ->
+                            if (llAnnouncementsBox.visibility == View.VISIBLE) {
+                                val viewW = view.width
+                                val viewH = view.height
+                                val triTopX = (left + viewW / 2).toFloat()
+                                val triTopY = top.toFloat() + viewH * 0.75f
+                                val triBottomLeft = left.toFloat()
+                                val triBottomRight = (left + viewW).toFloat()
+                                val triBottom = parent.height.toFloat()
+                                path.reset()
+                                path.moveTo(triTopX, triTopY)
+                                path.lineTo(triBottomRight, triBottom)
+                                path.lineTo(triBottomLeft, triBottom)
+                                path.lineTo(triTopX, triTopY)
+                                canvas.drawPath(path, btnAnnouncementsCutout)
+                            }
+                        }
+                    }.lparams(dip(40), dip(40))
+
+                    btnAnnouncementsBadge = imageView {
+                        setImageResource(R.drawable.announcements_dot)
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                    }.lparams(dip(7), dip(7)) {
+                        gravity = Gravity.END or Gravity.TOP
+                        endMargin = dip(4)
+                        topMargin = dip(4)
+                    }
+                }
+
+                frameLayout {
+                    lparams(wrapContent, wrapContent) {
+                        gravity = Gravity.CENTER_VERTICAL
+                        startMargin = dip(2)
+                    }
+                    clipChildren = false
+
+                    btnColumnSetting = imageButton {
+                        background =
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.btn_bg_transparent_round6dp
+                            )
+                        contentDescription = context.getString(R.string.setting)
+                        setImageResource(R.drawable.ic_tune)
+                        padding = dip(8)
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+
+                        val paint = Paint().apply {
+                            isAntiAlias = true
+                            color =
+                                context.attrColor(R.attr.colorColumnSettingBackground)
+                        }
+                        val path = Path()
+                        addOutsideDrawer(this) { canvas, parent, view, left, top ->
+                            if (llColumnSetting.visibility == View.VISIBLE) {
+                                val viewW = view.width
+                                val viewH = view.height
+                                val triTopX = (left + viewW / 2).toFloat()
+                                val triTopY = top.toFloat() + viewH * 0.75f
+                                val triBottomLeft = left.toFloat()
+                                val triBottomRight = (left + viewW).toFloat()
+                                val triBottom = parent.height.toFloat()
+                                path.reset()
+                                path.moveTo(triTopX, triTopY)
+                                path.lineTo(triBottomRight, triBottom)
+                                path.lineTo(triBottomLeft, triBottom)
+                                path.lineTo(triTopX, triTopY)
+                                canvas.drawPath(path, paint)
+                            }
+                        }
+                    }.lparams(dip(40), dip(40))
+                }
+
+                btnColumnReload = imageButton {
+                    background =
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.btn_bg_transparent_round6dp
+                        )
+                    contentDescription = context.getString(R.string.reload)
+                    setImageResource(R.drawable.ic_refresh)
+                    padding = dip(8)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                }.lparams(dip(40), dip(40)) {
+                    gravity = Gravity.CENTER_VERTICAL
+                    startMargin = dip(2)
+                }
+
+                btnColumnClose = imageButton {
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
+                    contentDescription = context.getString(R.string.close_column)
+                    setImageResource(R.drawable.ic_close)
+                    padding = dip(8)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                }.lparams(dip(40), dip(40)) {
+                    gravity = Gravity.CENTER_VERTICAL
+                    startMargin = dip(2)
+                }
+            }
+        } // end of column header
+    }
+
+    private fun _LinearLayout.inflateColumnSetting() {
         var label: TextView? = null
+        llColumnSetting = maxHeightScrollView {
+            lparams(matchParent, wrapContent)
+            isScrollbarFadingEnabled = false
+            maxHeight = dip(240)
+
+            backgroundColor =
+                context.attrColor(R.attr.colorColumnSettingBackground)
+
+            llColumnSettingInside = verticalLayout {
+                lparams(matchParent, wrapContent)
+
+                startPadding = dip(12)
+                endPadding = dip(12)
+                topPadding = dip(3)
+                bottomPadding = dip(3)
+
+                llHashtagExtra = verticalLayout {
+                    lparams(matchParent, wrapContent)
+
+                    label = textView {
+                        textColor =
+                            context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                        text = context.getString(R.string.hashtag_extra_any)
+                    }.lparams(matchParent, wrapContent)
+
+                    etHashtagExtraAny = editText {
+                        id = View.generateViewId()
+                        inputType = InputType.TYPE_CLASS_TEXT
+                        maxLines = 1
+                        setHorizontallyScrolling(true)
+                        isHorizontalScrollBarEnabled = true
+                    }.lparams(matchParent, wrapContent)
+                    label?.labelFor = etHashtagExtraAny.id
+
+                    label = textView {
+                        textColor =
+                            context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                        text = context.getString(R.string.hashtag_extra_all)
+                    }.lparams(matchParent, wrapContent)
+
+                    etHashtagExtraAll = editText {
+                        id = View.generateViewId()
+                        inputType = InputType.TYPE_CLASS_TEXT
+                        maxLines = 1
+                        setHorizontallyScrolling(true)
+                        isHorizontalScrollBarEnabled = true
+                    }.lparams(matchParent, wrapContent)
+                    label?.labelFor = etHashtagExtraAll.id
+
+                    label = textView {
+                        textColor =
+                            context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                        text = context.getString(R.string.hashtag_extra_none)
+                    }.lparams(matchParent, wrapContent)
+
+                    etHashtagExtraNone = editText {
+                        id = View.generateViewId()
+                        inputType = InputType.TYPE_CLASS_TEXT
+                        maxLines = 1
+                        setHorizontallyScrolling(true)
+                        isHorizontalScrollBarEnabled = true
+                    }.lparams(matchParent, wrapContent)
+                    label?.labelFor = etHashtagExtraNone.id
+                } // end of hashtag extra
+
+                cbDontCloseColumn = checkBox {
+                    text = context.getString(R.string.dont_close_column)
+                }.lparams(matchParent, wrapContent)
+
+                cbRemoteOnly = checkBox {
+                    text = context.getString(R.string.remote_only)
+                }.lparams(matchParent, wrapContent)
+
+                cbWithAttachment = checkBox {
+                    text = context.getString(R.string.with_attachment)
+                }.lparams(matchParent, wrapContent)
+
+                cbWithHighlight = checkBox {
+                    text = context.getString(R.string.with_highlight)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowBoost = checkBox {
+                    text = context.getString(R.string.dont_show_boost)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowFavourite = checkBox {
+                    text = context.getString(R.string.dont_show_favourite)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowFollow = checkBox {
+                    text = context.getString(R.string.dont_show_follow)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowReply = checkBox {
+                    text = context.getString(R.string.dont_show_reply)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowReaction = checkBox {
+                    text = context.getString(R.string.dont_show_reaction)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowVote = checkBox {
+                    text = context.getString(R.string.dont_show_vote)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowNormalToot = checkBox {
+                    text = context.getString(R.string.dont_show_normal_toot)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontShowNonPublicToot = checkBox {
+                    text = context.getString(R.string.dont_show_non_public_toot)
+                }.lparams(matchParent, wrapContent)
+
+                cbInstanceLocal = checkBox {
+                    text = context.getString(R.string.instance_local)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontStreaming = checkBox {
+                    text = context.getString(R.string.dont_use_streaming_api)
+                }.lparams(matchParent, wrapContent)
+
+                cbDontAutoRefresh = checkBox {
+                    text = context.getString(R.string.dont_refresh_on_activity_resume)
+                }.lparams(matchParent, wrapContent)
+
+                cbHideMediaDefault = checkBox {
+                    text = context.getString(R.string.hide_media_default)
+                }.lparams(matchParent, wrapContent)
+
+                cbSystemNotificationNotRelated = checkBox {
+                    text = context.getString(R.string.system_notification_not_related)
+                }.lparams(matchParent, wrapContent)
+
+                cbEnableSpeech = checkBox {
+                    text = context.getString(R.string.enable_speech)
+                }.lparams(matchParent, wrapContent)
+
+                cbOldApi = checkBox {
+                    text = context.getString(R.string.use_old_api)
+                }.lparams(matchParent, wrapContent)
+
+                llRegexFilter = linearLayout {
+                    lparams(matchParent, wrapContent)
+
+                    label = textView {
+                        textColor =
+                            context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                        text = context.getString(R.string.regex_filter)
+                    }.lparams(wrapContent, wrapContent)
+
+                    tvRegexFilterError = textView {
+                        textColor = context.attrColor(R.attr.colorRegexFilterError)
+                    }.lparams(0, wrapContent) {
+                        weight = 1f
+                        startMargin = dip(4)
+                    }
+                }
+
+                etRegexFilter = editText {
+                    id = View.generateViewId()
+                    inputType = InputType.TYPE_CLASS_TEXT
+                    maxLines = 1
+                    setHorizontallyScrolling(true)
+                    isHorizontalScrollBarEnabled = true
+                }.lparams(matchParent, wrapContent)
+
+                label?.labelFor = etRegexFilter.id
+
+                btnDeleteNotification = button {
+                    isAllCaps = false
+                    text = context.getString(R.string.notification_delete)
+                }.lparams(matchParent, wrapContent)
+
+                btnColor = button {
+                    isAllCaps = false
+                    text = context.getString(R.string.color_and_background)
+                }.lparams(matchParent, wrapContent)
+
+                btnLanguageFilter = button {
+                    isAllCaps = false
+                    text = context.getString(R.string.language_filter)
+                }.lparams(matchParent, wrapContent)
+            }
+        } // end of column setting scroll view
+    }
+
+    private fun _LinearLayout.inflateAnnouncementsBox() {
+        llAnnouncementsBox = verticalLayout {
+            lparams(matchParent, wrapContent) {
+                startMargin = dip(6)
+                endMargin = dip(6)
+                bottomMargin = dip(2)
+            }
+
+            val buttonHeight = ActMain.boostButtonSize
+            val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+            val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+
+            linearLayout {
+                lparams(matchParent, wrapContent)
+                val padLr = dip(6)
+                setPadding(padLr, 0, padLr, 0)
+
+                background = ContextCompat.getDrawable(
+                    context,
+                    R.drawable.btn_bg_transparent_round6dp
+                )
+
+                gravity = Gravity.CENTER_VERTICAL or Gravity.END
+
+                tvAnnouncementsCaption = textView {
+                    gravity = Gravity.END or Gravity.CENTER_VERTICAL
+                    text = context.getString(R.string.announcements)
+                }.lparams(0, wrapContent) {
+                    weight = 1f
+                }
+
+                btnAnnouncementsPrev = imageButton {
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
+                    contentDescription = context.getString(R.string.previous)
+                    imageResource = R.drawable.ic_arrow_start
+                    setPadding(paddingH, paddingV, paddingH, paddingV)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                }.lparams(buttonHeight, buttonHeight) {
+                    marginStart = dip(4)
+                }
+
+                tvAnnouncementsIndex = textView {
+                }.lparams(wrapContent, wrapContent) {
+                    marginStart = dip(4)
+                }
+
+                btnAnnouncementsNext = imageButton {
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
+                    contentDescription = context.getString(R.string.next)
+                    imageResource = R.drawable.ic_arrow_end
+                    setPadding(paddingH, paddingV, paddingH, paddingV)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                }.lparams(buttonHeight, buttonHeight) {
+                    marginStart = dip(4)
+                }
+            }
+
+            llAnnouncements = maxHeightScrollView {
+                lparams(matchParent, wrapContent) {
+                    topMargin = dip(1)
+                }
+
+                val padLr = dip(6)
+                val padTb = dip(2)
+                setPadding(padLr, padTb, padLr, padTb)
+
+                scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
+                isScrollbarFadingEnabled = false
+
+                maxHeight = dip(240)
+
+                verticalLayout {
+                    lparams(matchParent, wrapContent)
+
+                    // 期間があれば表示する
+                    tvAnnouncementPeriod = textView {
+                        gravity = Gravity.END
+                    }.lparams(matchParent, wrapContent) {
+                        bottomMargin = dip(3)
+                    }
+
+                    tvAnnouncementContent = myTextView {
+                        setLineSpacing(lineSpacingExtra, 1.1f)
+                        // tools:text="Contents\nContents"
+                    }.lparams(matchParent, wrapContent) {
+                        topMargin = dip(3)
+                    }
+
+                    llAnnouncementExtra = verticalLayout {
+                        lparams(matchParent, wrapContent) {
+                            topMargin = dip(3)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateSearchBar() {
+        llSearch = verticalLayout {
+            lparams(matchParent, wrapContent)
+
+            linearLayout {
+                lparams(matchParent, wrapContent)
+                isBaselineAligned = false
+                gravity = Gravity.CENTER
+
+                etSearch = editText {
+                    id = View.generateViewId()
+                    imeOptions = EditorInfo.IME_ACTION_SEARCH
+                    inputType = InputType.TYPE_CLASS_TEXT
+                    maxLines = 1
+                }.lparams(0, wrapContent) {
+                    weight = 1f
+                }
+
+                flEmoji = flexboxLayout {
+                    flexWrap = FlexWrap.WRAP
+                    justifyContent = JustifyContent.FLEX_START
+                }.lparams(0, wrapContent) {
+                    weight = 1f
+                }
+
+                btnEmojiAdd = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.add)
+                    imageResource = R.drawable.ic_add
+                    imageTintList = ColorStateList.valueOf(
+                        context.attrColor(R.attr.colorVectorDrawable)
+                    )
+                }.lparams(dip(40), dip(40)) {
+                    startMargin = dip(4)
+                }
+
+                btnSearchClear = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.clear)
+                    imageResource = R.drawable.ic_close
+                    imageTintList = ColorStateList.valueOf(
+                        context.attrColor(R.attr.colorVectorDrawable)
+                    )
+                }.lparams(dip(40), dip(40)) {
+                    startMargin = dip(4)
+                }
+
+                btnSearch = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.search)
+                    imageResource = R.drawable.ic_search
+                    imageTintList = ColorStateList.valueOf(
+                        context.attrColor(R.attr.colorVectorDrawable)
+                    )
+                }.lparams(dip(40), dip(40)) {
+                    startMargin = dip(4)
+                }
+            }
+
+            cbResolve = checkBox {
+                text = context.getString(R.string.resolve_non_local_account)
+            }.lparams(wrapContent, wrapContent) // チェックボックスの余白はタッチ判定外
+
+            tvEmojiDesc = textView {
+                text = context.getString(R.string.long_tap_to_delete)
+                textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                textSize = 12f
+            }.lparams(wrapContent, wrapContent)
+        } // end of search bar
+    }
+
+    private fun _LinearLayout.inflateListBar() {
+        llListList = linearLayout {
+            lparams(matchParent, wrapContent)
+
+            isBaselineAligned = false
+            gravity = Gravity.CENTER
+
+            etListName = editText {
+                hint = context.getString(R.string.list_create_hint)
+                imeOptions = EditorInfo.IME_ACTION_SEND
+                inputType = InputType.TYPE_CLASS_TEXT
+            }.lparams(0, wrapContent) {
+                weight = 1f
+            }
+
+            btnListAdd = imageButton {
+                backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                contentDescription = context.getString(R.string.add)
+                imageResource = R.drawable.ic_add
+                imageTintList = ColorStateList.valueOf(
+                    context.attrColor(
+                        R.attr.colorVectorDrawable
+                    )
+                )
+            }.lparams(dip(40), dip(40)) {
+                startMargin = dip(4)
+            }
+        } // end of list bar header
+    }
+
+    private fun _LinearLayout.inflateQuickFilter() {
+        svQuickFilter = horizontalScrollView {
+            lparams(matchParent, wrapContent)
+            isFillViewport = true
+            linearLayout {
+                lparams(matchParent, dip(40))
+
+                btnQuickFilterAll = button {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    minWidthCompat = dip(40)
+                    startPadding = dip(4)
+                    endPadding = dip(4)
+                    isAllCaps = false
+                    stateListAnimator = null
+                    text = context.getString(R.string.all)
+                }.lparams(wrapContent, matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterMention = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.mention2)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterFavourite = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.favourite)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterBoost = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.boost)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterFollow = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.follow)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterPost = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.notification_type_post)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterReaction = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.reaction)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+
+                btnQuickFilterVote = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.vote_polls)
+                }.lparams(dip(40), matchParent) {
+                    margin = 0
+                }
+            }
+        } // end of notification quick filter bar
+    }
+
+    private fun _LinearLayout.inflateColumnBody(actMain: ActMain) {
+        flColumnBackground = frameLayout {
+            ivColumnBackgroundImage = imageView {
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                visibility = View.GONE
+            }.lparams(matchParent, matchParent)
+
+            llLoading = verticalLayout {
+                lparams(matchParent, matchParent)
+
+                isBaselineAligned = false
+
+                gravity = Gravity.CENTER
+
+                tvLoading = textView {
+                    gravity = Gravity.CENTER
+                }.lparams(matchParent, wrapContent)
+
+                btnConfirmMail = button {
+                    text = context.getString(R.string.resend_confirm_mail)
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
+                }.lparams(matchParent, wrapContent) {
+                    topMargin = dip(8)
+                }
+            }
+
+            refreshLayout = swipyRefreshLayout {
+                lparams(matchParent, matchParent)
+
+                direction = SwipyRefreshLayoutDirection.BOTH
+
+                // スタイルで指定しないとAndroid 6 で落ちる…
+                listView = recyclerView {
+                    listLayoutManager = LinearLayoutManager(actMain)
+                    layoutManager = listLayoutManager
+                }.lparams(matchParent, matchParent) {
+                }
+            }
+
+            llRefreshError = frameLayout {
+                foregroundGravity = Gravity.BOTTOM
+                backgroundResource = R.drawable.bg_refresh_error
+
+                startPadding = dip(6)
+                endPadding = dip(6)
+                topPadding = dip(3)
+                bottomPadding = dip(3)
+
+                ivRefreshError = imageView {
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                    imageResource = R.drawable.ic_error
+                    imageTintList = ColorStateList.valueOf(Color.RED)
+                }.lparams(dip(24), dip(24)) {
+                    gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                    startMargin = dip(4)
+                }
+
+                tvRefreshError = textView {
+                    textColor = Color.WHITE
+                }.lparams(matchParent, wrapContent) {
+                    gravity = Gravity.TOP or Gravity.START
+                    startMargin = dip(32)
+                }
+            }.lparams(matchParent, wrapContent) {
+                margin = dip(6)
+            }
+        }.lparams(matchParent, 0) {
+            weight = 1f
+        }
+    }
+
+    fun inflate(actMain: ActMain, parent: ViewGroup) = with(actMain.UI {}) {
+        val b = Benchmark(log, "Item-Inflate", 40L)
         val rv = verticalLayout {
             // トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
             val lp = parent.generateLayoutParamsEx()
@@ -557,723 +1286,13 @@ class ColumnViewHolder(
                 }
                 layoutParams = lp
             }
-
-            llColumnHeader = customView<OutsideDrawerLayout> {
-                lparams(matchParent, wrapContent)
-
-                orientation = LinearLayout.VERTICAL
-
-                background = ContextCompat.getDrawable(context, R.drawable.bg_column_header)
-                startPadding = dip(12)
-                endPadding = dip(12)
-                topPadding = dip(3)
-                bottomPadding = dip(3)
-
-                linearLayout {
-                    lparams(matchParent, wrapContent)
-                    gravity = Gravity.BOTTOM
-
-                    tvColumnContext = textView {
-                        gravity = Gravity.END
-                        startPadding = dip(4)
-                        endPadding = dip(4)
-                        textColor = context.attrColor(R.attr.colorColumnHeaderAcct)
-                        textSize = 12f
-                    }.lparams(0, wrapContent) {
-                        weight = 1f
-                    }
-
-                    tvColumnStatus = textView {
-                        gravity = Gravity.END
-                        textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                        textSize = 12f
-                    }.lparams(wrapContent, wrapContent) {
-                        marginStart = dip(12)
-                    }
-
-                    tvColumnIndex = textView {
-                        gravity = Gravity.END
-                        textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                        textSize = 12f
-                    }.lparams(wrapContent, wrapContent) {
-                        marginStart = dip(4)
-                    }
-                }
-
-                linearLayout {
-                    lparams(matchParent, wrapContent) {
-                        topMargin = dip(0)
-                    }
-                    gravity = Gravity.CENTER_VERTICAL
-                    isBaselineAligned = false
-
-                    ivColumnIcon = imageView {
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }.lparams(dip(32), dip(32)) {
-                        endMargin = dip(4)
-                    }
-
-                    tvColumnName = textView {
-                        // Kannada語の  "ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್" の上下が途切れることがあるらしい
-                        // GS10+では再現しなかった
-                    }.lparams(dip(0), wrapContent) {
-                        weight = 1f
-                    }
-
-                    frameLayout {
-                        lparams(wrapContent, wrapContent) {
-                            gravity = Gravity.CENTER_VERTICAL
-                            startMargin = dip(2)
-                        }
-                        clipChildren = false
-
-                        btnAnnouncements = imageButton {
-                            background = ContextCompat.getDrawable(
-                                context,
-                                R.drawable.btn_bg_transparent_round6dp
-                            )
-                            contentDescription = context.getString(R.string.announcements)
-                            setImageResource(R.drawable.ic_info_outline)
-                            padding = dip(8)
-                            scaleType = ImageView.ScaleType.FIT_CENTER
-
-                            btnAnnouncementsCutout = Paint().apply {
-                                isAntiAlias = true
-                            }
-                            val path = Path()
-                            addOutsideDrawer(this) { canvas, parent, view, left, top ->
-                                if (llAnnouncementsBox.visibility == View.VISIBLE) {
-                                    val viewW = view.width
-                                    val viewH = view.height
-                                    val triTopX = (left + viewW / 2).toFloat()
-                                    val triTopY = top.toFloat() + viewH * 0.75f
-                                    val triBottomLeft = left.toFloat()
-                                    val triBottomRight = (left + viewW).toFloat()
-                                    val triBottom = parent.height.toFloat()
-                                    path.reset()
-                                    path.moveTo(triTopX, triTopY)
-                                    path.lineTo(triBottomRight, triBottom)
-                                    path.lineTo(triBottomLeft, triBottom)
-                                    path.lineTo(triTopX, triTopY)
-                                    canvas.drawPath(path, btnAnnouncementsCutout)
-                                }
-                            }
-                        }.lparams(dip(40), dip(40))
-
-                        btnAnnouncementsBadge = imageView {
-                            setImageResource(R.drawable.announcements_dot)
-                            scaleType = ImageView.ScaleType.FIT_CENTER
-                        }.lparams(dip(7), dip(7)) {
-                            gravity = Gravity.END or Gravity.TOP
-                            endMargin = dip(4)
-                            topMargin = dip(4)
-                        }
-                    }
-
-                    frameLayout {
-                        lparams(wrapContent, wrapContent) {
-                            gravity = Gravity.CENTER_VERTICAL
-                            startMargin = dip(2)
-                        }
-                        clipChildren = false
-
-                        btnColumnSetting = imageButton {
-                            background =
-                                ContextCompat.getDrawable(
-                                    context,
-                                    R.drawable.btn_bg_transparent_round6dp
-                                )
-                            contentDescription = context.getString(R.string.setting)
-                            setImageResource(R.drawable.ic_tune)
-                            padding = dip(8)
-                            scaleType = ImageView.ScaleType.FIT_CENTER
-
-                            val paint = Paint().apply {
-                                isAntiAlias = true
-                                color =
-                                    context.attrColor(R.attr.colorColumnSettingBackground)
-                            }
-                            val path = Path()
-                            addOutsideDrawer(this) { canvas, parent, view, left, top ->
-                                if (llColumnSetting.visibility == View.VISIBLE) {
-                                    val viewW = view.width
-                                    val viewH = view.height
-                                    val triTopX = (left + viewW / 2).toFloat()
-                                    val triTopY = top.toFloat() + viewH * 0.75f
-                                    val triBottomLeft = left.toFloat()
-                                    val triBottomRight = (left + viewW).toFloat()
-                                    val triBottom = parent.height.toFloat()
-                                    path.reset()
-                                    path.moveTo(triTopX, triTopY)
-                                    path.lineTo(triBottomRight, triBottom)
-                                    path.lineTo(triBottomLeft, triBottom)
-                                    path.lineTo(triTopX, triTopY)
-                                    canvas.drawPath(path, paint)
-                                }
-                            }
-                        }.lparams(dip(40), dip(40))
-                    }
-
-                    btnColumnReload = imageButton {
-                        background =
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.btn_bg_transparent_round6dp
-                            )
-                        contentDescription = context.getString(R.string.reload)
-                        setImageResource(R.drawable.ic_refresh)
-                        padding = dip(8)
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }.lparams(dip(40), dip(40)) {
-                        gravity = Gravity.CENTER_VERTICAL
-                        startMargin = dip(2)
-                    }
-
-                    btnColumnClose = imageButton {
-                        background = ContextCompat.getDrawable(
-                            context,
-                            R.drawable.btn_bg_transparent_round6dp
-                        )
-                        contentDescription = context.getString(R.string.close_column)
-                        setImageResource(R.drawable.ic_close)
-                        padding = dip(8)
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }.lparams(dip(40), dip(40)) {
-                        gravity = Gravity.CENTER_VERTICAL
-                        startMargin = dip(2)
-                    }
-                }
-            } // end of column header
-
-            llColumnSetting = maxHeightScrollView {
-                lparams(matchParent, wrapContent)
-                isScrollbarFadingEnabled = false
-                maxHeight = dip(240)
-
-                backgroundColor =
-                    context.attrColor(R.attr.colorColumnSettingBackground)
-
-                llColumnSettingInside = verticalLayout {
-                    lparams(matchParent, wrapContent)
-
-                    startPadding = dip(12)
-                    endPadding = dip(12)
-                    topPadding = dip(3)
-                    bottomPadding = dip(3)
-
-                    llHashtagExtra = verticalLayout {
-                        lparams(matchParent, wrapContent)
-
-                        label = textView {
-                            textColor =
-                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                            text = context.getString(R.string.hashtag_extra_any)
-                        }.lparams(matchParent, wrapContent)
-
-                        etHashtagExtraAny = editText {
-                            id = View.generateViewId()
-                            inputType = InputType.TYPE_CLASS_TEXT
-                            maxLines = 1
-                            setHorizontallyScrolling(true)
-                            isHorizontalScrollBarEnabled = true
-                        }.lparams(matchParent, wrapContent)
-                        label?.labelFor = etHashtagExtraAny.id
-
-                        label = textView {
-                            textColor =
-                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                            text = context.getString(R.string.hashtag_extra_all)
-                        }.lparams(matchParent, wrapContent)
-
-                        etHashtagExtraAll = editText {
-                            id = View.generateViewId()
-                            inputType = InputType.TYPE_CLASS_TEXT
-                            maxLines = 1
-                            setHorizontallyScrolling(true)
-                            isHorizontalScrollBarEnabled = true
-                        }.lparams(matchParent, wrapContent)
-                        label?.labelFor = etHashtagExtraAll.id
-
-                        label = textView {
-                            textColor =
-                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                            text = context.getString(R.string.hashtag_extra_none)
-                        }.lparams(matchParent, wrapContent)
-
-                        etHashtagExtraNone = editText {
-                            id = View.generateViewId()
-                            inputType = InputType.TYPE_CLASS_TEXT
-                            maxLines = 1
-                            setHorizontallyScrolling(true)
-                            isHorizontalScrollBarEnabled = true
-                        }.lparams(matchParent, wrapContent)
-                        label?.labelFor = etHashtagExtraNone.id
-                    } // end of hashtag extra
-
-                    cbDontCloseColumn = checkBox {
-                        text = context.getString(R.string.dont_close_column)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbRemoteOnly = checkBox {
-                        text = context.getString(R.string.remote_only)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbWithAttachment = checkBox {
-                        text = context.getString(R.string.with_attachment)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbWithHighlight = checkBox {
-                        text = context.getString(R.string.with_highlight)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowBoost = checkBox {
-                        text = context.getString(R.string.dont_show_boost)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowFavourite = checkBox {
-                        text = context.getString(R.string.dont_show_favourite)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowFollow = checkBox {
-                        text = context.getString(R.string.dont_show_follow)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowReply = checkBox {
-                        text = context.getString(R.string.dont_show_reply)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowReaction = checkBox {
-                        text = context.getString(R.string.dont_show_reaction)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowVote = checkBox {
-                        text = context.getString(R.string.dont_show_vote)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowNormalToot = checkBox {
-                        text = context.getString(R.string.dont_show_normal_toot)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontShowNonPublicToot = checkBox {
-                        text = context.getString(R.string.dont_show_non_public_toot)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbInstanceLocal = checkBox {
-                        text = context.getString(R.string.instance_local)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontStreaming = checkBox {
-                        text = context.getString(R.string.dont_use_streaming_api)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbDontAutoRefresh = checkBox {
-                        text = context.getString(R.string.dont_refresh_on_activity_resume)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbHideMediaDefault = checkBox {
-                        text = context.getString(R.string.hide_media_default)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbSystemNotificationNotRelated = checkBox {
-                        text = context.getString(R.string.system_notification_not_related)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbEnableSpeech = checkBox {
-                        text = context.getString(R.string.enable_speech)
-                    }.lparams(matchParent, wrapContent)
-
-                    cbOldApi = checkBox {
-                        text = context.getString(R.string.use_old_api)
-                    }.lparams(matchParent, wrapContent)
-
-                    llRegexFilter = linearLayout {
-                        lparams(matchParent, wrapContent)
-
-                        label = textView {
-                            textColor =
-                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                            text = context.getString(R.string.regex_filter)
-                        }.lparams(wrapContent, wrapContent)
-
-                        tvRegexFilterError = textView {
-                            textColor = context.attrColor(R.attr.colorRegexFilterError)
-                        }.lparams(0, wrapContent) {
-                            weight = 1f
-                            startMargin = dip(4)
-                        }
-                    }
-
-                    etRegexFilter = editText {
-                        id = View.generateViewId()
-                        inputType = InputType.TYPE_CLASS_TEXT
-                        maxLines = 1
-                        setHorizontallyScrolling(true)
-                        isHorizontalScrollBarEnabled = true
-                    }.lparams(matchParent, wrapContent)
-
-                    label?.labelFor = etRegexFilter.id
-
-                    btnDeleteNotification = button {
-                        isAllCaps = false
-                        text = context.getString(R.string.notification_delete)
-                    }.lparams(matchParent, wrapContent)
-
-                    btnColor = button {
-                        isAllCaps = false
-                        text = context.getString(R.string.color_and_background)
-                    }.lparams(matchParent, wrapContent)
-
-                    btnLanguageFilter = button {
-                        isAllCaps = false
-                        text = context.getString(R.string.language_filter)
-                    }.lparams(matchParent, wrapContent)
-                }
-            } // end of column setting scroll view
-
-            llAnnouncementsBox = verticalLayout {
-                lparams(matchParent, wrapContent) {
-                    startMargin = dip(6)
-                    endMargin = dip(6)
-                    bottomMargin = dip(2)
-                }
-
-                val buttonHeight = ActMain.boostButtonSize
-                val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
-                val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
-
-                linearLayout {
-                    lparams(matchParent, wrapContent)
-                    val padLr = dip(6)
-                    setPadding(padLr, 0, padLr, 0)
-
-                    background = ContextCompat.getDrawable(
-                        context,
-                        R.drawable.btn_bg_transparent_round6dp
-                    )
-
-                    gravity = Gravity.CENTER_VERTICAL or Gravity.END
-
-                    tvAnnouncementsCaption = textView {
-                        gravity = Gravity.END or Gravity.CENTER_VERTICAL
-                        text = context.getString(R.string.announcements)
-                    }.lparams(0, wrapContent) {
-                        weight = 1f
-                    }
-
-                    btnAnnouncementsPrev = imageButton {
-                        background = ContextCompat.getDrawable(
-                            context,
-                            R.drawable.btn_bg_transparent_round6dp
-                        )
-                        contentDescription = context.getString(R.string.previous)
-                        imageResource = R.drawable.ic_arrow_start
-                        setPadding(paddingH, paddingV, paddingH, paddingV)
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }.lparams(buttonHeight, buttonHeight) {
-                        marginStart = dip(4)
-                    }
-
-                    tvAnnouncementsIndex = textView {
-                    }.lparams(wrapContent, wrapContent) {
-                        marginStart = dip(4)
-                    }
-
-                    btnAnnouncementsNext = imageButton {
-                        background = ContextCompat.getDrawable(
-                            context,
-                            R.drawable.btn_bg_transparent_round6dp
-                        )
-                        contentDescription = context.getString(R.string.next)
-                        imageResource = R.drawable.ic_arrow_end
-                        setPadding(paddingH, paddingV, paddingH, paddingV)
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }.lparams(buttonHeight, buttonHeight) {
-                        marginStart = dip(4)
-                    }
-                }
-
-                llAnnouncements = maxHeightScrollView {
-                    lparams(matchParent, wrapContent) {
-                        topMargin = dip(1)
-                    }
-
-                    val padLr = dip(6)
-                    val padTb = dip(2)
-                    setPadding(padLr, padTb, padLr, padTb)
-
-                    scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
-                    isScrollbarFadingEnabled = false
-
-                    maxHeight = dip(240)
-
-                    verticalLayout {
-                        lparams(matchParent, wrapContent)
-
-                        // 期間があれば表示する
-                        tvAnnouncementPeriod = textView {
-                            gravity = Gravity.END
-                        }.lparams(matchParent, wrapContent) {
-                            bottomMargin = dip(3)
-                        }
-
-                        tvAnnouncementContent = myTextView {
-                            setLineSpacing(lineSpacingExtra, 1.1f)
-                            // tools:text="Contents\nContents"
-                        }.lparams(matchParent, wrapContent) {
-                            topMargin = dip(3)
-                        }
-
-                        llAnnouncementExtra = verticalLayout {
-                            lparams(matchParent, wrapContent) {
-                                topMargin = dip(3)
-                            }
-                        }
-                    }
-                }
-            }
-
-            llSearch = verticalLayout {
-                lparams(matchParent, wrapContent)
-
-                linearLayout {
-                    lparams(matchParent, wrapContent)
-                    isBaselineAligned = false
-                    gravity = Gravity.CENTER
-
-                    etSearch = editText {
-                        id = View.generateViewId()
-                        imeOptions = EditorInfo.IME_ACTION_SEARCH
-                        inputType = InputType.TYPE_CLASS_TEXT
-                        maxLines = 1
-                    }.lparams(0, wrapContent) {
-                        weight = 1f
-                    }
-
-                    flEmoji = flexboxLayout {
-                        flexWrap = FlexWrap.WRAP
-                        justifyContent = JustifyContent.FLEX_START
-                    }.lparams(0, wrapContent) {
-                        weight = 1f
-                    }
-
-                    btnEmojiAdd = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.add)
-                        imageResource = R.drawable.ic_add
-                        imageTintList = ColorStateList.valueOf(
-                            context.attrColor(R.attr.colorVectorDrawable)
-                        )
-                    }.lparams(dip(40), dip(40)) {
-                        startMargin = dip(4)
-                    }
-
-                    btnSearchClear = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.clear)
-                        imageResource = R.drawable.ic_close
-                        imageTintList = ColorStateList.valueOf(
-                            context.attrColor(R.attr.colorVectorDrawable)
-                        )
-                    }.lparams(dip(40), dip(40)) {
-                        startMargin = dip(4)
-                    }
-
-                    btnSearch = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.search)
-                        imageResource = R.drawable.ic_search
-                        imageTintList = ColorStateList.valueOf(
-                            context.attrColor(R.attr.colorVectorDrawable)
-                        )
-                    }.lparams(dip(40), dip(40)) {
-                        startMargin = dip(4)
-                    }
-                }
-
-                cbResolve = checkBox {
-                    text = context.getString(R.string.resolve_non_local_account)
-                }.lparams(wrapContent, wrapContent) // チェックボックスの余白はタッチ判定外
-
-                tvEmojiDesc = textView {
-                    text = context.getString(R.string.long_tap_to_delete)
-                    textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
-                    textSize = 12f
-                }.lparams(wrapContent, wrapContent)
-            } // end of search bar
-
-            llListList = linearLayout {
-                lparams(matchParent, wrapContent)
-
-                isBaselineAligned = false
-                gravity = Gravity.CENTER
-
-                etListName = editText {
-                    hint = context.getString(R.string.list_create_hint)
-                    imeOptions = EditorInfo.IME_ACTION_SEND
-                    inputType = InputType.TYPE_CLASS_TEXT
-                }.lparams(0, wrapContent) {
-                    weight = 1f
-                }
-
-                btnListAdd = imageButton {
-                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                    contentDescription = context.getString(R.string.add)
-                    imageResource = R.drawable.ic_add
-                    imageTintList = ColorStateList.valueOf(
-                        context.attrColor(
-                            R.attr.colorVectorDrawable
-                        )
-                    )
-                }.lparams(dip(40), dip(40)) {
-                    startMargin = dip(4)
-                }
-            } // end of list list header
-
-            svQuickFilter = horizontalScrollView {
-                lparams(matchParent, wrapContent)
-                isFillViewport = true
-                linearLayout {
-                    lparams(matchParent, dip(40))
-
-                    btnQuickFilterAll = button {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        minWidthCompat = dip(40)
-                        startPadding = dip(4)
-                        endPadding = dip(4)
-                        isAllCaps = false
-                        stateListAnimator = null
-                        text = context.getString(R.string.all)
-                    }.lparams(wrapContent, matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterMention = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.mention2)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterFavourite = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.favourite)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterBoost = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.boost)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterFollow = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.follow)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterPost = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.notification_type_post)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterReaction = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.reaction)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-
-                    btnQuickFilterVote = imageButton {
-                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                        contentDescription = context.getString(R.string.vote_polls)
-                    }.lparams(dip(40), matchParent) {
-                        margin = 0
-                    }
-                }
-            } // end of notification quick filter bar
-
-            flColumnBackground = frameLayout {
-
-                ivColumnBackgroundImage = imageView {
-                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                    visibility = View.GONE
-                }.lparams(matchParent, matchParent)
-
-                llLoading = verticalLayout {
-                    lparams(matchParent, matchParent)
-
-                    isBaselineAligned = false
-
-                    gravity = Gravity.CENTER
-
-                    tvLoading = textView {
-                        gravity = Gravity.CENTER
-                    }.lparams(matchParent, wrapContent)
-
-                    btnConfirmMail = button {
-                        text = activity.getString(R.string.resend_confirm_mail)
-                        background = ContextCompat.getDrawable(
-                            activity,
-                            R.drawable.btn_bg_transparent_round6dp
-                        )
-                    }.lparams(matchParent, wrapContent) {
-                        topMargin = dip(8)
-                    }
-                }
-
-                refreshLayout = swipyRefreshLayout {
-                    lparams(matchParent, matchParent)
-
-                    direction = SwipyRefreshLayoutDirection.BOTH
-
-                    // スタイルで指定しないとAndroid 6 で落ちる…
-                    listView = recyclerView {
-                        listLayoutManager = LinearLayoutManager(activity)
-                        layoutManager = listLayoutManager
-                    }.lparams(matchParent, matchParent) {
-                    }
-                }
-
-                llRefreshError = frameLayout {
-
-                    foregroundGravity = Gravity.BOTTOM
-                    backgroundResource = R.drawable.bg_refresh_error
-
-                    startPadding = dip(6)
-                    endPadding = dip(6)
-                    topPadding = dip(3)
-                    bottomPadding = dip(3)
-
-                    ivRefreshError = imageView {
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                        imageResource = R.drawable.ic_error
-                        imageTintList = ColorStateList.valueOf(Color.RED)
-                    }.lparams(dip(24), dip(24)) {
-                        gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                        startMargin = dip(4)
-                    }
-
-                    tvRefreshError = textView {
-                        textColor = Color.WHITE
-                    }.lparams(matchParent, wrapContent) {
-                        gravity = Gravity.TOP or Gravity.START
-                        startMargin = dip(32)
-                    }
-                }.lparams(matchParent, wrapContent) {
-                    margin = dip(6)
-                }
-            }.lparams(matchParent, 0) {
-                weight = 1f
-            }
+            inflateColumnHeader()
+            inflateColumnSetting()
+            inflateAnnouncementsBox()
+            inflateSearchBar()
+            inflateListBar()
+            inflateQuickFilter()
+            inflateColumnBody(actMain)
         }
         b.report()
         rv

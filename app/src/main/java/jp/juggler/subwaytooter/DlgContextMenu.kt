@@ -266,7 +266,7 @@ internal class DlgContextMenu(
         } else {
             val statusByMe = accessInfo.isMe(status.account)
 
-            if (Pref.bpLinksInContextMenu(activity.pref) && contentTextView != null) {
+            if (PrefB.bpLinksInContextMenu(activity.pref) && contentTextView != null) {
 
                 var insPos = 0
 
@@ -344,11 +344,11 @@ internal class DlgContextMenu(
         llNotification.vg(notification != null)
 
         val colorButtonAccent =
-            Pref.ipButtonFollowingColor(activity.pref).notZero()
+            PrefI.ipButtonFollowingColor(activity.pref).notZero()
                 ?: activity.attrColor(R.attr.colorImageButtonAccent)
 
         val colorButtonError =
-            Pref.ipButtonFollowRequestColor(activity.pref).notZero()
+            PrefI.ipButtonFollowRequestColor(activity.pref).notZero()
                 ?: activity.attrColor(R.attr.colorRegexFilterError)
 
         val colorButtonNormal =
@@ -426,7 +426,7 @@ internal class DlgContextMenu(
                 )
 
                 btnDomainTimeline.vg(
-                    Pref.bpEnableDomainTimeline(activity.pref) &&
+                    PrefB.bpEnableDomainTimeline(activity.pref) &&
                         !accessInfo.isPseudo &&
                         !accessInfo.isMisskey
                 )
@@ -563,7 +563,7 @@ internal class DlgContextMenu(
         }
 
         when {
-            Pref.bpAlwaysExpandContextMenuItems(activity.pref) -> {
+            PrefB.bpAlwaysExpandContextMenuItems(activity.pref) -> {
                 group.vg(true)
                 btn.background = null
             }
@@ -638,7 +638,7 @@ internal class DlgContextMenu(
     private fun ActMain.onClickUser(v: View, pos: Int, who: TootAccount, whoRef: TootAccountRef): Boolean {
         when (v.id) {
             R.id.btnReportUser -> userReportForm(accessInfo, who)
-            R.id.btnFollow -> clickFollow(pos, accessInfo, who, whoRef, relation)
+            R.id.btnFollow -> clickFollow(pos, accessInfo, whoRef, relation)
             R.id.btnMute -> clickMute(accessInfo, who, relation)
             R.id.btnBlock -> clickBlock(accessInfo, who, relation)
             R.id.btnAccountText -> launchActText(ActText.createIntent(activity, accessInfo, who))
@@ -763,7 +763,7 @@ internal class DlgContextMenu(
                 activity.mentionFromAnotherAccount(accessInfo, who)
             }
 
-            R.id.btnMute ->  activity.userMuteFromAnotherAccount(who, accessInfo)
+            R.id.btnMute -> activity.userMuteFromAnotherAccount(who, accessInfo)
             R.id.btnBlock -> activity.userBlockFromAnotherAccount(who, accessInfo)
             R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(accessInfo, status)
             R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(accessInfo, status?.reblogParent)

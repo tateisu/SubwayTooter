@@ -64,7 +64,7 @@ class ItemViewHolder(
     lateinit var ivFollowedBy: ImageView
 
     lateinit var llStatus: View
-    lateinit var ivThumbnail: MyNetworkImageView
+    lateinit var ivAvatar: MyNetworkImageView
     lateinit var tvName: TextView
     lateinit var tvTime: TextView
     lateinit var tvAcct: TextView
@@ -189,7 +189,7 @@ class ItemViewHolder(
             ivCardImage,
             btnCardImageHide,
             btnCardImageShow,
-            ivThumbnail,
+            ivAvatar,
             llBoosted,
             llReply,
             llFollow,
@@ -211,7 +211,7 @@ class ItemViewHolder(
             llReply,
             llFollow,
             llConversationIcons,
-            ivThumbnail,
+            ivAvatar,
             llTrendTag
         )) {
             v.setOnLongClickListener(this)
@@ -290,8 +290,8 @@ class ItemViewHolder(
         }
 
         var s = activity.avatarIconSize
-        ivThumbnail.layoutParams.height = s
-        ivThumbnail.layoutParams.width = s
+        ivAvatar.layoutParams.height = s
+        ivAvatar.layoutParams.width = s
         ivFollow.layoutParams.width = s
         ivBoosted.layoutParams.width = s
 
@@ -343,7 +343,605 @@ class ItemViewHolder(
 
     /////////////////////////////////////////////////////////////////////
 
-    fun inflate(activity: ActMain) = with(activity.UI {}) {
+    private fun _LinearLayout.inflateBoosted() {
+        llBoosted = linearLayout {
+            lparams(matchParent, wrapContent) {
+                bottomMargin = dip(6)
+            }
+            backgroundResource = R.drawable.btn_bg_transparent_round6dp
+            gravity = Gravity.CENTER_VERTICAL
+
+            ivBoosted = imageView {
+                scaleType = ImageView.ScaleType.FIT_END
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }.lparams(dip(48), dip(32)) {
+                endMargin = dip(4)
+            }
+
+            verticalLayout {
+                lparams(dip(0), wrapContent) {
+                    weight = 1f
+                }
+
+                linearLayout {
+                    lparams(matchParent, wrapContent)
+
+                    tvBoostedAcct = textView {
+                        ellipsize = TextUtils.TruncateAt.END
+                        gravity = Gravity.END
+                        maxLines = 1
+                        textSize = 12f // textSize の単位はSP
+                        // tools:text ="who@hoge"
+                    }.lparams(dip(0), wrapContent) {
+                        weight = 1f
+                    }
+
+                    tvBoostedTime = textView {
+
+                        startPadding = dip(2)
+
+                        gravity = Gravity.END
+                        textSize = 12f // textSize の単位はSP
+                        // tools:ignore="RtlSymmetry"
+                        // tools:text="2017-04-16 09:37:14"
+                    }.lparams(wrapContent, wrapContent)
+                }
+
+                tvBoosted = textView {
+                    // tools:text = "～にブーストされました"
+                }.lparams(matchParent, wrapContent)
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateFollowed() {
+        llFollow = linearLayout {
+            lparams(matchParent, wrapContent)
+
+            background =
+                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            gravity = Gravity.CENTER_VERTICAL
+
+            ivFollow = myNetworkImageView {
+                contentDescription = context.getString(R.string.thumbnail)
+                scaleType = ImageView.ScaleType.FIT_END
+            }.lparams(dip(48), dip(40)) {
+                endMargin = dip(4)
+            }
+
+            verticalLayout {
+
+                lparams(dip(0), wrapContent) {
+                    weight = 1f
+                }
+
+                tvFollowerName = textView {
+                    // tools:text="Follower Name"
+                }.lparams(matchParent, wrapContent)
+
+                tvFollowerAcct = textView {
+                    setPaddingStartEnd(dip(4), dip(4))
+                    textSize = 12f // SP
+                }.lparams(matchParent, wrapContent)
+
+                tvLastStatusAt = myTextView {
+                    setPaddingStartEnd(dip(4), dip(4))
+                    textSize = 12f // SP
+                }.lparams(matchParent, wrapContent)
+            }
+
+            frameLayout {
+                lparams(dip(40), dip(40)) {
+                    startMargin = dip(4)
+                }
+
+                btnFollow = imageButton {
+                    background =
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.btn_bg_transparent_round6dp
+                        )
+                    contentDescription = context.getString(R.string.follow)
+                    scaleType = ImageView.ScaleType.CENTER
+                    // tools:src="?attr/ic_follow_plus"
+                }.lparams(matchParent, matchParent)
+
+                ivFollowedBy = imageView {
+                    scaleType = ImageView.ScaleType.CENTER
+                    // tools:src="?attr/ic_followed_by"
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }.lparams(matchParent, matchParent)
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateVerticalMediaOne(thumbnailHeight: Int) =
+        myNetworkImageView {
+            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+            contentDescription = context.getString(R.string.thumbnail)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }.lparams(matchParent, thumbnailHeight) {
+            topMargin = dip(3)
+        }
+
+    private fun _LinearLayout.inflateVerticalMedia(thumbnailHeight: Int) =
+        frameLayout {
+            lparams(matchParent, wrapContent) {
+                topMargin = dip(3)
+            }
+            llMedia = verticalLayout {
+                lparams(matchParent, matchParent)
+
+                btnHideMedia = imageButton {
+                    background =
+                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                    contentDescription = context.getString(R.string.hide)
+                    imageResource = R.drawable.ic_close
+                }.lparams(dip(32), dip(32)) {
+                    gravity = Gravity.END
+                }
+                ivMedia1 = inflateVerticalMediaOne(thumbnailHeight)
+                ivMedia2 = inflateVerticalMediaOne(thumbnailHeight)
+                ivMedia3 = inflateVerticalMediaOne(thumbnailHeight)
+                ivMedia4 = inflateVerticalMediaOne(thumbnailHeight)
+            }
+
+            btnShowMedia = blurhashView {
+                errorColor = context.attrColor(R.attr.colorShowMediaBackground)
+                gravity = Gravity.CENTER
+                textColor = context.attrColor(R.attr.colorShowMediaText)
+                minHeightCompat = dip(48)
+            }.lparams(matchParent, thumbnailHeight)
+        }
+
+    private fun _LinearLayout.inflateHorizontalMediaOne(trail: Boolean) =
+        myNetworkImageView {
+            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+            contentDescription = context.getString(R.string.thumbnail)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }.lparams(0, matchParent) {
+            weight = 1f
+            if (trail) startMargin = dip(8)
+        }
+
+    private fun _LinearLayout.inflateHorizontalMedia(thumbnailHeight: Int): View {
+        return frameLayout {
+            lparams(matchParent, thumbnailHeight) { topMargin = dip(3) }
+            llMedia = linearLayout {
+                lparams(matchParent, matchParent)
+                ivMedia1 = inflateHorizontalMediaOne(trail = false)
+                ivMedia2 = inflateHorizontalMediaOne(trail = true)
+                ivMedia3 = inflateHorizontalMediaOne(trail = true)
+                ivMedia4 = inflateHorizontalMediaOne(trail = true)
+                btnHideMedia = imageButton {
+                    background =
+                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                    contentDescription = context.getString(R.string.hide)
+                    imageResource = R.drawable.ic_close
+                }.lparams(dip(32), matchParent) {
+                    startMargin = dip(8)
+                }
+            }
+
+            btnShowMedia = blurhashView {
+                errorColor = context.attrColor(R.attr.colorShowMediaBackground)
+                textColor = context.attrColor(R.attr.colorShowMediaText)
+                gravity = Gravity.CENTER
+            }.lparams(matchParent, matchParent)
+        }
+    }
+
+    private fun _LinearLayout.inflateCard(actMain: ActMain) {
+        llCardOuter = verticalLayout {
+            lparams(matchParent, wrapContent) {
+                topMargin = dip(3)
+                startMargin = dip(12)
+                endMargin = dip(6)
+            }
+            padding = dip(3)
+            bottomPadding = dip(6)
+
+            background = PreviewCardBorder()
+
+            tvCardText = myTextView {
+            }.lparams(matchParent, wrapContent) {
+            }
+
+            flCardImage = frameLayout {
+                lparams(matchParent, actMain.appState.mediaThumbHeight) {
+                    topMargin = dip(3)
+                }
+
+                llCardImage = linearLayout {
+                    lparams(matchParent, matchParent)
+
+                    ivCardImage = myNetworkImageView {
+                        contentDescription = context.getString(R.string.thumbnail)
+                        scaleType = when {
+                            PrefB.bpDontCropMediaThumb(App1.pref) -> ImageView.ScaleType.FIT_CENTER
+                            else -> ImageView.ScaleType.CENTER_CROP
+                        }
+                    }.lparams(0, matchParent) {
+                        weight = 1f
+                    }
+                    btnCardImageHide = imageButton {
+                        background =
+                            ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                        contentDescription = context.getString(R.string.hide)
+                        imageResource = R.drawable.ic_close
+                    }.lparams(dip(32), matchParent) {
+                        startMargin = dip(4)
+                    }
+                }
+
+                btnCardImageShow = blurhashView {
+                    errorColor = context.attrColor(R.attr.colorShowMediaBackground)
+                    textColor = context.attrColor(R.attr.colorShowMediaText)
+                    gravity = Gravity.CENTER
+                }.lparams(matchParent, matchParent)
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateStatusReplyInfo() {
+        llReply = linearLayout {
+            lparams(matchParent, wrapContent) {
+                bottomMargin = dip(3)
+            }
+
+            background =
+                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            gravity = Gravity.CENTER_VERTICAL
+
+            ivReply = imageView {
+                scaleType = ImageView.ScaleType.FIT_END
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                padding = dip(4)
+            }.lparams(dip(32), dip(32)) {
+                endMargin = dip(4)
+            }
+
+            tvReply = textView {
+            }.lparams(dip(0), wrapContent) {
+                weight = 1f
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateStatusContentWarning() {
+        llContentWarning = linearLayout {
+            lparams(matchParent, wrapContent) {
+                topMargin = dip(3)
+                isBaselineAligned = false
+            }
+            gravity = Gravity.CENTER_VERTICAL
+
+            btnContentWarning = button {
+                backgroundDrawable =
+                    ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
+                minWidthCompat = dip(40)
+                padding = dip(4)
+                //tools:text="見る"
+            }.lparams(wrapContent, dip(40)) {
+                endMargin = dip(8)
+            }
+
+            verticalLayout {
+                lparams(dip(0), wrapContent) {
+                    weight = 1f
+                }
+
+                tvMentions = myTextView {}.lparams(matchParent, wrapContent)
+
+                tvContentWarning = myTextView {
+                }.lparams(matchParent, wrapContent) {
+                    topMargin = dip(3)
+                }
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateStatusContents(actMain: ActMain) {
+        llContents = verticalLayout {
+            lparams(matchParent, wrapContent)
+
+            tvContent = myTextView {
+                setLineSpacing(lineSpacingExtra, 1.1f)
+                // tools:text="Contents\nContents"
+            }.lparams(matchParent, wrapContent) {
+                topMargin = dip(3)
+            }
+
+            val thumbnailHeight = actMain.appState.mediaThumbHeight
+            flMedia = when (PrefB.bpVerticalArrangeThumbnails(actMain.pref)) {
+                true -> inflateVerticalMedia(thumbnailHeight)
+                else -> inflateHorizontalMedia(thumbnailHeight)
+            }
+
+            tvMediaDescription = textView {}.lparams(matchParent, wrapContent)
+
+            inflateCard(actMain)
+
+            llExtra = verticalLayout {
+                lparams(matchParent, wrapContent) {
+                    topMargin = dip(0)
+                }
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateStatusButtons(actMain: ActMain) {
+        // button bar
+        statusButtonsViewHolder = StatusButtonsViewHolder(
+            actMain,
+            matchParent,
+            3f,
+            justifyContent = when (PrefI.ipBoostButtonJustify(App1.pref)) {
+                0 -> JustifyContent.FLEX_START
+                1 -> JustifyContent.CENTER
+                else -> JustifyContent.FLEX_END
+            }
+        )
+        llButtonBar = statusButtonsViewHolder.viewRoot
+        addView(llButtonBar)
+    }
+
+    private fun _LinearLayout.inflateOpenSticker() {
+
+        llOpenSticker = linearLayout {
+            lparams(matchParent, wrapContent)
+
+            ivOpenSticker = myNetworkImageView {
+            }.lparams(dip(16), dip(16)) {
+                isBaselineAligned = false
+            }
+
+            tvOpenSticker = textView {
+                setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
+                gravity = Gravity.CENTER_VERTICAL
+                setPaddingStartEnd(dip(4f), dip(4f))
+            }.lparams(0, dip(16)) {
+                isBaselineAligned = false
+                weight = 1f
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateStatusAcctTime() {
+        linearLayout {
+            lparams(matchParent, wrapContent)
+            tvAcct = textView {
+                ellipsize = TextUtils.TruncateAt.END
+                gravity = Gravity.END
+                maxLines = 1
+                textSize = 12f // SP
+                // tools:text="who@hoge"
+            }.lparams(dip(0), wrapContent) {
+                weight = 1f
+            }
+
+            tvTime = textView {
+                gravity = Gravity.END
+                startPadding = dip(2)
+                textSize = 12f // SP
+                // tools:ignore="RtlSymmetry"
+                // tools:text="2017-04-16 09:37:14"
+            }.lparams(wrapContent, wrapContent)
+        }
+    }
+
+    private fun _LinearLayout.inflateStatusAvatar() {
+        ivAvatar = myNetworkImageView {
+            background =
+                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            contentDescription = context.getString(R.string.thumbnail)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }.lparams(dip(48), dip(48)) {
+            topMargin = dip(4)
+            endMargin = dip(4)
+        }
+    }
+
+    private fun _LinearLayout.inflateStatus(actMain: ActMain) {
+        llStatus = verticalLayout {
+            lparams(matchParent, wrapContent)
+
+            inflateStatusAcctTime()
+
+            // horizontal split : avatar and other
+            linearLayout {
+                lparams(matchParent, wrapContent)
+                inflateStatusAvatar()
+                verticalLayout {
+                    lparams(0, wrapContent) { weight = 1f }
+
+                    tvName = textView {
+                    }.lparams(matchParent, wrapContent)
+
+                    inflateOpenSticker()
+                    inflateStatusReplyInfo()
+                    inflateStatusContentWarning()
+                    inflateStatusContents(actMain)
+                    inflateStatusButtons(actMain)
+
+                    tvApplication = textView {
+                        gravity = Gravity.END
+                    }.lparams(matchParent, wrapContent)
+                }
+            }
+        }
+    }
+
+    fun _LinearLayout.inflateConversationIconOne() =
+        myNetworkImageView {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }.lparams(dip(24), dip(24)) {
+            endMargin = dip(3)
+        }
+
+    private fun _LinearLayout.inflateConversationIcons() {
+        llConversationIcons = linearLayout {
+            lparams(matchParent, dip(40))
+
+            isBaselineAligned = false
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+
+            tvConversationParticipants = textView {
+                text = context.getString(R.string.participants)
+            }.lparams(wrapContent, wrapContent) {
+                endMargin = dip(3)
+            }
+
+            ivConversationIcon1 = inflateConversationIconOne()
+            ivConversationIcon2 = inflateConversationIconOne()
+            ivConversationIcon3 = inflateConversationIconOne()
+            ivConversationIcon4 = inflateConversationIconOne()
+
+            tvConversationIconsMore = textView {}.lparams(wrapContent, wrapContent)
+        }
+    }
+
+    private fun _LinearLayout.inflateSearchTag() {
+        llSearchTag = linearLayout {
+            lparams(matchParent, wrapContent)
+
+            btnSearchTag = button {
+                background =
+                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                allCaps = false
+            }.lparams(0, wrapContent) {
+                weight = 1f
+            }
+
+            btnGapHead = imageButton {
+                background = ContextCompat.getDrawable(
+                    context,
+                    R.drawable.btn_bg_transparent_round6dp
+                )
+                contentDescription = context.getString(R.string.read_gap_head)
+                imageResource = R.drawable.ic_arrow_drop_down
+            }.lparams(dip(32), matchParent) {
+                startMargin = dip(8)
+            }
+
+            btnGapTail = imageButton {
+                background = ContextCompat.getDrawable(
+                    context,
+                    R.drawable.btn_bg_transparent_round6dp
+                )
+                contentDescription = context.getString(R.string.read_gap_tail)
+                imageResource = R.drawable.ic_arrow_drop_up
+            }.lparams(dip(32), matchParent) {
+                startMargin = dip(8)
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateTrendTag() {
+        llTrendTag = linearLayout {
+            lparams(matchParent, wrapContent)
+
+            gravity = Gravity.CENTER_VERTICAL
+            background =
+                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+
+            verticalLayout {
+                lparams(0, wrapContent) {
+                    weight = 1f
+                }
+
+                tvTrendTagName = textView {}.lparams(matchParent, wrapContent)
+
+                tvTrendTagDesc = textView {
+                    textSize = 12f // SP
+                }.lparams(matchParent, wrapContent)
+            }
+            tvTrendTagCount = textView {}.lparams(wrapContent, wrapContent) {
+                startMargin = dip(6)
+                endMargin = dip(6)
+            }
+
+            cvTagHistory = trendTagHistoryView {}.lparams(dip(64), dip(32))
+        }
+    }
+
+    private fun _LinearLayout.inflateList() {
+        llList = linearLayout {
+            lparams(matchParent, wrapContent)
+
+            gravity = Gravity.CENTER_VERTICAL
+            isBaselineAligned = false
+            minimumHeight = dip(40)
+
+            btnListTL = button {
+                background =
+                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                allCaps = false
+            }.lparams(0, wrapContent) {
+                weight = 1f
+            }
+
+            btnListMore = imageButton {
+                background =
+                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                imageResource = R.drawable.ic_more
+                contentDescription = context.getString(R.string.more)
+            }.lparams(dip(40), matchParent) {
+                startMargin = dip(4)
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateMessageHolder() {
+        tvMessageHolder = textView {
+            padding = dip(4)
+        }.lparams(matchParent, wrapContent)
+    }
+
+    private fun _LinearLayout.inflateFollowRequest() {
+        llFollowRequest = linearLayout {
+            lparams(matchParent, wrapContent) {
+                topMargin = dip(6)
+            }
+            gravity = Gravity.END
+
+            btnFollowRequestAccept = imageButton {
+                background =
+                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                contentDescription = context.getString(R.string.follow_accept)
+                imageResource = R.drawable.ic_check
+                setPadding(0, 0, 0, 0)
+            }.lparams(dip(48f), dip(32f))
+
+            btnFollowRequestDeny = imageButton {
+                background =
+                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                contentDescription = context.getString(R.string.follow_deny)
+                imageResource = R.drawable.ic_close
+                setPadding(0, 0, 0, 0)
+            }.lparams(dip(48f), dip(32f)) {
+                startMargin = dip(4)
+            }
+        }
+    }
+
+    private fun _LinearLayout.inflateFilter() {
+        llFilter = verticalLayout {
+            lparams(matchParent, wrapContent) {
+            }
+            minimumHeight = dip(40)
+
+            tvFilterPhrase = textView {
+                typeface = Typeface.DEFAULT_BOLD
+            }.lparams(matchParent, wrapContent)
+
+            tvFilterDetail = textView {
+                textSize = 12f // SP
+            }.lparams(matchParent, wrapContent)
+        }
+    }
+
+    fun inflate(actMain: ActMain) = with(actMain.UI {}) {
         val b = Benchmark(log, "Item-Inflate", 40L)
         val rv = verticalLayout {
             // トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
@@ -360,634 +958,17 @@ class ItemViewHolder(
 
             descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
 
-            llBoosted = linearLayout {
-                lparams(matchParent, wrapContent) {
-                    bottomMargin = dip(6)
-                }
-                backgroundResource = R.drawable.btn_bg_transparent_round6dp
-                gravity = Gravity.CENTER_VERTICAL
-
-                ivBoosted = imageView {
-                    scaleType = ImageView.ScaleType.FIT_END
-                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                }.lparams(dip(48), dip(32)) {
-                    endMargin = dip(4)
-                }
-
-                verticalLayout {
-                    lparams(dip(0), wrapContent) {
-                        weight = 1f
-                    }
-
-                    linearLayout {
-                        lparams(matchParent, wrapContent)
-
-                        tvBoostedAcct = textView {
-                            ellipsize = TextUtils.TruncateAt.END
-                            gravity = Gravity.END
-                            maxLines = 1
-                            textSize = 12f // textSize の単位はSP
-                            // tools:text ="who@hoge"
-                        }.lparams(dip(0), wrapContent) {
-                            weight = 1f
-                        }
-
-                        tvBoostedTime = textView {
-
-                            startPadding = dip(2)
-
-                            gravity = Gravity.END
-                            textSize = 12f // textSize の単位はSP
-                            // tools:ignore="RtlSymmetry"
-                            // tools:text="2017-04-16 09:37:14"
-                        }.lparams(wrapContent, wrapContent)
-                    }
-
-                    tvBoosted = textView {
-                        // tools:text = "～にブーストされました"
-                    }.lparams(matchParent, wrapContent)
-                }
-            }
-
-            llFollow = linearLayout {
-                lparams(matchParent, wrapContent)
-
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                gravity = Gravity.CENTER_VERTICAL
-
-                ivFollow = myNetworkImageView {
-                    contentDescription = context.getString(R.string.thumbnail)
-                    scaleType = ImageView.ScaleType.FIT_END
-                }.lparams(dip(48), dip(40)) {
-                    endMargin = dip(4)
-                }
-
-                verticalLayout {
-
-                    lparams(dip(0), wrapContent) {
-                        weight = 1f
-                    }
-
-                    tvFollowerName = textView {
-                        // tools:text="Follower Name"
-                    }.lparams(matchParent, wrapContent)
-
-                    tvFollowerAcct = textView {
-                        setPaddingStartEnd(dip(4), dip(4))
-                        textSize = 12f // SP
-                    }.lparams(matchParent, wrapContent)
-
-                    tvLastStatusAt = myTextView {
-                        setPaddingStartEnd(dip(4), dip(4))
-                        textSize = 12f // SP
-                    }.lparams(matchParent, wrapContent)
-                }
-
-                frameLayout {
-                    lparams(dip(40), dip(40)) {
-                        startMargin = dip(4)
-                    }
-
-                    btnFollow = imageButton {
-                        background =
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.btn_bg_transparent_round6dp
-                            )
-                        contentDescription = context.getString(R.string.follow)
-                        scaleType = ImageView.ScaleType.CENTER
-                        // tools:src="?attr/ic_follow_plus"
-                    }.lparams(matchParent, matchParent)
-
-                    ivFollowedBy = imageView {
-                        scaleType = ImageView.ScaleType.CENTER
-                        // tools:src="?attr/ic_followed_by"
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                    }.lparams(matchParent, matchParent)
-                }
-            }
-
-            llStatus = verticalLayout {
-                lparams(matchParent, wrapContent)
-
-                linearLayout {
-                    lparams(matchParent, wrapContent)
-
-                    tvAcct = textView {
-                        ellipsize = TextUtils.TruncateAt.END
-                        gravity = Gravity.END
-                        maxLines = 1
-                        textSize = 12f // SP
-                        // tools:text="who@hoge"
-                    }.lparams(dip(0), wrapContent) {
-                        weight = 1f
-                    }
-
-                    tvTime = textView {
-                        gravity = Gravity.END
-                        startPadding = dip(2)
-                        textSize = 12f // SP
-                        // tools:ignore="RtlSymmetry"
-                        // tools:text="2017-04-16 09:37:14"
-                    }.lparams(wrapContent, wrapContent)
-                }
-
-                linearLayout {
-                    lparams(matchParent, wrapContent)
-
-                    ivThumbnail = myNetworkImageView {
-                        background =
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.btn_bg_transparent_round6dp
-                            )
-                        contentDescription = context.getString(R.string.thumbnail)
-                        scaleType = ImageView.ScaleType.CENTER_CROP
-                    }.lparams(dip(48), dip(48)) {
-                        topMargin = dip(4)
-                        endMargin = dip(4)
-                    }
-
-                    verticalLayout {
-                        lparams(dip(0), wrapContent) {
-                            weight = 1f
-                        }
-
-                        tvName = textView {
-                        }.lparams(matchParent, wrapContent)
-
-                        llOpenSticker = linearLayout {
-                            lparams(matchParent, wrapContent)
-
-                            ivOpenSticker = myNetworkImageView {
-                            }.lparams(dip(16), dip(16)) {
-                                isBaselineAligned = false
-                            }
-
-                            tvOpenSticker = textView {
-                                setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
-                                gravity = Gravity.CENTER_VERTICAL
-                                setPaddingStartEnd(dip(4f), dip(4f))
-                            }.lparams(0, dip(16)) {
-                                isBaselineAligned = false
-                                weight = 1f
-                            }
-                        }
-
-                        llReply = linearLayout {
-                            lparams(matchParent, wrapContent) {
-                                bottomMargin = dip(3)
-                            }
-
-                            background =
-                                ContextCompat.getDrawable(
-                                    context,
-                                    R.drawable.btn_bg_transparent_round6dp
-                                )
-                            gravity = Gravity.CENTER_VERTICAL
-
-                            ivReply = imageView {
-                                scaleType = ImageView.ScaleType.FIT_END
-                                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                                padding = dip(4)
-                            }.lparams(dip(32), dip(32)) {
-                                endMargin = dip(4)
-                            }
-
-                            tvReply = textView {
-                            }.lparams(dip(0), wrapContent) {
-                                weight = 1f
-                            }
-                        }
-
-                        llContentWarning = linearLayout {
-                            lparams(matchParent, wrapContent) {
-                                topMargin = dip(3)
-                                isBaselineAligned = false
-                            }
-                            gravity = Gravity.CENTER_VERTICAL
-
-                            btnContentWarning = button {
-                                backgroundDrawable =
-                                    ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
-                                minWidthCompat = dip(40)
-                                padding = dip(4)
-                                //tools:text="見る"
-                            }.lparams(wrapContent, dip(40)) {
-                                endMargin = dip(8)
-                            }
-
-                            verticalLayout {
-                                lparams(dip(0), wrapContent) {
-                                    weight = 1f
-                                }
-
-                                tvMentions = myTextView {
-                                }.lparams(matchParent, wrapContent)
-
-                                tvContentWarning = myTextView {
-                                }.lparams(matchParent, wrapContent) {
-                                    topMargin = dip(3)
-                                }
-                            }
-                        }
-
-                        llContents = verticalLayout {
-                            lparams(matchParent, wrapContent)
-
-                            tvContent = myTextView {
-                                setLineSpacing(lineSpacingExtra, 1.1f)
-                                // tools:text="Contents\nContents"
-                            }.lparams(matchParent, wrapContent) {
-                                topMargin = dip(3)
-                            }
-
-                            val thumbnailHeight = activity.appState.mediaThumbHeight
-                            val verticalArrangeThumbnails =
-                                Pref.bpVerticalArrangeThumbnails(activity.pref)
-
-                            flMedia = if (verticalArrangeThumbnails) {
-                                frameLayout {
-                                    lparams(matchParent, wrapContent) {
-                                        topMargin = dip(3)
-                                    }
-                                    llMedia = verticalLayout {
-                                        lparams(matchParent, matchParent)
-
-                                        btnHideMedia = imageButton {
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.btn_bg_transparent_round6dp
-                                            )
-                                            contentDescription = context.getString(R.string.hide)
-                                            imageResource = R.drawable.ic_close
-                                        }.lparams(dip(32), dip(32)) {
-                                            gravity = Gravity.END
-                                        }
-
-                                        ivMedia1 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(matchParent, thumbnailHeight) {
-                                            topMargin = dip(3)
-                                        }
-
-                                        ivMedia2 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(matchParent, thumbnailHeight) {
-                                            topMargin = dip(3)
-                                        }
-
-                                        ivMedia3 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(matchParent, thumbnailHeight) {
-                                            topMargin = dip(3)
-                                        }
-
-                                        ivMedia4 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(matchParent, thumbnailHeight) {
-                                            topMargin = dip(3)
-                                        }
-                                    }
-
-                                    btnShowMedia = blurhashView {
-                                        errorColor = context.attrColor(R.attr.colorShowMediaBackground)
-                                        gravity = Gravity.CENTER
-                                        textColor = context.attrColor(R.attr.colorShowMediaText)
-                                        minHeightCompat = dip(48)
-                                    }.lparams(matchParent, thumbnailHeight)
-                                }
-                            } else {
-                                frameLayout {
-                                    lparams(matchParent, thumbnailHeight) {
-                                        topMargin = dip(3)
-                                    }
-                                    llMedia = linearLayout {
-                                        lparams(matchParent, matchParent)
-
-                                        ivMedia1 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.bg_thumbnail
-                                            )
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(0, matchParent) {
-                                            weight = 1f
-                                        }
-
-                                        ivMedia2 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(0, matchParent) {
-                                            startMargin = dip(8)
-                                            weight = 1f
-                                        }
-
-                                        ivMedia3 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(0, matchParent) {
-                                            startMargin = dip(8)
-                                            weight = 1f
-                                        }
-
-                                        ivMedia4 = myNetworkImageView {
-                                            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-                                            contentDescription = context.getString(R.string.thumbnail)
-                                            scaleType = ImageView.ScaleType.CENTER_CROP
-                                        }.lparams(0, matchParent) {
-                                            startMargin = dip(8)
-                                            weight = 1f
-                                        }
-
-                                        btnHideMedia = imageButton {
-                                            background =
-                                                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                                            contentDescription = context.getString(R.string.hide)
-                                            imageResource = R.drawable.ic_close
-                                        }.lparams(dip(32), matchParent) {
-                                            startMargin = dip(8)
-                                        }
-                                    }
-
-                                    btnShowMedia = blurhashView {
-                                        errorColor = context.attrColor(
-                                            R.attr.colorShowMediaBackground
-                                        )
-                                        gravity = Gravity.CENTER
-
-                                        textColor = context.attrColor(
-                                            R.attr.colorShowMediaText
-                                        )
-                                    }.lparams(matchParent, matchParent)
-                                }
-                            }
-
-                            tvMediaDescription = textView {}.lparams(matchParent, wrapContent)
-
-                            llCardOuter = verticalLayout {
-                                lparams(matchParent, wrapContent) {
-                                    topMargin = dip(3)
-                                    startMargin = dip(12)
-                                    endMargin = dip(6)
-                                }
-                                padding = dip(3)
-                                bottomPadding = dip(6)
-
-                                background = PreviewCardBorder()
-
-                                tvCardText = myTextView {
-                                }.lparams(matchParent, wrapContent) {
-                                }
-
-                                flCardImage = frameLayout {
-                                    lparams(matchParent, activity.appState.mediaThumbHeight) {
-                                        topMargin = dip(3)
-                                    }
-
-                                    llCardImage = linearLayout {
-                                        lparams(matchParent, matchParent)
-
-                                        ivCardImage = myNetworkImageView {
-                                            contentDescription =
-                                                context.getString(R.string.thumbnail)
-
-                                            scaleType = when {
-                                                Pref.bpDontCropMediaThumb(App1.pref) -> ImageView.ScaleType.FIT_CENTER
-                                                else -> ImageView.ScaleType.CENTER_CROP
-                                            }
-                                        }.lparams(0, matchParent) {
-                                            weight = 1f
-                                        }
-                                        btnCardImageHide = imageButton {
-                                            background = ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.btn_bg_transparent_round6dp
-                                            )
-                                            contentDescription = context.getString(R.string.hide)
-                                            imageResource = R.drawable.ic_close
-                                        }.lparams(dip(32), matchParent) {
-                                            startMargin = dip(4)
-                                        }
-                                    }
-
-                                    btnCardImageShow = blurhashView {
-                                        errorColor = context.attrColor(
-                                            R.attr.colorShowMediaBackground
-                                        )
-                                        gravity = Gravity.CENTER
-
-                                        textColor = context.attrColor(
-                                            R.attr.colorShowMediaText
-                                        )
-                                    }.lparams(matchParent, matchParent)
-                                }
-                            }
-
-                            llExtra = verticalLayout {
-                                lparams(matchParent, wrapContent) {
-                                    topMargin = dip(0)
-                                }
-                            }
-                        }
-
-                        // button bar
-                        statusButtonsViewHolder = StatusButtonsViewHolder(
-                            activity,
-                            matchParent,
-                            3f,
-                            justifyContent = when (Pref.ipBoostButtonJustify(App1.pref)) {
-                                0 -> JustifyContent.FLEX_START
-                                1 -> JustifyContent.CENTER
-                                else -> JustifyContent.FLEX_END
-                            }
-                        )
-                        llButtonBar = statusButtonsViewHolder.viewRoot
-                        addView(llButtonBar)
-
-                        tvApplication = textView {
-                            gravity = Gravity.END
-                        }.lparams(matchParent, wrapContent)
-                    }
-                }
-            }
-
-            llConversationIcons = linearLayout {
-                lparams(matchParent, dip(40))
-
-                isBaselineAligned = false
-                gravity = Gravity.START or Gravity.CENTER_VERTICAL
-
-                tvConversationParticipants = textView {
-                    text = context.getString(R.string.participants)
-                }.lparams(wrapContent, wrapContent) {
-                    endMargin = dip(3)
-                }
-
-                ivConversationIcon1 = myNetworkImageView {
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                }.lparams(dip(24), dip(24)) {
-                    endMargin = dip(3)
-                }
-                ivConversationIcon2 = myNetworkImageView {
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                }.lparams(dip(24), dip(24)) {
-                    endMargin = dip(3)
-                }
-                ivConversationIcon3 = myNetworkImageView {
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                }.lparams(dip(24), dip(24)) {
-                    endMargin = dip(3)
-                }
-                ivConversationIcon4 = myNetworkImageView {
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                }.lparams(dip(24), dip(24)) {
-                    endMargin = dip(3)
-                }
-
-                tvConversationIconsMore = textView {}.lparams(wrapContent, wrapContent)
-            }
-
-            llSearchTag = linearLayout {
-                lparams(matchParent, wrapContent)
-
-                btnSearchTag = button {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                    allCaps = false
-                }.lparams(0, wrapContent) {
-                    weight = 1f
-                }
-
-                btnGapHead = imageButton {
-                    background = ContextCompat.getDrawable(
-                        context,
-                        R.drawable.btn_bg_transparent_round6dp
-                    )
-                    contentDescription = context.getString(R.string.read_gap_head)
-                    imageResource = R.drawable.ic_arrow_drop_down
-                }.lparams(dip(32), matchParent) {
-                    startMargin = dip(8)
-                }
-
-                btnGapTail = imageButton {
-                    background = ContextCompat.getDrawable(
-                        context,
-                        R.drawable.btn_bg_transparent_round6dp
-                    )
-                    contentDescription = context.getString(R.string.read_gap_tail)
-                    imageResource = R.drawable.ic_arrow_drop_up
-                }.lparams(dip(32), matchParent) {
-                    startMargin = dip(8)
-                }
-            }
-
-            llTrendTag = linearLayout {
-                lparams(matchParent, wrapContent)
-
-                gravity = Gravity.CENTER_VERTICAL
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-
-                verticalLayout {
-                    lparams(0, wrapContent) {
-                        weight = 1f
-                    }
-
-                    tvTrendTagName = textView {}.lparams(matchParent, wrapContent)
-
-                    tvTrendTagDesc = textView {
-                        textSize = 12f // SP
-                    }.lparams(matchParent, wrapContent)
-                }
-                tvTrendTagCount = textView {}.lparams(wrapContent, wrapContent) {
-                    startMargin = dip(6)
-                    endMargin = dip(6)
-                }
-
-                cvTagHistory = trendTagHistoryView {}.lparams(dip(64), dip(32))
-            }
-
-            llList = linearLayout {
-                lparams(matchParent, wrapContent)
-
-                gravity = Gravity.CENTER_VERTICAL
-                isBaselineAligned = false
-                minimumHeight = dip(40)
-
-                btnListTL = button {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                    allCaps = false
-                }.lparams(0, wrapContent) {
-                    weight = 1f
-                }
-
-                btnListMore = imageButton {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                    imageResource = R.drawable.ic_more
-                    contentDescription = context.getString(R.string.more)
-                }.lparams(dip(40), matchParent) {
-                    startMargin = dip(4)
-                }
-            }
-
-            tvMessageHolder = textView {
-                padding = dip(4)
-            }.lparams(matchParent, wrapContent)
-
-            llFollowRequest = linearLayout {
-                lparams(matchParent, wrapContent) {
-                    topMargin = dip(6)
-                }
-                gravity = Gravity.END
-
-                btnFollowRequestAccept = imageButton {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                    contentDescription = context.getString(R.string.follow_accept)
-                    imageResource = R.drawable.ic_check
-                    setPadding(0, 0, 0, 0)
-                }.lparams(dip(48f), dip(32f))
-
-                btnFollowRequestDeny = imageButton {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                    contentDescription = context.getString(R.string.follow_deny)
-                    imageResource = R.drawable.ic_close
-                    setPadding(0, 0, 0, 0)
-                }.lparams(dip(48f), dip(32f)) {
-                    startMargin = dip(4)
-                }
-            }
-
-            llFilter = verticalLayout {
-                lparams(matchParent, wrapContent) {
-                }
-                minimumHeight = dip(40)
-
-                tvFilterPhrase = textView {
-                    typeface = Typeface.DEFAULT_BOLD
-                }.lparams(matchParent, wrapContent)
-
-                tvFilterDetail = textView {
-                    textSize = 12f // SP
-                }.lparams(matchParent, wrapContent)
-            }
+            inflateBoosted()
+            inflateFollowed()
+            inflateStatus(actMain)
+            inflateConversationIcons()
+            inflateSearchTag()
+            inflateTrendTag()
+            inflateList()
+            inflateMessageHolder()
+
+            inflateFollowRequest()
+            inflateFilter()
         }
         b.report()
         rv

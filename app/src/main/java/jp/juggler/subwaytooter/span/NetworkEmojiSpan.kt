@@ -8,7 +8,7 @@ import android.text.style.ReplacementSpan
 import androidx.annotation.IntRange
 import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.util.LogCategory
 import java.lang.ref.WeakReference
 
@@ -89,7 +89,7 @@ class NetworkEmojiSpan internal constructor(
         } ?: return
 
         val t = when {
-            Pref.bpDisableEmojiAnimation(App1.pref) -> 0L
+            PrefB.bpDisableEmojiAnimation(App1.pref) -> 0L
             else -> invalidateCallback.timeFromStart
         }
 
@@ -152,7 +152,7 @@ class NetworkEmojiSpan internal constructor(
 
         // 少し後に描画しなおす
         val delay = mFrameFindResult.delay
-        if (delay != Long.MAX_VALUE && !Pref.bpDisableEmojiAnimation(App1.pref)) {
+        if (delay != Long.MAX_VALUE && !PrefB.bpDisableEmojiAnimation(App1.pref)) {
             invalidateCallback.delayInvalidate(delay)
         }
     }

@@ -2,10 +2,7 @@ package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.subwaytooter.api.entity.InstanceType
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -111,6 +108,18 @@ fun ActMain.serverInformation(
     host
 )
 
+// ドメインブロック一覧から解除
+fun ActMain.clickDomainBlock(accessInfo: SavedAccount, item: TootDomainBlock) {
+    AlertDialog.Builder(this)
+        .setMessage(getString(R.string.confirm_unblock_domain, item.domain.pretty))
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.ok) { _, _ ->
+            domainBlock(accessInfo, item.domain, bBlock = false)
+        }
+        .show()
+}
+
+// ContextMenuからドメインブロックを追加
 fun ActMain.clickDomainBlock(
     accessInfo: SavedAccount,
     who: TootAccount,

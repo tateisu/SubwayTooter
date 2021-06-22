@@ -68,8 +68,8 @@ fun ActMain.openActPostImpl(
     scheduledStatus: TootScheduled? = null,
 ) {
 
-    val useManyWindow = Pref.bpManyWindowPost(pref)
-    val useMultiWindow = useManyWindow || Pref.bpMultiWindowPost(pref)
+    val useManyWindow = PrefB.bpManyWindowPost(pref)
+    val useMultiWindow = useManyWindow || PrefB.bpMultiWindowPost(pref)
 
     val intent = ActPost.createIntent(
         activity = this,
@@ -246,7 +246,7 @@ fun ActMain.quoteFromAnotherAccount(
 fun ActMain.quoteName(who: TootAccount) {
     var sv = who.display_name
     try {
-        val fmt = Pref.spQuoteNameFormat(pref)
+        val fmt = PrefS.spQuoteNameFormat(pref)
         if (fmt.contains("%1\$s")) {
             sv = String.format(Locale.getDefault(), fmt, sv)
         }
@@ -262,4 +262,20 @@ fun ActMain.shareText(text: String?) {
         .setText(text)
         .setType("text/plain")
         .startChooser()
+}
+
+fun ActMain.clickReply(accessInfo: SavedAccount, status: TootStatus) {
+    if (!accessInfo.isPseudo) {
+        reply(accessInfo, status)
+    } else {
+        replyFromAnotherAccount(accessInfo, status)
+    }
+}
+
+fun ActMain.clickQuote(accessInfo: SavedAccount, status: TootStatus) {
+    if (!accessInfo.isPseudo) {
+        reply(accessInfo, status, quote = true)
+    } else {
+        quoteFromAnotherAccount(accessInfo, status)
+    }
 }

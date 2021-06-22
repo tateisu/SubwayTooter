@@ -23,7 +23,7 @@ import org.jetbrains.anko.dip
 fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     val reactionSet = status.reactionSet
     if (reactionSet?.hasReaction() != true) {
-        if (!TootReaction.canReaction(accessInfo) || !Pref.bpKeepReactionSpace(activity.pref)) return
+        if (!TootReaction.canReaction(accessInfo) || !PrefB.bpKeepReactionSpace(activity.pref)) return
     }
 
     val density = activity.density
@@ -87,7 +87,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 // 自分がリアクションしたやつは背景を変える
                 getAdaptiveRippleDrawableRound(
                     act,
-                    Pref.ipButtonReactionedColor(act.pref).notZero() ?: act.attrColor(R.attr.colorImageButtonAccent),
+                    PrefI.ipButtonReactionedColor(act.pref).notZero() ?: act.attrColor(R.attr.colorImageButtonAccent),
                     act.attrColor(R.attr.colorRippleEffect),
                     roundNormal = true
                 )

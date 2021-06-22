@@ -12,10 +12,6 @@ import jp.juggler.util.*
 import okhttp3.Request
 import java.util.regex.Pattern
 
-fun interface ListOnListMemberUpdatedCallback {
-    fun onListMemberUpdated(willRegistered: Boolean, bSuccess: Boolean)
-}
-
 private val reFollowError422 = "follow".asciiPattern(Pattern.CASE_INSENSITIVE)
 private val reFollowError404 = "Record not found".asciiPattern(Pattern.CASE_INSENSITIVE)
 
@@ -24,7 +20,7 @@ fun ActMain.listMemberAdd(
     listId: EntityId,
     localWho: TootAccount,
     bFollow: Boolean = false,
-    callback: ListOnListMemberUpdatedCallback?,
+    onListMemberUpdated: (willRegistered: Boolean, bSuccess: Boolean) -> Unit = { _, _ -> },
 ) {
     launchMain {
         runApiTask(accessInfo) { client ->
@@ -143,7 +139,7 @@ fun ActMain.listMemberAdd(
                                     listId,
                                     localWho,
                                     bFollow = true,
-                                    callback = callback
+                                    onListMemberUpdated = onListMemberUpdated
                                 )
                             }
                         } else {
@@ -158,7 +154,7 @@ fun ActMain.listMemberAdd(
                     else -> showToast(true, error)
                 }
             } finally {
-                callback?.onListMemberUpdated(true, bSuccess)
+                onListMemberUpdated(true, bSuccess)
             }
         }
     }
@@ -168,7 +164,7 @@ fun ActMain.listMemberDelete(
     accessInfo: SavedAccount,
     listId: EntityId,
     localWho: TootAccount,
-    callback: ListOnListMemberUpdatedCallback?,
+    onListMemberDeleted:  (willRegistered: Boolean, bSuccess: Boolean) -> Unit = { _, _ -> },
 ) {
     launchMain {
         runApiTask(accessInfo) { client ->
@@ -208,7 +204,7 @@ fun ActMain.listMemberDelete(
                     }
                 }
             } finally {
-                callback?.onListMemberUpdated(false, bSuccess)
+                onListMemberDeleted(false, bSuccess)
             }
         }
     }

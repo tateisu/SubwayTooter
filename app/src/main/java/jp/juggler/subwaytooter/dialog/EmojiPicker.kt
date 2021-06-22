@@ -97,7 +97,7 @@ class EmojiPicker(
 
         // recentをロードする
         val pref = App1.pref
-        val sv = Pref.spEmojiPickerRecent(pref)
+        val sv = PrefS.spEmojiPickerRecent(pref)
         if (sv.isNotEmpty()) {
             try {
                 for (item in sv.decodeJsonArray().objectList()) {
@@ -188,7 +188,7 @@ class EmojiPicker(
                 R.string.emoji_category_flags
             )
         )
-        if (Pref.bpEmojiPickerCategoryOther(activity)) {
+        if (PrefB.bpEmojiPickerCategoryOther(activity)) {
             pageList.add(
                 EmojiPickerPage(
                     true,
@@ -528,7 +528,7 @@ class EmojiPicker(
 
         // Recentをロード(他インスタンスの絵文字を含む)
         val list: MutableList<JsonObject> = try {
-            Pref.spEmojiPickerRecent(pref).decodeJsonArray().objectList()
+            PrefS.spEmojiPickerRecent(pref).decodeJsonArray().objectList()
         } catch (_: Throwable) {
             emptyList()
         }.toMutableList()
@@ -571,7 +571,7 @@ class EmojiPicker(
         // 保存する
         try {
             val sv = list.toJsonArray().toString()
-            App1.pref.edit().put(Pref.spEmojiPickerRecent, sv).apply()
+            App1.pref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
         } catch (ignored: Throwable) {
         }
 

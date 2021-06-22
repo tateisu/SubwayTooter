@@ -6,10 +6,8 @@ import android.os.SystemClock
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import android.view.Gravity
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.api.TootParser
@@ -19,7 +17,6 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.Benchmark
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.OpenSticker
 import jp.juggler.subwaytooter.view.CountImageButton
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
@@ -197,14 +194,14 @@ fun ItemViewHolder.bind(
 
                 item.isQuoteToot -> {
                     // 引用Renote
-                    val colorBg = Pref.ipEventBgColorBoost(activity.pref)
+                    val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
                     showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
                     showStatus(item, colorBg)
                 }
 
                 else -> {
                     // 引用なしブースト
-                    val colorBg = Pref.ipEventBgColorBoost(activity.pref)
+                    val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
                     showBoost(
                         item.accountRef,
                         item.time_created_at,
@@ -218,32 +215,20 @@ fun ItemViewHolder.bind(
         }
 
         is TootAccountRef -> showAccount(item)
-
         is TootNotification -> showNotification(item)
-
         is TootGap -> showGap()
         is TootSearchGap -> showSearchGap(item)
         is TootDomainBlock -> showDomainBlock(item)
         is TootList -> showList(item)
         is MisskeyAntenna -> showAntenna(item)
-
         is TootMessageHolder -> showMessageHolder(item)
-
         is TootTag -> showSearchTag(item)
-
         is TootFilter -> showFilter(item)
-
         is TootConversationSummary -> {
             showStatusOrReply(item.last_status)
             showConversationIcons(item)
         }
-
-        is TootScheduled -> {
-            showScheduled(item)
-        }
-
-        else -> {
-        }
+        is TootScheduled -> showScheduled(item)
     }
     b.report()
 }
@@ -363,282 +348,10 @@ fun ItemViewHolder.showBoost(
     setAcct(tvBoostedAcct, accessInfo, who)
 }
 
-fun ItemViewHolder.showStatusOrReply(item: TootStatus, colorBgArg: Int = 0) {
-    var colorBg = colorBgArg
-    val reply = item.reply
-    val inReplyToId = item.in_reply_to_id
-    val inReplyToAccountId = item.in_reply_to_account_id
-    when {
-        reply != null -> {
-            showReply(reply, R.drawable.ic_reply, R.string.reply_to)
-            if (colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
-        }
-
-        inReplyToId != null && inReplyToAccountId != null -> {
-            showReply(item, inReplyToAccountId)
-            if (colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
-        }
-    }
-    showStatus(item, colorBg)
-}
-
 fun ItemViewHolder.showMessageHolder(item: TootMessageHolder) {
     tvMessageHolder.visibility = View.VISIBLE
     tvMessageHolder.text = item.text
     tvMessageHolder.gravity = item.gravity
-}
-
-fun ItemViewHolder.showNotification(n: TootNotification) {
-    val nStatus = n.status
-    val nAccountRef = n.accountRef
-    val nAccount = nAccountRef?.get()
-
-    fun showNotificationStatus(item: TootStatus, colorBgDefault: Int) {
-        val reblog = item.reblog
-        when {
-            reblog == null -> showStatusOrReply(item, colorBgDefault)
-
-            item.isQuoteToot -> {
-                // 引用Renote
-                showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
-                showStatus(item, Pref.ipEventBgColorQuote(activity.pref))
-            }
-
-            else -> {
-                // 通常のブースト。引用なしブースト。
-                // ブースト表示は通知イベントと被るのでしない
-                showStatusOrReply(reblog, Pref.ipEventBgColorBoost(activity.pref))
-            }
-        }
-    }
-
-    when (n.type) {
-
-        TootNotification.TYPE_FAVOURITE -> {
-            val colorBg = Pref.ipEventBgColorFavourite(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                if (accessInfo.isNicoru(nAccount)) R.drawable.ic_nicoru else R.drawable.ic_star,
-                R.string.display_name_favourited_by
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_REBLOG -> {
-            val colorBg = Pref.ipEventBgColorBoost(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_repeat,
-                R.string.display_name_boosted_by,
-                boostStatus = nStatus
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_RENOTE -> {
-            // 引用のないreblog
-            val colorBg = Pref.ipEventBgColorBoost(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_repeat,
-                R.string.display_name_boosted_by,
-                boostStatus = nStatus
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_FOLLOW -> {
-            val colorBg = Pref.ipEventBgColorFollow(activity.pref)
-            if (nAccount != null) {
-                showBoost(
-                    nAccountRef,
-                    n.time_created_at,
-                    R.drawable.ic_follow_plus,
-                    R.string.display_name_followed_by
-                )
-                showAccount(nAccountRef)
-                if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
-            }
-        }
-
-        TootNotification.TYPE_UNFOLLOW -> {
-            val colorBg = Pref.ipEventBgColorUnfollow(activity.pref)
-            if (nAccount != null) {
-                showBoost(
-                    nAccountRef,
-                    n.time_created_at,
-                    R.drawable.ic_follow_cross,
-                    R.string.display_name_unfollowed_by
-                )
-                showAccount(nAccountRef)
-                if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
-            }
-        }
-
-        TootNotification.TYPE_MENTION,
-        TootNotification.TYPE_REPLY,
-        -> {
-            val colorBg = Pref.ipEventBgColorMention(activity.pref)
-            if (!bSimpleList && !accessInfo.isMisskey) {
-                when {
-                    nAccount == null -> {
-                        //
-                    }
-
-                    nStatus?.in_reply_to_id != null || nStatus?.reply != null -> {
-                        // トゥート内部に「～への返信」を表示するので、
-                        // 通知イベントの「～からの返信」は表示しない
-                    }
-
-                    else -> // 返信ではなくメンションの場合は「～からの返信」を表示する
-                        showBoost(
-                            nAccountRef,
-                            n.time_created_at,
-                            R.drawable.ic_reply,
-                            R.string.display_name_mentioned_by
-                        )
-                }
-            }
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-        TootNotification.TYPE_EMOJI_REACTION,
-        TootNotification.TYPE_REACTION,
-        -> {
-            val colorBg = Pref.ipEventBgColorReaction(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_face,
-                R.string.display_name_reaction_by,
-                reaction = n.reaction ?: TootReaction.UNKNOWN,
-                boostStatus = nStatus
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_QUOTE -> {
-            val colorBg = Pref.ipEventBgColorQuote(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_repeat,
-                R.string.display_name_quoted_by
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_STATUS -> {
-            val colorBg = Pref.ipEventBgColorStatus(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                if (nStatus == null) {
-                    R.drawable.ic_question
-                } else {
-                    Styler.getVisibilityIconId(accessInfo.isMisskey, nStatus.visibility)
-                },
-                R.string.display_name_posted_by
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_FOLLOW_REQUEST,
-        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-        -> {
-            val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
-            if (nAccount != null) {
-                showBoost(
-                    nAccountRef,
-                    n.time_created_at,
-                    R.drawable.ic_follow_wait,
-                    R.string.display_name_follow_request_by
-                )
-                if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
-                boostedAction = {
-                    activity.addColumn(
-                        activity.nextPosition(column), accessInfo, ColumnType.FOLLOW_REQUESTS
-                    )
-                }
-            }
-        }
-
-        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
-            val colorBg = Pref.ipEventBgColorFollow(activity.pref)
-            if (nAccount != null) {
-                showBoost(
-                    nAccountRef,
-                    n.time_created_at,
-                    R.drawable.ic_follow_plus,
-                    R.string.display_name_follow_request_accepted_by
-                )
-                showAccount(nAccountRef)
-                if (colorBg != 0) this.viewRoot.backgroundColor = colorBg
-            }
-        }
-
-        TootNotification.TYPE_VOTE,
-        TootNotification.TYPE_POLL_VOTE_MISSKEY,
-        -> {
-            val colorBg = Pref.ipEventBgColorVote(activity.pref)
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_vote,
-                R.string.display_name_voted_by
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        TootNotification.TYPE_POLL -> {
-            val colorBg = 0
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_vote,
-                R.string.end_of_polling_from
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-        }
-
-        else -> {
-            val colorBg = 0
-            if (nAccount != null) showBoost(
-                nAccountRef,
-                n.time_created_at,
-                R.drawable.ic_question,
-                R.string.unknown_notification_from
-            )
-            if (nStatus != null) {
-                showNotificationStatus(nStatus, colorBg)
-            }
-            tvMessageHolder.visibility = View.VISIBLE
-            tvMessageHolder.text = "notification type is ${n.type}"
-            tvMessageHolder.gravity = Gravity.CENTER
-        }
-    }
 }
 
 fun ItemViewHolder.showList(list: TootList) {
@@ -705,7 +418,7 @@ fun ItemViewHolder.showGap() {
     btnGapTail.vg(column.type.gapDirection(column, false))
         ?.imageTintList = contentColorCsl
 
-    val c = Pref.ipEventBgColorGap(App1.pref)
+    val c = PrefI.ipEventBgColorGap(App1.pref)
     if (c != 0) this.viewRoot.backgroundColor = c
 }
 
@@ -762,281 +475,6 @@ fun ItemViewHolder.showReply(reply: TootStatus, accountId: EntityId) {
 
     // tootsearchはreplyオブジェクトがなくin_reply_toだけが提供される場合があるが
     // tootsearchではどのタンスから読んだか分からないのでin_reply_toのIDも信用できない
-}
-
-fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
-
-    val filteredWord = status.filteredWord
-    if (filteredWord != null) {
-        showMessageHolder(
-            TootMessageHolder(
-                if (Pref.bpShowFilteredWord(activity.pref)) {
-                    "${activity.getString(R.string.filtered)} / $filteredWord"
-                } else {
-                    activity.getString(R.string.filtered)
-                }
-            )
-        )
-        return
-    }
-
-    this.statusShowing = status
-    llStatus.visibility = View.VISIBLE
-
-    if (status.conversation_main) {
-
-        val conversationMainBgColor =
-            Pref.ipConversationMainTootBgColor(activity.pref).notZero()
-                ?: (activity.attrColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
-
-        this.viewRoot.setBackgroundColor(conversationMainBgColor)
-    } else {
-        val c = colorBg.notZero()
-
-            ?: when (status.bookmarked) {
-                true -> Pref.ipEventBgColorBookmark(App1.pref)
-                false -> 0
-            }.notZero()
-
-            ?: when (status.getBackgroundColorType(accessInfo)) {
-                TootVisibility.UnlistedHome -> ItemViewHolder.toot_color_unlisted
-                TootVisibility.PrivateFollowers -> ItemViewHolder.toot_color_follower
-                TootVisibility.DirectSpecified -> ItemViewHolder.toot_color_direct_user
-                TootVisibility.DirectPrivate -> ItemViewHolder.toot_color_direct_me
-                // TODO add color setting for limited?
-                TootVisibility.Limited -> ItemViewHolder.toot_color_follower
-                else -> 0
-            }
-
-        if (c != 0) {
-            this.viewRoot.backgroundColor = c
-        }
-    }
-
-    showStatusTime(activity, tvTime, who = status.account, status = status)
-
-    val whoRef = status.accountRef
-    val who = whoRef.get()
-    this.statusAccount = whoRef
-
-    setAcct(tvAcct, accessInfo, who)
-
-    //		if(who == null) {
-    //			tvName.text = "?"
-    //			name_invalidator.register(null)
-    //			ivThumbnail.setImageUrl(activity.pref, 16f, null, null)
-    //		} else {
-    tvName.text = whoRef.decoded_display_name
-    nameInvalidator.register(whoRef.decoded_display_name)
-    ivThumbnail.setImageUrl(
-        activity.pref,
-        Styler.calcIconRound(ivThumbnail.layoutParams),
-        accessInfo.supplyBaseUrl(who.avatar_static),
-        accessInfo.supplyBaseUrl(who.avatar)
-    )
-    //		}
-
-    showOpenSticker(who)
-
-    var content = status.decoded_content
-
-    // ニコフレのアンケートの表示
-    val enquete = status.enquete
-    when {
-        enquete == null -> {
-        }
-
-        enquete.pollType == TootPollsType.FriendsNico && enquete.type != TootPolls.TYPE_ENQUETE -> {
-            // フレニコの投票の結果表示は普通にテキストを表示するだけでよい
-        }
-
-        else -> {
-
-            // アンケートの本文を上書きする
-            val question = enquete.decoded_question
-            if (question.isNotBlank()) content = question
-
-            showEnqueteItems(status, enquete)
-        }
-    }
-
-    showPreviewCard(status)
-
-    //			if( status.decoded_tags == null ){
-    //				tvTags.setVisibility( View.GONE );
-    //			}else{
-    //				tvTags.setVisibility( View.VISIBLE );
-    //				tvTags.setText( status.decoded_tags );
-    //			}
-
-    if (status.decoded_mentions.isEmpty()) {
-        tvMentions.visibility = View.GONE
-    } else {
-        tvMentions.visibility = View.VISIBLE
-        tvMentions.text = status.decoded_mentions
-    }
-
-    if (status.time_deleted_at > 0L) {
-        val s = SpannableStringBuilder()
-            .append('(')
-            .append(
-                activity.getString(
-                    R.string.deleted_at,
-                    TootStatus.formatTime(activity, status.time_deleted_at, true)
-                )
-            )
-            .append(')')
-        content = s
-    }
-
-    tvContent.text = content
-    contentInvalidator.register(content)
-
-    activity.checkAutoCW(status, content)
-    val r = status.auto_cw
-
-    tvContent.minLines = r?.originalLineCount ?: -1
-
-    val decodedSpoilerText = status.decoded_spoiler_text
-    when {
-        decodedSpoilerText.isNotEmpty() -> {
-            // 元データに含まれるContent Warning を使う
-            llContentWarning.visibility = View.VISIBLE
-            tvContentWarning.text = status.decoded_spoiler_text
-            spoilerInvalidator.register(status.decoded_spoiler_text)
-            val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
-            showContent(cwShown)
-        }
-
-        r?.decodedSpoilerText != null -> {
-            // 自動CW
-            llContentWarning.visibility = View.VISIBLE
-            tvContentWarning.text = r.decodedSpoilerText
-            spoilerInvalidator.register(r.decodedSpoilerText)
-            val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
-            showContent(cwShown)
-        }
-
-        else -> {
-            // CWしない
-            llContentWarning.visibility = View.GONE
-            llContents.visibility = View.VISIBLE
-        }
-    }
-
-    val mediaAttachments = status.media_attachments
-    if (mediaAttachments == null || mediaAttachments.isEmpty()) {
-        flMedia.visibility = View.GONE
-        llMedia.visibility = View.GONE
-        btnShowMedia.visibility = View.GONE
-    } else {
-        flMedia.visibility = View.VISIBLE
-
-        // hide sensitive media
-        val defaultShown = when {
-            column.hideMediaDefault -> false
-            accessInfo.dont_hide_nsfw -> true
-            else -> !status.sensitive
-        }
-        val isShown = MediaShown.isShown(status, defaultShown)
-
-        btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
-        llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
-        val sb = StringBuilder()
-        setMedia(mediaAttachments, sb, ivMedia1, 0)
-        setMedia(mediaAttachments, sb, ivMedia2, 1)
-        setMedia(mediaAttachments, sb, ivMedia3, 2)
-        setMedia(mediaAttachments, sb, ivMedia4, 3)
-
-        val m0 =
-            if (mediaAttachments.isEmpty()) null else mediaAttachments[0] as? TootAttachment
-        btnShowMedia.blurhash = m0?.blurhash
-
-        if (sb.isNotEmpty()) {
-            tvMediaDescription.visibility = View.VISIBLE
-            tvMediaDescription.text = sb
-        }
-
-        setIconDrawableId(
-            activity,
-            btnHideMedia,
-            R.drawable.ic_close,
-            color = contentColor,
-            alphaMultiplier = Styler.boostAlpha
-        )
-    }
-
-    makeReactionsView(status)
-
-    buttonsForStatus?.bind(status, (item as? TootNotification))
-
-    var sb: StringBuilder? = null
-
-    fun prepareSb(): StringBuilder =
-        sb?.append(", ") ?: StringBuilder().also { sb = it }
-
-    val application = status.application
-    if (application != null &&
-        (column.type == ColumnType.CONVERSATION || Pref.bpShowAppName(activity.pref))
-    ) {
-        prepareSb().append(activity.getString(R.string.application_is, application.name ?: ""))
-    }
-
-    val language = status.language
-    if (language != null &&
-        (column.type == ColumnType.CONVERSATION || Pref.bpShowLanguage(activity.pref))
-    ) {
-        prepareSb().append(activity.getString(R.string.language_is, language))
-    }
-
-    tvApplication.vg(sb != null)?.text = sb
-}
-
-fun ItemViewHolder.showOpenSticker(who: TootAccount) {
-    try {
-        if (!Column.showOpenSticker) return
-
-        val host = who.apDomain
-
-        // LTLでホスト名が同じならTickerを表示しない
-        @Suppress("NON_EXHAUSTIVE_WHEN")
-        when (column.type) {
-            ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
-                if (host == accessInfo.apDomain) return
-            }
-        }
-
-        val item = OpenSticker.lastList[host.ascii] ?: return
-
-        tvOpenSticker.text = item.name
-        tvOpenSticker.textColor = item.fontColor
-
-        val density = activity.density
-
-        val lp = ivOpenSticker.layoutParams
-        lp.height = (density * 16f + 0.5f).toInt()
-        lp.width = (density * item.imageWidth + 0.5f).toInt()
-
-        ivOpenSticker.layoutParams = lp
-        ivOpenSticker.setImageUrl(activity.pref, 0f, item.favicon)
-        val colorBg = item.bgColor
-        when (colorBg.size) {
-            1 -> {
-                val c = colorBg.first()
-                tvOpenSticker.setBackgroundColor(c)
-                ivOpenSticker.setBackgroundColor(c)
-            }
-
-            else -> {
-                ivOpenSticker.setBackgroundColor(colorBg.last())
-                tvOpenSticker.background = colorBg.getGradation()
-            }
-        }
-        llOpenSticker.visibility = View.VISIBLE
-        llOpenSticker.requestLayout()
-    } catch (ex: Throwable) {
-        ItemViewHolder.log.trace(ex)
-    }
 }
 
 fun ItemViewHolder.showStatusTime(
@@ -1238,9 +676,9 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
 
         tvName.text = whoRef.decoded_display_name
         nameInvalidator.register(whoRef.decoded_display_name)
-        ivThumbnail.setImageUrl(
+        ivAvatar.setImageUrl(
             activity.pref,
-            Styler.calcIconRound(ivThumbnail.layoutParams),
+            Styler.calcIconRound(ivAvatar.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
         )
@@ -1320,20 +758,6 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
         TootStatus.formatTime(activity, item.timeScheduledAt, true)
 }
 
-fun ItemViewHolder.showContent(shown: Boolean) {
-    llContents.visibility = if (shown) View.VISIBLE else View.GONE
-    btnContentWarning.setText(if (shown) R.string.hide else R.string.show)
-    statusShowing?.let { status ->
-        val r = status.auto_cw
-        tvContent.minLines = r?.originalLineCount ?: -1
-        if (r?.decodedSpoilerText != null) {
-            // 自動CWの場合はContentWarningのテキストを切り替える
-            tvContentWarning.text =
-                if (shown) activity.getString(R.string.auto_cw_prefix) else r.decodedSpoilerText
-        }
-    }
-}
-
 fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
 
     val lastAccountId = cs.last_status.account.id
@@ -1384,105 +808,11 @@ fun ItemViewHolder.setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAcco
     val ac = AcctColor.load(accessInfo, who)
     tv.text = when {
         AcctColor.hasNickname(ac) -> ac.nickname
-        Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
+        PrefB.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
         else -> "@${ac.nickname}"
     }
     tv.textColor = ac.color_fg.notZero() ?: this.acctColor
 
     tv.setBackgroundColor(ac.color_bg) // may 0
     tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
-}
-
-fun ItemViewHolder.setMedia(
-    mediaAttachments: ArrayList<TootAttachmentLike>,
-    sbDesc: StringBuilder,
-    iv: MyNetworkImageView,
-    idx: Int,
-) {
-    val ta = if (idx < mediaAttachments.size) mediaAttachments[idx] else null
-    if (ta == null) {
-        iv.visibility = View.GONE
-        return
-    }
-
-    iv.visibility = View.VISIBLE
-
-    iv.setFocusPoint(ta.focusX, ta.focusY)
-
-    if (Pref.bpDontCropMediaThumb(App1.pref)) {
-        iv.scaleType = ImageView.ScaleType.FIT_CENTER
-    } else {
-        iv.setScaleTypeForMedia()
-    }
-
-    val showUrl: Boolean
-
-    when (ta.type) {
-        TootAttachmentType.Audio -> {
-            iv.setMediaType(0)
-            iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_music))
-            iv.setImageUrl(activity.pref, 0f, ta.urlForThumbnail(activity.pref))
-            showUrl = true
-        }
-
-        TootAttachmentType.Unknown -> {
-            iv.setMediaType(0)
-            iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_question))
-            iv.setImageUrl(activity.pref, 0f, null)
-            showUrl = true
-        }
-
-        else -> when (val urlThumbnail = ta.urlForThumbnail(activity.pref)) {
-            null, "" -> {
-                iv.setMediaType(0)
-                iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_question))
-                iv.setImageUrl(activity.pref, 0f, null)
-                showUrl = true
-            }
-
-            else -> {
-                iv.setMediaType(
-                    when (ta.type) {
-                        TootAttachmentType.Video -> R.drawable.media_type_video
-                        TootAttachmentType.GIFV -> R.drawable.media_type_gifv
-                        else -> 0
-                    }
-                )
-                iv.setDefaultImage(null)
-                iv.setImageUrl(
-                    activity.pref,
-                    0f,
-                    accessInfo.supplyBaseUrl(urlThumbnail),
-                    accessInfo.supplyBaseUrl(urlThumbnail)
-                )
-                showUrl = false
-            }
-        }
-    }
-
-    fun appendDescription(s: String) {
-        //			val lp = LinearLayout.LayoutParams(
-        //				LinearLayout.LayoutParams.MATCH_PARENT,
-        //				LinearLayout.LayoutParams.WRAP_CONTENT
-        //			)
-        //			lp.topMargin = (0.5f + activity.density * 3f).toInt()
-        //
-        //			val tv = MyTextView(activity)
-        //			tv.layoutParams = lp
-        //			//
-        //			tv.movementMethod = MyLinkMovementMethod
-        //			if(! activity.timeline_font_size_sp.isNaN()) {
-        //				tv.textSize = activity.timeline_font_size_sp
-        //			}
-        //			tv.setTextColor(content_color)
-
-        if (sbDesc.isNotEmpty()) sbDesc.append("\n")
-        val desc = activity.getString(R.string.media_description, idx + 1, s)
-        sbDesc.append(desc)
-    }
-
-    when (val description = ta.description.notEmpty()) {
-        null -> if (showUrl) ta.urlForDescription.notEmpty()?.let { appendDescription(it) }
-        else -> appendDescription(description)
-    }
 }

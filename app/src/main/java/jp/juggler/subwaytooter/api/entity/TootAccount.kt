@@ -5,7 +5,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.widget.TextView
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
@@ -491,7 +491,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 .append(suggestionSource)
         }
 
-        if (Pref.bpDirectoryLastActive(pref) && last_status_at > 0L) {
+        if (PrefB.bpDirectoryLastActive(pref) && last_status_at > 0L) {
             prepareSb()
                 .append(context.getString(R.string.last_active))
                 .append(delm)
@@ -499,7 +499,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         }
 
         if (!fromProfileHeader) {
-            if (Pref.bpDirectoryTootCount(pref) &&
+            if (PrefB.bpDirectoryTootCount(pref) &&
                 (statuses_count ?: 0L) > 0L
             ) {
                 prepareSb()
@@ -508,8 +508,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     .append(statuses_count.toString())
             }
 
-            if (Pref.bpDirectoryFollowers(pref) &&
-                !Pref.bpHideFollowCount(pref) &&
+            if (PrefB.bpDirectoryFollowers(pref) &&
+                !PrefB.bpHideFollowCount(pref) &&
                 (followers_count ?: 0L) > 0L
             ) {
                 prepareSb()
@@ -518,7 +518,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     .append(followers_count.toString())
             }
 
-            if (Pref.bpDirectoryNote(pref) && note?.isNotEmpty() == true) {
+            if (PrefB.bpDirectoryNote(pref) && note?.isNotEmpty() == true) {
                 val decodedNote = DecodeOptions(
                     context,
                     accessInfo,

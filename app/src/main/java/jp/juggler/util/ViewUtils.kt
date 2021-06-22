@@ -16,7 +16,7 @@ import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefI
 import jp.juggler.subwaytooter.R
 import org.xmlpull.v1.XmlPullParser
 import kotlin.math.pow
@@ -109,8 +109,8 @@ fun Context.setSwitchColor(
     root: View?
 ) {
     val colorBg = attrColor(R.attr.colorWindowBackground)
-    val colorOn = Pref.ipSwitchOnColor(pref)
-    val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
+    val colorOn = PrefI.ipSwitchOnColor(pref)
+    val colorOff = /* PrefI.ipSwitchOffColor(pref).notZero() ?: */
         attrColor(android.R.attr.colorPrimary)
 
     val colorDisabled = mixColor(colorBg, colorOff)
@@ -209,7 +209,7 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
 
         var c = when {
             forceDark -> Color.BLACK
-            else -> Pref.ipStatusBarColor(App1.pref).notZero()
+            else -> PrefI.ipStatusBarColor(App1.pref).notZero()
                 ?: attrColor(R.attr.colorPrimaryDark)
         }
         statusBarColor = c or Color.BLACK
@@ -235,7 +235,7 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
 
         c = when {
             forceDark -> Color.BLACK
-            else -> Pref.ipNavigationBarColor(App1.pref)
+            else -> PrefI.ipNavigationBarColor(App1.pref)
         }
 
         if (c != 0) {

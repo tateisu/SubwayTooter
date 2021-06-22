@@ -7,7 +7,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.*
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.span.*
@@ -468,16 +468,258 @@ object HTMLDecoder {
             else -> false
         }
 
-        fun canSkipEncode(isBlockParent: Boolean, parent: Node, prev: Node?, next: Node?) = when {
+        fun canSkipEncode(isBlockParent: Boolean, curr: Node, parent: Node, prev: Node?, next: Node?) = when {
             !isBlockParent -> false
-            tag != TAG_TEXT -> false
-            text.isNotBlank() -> false
+            curr.tag != TAG_TEXT -> false
+            curr.text.isNotBlank() -> false
             else -> when {
                 prev?.tag?.tagsCanRemoveNearSpaces() == true -> true
                 next?.tag?.tagsCanRemoveNearSpaces() == true -> true
                 parent.tag.tagsCanRemoveNearSpaces() && (prev == null || next == null) -> true
                 else -> false
             }
+        }
+
+        fun encodeText(options: DecodeOptions, sb: SpannableStringBuilder) {
+            if (options.context != null && options.decodeEmoji) {
+                sb.append(options.decodeEmoji(decodeEntity(text)))
+            } else {
+                sb.append(decodeEntity(text))
+            }
+        }
+
+        fun encodeImage(options: DecodeOptions, sb: SpannableStringBuilder) {
+            val attrs = parseAttributes(text)
+
+            if (options.unwrapEmojiImageTag) {
+                val cssClass = attrs["class"]
+                val title = attrs["title"]
+                val url = attrs["src"]
+                val alt = attrs["alt"]
+                if (cssClass != null &&
+                    title != null &&
+                    cssClass.contains("emojione") &&
+                    reShortcode.matcher(title).find()
+                ) {
+                    sb.append(options.decodeEmoji(title))
+                    return
+                } else if (cssClass == "emoji" && url != null && alt != null && reNotestockEmojiAlt.matches(alt)) {
+                    // notestock custom emoji
+                    sb.run {
+                        val start = length
+                        append(alt)
+                        val end = length
+                        setSpan(
+                            NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    return
+                }
+            }
+
+            sb.append("<img ")
+            val url = attrs["src"] ?: ""
+            val caption = attrs["alt"] ?: ""
+            if (caption.isNotEmpty() || url.isNotEmpty()) {
+                val start = sb.length
+                sb.append(caption.notEmpty() ?: url)
+                if (reUrlStart.find(url) != null) {
+                    val span =
+                        MyClickableSpan(LinkInfo(url = url, ac = null, tag = null, caption = caption, mention = null))
+                    sb.setSpan(span, start, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                sb.append(" ")
+            }
+            sb.append("/>")
+        }
+
+        class EncodeSpanEnv(
+            val options: DecodeOptions,
+            val listContext: ListContext,
+            val tag: String,
+            val sb: SpannableStringBuilder,
+            val sbTmp: SpannableStringBuilder,
+            val spanStart: Int,
+        )
+
+        val originalFlusher: EncodeSpanEnv.() -> Unit = {
+            when (tag) {
+                "s", "strike", "del" -> {
+                    sb.setSpan(StrikethroughSpan(), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "em" -> {
+                    sb.setSpan(
+                        fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+                "strong" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "tr" -> {
+                    sb.append("|")
+                }
+
+                "style", "script" -> {
+                    // sb_tmpにレンダリングした分は読み捨てる
+                }
+                "h1" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(1.8f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "h2" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(1.6f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "h3" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(1.4f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "h4" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(1.2f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "h5" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(1.0f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "h6" -> {
+                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(0.8f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "pre" -> {
+                    sb.setSpan(BackgroundColorSpan(0x40808080), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(RelativeSizeSpan(0.7f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(fontSpan(Typeface.MONOSPACE), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "code" -> {
+                    sb.setSpan(BackgroundColorSpan(0x40808080), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(fontSpan(Typeface.MONOSPACE), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                "hr" -> sb.append("----------")
+            }
+        }
+
+        val tmpFlusher = HashMap<String, EncodeSpanEnv.() -> Unit>().apply {
+
+            fun add(vararg tags: String, block: EncodeSpanEnv.() -> Unit) {
+                for (tag in tags) this[tag] = block
+            }
+
+            add("a") {
+                val linkInfo = formatLinkCaption(options, sbTmp, href ?: "")
+                val caption = linkInfo.caption
+                if (caption.isNotEmpty()) {
+                    val start = sb.length
+                    sb.append(linkInfo.caption)
+                    val end = sb.length
+                    if (linkInfo.url.isNotEmpty()) {
+                        val span = MyClickableSpan(linkInfo)
+                        sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+
+                    // リンクスパンを設定した後に色をつける
+                    val list = options.highlightTrie?.matchList(sb, start, end)
+                    if (list != null) {
+                        for (range in list) {
+                            val word = HighlightWord.load(range.word) ?: continue
+                            sb.setSpan(
+                                HighlightSpan(word.color_fg, word.color_bg),
+                                range.start,
+                                range.end,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+
+                            if (word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+                                if (options.highlightSound == null) options.highlightSound = word
+                            }
+
+                            if (word.speech != 0) {
+                                if (options.highlightSpeech == null) options.highlightSpeech = word
+                            }
+
+                            if (options.highlightAny == null) options.highlightAny = word
+                        }
+                    }
+                }
+            }
+
+            add("style", "script") {
+                // 読み捨てる
+                // 最適化によりtmpFlusherOriginalとこのラムダが同一オブジェクトにならないようにする
+            }
+
+            add("blockquote") {
+                val bg_color = listContext.quoteColor()
+
+                // TextView の文字装飾では「ブロック要素の入れ子」を表現できない
+                // 内容の各行の始端に何か追加するというのがまずキツい
+                // しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
+
+                val startItalic = sb.length
+                sbTmp.splitLines().forEach { line ->
+                    val lineStart = sb.length
+                    sb.append("> ")
+                    sb.setSpan(
+                        BackgroundColorSpan(bg_color),
+                        lineStart,
+                        lineStart + 1,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.append(line)
+                }
+                sb.setSpan(
+                    fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
+                    startItalic,
+                    sb.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+
+            add("li") {
+                val lineHeader1 = listContext.increment()
+                val lineHeader2 = " ".repeat(lineHeader1.length)
+                sbTmp.splitLines().forEachIndexed { i, line ->
+                    sb.append(if (i == 0) lineHeader1 else lineHeader2)
+                    sb.append(line)
+                }
+            }
+
+            add("dt") {
+                val prefix = listContext.increment()
+                val startBold = sb.length
+                sbTmp.splitLines().forEach { line ->
+                    sb.append(prefix)
+                    sb.append(line)
+                }
+                sb.setSpan(
+                    fontSpan(Typeface.defaultFromStyle(Typeface.BOLD)),
+                    startBold,
+                    sb.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+
+            add("dd") {
+                val prefix = listContext.increment() + "　　"
+                sbTmp.splitLines().forEach { line ->
+                    sb.append(prefix)
+                    sb.append(line)
+                }
+            }
+        }
+
+        fun childListContext(tag: String, outerContext: ListContext) = when (tag) {
+            "ol" -> outerContext.subOrdered()
+            "ul" -> outerContext.subUnordered()
+            "dl" -> outerContext.subDefinition()
+            "blockquote" -> outerContext.subQuote()
+            else -> outerContext
         }
 
         fun encodeSpan(
@@ -488,59 +730,11 @@ object HTMLDecoder {
             val isBlock = blockLevelElements.contains(tag)
             when (tag) {
                 TAG_TEXT -> {
-                    if (options.context != null && options.decodeEmoji) {
-                        sb.append(options.decodeEmoji(decodeEntity(text)))
-                    } else {
-                        sb.append(decodeEntity(text))
-                    }
+                    encodeText(options, sb)
                     return
                 }
                 "img" -> {
-                    val attrs = parseAttributes(text)
-
-                    if (options.unwrapEmojiImageTag) {
-                        val cssClass = attrs["class"]
-                        val title = attrs["title"]
-                        val url = attrs["src"]
-                        val alt = attrs["alt"]
-                        if (cssClass != null &&
-                            title != null &&
-                            cssClass.contains("emojione") &&
-                            reShortcode.matcher(title).find()
-                        ) {
-                            sb.append(options.decodeEmoji(title))
-                            return
-                        } else if (cssClass == "emoji" && url != null && alt != null && reNotestockEmojiAlt.matches(alt)) {
-                            // notestock custom emoji
-                            sb.run {
-                                val start = length
-                                append(alt)
-                                val end = length
-                                setSpan(
-                                    NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
-                                    start,
-                                    end,
-                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                )
-                            }
-                            return
-                        }
-                    }
-
-                    sb.append("<img ")
-                    val url = attrs["src"] ?: ""
-                    val caption = attrs["alt"] ?: ""
-                    if (caption.isNotEmpty() || url.isNotEmpty()) {
-                        val start = sb.length
-                        sb.append(caption.notEmpty() ?: url)
-                        if (reUrlStart.find(url) != null) {
-                            val span =
-                                MyClickableSpan(LinkInfo(url = url, ac = null, tag = null, caption = caption, mention = null))
-                            sb.setSpan(span, start, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        }
-                        sb.append(" ")
-                    }
-                    sb.append("/>")
+                    encodeImage(options, sb)
                     return
                 }
 
@@ -556,216 +750,46 @@ object HTMLDecoder {
                 }
             }
 
-            var spanStart = 0
-
-            val tmpFlusherOriginal: (SpannableStringBuilder) -> Unit = {
-
-                when (tag) {
-                    "s", "strike", "del" -> {
-                        sb.setSpan(StrikethroughSpan(), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "em" -> {
-                        sb.setSpan(
-                            fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
-                            spanStart,
-                            sb.length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-                    "strong" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "tr" -> {
-                        sb.append("|")
-                    }
-
-                    "style", "script" -> {
-                        // sb_tmpにレンダリングした分は読み捨てる
-                    }
-                    "h1" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(1.8f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "h2" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(1.6f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "h3" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(1.4f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "h4" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(1.2f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "h5" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(1.0f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "h6" -> {
-                        sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(0.8f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "pre" -> {
-                        sb.setSpan(BackgroundColorSpan(0x40808080), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(RelativeSizeSpan(0.7f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(fontSpan(Typeface.MONOSPACE), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "code" -> {
-                        sb.setSpan(BackgroundColorSpan(0x40808080), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        sb.setSpan(fontSpan(Typeface.MONOSPACE), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    }
-                    "hr" -> sb.append("----------")
-                }
-            }
-
-            val tmpFlusher = when (tag) {
-                "a" -> {
-                    { sb_tmp ->
-                        val linkInfo = formatLinkCaption(options, sb_tmp, href ?: "")
-                        val caption = linkInfo.caption
-                        if (caption.isNotEmpty()) {
-                            val start = sb.length
-                            sb.append(linkInfo.caption)
-                            val end = sb.length
-                            if (linkInfo.url.isNotEmpty()) {
-                                val span = MyClickableSpan(linkInfo)
-                                sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                            }
-
-                            // リンクスパンを設定した後に色をつける
-                            val list = options.highlightTrie?.matchList(sb, start, end)
-                            if (list != null) {
-                                for (range in list) {
-                                    val word = HighlightWord.load(range.word) ?: continue
-                                    sb.setSpan(
-                                        HighlightSpan(word.color_fg, word.color_bg),
-                                        range.start,
-                                        range.end,
-                                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                    )
-
-                                    if (word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-                                        if (options.highlightSound == null) options.highlightSound = word
-                                    }
-
-                                    if (word.speech != 0) {
-                                        if (options.highlightSpeech == null) options.highlightSpeech = word
-                                    }
-
-                                    if (options.highlightAny == null) options.highlightAny = word
-                                }
-                            }
-                        }
-                    }
-                }
-
-                "style", "script" -> {
-                    {
-                        // 読み捨てる
-                        // 最適化によりtmpFlusherOriginalとこのラムダが同一オブジェクトにならないようにする
-                    }
-                }
-
-                "blockquote" -> {
-                    { sb_tmp ->
-                        val bg_color = listContext.quoteColor()
-
-                        // TextView の文字装飾では「ブロック要素の入れ子」を表現できない
-                        // 内容の各行の始端に何か追加するというのがまずキツい
-                        // しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
-
-                        val startItalic = sb.length
-                        sb_tmp.splitLines().forEach { line ->
-                            val lineStart = sb.length
-                            sb.append("> ")
-                            sb.setSpan(
-                                BackgroundColorSpan(bg_color),
-                                lineStart,
-                                lineStart + 1,
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                            sb.append(line)
-                        }
-                        sb.setSpan(
-                            fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
-                            startItalic,
-                            sb.length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-                }
-
-                "li" -> {
-                    { sb_tmp ->
-                        val lineHeader1 = listContext.increment()
-                        val lineHeader2 = " ".repeat(lineHeader1.length)
-                        sb_tmp.splitLines().forEachIndexed { i, line ->
-                            sb.append(if (i == 0) lineHeader1 else lineHeader2)
-                            sb.append(line)
-                        }
-                    }
-                }
-
-                "dt" -> {
-                    { sb_tmp ->
-                        val prefix = listContext.increment()
-                        val startBold = sb.length
-                        sb_tmp.splitLines().forEach { line ->
-                            sb.append(prefix)
-                            sb.append(line)
-                        }
-                        sb.setSpan(
-                            fontSpan(Typeface.defaultFromStyle(Typeface.BOLD)),
-                            startBold,
-                            sb.length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-                }
-
-                "dd" -> {
-                    { sb_tmp ->
-                        val prefix = listContext.increment() + "　　"
-                        sb_tmp.splitLines().forEach { line ->
-                            sb.append(prefix)
-                            sb.append(line)
-                        }
-                    }
-                }
-
-                else -> tmpFlusherOriginal
-            }
-
-            val sb_tmp = if (tmpFlusher == tmpFlusherOriginal) {
-                sb
+            var flusher = this.tmpFlusher[tag]
+            val encodeSpanEnv = if (flusher != null) {
+                // 一時的なバッファに子要素を出力して、後で何か処理する
+                EncodeSpanEnv(
+                    options = options,
+                    listContext = listContext,
+                    tag = tag,
+                    sb = sb,
+                    sbTmp = SpannableStringBuilder(),
+                    spanStart = 0,
+                )
             } else {
-                SpannableStringBuilder()
+                // 現在のバッファに出力する
+                flusher = originalFlusher
+                EncodeSpanEnv(
+                    options = options,
+                    listContext = listContext,
+                    tag = tag,
+                    sb = sb,
+                    sbTmp = sb,
+                    spanStart = sb.length
+                )
             }
 
-            spanStart = sb_tmp.length
-
-            val childListContext = when (tag) {
-                "ol" -> listContext.subOrdered()
-                "ul" -> listContext.subUnordered()
-                "dl" -> listContext.subDefinition()
-                "blockquote" -> listContext.subQuote()
-                else -> listContext
-            }
+            val childListContext = childListContext(tag, listContext)
 
             child_nodes.forEachIndexed { i, child ->
                 if (!canSkipEncode(
                         isBlock,
+                        curr = child,
                         parent = this,
                         prev = child_nodes.elementAtOrNull(i - 1),
                         next = child_nodes.elementAtOrNull(i + 1)
                     )
                 ) {
-                    child.encodeSpan(options, sb_tmp, childListContext)
+                    child.encodeSpan(options, encodeSpanEnv.sbTmp, childListContext)
                 }
             }
 
-            tmpFlusher(sb_tmp)
+            flusher(encodeSpanEnv)
 
             if (isBlock) {
                 // ブロック要素
@@ -849,7 +873,7 @@ object HTMLDecoder {
             val linkInfo = if (fullAcct != null) {
                 LinkInfo(
                     url = item.url,
-                    caption = "@${(if (Pref.bpMentionFullAcct(App1.pref)) fullAcct else item.acct).pretty}",
+                    caption = "@${(if (PrefB.bpMentionFullAcct(App1.pref)) fullAcct else item.acct).pretty}",
                     ac = AcctColor.load(fullAcct),
                     mention = item,
                     tag = link_tag
@@ -939,7 +963,7 @@ object HTMLDecoder {
 
                 fun afterFullAcctResolved(fullAcct: Acct) {
                     linkInfo.ac = AcctColor.load(fullAcct)
-                    if (options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+                    if (options.mentionFullAcct || PrefB.bpMentionFullAcct(App1.pref)) {
                         linkInfo.caption = "@${fullAcct.pretty}"
                     }
                 }

@@ -11,15 +11,12 @@ import android.os.Build
 import android.os.Bundle
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
-import jp.juggler.subwaytooter.pref
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -42,7 +39,7 @@ private fun Activity.openBrowserExcludeMe(
 ): Boolean {
     try {
         if (intent.component == null) {
-            val cn = Pref.spWebBrowser(pref).cn()
+            val cn = PrefS.spWebBrowser(pref).cn()
             if (cn?.exists(this) == true) {
                 intent.component = cn
             }
@@ -134,7 +131,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
         return
     }
 
-    if (Pref.bpDontUseCustomTabs(pref)) {
+    if (PrefB.bpDontUseCustomTabs(pref)) {
         openBrowser(url, pref)
         return
     }
@@ -161,7 +158,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
                     )
                 }
 
-        if (url.startsWith("http") && Pref.bpPriorChrome(pref)) {
+        if (url.startsWith("http") && PrefB.bpPriorChrome(pref)) {
             try {
                 // 初回はChrome指定で試す
                 val cn = ComponentName(

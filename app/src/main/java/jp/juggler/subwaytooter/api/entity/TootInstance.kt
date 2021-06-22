@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -399,7 +399,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 when {
                     pair.first?.instanceType == InstanceType.Pixelfed &&
-                        !Pref.bpEnablePixelfed(App1.pref) &&
+                        !PrefB.bpEnablePixelfed(App1.pref) &&
                         !req.allowPixelfed ->
                         Pair(
                             null, TootApiResult("currently Pixelfed instance is not supported.")

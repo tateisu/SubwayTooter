@@ -23,7 +23,7 @@ class ColumnTask_Loading(
     override suspend fun background(): TootApiResult? {
         ctStarted.set(true)
 
-        if (Pref.bpOpenSticker(pref)) {
+        if (PrefB.bpOpenSticker(pref)) {
             OpenSticker.loadAndWait()
         }
 

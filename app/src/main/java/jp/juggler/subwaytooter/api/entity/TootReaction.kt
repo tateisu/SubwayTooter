@@ -4,7 +4,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.ColumnViewHolder
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -165,7 +165,7 @@ class TootReaction(
     }
 
     fun chooseUrl() = when {
-        Pref.bpDisableEmojiAnimation(App1.pref) -> staticUrl
+        PrefB.bpDisableEmojiAnimation(App1.pref) -> staticUrl
         else -> url
     }
 

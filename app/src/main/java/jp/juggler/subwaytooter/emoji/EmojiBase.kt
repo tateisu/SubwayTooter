@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.emoji
 
 import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.Mappable
 import jp.juggler.util.JsonArray
@@ -74,7 +74,7 @@ class CustomEmoji(
         get() = shortcode
 
     fun chooseUrl() = when {
-        Pref.bpDisableEmojiAnimation(App1.pref) -> staticUrl
+        PrefB.bpDisableEmojiAnimation(App1.pref) -> staticUrl
         else -> url
     }
 

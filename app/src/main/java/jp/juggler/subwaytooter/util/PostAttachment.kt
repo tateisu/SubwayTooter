@@ -3,29 +3,27 @@ package jp.juggler.subwaytooter.util
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 
 class PostAttachment : Comparable<PostAttachment> {
-
-    companion object {
-        const val STATUS_UPLOADING = 1
-        const val STATUS_UPLOADED = 2
-        const val STATUS_UPLOAD_FAILED = 3
-    }
-
     interface Callback {
         fun onPostAttachmentComplete(pa: PostAttachment)
     }
 
-    var status: Int
-    var attachment: TootAttachment? = null
+    enum class Status(val id: Int) {
+        Progress(1),
+        Ok(2),
+        Error(3),
+    }
 
+    var status: Status
+    var attachment: TootAttachment? = null
     var callback: Callback? = null
 
     constructor(callback: Callback) {
-        this.status = STATUS_UPLOADING
+        this.status = Status.Progress
         this.callback = callback
     }
 
     constructor(a: TootAttachment) {
-        this.status = STATUS_UPLOADED
+        this.status = Status.Ok
         this.attachment = a
     }
 

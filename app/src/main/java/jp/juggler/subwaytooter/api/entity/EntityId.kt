@@ -3,10 +3,15 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
-import jp.juggler.util.JsonObject
-import jp.juggler.util.getStringOrNull
-import jp.juggler.util.notZero
+import jp.juggler.util.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 class EntityId(val x: String) : Comparable<EntityId> {
 
@@ -98,3 +103,15 @@ fun EntityId?.putMayNull(cv: ContentValues, key: String) {
         this.putTo(cv, key)
     }
 }
+
+object EntityIdSerializer : KSerializer<EntityId> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("EntityId", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: EntityId) =
+        encoder.encodeString(value.toString() )
+
+    override fun deserialize(decoder: Decoder): EntityId =
+        EntityId(decoder.decodeString())
+}
+

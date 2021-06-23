@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
+import jp.juggler.util.jsonObject
 
 class TootScheduled(parser: TootParser, val src: JsonObject) : TimelineItem() {
 
@@ -42,4 +43,18 @@ class TootScheduled(parser: TootParser, val src: JsonObject) : TimelineItem() {
     }
 
     fun hasMedia() = mediaAttachments?.isNotEmpty() == true
+
+    // 投稿画面の復元時に、IDだけでもないと困る
+    fun encodeSimple() = jsonObject {
+        put("id",id.toString())
+        put("scheduled_at",scheduledAt)
+        // SKIP: put("media_attachments",mediaAttachments?.map{ it.})
+        put("params", jsonObject {
+            put("text",text)
+            put("visibility",visibility.strMastodon)
+            put("spoiler_text",spoilerText)
+            put("in_reply_to_id",inReplyToId)
+            put("sensitive",sensitive)
+        })
+    }
 }

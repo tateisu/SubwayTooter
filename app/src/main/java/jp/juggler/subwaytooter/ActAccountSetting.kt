@@ -36,8 +36,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -82,7 +82,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     data class State(
         var propName: String = "",
 
-        @kotlinx.serialization.Serializable(with = UriOrNullSerializer::class)
+        @kotlinx.serialization.Serializable(with = UriSerializer::class)
         var uriCameraImage: Uri? = null,
     )
 
@@ -254,7 +254,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
         if (savedInstanceState != null) {
             savedInstanceState.getString(ACTIVITY_STATE)
-                ?.let { state = Json.decodeFromString(it) }
+                ?.let { state = kJson.decodeFromString(it) }
         }
 
         App1.setActivityTheme(this)
@@ -278,9 +278,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        val encodedState = Json.encodeToString(state)
+        val encodedState = kJson.encodeToString(state)
         log.d("encodedState=$encodedState")
-        val decodedState: State = Json.decodeFromString(encodedState)
+        val decodedState: State = kJson.decodeFromString(encodedState)
         log.d("encodedState.uriCameraImage=${decodedState.uriCameraImage}")
         outState.putString(ACTIVITY_STATE, encodedState)
     }

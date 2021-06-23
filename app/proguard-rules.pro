@@ -51,7 +51,7 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# your package
+# jp.juggler.subwaytooter
 -keep,includedescriptorclasses class jp.juggler.subwaytooter.**$$serializer { *; }
 -keepclassmembers class jp.juggler.subwaytooter.** {
     *** Companion;

@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.onListMemberUpdated
+import jp.juggler.subwaytooter.showColumnMatchAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Request

@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.action
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ColumnType
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.addColumn
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootTag

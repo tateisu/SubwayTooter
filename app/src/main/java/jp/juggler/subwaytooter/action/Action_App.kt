@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.ActColumnList
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootApplication
+import jp.juggler.subwaytooter.currentColumn
 import jp.juggler.subwaytooter.table.MutedApp
 import jp.juggler.util.showToast
 

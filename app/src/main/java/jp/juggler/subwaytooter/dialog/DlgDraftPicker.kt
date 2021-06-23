@@ -11,6 +11,8 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
+import jp.juggler.subwaytooter.DRAFT_CONTENT
+import jp.juggler.subwaytooter.DRAFT_CONTENT_WARNING
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
@@ -153,8 +155,8 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 
             val json = draft.json
             if (json != null) {
-                val cw = json.string(ActPost.DRAFT_CONTENT_WARNING)
-                val c = json.string(ActPost.DRAFT_CONTENT)
+                val cw = json.string(DRAFT_CONTENT_WARNING)
+                val c = json.string(DRAFT_CONTENT)
                 val sb = StringBuilder()
                 if (cw?.trim { it <= ' ' }?.isNotEmpty() == true) {
                     sb.append(cw)

@@ -3,9 +3,10 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
-import android.net.Uri
 import android.os.Bundle
-import jp.juggler.util.*
+import jp.juggler.util.JsonObject
+import jp.juggler.util.getStringOrNull
+import jp.juggler.util.notZero
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -109,9 +110,8 @@ object EntityIdSerializer : KSerializer<EntityId> {
         PrimitiveSerialDescriptor("EntityId", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: EntityId) =
-        encoder.encodeString(value.toString() )
+        encoder.encodeString(value.toString())
 
     override fun deserialize(decoder: Decoder): EntityId =
         EntityId(decoder.decodeString())
 }
-

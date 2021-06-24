@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.action
 
+import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
@@ -29,13 +30,17 @@ private class BoostImpl(
     val visibility: TootVisibility? = null,
     val callback: () -> Unit,
 ) {
+    val parser = TootParser(activity, accessInfo)
+    var resultStatus: TootStatus? = null
+    var resultUnrenoteId: EntityId? = null
+
     // Mastodonは非公開トゥートをブーストできるのは本人だけ
-    val isPrivateToot = accessInfo.isMastodon &&
+    private val isPrivateToot = accessInfo.isMastodon &&
         statusArg.visibility == TootVisibility.PrivateFollowers
 
-    var bConfirmed = false
+    private var bConfirmed = false
 
-    fun preCheck(): Boolean {
+    private fun preCheck(): Boolean {
 
         // アカウントからステータスにブースト操作を行っているなら、何もしない
         if (activity.appState.isBusyBoost(accessInfo, statusArg)) {
@@ -52,7 +57,7 @@ private class BoostImpl(
         return true
     }
 
-    fun confirm(): Boolean {
+    private fun confirm(): Boolean {
         if (bConfirmed) return true
         DlgConfirm.open(
             activity,
@@ -88,178 +93,162 @@ private class BoostImpl(
         return false
     }
 
+    private suspend fun Context.syncStatus(client: TootApiClient) =
+        if (!crossAccountMode.isRemote) {
+            // 既に自タンスのステータスがある
+            statusArg
+        } else {
+            val (result, status) = client.syncStatus(accessInfo, statusArg)
+            when {
+                status == null -> errorApiResult(result)
+                status.reblogged -> errorApiResult(getString(R.string.already_boosted))
+                else -> status
+            }
+        }
+
+    // ブースト結果をUIに反映させる
+    private fun after(result: TootApiResult?, newStatus: TootStatus?, unrenoteId: EntityId?) {
+        result ?: return // cancelled.
+        when {
+            // Misskeyでunrenoteに成功した
+            unrenoteId != null -> {
+                // 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
+                // 0未満にしない
+                val count = max(0, (statusArg.reblogs_count ?: 1) - 1)
+                for (column in activity.appState.columnList) {
+                    column.findStatus(accessInfo.apDomain, statusArg.id) { account, status ->
+                        // 同タンス別アカウントでもカウントは変化する
+                        status.reblogs_count = count
+                        // 同アカウントならreblogged状態を変化させる
+                        if (accessInfo == account && status.myRenoteId == unrenoteId) {
+                            status.myRenoteId = null
+                            status.reblogged = false
+                        }
+                        true
+                    }
+                }
+                callback()
+            }
+
+            // 処理に成功した
+            newStatus != null -> {
+                // カウント数は遅延があるみたいなので、恣意的に表示を変更する
+                // ブーストカウント数を加工する
+                val oldCount = statusArg.reblogs_count
+                val newCount = newStatus.reblogs_count
+                if (oldCount != null && newCount != null) {
+                    if (bSet && newStatus.reblogged && newCount <= oldCount) {
+                        // 星をつけたのにカウントが上がらないのは違和感あるので、表示をいじる
+                        newStatus.reblogs_count = oldCount + 1
+                    } else if (!bSet && !newStatus.reblogged && newCount >= oldCount) {
+                        // 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
+                        // 0未満にはしない
+                        newStatus.reblogs_count = if (oldCount < 1) 0 else oldCount - 1
+                    }
+                }
+
+                for (column in activity.appState.columnList) {
+                    column.findStatus(accessInfo.apDomain, newStatus.id) { account, status ->
+                        // 同タンス別アカウントでもカウントは変化する
+                        status.reblogs_count = newStatus.reblogs_count
+
+                        if (accessInfo == account) {
+                            // 同アカウントならreblog状態を変化させる
+                            when {
+                                accessInfo.isMastodon ->
+                                    status.reblogged = newStatus.reblogged
+
+                                bSet && status.myRenoteId == null -> {
+                                    status.myRenoteId = newStatus.myRenoteId
+                                    status.reblogged = true
+                                }
+                                // Misskey のunrenote時はここを通らない
+                            }
+                        }
+                        true
+                    }
+                }
+                callback()
+            }
+
+            else -> activity.showToast(true, result.error)
+        }
+    }
+
+    suspend fun boostApi(client: TootApiClient, targetStatus: TootStatus): TootApiResult? =
+        if (accessInfo.isMisskey) {
+            if (!bSet) {
+                val myRenoteId = targetStatus.myRenoteId ?: errorApiResult("missing renote id.")
+
+                client.request(
+                    "/api/notes/delete",
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("noteId", myRenoteId.toString())
+                        put("renoteId", targetStatus.id.toString())
+                    }.toPostRequestBuilder()
+                )?.also {
+                    if (it.response?.code == 204) {
+                        resultUnrenoteId = myRenoteId
+                    }
+                }
+            } else {
+                client.request(
+                    "/api/notes/create",
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("renoteId", targetStatus.id.toString())
+                    }.toPostRequestBuilder()
+                )?.also { result ->
+                    val jsonObject = result.jsonObject
+                    if (jsonObject != null) {
+                        val outerStatus = parser.status(jsonObject.jsonObject("createdNote") ?: jsonObject)
+                        val innerStatus = outerStatus?.reblog ?: outerStatus
+                        if (outerStatus != null && innerStatus != null && outerStatus != innerStatus) {
+                            innerStatus.myRenoteId = outerStatus.id
+                            innerStatus.reblogged = true
+                        }
+                        // renoteそのものではなくrenoteされた元noteが欲しい
+                        resultStatus = innerStatus
+                    }
+                }
+            }
+        } else {
+            val b = JsonObject().apply {
+                if (visibility != null) put("visibility", visibility.strMastodon)
+            }.toPostRequestBuilder()
+
+            client.request(
+                "/api/v1/statuses/${targetStatus.id}/${if (bSet) "reblog" else "unreblog"}",
+                b
+            )?.also { result ->
+                // reblogはreblogを表すStatusを返す
+                // unreblogはreblogしたStatusを返す
+                val s = parser.status(result.jsonObject)
+                resultStatus = s?.reblog ?: s
+            }
+        }
+
     fun run() {
         if (!preCheck()) return
         if (!confirm()) return
 
-        activity.appState.setBusyBoost(accessInfo, statusArg)
         // ブースト表示を更新中にする
+        activity.appState.setBusyBoost(accessInfo, statusArg)
         activity.showColumnMatchAccount(accessInfo)
-        // misskeyは非公開トゥートをブーストできないっぽい
 
         launchMain {
-            var resultStatus: TootStatus? = null
-            var resultUnrenoteId: EntityId? = null
             val result = activity.runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
-
-                val parser = TootParser(this, accessInfo)
-
-                val targetStatus = if (crossAccountMode.isRemote) {
-                    val (result, status) = client.syncStatus(accessInfo, statusArg)
-                    if (status == null) return@runApiTask result
-                    if (status.reblogged) {
-                        return@runApiTask TootApiResult(getString(R.string.already_boosted))
-                    }
-                    status
-                } else {
-                    // 既に自タンスのステータスがある
-                    statusArg
-                }
-
-                if (accessInfo.isMisskey) {
-                    if (!bSet) {
-                        val myRenoteId = targetStatus.myRenoteId
-                            ?: return@runApiTask TootApiResult("missing renote id.")
-
-                        client.request(
-                            "/api/notes/delete",
-                            accessInfo.putMisskeyApiToken().apply {
-                                put("noteId", myRenoteId.toString())
-                                put("renoteId", targetStatus.id.toString())
-                            }
-                                .toPostRequestBuilder()
-                        )
-                            ?.also {
-                                if (it.response?.code == 204) {
-                                    resultUnrenoteId = myRenoteId
-                                }
-                            }
-                    } else {
-                        client.request(
-                            "/api/notes/create",
-                            accessInfo.putMisskeyApiToken().apply {
-                                put("renoteId", targetStatus.id.toString())
-                            }
-                                .toPostRequestBuilder()
-                        )
-                            ?.also { result ->
-                                val jsonObject = result.jsonObject
-                                if (jsonObject != null) {
-                                    val outerStatus = parser.status(
-                                        jsonObject.jsonObject("createdNote")
-                                            ?: jsonObject
-                                    )
-                                    val innerStatus = outerStatus?.reblog ?: outerStatus
-                                    if (outerStatus != null && innerStatus != null && outerStatus != innerStatus) {
-                                        innerStatus.myRenoteId = outerStatus.id
-                                        innerStatus.reblogged = true
-                                    }
-                                    // renoteそのものではなくrenoteされた元noteが欲しい
-                                    resultStatus = innerStatus
-                                }
-                            }
-                    }
-                } else {
-                    val b = JsonObject().apply {
-                        if (visibility != null) put("visibility", visibility.strMastodon)
-                    }.toPostRequestBuilder()
-
-                    client.request(
-                        "/api/v1/statuses/${targetStatus.id}/${if (bSet) "reblog" else "unreblog"}",
-                        b
-                    )?.also { result ->
-                        // reblogはreblogを表すStatusを返す
-                        // unreblogはreblogしたStatusを返す
-                        val s = parser.status(result.jsonObject)
-                        resultStatus = s?.reblog ?: s
-                    }
+                try {
+                    val targetStatus = syncStatus(client)
+                    boostApi(client, targetStatus)
+                } catch (ex: TootApiResultException) {
+                    ex.result
                 }
             }
-
+            // 更新中状態をリセット
             activity.appState.resetBusyBoost(accessInfo, statusArg)
-
-            if (result != null) {
-                val unrenoteId = resultUnrenoteId
-                val newStatus = resultStatus
-                when {
-                    // Misskeyでunrenoteに成功した
-                    unrenoteId != null -> {
-
-                        // 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
-                        // 0未満にはならない
-                        val count = max(0, (statusArg.reblogs_count ?: 1) - 1)
-
-                        for (column in activity.appState.columnList) {
-                            column.findStatus(
-                                accessInfo.apDomain,
-                                statusArg.id
-                            ) { account, status ->
-
-                                // 同タンス別アカウントでもカウントは変化する
-                                status.reblogs_count = count
-
-                                // 同アカウントならreblogged状態を変化させる
-                                if (accessInfo == account && status.myRenoteId == unrenoteId) {
-                                    status.myRenoteId = null
-                                    status.reblogged = false
-                                }
-                                true
-                            }
-                        }
-                        callback()
-                    }
-
-                    // 処理に成功した
-                    newStatus != null -> {
-                        // カウント数は遅延があるみたいなので、恣意的に表示を変更する
-                        // ブーストカウント数を加工する
-                        val oldCount = statusArg.reblogs_count
-                        val newCount = newStatus.reblogs_count
-                        if (oldCount != null && newCount != null) {
-                            if (bSet && newStatus.reblogged && newCount <= oldCount) {
-                                // 星をつけたのにカウントが上がらないのは違和感あるので、表示をいじる
-                                newStatus.reblogs_count = oldCount + 1
-                            } else if (!bSet && !newStatus.reblogged && newCount >= oldCount) {
-                                // 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
-                                // 0未満にはならない
-                                newStatus.reblogs_count = if (oldCount < 1) 0 else oldCount - 1
-                            }
-                        }
-
-                        for (column in activity.appState.columnList) {
-                            column.findStatus(
-                                accessInfo.apDomain,
-                                newStatus.id
-                            ) { account, status ->
-
-                                // 同タンス別アカウントでもカウントは変化する
-                                status.reblogs_count = newStatus.reblogs_count
-
-                                if (accessInfo == account) {
-
-                                    // 同アカウントならreblog状態を変化させる
-                                    when {
-                                        accessInfo.isMastodon ->
-                                            status.reblogged = newStatus.reblogged
-
-                                        bSet && status.myRenoteId == null -> {
-                                            status.myRenoteId = newStatus.myRenoteId
-                                            status.reblogged = true
-                                        }
-                                    }
-                                    // Misskey のunrenote時はここを通らない
-                                }
-                                true
-                            }
-                        }
-                        callback()
-                    }
-
-                    else -> activity.showToast(true, result.error)
-                }
-            }
-
-            // 結果に関わらず、更新中状態から復帰させる
+            // カラムデータの書き換え
+            after(result, resultStatus, resultUnrenoteId)
+            // result == null の場合でも更新中表示の解除が必要になる
             activity.showColumnMatchAccount(accessInfo)
         }
     }

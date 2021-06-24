@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter.notification
 
+import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActCallback
@@ -463,215 +463,170 @@ class TaskRunner(
             }
 
             fun updateNotification() {
-
                 val notificationTag = when (trackingName) {
                     "" -> "${account.db_id}/_"
                     else -> "${account.db_id}/$trackingName"
                 }
 
                 val nt = NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
-                val dataList = dstListData
-                val first = dataList.firstOrNull()
-                if (first == null) {
-                    log.d("showNotification[${account.acct.pretty}/$notificationTag] cancel notification.")
-                    if (Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref)) {
-                        notificationManager.activeNotifications?.forEach {
-                            if (it != null &&
-                                it.id == PollingWorker.NOTIFICATION_ID &&
-                                it.tag.startsWith("$notificationTag/")
-                            ) {
-                                log.d("cancel: ${it.tag} context=${account.acct.pretty} $notificationTag")
-                                notificationManager.cancel(it.tag, PollingWorker.NOTIFICATION_ID)
+                when (val first = dstListData.firstOrNull()) {
+                    null -> {
+                        log.d("showNotification[${account.acct.pretty}/$notificationTag] cancel notification.")
+                        removeNotification(notificationTag)
+                    }
+                    else -> {
+                        when {
+                            // 先頭にあるデータが同じなら、通知を更新しない
+                            // このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
+                            first.notification.time_created_at == nt.post_time && first.notification.id == nt.post_id ->
+                                log.d("showNotification[${account.acct.pretty}] id=${first.notification.id} is already shown.")
+
+                            Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref) -> {
+                                updateNotificationDivided(notificationTag, nt)
+                                nt.updatePost(first.notification.id, first.notification.time_created_at)
+                            }
+
+                            else -> {
+                                updateNotificationMerged(notificationTag, first)
+                                nt.updatePost(first.notification.id, first.notification.time_created_at)
                             }
                         }
-                    } else {
-                        notificationManager.cancel(notificationTag, PollingWorker.NOTIFICATION_ID)
                     }
-                    return
                 }
+            }
+
+            private fun removeNotification(notificationTag: String) {
+                if (Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref)) {
+                    notificationManager.activeNotifications?.filterNotNull()?.filter {
+                        it.id == PollingWorker.NOTIFICATION_ID && it.tag.startsWith("$notificationTag/")
+                    }?.forEach {
+                        log.d("cancel: ${it.tag} context=${account.acct.pretty} $notificationTag")
+                        notificationManager.cancel(it.tag, PollingWorker.NOTIFICATION_ID)
+                    }
+                } else {
+                    notificationManager.cancel(notificationTag, PollingWorker.NOTIFICATION_ID)
+                }
+            }
+
+            @TargetApi(23)
+            private fun updateNotificationDivided(notificationTag: String, nt: NotificationTracking) {
+                log.d("updateNotificationDivided[${account.acct.pretty}] creating notification(1)")
+
+                val activeNotificationMap = notificationManager.activeNotifications?.filterNotNull()?.filter {
+                    it.id == PollingWorker.NOTIFICATION_ID && it.tag.startsWith("$notificationTag/")
+                }?.map { Pair(it.tag, it) }?.toMutableMap() ?: mutableMapOf()
 
                 val lastPostTime = nt.post_time
                 val lastPostId = nt.post_id
-                if (first.notification.time_created_at == lastPostTime &&
-                    first.notification.id == lastPostId
-                ) {
-                    // 先頭にあるデータが同じなら、通知を更新しない
-                    // このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
-                    log.d("showNotification[${account.acct.pretty}] id=${first.notification.id} is already shown.")
-                    return
-                }
 
-                if (Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref)) {
-                    val activeNotificationMap = HashMap<String, StatusBarNotification>().apply {
-                        notificationManager.activeNotifications?.forEach {
-                            if (it != null &&
-                                it.id == PollingWorker.NOTIFICATION_ID &&
-                                it.tag.startsWith("$notificationTag/")
-                            ) {
-                                put(it.tag, it)
-                            }
-                        }
+                for (item in dstListData.reversed()) {
+                    val itemTag = "$notificationTag/${item.notification.id}"
+
+                    if (lastPostId != null &&
+                        item.notification.time_created_at <= lastPostTime &&
+                        item.notification.id <= lastPostId
+                    ) {
+                        // 掲載済みデータより古い通知は再表示しない
+                        log.d("ignore $itemTag ${item.notification.time_created_at} <= $lastPostTime && ${item.notification.id} <= $lastPostId")
+                        continue
                     }
-                    for (item in dstListData.reversed()) {
-                        val itemTag = "$notificationTag/${item.notification.id}"
 
-                        if (lastPostId != null &&
-                            item.notification.time_created_at <= lastPostTime &&
-                            item.notification.id <= lastPostId
-                        ) {
-                            // 掲載済みデータより古い通知は再表示しない
-                            log.d("ignore $itemTag ${item.notification.time_created_at} <= $lastPostTime && ${item.notification.id} <= $lastPostId")
-                            continue
-                        }
-
-                        // ignore if already showing
-                        if (activeNotificationMap.remove(itemTag) != null) {
-                            log.d("ignore $itemTag is in activeNotificationMap")
-                            continue
-                        }
-
-                        createNotification(
-                            itemTag,
-                            notificationId = item.notification.id.toString()
-                        ) { builder ->
-
-                            builder.setWhen(item.notification.time_created_at)
-
-                            val summary = item.getNotificationLine()
-                            builder.setContentTitle(summary)
-                            val content = item.notification.status?.decoded_content?.notEmpty()
-                            if (content != null) {
-                                builder.setStyle(
-                                    NotificationCompat.BigTextStyle()
-                                        .setBigContentTitle(summary)
-                                        .setSummaryText(item.accessInfo.acct.pretty)
-                                        .bigText(content)
-                                )
-                            } else {
-                                builder.setContentText(item.accessInfo.acct.pretty)
-                            }
-
-                            if (Build.VERSION.SDK_INT < 26) {
-                                var iv = 0
-
-                                if (PrefB.bpNotificationSound(pref)) {
-
-                                    var soundUri: Uri? = null
-
-                                    try {
-                                        val whoAcct = account.getFullAcct(item.notification.account)
-                                        soundUri = AcctColor.getNotificationSound(whoAcct).mayUri()
-                                    } catch (ex: Throwable) {
-                                        log.trace(ex)
-                                    }
-
-                                    if (soundUri == null) {
-                                        soundUri = account.sound_uri.mayUri()
-                                    }
-
-                                    var bSoundSet = false
-                                    if (soundUri != null) {
-                                        try {
-                                            builder.setSound(soundUri)
-                                            bSoundSet = true
-                                        } catch (ex: Throwable) {
-                                            log.trace(ex)
-                                        }
-                                    }
-                                    if (!bSoundSet) {
-                                        iv = iv or NotificationCompat.DEFAULT_SOUND
-                                    }
-                                }
-
-                                if (PrefB.bpNotificationVibration(pref)) {
-                                    iv = iv or NotificationCompat.DEFAULT_VIBRATE
-                                }
-
-                                if (PrefB.bpNotificationLED(pref)) {
-                                    iv = iv or NotificationCompat.DEFAULT_LIGHTS
-                                }
-
-                                builder.setDefaults(iv)
-                            }
-                        }
+                    // ignore if already showing
+                    if (activeNotificationMap.remove(itemTag) != null) {
+                        log.d("ignore $itemTag is in activeNotificationMap")
+                        continue
                     }
-                    // リストにない通知は消さない。ある通知をユーザが指で削除した際に他の通知が残ってほしい場合がある
-                } else {
-                    log.d("showNotification[${account.acct.pretty}] creating notification(1)")
-                    createNotification(notificationTag) { builder ->
 
-                        builder.setWhen(first.notification.time_created_at)
-
-                        var a = first.getNotificationLine()
-
-                        if (dataList.size == 1) {
-                            builder.setContentTitle(a)
-                            builder.setContentText(account.acct.pretty)
-                        } else {
-                            val header =
-                                context.getString(R.string.notification_count, dataList.size)
-                            builder.setContentTitle(header)
-                                .setContentText(a)
-
-                            val style = NotificationCompat.InboxStyle()
-                                .setBigContentTitle(header)
-                                .setSummaryText(account.acct.pretty)
-                            for (i in 0..4) {
-                                if (i >= dataList.size) break
-                                val item = dataList[i]
-                                a = item.getNotificationLine()
-                                style.addLine(a)
+                    createNotification(itemTag, notificationId = item.notification.id.toString()) { builder ->
+                        builder.setWhen(item.notification.time_created_at)
+                        val summary = item.getNotificationLine()
+                        builder.setContentTitle(summary)
+                        when (val content = item.notification.status?.decoded_content?.notEmpty()) {
+                            null -> builder.setContentText(item.accessInfo.acct.pretty)
+                            else -> {
+                                val style = NotificationCompat.BigTextStyle()
+                                    .setBigContentTitle(summary)
+                                    .setSummaryText(item.accessInfo.acct.pretty)
+                                    .bigText(content)
+                                builder.setStyle(style)
                             }
-                            builder.setStyle(style)
                         }
-
-                        if (Build.VERSION.SDK_INT < 26) {
-
-                            var iv = 0
-
-                            if (PrefB.bpNotificationSound(pref)) {
-
-                                var soundUri: Uri? = null
-
-                                try {
-                                    val whoAcct =
-                                        account.getFullAcct(first.notification.account)
-                                    soundUri = AcctColor.getNotificationSound(whoAcct).mayUri()
-                                } catch (ex: Throwable) {
-                                    log.trace(ex)
-                                }
-
-                                if (soundUri == null) {
-                                    soundUri = account.sound_uri.mayUri()
-                                }
-
-                                var bSoundSet = false
-                                if (soundUri != null) {
-                                    try {
-                                        builder.setSound(soundUri)
-                                        bSoundSet = true
-                                    } catch (ex: Throwable) {
-                                        log.trace(ex)
-                                    }
-                                }
-                                if (!bSoundSet) {
-                                    iv = iv or NotificationCompat.DEFAULT_SOUND
-                                }
-                            }
-
-                            if (PrefB.bpNotificationVibration(pref)) {
-                                iv = iv or NotificationCompat.DEFAULT_VIBRATE
-                            }
-
-                            if (PrefB.bpNotificationLED(pref)) {
-                                iv = iv or NotificationCompat.DEFAULT_LIGHTS
-                            }
-
-                            builder.setDefaults(iv)
-                        }
+                        if (Build.VERSION.SDK_INT < 26) setNotificationSound25(builder, item)
                     }
                 }
-                nt.updatePost(first.notification.id, first.notification.time_created_at)
+                // リストにない通知は消さない。ある通知をユーザが指で削除した際に他の通知が残ってほしい場合がある
+            }
+
+            private fun updateNotificationMerged(
+                notificationTag: String,
+                first: NotificationData,
+            ) {
+                log.d("updateNotificationMerged[${account.acct.pretty}] creating notification(1)")
+                createNotification(notificationTag) { builder ->
+                    builder.setWhen(first.notification.time_created_at)
+                    val a = first.getNotificationLine()
+                    val dataList = dstListData
+                    if (dataList.size == 1) {
+                        builder.setContentTitle(a)
+                        builder.setContentText(account.acct.pretty)
+                    } else {
+                        val header = context.getString(R.string.notification_count, dataList.size)
+                        builder.setContentTitle(header).setContentText(a)
+
+                        val style = NotificationCompat.InboxStyle()
+                            .setBigContentTitle(header)
+                            .setSummaryText(account.acct.pretty)
+
+                        for (i in 0 until min(4, dataList.size)) {
+                            style.addLine(dataList[i].getNotificationLine())
+                        }
+
+                        builder.setStyle(style)
+                    }
+                    if (Build.VERSION.SDK_INT < 26) setNotificationSound25(builder, first)
+                }
+            }
+
+            // Android 8 未満ではチャネルではなく通知に個別にスタイルを設定する
+            @TargetApi(25)
+            private fun setNotificationSound25(builder: NotificationCompat.Builder, item: NotificationData) {
+                var iv = 0
+                if (PrefB.bpNotificationSound(pref)) {
+                    var soundUri: Uri? = null
+
+                    try {
+                        val whoAcct = account.getFullAcct(item.notification.account)
+                        soundUri = AcctColor.getNotificationSound(whoAcct).mayUri()
+                    } catch (ex: Throwable) {
+                        log.trace(ex)
+                    }
+                    if (soundUri == null) {
+                        soundUri = account.sound_uri.mayUri()
+                    }
+
+                    var bSoundSet = false
+                    if (soundUri != null) {
+                        try {
+                            builder.setSound(soundUri)
+                            bSoundSet = true
+                        } catch (ex: Throwable) {
+                            log.trace(ex)
+                        }
+                    }
+                    if (!bSoundSet) {
+                        iv = iv or NotificationCompat.DEFAULT_SOUND
+                    }
+                }
+
+                if (PrefB.bpNotificationVibration(pref)) {
+                    iv = iv or NotificationCompat.DEFAULT_VIBRATE
+                }
+
+                if (PrefB.bpNotificationLED(pref)) {
+                    iv = iv or NotificationCompat.DEFAULT_LIGHTS
+                }
+
+                builder.setDefaults(iv)
             }
 
             private fun createNotification(
@@ -701,41 +656,35 @@ class TaskRunner(
                         "type" to trackingType.str,
                         "notificationId" to notificationId
                     ).mapNotNull {
-                        val second = it.second
-                        if (second == null) {
-                            null
-                        } else {
-                            "${it.first.encodePercent()}=${second.encodePercent()}"
+                        when (val second = it.second) {
+                            null -> null
+                            else -> "${it.first.encodePercent()}=${second.encodePercent()}"
                         }
                     }.joinToString("&")
 
-                    setContentIntent(
-                        PendingIntent.getActivity(
-                            context,
-                            257,
-                            Intent(context, ActCallback::class.java).apply {
-                                data =
-                                    "subwaytooter://notification_click/?$params".toUri()
+                    val flag = PendingIntent.FLAG_UPDATE_CURRENT or
+                        (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
 
-                                // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            },
-                            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
-                        )
-                    )
+                    PendingIntent.getActivity(
+                        context,
+                        257,
+                        Intent(context, ActCallback::class.java).apply {
+                            data = "subwaytooter://notification_click/?$params".toUri()
+                            // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        },
+                        flag
+                    )?.let { setContentIntent(it) }
 
-                    setDeleteIntent(
-                        PendingIntent.getBroadcast(
-                            context,
-                            257,
-                            Intent(context, EventReceiver::class.java).apply {
-                                action = EventReceiver.ACTION_NOTIFICATION_DELETE
-                                data =
-                                    "subwaytooter://notification_delete/?$params".toUri()
-                            },
-                            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
-                        )
-                    )
+                    PendingIntent.getBroadcast(
+                        context,
+                        257,
+                        Intent(context, EventReceiver::class.java).apply {
+                            action = EventReceiver.ACTION_NOTIFICATION_DELETE
+                            data = "subwaytooter://notification_delete/?$params".toUri()
+                        },
+                        flag
+                    )?.let { setDeleteIntent(it) }
 
                     setAutoCancel(true)
 
@@ -752,16 +701,10 @@ class TaskRunner(
                 }
 
                 log.d("showNotification[${account.acct.pretty}] creating notification(3)")
-
                 setContent(builder)
 
                 log.d("showNotification[${account.acct.pretty}] set notification...")
-
-                notificationManager.notify(
-                    notificationTag,
-                    PollingWorker.NOTIFICATION_ID,
-                    builder.build()
-                )
+                notificationManager.notify(notificationTag, PollingWorker.NOTIFICATION_ID, builder.build())
             }
         }
     }

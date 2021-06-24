@@ -46,15 +46,15 @@ class TootScheduled(parser: TootParser, val src: JsonObject) : TimelineItem() {
 
     // 投稿画面の復元時に、IDだけでもないと困る
     fun encodeSimple() = jsonObject {
-        put("id",id.toString())
-        put("scheduled_at",scheduledAt)
+        put("id", id.toString())
+        put("scheduled_at", scheduledAt)
         // SKIP: put("media_attachments",mediaAttachments?.map{ it.})
         put("params", jsonObject {
-            put("text",text)
-            put("visibility",visibility.strMastodon)
-            put("spoiler_text",spoilerText)
-            put("in_reply_to_id",inReplyToId)
-            put("sensitive",sensitive)
+            put("text", text)
+            put("visibility", visibility.strMastodon)
+            put("spoiler_text", spoilerText)
+            put("in_reply_to_id", inReplyToId)
+            put("sensitive", sensitive)
         })
     }
 }

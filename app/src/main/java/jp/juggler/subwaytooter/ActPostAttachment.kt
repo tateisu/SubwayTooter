@@ -38,7 +38,6 @@ fun ActPost.decodeAttachments(sv: String) {
     }
 }
 
-
 fun ActPost.showMediaAttachment() {
     if (isFinishing) return
     llAttachment.vg(attachmentList.isNotEmpty())

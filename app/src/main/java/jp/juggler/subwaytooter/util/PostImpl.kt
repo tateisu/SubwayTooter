@@ -7,11 +7,8 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -23,12 +20,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.lang.Exception
 import java.lang.ref.WeakReference
 import java.util.*
 
 interface PostCompleteCallback {
-
     fun onPostComplete(targetAccount: SavedAccount, status: TootStatus)
     fun onScheduledPostComplete(targetAccount: SavedAccount)
 }
@@ -247,10 +242,6 @@ class PostImpl(
         }
     }
 
-    private class TootApiResultException(val result: TootApiResult?) : Exception(result?.error ?: "cancelled.") {
-        constructor(error: String) : this(TootApiResult(error))
-    }
-
     private suspend fun getWebVisibility(
         client: TootApiClient,
         parser: TootParser,
@@ -261,10 +252,10 @@ class PostImpl(
         val r2 = getCredential(client, parser)
 
         val credentialTmp = resultCredentialTmp
-            ?: throw TootApiResultException(r2)
+            ?: errorApiResult(r2)
 
         val privacy = credentialTmp.source?.privacy
-            ?: throw TootApiResultException(activity.getString(R.string.cant_get_web_setting_visibility))
+            ?: errorApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
 
         return TootVisibility.parseMastodon(privacy)
         // may null, not error
@@ -278,7 +269,7 @@ class PostImpl(
     ) {
         if (actual != extra || checkFun(instance)) return
         val strVisibility = Styler.getVisibilityString(activity, account.isMisskey, extra)
-        throw TootApiResultException(activity.getString(R.string.server_has_no_support_of_visibility, strVisibility))
+        errorApiResult(activity.getString(R.string.server_has_no_support_of_visibility, strVisibility))
     }
 
     private suspend fun checkVisibility(
@@ -391,7 +382,7 @@ class PostImpl(
                         }
                             .toPostRequestBuilder()
                     )
-                    if (r == null || r.error != null) throw TootApiResultException(r)
+                    if (r == null || r.error != null) errorApiResult(r)
                 }
             }
             if (array.isNotEmpty()) json["mediaIds"] = array
@@ -449,7 +440,7 @@ class PostImpl(
 
         if (scheduledAt != 0L) {
             if (!instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
-                throw TootApiResultException(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
+                errorApiResult(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
             }
             // UTCの日時を渡す
             val c = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"))

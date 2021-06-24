@@ -7,10 +7,8 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Typeface
 import android.os.*
-import android.text.InputType
 import android.text.Spannable
 import android.view.*
-import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -40,8 +38,7 @@ class ActMain : AppCompatActivity(),
     MyClickableSpanHandler {
 
     companion object {
-
-        val log = LogCategory("ActMain")
+        private val log = LogCategory("ActMain")
 
         // リザルト
         const val RESULT_APP_DATA_IMPORT = Activity.RESULT_FIRST_USER
@@ -122,9 +119,7 @@ class ActMain : AppCompatActivity(),
 
     var quickTootVisibility: TootVisibility = TootVisibility.AccountSetting
 
-    //////////////////////////////////////////////////////////////////
-    // 変更しない変数(lateinit)
-
+    lateinit var llFormRoot: LinearLayout
     lateinit var llQuickTootBar: LinearLayout
     lateinit var etQuickToot: MyEditText
     lateinit var btnQuickToot: ImageButton
@@ -879,106 +874,11 @@ class ActMain : AppCompatActivity(),
         return rv
     }
 
-    internal fun initUI() {
-        setContentView(R.layout.act_main)
-        App1.initEdgeToEdge(this)
-
-        quickTootVisibility =
-            TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility(pref))
-                ?: quickTootVisibility
-
-        Column.reloadDefaultColor(this, pref)
-
-        var sv = PrefS.spTimelineFont(pref)
-        if (sv.isNotEmpty()) {
-            try {
-                timelineFont = Typeface.createFromFile(sv)
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-        }
-
-        sv = PrefS.spTimelineFontBold(pref)
-        if (sv.isNotEmpty()) {
-            try {
-                timeline_font_bold = Typeface.createFromFile(sv)
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-        } else {
-            try {
-                timeline_font_bold = Typeface.create(timelineFont, Typeface.BOLD)
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-        }
-
-        fun parseIconSize(stringPref: StringPref, minDp: Float = 1f): Int {
-            var iconSizeDp = stringPref.defVal.toFloat()
-            try {
-                sv = stringPref(pref)
-                val fv = if (sv.isEmpty()) Float.NaN else sv.toFloat()
-                if (fv.isFinite() && fv >= minDp) {
-                    iconSizeDp = fv
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-            return (0.5f + iconSizeDp * density).toInt()
-        }
-
-        avatarIconSize = parseIconSize(PrefS.spAvatarIconSize)
-        notificationTlIconSize = parseIconSize(PrefS.spNotificationTlIconSize)
-        boostButtonSize = parseIconSize(PrefS.spBoostButtonSize)
-        replyIconSize = parseIconSize(PrefS.spReplyIconSize)
-        headerIconSize = parseIconSize(PrefS.spHeaderIconSize)
-        stripIconSize = parseIconSize(PrefS.spStripIconSize)
-        screenBottomPadding = parseIconSize(PrefS.spScreenBottomPadding, minDp = 0f)
-
-        run {
-            var roundRatio = 33f
-            try {
-                if (PrefB.bpDontRound(pref)) {
-                    roundRatio = 0f
-                } else {
-                    sv = PrefS.spRoundRatio(pref)
-                    if (sv.isNotEmpty()) {
-                        val fv = sv.toFloat()
-                        if (fv.isFinite()) {
-                            roundRatio = fv
-                        }
-                    }
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-            Styler.round_ratio = clipRange(0f, 1f, roundRatio / 100f) * 0.5f
-        }
-
-        run {
-            var boostAlpha = 0.8f
-            try {
-                val f = (PrefS.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
-                boostAlpha = when {
-                    f >= 1f -> 1f
-                    f < 0f -> 0.66f
-                    else -> f
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-            Styler.boostAlpha = boostAlpha
-        }
-
+    // lateinitなビュー変数を初期化する
+    fun findViews() {
+        llFormRoot = findViewById(R.id.llFormRoot)
         llEmpty = findViewById(R.id.llEmpty)
-
         drawer = findViewById(R.id.drawer_layout)
-        drawer.addDrawerListener(this)
-
-        drawer.setExclusionSize(stripIconSize)
-
-        SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
-
         btnMenu = findViewById(R.id.btnMenu)
         btnToot = findViewById(R.id.btnToot)
         vFooterDivider1 = findViewById(R.id.vFooterDivider1)
@@ -990,128 +890,58 @@ class ActMain : AppCompatActivity(),
         btnQuickToot = findViewById(R.id.btnQuickToot)
         btnQuickTootMenu = findViewById(R.id.btnQuickTootMenu)
 
-        val llFormRoot: LinearLayout = findViewById(R.id.llFormRoot)
-
-        llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
-
-        etQuickToot.typeface = timelineFont
-
-        when (PrefI.ipJustifyWindowContentPortrait(pref)) {
-            PrefI.JWCP_START -> {
-                val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
-                val padding = resources.displayMetrics.widthPixels / 2 - iconW
-
-                fun ViewGroup.addViewBeforeLast(v: View) = addView(v, childCount - 1)
-                (svColumnStrip.parent as LinearLayout).addViewBeforeLast(
-                    View(this).apply {
-                        layoutParams = LinearLayout.LayoutParams(padding, 0)
-                    }
-                )
-                llQuickTootBar.addViewBeforeLast(
-                    View(this).apply {
-                        layoutParams = LinearLayout.LayoutParams(padding, 0)
-                    }
-                )
-            }
-
-            PrefI.JWCP_END -> {
-                val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
-                val borderWidth = (1f * density + 0.5f).toInt()
-                val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
-
-                fun ViewGroup.addViewAfterFirst(v: View) = addView(v, 1)
-                (svColumnStrip.parent as LinearLayout).addViewAfterFirst(
-                    View(this).apply {
-                        layoutParams = LinearLayout.LayoutParams(padding, 0)
-                    }
-                )
-                llQuickTootBar.addViewAfterFirst(
-                    View(this).apply {
-                        layoutParams = LinearLayout.LayoutParams(padding, 0)
-                    }
-                )
-            }
-        }
-
-        if (!PrefB.bpQuickTootBar(pref)) {
-            llQuickTootBar.visibility = View.GONE
-        }
-
         btnToot.setOnClickListener(this)
         btnMenu.setOnClickListener(this)
         btnQuickToot.setOnClickListener(this)
         btnQuickTootMenu.setOnClickListener(this)
+    }
 
-        if (PrefB.bpDontUseActionButtonWithQuickTootBar(pref)) {
-            etQuickToot.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
-            etQuickToot.imeOptions = EditorInfo.IME_ACTION_NONE
-            // 最後に指定する必要がある？
-            etQuickToot.maxLines = 5
-            etQuickToot.isVerticalScrollBarEnabled = true
-            etQuickToot.isScrollbarFadingEnabled = false
-        } else {
-            etQuickToot.inputType = InputType.TYPE_CLASS_TEXT
-            etQuickToot.imeOptions = EditorInfo.IME_ACTION_SEND
-            etQuickToot.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    btnQuickToot.performClick()
-                    return@OnEditorActionListener true
-                }
-                false
-            })
-            // 最後に指定する必要がある？
-            etQuickToot.maxLines = 1
-        }
+    internal fun initUI() {
+        setContentView(R.layout.act_main)
+        App1.initEdgeToEdge(this)
+
+        quickTootVisibility =
+            TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility(pref))
+                ?: quickTootVisibility
+
+        Column.reloadDefaultColor(this, pref)
+
+        reloadFonts()
+        reloadIconSize()
+        reloadRoundRatio()
+        reloadBoostAlpha()
+
+        findViews()
+
+        drawer.addDrawerListener(this)
+        drawer.setExclusionSize(stripIconSize)
+
+        SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
+
+        llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
+
+        justifyWindowContentPortrait()
+
+        initUIQuickToot()
 
         svColumnStrip.isHorizontalFadingEdgeEnabled = true
-
         completionHelper = CompletionHelper(this, pref, appState.handler)
 
         val dm = resources.displayMetrics
-
         val density = dm.density
-
-        var mediaThumbHeightDp = 64
-        sv = PrefS.spMediaThumbHeight(pref)
-        if (sv.isNotEmpty()) {
-            try {
-                val iv = Integer.parseInt(sv)
-                if (iv >= 32) {
-                    mediaThumbHeightDp = iv
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-        }
-        appState.mediaThumbHeight = (0.5f + mediaThumbHeightDp * density).toInt()
-
-        var columnWMinDp = COLUMN_WIDTH_MIN_DP
-        sv = PrefS.spColumnWidth(pref)
-        if (sv.isNotEmpty()) {
-            try {
-                val iv = Integer.parseInt(sv)
-                if (iv >= 100) {
-                    columnWMinDp = iv
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-        }
-        val columnWMin = (0.5f + columnWMinDp * density).toInt()
-
+        reloadMediaHeight()
+        val columnWMin = loadColumnMin(density)
         val sw = dm.widthPixels
 
+        // スマホモードとタブレットモードの切り替え
         if (PrefB.bpDisableTabletMode(pref) || sw < columnWMin * 2) {
-            // SmartPhone mode
             phoneViews = PhoneViews(this)
         } else {
-            // Tablet mode
             tabletViews = TabletViews(this)
         }
 
         val tmpPhonePager: MyViewPager = findViewById(R.id.viewPager)
         val tmpTabletPager: RecyclerView = findViewById(R.id.rvPager)
-
         phoneTab({ env ->
             tmpTabletPager.visibility = View.GONE
             env.initUI(tmpPhonePager)
@@ -1119,23 +949,8 @@ class ActMain : AppCompatActivity(),
         }, { env ->
             tmpPhonePager.visibility = View.GONE
             env.initUI(tmpTabletPager)
-
         })
 
         showFooterColor()
-
-        completionHelper.attachEditText(
-            llFormRoot,
-            etQuickToot,
-            true,
-            object : CompletionHelper.Callback2 {
-                override fun onTextUpdate() {}
-
-                override fun canOpenPopup(): Boolean {
-                    return !drawer.isDrawerOpen(GravityCompat.START)
-                }
-            })
-
-        showQuickTootVisibility()
     }
 }

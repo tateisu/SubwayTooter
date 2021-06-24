@@ -74,7 +74,7 @@ fun ActPost.updateTextCount() {
         }
     }
 
-    when (spEnquete.selectedItemPosition) {
+    when (spPollType.selectedItemPosition) {
         1 -> checkEnqueteLength()
 
         2 -> {

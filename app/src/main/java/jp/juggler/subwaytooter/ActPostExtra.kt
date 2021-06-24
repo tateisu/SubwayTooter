@@ -102,7 +102,7 @@ fun ActPost.resetText() {
     attachmentList.clear()
     cbQuote.isChecked = false
     etContent.setText("")
-    spEnquete.setSelection(0, false)
+    spPollType.setSelection(0, false)
     etChoices.forEach { it.setText("") }
     accountList = SavedAccount.loadAccountList(this)
     SavedAccount.sort(accountList)
@@ -131,7 +131,6 @@ fun ActPost.afterUpdateText() {
     showSchedule()
     updateTextCount()
 }
-
 
 // 初期化時と投稿完了時とリセット確認後に呼ばれる
 fun ActPost.updateText(
@@ -294,7 +293,7 @@ fun ActPost.performPost() {
     var pollExpireSeconds = 0
     var pollHideTotals = false
     var pollMultipleChoice = false
-    when (spEnquete.selectedItemPosition) {
+    when (spPollType.selectedItemPosition) {
         1 -> {
             pollType = TootPollsType.Mastodon
             pollItems = pollChoiceList()

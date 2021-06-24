@@ -611,4 +611,4 @@ class App1 : Application() {
     }
 }
 
-val kJson = kotlinx.serialization.json.Json{ ignoreUnknownKeys = true }
+val kJson = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }

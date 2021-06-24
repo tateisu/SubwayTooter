@@ -635,6 +635,7 @@ internal class DlgContextMenu(
         return true
     }
 
+    @Suppress("ComplexMethod")
     private fun ActMain.onClickUser(v: View, pos: Int, who: TootAccount, whoRef: TootAccountRef): Boolean {
         when (v.id) {
             R.id.btnReportUser -> userReportForm(accessInfo, who)

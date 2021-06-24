@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
 

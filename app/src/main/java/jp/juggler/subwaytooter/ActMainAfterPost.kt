@@ -63,4 +63,3 @@ fun ActMain.refreshAfterPost() {
     this.postedAcct = null
     this.postedStatusId = null
 }
-

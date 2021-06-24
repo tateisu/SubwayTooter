@@ -1,9 +1,15 @@
 package jp.juggler.subwaytooter
 
+import android.text.InputType
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
+import androidx.core.view.GravityCompat
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.CompletionHelper
 import jp.juggler.subwaytooter.util.PostCompleteCallback
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.util.hideKeyboard
@@ -13,6 +19,49 @@ import org.jetbrains.anko.imageResource
 // 簡易投稿入力のテキスト
 val ActMain.quickTootText: String
     get() = etQuickToot.text.toString()
+
+fun ActMain.initUIQuickToot() {
+    etQuickToot.typeface = ActMain.timelineFont
+
+    if (!PrefB.bpQuickTootBar(pref)) {
+        llQuickTootBar.visibility = View.GONE
+    }
+
+    if (PrefB.bpDontUseActionButtonWithQuickTootBar(pref)) {
+        etQuickToot.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        etQuickToot.imeOptions = EditorInfo.IME_ACTION_NONE
+        // 最後に指定する必要がある？
+        etQuickToot.maxLines = 5
+        etQuickToot.isVerticalScrollBarEnabled = true
+        etQuickToot.isScrollbarFadingEnabled = false
+    } else {
+        etQuickToot.inputType = InputType.TYPE_CLASS_TEXT
+        etQuickToot.imeOptions = EditorInfo.IME_ACTION_SEND
+        etQuickToot.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                btnQuickToot.performClick()
+                return@OnEditorActionListener true
+            }
+            false
+        })
+        // 最後に指定する必要がある？
+        etQuickToot.maxLines = 1
+    }
+
+    completionHelper.attachEditText(
+        llFormRoot,
+        etQuickToot,
+        true,
+        object : CompletionHelper.Callback2 {
+            override fun onTextUpdate() {}
+
+            override fun canOpenPopup(): Boolean {
+                return !drawer.isDrawerOpen(GravityCompat.START)
+            }
+        })
+
+    showQuickTootVisibility()
+}
 
 fun ActMain.showQuickTootVisibility() {
     btnQuickTootMenu.imageResource =

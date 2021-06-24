@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.annotation.SuppressLint
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.api.TootParser

@@ -5,7 +5,7 @@ import jp.juggler.util.notEmpty
 import jp.juggler.util.vg
 
 fun ActPost.showPoll() {
-    val i = spEnquete.selectedItemPosition
+    val i = spPollType.selectedItemPosition
     llEnquete.vg(i != 0)
     llExpire.vg(i == 1)
     cbHideTotals.vg(i == 1)
@@ -13,9 +13,9 @@ fun ActPost.showPoll() {
 }
 
 // 投票が有効で何か入力済みなら真
-fun ActPost.hasPoll():Boolean{
-    if( spEnquete.selectedItemPosition <= 0) return false
-    return etChoices.any{ it.text.toString().isNotBlank()}
+fun ActPost.hasPoll(): Boolean {
+    if (spPollType.selectedItemPosition <= 0) return false
+    return etChoices.any { it.text.toString().isNotBlank() }
 }
 
 fun ActPost.pollChoiceList() = ArrayList<String>().apply {
@@ -30,4 +30,3 @@ fun ActPost.pollExpireSeconds(): Int {
     val m = etExpireMinutes.text.toString().trim().toDoubleOrNull().finiteOrZero()
     return (d * 86400.0 + h * 3600.0 + m * 60.0).toInt()
 }
-

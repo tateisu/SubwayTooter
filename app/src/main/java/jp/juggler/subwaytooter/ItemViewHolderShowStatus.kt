@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.ImageView
@@ -51,34 +52,22 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     llStatus.visibility = View.VISIBLE
 
     if (status.conversation_main) {
-
-        val conversationMainBgColor =
-            PrefI.ipConversationMainTootBgColor(activity.pref).notZero()
-                ?: (activity.attrColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
-
-        this.viewRoot.setBackgroundColor(conversationMainBgColor)
+        PrefI.ipConversationMainTootBgColor(activity.pref).notZero()
+            ?: (activity.attrColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
     } else {
-        val c = colorBg.notZero()
-
-            ?: when (status.bookmarked) {
-                true -> PrefI.ipEventBgColorBookmark(App1.pref)
-                false -> 0
-            }.notZero()
-
-            ?: when (status.getBackgroundColorType(accessInfo)) {
-                TootVisibility.UnlistedHome -> ItemViewHolder.toot_color_unlisted
-                TootVisibility.PrivateFollowers -> ItemViewHolder.toot_color_follower
-                TootVisibility.DirectSpecified -> ItemViewHolder.toot_color_direct_user
-                TootVisibility.DirectPrivate -> ItemViewHolder.toot_color_direct_me
-                // TODO add color setting for limited?
-                TootVisibility.Limited -> ItemViewHolder.toot_color_follower
-                else -> 0
-            }
-
-        if (c != 0) {
-            this.viewRoot.backgroundColor = c
-        }
-    }
+        colorBg.notZero() ?: when (status.bookmarked) {
+            true -> PrefI.ipEventBgColorBookmark(App1.pref)
+            false -> 0
+        }.notZero() ?: when (status.getBackgroundColorType(accessInfo)) {
+            TootVisibility.UnlistedHome -> ItemViewHolder.toot_color_unlisted
+            TootVisibility.PrivateFollowers -> ItemViewHolder.toot_color_follower
+            TootVisibility.DirectSpecified -> ItemViewHolder.toot_color_direct_user
+            TootVisibility.DirectPrivate -> ItemViewHolder.toot_color_direct_me
+            // TODO add color setting for limited?
+            TootVisibility.Limited -> ItemViewHolder.toot_color_follower
+            else -> 0
+        }.notZero()
+    }?.let { viewRoot.backgroundColor = it }
 
     showStatusTime(activity, tvTime, who = status.account, status = status)
 
@@ -88,11 +77,6 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
 
     setAcct(tvAcct, accessInfo, who)
 
-    //		if(who == null) {
-    //			tvName.text = "?"
-    //			name_invalidator.register(null)
-    //			ivThumbnail.setImageUrl(activity.pref, 16f, null, null)
-    //		} else {
     tvName.text = whoRef.decoded_display_name
     nameInvalidator.register(whoRef.decoded_display_name)
     ivAvatar.setImageUrl(
@@ -101,33 +85,22 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
         accessInfo.supplyBaseUrl(who.avatar_static),
         accessInfo.supplyBaseUrl(who.avatar)
     )
-    //		}
 
     showOpenSticker(who)
 
-    var content = status.decoded_content
-
-    // ニコフレのアンケートの表示
-    val enquete = status.enquete
-    when {
-        enquete == null -> {
-        }
-
-        enquete.pollType == TootPollsType.FriendsNico && enquete.type != TootPolls.TYPE_ENQUETE -> {
-            // フレニコの投票の結果表示は普通にテキストを表示するだけでよい
-        }
-
-        else -> {
-
-            // アンケートの本文を上書きする
-            val question = enquete.decoded_question
-            if (question.isNotBlank()) content = question
-
-            showEnqueteItems(status, enquete)
-        }
+    val modifiedContent = if (status.time_deleted_at > 0L) {
+        SpannableStringBuilder()
+            .append('(')
+            .append(
+                activity.getString(
+                    R.string.deleted_at,
+                    TootStatus.formatTime(activity, status.time_deleted_at, true)
+                )
+            )
+            .append(')')
+    } else {
+        showPoll(status) ?: status.decoded_content
     }
-
-    showPreviewCard(status)
 
     //			if( status.decoded_tags == null ){
     //				tvTags.setVisibility( View.GONE );
@@ -143,27 +116,41 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
         tvMentions.text = status.decoded_mentions
     }
 
-    if (status.time_deleted_at > 0L) {
-        val s = SpannableStringBuilder()
-            .append('(')
-            .append(
-                activity.getString(
-                    R.string.deleted_at,
-                    TootStatus.formatTime(activity, status.time_deleted_at, true)
-                )
-            )
-            .append(')')
-        content = s
-    }
+    tvContent.text = modifiedContent
+    contentInvalidator.register(modifiedContent)
 
-    tvContent.text = content
-    contentInvalidator.register(content)
-
-    activity.checkAutoCW(status, content)
+    activity.checkAutoCW(status, modifiedContent)
     val r = status.auto_cw
-
     tvContent.minLines = r?.originalLineCount ?: -1
 
+    showPreviewCard(status)
+    showSpoilerTextAndContent(status)
+    showAttachments(status)
+    makeReactionsView(status)
+    buttonsForStatus?.bind(status, (item as? TootNotification))
+    showApplicationAndLanguage(status)
+}
+
+// 投票の表示
+// returns modified decoded_content or null
+private fun ItemViewHolder.showPoll(status: TootStatus): Spannable? {
+    val enquete = status.enquete
+    return when {
+        enquete == null -> null
+
+        // フレニコの投票の結果表示は普通にテキストを表示するだけでよい
+        enquete.pollType == TootPollsType.FriendsNico && enquete.type != TootPolls.TYPE_ENQUETE -> null
+
+        else -> {
+            showEnqueteItems(status, enquete)
+            // アンケートの本文を使ってcontentを上書きする
+            enquete.decoded_question.notBlank()
+        }
+    }
+}
+
+private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
+    val r = status.auto_cw
     val decodedSpoilerText = status.decoded_spoiler_text
     when {
         decodedSpoilerText.isNotEmpty() -> {
@@ -172,7 +159,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
             tvContentWarning.text = status.decoded_spoiler_text
             spoilerInvalidator.register(status.decoded_spoiler_text)
             val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
-            showContent(cwShown)
+            setContentVisibility(cwShown)
         }
 
         r?.decodedSpoilerText != null -> {
@@ -181,7 +168,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
             tvContentWarning.text = r.decodedSpoilerText
             spoilerInvalidator.register(r.decodedSpoilerText)
             val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
-            showContent(cwShown)
+            setContentVisibility(cwShown)
         }
 
         else -> {
@@ -190,55 +177,25 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
             llContents.visibility = View.VISIBLE
         }
     }
+}
 
-    val mediaAttachments = status.media_attachments
-    if (mediaAttachments == null || mediaAttachments.isEmpty()) {
-        flMedia.visibility = View.GONE
-        llMedia.visibility = View.GONE
-        btnShowMedia.visibility = View.GONE
-    } else {
-        flMedia.visibility = View.VISIBLE
-
-        // hide sensitive media
-        val defaultShown = when {
-            column.hideMediaDefault -> false
-            accessInfo.dont_hide_nsfw -> true
-            else -> !status.sensitive
+private fun ItemViewHolder.setContentVisibility(shown: Boolean) {
+    llContents.visibility = if (shown) View.VISIBLE else View.GONE
+    btnContentWarning.setText(if (shown) R.string.hide else R.string.show)
+    statusShowing?.let { status ->
+        val r = status.auto_cw
+        tvContent.minLines = r?.originalLineCount ?: -1
+        if (r?.decodedSpoilerText != null) {
+            // 自動CWの場合はContentWarningのテキストを切り替える
+            tvContentWarning.text =
+                if (shown) activity.getString(R.string.auto_cw_prefix) else r.decodedSpoilerText
         }
-        val isShown = MediaShown.isShown(status, defaultShown)
-
-        btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
-        llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
-        val sb = StringBuilder()
-        setMedia(mediaAttachments, sb, ivMedia1, 0)
-        setMedia(mediaAttachments, sb, ivMedia2, 1)
-        setMedia(mediaAttachments, sb, ivMedia3, 2)
-        setMedia(mediaAttachments, sb, ivMedia4, 3)
-
-        val m0 =
-            if (mediaAttachments.isEmpty()) null else mediaAttachments[0] as? TootAttachment
-        btnShowMedia.blurhash = m0?.blurhash
-
-        if (sb.isNotEmpty()) {
-            tvMediaDescription.visibility = View.VISIBLE
-            tvMediaDescription.text = sb
-        }
-
-        setIconDrawableId(
-            activity,
-            btnHideMedia,
-            R.drawable.ic_close,
-            color = contentColor,
-            alphaMultiplier = Styler.boostAlpha
-        )
     }
+}
 
-    makeReactionsView(status)
-
-    buttonsForStatus?.bind(status, (item as? TootNotification))
+private fun ItemViewHolder.showApplicationAndLanguage(status: TootStatus) {
 
     var sb: StringBuilder? = null
-
     fun prepareSb(): StringBuilder =
         sb?.append(", ") ?: StringBuilder().also { sb = it }
 
@@ -259,7 +216,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     tvApplication.vg(sb != null)?.text = sb
 }
 
-fun ItemViewHolder.showOpenSticker(who: TootAccount) {
+private fun ItemViewHolder.showOpenSticker(who: TootAccount) {
     try {
         if (!Column.showOpenSticker) return
 
@@ -306,17 +263,47 @@ fun ItemViewHolder.showOpenSticker(who: TootAccount) {
     }
 }
 
-fun ItemViewHolder.showContent(shown: Boolean) {
-    llContents.visibility = if (shown) View.VISIBLE else View.GONE
-    btnContentWarning.setText(if (shown) R.string.hide else R.string.show)
-    statusShowing?.let { status ->
-        val r = status.auto_cw
-        tvContent.minLines = r?.originalLineCount ?: -1
-        if (r?.decodedSpoilerText != null) {
-            // 自動CWの場合はContentWarningのテキストを切り替える
-            tvContentWarning.text =
-                if (shown) activity.getString(R.string.auto_cw_prefix) else r.decodedSpoilerText
+private fun ItemViewHolder.showAttachments(status: TootStatus) {
+    val mediaAttachments = status.media_attachments
+    if (mediaAttachments == null || mediaAttachments.isEmpty()) {
+        flMedia.visibility = View.GONE
+        llMedia.visibility = View.GONE
+        btnShowMedia.visibility = View.GONE
+    } else {
+        flMedia.visibility = View.VISIBLE
+
+        // hide sensitive media
+        val defaultShown = when {
+            column.hideMediaDefault -> false
+            accessInfo.dont_hide_nsfw -> true
+            else -> !status.sensitive
         }
+        val isShown = MediaShown.isShown(status, defaultShown)
+
+        btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
+        llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
+        val sb = StringBuilder()
+        setMedia(mediaAttachments, sb, ivMedia1, 0)
+        setMedia(mediaAttachments, sb, ivMedia2, 1)
+        setMedia(mediaAttachments, sb, ivMedia3, 2)
+        setMedia(mediaAttachments, sb, ivMedia4, 3)
+
+        val m0 =
+            if (mediaAttachments.isEmpty()) null else mediaAttachments[0] as? TootAttachment
+        btnShowMedia.blurhash = m0?.blurhash
+
+        if (sb.isNotEmpty()) {
+            tvMediaDescription.visibility = View.VISIBLE
+            tvMediaDescription.text = sb
+        }
+
+        setIconDrawableId(
+            activity,
+            btnHideMedia,
+            R.drawable.ic_close,
+            color = contentColor,
+            alphaMultiplier = Styler.boostAlpha
+        )
     }
 }
 

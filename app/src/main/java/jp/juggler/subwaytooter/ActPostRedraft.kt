@@ -38,13 +38,12 @@ private const val DRAFT_POLL_EXPIRE_MINUTE = "poll_expire_minute"
 private const val DRAFT_ENQUETE_ITEMS = "enquete_items"
 private const val DRAFT_QUOTE = "quotedRenote" // 歴史的な理由で名前がMisskey用になってる
 
-
 fun ActPost.saveDraft() {
     val content = etContent.text.toString()
     val contentWarning =
         if (cbContentWarning.isChecked) etContentWarning.text.toString() else ""
 
-    val isEnquete = spEnquete.selectedItemPosition > 0
+    val isEnquete = spPollType.selectedItemPosition > 0
 
     val strChoice = arrayOf(
         if (isEnquete) etChoices[0].text.toString() else "",
@@ -88,7 +87,7 @@ fun ActPost.saveDraft() {
         // deprecated. but still used in old draft.
         // json.put(DRAFT_IS_ENQUETE, isEnquete)
 
-        json[DRAFT_POLL_TYPE] = spEnquete.selectedItemPosition.toPollTypeString()
+        json[DRAFT_POLL_TYPE] = spPollType.selectedItemPosition.toPollTypeString()
 
         json[DRAFT_POLL_MULTIPLE] = cbMultipleChoice.isChecked
         json[DRAFT_POLL_HIDE_TOTALS] = cbHideTotals.isChecked
@@ -236,11 +235,11 @@ fun ActPost.restoreDraft(draft: JsonObject) {
 
                 val sv = draft.string(DRAFT_POLL_TYPE)
                 if (sv != null) {
-                    spEnquete.setSelection(sv.toPollTypeIndex())
+                    spPollType.setSelection(sv.toPollTypeIndex())
                 } else {
                     // old draft
                     val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
-                    spEnquete.setSelection(if (bv) 2 else 0)
+                    spPollType.setSelection(if (bv) 2 else 0)
                 }
 
                 cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
@@ -369,7 +368,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
 
             else -> {
-                spEnquete.setSelection(
+                spPollType.setSelection(
                     if (srcEnquete.pollType == TootPollsType.FriendsNico) {
                         2
                     } else {

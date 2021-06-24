@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.StreamStatus
 import jp.juggler.subwaytooter.util.ScrollPosition
+import jp.juggler.util.notEmpty
 import jp.juggler.util.runOnMainLooper
 import kotlin.math.max
 
@@ -73,37 +74,22 @@ fun Column.mergeStreamingMessage() {
 
     lastShowStreamData.set(now)
 
+    // read items while queue is not empty
     val tmpList = ArrayList<TimelineItem>()
-    while (true) tmpList.add(streamDataQueue.poll() ?: break)
-    if (tmpList.isEmpty()) return
+        .apply { while (true) add(streamDataQueue.poll() ?: break) }.notEmpty()
+        ?: return
 
     // キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
     handler.postDelayed(procMergeStreamingMessage, 333L)
 
-    // ストリーミングされるデータは全てID順に並んでいるはず
+    // orderId順ソートを徹底する
     tmpList.sortByDescending { it.getOrderId() }
 
-    val listNew = duplicateMap.filterDuplicate(tmpList)
-    if (listNew.isEmpty()) return
+    // 既にカラム中にあるデータは除去する
+    val listNew = duplicateMap.filterDuplicate(tmpList).notEmpty() ?: return
 
-    for (item in listNew) {
-        if (enableSpeech && item is TootStatus) {
-            appState.addSpeech(item.reblog ?: item)
-        }
-    }
-
-    // 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
-    if (isNotificationColumn) {
-        val list = ArrayList<TootNotification>()
-        for (o in listNew) {
-            if (o is TootNotification) {
-                list.add(o)
-            }
-        }
-        if (list.isNotEmpty()) {
-            PollingWorker.injectData(context, accessInfo, list)
-        }
-    }
+    sendToSpeech(listNew)
+    injectToPollingWorker(listNew)
 
     // 最新のIDをsince_idとして覚える(ソートはしない)
     var newIdMax: EntityId? = null
@@ -154,17 +140,7 @@ fun Column.mergeStreamingMessage() {
     // 画面復帰時の自動リフレッシュではギャップが残る可能性がある
     if (bPutGap) {
         bPutGap = false
-        try {
-            if (listData.size > 0 && newIdMin != null) {
-                val since = listData[0].getOrderId()
-                if (newIdMin > since) {
-                    val gap = TootGap(newIdMin, since)
-                    listNew.add(gap)
-                }
-            }
-        } catch (ex: Throwable) {
-            Column.log.e(ex, "can't put gap.")
-        }
+        addGapAfterStreaming(listNew, newIdMin)
     }
 
     val changeList = ArrayList<AdapterChange>()
@@ -192,8 +168,49 @@ fun Column.mergeStreamingMessage() {
     listData.addAll(0, listNew)
 
     fireShowContent(reason = "mergeStreamingMessage", changeList = changeList)
+    scrollAfterStreaming(added, holderSp, restoreIdx, restoreY)
+    updateMisskeyCapture()
+}
 
-    if (holder != null) {
+// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
+private fun Column.injectToPollingWorker(listNew: ArrayList<TimelineItem>) {
+    if (!isNotificationColumn) return
+    listNew.mapNotNull { it as? TootNotification }.notEmpty()
+        ?.let { PollingWorker.injectData(context, accessInfo, it) }
+}
+
+private fun Column.sendToSpeech(listNew: ArrayList<TimelineItem>) {
+    if (!enableSpeech) return
+    listNew.mapNotNull { it as? TootStatus }
+        .forEach { appState.addSpeech(it.reblog ?: it) }
+}
+
+private fun Column.addGapAfterStreaming(listNew: ArrayList<TimelineItem>, newIdMin: EntityId?) {
+    try {
+        if (listData.size > 0 && newIdMin != null) {
+            val since = listData[0].getOrderId()
+            if (newIdMin > since) {
+                val gap = TootGap(newIdMin, since)
+                listNew.add(gap)
+            }
+        }
+    } catch (ex: Throwable) {
+        Column.log.e(ex, "can't put gap.")
+    }
+}
+
+private fun Column.scrollAfterStreaming(added: Int, holderSp: ScrollPosition?, restoreIdx: Int, restoreY: Int) {
+    val holder = viewHolder
+    if (holder == null) {
+        val scrollSave = this.scrollSave
+        when {
+            // スクロール位置が先頭なら先頭のまま
+            scrollSave == null || scrollSave.isHead -> Unit
+
+            // 現在の要素が表示され続けるようにしたい
+            else -> scrollSave.adapterIndex += added
+        }
+    } else {
         when {
             holderSp == null -> {
                 // スクロール位置が先頭なら先頭にする
@@ -218,19 +235,7 @@ fun Column.mergeStreamingMessage() {
                 holder.setListItemTop(restoreIdx + added, restoreY)
             }
         }
-    } else {
-        val scrollSave = this.scrollSave
-        when {
-            // スクロール位置が先頭なら先頭のまま
-            scrollSave == null || scrollSave.isHead -> {
-            }
-
-            // 現在の要素が表示され続けるようにしたい
-            else -> scrollSave.adapterIndex += added
-        }
     }
-
-    updateMisskeyCapture()
 }
 
 fun Column.runOnMainLooperForStreamingEvent(proc: () -> Unit) {

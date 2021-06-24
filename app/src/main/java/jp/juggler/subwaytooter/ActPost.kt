@@ -30,6 +30,7 @@ import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import kotlinx.coroutines.Job
 import okhttp3.Request
+import okhttp3.internal.closeQuietly
 import ru.gildor.coroutines.okhttp.await
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
@@ -40,7 +41,6 @@ class ActPost : AppCompatActivity(),
     MyClickableSpanHandler, AttachmentPicker.Callback {
 
     companion object {
-
         internal val log = LogCategory("ActPost")
 
         var refActPost: WeakReference<ActPost>? = null
@@ -69,8 +69,8 @@ class ActPost : AppCompatActivity(),
         /////////////////////////////////////////////////
 
         fun createIntent(
-
             activity: Activity,
+
             accountDbId: Long,
 
             multiWindowMode: Boolean,
@@ -127,9 +127,12 @@ class ActPost : AppCompatActivity(),
                 val request = Request.Builder().url(url).build()
                 val call = App1.ok_http_client.newCall(request)
                 val response = call.await()
-                if (response.isSuccessful) return true
-
-                log.e(TootApiClient.formatResponse(response, "check_exist failed."))
+                try {
+                    if (response.isSuccessful) return true
+                    log.e(TootApiClient.formatResponse(response, "check_exist failed."))
+                } finally {
+                    response.closeQuietly()
+                }
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
@@ -165,7 +168,7 @@ class ActPost : AppCompatActivity(),
 
     lateinit var cbQuote: CheckBox
 
-    lateinit var spEnquete: Spinner
+    lateinit var spPollType: Spinner
     lateinit var llEnquete: View
     lateinit var etChoices: List<MyEditText>
 
@@ -197,8 +200,6 @@ class ActPost : AppCompatActivity(),
 
     ///////////////////////////////////////////////////
 
-
-
     var states = ActPostStates()
 
     internal var account: SavedAccount? = null
@@ -219,18 +220,6 @@ class ActPost : AppCompatActivity(),
     var jobMaxCharCount: WeakReference<Job>? = null
 
     var paThumbnailTarget: PostAttachment? = null
-
-    val textWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-        }
-
-        override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-        }
-
-        override fun afterTextChanged(editable: Editable) {
-            updateTextCount()
-        }
-    }
 
     val scrollListener: ViewTreeObserver.OnScrollChangedListener =
         ViewTreeObserver.OnScrollChangedListener { completionHelper.onScrollChanged() }
@@ -292,24 +281,65 @@ class ActPost : AppCompatActivity(),
 
     ////////////////////////////////////////////////////////////////
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return when {
-            super.onKeyDown(keyCode, event) -> true
-            event == null -> false
-            else -> event.isCtrlPressed
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
+        App1.setActivityTheme(this, noActionBar = true)
+        appState = App1.getAppState(this)
+        handler = appState.handler
+        pref = appState.pref
+        attachmentUploader = AttachmentUploader(this, handler)
+        attachmentPicker = AttachmentPicker(this, this)
+        density = resources.displayMetrics.density
+        arMushroom.register(this, log)
+
+        initUI()
+
+        when (savedInstanceState) {
+            null -> updateText(intent, confirmed = true, saveDraft = false)
+            else -> restoreState(savedInstanceState)
         }
     }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        val rv = super.onKeyUp(keyCode, event)
-        if (event?.isCtrlPressed == true) {
-            ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
-            when (keyCode) {
-                KeyEvent.KEYCODE_T -> btnPost.performClick()
-            }
-            return true
-        }
-        return rv
+    override fun onDestroy() {
+        completionHelper.onDestroy()
+        attachmentUploader.onActivityDestroy()
+        super.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        saveState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        showContentWarningEnabled()
+        showMediaAttachment()
+        showVisibility()
+        updateTextCount()
+        showReplyTo()
+        showPoll()
+        showQuotedRenote()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refActPost = WeakReference(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 編集中にホーム画面を押したり他アプリに移動する場合は下書きを保存する
+        // やや過剰な気がするが、自アプリに戻ってくるときにランチャーからアイコンタップされると
+        // メイン画面より上にあるアクティビティはすべて消されてしまうので
+        // このタイミングで保存するしかない
+        if (!isPostComplete) saveDraft()
+    }
+
+    override fun onBackPressed() {
+        saveDraft()
+        super.onBackPressed()
     }
 
     override fun onClick(v: View) {
@@ -335,93 +365,31 @@ class ActPost : AppCompatActivity(),
         }
     }
 
-    // unused? for REQUEST_CODE_ATTACHMENT
-//     fun handleAttachmentResult(ar: ActivityResult?) {
-//        if (ar?.resultCode == RESULT_OK) {
-//            ar.data?.handleGetContentResult(contentResolver)?.let { checkAttachments(it) }
-//        }
-//    }
-
-    override fun onBackPressed() {
-        saveDraft()
-        super.onBackPressed()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        refActPost = WeakReference(this)
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        // 編集中にホーム画面を押したり他アプリに移動する場合は下書きを保存する
-        // やや過剰な気がするが、自アプリに戻ってくるときにランチャーからアイコンタップされると
-        // メイン画面より上にあるアクティビティはすべて消されてしまうので
-        // このタイミングで保存するしかない
-        if (!isPostComplete) {
-            saveDraft()
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return when {
+            super.onKeyDown(keyCode, event) -> true
+            event == null -> false
+            else -> event.isCtrlPressed
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-
-        if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
-
-        App1.setActivityTheme(this, noActionBar = true)
-
-        appState = App1.getAppState(this)
-        handler = appState.handler
-        pref = appState.pref
-        attachmentUploader = AttachmentUploader(this, handler)
-        attachmentPicker = AttachmentPicker(this, this)
-
-        arMushroom.register(this, log)
-
-        initUI()
-
-        if (savedInstanceState != null) {
-            restoreState(savedInstanceState)
-        } else {
-            updateText(intent, confirmed = true, saveDraft = false)
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        val rv = super.onKeyUp(keyCode, event)
+        if (event?.isCtrlPressed == true) {
+            ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
+            when (keyCode) {
+                KeyEvent.KEYCODE_T -> btnPost.performClick()
+            }
+            return true
         }
-    }
-
-    override fun onDestroy() {
-        completionHelper.onDestroy()
-        attachmentUploader.onActivityDestroy()
-        super.onDestroy()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        saveState(outState)
-
-    }
-
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        showContentWarningEnabled()
-        showMediaAttachment()
-        showVisibility()
-        updateTextCount()
-        showReplyTo()
-        showPoll()
-        showQuotedRenote()
+        return rv
     }
 
     override fun onMyClickableSpanClicked(viewClicked: View, span: MyClickableSpan) {
         openBrowser(span.linkInfo.url)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         attachmentPicker.onRequestPermissionsResult(requestCode, permissions, grantResults)
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
@@ -439,12 +407,10 @@ class ActPost : AppCompatActivity(),
     }
 
     fun initUI() {
-        density = resources.displayMetrics.density
-
         setContentView(R.layout.act_post)
         App1.initEdgeToEdge(this)
 
-        if (PrefB.bpPostButtonBarTop(this)) {
+        if (PrefB.bpPostButtonBarTop(pref)) {
             val bar = findViewById<View>(R.id.llFooterBar)
             val parent = bar.parent as ViewGroup
             parent.removeView(bar)
@@ -480,7 +446,7 @@ class ActPost : AppCompatActivity(),
 
         cbQuote = findViewById(R.id.cbQuote)
 
-        spEnquete = findViewById<Spinner>(R.id.spEnquete).apply {
+        spPollType = findViewById<Spinner>(R.id.spEnquete).apply {
             this.adapter = ArrayAdapter(
                 this@ActPost,
                 android.R.layout.simple_spinner_item,
@@ -499,17 +465,13 @@ class ActPost : AppCompatActivity(),
                     updateTextCount()
                 }
 
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long,
-                ) {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                     showPoll()
                     updateTextCount()
                 }
             }
         }
+
         llEnquete = findViewById(R.id.llEnquete)
         llExpire = findViewById(R.id.llExpire)
         cbHideTotals = findViewById(R.id.cbHideTotals)
@@ -542,7 +504,6 @@ class ActPost : AppCompatActivity(),
         ibSchedule = findViewById(R.id.ibSchedule)
         ibScheduleReset = findViewById(R.id.ibScheduleReset)
 
-
         arrayOf(
             ibSchedule,
             ibScheduleReset,
@@ -559,9 +520,7 @@ class ActPost : AppCompatActivity(),
 
         ivMedia.forEach { it.setOnClickListener(this) }
 
-        cbContentWarning.setOnCheckedChangeListener { _, _ ->
-            showContentWarningEnabled()
-        }
+        cbContentWarning.setOnCheckedChangeListener { _, _ -> showContentWarningEnabled() }
 
         completionHelper = CompletionHelper(this, pref, appState.handler)
         completionHelper.attachEditText(formRoot, etContent, false, object : CompletionHelper.Callback2 {
@@ -569,12 +528,23 @@ class ActPost : AppCompatActivity(),
                 updateTextCount()
             }
 
-            override fun canOpenPopup(): Boolean {
-                return true
-            }
+            override fun canOpenPopup(): Boolean = true
         })
 
+        val textWatcher: TextWatcher = object : TextWatcher {
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+            }
+
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+            }
+
+            override fun afterTextChanged(editable: Editable) {
+                updateTextCount()
+            }
+        }
+
         etContentWarning.addTextChangedListener(textWatcher)
+
         for (et in etChoices) {
             et.addTextChangedListener(textWatcher)
         }

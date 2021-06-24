@@ -145,6 +145,7 @@ class ProgressResponseBody private constructor(
     override fun source(): BufferedSource = wrappedSource
 
     // To avoid double buffering, We have to make ForwardingBufferedSource.
+    @Suppress("TooManyFunctions")
     internal open class ForwardingBufferedSource(
         private val originalSource: BufferedSource,
     ) : BufferedSource {

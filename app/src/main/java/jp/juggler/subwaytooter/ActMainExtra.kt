@@ -1,20 +1,14 @@
 package jp.juggler.subwaytooter
 
-import android.content.Intent
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.lang.ref.WeakReference
-import kotlin.math.abs
-import kotlin.math.min
-
 
 fun ActMain.resizeAutoCW(columnW: Int) {
     val sv = PrefS.spAutoCWLines(pref)

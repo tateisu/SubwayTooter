@@ -376,7 +376,7 @@ class ActPost : AppCompatActivity(),
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         val rv = super.onKeyUp(keyCode, event)
         if (event?.isCtrlPressed == true) {
-            ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
+            log.d("onKeyUp code=$keyCode rv=$rv")
             when (keyCode) {
                 KeyEvent.KEYCODE_T -> btnPost.performClick()
             }

@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.table
 
 import android.database.sqlite.SQLiteDatabase
+import jp.juggler.util.TableCompanion
 
 object LogData : TableCompanion {
     // private const val TAG = "SubwayTooter"

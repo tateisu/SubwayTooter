@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.LogCategory
+import jp.juggler.util.TableCompanion
+import jp.juggler.util.b2i
 import jp.juggler.util.getInt
 
 object MediaShown : TableCompanion {

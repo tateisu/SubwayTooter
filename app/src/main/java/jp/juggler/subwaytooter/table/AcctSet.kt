@@ -7,6 +7,7 @@ import java.util.ArrayList
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
+import jp.juggler.util.TableCompanion
 
 object AcctSet : TableCompanion {
 

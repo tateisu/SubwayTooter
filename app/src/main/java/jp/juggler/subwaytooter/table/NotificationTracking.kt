@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.putMayNull
 import jp.juggler.util.LogCategory
+import jp.juggler.util.TableCompanion
 import jp.juggler.util.getLong
 import jp.juggler.util.minComparable
 import java.util.concurrent.ConcurrentHashMap

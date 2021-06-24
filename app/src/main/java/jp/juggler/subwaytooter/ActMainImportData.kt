@@ -6,10 +6,7 @@ import android.util.JsonReader
 import android.view.WindowManager
 import androidx.annotation.WorkerThread
 import jp.juggler.subwaytooter.notification.PollingWorker
-import jp.juggler.util.launchMain
-import jp.juggler.util.runOnMainLooper
-import jp.juggler.util.runWithProgress
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 import kotlinx.coroutines.delay
 import org.apache.commons.io.IOUtils
 import java.io.File
@@ -18,6 +15,8 @@ import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.util.ArrayList
 import java.util.zip.ZipInputStream
+
+private val log = LogCategory("ActMainImportAppData")
 
 @WorkerThread
 fun ActMain.importAppData(uri: Uri) {
@@ -72,7 +71,7 @@ fun ActMain.importAppData(uri: Uri) {
                 PollingWorker.queueAppDataImportBefore(this@importAppData)
                 while (PollingWorker.mBusyAppDataImportBefore.get()) {
                     delay(1000L)
-                    ActMain.log.d("syncing polling task...")
+                    log.d("syncing polling task...")
                 }
 
                 // データを読み込む
@@ -109,7 +108,7 @@ fun ActMain.importAppData(uri: Uri) {
                         }
                     }
                 } catch (ex: Throwable) {
-                    ActMain.log.trace(ex)
+                    log.trace(ex)
                     if (zipEntryCount != 0) {
                         showToast(ex, "importAppData failed.")
                     }

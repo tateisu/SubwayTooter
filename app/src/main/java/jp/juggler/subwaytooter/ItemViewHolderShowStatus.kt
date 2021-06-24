@@ -179,7 +179,8 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
     }
 }
 
-private fun ItemViewHolder.setContentVisibility(shown: Boolean) {
+// 予約投稿でも使う
+fun ItemViewHolder.setContentVisibility(shown: Boolean) {
     llContents.visibility = if (shown) View.VISIBLE else View.GONE
     btnContentWarning.setText(if (shown) R.string.hide else R.string.show)
     statusShowing?.let { status ->

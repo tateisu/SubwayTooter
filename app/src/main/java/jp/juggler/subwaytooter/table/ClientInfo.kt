@@ -3,10 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.getString
-import jp.juggler.util.decodeJsonObject
+import jp.juggler.util.*
 
 object ClientInfo : TableCompanion {
     private val log = LogCategory("ClientInfo")

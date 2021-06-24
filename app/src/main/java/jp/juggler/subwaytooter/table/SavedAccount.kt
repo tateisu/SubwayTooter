@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class SavedAccount(
@@ -195,7 +196,7 @@ class SavedAccount(
         this.token_info = token_info
 
         val cv = ContentValues()
-        cv.put(COL_TOKEN, token_info.toString())
+        COL_TOKEN.putTo(cv, token_info.toString())
         App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
     }
 
@@ -204,40 +205,40 @@ class SavedAccount(
         if (db_id == INVALID_DB_ID) error("saveSetting: missing db_id")
 
         val cv = ContentValues()
-        cv.put(COL_VISIBILITY, visibility.id.toString())
-        cv.put(COL_CONFIRM_BOOST, confirm_boost.b2i())
-        cv.put(COL_CONFIRM_FAVOURITE, confirm_favourite.b2i())
-        cv.put(COL_CONFIRM_UNBOOST, confirm_unboost.b2i())
-        cv.put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite.b2i())
+        COL_VISIBILITY.putTo(cv, visibility.id.toString())
+        COL_CONFIRM_BOOST.putTo(cv, confirm_boost.b2i())
+        COL_CONFIRM_FAVOURITE.putTo(cv, confirm_favourite.b2i())
+        COL_CONFIRM_UNBOOST.putTo(cv, confirm_unboost.b2i())
+        COL_CONFIRM_UNFAVOURITE.putTo(cv, confirm_unfavourite.b2i())
 
-        cv.put(COL_DONT_HIDE_NSFW, dont_hide_nsfw.b2i())
-        cv.put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout.b2i())
-        cv.put(COL_NOTIFICATION_MENTION, notification_mention.b2i())
-        cv.put(COL_NOTIFICATION_BOOST, notification_boost.b2i())
-        cv.put(COL_NOTIFICATION_FAVOURITE, notification_favourite.b2i())
-        cv.put(COL_NOTIFICATION_FOLLOW, notification_follow.b2i())
-        cv.put(COL_NOTIFICATION_FOLLOW_REQUEST, notification_follow_request.b2i())
-        cv.put(COL_NOTIFICATION_REACTION, notification_reaction.b2i())
-        cv.put(COL_NOTIFICATION_VOTE, notification_vote.b2i())
-        cv.put(COL_NOTIFICATION_POST, notification_post.b2i())
+        COL_DONT_HIDE_NSFW.putTo(cv, dont_hide_nsfw.b2i())
+        COL_DONT_SHOW_TIMEOUT.putTo(cv, dont_show_timeout.b2i())
+        COL_NOTIFICATION_MENTION.putTo(cv, notification_mention.b2i())
+        COL_NOTIFICATION_BOOST.putTo(cv, notification_boost.b2i())
+        COL_NOTIFICATION_FAVOURITE.putTo(cv, notification_favourite.b2i())
+        COL_NOTIFICATION_FOLLOW.putTo(cv, notification_follow.b2i())
+        COL_NOTIFICATION_FOLLOW_REQUEST.putTo(cv, notification_follow_request.b2i())
+        COL_NOTIFICATION_REACTION.putTo(cv, notification_reaction.b2i())
+        COL_NOTIFICATION_VOTE.putTo(cv, notification_vote.b2i())
+        COL_NOTIFICATION_POST.putTo(cv, notification_post.b2i())
 
-        cv.put(COL_CONFIRM_FOLLOW, confirm_follow.b2i())
-        cv.put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked.b2i())
-        cv.put(COL_CONFIRM_UNFOLLOW, confirm_unfollow.b2i())
-        cv.put(COL_CONFIRM_POST, confirm_post.b2i())
-        cv.put(COL_CONFIRM_REACTION, confirm_reaction.b2i())
+        COL_CONFIRM_FOLLOW.putTo(cv, confirm_follow.b2i())
+        COL_CONFIRM_FOLLOW_LOCKED.putTo(cv, confirm_follow_locked.b2i())
+        COL_CONFIRM_UNFOLLOW.putTo(cv, confirm_unfollow.b2i())
+        COL_CONFIRM_POST.putTo(cv, confirm_post.b2i())
+        COL_CONFIRM_REACTION.putTo(cv, confirm_reaction.b2i())
 
-        cv.put(COL_SOUND_URI, sound_uri)
-        cv.put(COL_DEFAULT_TEXT, default_text)
+        COL_SOUND_URI.putTo(cv, sound_uri)
+        COL_DEFAULT_TEXT.putTo(cv, default_text)
 
-        cv.put(COL_DEFAULT_SENSITIVE, default_sensitive.b2i())
-        cv.put(COL_EXPAND_CW, expand_cw.b2i())
-        cv.put(COL_MAX_TOOT_CHARS, max_toot_chars)
+        COL_DEFAULT_SENSITIVE.putTo(cv, default_sensitive.b2i())
+        COL_EXPAND_CW.putTo(cv, expand_cw.b2i())
+        COL_MAX_TOOT_CHARS.putTo(cv, max_toot_chars)
 
-        cv.putOrNull(COL_IMAGE_RESIZE, image_resize)
-        cv.putOrNull(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
-        cv.putOrNull(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
-        cv.putOrNull(COL_PUSH_POLICY, push_policy)
+        COL_IMAGE_RESIZE.putTo(cv, image_resize)
+        COL_IMAGE_MAX_MEGABYTES.putTo(cv, image_max_megabytes)
+        COL_MOVIE_MAX_MEGABYTES.putTo(cv, movie_max_megabytes)
+        COL_PUSH_POLICY.putTo(cv, push_policy)
 
         // UIからは更新しない
         // notification_tag
@@ -346,70 +347,74 @@ class SavedAccount(
 
         const val table = "access_info"
 
-        private const val COL_ID = BaseColumns._ID
-        private const val COL_HOST = "h"
-        private const val COL_DOMAIN = "d"
-        private const val COL_USER = "u"
-        private const val COL_ACCOUNT = "a"
-        private const val COL_TOKEN = "t"
+        private val columnList = ColumnMeta.List(table)
 
-        private const val COL_VISIBILITY = "visibility"
-        private const val COL_CONFIRM_BOOST = "confirm_boost"
-        private const val COL_DONT_HIDE_NSFW = "dont_hide_nsfw"
+        private val COL_ID = ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
+        private val COL_HOST = ColumnMeta(columnList, 0, "h", "text not null")
+        private val COL_DOMAIN = ColumnMeta(columnList, 56, "d", "text")
+        private val COL_USER = ColumnMeta(columnList, 0, "u", "text not null")
+        private val COL_ACCOUNT = ColumnMeta(columnList, 0, "a", "text not null")
+        private val COL_TOKEN = ColumnMeta(columnList, 0, "t", "text not null")
 
-        private const val COL_NOTIFICATION_MENTION = "notification_mention" // スキーマ2
-        private const val COL_NOTIFICATION_BOOST = "notification_boost" // スキーマ2
-        private const val COL_NOTIFICATION_FAVOURITE = "notification_favourite" // スキーマ2
-        private const val COL_NOTIFICATION_FOLLOW = "notification_follow" // スキーマ2
-        private const val COL_NOTIFICATION_FOLLOW_REQUEST = "notification_follow_request" // スキーマ44
-        private const val COL_NOTIFICATION_REACTION = "notification_reaction" // スキーマ33
-        private const val COL_NOTIFICATION_VOTE = "notification_vote" // スキーマ33
-        private const val COL_NOTIFICATION_POST = "notification_post" // スキーマ57
+        private val COL_VISIBILITY = ColumnMeta(columnList, 0, "visibility", "text")
+        private val COL_CONFIRM_BOOST = ColumnMeta(columnList, 0, "confirm_boost", ColumnMeta.TS_TRUE)
+        private val COL_DONT_HIDE_NSFW = ColumnMeta(columnList, 0, "dont_hide_nsfw", ColumnMeta.TS_ZERO)
 
-        private const val COL_CONFIRM_FOLLOW = "confirm_follow" // スキーマ10
-        private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked" // スキーマ10
-        private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow" // スキーマ10
-        private const val COL_CONFIRM_POST = "confirm_post" // スキーマ10
-        private const val COL_CONFIRM_FAVOURITE = "confirm_favourite" // スキーマ23
-        private const val COL_CONFIRM_UNBOOST = "confirm_unboost" // スキーマ24
-        private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite" // スキーマ24
-        private const val COL_CONFIRM_REACTION = "confirm_reaction" // スキーマ61
+        private val COL_NOTIFICATION_MENTION = ColumnMeta(columnList, 2, "notification_mention", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_BOOST = ColumnMeta(columnList, 2, "notification_boost", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_FAVOURITE = ColumnMeta(columnList, 2, "notification_favourite", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_FOLLOW = ColumnMeta(columnList, 2, "notification_follow", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_FOLLOW_REQUEST =
+            ColumnMeta(columnList, 44, "notification_follow_request", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_REACTION = ColumnMeta(columnList, 33, "notification_reaction", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_VOTE = ColumnMeta(columnList, 33, "notification_vote", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_POST = ColumnMeta(columnList, 57, "notification_post", ColumnMeta.TS_TRUE)
+
+        private val COL_CONFIRM_FOLLOW = ColumnMeta(columnList, 10, "confirm_follow", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_FOLLOW_LOCKED = ColumnMeta(columnList, 10, "confirm_follow_locked", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNFOLLOW = ColumnMeta(columnList, 10, "confirm_unfollow", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_POST = ColumnMeta(columnList, 10, "confirm_post", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_FAVOURITE = ColumnMeta(columnList, 23, "confirm_favourite", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNBOOST = ColumnMeta(columnList, 24, "confirm_unboost", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNFAVOURITE = ColumnMeta(columnList, 24, "confirm_unfavourite", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_REACTION = ColumnMeta(columnList, 61, "confirm_reaction", ColumnMeta.TS_TRUE)
 
         // スキーマ13から
-        const val COL_NOTIFICATION_TAG = "notification_server"
+        val COL_NOTIFICATION_TAG = ColumnMeta(columnList, 13, "notification_server", ColumnMeta.TS_EMPTY)
 
         // スキーマ14から
-        const val COL_REGISTER_KEY = "register_key"
-        const val COL_REGISTER_TIME = "register_time"
+        val COL_REGISTER_KEY = ColumnMeta(columnList, 14, "register_key", ColumnMeta.TS_EMPTY)
+        val COL_REGISTER_TIME = ColumnMeta(columnList, 14, "register_time", ColumnMeta.TS_ZERO)
 
         // スキーマ16から
-        private const val COL_SOUND_URI = "sound_uri"
+        private val COL_SOUND_URI = ColumnMeta(columnList, 16, "sound_uri", ColumnMeta.TS_EMPTY)
 
         // スキーマ18から
-        private const val COL_DONT_SHOW_TIMEOUT = "dont_show_timeout"
+        private val COL_DONT_SHOW_TIMEOUT = ColumnMeta(columnList, 18, "dont_show_timeout", ColumnMeta.TS_ZERO)
 
         // スキーマ27から
-        private const val COL_DEFAULT_TEXT = "default_text"
+        private val COL_DEFAULT_TEXT = ColumnMeta(columnList, 27, "default_text", ColumnMeta.TS_EMPTY)
 
         // スキーマ28から
-        private const val COL_MISSKEY_VERSION = "is_misskey" // カラム名がおかしいのは、昔はboolean扱いだったから
+        private val COL_MISSKEY_VERSION = ColumnMeta(columnList, 28, "is_misskey", ColumnMeta.TS_ZERO)
+        // カラム名がおかしいのは、昔はboolean扱いだったから
         // 0: not misskey
         // 1: old(v10) misskey
         // 11: misskey v11
 
-        private const val COL_DEFAULT_SENSITIVE = "default_sensitive"
-        private const val COL_EXPAND_CW = "expand_cw"
-        private const val COL_MAX_TOOT_CHARS = "max_toot_chars"
+        private val COL_DEFAULT_SENSITIVE = ColumnMeta(columnList, 38, "default_sensitive", ColumnMeta.TS_ZERO)
+        private val COL_EXPAND_CW = ColumnMeta(columnList, 38, "expand_cw", ColumnMeta.TS_ZERO)
+        private val COL_MAX_TOOT_CHARS = ColumnMeta(columnList, 39, "max_toot_chars", ColumnMeta.TS_ZERO)
 
-        private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error" // スキーマ42
-        private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error" // スキーマ45
-        private const val COL_LAST_PUSH_ENDPOINT = "last_push_endpoint" // スキーマ46
+        private val COL_LAST_NOTIFICATION_ERROR = ColumnMeta(columnList, 42, "last_notification_error", "text")
+        private val COL_LAST_SUBSCRIPTION_ERROR = ColumnMeta(columnList, 45, "last_subscription_error", "text")
+        private val COL_LAST_PUSH_ENDPOINT = ColumnMeta(columnList, 46, "last_push_endpoint", "text")
 
-        private const val COL_IMAGE_RESIZE = "image_resize" // スキーマ59
-        private const val COL_IMAGE_MAX_MEGABYTES = "image_max_megabytes" // スキーマ59
-        private const val COL_MOVIE_MAX_MEGABYTES = "movie_max_megabytes" // スキーマ59
+        private val COL_IMAGE_RESIZE = ColumnMeta(columnList, 59, "image_resize", "text default null")
+        private val COL_IMAGE_MAX_MEGABYTES = ColumnMeta(columnList, 59, "image_max_megabytes", "text default null")
+        private val COL_MOVIE_MAX_MEGABYTES = ColumnMeta(columnList, 59, "movie_max_megabytes", "text default null")
 
-        private const val COL_PUSH_POLICY = "push_policy" // スキーマ60
+        private val COL_PUSH_POLICY = ColumnMeta(columnList, 60, "push_policy", "text default null")
 
         /////////////////////////////////
         // login information
@@ -425,299 +430,13 @@ class SavedAccount(
         }
 
         override fun onDBCreate(db: SQLiteDatabase) {
-            db.execSQL(
-                """create table if not exists $table
-                ($COL_ID INTEGER PRIMARY KEY
-                ,$COL_USER text not null
-                ,$COL_HOST text not null
-                ,$COL_ACCOUNT text not null
-                ,$COL_TOKEN text not null
-                ,$COL_VISIBILITY text
-                ,$COL_CONFIRM_BOOST integer default 1
-                ,$COL_DONT_HIDE_NSFW integer default 0
-                ,$COL_NOTIFICATION_MENTION integer default 1
-                ,$COL_NOTIFICATION_BOOST integer default 1
-                ,$COL_NOTIFICATION_FAVOURITE integer default 1
-                ,$COL_NOTIFICATION_FOLLOW integer default 1
-                ,$COL_CONFIRM_FOLLOW integer default 1
-                ,$COL_CONFIRM_FOLLOW_LOCKED integer default 1
-                ,$COL_CONFIRM_UNFOLLOW integer default 1
-                ,$COL_CONFIRM_POST integer default 1
-                ,$COL_NOTIFICATION_TAG text default ''
-                ,$COL_REGISTER_KEY text default ''
-                ,$COL_REGISTER_TIME integer default 0
-                ,$COL_SOUND_URI text default ''
-                ,$COL_DONT_SHOW_TIMEOUT integer default 0
-                ,$COL_CONFIRM_FAVOURITE integer default 1
-                ,$COL_CONFIRM_UNBOOST integer default 1
-                ,$COL_CONFIRM_UNFAVOURITE integer default 1
-                ,$COL_DEFAULT_TEXT text default ''
-                ,$COL_MISSKEY_VERSION integer default 0
-                ,$COL_NOTIFICATION_REACTION integer default 1
-                ,$COL_NOTIFICATION_VOTE integer default 1
-                ,$COL_DEFAULT_SENSITIVE integer default 0
-                ,$COL_EXPAND_CW integer default 0
-                ,$COL_MAX_TOOT_CHARS integer default 0
-                ,$COL_LAST_NOTIFICATION_ERROR text
-                ,$COL_NOTIFICATION_FOLLOW_REQUEST integer default 1
-                ,$COL_LAST_SUBSCRIPTION_ERROR text
-                ,$COL_LAST_PUSH_ENDPOINT text
-                ,$COL_DOMAIN text
-                ,$COL_NOTIFICATION_POST integer default 1
-                ,$COL_IMAGE_RESIZE text default null
-                ,$COL_IMAGE_MAX_MEGABYTES text default null
-                ,$COL_MOVIE_MAX_MEGABYTES text default null
-                ,$COL_PUSH_POLICY text default null
-                ,$COL_CONFIRM_REACTION integer default 1
-                )""".trimIndent()
-            )
+            db.execSQL("create table if not exists $table (${columnList.createParams()})")
             db.execSQL("create index if not exists ${table}_user on $table(u)")
             db.execSQL("create index if not exists ${table}_host on $table(h,u)")
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            fun isUpgraded(n: Int, block: () -> Unit) {
-                if (oldVersion < n && newVersion >= n) block()
-            }
-
-            isUpgraded(2) {
-                try {
-                    db.execSQL("alter table $table add column notification_mention integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column notification_boost integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column notification_favourite integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column notification_follow integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(10) {
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_FOLLOW integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_FOLLOW_LOCKED integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_UNFOLLOW integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_POST integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-            isUpgraded(13) {
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_TAG text default ''")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-            isUpgraded(14) {
-                try {
-                    db.execSQL("alter table $table add column $COL_REGISTER_KEY text default ''")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-
-                try {
-                    db.execSQL("alter table $table add column $COL_REGISTER_TIME integer default 0")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-            isUpgraded(16) {
-                try {
-                    db.execSQL("alter table $table add column $COL_SOUND_URI text default ''")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-            isUpgraded(18) {
-                try {
-                    db.execSQL("alter table $table add column $COL_DONT_SHOW_TIMEOUT integer default 0")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(23) {
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_FAVOURITE integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(24) {
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_UNFAVOURITE integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_UNBOOST integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(27) {
-                try {
-                    db.execSQL("alter table $table add column $COL_DEFAULT_TEXT text default ''")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(28) {
-                try {
-                    db.execSQL("alter table $table add column $COL_MISSKEY_VERSION integer default 0")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(33) {
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_REACTION integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_VOTE integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(38) {
-                try {
-                    db.execSQL("alter table $table add column $COL_DEFAULT_SENSITIVE integer default 0")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-                try {
-                    db.execSQL("alter table $table add column $COL_EXPAND_CW integer default 0")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(39) {
-                try {
-                    db.execSQL("alter table $table add column $COL_MAX_TOOT_CHARS integer default 0")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(42) {
-                try {
-                    db.execSQL("alter table $table add column $COL_LAST_NOTIFICATION_ERROR text")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(44) {
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_FOLLOW_REQUEST integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(45) {
-                try {
-                    db.execSQL("alter table $table add column $COL_LAST_SUBSCRIPTION_ERROR text")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(46) {
-                try {
-                    db.execSQL("alter table $table add column $COL_LAST_PUSH_ENDPOINT text")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(56) {
-                try {
-                    db.execSQL("alter table $table add column $COL_DOMAIN text")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(57) {
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_POST integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(59) {
-                try {
-                    db.execSQL("alter table $table add column $COL_IMAGE_RESIZE text default null")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-                try {
-                    db.execSQL("alter table $table add column $COL_IMAGE_MAX_MEGABYTES text default null")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-                try {
-                    db.execSQL("alter table $table add column $COL_MOVIE_MAX_MEGABYTES text default null")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(60) {
-                try {
-                    db.execSQL("alter table $table add column $COL_PUSH_POLICY text default null")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-
-            isUpgraded(61) {
-                try {
-                    db.execSQL("alter table $table add column $COL_CONFIRM_REACTION integer default 1")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
+            columnList.addColumns(db, oldVersion, newVersion)
         }
 
         val defaultResizeConfig = ResizeConfig(ResizeType.LongSide, 1280)
@@ -777,12 +496,12 @@ class SavedAccount(
         ): Long {
             try {
                 val cv = ContentValues()
-                cv.put(COL_USER, acct)
-                cv.put(COL_HOST, host)
-                cv.putOrNull(COL_DOMAIN, domain)
-                cv.put(COL_ACCOUNT, account.toString())
-                cv.put(COL_TOKEN, token.toString())
-                cv.put(COL_MISSKEY_VERSION, misskeyVersion)
+                COL_USER.putTo(cv, acct)
+                COL_HOST.putTo(cv, host)
+                COL_DOMAIN.putTo(cv, domain)
+                COL_ACCOUNT.putTo(cv, account.toString())
+                COL_TOKEN.putTo(cv, token.toString())
+                COL_MISSKEY_VERSION.putTo(cv, misskeyVersion)
                 return App1.database.insert(table, null, cv)
             } catch (ex: Throwable) {
                 log.trace(ex)
@@ -794,8 +513,8 @@ class SavedAccount(
 
         fun clearRegistrationCache() {
             val cv = ContentValues()
-            cv.put(COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED)
-            cv.put(COL_REGISTER_TIME, 0L)
+            COL_REGISTER_KEY.putTo(cv, REGISTER_KEY_UNREGISTERED)
+            COL_REGISTER_TIME.putTo(cv, 0L)
             App1.database.update(table, cv, null, null)
         }
 
@@ -1019,7 +738,7 @@ class SavedAccount(
                     null
                 ).use { cursor ->
                     while (cursor.moveToNext()) {
-                        list.add(cursor.getLong(COL_ID))
+                        list.add(COL_ID.getLong(cursor))
                     }
                 }
             } catch (ex: Throwable) {
@@ -1106,7 +825,7 @@ class SavedAccount(
                     if (ta != null) {
                         this.loginAccount = ta
                         val cv = ContentValues()
-                        cv.put(COL_ACCOUNT, result.jsonObject.toString())
+                        COL_ACCOUNT.putTo(cv, result.jsonObject.toString())
                         App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
                         PollingWorker.queueUpdateNotification(context)
                     }
@@ -1119,40 +838,27 @@ class SavedAccount(
         }
     }
 
-    fun updateNotificationError(text: String?) {
-        this.lastNotificationError = text
+    private fun updateSingleString(col: ColumnMeta, value: String?) {
         if (db_id != INVALID_DB_ID) {
             val cv = ContentValues()
-            when (text) {
-                null -> cv.putNull(COL_LAST_NOTIFICATION_ERROR)
-                else -> cv.put(COL_LAST_NOTIFICATION_ERROR, text)
-            }
+            col.putTo(cv, value)
             App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
         }
+    }
+
+    fun updateNotificationError(text: String?) {
+        this.lastNotificationError = text
+        updateSingleString(COL_LAST_NOTIFICATION_ERROR, text)
     }
 
     fun updateSubscriptionError(text: String?) {
         this.last_subscription_error = text
-        if (db_id != INVALID_DB_ID) {
-            val cv = ContentValues()
-            when (text) {
-                null -> cv.putNull(COL_LAST_SUBSCRIPTION_ERROR)
-                else -> cv.put(COL_LAST_SUBSCRIPTION_ERROR, text)
-            }
-            App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-        }
+        updateSingleString(COL_LAST_SUBSCRIPTION_ERROR, text)
     }
 
     fun updateLastPushEndpoint(text: String?) {
         this.last_push_endpoint = text
-        if (db_id != INVALID_DB_ID) {
-            val cv = ContentValues()
-            when (text) {
-                null -> cv.putNull(COL_LAST_PUSH_ENDPOINT)
-                else -> cv.put(COL_LAST_PUSH_ENDPOINT, text)
-            }
-            App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-        }
+        updateSingleString(COL_LAST_PUSH_ENDPOINT, text)
     }
 
     override fun equals(other: Any?): Boolean =

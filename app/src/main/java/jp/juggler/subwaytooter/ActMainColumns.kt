@@ -14,6 +14,8 @@ import org.jetbrains.anko.backgroundDrawable
 import kotlin.math.abs
 import kotlin.math.min
 
+private val log = LogCategory("ActMainColumns")
+
 // スマホモードなら現在のカラムを、タブレットモードなら-1Lを返す
 // (カラム一覧画面のデフォルト選択位置に使われる)
 val ActMain.currentColumn: Int
@@ -348,13 +350,13 @@ fun ActMain.scrollToColumn(index: Int, smoothScroll: Boolean = true) {
 
         // スマホはスムーススクロール基本ありだがたまにしない
         { env ->
-            ActMain.log.d("ipLastColumnPos beforeScroll=${env.pager.currentItem}")
+            log.d("ipLastColumnPos beforeScroll=${env.pager.currentItem}")
             env.pager.setCurrentItem(index, smoothScroll)
         },
 
         // タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
         { env ->
-            ActMain.log.d("ipLastColumnPos beforeScroll=${env.visibleColumnsIndices.first}")
+            log.d("ipLastColumnPos beforeScroll=${env.visibleColumnsIndices.first}")
             env.tabletPager.scrollToPosition(index)
         }
     )
@@ -371,7 +373,7 @@ fun ActMain.resizeColumnWidth(views: TabletViews) {
                 columnWMinDp = iv
             }
         } catch (ex: Throwable) {
-            ActMain.log.trace(ex)
+            log.trace(ex)
         }
     }
 

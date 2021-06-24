@@ -700,7 +700,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 tvContentWarning.text = decodedSpoilerText
                 spoilerInvalidator.register(decodedSpoilerText)
                 val cwShown = ContentWarning.isShown(item.uri, accessInfo.expand_cw)
-                showContent(cwShown)
+                setContentVisibility(cwShown)
             }
 
             else -> {

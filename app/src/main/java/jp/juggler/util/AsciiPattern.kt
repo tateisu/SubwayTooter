@@ -1,5 +1,6 @@
 package jp.juggler.util
 
+import org.intellij.lang.annotations.Language
 import java.util.regex.Pattern
 
 /*
@@ -32,10 +33,10 @@ http://userguide.icu-project.org/strings/regexp
 
 */
 
-fun String.asciiPattern(flags: Int = 0): Pattern =
+fun @receiver:Language("RegExp") String.asciiPattern(flags: Int = 0): Pattern =
     Pattern.compile(this.asciiPatternString(), flags)
 
-fun String.asciiPatternString(): String {
+fun @receiver:Language("RegExp") String.asciiPatternString(): String {
     val dst = StringBuilder()
     dst.ensureCapacity(this.length)
     var escaped = false

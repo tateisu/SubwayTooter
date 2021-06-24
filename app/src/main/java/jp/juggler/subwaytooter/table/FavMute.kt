@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.util.LogCategory
+import jp.juggler.util.TableCompanion
 
 object FavMute : TableCompanion {
 

@@ -177,6 +177,10 @@ object AppDataExporter {
                 reader.beginObject()
                 while (reader.hasNext()) {
                     val name = reader.nextName()
+                    if (name == null) {
+                        reader.skipValue()
+                        continue
+                    }
 
                     if (BaseColumns._ID == name) {
                         old_id = reader.nextLong()
@@ -191,9 +195,9 @@ object AppDataExporter {
                         }
 
                         // リアルタイム通知に関連する項目は読み飛ばす
-                        if (SavedAccount.COL_NOTIFICATION_TAG == name ||
-                            SavedAccount.COL_REGISTER_KEY == name ||
-                            SavedAccount.COL_REGISTER_TIME == name
+                        if (SavedAccount.COL_NOTIFICATION_TAG.name == name ||
+                            SavedAccount.COL_REGISTER_KEY.name == name ||
+                            SavedAccount.COL_REGISTER_TIME.name == name
                         ) {
                             reader.skipValue()
                             continue

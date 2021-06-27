@@ -113,11 +113,15 @@ class JobItem(
                 TaskRunner(pollingWorker, this@JobItem, TaskId.Polling, JsonObject()).runTask()
             }
 
-            log.w("pollingComplete=$bPollingComplete,isJobCancelled=$isJobCancelled,bPollingRequired=${bPollingRequired.get()}")
+            if (!bPollingComplete || isJobCancelled || !bPollingRequired.get()) {
+                log.w("pollingComplete=$bPollingComplete,isJobCancelled=$isJobCancelled,bPollingRequired=${bPollingRequired.get()}")
+            }
+
             if (!isJobCancelled && bPollingComplete) {
                 // ポーリングが完了した
                 pollingWorker.onPollingComplete(bPollingRequired.get())
             }
+            // no log for normal case
         } catch (ignored: JobCancelledException) {
             log.w("job execution cancelled.")
         } catch (ex: Throwable) {

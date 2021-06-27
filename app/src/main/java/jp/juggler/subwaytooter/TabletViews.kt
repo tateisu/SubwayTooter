@@ -9,9 +9,7 @@ import jp.juggler.util.clipRange
 import kotlin.math.abs
 import kotlin.math.min
 
-class TabletViews(
-    val actMain: ActMain,
-) {
+class TabletViews(val actMain: ActMain) {
     internal lateinit var tabletPager: RecyclerView
     internal lateinit var tabletPagerAdapter: TabletColumnPagerAdapter
     internal lateinit var tabletLayoutManager: LinearLayoutManager

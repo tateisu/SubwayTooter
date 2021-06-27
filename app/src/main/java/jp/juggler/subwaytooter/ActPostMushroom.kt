@@ -16,6 +16,12 @@ import jp.juggler.util.loadRawResource
 
 private val log = LogCategory("ActPostMushroom")
 
+fun ActPost.resetMushroom(){
+    states.mushroomInput = 0
+    states.mushroomStart = 0
+    states.mushroomEnd = 0
+}
+
 @SuppressLint("InflateParams")
 fun ActPost.showRecommendedPlugin(title: String?) {
 

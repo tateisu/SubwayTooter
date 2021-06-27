@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Intent
 import android.net.Uri
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.*
@@ -90,13 +91,10 @@ fun ActPost.hasContent(): Boolean {
 
 fun ActPost.resetText() {
     isPostComplete = false
-    states.inReplyToId = null
-    states.inReplyToText = null
-    states.inReplyToImage = null
-    states.inReplyToUrl = null
-    states.mushroomInput = 0
-    states.mushroomStart = 0
-    states.mushroomEnd = 0
+
+    resetReply()
+
+    resetMushroom()
     states.redraftStatusId = null
     states.timeSchedule = 0L
     attachmentPicker.reset()
@@ -370,4 +368,8 @@ fun ActPost.performPost() {
             }
         }
     ).run()
+}
+
+fun ActPost.showContentWarningEnabled() {
+    etContentWarning.visibility = if (cbContentWarning.isChecked) View.VISIBLE else View.GONE
 }

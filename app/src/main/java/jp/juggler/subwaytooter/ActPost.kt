@@ -346,7 +346,7 @@ class ActPost : AppCompatActivity(),
         refActPost = WeakReference(this)
         when (v.id) {
             R.id.btnAccount -> performAccountChooser()
-            R.id.btnVisibility -> performVisibility()
+            R.id.btnVisibility -> openVisibilityPicker()
             R.id.btnAttachment -> openAttachment()
             R.id.ivMedia1 -> performAttachmentClick(0)
             R.id.ivMedia2 -> performAttachmentClick(1)

@@ -512,7 +512,6 @@ class TaskRunner(
                     if (job.isJobCancelled) return
                     tr.updateNotification()
                 }
-                log.i("runSuspend complete normally.")
             } catch (ex: Throwable) {
                 log.trace(ex)
             } finally {

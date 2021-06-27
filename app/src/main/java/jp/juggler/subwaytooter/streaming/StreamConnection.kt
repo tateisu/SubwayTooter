@@ -331,7 +331,7 @@ class StreamConnection(
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         manager.enqueue {
             if (t is SocketException && t.message?.contains("closed") == true) {
-                log.i("$name socket closed.")
+                log.v("$name socket closed.")
             } else {
                 log.w(t, "$name WebSocket onFailure.")
             }

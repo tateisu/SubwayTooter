@@ -514,7 +514,7 @@ class PushSubscriptionHelper(
 
         // サーバのバージョンを調べる前に、この時点でalertsが一致するか確認する
         if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
-            log.i("${account.acct}: same alerts(1)")
+            log.v("${account.acct}: same alerts(1)")
             return makeSkipResult()
         }
 
@@ -542,7 +542,7 @@ class PushSubscriptionHelper(
         alertsNew = alertsNew.knownOnly()
 
         return if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
-            log.i("${account.acct}: same alerts(2)")
+            log.v("${account.acct}: same alerts(2)")
             makeSkipResult()
         } else {
             addLog("${account.acct}: alerts not match. account=${account.acct.pretty} old=${alertsOld.sorted()}, new=${alertsNew.sorted()}")

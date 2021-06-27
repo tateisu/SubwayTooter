@@ -18,6 +18,13 @@ import jp.juggler.util.showToast
 
 private val log = LogCategory("ActPostReply")
 
+fun ActPost.resetReply(){
+    states.inReplyToId = null
+    states.inReplyToText = null
+    states.inReplyToImage = null
+    states.inReplyToUrl = null
+}
+
 fun ActPost.showQuotedRenote() {
     cbQuote.visibility = if (states.inReplyToId != null) View.VISIBLE else View.GONE
 }

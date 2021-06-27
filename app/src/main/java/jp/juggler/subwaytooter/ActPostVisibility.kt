@@ -10,52 +10,48 @@ fun ActPost.showVisibility() {
     btnVisibility.setImageResource(iconId)
 }
 
-fun ActPost.performVisibility() {
+fun ActPost.openVisibilityPicker() {
     val ti = TootInstance.getCached(account)
 
     val list = when {
-        account?.isMisskey == true ->
-            arrayOf(
-                //	TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.LocalPublic,
-                TootVisibility.LocalHome,
-                TootVisibility.LocalFollowers,
-                TootVisibility.DirectSpecified,
-                TootVisibility.DirectPrivate
-            )
+        account?.isMisskey == true -> arrayOf(
+            //	TootVisibility.WebSetting,
+            TootVisibility.Public,
+            TootVisibility.UnlistedHome,
+            TootVisibility.PrivateFollowers,
+            TootVisibility.LocalPublic,
+            TootVisibility.LocalHome,
+            TootVisibility.LocalFollowers,
+            TootVisibility.DirectSpecified,
+            TootVisibility.DirectPrivate
+        )
 
-        InstanceCapability.visibilityMutual(ti) ->
-            arrayOf(
-                TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.Limited,
-                TootVisibility.Mutual,
-                TootVisibility.DirectSpecified
-            )
+        InstanceCapability.visibilityMutual(ti) -> arrayOf(
+            TootVisibility.WebSetting,
+            TootVisibility.Public,
+            TootVisibility.UnlistedHome,
+            TootVisibility.PrivateFollowers,
+            TootVisibility.Limited,
+            TootVisibility.Mutual,
+            TootVisibility.DirectSpecified
+        )
 
-        InstanceCapability.visibilityLimited(ti) ->
-            arrayOf(
-                TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.Limited,
-                TootVisibility.DirectSpecified
-            )
+        InstanceCapability.visibilityLimited(ti) -> arrayOf(
+            TootVisibility.WebSetting,
+            TootVisibility.Public,
+            TootVisibility.UnlistedHome,
+            TootVisibility.PrivateFollowers,
+            TootVisibility.Limited,
+            TootVisibility.DirectSpecified
+        )
 
-        else ->
-            arrayOf(
-                TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.DirectSpecified
-            )
+        else -> arrayOf(
+            TootVisibility.WebSetting,
+            TootVisibility.Public,
+            TootVisibility.UnlistedHome,
+            TootVisibility.PrivateFollowers,
+            TootVisibility.DirectSpecified
+        )
     }
     val captionList = list
         .map { Styler.getVisibilityCaption(this, account?.isMisskey == true, it) }
@@ -63,12 +59,12 @@ fun ActPost.performVisibility() {
 
     AlertDialog.Builder(this)
         .setTitle(R.string.choose_visibility)
+        .setNegativeButton(R.string.cancel, null)
         .setItems(captionList) { _, which ->
-            if (which in list.indices) {
-                states.visibility = list[which]
+            list.elementAtOrNull(which)?.let {
+                states.visibility = it
                 showVisibility()
             }
         }
-        .setNegativeButton(R.string.cancel, null)
         .show()
 }

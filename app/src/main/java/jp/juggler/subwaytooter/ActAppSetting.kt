@@ -166,9 +166,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             })
         }
 
-        findViewById<View>(R.id.btnSearchReset).apply {
-            setOnClickListener(this@ActAppSetting)
-        }
+        findViewById<View>(R.id.btnSearchReset).setOnClickListener(this@ActAppSetting)
     }
 
     private fun removeDefaultPref() {

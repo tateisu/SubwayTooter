@@ -195,56 +195,55 @@ class SavedAccount(
         val token_info = tokenInfoArg ?: JsonObject()
         this.token_info = token_info
 
-        val cv = ContentValues()
-        COL_TOKEN.putTo(cv, token_info.toString())
-        App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+        ContentValues().apply {
+            put(COL_TOKEN, token_info.toString())
+        }.let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
     }
 
     fun saveSetting() {
 
         if (db_id == INVALID_DB_ID) error("saveSetting: missing db_id")
 
-        val cv = ContentValues()
-        COL_VISIBILITY.putTo(cv, visibility.id.toString())
-        COL_CONFIRM_BOOST.putTo(cv, confirm_boost.b2i())
-        COL_CONFIRM_FAVOURITE.putTo(cv, confirm_favourite.b2i())
-        COL_CONFIRM_UNBOOST.putTo(cv, confirm_unboost.b2i())
-        COL_CONFIRM_UNFAVOURITE.putTo(cv, confirm_unfavourite.b2i())
+        ContentValues().apply {
+            put(COL_VISIBILITY, visibility.id.toString())
+            put(COL_CONFIRM_BOOST, confirm_boost)
+            put(COL_CONFIRM_FAVOURITE, confirm_favourite)
+            put(COL_CONFIRM_UNBOOST, confirm_unboost)
+            put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite)
 
-        COL_DONT_HIDE_NSFW.putTo(cv, dont_hide_nsfw.b2i())
-        COL_DONT_SHOW_TIMEOUT.putTo(cv, dont_show_timeout.b2i())
-        COL_NOTIFICATION_MENTION.putTo(cv, notification_mention.b2i())
-        COL_NOTIFICATION_BOOST.putTo(cv, notification_boost.b2i())
-        COL_NOTIFICATION_FAVOURITE.putTo(cv, notification_favourite.b2i())
-        COL_NOTIFICATION_FOLLOW.putTo(cv, notification_follow.b2i())
-        COL_NOTIFICATION_FOLLOW_REQUEST.putTo(cv, notification_follow_request.b2i())
-        COL_NOTIFICATION_REACTION.putTo(cv, notification_reaction.b2i())
-        COL_NOTIFICATION_VOTE.putTo(cv, notification_vote.b2i())
-        COL_NOTIFICATION_POST.putTo(cv, notification_post.b2i())
+            put(COL_DONT_HIDE_NSFW, dont_hide_nsfw)
+            put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout)
+            put(COL_NOTIFICATION_MENTION, notification_mention)
+            put(COL_NOTIFICATION_BOOST, notification_boost)
+            put(COL_NOTIFICATION_FAVOURITE, notification_favourite)
+            put(COL_NOTIFICATION_FOLLOW, notification_follow)
+            put(COL_NOTIFICATION_FOLLOW_REQUEST, notification_follow_request)
+            put(COL_NOTIFICATION_REACTION, notification_reaction)
+            put(COL_NOTIFICATION_VOTE, notification_vote)
+            put(COL_NOTIFICATION_POST, notification_post)
 
-        COL_CONFIRM_FOLLOW.putTo(cv, confirm_follow.b2i())
-        COL_CONFIRM_FOLLOW_LOCKED.putTo(cv, confirm_follow_locked.b2i())
-        COL_CONFIRM_UNFOLLOW.putTo(cv, confirm_unfollow.b2i())
-        COL_CONFIRM_POST.putTo(cv, confirm_post.b2i())
-        COL_CONFIRM_REACTION.putTo(cv, confirm_reaction.b2i())
+            put(COL_CONFIRM_FOLLOW, confirm_follow)
+            put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked)
+            put(COL_CONFIRM_UNFOLLOW, confirm_unfollow)
+            put(COL_CONFIRM_POST, confirm_post)
+            put(COL_CONFIRM_REACTION, confirm_reaction)
 
-        COL_SOUND_URI.putTo(cv, sound_uri)
-        COL_DEFAULT_TEXT.putTo(cv, default_text)
+            put(COL_SOUND_URI, sound_uri)
+            put(COL_DEFAULT_TEXT, default_text)
 
-        COL_DEFAULT_SENSITIVE.putTo(cv, default_sensitive.b2i())
-        COL_EXPAND_CW.putTo(cv, expand_cw.b2i())
-        COL_MAX_TOOT_CHARS.putTo(cv, max_toot_chars)
+            put(COL_DEFAULT_SENSITIVE, default_sensitive)
+            put(COL_EXPAND_CW, expand_cw)
+            put(COL_MAX_TOOT_CHARS, max_toot_chars)
 
-        COL_IMAGE_RESIZE.putTo(cv, image_resize)
-        COL_IMAGE_MAX_MEGABYTES.putTo(cv, image_max_megabytes)
-        COL_MOVIE_MAX_MEGABYTES.putTo(cv, movie_max_megabytes)
-        COL_PUSH_POLICY.putTo(cv, push_policy)
+            put(COL_IMAGE_RESIZE, image_resize)
+            put(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
+            put(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
+            put(COL_PUSH_POLICY, push_policy)
 
-        // UIからは更新しない
-        // notification_tag
-        // register_key
-
-        App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+            // 以下のデータはUIからは更新しない
+            // notification_tag
+            // register_key
+        }.let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
     }
 
     //	fun saveNotificationTag() {
@@ -466,17 +465,16 @@ class SavedAccount(
         // 横断検索用の、何とも紐ついていないアカウント
         // 保存しない。
         val na: SavedAccount by lazy {
-            val dst = SavedAccount(-1L, "?@?")
-            dst.notification_follow = false
-            dst.notification_follow_request = false
-            dst.notification_favourite = false
-            dst.notification_boost = false
-            dst.notification_mention = false
-            dst.notification_reaction = false
-            dst.notification_vote = false
-            dst.notification_post = false
-
-            dst
+            SavedAccount(-1L, "?@?").apply {
+                notification_follow = false
+                notification_follow_request = false
+                notification_favourite = false
+                notification_boost = false
+                notification_mention = false
+                notification_reaction = false
+                notification_vote = false
+                notification_post = false
+            }
         }
 
         private fun parse(context: Context, cursor: Cursor): SavedAccount? {
@@ -498,14 +496,14 @@ class SavedAccount(
             misskeyVersion: Int = 0,
         ): Long {
             try {
-                val cv = ContentValues()
-                COL_USER.putTo(cv, acct)
-                COL_HOST.putTo(cv, host)
-                COL_DOMAIN.putTo(cv, domain)
-                COL_ACCOUNT.putTo(cv, account.toString())
-                COL_TOKEN.putTo(cv, token.toString())
-                COL_MISSKEY_VERSION.putTo(cv, misskeyVersion)
-                return App1.database.insert(table, null, cv)
+                return ContentValues().apply {
+                    put(COL_USER, acct)
+                    put(COL_HOST, host)
+                    put(COL_DOMAIN, domain)
+                    put(COL_ACCOUNT, account.toString())
+                    put(COL_TOKEN, token.toString())
+                    put(COL_MISSKEY_VERSION, misskeyVersion)
+                }.let { App1.database.insert(table, null, it) }
             } catch (ex: Throwable) {
                 log.trace(ex)
                 errorEx(ex, "SavedAccount.insert failed.")
@@ -515,10 +513,10 @@ class SavedAccount(
         private const val REGISTER_KEY_UNREGISTERED = "unregistered"
 
         fun clearRegistrationCache() {
-            val cv = ContentValues()
-            COL_REGISTER_KEY.putTo(cv, REGISTER_KEY_UNREGISTERED)
-            COL_REGISTER_TIME.putTo(cv, 0L)
-            App1.database.update(table, cv, null, null)
+            ContentValues().apply {
+                put(COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED)
+                put(COL_REGISTER_TIME, 0L)
+            }.let { App1.database.update(table, it, null, null) }
         }
 
         fun loadAccount(context: Context, dbId: Long): SavedAccount? {
@@ -827,9 +825,9 @@ class SavedAccount(
                     val ta = TootParser(context, this).account(result.jsonObject)
                     if (ta != null) {
                         this.loginAccount = ta
-                        val cv = ContentValues()
-                        COL_ACCOUNT.putTo(cv, result.jsonObject.toString())
-                        App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+                        ContentValues().apply {
+                            put(COL_ACCOUNT, result.jsonObject.toString())
+                        }.let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
                         PollingWorker.queueUpdateNotification(context)
                     }
                 }
@@ -843,9 +841,9 @@ class SavedAccount(
 
     private fun updateSingleString(col: ColumnMeta, value: String?) {
         if (db_id != INVALID_DB_ID) {
-            val cv = ContentValues()
-            col.putTo(cv, value)
-            App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+            ContentValues()
+                .apply { put(col, value) }
+                .let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
         }
     }
 

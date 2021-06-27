@@ -105,7 +105,7 @@ class UpdateRelationEnv(val column: Column) {
                         for (i in 0 until list.size) {
                             list[i].id = userIdList[i]
                         }
-                        UserRelation.saveList2(now, column.accessInfo.db_id, list)
+                        UserRelation.saveListMisskeyRelationApi(now, column.accessInfo.db_id, list)
                     }
                 }
                 Column.log.d("updateRelation: update $n relations.")

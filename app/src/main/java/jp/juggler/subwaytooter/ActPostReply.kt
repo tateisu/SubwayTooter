@@ -18,7 +18,7 @@ import jp.juggler.util.showToast
 
 private val log = LogCategory("ActPostReply")
 
-fun ActPost.resetReply(){
+fun ActPost.resetReply() {
     states.inReplyToId = null
     states.inReplyToText = null
     states.inReplyToImage = null

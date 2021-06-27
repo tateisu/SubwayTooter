@@ -329,8 +329,8 @@ fun defaultLocale(context: Context): Locale =
 
 fun Matcher.findOrNull() = if (find()) this else null
 
-fun String.formatEx(vararg args: Any?): String =
-    java.lang.String.format(Locale.JAPANESE, this, *args)
+//fun String.formatEx(vararg args: Any?): String =
+//    java.lang.String.format(Locale.JAPANESE, this, *args)
 
 fun Float.toString(format: String): String =
     java.lang.String.format(Locale.JAPANESE, format, this)

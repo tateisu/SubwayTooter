@@ -3,7 +3,6 @@ package jp.juggler.util
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import jp.juggler.subwaytooter.table.SavedAccount
 
 /////////////////////////////////////////////////////////////
 // SQLite にBooleanをそのまま保存することはできないのでInt型との変換が必要になる
@@ -14,11 +13,10 @@ fun Boolean.b2i() = if (this) 1 else 0
 // integer to boolean
 fun Int.i2b() = this != 0
 
-fun Cursor.getBoolean(keyIdx: Int) =
-    getInt(keyIdx).i2b()
-
-fun Cursor.getBoolean(key: String) =
-    getBoolean(getColumnIndex(key))
+//fun Cursor.getBoolean(keyIdx: Int) =
+//    getInt(keyIdx).i2b()
+//fun Cursor.getBoolean(key: String) =
+//    getBoolean(getColumnIndex(key))
 
 fun Cursor.getInt(key: String) =
     getInt(getColumnIndex(key))
@@ -47,9 +45,6 @@ fun Cursor.getStringOrNull(keyIdx: Int) =
 fun Cursor.getStringOrNull(key: String) =
     getStringOrNull(getColumnIndex(key))
 
-fun ContentValues.putOrNull(key: String, value: String?) =
-    if (value == null) putNull(key) else put(key, value)
-
 /////////////////////////////////////////////////////////////
 
 interface TableCompanion {
@@ -76,13 +71,14 @@ class ColumnMeta(
         val table: String,
         val initialVersion: Int,
         var createExtra: () -> Array<String> = { emptyArray() },
+        var deleteBeforeCreate: Boolean = false,
     ) : ArrayList<ColumnMeta>() {
         val maxVersion: Int
             get() = this.maxOfOrNull { it.version } ?: 0
 
         fun createTableSql() =
             listOf(
-                "create table if not exists ${SavedAccount.table} (${sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }})",
+                "create table if not exists $table (${sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }})",
                 *(createExtra())
             )
 
@@ -93,6 +89,7 @@ class ColumnMeta(
 
         fun onDBCreate(db: SQLiteDatabase) {
             log.d("onDBCreate table=$table")
+            if (deleteBeforeCreate) db.execSQL("drop table if exists $table")
             createTableSql().forEach { db.execSQL(it) }
         }
 
@@ -114,10 +111,7 @@ class ColumnMeta(
     // テーブル作成時のソート
     override fun compareTo(other: ColumnMeta): Int {
         // プライマリキーを先頭にする
-        val ia = if (this.primary) -1 else 0
-        val ib = if (other.primary) -1 else 0
-        ia.compareTo(ib).notZero()?.let { return it }
-
+        (other.primary.b2i() - primary.b2i()).notZero()?.let { return it }
         // 残りはカラム名順
         return name.compareTo(other.name)
     }
@@ -134,24 +128,12 @@ class ColumnMeta(
         list.add(this)
     }
 
-    @Suppress("unused")
-    fun putNullTo(cv: ContentValues) = cv.putNull(name)
-    fun putTo(cv: ContentValues, v: Boolean?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: String?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: Byte?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: Short?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: Int?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: Long?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: Float?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: Double?) = cv.put(name, v)
-    fun putTo(cv: ContentValues, v: ByteArray?) = cv.put(name, v)
-
     fun getIndex(cursor: Cursor) = cursor.getColumnIndex(name)
     fun getLong(cursor: Cursor) = cursor.getLong(getIndex(cursor))
 }
 
 fun ContentValues.putNull(key: ColumnMeta) = putNull(key.name)
-fun ContentValues.put(key: ColumnMeta, v: Boolean?) = put(key.name, v)
+fun ContentValues.put(key: ColumnMeta, v: Boolean?) = put(key.name, v?.b2i())
 fun ContentValues.put(key: ColumnMeta, v: String?) = put(key.name, v)
 fun ContentValues.put(key: ColumnMeta, v: Byte?) = put(key.name, v)
 fun ContentValues.put(key: ColumnMeta, v: Short?) = put(key.name, v)
@@ -163,7 +145,7 @@ fun ContentValues.put(key: ColumnMeta, v: ByteArray?) = put(key.name, v)
 
 fun Cursor.getInt(key: ColumnMeta) = getInt(getColumnIndex(key.name))
 
-fun Cursor.getBoolean(key: ColumnMeta) = getBoolean(getColumnIndex(key.name))
+fun Cursor.getBoolean(key: ColumnMeta) = getInt(key).i2b()
 fun Cursor.getLong(key: ColumnMeta) = getLong(getColumnIndex(key.name))
 
 @Suppress("unused")

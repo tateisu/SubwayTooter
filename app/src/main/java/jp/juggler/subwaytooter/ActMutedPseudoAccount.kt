@@ -106,8 +106,8 @@ class ActMutedPseudoAccount : AppCompatActivity() {
         val tmpList = ArrayList<MyItem>()
         try {
             UserRelation.createCursorPseudo().use { cursor ->
-                val idxId = cursor.getColumnIndex(UserRelation.COL_ID)
-                val idxName = cursor.getColumnIndex(UserRelation.COL_WHO_ID)
+                val idxId = UserRelation.COL_ID.getIndex(cursor)
+                val idxName = UserRelation.COL_WHO_ID.getIndex(cursor)
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idxId)
                     val name = cursor.getString(idxName)

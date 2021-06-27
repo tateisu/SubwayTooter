@@ -558,7 +558,7 @@ potential-bugs:
   UnreachableCode:
     active: true
   UnsafeCallOnNullableType:
-    active: true
+    active: false
   UnsafeCast:
     active: true
   UnusedUnaryOperator:
@@ -609,6 +609,7 @@ style:
       - 'java.lang.String.format'
       - 'kotlin.text.String.format'
       - 'kotlin.text.String.Companion.format'
+      - 'android.content.ContentValues.put(java.lang.String,java.lang.Boolean)'
     excludes:
       - '**/test/**'
       - '**/androidTest/**'

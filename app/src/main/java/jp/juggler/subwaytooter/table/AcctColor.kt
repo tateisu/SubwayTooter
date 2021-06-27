@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
@@ -75,16 +76,39 @@ class AcctColor {
         private val log = LogCategory("AcctColor")
 
         const val table = "acct_color"
-        private const val COL_TIME_SAVE = "time_save"
-        private const val COL_ACCT = "ac" //@who@host ascii文字の大文字小文字は(sqliteにより)同一視される
-        private const val COL_COLOR_FG = "cf" // 未設定なら0、それ以外は色
-        private const val COL_COLOR_BG = "cb" // 未設定なら0、それ以外は色
-        private const val COL_NICKNAME = "nick" // 未設定ならnullか空文字列
-        private const val COL_NOTIFICATION_SOUND = "notification_sound" // 未設定ならnullか空文字列
+
+        val columnList: ColumnMeta.List = ColumnMeta.List(table, 9).apply {
+            // not used, but must be defined
+            ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
+
+            createExtra = {
+                arrayOf(
+                    "create unique index if not exists ${table}_acct on $table($COL_ACCT)",
+                    "create index if not exists ${table}_time on $table($COL_TIME_SAVE)",
+                )
+            }
+        }
+
+        private val COL_TIME_SAVE = ColumnMeta(columnList, 0, "time_save", "integer not null")
+
+        //@who@host ascii文字の大文字小文字は(sqliteにより)同一視される
+        private val COL_ACCT = ColumnMeta(columnList, 0, "ac", "text not null")
+
+        // 未設定なら0、それ以外は色
+        private val COL_COLOR_FG = ColumnMeta(columnList, 0, "cf", "integer")
+
+        // 未設定なら0、それ以外は色
+        private val COL_COLOR_BG = ColumnMeta(columnList, 0, "cb", "integer")
+
+        // 未設定ならnullか空文字列
+        private val COL_NICKNAME = ColumnMeta(columnList, 0, "nick", "text")
+
+        // 未設定ならnullか空文字列
+        private val COL_NOTIFICATION_SOUND = ColumnMeta(columnList, 17, "notification_sound", "text default ''")
 
         private const val CHAR_REPLACE: Char = 0x328A.toChar()
 
-        private const val load_where = "$COL_ACCT=?"
+        private val load_where = "$COL_ACCT=?"
 
         private val load_where_arg = object : ThreadLocal<Array<String?>>() {
             override fun initialValue(): Array<String?> {
@@ -94,37 +118,11 @@ class AcctColor {
 
         private val mMemoryCache = LruCache<String, AcctColor>(2048)
 
-        override fun onDBCreate(db: SQLiteDatabase) {
-            log.d("onDBCreate!")
-            db.execSQL(
-                """create table if not exists $table
-                (_id INTEGER PRIMARY KEY
-                ,$COL_TIME_SAVE integer not null
-                ,$COL_ACCT text not null
-                ,$COL_COLOR_FG integer
-                ,$COL_COLOR_BG integer
-                ,$COL_NICKNAME text
-                ,$COL_NOTIFICATION_SOUND text default ''
-                )""".trimIndent()
-            )
-            db.execSQL("create unique index if not exists ${table}_acct on $table($COL_ACCT)")
-            db.execSQL("create index if not exists ${table}_time on $table($COL_TIME_SAVE)")
-        }
+        override fun onDBCreate(db: SQLiteDatabase) =
+            columnList.onDBCreate(db)
 
-        override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion < 9 && newVersion >= 9) {
-                onDBCreate(db)
-                return
-            }
-
-            if (oldVersion < 17 && newVersion >= 17) {
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_SOUND text default ''")
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-        }
+        override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
+            columnList.onDBUpgrade(db, oldVersion, newVersion)
 
         fun load(a: SavedAccount, who: TootAccount) = load(a.getFullAcct(who))
         fun load(a: SavedAccount) = load(a.acct)

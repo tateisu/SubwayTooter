@@ -2,22 +2,37 @@ package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
 
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.util.ColumnMeta
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
+import jp.juggler.util.put
 
 object AcctSet : TableCompanion {
 
     private val log = LogCategory("AcctSet")
 
     private const val table = "acct_set"
-    private const val COL_TIME_SAVE = "time_save"
-    private const val COL_ACCT = "acct" //@who@host ascii文字の大文字小文字は(sqliteにより)同一視される
+    val columnList: ColumnMeta.List = ColumnMeta.List("", 7).apply {
+        ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
 
-    private const val prefix_search_where = "$COL_ACCT like ? escape '$'"
+        createExtra = {
+            arrayOf(
+                "create unique index if not exists ${table}_acct on $table($COL_ACCT)",
+                "create index if not exists ${table}_time on $table($COL_TIME_SAVE)",
+            )
+        }
+    }
+    private val COL_TIME_SAVE = ColumnMeta(columnList, 0, "time_save", "integer not null")
+
+    //@who@host ascii文字の大文字小文字は(sqliteにより)同一視される
+    private val COL_ACCT = ColumnMeta(columnList, 0, "acct", "text not null")
+
+    private val prefix_search_where = "$COL_ACCT like ? escape '$'"
 
     private val prefix_search_where_arg = object : ThreadLocal<Array<String?>>() {
         override fun initialValue(): Array<String?> {
@@ -25,24 +40,11 @@ object AcctSet : TableCompanion {
         }
     }
 
-    override fun onDBCreate(db: SQLiteDatabase) {
-        log.d("onDBCreate!")
-        db.execSQL(
-            """create table if not exists $table
-            (_id INTEGER PRIMARY KEY
-            ,$COL_TIME_SAVE integer not null
-            ,$COL_ACCT text not null
-            )""".trimIndent()
-        )
-        db.execSQL("create unique index if not exists ${table}_acct on $table($COL_ACCT)")
-        db.execSQL("create index if not exists ${table}_time on $table($COL_TIME_SAVE)")
-    }
+    override fun onDBCreate(db: SQLiteDatabase) =
+        columnList.onDBCreate(db)
 
-    override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 7 && newVersion >= 7) {
-            onDBCreate(db)
-        }
-    }
+    override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
+        columnList.onDBUpgrade(db, oldVersion, newVersion)
 
     fun deleteOld(now: Long) {
         try {
@@ -115,15 +117,14 @@ object AcctSet : TableCompanion {
                 null,
                 null,
                 "$COL_ACCT asc limit $limit"
-            )
-                .use { cursor ->
-                    val dst = ArrayList<CharSequence>(cursor.count)
-                    val idx_acct = cursor.getColumnIndex(COL_ACCT)
-                    while (cursor.moveToNext()) {
-                        dst.add(cursor.getString(idx_acct))
-                    }
-                    return dst
+            ).use { cursor ->
+                val dst = ArrayList<CharSequence>(cursor.count)
+                val idx_acct = COL_ACCT.getIndex(cursor)
+                while (cursor.moveToNext()) {
+                    dst.add(cursor.getString(idx_acct))
                 }
+                return dst
+            }
         } catch (ex: Throwable) {
             log.trace(ex)
             log.e(ex, "searchPrefix failed.")

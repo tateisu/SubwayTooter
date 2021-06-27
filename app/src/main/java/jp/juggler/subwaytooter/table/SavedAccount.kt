@@ -347,7 +347,14 @@ class SavedAccount(
 
         const val table = "access_info"
 
-        val columnList = ColumnMeta.List(table)
+        val columnList = ColumnMeta.List(table, 0).apply {
+            createExtra = {
+                arrayOf(
+                    "create index if not exists ${table}_user on $table(u)",
+                    "create index if not exists ${table}_host on $table(h,u)"
+                )
+            }
+        }
 
         private val COL_ID = ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
         private val COL_HOST = ColumnMeta(columnList, 0, "h", "text not null")
@@ -429,15 +436,11 @@ class SavedAccount(
             }
         }
 
-        override fun onDBCreate(db: SQLiteDatabase) {
-            db.execSQL("create table if not exists $table (${columnList.createParams()})")
-            db.execSQL("create index if not exists ${table}_user on $table(u)")
-            db.execSQL("create index if not exists ${table}_host on $table(h,u)")
-        }
+        override fun onDBCreate(db: SQLiteDatabase) =
+            columnList.onDBCreate(db)
 
-        override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            columnList.addColumns(db, oldVersion, newVersion)
-        }
+        override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
+            columnList.onDBUpgrade(db, oldVersion, newVersion)
 
         val defaultResizeConfig = ResizeConfig(ResizeType.LongSide, 1280)
 

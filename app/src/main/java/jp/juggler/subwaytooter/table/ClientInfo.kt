@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.*
 
@@ -9,27 +10,23 @@ object ClientInfo : TableCompanion {
     private val log = LogCategory("ClientInfo")
 
     const val table = "client_info2"
-    private const val COL_HOST = "h"
-    private const val COL_CLIENT_NAME = "cn"
-    private const val COL_RESULT = "r"
-
-    override fun onDBCreate(db: SQLiteDatabase) {
-        db.execSQL(
-            """create table if not exists $table
-            (_id INTEGER PRIMARY KEY
-            ,$COL_HOST text not null
-            ,$COL_CLIENT_NAME text not null
-            ,$COL_RESULT text not null
-            )""".trimIndent()
-        )
-        db.execSQL("create unique index if not exists ${table}_host_client_name on $table($COL_HOST,$COL_CLIENT_NAME)")
-    }
-
-    override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion <= 18 && newVersion >= 19) {
-            onDBCreate(db)
+    val columnList: ColumnMeta.List = ColumnMeta.List(table, 19).apply {
+        ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
+        createExtra = {
+            arrayOf(
+                "create unique index if not exists ${table}_host_client_name on $table($COL_HOST,$COL_CLIENT_NAME)"
+            )
         }
     }
+    private val COL_HOST = ColumnMeta(columnList, 0, "h", "text not null")
+    private val COL_CLIENT_NAME = ColumnMeta(columnList, 0, "cn", "text not null")
+    private val COL_RESULT = ColumnMeta(columnList, 0, "r", "text not null")
+
+    override fun onDBCreate(db: SQLiteDatabase) =
+        columnList.onDBCreate(db)
+
+    override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
+        columnList.onDBUpgrade(db, oldVersion, newVersion)
 
     fun load(instance: String, clientName: String): JsonObject? {
         try {

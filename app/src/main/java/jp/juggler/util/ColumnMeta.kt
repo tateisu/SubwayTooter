@@ -3,6 +3,7 @@ package jp.juggler.util
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import jp.juggler.subwaytooter.table.SavedAccount
 
 /////////////////////////////////////////////////////////////
 // SQLite にBooleanをそのまま保存することはできないのでInt型との変換が必要になる
@@ -71,24 +72,40 @@ class ColumnMeta(
         const val TS_TRUE = "integer default 1"
     }
 
-    class List(val table: String) : ArrayList<ColumnMeta>() {
-        fun createParams(): String =
-            sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }
-
+    class List(
+        val table: String,
+        val initialVersion: Int,
+        var createExtra: () -> Array<String> = { emptyArray() },
+    ) : ArrayList<ColumnMeta>() {
         val maxVersion: Int
-            get() = this.maxOfOrNull{ it.version} ?: 0
+            get() = this.maxOfOrNull { it.version } ?: 0
+
+        fun createTableSql() =
+            listOf(
+                "create table if not exists ${SavedAccount.table} (${sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }})",
+                *(createExtra())
+            )
 
         fun addColumnsSql(oldVersion: Int, newVersion: Int) =
             sorted()
                 .filter { oldVersion < it.version && newVersion >= it.version }
                 .map { "alter table $table add column ${it.name} ${it.typeSpec}" }
 
-        fun addColumns(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            for (sql in addColumnsSql(oldVersion, newVersion)) {
+        fun onDBCreate(db: SQLiteDatabase) {
+            log.d("onDBCreate table=$table")
+            createTableSql().forEach { db.execSQL(it) }
+        }
+
+        fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            if (oldVersion < initialVersion && newVersion >= initialVersion) {
+                onDBCreate(db)
+                return
+            }
+            addColumnsSql(oldVersion, newVersion).forEach {
                 try {
-                    db.execSQL(sql)
+                    db.execSQL(it)
                 } catch (ex: Throwable) {
-                    log.trace(ex, "addColumns failed. $sql")
+                    log.trace(ex, "execSQL failed. $it")
                 }
             }
         }
@@ -99,7 +116,7 @@ class ColumnMeta(
         // プライマリキーを先頭にする
         val ia = if (this.primary) -1 else 0
         val ib = if (other.primary) -1 else 0
-        ia.compareTo(ib).notZero()?.let{ return it}
+        ia.compareTo(ib).notZero()?.let { return it }
 
         // 残りはカラム名順
         return name.compareTo(other.name)

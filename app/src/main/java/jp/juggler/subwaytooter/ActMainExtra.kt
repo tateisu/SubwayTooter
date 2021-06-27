@@ -4,7 +4,6 @@ import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.*
@@ -101,35 +100,22 @@ fun ActMain.checkPrivacyPolicy() {
     // 既に表示中かもしれない
     if (dlgPrivacyPolicy?.get()?.isShowing == true) return
 
-    @RawRes val resId = when (getString(R.string.language_code)) {
-        "ja" -> R.raw.privacy_policy_ja
-        "fr" -> R.raw.privacy_policy_fr
-        else -> R.raw.privacy_policy_en
-    }
-
-    // プライバシーポリシーデータの読み込み
-    val bytes = loadRawResource(resId)
-    if (bytes.isEmpty()) return
+    val checker = PrivacyPolicyChecker(this, pref)
 
     // 同意ずみなら表示しない
-    val digest = bytes.digestSHA256().encodeBase64Url()
-    if (digest == PrefS.spAgreedPrivacyPolicyDigest(pref)) return
+    if (checker.agreed) return
 
-    val dialog = AlertDialog.Builder(this)
+    AlertDialog.Builder(this)
         .setTitle(R.string.privacy_policy)
-        .setMessage(bytes.decodeUTF8())
-        .setNegativeButton(R.string.cancel) { _, _ ->
-            finish()
-        }
-        .setOnCancelListener {
-            finish()
-        }
+        .setMessage(checker.text)
+        .setOnCancelListener { finish() }
+        .setNegativeButton(R.string.cancel) { _, _ -> finish() }
         .setPositiveButton(R.string.agree) { _, _ ->
-            pref.edit().put(PrefS.spAgreedPrivacyPolicyDigest, digest).apply()
+            pref.edit().put(PrefS.spAgreedPrivacyPolicyDigest, checker.digest).apply()
         }
         .create()
-    dlgPrivacyPolicy = WeakReference(dialog)
-    dialog.show()
+        .also { dlgPrivacyPolicy = WeakReference(it) }
+        .show()
 }
 
 fun ActMain.closeListItemPopup() {

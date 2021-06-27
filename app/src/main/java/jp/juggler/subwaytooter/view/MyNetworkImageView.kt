@@ -30,7 +30,6 @@ import jp.juggler.util.clipRange
 class MyNetworkImageView : AppCompatImageView {
 
     companion object {
-
         internal val log = LogCategory("MyNetworkImageView")
     }
 
@@ -264,7 +263,7 @@ class MyNetworkImageView : AppCompatImageView {
                     }
                     // その他のDrawable
                     // たとえばInstanceTickerのアイコンにSVGが使われていたらPictureDrawableになる
-                    log.w("cornerRadius=$mCornerRadius,drawable=$resource,url=$urlLoading")
+                    // log.w("cornerRadius=$mCornerRadius,drawable=$resource,url=$urlLoading")
                 }
 
                 setImageDrawable(resource)

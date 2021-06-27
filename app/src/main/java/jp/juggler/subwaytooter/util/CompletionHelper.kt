@@ -26,6 +26,7 @@ import jp.juggler.util.*
 import java.util.*
 import kotlin.math.min
 
+// 入力補完機能
 class CompletionHelper(
     private val activity: AppCompatActivity,
     private val pref: SharedPreferences,
@@ -36,38 +37,14 @@ class CompletionHelper(
         private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiPattern()
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    // 投稿機能はPostImplに移動した
-//    var content: String? = null
-//    var spoilerText: String? = null
-//    var visibility: TootVisibility = TootVisibility.Public
-//    var bNSFW = false
-//    var inReplyToId: EntityId? = null
-//    var attachmentList: ArrayList<PostAttachment>? = null
-//    var enqueteItems: ArrayList<String>? = null
-//    var pollType: TootPollsType? = null
-//    var pollExpireSeconds = 0
-//    var pollHideTotals = false
-//    var pollMultipleChoice = false
-//
-//    var emojiMapCustom: HashMap<String, CustomEmoji>? = null
-//    var redraftStatusId: EntityId? = null
-//    var useQuoteToot = false
-//    var scheduledAt = 0L
-//    var scheduledId: EntityId? = null
-
-    ///////////////////////////////////////////////////////////////////////////////////
-    // 入力補完機能
+    interface Callback2 {
+        fun onTextUpdate()
+        fun canOpenPopup(): Boolean
+    }
 
     private val pickerCaptionEmoji: String by lazy {
         activity.getString(R.string.open_picker_emoji)
     }
-    //	private val picker_caption_tag : String by lazy {
-    //		activity.getString(R.string.open_picker_tag)
-    //	}
-    //	private val picker_caption_mention : String by lazy {
-    //		activity.getString(R.string.open_picker_mention)
-    //	}
 
     private var callback2: Callback2? = null
     private var et: MyEditText? = null
@@ -77,11 +54,9 @@ class CompletionHelper(
 
     private var accessInfo: SavedAccount? = null
 
-    private val onEmojiListLoad: (list: ArrayList<CustomEmoji>) -> Unit =
-        {
-            val popup = this@CompletionHelper.popup
-            if (popup?.isShowing == true) procTextChanged.run()
-        }
+    private val onEmojiListLoad: (list: ArrayList<CustomEmoji>) -> Unit = {
+        if (popup?.isShowing == true) procTextChanged.run()
+    }
 
     private val procTextChanged = object : Runnable {
 
@@ -320,24 +295,10 @@ class CompletionHelper(
         return popup
     }
 
-    interface Callback2 {
-
-        fun onTextUpdate()
-
-        fun canOpenPopup(): Boolean
-    }
-
     fun setInstance(accessInfo: SavedAccount?) {
         this.accessInfo = accessInfo
-
-        if (accessInfo != null) {
-            App1.custom_emoji_lister.getList(accessInfo, onEmojiListLoad)
-        }
-
-        val popup = this.popup
-        if (popup?.isShowing == true) {
-            procTextChanged.run()
-        }
+        accessInfo?.let { App1.custom_emoji_lister.getList(it, onEmojiListLoad) }
+        if (popup?.isShowing == true) procTextChanged.run()
     }
 
     fun closeAcctPopup() {
@@ -346,9 +307,7 @@ class CompletionHelper(
     }
 
     fun onScrollChanged() {
-        if (popup?.isShowing == true) {
-            popup?.updatePosition()
-        }
+        popup?.takeIf { it.isShowing }?.updatePosition()
     }
 
     fun onDestroy() {

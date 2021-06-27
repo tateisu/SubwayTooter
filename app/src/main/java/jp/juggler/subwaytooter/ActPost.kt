@@ -41,7 +41,7 @@ class ActPost : AppCompatActivity(),
     MyClickableSpanHandler, AttachmentPicker.Callback {
 
     companion object {
-        internal val log = LogCategory("ActPost")
+        private val log = LogCategory("ActPost")
 
         var refActPost: WeakReference<ActPost>? = null
 

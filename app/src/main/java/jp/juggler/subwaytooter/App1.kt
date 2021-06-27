@@ -18,14 +18,15 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.model.GlideUrl
-import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.util.*
 import okhttp3.*
+import okhttp3.OkHttpClient
 import org.conscrypt.Conscrypt
 import ru.gildor.coroutines.okhttp.await
 import java.io.File
@@ -36,6 +37,8 @@ import java.net.CookiePolicy
 import java.security.Security
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.math.max
 
 class App1 : Application() {
@@ -370,6 +373,9 @@ class App1 : Application() {
 
             log.d("create okhttp client")
             run {
+
+                Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
+
                 // API用のHTTP設定はキャッシュを使わない
                 ok_http_client = prepareOkHttp(60, 60)
                     .build()
@@ -540,19 +546,19 @@ class App1 : Application() {
                 val call = ok_http_client2.newCall(request_builder.build())
                 response = call.await()
             } catch (ex: Throwable) {
-                log.e(ex, "getHttp network error.")
+                log.e(ex, "getHttp network error. $url")
                 return null
             }
 
             if (!response.isSuccessful) {
-                log.e(TootApiClient.formatResponse(response, "getHttp response error."))
+                log.e(TootApiClient.formatResponse(response, "getHttp response error. $url"))
                 return null
             }
 
             return try {
                 response.body?.bytes()
             } catch (ex: Throwable) {
-                log.e(ex, "getHttp content error.")
+                log.e(ex, "getHttp content error. $url")
                 null
             }
         }
@@ -579,19 +585,19 @@ class App1 : Application() {
                 val call = ok_http_client2.newCall(request_builder.build())
                 response = call.await()
             } catch (ex: Throwable) {
-                log.e(ex, "getHttp network error.")
+                log.e(ex, "getHttp network error. $url")
                 return null
             }
 
             if (!response.isSuccessful) {
-                log.e(TootApiClient.formatResponse(response, "getHttp response error."))
+                log.e(TootApiClient.formatResponse(response, "getHttp response error. $url"))
                 return null
             }
 
             return try {
                 response.body?.string()
             } catch (ex: Throwable) {
-                log.e(ex, "getHttp content error.")
+                log.e(ex, "getHttp content error. $url")
                 null
             }
         }

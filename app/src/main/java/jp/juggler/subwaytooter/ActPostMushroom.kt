@@ -10,8 +10,11 @@ import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.util.LogCategory
 import jp.juggler.util.decodeUTF8
 import jp.juggler.util.loadRawResource
+
+private val log = LogCategory("ActPostMushroom")
 
 @SuppressLint("InflateParams")
 fun ActPost.showRecommendedPlugin(title: String?) {
@@ -89,7 +92,7 @@ fun ActPost.openMushroom() {
 
         arMushroom.launch(chooser)
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
         showRecommendedPlugin(getString(R.string.plugin_not_installed))
     }
 }

@@ -29,11 +29,14 @@ fun ActMain.handleIntentUri(uri: Uri) {
     log.d("handleIntentUri $uri")
 
     when (uri.scheme) {
-        "subwaytooter", "misskeyclientproto" -> return try {
-            handleCustomSchemaUri(uri)
-        } catch (ex: Throwable) {
-            log.trace(ex)
-            showToast(ex, "handleCustomSchemaUri failed.")
+        "subwaytooter", "misskeyclientproto" -> {
+            try {
+                handleCustomSchemaUri(uri)
+            } catch (ex: Throwable) {
+                log.trace(ex)
+                showToast(ex, "handleCustomSchemaUri failed.")
+            }
+            return
         }
     }
 

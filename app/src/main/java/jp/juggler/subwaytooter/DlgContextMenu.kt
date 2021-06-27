@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
+import androidx.annotation.IdRes
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -43,38 +44,20 @@ internal class DlgContextMenu(
     private val dialog: Dialog
 
     private val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_context_menu, null, false)
+    private fun <T : View> fv(@IdRes id: Int): T = viewRoot.findViewById(id)
 
-    private val btnCrossAccountActionsForStatus: Button =
-        viewRoot.findViewById(R.id.btnCrossAccountActionsForStatus)
-    private val llCrossAccountActionsForStatus: View =
-        viewRoot.findViewById(R.id.llCrossAccountActionsForStatus)
-
-    private val btnCrossAccountActionsForAccount: Button =
-        viewRoot.findViewById(R.id.btnCrossAccountActionsForAccount)
-    private val llCrossAccountActionsForAccount: View =
-        viewRoot.findViewById(R.id.llCrossAccountActionsForAccount)
-
-    private val btnAroundThisToot: Button =
-        viewRoot.findViewById(R.id.btnAroundThisToot)
-    private val llAroundThisToot: View =
-        viewRoot.findViewById(R.id.llAroundThisToot)
-
-    private val btnYourToot: Button =
-        viewRoot.findViewById(R.id.btnYourToot)
-    private val llYourToot: View =
-        viewRoot.findViewById(R.id.llYourToot)
-
-    private val btnStatusExtraAction: Button =
-        viewRoot.findViewById(R.id.btnStatusExtraAction)
-    private val llStatusExtraAction: View =
-        viewRoot.findViewById(R.id.llStatusExtraAction)
-
-    private val btnAccountExtraAction: Button =
-        viewRoot.findViewById(R.id.btnAccountExtraAction)
-    private val llAccountExtraAction: View =
-        viewRoot.findViewById(R.id.llAccountExtraAction)
-
-    private val btnPostNotification: Button = viewRoot.findViewById(R.id.btnPostNotification)
+    private val btnGroupStatusCrossAccount: Button = fv(R.id.btnGroupStatusCrossAccount)
+    private val llGroupStatusCrossAccount: View = fv(R.id.llGroupStatusCrossAccount)
+    private val btnGroupStatusAround: Button = fv(R.id.btnGroupStatusAround)
+    private val llGroupStatusAround: View = fv(R.id.llGroupStatusAround)
+    private val btnGroupStatusByMe: Button = fv(R.id.btnGroupStatusByMe)
+    private val llGroupStatusByMe: View = fv(R.id.llGroupStatusByMe)
+    private val btnGroupStatusExtra: Button = fv(R.id.btnGroupStatusExtra)
+    private val llGroupStatusExtra: View = fv(R.id.llGroupStatusExtra)
+    private val btnGroupUserCrossAccount: Button = fv(R.id.btnGroupUserCrossAccount)
+    private val llGroupUserCrossAccount: View = fv(R.id.llGroupUserCrossAccount)
+    private val btnGroupUserExtra: Button = fv(R.id.btnGroupUserExtra)
+    private val llGroupUserExtra: View = fv(R.id.llGroupUserExtra)
 
     init {
         val columnType = column.type
@@ -93,136 +76,121 @@ internal class DlgContextMenu(
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
 
-        val llStatus: View = viewRoot.findViewById(R.id.llStatus)
-        val btnStatusWebPage: View = viewRoot.findViewById(R.id.btnStatusWebPage)
-        val btnText: View = viewRoot.findViewById(R.id.btnText)
-        val btnFavouriteAnotherAccount: View =
-            viewRoot.findViewById(R.id.btnFavouriteAnotherAccount)
-        val btnBookmarkAnotherAccount: View =
-            viewRoot.findViewById(R.id.btnBookmarkAnotherAccount)
-        val btnBoostAnotherAccount: View = viewRoot.findViewById(R.id.btnBoostAnotherAccount)
-        val btnReactionAnotherAccount: View = viewRoot.findViewById(R.id.btnReactionAnotherAccount)
-        val btnReplyAnotherAccount: View = viewRoot.findViewById(R.id.btnReplyAnotherAccount)
-        val btnQuoteAnotherAccount: View = viewRoot.findViewById(R.id.btnQuoteAnotherAccount)
-        val btnQuoteTootBT: View = viewRoot.findViewById(R.id.btnQuoteTootBT)
-        val btnDelete: View = viewRoot.findViewById(R.id.btnDelete)
-        val btnRedraft: View = viewRoot.findViewById(R.id.btnRedraft)
-
-        val btnReportStatus: View = viewRoot.findViewById(R.id.btnReportStatus)
-        val btnReportUser: View = viewRoot.findViewById(R.id.btnReportUser)
-        val btnMuteApp: Button = viewRoot.findViewById(R.id.btnMuteApp)
-        val llAccountActionBar: View = viewRoot.findViewById(R.id.llAccountActionBar)
-        val btnFollow: ImageButton = viewRoot.findViewById(R.id.btnFollow)
-
-        val btnMute: ImageView = viewRoot.findViewById(R.id.btnMute)
-        val btnBlock: ImageView = viewRoot.findViewById(R.id.btnBlock)
-        val btnProfile: View = viewRoot.findViewById(R.id.btnProfile)
-        val btnSendMessage: View = viewRoot.findViewById(R.id.btnSendMessage)
-        val btnAccountWebPage: View = viewRoot.findViewById(R.id.btnAccountWebPage)
-        val btnFollowRequestOK: View = viewRoot.findViewById(R.id.btnFollowRequestOK)
-        val btnFollowRequestNG: View = viewRoot.findViewById(R.id.btnFollowRequestNG)
-        val btnDeleteSuggestion: View = viewRoot.findViewById(R.id.btnDeleteSuggestion)
-        val btnFollowFromAnotherAccount: View =
-            viewRoot.findViewById(R.id.btnFollowFromAnotherAccount)
-        val btnSendMessageFromAnotherAccount: View =
-            viewRoot.findViewById(R.id.btnSendMessageFromAnotherAccount)
-        val btnOpenProfileFromAnotherAccount: View =
-            viewRoot.findViewById(R.id.btnOpenProfileFromAnotherAccount)
-        val btnDomainBlock: Button = viewRoot.findViewById(R.id.btnDomainBlock)
-        val btnInstanceInformation: Button = viewRoot.findViewById(R.id.btnInstanceInformation)
-        val btnProfileDirectory: Button = viewRoot.findViewById(R.id.btnProfileDirectory)
-        val ivFollowedBy: ImageView = viewRoot.findViewById(R.id.ivFollowedBy)
-        val btnOpenTimeline: Button = viewRoot.findViewById(R.id.btnOpenTimeline)
-        val btnConversationAnotherAccount: View =
-            viewRoot.findViewById(R.id.btnConversationAnotherAccount)
-        val btnAvatarImage: View = viewRoot.findViewById(R.id.btnAvatarImage)
-
-        val llNotification: View = viewRoot.findViewById(R.id.llNotification)
-        val btnNotificationDelete: View = viewRoot.findViewById(R.id.btnNotificationDelete)
-        val btnConversationMute: Button = viewRoot.findViewById(R.id.btnConversationMute)
-
-        val btnHideBoost: View = viewRoot.findViewById(R.id.btnHideBoost)
-        val btnShowBoost: View = viewRoot.findViewById(R.id.btnShowBoost)
-        val btnHideFavourite: View = viewRoot.findViewById(R.id.btnHideFavourite)
-        val btnShowFavourite: View = viewRoot.findViewById(R.id.btnShowFavourite)
-
-        val btnListMemberAddRemove: View = viewRoot.findViewById(R.id.btnListMemberAddRemove)
-        val btnEndorse: Button = viewRoot.findViewById(R.id.btnEndorse)
-
-        val btnAroundAccountTL: View = viewRoot.findViewById(R.id.btnAroundAccountTL)
-        val btnAroundLTL: View = viewRoot.findViewById(R.id.btnAroundLTL)
-        val btnAroundFTL: View = viewRoot.findViewById(R.id.btnAroundFTL)
-        val btnCopyAccountId: Button = viewRoot.findViewById(R.id.btnCopyAccountId)
-        val btnOpenAccountInAdminWebUi: Button =
-            viewRoot.findViewById(R.id.btnOpenAccountInAdminWebUi)
-        val btnOpenInstanceInAdminWebUi: Button =
-            viewRoot.findViewById(R.id.btnOpenInstanceInAdminWebUi)
-        val btnBoostWithVisibility: Button = viewRoot.findViewById(R.id.btnBoostWithVisibility)
-        val llLinks: LinearLayout = viewRoot.findViewById(R.id.llLinks)
-
-        val btnNotificationFrom: Button = viewRoot.findViewById(R.id.btnNotificationFrom)
-        val btnProfilePin = viewRoot.findViewById<View>(R.id.btnProfilePin)
-        val btnProfileUnpin = viewRoot.findViewById<View>(R.id.btnProfileUnpin)
-        val btnBoostedBy = viewRoot.findViewById<View>(R.id.btnBoostedBy)
-        val btnFavouritedBy = viewRoot.findViewById<View>(R.id.btnFavouritedBy)
-
-        val btnDomainTimeline = viewRoot.findViewById<View>(R.id.btnDomainTimeline)
+        val btnAccountWebPage: View = fv(R.id.btnAccountWebPage)
+        val btnAroundAccountTL: View = fv(R.id.btnAroundAccountTL)
+        val btnAroundFTL: View = fv(R.id.btnAroundFTL)
+        val btnAroundLTL: View = fv(R.id.btnAroundLTL)
+        val btnAvatarImage: View = fv(R.id.btnAvatarImage)
+        val btnBlock: ImageView = fv(R.id.btnBlock)
+        val btnBookmarkAnotherAccount: View = fv(R.id.btnBookmarkAnotherAccount)
+        val btnBoostAnotherAccount: View = fv(R.id.btnBoostAnotherAccount)
+        val btnBoostedBy: View = fv(R.id.btnBoostedBy)
+        val btnBoostWithVisibility: Button = fv(R.id.btnBoostWithVisibility)
+        val btnConversationAnotherAccount: View = fv(R.id.btnConversationAnotherAccount)
+        val btnConversationMute: Button = fv(R.id.btnConversationMute)
+        val btnCopyAccountId: Button = fv(R.id.btnCopyAccountId)
+        val btnDelete: View = fv(R.id.btnDelete)
+        val btnDeleteSuggestion: View = fv(R.id.btnDeleteSuggestion)
+        val btnDomainBlock: Button = fv(R.id.btnDomainBlock)
+        val btnDomainTimeline: View = fv(R.id.btnDomainTimeline)
+        val btnEndorse: Button = fv(R.id.btnEndorse)
+        val btnFavouriteAnotherAccount: View = fv(R.id.btnFavouriteAnotherAccount)
+        val btnFavouritedBy: View = fv(R.id.btnFavouritedBy)
+        val btnFollow: ImageButton = fv(R.id.btnFollow)
+        val btnFollowFromAnotherAccount: View = fv(R.id.btnFollowFromAnotherAccount)
+        val btnFollowRequestNG: View = fv(R.id.btnFollowRequestNG)
+        val btnFollowRequestOK: View = fv(R.id.btnFollowRequestOK)
+        val btnHideBoost: View = fv(R.id.btnHideBoost)
+        val btnHideFavourite: View = fv(R.id.btnHideFavourite)
+        val btnInstanceInformation: Button = fv(R.id.btnInstanceInformation)
+        val btnListMemberAddRemove: View = fv(R.id.btnListMemberAddRemove)
+        val btnMute: ImageView = fv(R.id.btnMute)
+        val btnMuteApp: Button = fv(R.id.btnMuteApp)
+        val btnNotificationDelete: View = fv(R.id.btnNotificationDelete)
+        val btnNotificationFrom: Button = fv(R.id.btnNotificationFrom)
+        val btnOpenAccountInAdminWebUi: Button = fv(R.id.btnOpenAccountInAdminWebUi)
+        val btnOpenInstanceInAdminWebUi: Button = fv(R.id.btnOpenInstanceInAdminWebUi)
+        val btnOpenProfileFromAnotherAccount: View = fv(R.id.btnOpenProfileFromAnotherAccount)
+        val btnOpenTimeline: Button = fv(R.id.btnOpenTimeline)
+        val btnProfile: View = fv(R.id.btnProfile)
+        val btnProfileDirectory: Button = fv(R.id.btnProfileDirectory)
+        val btnProfilePin: View = fv(R.id.btnProfilePin)
+        val btnProfileUnpin: View = fv(R.id.btnProfileUnpin)
+        val btnQuoteAnotherAccount: View = fv(R.id.btnQuoteAnotherAccount)
+        val btnQuoteTootBT: View = fv(R.id.btnQuoteTootBT)
+        val btnReactionAnotherAccount: View = fv(R.id.btnReactionAnotherAccount)
+        val btnRedraft: View = fv(R.id.btnRedraft)
+        val btnReplyAnotherAccount: View = fv(R.id.btnReplyAnotherAccount)
+        val btnReportStatus: View = fv(R.id.btnReportStatus)
+        val btnReportUser: View = fv(R.id.btnReportUser)
+        val btnSendMessage: View = fv(R.id.btnSendMessage)
+        val btnSendMessageFromAnotherAccount: View = fv(R.id.btnSendMessageFromAnotherAccount)
+        val btnShowBoost: View = fv(R.id.btnShowBoost)
+        val btnShowFavourite: View = fv(R.id.btnShowFavourite)
+        val btnStatusWebPage: View = fv(R.id.btnStatusWebPage)
+        val btnText: View = fv(R.id.btnText)
+        val ivFollowedBy: ImageView = fv(R.id.ivFollowedBy)
+        val llAccountActionBar: View = fv(R.id.llAccountActionBar)
+        val llLinks: LinearLayout = fv(R.id.llLinks)
+        val llNotification: View = fv(R.id.llNotification)
+        val llStatus: View = fv(R.id.llStatus)
+        val btnStatusNotification: Button = fv(R.id.btnStatusNotification)
 
         arrayOf(
-            btnNotificationFrom,
+            btnAccountWebPage,
             btnAroundAccountTL,
-            btnAroundLTL,
             btnAroundFTL,
-            btnStatusWebPage,
-            btnText,
-            btnFavouriteAnotherAccount,
+            btnAroundLTL,
+            btnAvatarImage,
+            btnBlock,
             btnBookmarkAnotherAccount,
             btnBoostAnotherAccount,
-            btnReactionAnotherAccount,
-            btnReplyAnotherAccount,
-            btnQuoteAnotherAccount,
-            btnQuoteTootBT,
-            btnReportStatus,
-            btnReportUser,
-            btnMuteApp,
-            btnDelete,
-            btnRedraft,
-            btnFollow,
-            btnMute,
-            btnBlock,
-            btnProfile,
-            btnSendMessage,
-            btnAccountWebPage,
-            btnFollowRequestOK,
-            btnFollowRequestNG,
-            btnDeleteSuggestion,
-            btnFollowFromAnotherAccount,
-            btnSendMessageFromAnotherAccount,
-            btnOpenProfileFromAnotherAccount,
-            btnOpenTimeline,
+            btnBoostedBy,
+            btnBoostWithVisibility,
             btnConversationAnotherAccount,
-            btnAvatarImage,
-            btnNotificationDelete,
             btnConversationMute,
-            btnHideBoost,
-            btnShowBoost,
-            btnHideFavourite,
-            btnShowFavourite,
-            btnListMemberAddRemove,
-            btnInstanceInformation,
-            btnProfileDirectory,
-            btnDomainBlock,
-            btnEndorse,
             btnCopyAccountId,
+            btnDelete,
+            btnDeleteSuggestion,
+            btnDomainBlock,
+            btnDomainTimeline,
+            btnEndorse,
+            btnFavouriteAnotherAccount,
+            btnFavouritedBy,
+            btnFollow,
+            btnFollowFromAnotherAccount,
+            btnFollowRequestNG,
+            btnFollowRequestOK,
+            btnHideBoost,
+            btnHideFavourite,
+            btnInstanceInformation,
+            btnListMemberAddRemove,
+            btnMute,
+            btnMuteApp,
+            btnNotificationDelete,
+            btnNotificationFrom,
             btnOpenAccountInAdminWebUi,
             btnOpenInstanceInAdminWebUi,
-            btnBoostWithVisibility,
+            btnOpenProfileFromAnotherAccount,
+            btnOpenTimeline,
+            btnProfile,
+            btnProfileDirectory,
             btnProfilePin,
             btnProfileUnpin,
-            btnBoostedBy,
-            btnFavouritedBy,
-            btnDomainTimeline,
-            btnPostNotification,
+            btnQuoteAnotherAccount,
+            btnQuoteTootBT,
+            btnReactionAnotherAccount,
+            btnRedraft,
+            btnReplyAnotherAccount,
+            btnReportStatus,
+            btnReportUser,
+            btnSendMessage,
+            btnSendMessageFromAnotherAccount,
+            btnShowBoost,
+            btnShowFavourite,
+            btnStatusNotification,
+            btnStatusWebPage,
+            btnText,
 
             viewRoot.findViewById(R.id.btnQuoteUrlStatus),
             viewRoot.findViewById(R.id.btnTranslate),
@@ -231,21 +199,17 @@ internal class DlgContextMenu(
             viewRoot.findViewById(R.id.btnShareUrlAccount),
             viewRoot.findViewById(R.id.btnQuoteName)
 
-        ).forEach {
-            it.setOnClickListener(this@DlgContextMenu)
-        }
+        ).forEach { it.setOnClickListener(this) }
 
         arrayOf(
-            btnFollow,
-            btnProfile,
-            btnMute,
             btnBlock,
-            btnSendMessage,
+            btnFollow,
+            btnMute,
+            btnProfile,
             btnQuoteAnotherAccount,
             btnQuoteTootBT,
-        ).forEach {
-            it.setOnLongClickListener(this)
-        }
+            btnSendMessage,
+        ).forEach { it.setOnLongClickListener(this) }
 
         val accountList = SavedAccount.loadAccountList(activity)
         //	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
@@ -305,7 +269,7 @@ internal class DlgContextMenu(
             }
             llLinks.vg(llLinks.childCount > 1)
 
-            btnYourToot.vg(statusByMe)
+            btnGroupStatusByMe.vg(statusByMe)
 
             btnQuoteTootBT.vg(status.reblogParent != null)
 
@@ -448,7 +412,7 @@ internal class DlgContextMenu(
 
             btnReportUser.vg(!(accessInfo.isPseudo || accessInfo.isMe(who)))
 
-            btnPostNotification.vg(!accessInfo.isPseudo && accessInfo.isMastodon && relation.following)
+            btnStatusNotification.vg(!accessInfo.isPseudo && accessInfo.isMastodon && relation.following)
                 ?.let {
                     it.text = when (relation.notifying) {
                         true -> activity.getString(R.string.stop_notify_posts_from_this_user)
@@ -522,12 +486,12 @@ internal class DlgContextMenu(
 
         btnListMemberAddRemove.visibility = View.VISIBLE
 
-        updateGroup(btnCrossAccountActionsForStatus, llCrossAccountActionsForStatus)
-        updateGroup(btnCrossAccountActionsForAccount, llCrossAccountActionsForAccount)
-        updateGroup(btnAroundThisToot, llAroundThisToot)
-        updateGroup(btnYourToot, llYourToot)
-        updateGroup(btnStatusExtraAction, llStatusExtraAction)
-        updateGroup(btnAccountExtraAction, llAccountExtraAction)
+        updateGroup(btnGroupStatusCrossAccount, llGroupStatusCrossAccount)
+        updateGroup(btnGroupUserCrossAccount, llGroupUserCrossAccount)
+        updateGroup(btnGroupStatusAround, llGroupStatusAround)
+        updateGroup(btnGroupStatusByMe, llGroupStatusByMe)
+        updateGroup(btnGroupStatusExtra, llGroupStatusExtra)
+        updateGroup(btnGroupUserExtra, llGroupUserExtra)
     }
 
     fun show() {
@@ -585,35 +549,35 @@ internal class DlgContextMenu(
     }
 
     fun onClickUpdateGroup(v: View): Boolean = when (v.id) {
-        R.id.btnCrossAccountActionsForStatus -> updateGroup(
-            btnCrossAccountActionsForStatus,
-            llCrossAccountActionsForStatus,
+        R.id.btnGroupStatusCrossAccount -> updateGroup(
+            btnGroupStatusCrossAccount,
+            llGroupStatusCrossAccount,
             toggle = true
         )
 
-        R.id.btnCrossAccountActionsForAccount -> updateGroup(
-            btnCrossAccountActionsForAccount,
-            llCrossAccountActionsForAccount,
+        R.id.btnGroupUserCrossAccount -> updateGroup(
+            btnGroupUserCrossAccount,
+            llGroupUserCrossAccount,
             toggle = true
         )
-        R.id.btnAroundThisToot -> updateGroup(
-            btnAroundThisToot,
-            llAroundThisToot,
+        R.id.btnGroupStatusAround -> updateGroup(
+            btnGroupStatusAround,
+            llGroupStatusAround,
             toggle = true
         )
-        R.id.btnYourToot -> updateGroup(
-            btnYourToot,
-            llYourToot,
+        R.id.btnGroupStatusByMe -> updateGroup(
+            btnGroupStatusByMe,
+            llGroupStatusByMe,
             toggle = true
         )
-        R.id.btnStatusExtraAction -> updateGroup(
-            btnStatusExtraAction,
-            llStatusExtraAction,
+        R.id.btnGroupStatusExtra -> updateGroup(
+            btnGroupStatusExtra,
+            llGroupStatusExtra,
             toggle = true
         )
-        R.id.btnAccountExtraAction -> updateGroup(
-            btnAccountExtraAction,
-            llAccountExtraAction,
+        R.id.btnGroupUserExtra -> updateGroup(
+            btnGroupUserExtra,
+            llGroupUserExtra,
             toggle = true
         )
         else -> false
@@ -671,7 +635,7 @@ internal class DlgContextMenu(
             R.id.btnOpenAccountInAdminWebUi -> openBrowser("https://${accessInfo.apiHost.ascii}/admin/accounts/${who.id}")
             R.id.btnOpenInstanceInAdminWebUi -> openBrowser("https://${accessInfo.apiHost.ascii}/admin/instances/${who.apDomain.ascii}")
             R.id.btnNotificationFrom -> clickNotificationFrom(pos, accessInfo, who)
-            R.id.btnPostNotification -> clickStatusNotification(accessInfo, who, relation)
+            R.id.btnStatusNotification -> clickStatusNotification(accessInfo, who, relation)
             R.id.btnQuoteUrlAccount -> openPost(who.url?.notEmpty())
             R.id.btnShareUrlAccount -> shareText(who.url?.notEmpty())
             else -> return false
@@ -740,36 +704,33 @@ internal class DlgContextMenu(
     override fun onLongClick(v: View): Boolean {
         val whoRef = this.whoRef
         val who = whoRef?.get()
-        when (v.id) {
-            R.id.btnFollow -> {
-                dialog.dismissSafe()
-                activity.followFromAnotherAccount(
-                    activity.nextPosition(column),
-                    accessInfo,
-                    who
-                )
+
+        with(activity) {
+            val pos = nextPosition(column)
+
+            when (v.id) {
+                // events don't close dialog
+                R.id.btnMute -> userMuteFromAnotherAccount(who, accessInfo)
+                R.id.btnBlock -> userBlockFromAnotherAccount(who, accessInfo)
+                R.id.btnQuoteAnotherAccount -> quoteFromAnotherAccount(accessInfo, status)
+                R.id.btnQuoteTootBT -> quoteFromAnotherAccount(accessInfo, status?.reblogParent)
+
+                // events close dialog before action
+                R.id.btnFollow -> {
+                    dialog.dismissSafe()
+                    followFromAnotherAccount(pos, accessInfo, who)
+                }
+                R.id.btnProfile -> {
+                    dialog.dismissSafe()
+                    userProfileFromAnotherAccount(pos, accessInfo, who)
+                }
+                R.id.btnSendMessage -> {
+                    dialog.dismissSafe()
+                    mentionFromAnotherAccount(accessInfo, who)
+                }
+
+                else -> return false
             }
-
-            R.id.btnProfile -> {
-                dialog.dismissSafe()
-                activity.userProfileFromAnotherAccount(
-                    activity.nextPosition(column),
-                    accessInfo,
-                    who
-                )
-            }
-
-            R.id.btnSendMessage -> {
-                dialog.dismissSafe()
-                activity.mentionFromAnotherAccount(accessInfo, who)
-            }
-
-            R.id.btnMute -> activity.userMuteFromAnotherAccount(who, accessInfo)
-            R.id.btnBlock -> activity.userBlockFromAnotherAccount(who, accessInfo)
-            R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(accessInfo, status)
-            R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(accessInfo, status?.reblogParent)
-
-            else -> return false
         }
         return true
     }

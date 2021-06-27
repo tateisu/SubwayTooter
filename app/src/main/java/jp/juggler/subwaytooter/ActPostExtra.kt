@@ -11,6 +11,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 
+private val log = LogCategory("ActPostExtra")
+
 fun ActPost.appendContentText(
     src: String?,
     selectBefore: Boolean = false,
@@ -246,7 +248,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
             appendContentText(sharedIntent)
         }
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
     }
 }
 

@@ -344,15 +344,15 @@ class ActMain : AppCompatActivity(),
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true)
 
-        handler = App1.getAppState(this).handler
         appState = App1.getAppState(this)
-        pref = App1.pref
+        handler = appState.handler
+        pref = appState.pref
+        density = appState.density
+        completionHelper = CompletionHelper(this, pref, appState.handler)
 
         EmojiDecoder.handleUnicodeEmoji = PrefB.bpInAppUnicodeEmoji(pref)
 
-        density = appState.density
         acctPadLr = (0.5f + 4f * density).toInt()
-
         timelineFontSizeSp = PrefF.fpTimelineFontSize(pref).clipFontSize()
         acctFontSizeSp = PrefF.fpAcctFontSize(pref).clipFontSize()
         notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize(pref).clipFontSize()
@@ -925,7 +925,6 @@ class ActMain : AppCompatActivity(),
         initUIQuickToot()
 
         svColumnStrip.isHorizontalFadingEdgeEnabled = true
-        completionHelper = CompletionHelper(this, pref, appState.handler)
 
         val dm = resources.displayMetrics
         val density = dm.density

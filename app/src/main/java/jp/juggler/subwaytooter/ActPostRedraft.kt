@@ -15,6 +15,8 @@ import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
 import kotlinx.coroutines.isActive
 
+private val log = LogCategory("ActPostRedraft")
+
 // DlgDraftPickerから参照される
 const val DRAFT_CONTENT = "content"
 const val DRAFT_CONTENT_WARNING = "content_warning"
@@ -60,7 +62,7 @@ fun ActPost.saveDraft() {
     }
 
     if (!hasContent) {
-        ActPost.log.d("saveDraft: dont save empty content")
+        log.d("saveDraft: dont save empty content")
         return
     }
 
@@ -74,32 +76,29 @@ fun ActPost.saveDraft() {
         json[DRAFT_CONTENT_WARNING] = contentWarning
         json[DRAFT_CONTENT_WARNING_CHECK] = cbContentWarning.isChecked
         json[DRAFT_NSFW_CHECK] = cbNSFW.isChecked
-        states.visibility?.let { json.put(DRAFT_VISIBILITY, it.id.toString()) }
         json[DRAFT_ACCOUNT_DB_ID] = account?.db_id ?: -1L
         json[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList
-        states.inReplyToId?.putTo(json, DRAFT_REPLY_ID)
         json[DRAFT_REPLY_TEXT] = states.inReplyToText
         json[DRAFT_REPLY_IMAGE] = states.inReplyToImage
         json[DRAFT_REPLY_URL] = states.inReplyToUrl
-
         json[DRAFT_QUOTE] = cbQuote.isChecked
-
-        // deprecated. but still used in old draft.
-        // json.put(DRAFT_IS_ENQUETE, isEnquete)
-
         json[DRAFT_POLL_TYPE] = spPollType.selectedItemPosition.toPollTypeString()
-
         json[DRAFT_POLL_MULTIPLE] = cbMultipleChoice.isChecked
         json[DRAFT_POLL_HIDE_TOTALS] = cbHideTotals.isChecked
         json[DRAFT_POLL_EXPIRE_DAY] = etExpireDays.text.toString()
         json[DRAFT_POLL_EXPIRE_HOUR] = etExpireHours.text.toString()
         json[DRAFT_POLL_EXPIRE_MINUTE] = etExpireMinutes.text.toString()
-
         json[DRAFT_ENQUETE_ITEMS] = strChoice.toJsonArray()
+
+        states.visibility?.id?.toString()?.let { json.put(DRAFT_VISIBILITY, it) }
+        states.inReplyToId?.putTo(json, DRAFT_REPLY_ID)
+
+        // deprecated. but still used in old draft.
+        // json.put(DRAFT_IS_ENQUETE, isEnquete)
 
         PostDraft.save(System.currentTimeMillis(), json)
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
     }
 }
 
@@ -111,98 +110,94 @@ fun ActPost.restoreDraft(draft: JsonObject) {
     launchMain {
         val listWarning = ArrayList<String>()
         var targetAccount: SavedAccount? = null
-        runWithProgress(
-            "restore from draft",
-            doInBackground = { progress ->
-                fun isTaskCancelled() = !this.coroutineContext.isActive
+        runWithProgress("restore from draft", doInBackground = { progress ->
 
-                var content = draft.string(DRAFT_CONTENT) ?: ""
-                val accountDbId = draft.long(DRAFT_ACCOUNT_DB_ID) ?: -1L
-                val tmpAttachmentList =
-                    draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
+            fun isTaskCancelled() = !this.coroutineContext.isActive
 
-                val account = SavedAccount.loadAccount(this@restoreDraft, accountDbId)
-                if (account == null) {
-                    listWarning.add(getString(R.string.account_in_draft_is_lost))
-                    try {
-                        if (tmpAttachmentList != null) {
-                            // 本文からURLを除去する
-                            tmpAttachmentList.forEach {
-                                val textUrl = TootAttachment.decodeJson(it).text_url
-                                if (textUrl?.isNotEmpty() == true) {
-                                    content = content.replace(textUrl, "")
-                                }
-                            }
-                            tmpAttachmentList.clear()
-                            draft[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList.toJsonArray()
-                            draft[DRAFT_CONTENT] = content
-                            draft.remove(DRAFT_REPLY_ID)
-                            draft.remove(DRAFT_REPLY_TEXT)
-                            draft.remove(DRAFT_REPLY_IMAGE)
-                            draft.remove(DRAFT_REPLY_URL)
-                        }
-                    } catch (ignored: JsonException) {
-                    }
+            var content = draft.string(DRAFT_CONTENT) ?: ""
+            val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
 
-                    return@runWithProgress "OK"
-                }
-
-                targetAccount = account
-
-                // アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
-                val apiClient = TootApiClient(this@restoreDraft, callback = object : TootApiCallback {
-
-                    override val isApiCancelled: Boolean
-                        get() = isTaskCancelled()
-
-                    override suspend fun publishApiProgress(s: String) {
-                        progress.setMessageEx(s)
-                    }
-                })
-
-                apiClient.account = account
-
-                states.inReplyToId?.let { inReplyToId ->
-                    val result = apiClient.request("/api/v1/statuses/$inReplyToId")
-                    if (isTaskCancelled()) return@runWithProgress null
-                    val jsonObject = result?.jsonObject
-                    if (jsonObject == null) {
-                        listWarning.add(getString(R.string.reply_to_in_draft_is_lost))
-                        draft.remove(DRAFT_REPLY_ID)
-                        draft.remove(DRAFT_REPLY_TEXT)
-                        draft.remove(DRAFT_REPLY_IMAGE)
-                    }
-                }
-
+            val accountDbId = draft.long(DRAFT_ACCOUNT_DB_ID) ?: -1L
+            val account = SavedAccount.loadAccount(this@restoreDraft, accountDbId)
+            if (account == null) {
+                listWarning.add(getString(R.string.account_in_draft_is_lost))
                 try {
                     if (tmpAttachmentList != null) {
-                        // 添付メディアの存在確認
-                        var isSomeAttachmentRemoved = false
-                        val it = tmpAttachmentList.iterator()
-                        while (it.hasNext()) {
-                            if (isTaskCancelled()) return@runWithProgress null
-                            val ta = TootAttachment.decodeJson(it.next())
-                            if (ActPost.checkExist(ta.url)) continue
-                            it.remove()
-                            isSomeAttachmentRemoved = true
-                            // 本文からURLを除去する
-                            val textUrl = ta.text_url
+                        // 本文からURLを除去する
+                        tmpAttachmentList.forEach {
+                            val textUrl = TootAttachment.decodeJson(it).text_url
                             if (textUrl?.isNotEmpty() == true) {
                                 content = content.replace(textUrl, "")
                             }
                         }
-                        if (isSomeAttachmentRemoved) {
-                            listWarning.add(getString(R.string.attachment_in_draft_is_lost))
-                            draft[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList.toJsonArray()
-                            draft[DRAFT_CONTENT] = content
-                        }
+                        tmpAttachmentList.clear()
+                        draft[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList.toJsonArray()
+                        draft[DRAFT_CONTENT] = content
+                        draft.remove(DRAFT_REPLY_ID)
+                        draft.remove(DRAFT_REPLY_TEXT)
+                        draft.remove(DRAFT_REPLY_IMAGE)
+                        draft.remove(DRAFT_REPLY_URL)
                     }
-                } catch (ex: JsonException) {
-                    ActPost.log.trace(ex)
+                } catch (ignored: JsonException) {
                 }
 
-                "OK"
-            },
+                return@runWithProgress "OK"
+            }
+
+            targetAccount = account
+
+            // アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
+            val apiClient = TootApiClient(this@restoreDraft, callback = object : TootApiCallback {
+                override val isApiCancelled: Boolean
+                    get() = isTaskCancelled()
+
+                override suspend fun publishApiProgress(s: String) {
+                    progress.setMessageEx(s)
+                }
+            })
+            apiClient.account = account
+
+            // 返信ステータスが存在するかどうか
+            EntityId.from(draft, DRAFT_REPLY_ID)?.let { inReplyToId ->
+                val result = apiClient.request("/api/v1/statuses/$inReplyToId")
+                if (isTaskCancelled()) return@runWithProgress null
+                if (result?.jsonObject == null) {
+                    listWarning.add(getString(R.string.reply_to_in_draft_is_lost))
+                    draft.remove(DRAFT_REPLY_ID)
+                    draft.remove(DRAFT_REPLY_TEXT)
+                    draft.remove(DRAFT_REPLY_IMAGE)
+                }
+            }
+
+            try {
+                if (tmpAttachmentList != null) {
+                    // 添付メディアの存在確認
+                    var isSomeAttachmentRemoved = false
+                    val it = tmpAttachmentList.iterator()
+                    while (it.hasNext()) {
+                        if (isTaskCancelled()) return@runWithProgress null
+                        val ta = TootAttachment.decodeJson(it.next())
+                        if (ActPost.checkExist(ta.url)) continue
+                        it.remove()
+                        isSomeAttachmentRemoved = true
+                        // 本文からURLを除去する
+                        val textUrl = ta.text_url
+                        if (textUrl?.isNotEmpty() == true) {
+                            content = content.replace(textUrl, "")
+                        }
+                    }
+                    if (isSomeAttachmentRemoved) {
+                        listWarning.add(getString(R.string.attachment_in_draft_is_lost))
+                        draft[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList.toJsonArray()
+                        draft[DRAFT_CONTENT] = content
+                    }
+                }
+            } catch (ex: JsonException) {
+                log.trace(ex)
+            }
+
+            "OK"
+        },
             afterProc = { result ->
                 // cancelled.
                 if (result == null) return@runWithProgress
@@ -213,16 +208,12 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                 val nsfwChecked = draft.optBoolean(DRAFT_NSFW_CHECK)
                 val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
                 val replyId = EntityId.from(draft, DRAFT_REPLY_ID)
-                val replyText = draft.string(DRAFT_REPLY_TEXT)
-                val replyImage = draft.string(DRAFT_REPLY_IMAGE)
-                val replyUrl = draft.string(DRAFT_REPLY_URL)
-                val draftVisibility = TootVisibility
-                    .parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
 
-                val evEmoji = DecodeOptions(
-                    this@restoreDraft,
-                    decodeEmoji = true
-                ).decodeEmoji(content)
+                val draftVisibility = TootVisibility.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
+
+                val evEmoji = DecodeOptions(this@restoreDraft, decodeEmoji = true)
+                    .decodeEmoji(content)
+
                 etContent.setText(evEmoji)
                 etContent.setSelection(evEmoji.length)
                 etContentWarning.setText(contentWarning)
@@ -274,9 +265,9 @@ fun ActPost.restoreDraft(draft: JsonObject) {
 
                 if (replyId != null) {
                     states.inReplyToId = replyId
-                    states.inReplyToText = replyText
-                    states.inReplyToImage = replyImage
-                    states.inReplyToUrl = replyUrl
+                    states.inReplyToText = draft.string(DRAFT_REPLY_TEXT)
+                    states.inReplyToImage = draft.string(DRAFT_REPLY_IMAGE)
+                    states.inReplyToUrl = draft.string(DRAFT_REPLY_URL)
                 }
 
                 showContentWarningEnabled()
@@ -327,7 +318,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
                     }
                 }
             } catch (ex: Throwable) {
-                ActPost.log.trace(ex)
+                log.trace(ex)
             }
         }
 
@@ -400,6 +391,6 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
         }
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
     }
 }

@@ -142,15 +142,11 @@ enum class TootVisibility(
         fun parseSavedVisibility(sv: String?): TootVisibility? {
             sv ?: return null
 
-            // 新しい方式ではenumのID
-            for (v in values()) {
-                if (v.id.toString() == sv) return v
-            }
+            // 新しい方式ではenumのidの文字列表現
+            values().find { it.id.toString() == sv }?.let { return it }
 
             // 古い方式ではマストドンの公開範囲文字列かweb_setting
-            for (v in values()) {
-                if (v.strMastodon == sv) return v
-            }
+            values().find { it.strMastodon == sv }?.let { return it }
 
             return null
         }

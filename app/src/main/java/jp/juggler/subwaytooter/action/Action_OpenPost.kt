@@ -32,7 +32,7 @@ fun ActPost.saveWindowSize() {
     if (Build.VERSION.SDK_INT >= 30) {
         // WindowMetrics#getBounds() the window size including all system bar areas
         windowManager?.currentWindowMetrics?.bounds?.let { bounds ->
-            ActPost.log.d("API=${Build.VERSION.SDK_INT}, WindowMetrics#getBounds() $bounds")
+            log.d("API=${Build.VERSION.SDK_INT}, WindowMetrics#getBounds() $bounds")
             PrefDevice.savePostWindowBound(this, bounds.width(), bounds.height())
         }
     } else {
@@ -40,7 +40,7 @@ fun ActPost.saveWindowSize() {
         windowManager.defaultDisplay?.let { display ->
             val dm = DisplayMetrics()
             display.getMetrics(dm)
-            ActPost.log.d("API=${Build.VERSION.SDK_INT}, displayMetrics=${dm.widthPixels},${dm.heightPixels}")
+            log.d("API=${Build.VERSION.SDK_INT}, displayMetrics=${dm.widthPixels},${dm.heightPixels}")
             PrefDevice.savePostWindowBound(this, dm.widthPixels, dm.heightPixels)
         }
     }
@@ -265,17 +265,15 @@ fun ActMain.shareText(text: String?) {
 }
 
 fun ActMain.clickReply(accessInfo: SavedAccount, status: TootStatus) {
-    if (!accessInfo.isPseudo) {
-        reply(accessInfo, status)
-    } else {
-        replyFromAnotherAccount(accessInfo, status)
+    when {
+        accessInfo.isPseudo -> replyFromAnotherAccount(accessInfo, status)
+        else -> reply(accessInfo, status)
     }
 }
 
 fun ActMain.clickQuote(accessInfo: SavedAccount, status: TootStatus) {
-    if (!accessInfo.isPseudo) {
-        reply(accessInfo, status, quote = true)
-    } else {
-        quoteFromAnotherAccount(accessInfo, status)
+    when {
+        accessInfo.isPseudo -> quoteFromAnotherAccount(accessInfo, status)
+        else -> reply(accessInfo, status, quote = true)
     }
 }

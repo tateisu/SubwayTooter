@@ -159,7 +159,7 @@ class ActText : AppCompatActivity() {
     }
 
     private fun search() {
-        selection.trim().notEmpty()?.let {
+        selection.trim().notEmpty()?.also {
             try {
                 val intent = Intent(Intent.ACTION_WEB_SEARCH)
                 intent.putExtra(SearchManager.QUERY, it)

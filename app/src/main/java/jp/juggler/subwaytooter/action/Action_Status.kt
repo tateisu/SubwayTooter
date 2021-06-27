@@ -302,7 +302,6 @@ fun ActMain.bookmark(
             )
         ) {
             bookmark(
-
                 accessInfo,
                 statusArg,
                 crossAccountMode,

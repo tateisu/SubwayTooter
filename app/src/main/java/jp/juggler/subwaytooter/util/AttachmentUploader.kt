@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Handler
 import android.os.SystemClock
 import androidx.annotation.WorkerThread
-import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -477,7 +476,7 @@ class AttachmentUploader(
                 val isJpeg = MIME_TYPE_JPEG == mimeType
                 val isPng = MIME_TYPE_PNG == mimeType
                 if (!isJpeg && !isPng) {
-                    ActPost.log.d("createOpener: source is not jpeg or png")
+                    log.d("createOpener: source is not jpeg or png")
                     break
                 }
 
@@ -525,7 +524,7 @@ class AttachmentUploader(
                     }
                 }
             } catch (ex: Throwable) {
-                ActPost.log.trace(ex)
+                log.trace(ex)
                 context.showToast(ex, "Resizing image failed.")
             }
 

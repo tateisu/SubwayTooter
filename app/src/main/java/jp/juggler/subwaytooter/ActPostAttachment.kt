@@ -30,7 +30,7 @@ fun ActPost.decodeAttachments(sv: String) {
             try {
                 attachmentList.add(PostAttachment(TootAttachment.decodeJson(it)))
             } catch (ex: Throwable) {
-                ActPost.log.trace(ex)
+                log.trace(ex)
             }
         }
     } catch (ex: Throwable) {
@@ -126,22 +126,22 @@ fun ActPost.onPostAttachmentCompleteImpl(pa: PostAttachment) {
 
     when (pa.status) {
         PostAttachment.Status.Error -> {
-            ActPost.log.w("onPostAttachmentComplete: upload failed.")
+            log.w("onPostAttachmentComplete: upload failed.")
             attachmentList.remove(pa)
             showMediaAttachment()
         }
 
         PostAttachment.Status.Progress -> {
             // アップロード中…？
-            ActPost.log.w("onPostAttachmentComplete: ?? status=${pa.status}")
+            log.w("onPostAttachmentComplete: ?? status=${pa.status}")
         }
 
         PostAttachment.Status.Ok -> {
             when (val a = pa.attachment) {
-                null -> ActPost.log.e("onPostAttachmentComplete: upload complete, but missing attachment entity.")
+                null -> log.e("onPostAttachmentComplete: upload complete, but missing attachment entity.")
                 else -> {
                     // アップロード完了
-                    ActPost.log.i("onPostAttachmentComplete: upload complete.")
+                    log.i("onPostAttachmentComplete: upload complete.")
 
                     // 投稿欄の末尾に追記する
                     if (PrefB.bpAppendAttachmentUrlToContent(pref)) {

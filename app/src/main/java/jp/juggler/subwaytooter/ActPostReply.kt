@@ -11,9 +11,12 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.util.LogCategory
 import jp.juggler.util.decodeJsonObject
 import jp.juggler.util.launchMain
 import jp.juggler.util.showToast
+
+private val log = LogCategory("ActPostReply")
 
 fun ActPost.showQuotedRenote() {
     cbQuote.visibility = if (states.inReplyToId != null) View.VISIBLE else View.GONE
@@ -102,6 +105,7 @@ fun ActPost.initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
         }
 
         // リプライ表示をつける
+        states.inReplyToId = replyStatus.id
         states.inReplyToText = replyStatus.content
         states.inReplyToImage = replyStatus.account.avatar_static
         states.inReplyToUrl = replyStatus.url
@@ -127,18 +131,15 @@ fun ActPost.initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
             if (TootVisibility.WebSetting == states.visibility) {
                 // 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
                 states.visibility = sample
-            } else if (TootVisibility.isVisibilitySpoilRequired(
-                    states.visibility, sample
-                )
-            ) {
+            } else if (TootVisibility.isVisibilitySpoilRequired(states.visibility, sample)) {
                 // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
                 states.visibility = sample
             }
         } catch (ex: Throwable) {
-            ActPost.log.trace(ex)
+            log.trace(ex)
         }
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
     }
 }
 

@@ -7,6 +7,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import org.jetbrains.anko.textColor
 
+private val log = LogCategory("ActPostAccount")
+
 fun ActPost.selectAccount(a: SavedAccount?) {
     this.account = a
 
@@ -95,7 +97,7 @@ internal fun ActPost.setAccountWithVisibilityConversion(a: SavedAccount) {
             states.visibility = a.visibility
         }
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
     }
     showVisibility()
     showQuotedRenote()

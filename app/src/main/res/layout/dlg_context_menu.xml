@@ -123,7 +123,7 @@
 
 
                 <Button
-                    android:id="@+id/btnCrossAccountActionsForStatus"
+                    android:id="@+id/btnGroupStatusCrossAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent_round6dp"
@@ -140,7 +140,7 @@
                     android:textSize="12sp" />
 
                 <LinearLayout
-                    android:id="@+id/llCrossAccountActionsForStatus"
+                    android:id="@+id/llGroupStatusCrossAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -262,7 +262,7 @@
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/btnAroundThisToot"
+                    android:id="@+id/btnGroupStatusAround"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent_round6dp"
@@ -279,7 +279,7 @@
                     android:textSize="12sp" />
 
                 <LinearLayout
-                    android:id="@+id/llAroundThisToot"
+                    android:id="@+id/llGroupStatusAround"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -332,7 +332,7 @@
 
 
                 <Button
-                    android:id="@+id/btnYourToot"
+                    android:id="@+id/btnGroupStatusByMe"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent_round6dp"
@@ -349,7 +349,7 @@
                     android:textSize="12sp" />
 
                 <LinearLayout
-                    android:id="@+id/llYourToot"
+                    android:id="@+id/llGroupStatusByMe"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -420,7 +420,7 @@
 
 
                 <Button
-                    android:id="@+id/btnStatusExtraAction"
+                    android:id="@+id/btnGroupStatusExtra"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent_round6dp"
@@ -437,7 +437,7 @@
                     android:textSize="12sp" />
 
                 <LinearLayout
-                    android:id="@+id/llStatusExtraAction"
+                    android:id="@+id/llGroupStatusExtra"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -810,7 +810,7 @@
                     />
 
                 <Button
-                    android:id="@+id/btnCrossAccountActionsForAccount"
+                    android:id="@+id/btnGroupUserCrossAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent_round6dp"
@@ -827,7 +827,7 @@
                     android:textSize="12sp" />
 
                 <LinearLayout
-                    android:id="@+id/llCrossAccountActionsForAccount"
+                    android:id="@+id/llGroupUserCrossAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -880,7 +880,7 @@
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/btnAccountExtraAction"
+                    android:id="@+id/btnGroupUserExtra"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent_round6dp"
@@ -897,7 +897,7 @@
                     android:textSize="12sp" />
 
                 <LinearLayout
-                    android:id="@+id/llAccountExtraAction"
+                    android:id="@+id/llGroupUserExtra"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -906,7 +906,7 @@
                     tools:ignore="RtlSymmetry">
 
                     <Button
-                        android:id="@+id/btnPostNotification"
+                        android:id="@+id/btnStatusNotification"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/btn_bg_transparent_round6dp"

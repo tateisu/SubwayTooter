@@ -8,9 +8,12 @@ import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.DlgDateTime
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PostAttachment
+import jp.juggler.util.LogCategory
 import jp.juggler.util.cast
 import jp.juggler.util.decodeJsonObject
 import jp.juggler.util.notEmpty
+
+private val log = LogCategory("ActPostSchedule")
 
 fun ActPost.showSchedule() {
     tvSchedule.text = when (states.timeSchedule) {
@@ -37,7 +40,7 @@ fun ActPost.initializeFromScheduledStatus(account: SavedAccount, jsonText: Strin
             ::TootScheduled,
             TootParser(this, account),
             jsonText.decodeJsonObject(),
-            ActPost.log
+            log
         ) ?: error("initializeFromScheduledStatus: parse failed.")
 
         scheduledStatus = item
@@ -67,6 +70,6 @@ fun ActPost.initializeFromScheduledStatus(account: SavedAccount, jsonText: Strin
                 this.attachmentList.addAll(it)
             }
     } catch (ex: Throwable) {
-        ActPost.log.trace(ex)
+        log.trace(ex)
     }
 }

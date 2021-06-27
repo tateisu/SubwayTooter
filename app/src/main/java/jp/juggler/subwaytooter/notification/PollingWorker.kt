@@ -42,9 +42,6 @@ class PollingWorker private constructor(contextArg: Context) {
 
         val log = LogCategory("PollingWorker")
 
-        // private const val FCM_SENDER_ID = "433682361381"
-        // private const val FCM_SCOPE = "FCM"
-
         const val NOTIFICATION_ID = 1
         const val NOTIFICATION_ID_ERROR = 3
 
@@ -72,6 +69,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
         suspend fun getFirebaseMessagingToken(context: Context): String? {
             val prefDevice = PrefDevice.from(context)
+
             // 設定ファイルに保持されていたらそれを使う
             prefDevice
                 .getString(PrefDevice.KEY_DEVICE_TOKEN, null)
@@ -103,20 +101,22 @@ class PollingWorker private constructor(contextArg: Context) {
         // インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
         // トークンがまだ生成されていない場合、このメソッドは null を返します。
         @Suppress("BlockingMethodInNonBlockingContext")
-        suspend fun prepareInstallId(
-            context: Context,
-            job: JobItem? = null,
-        ): String? {
+        suspend fun prepareInstallId(context: Context, job: JobItem? = null): String? {
+            if (!PrivacyPolicyChecker(context).agreed) {
+                log.w("prepareInstallId: PrivacyPolicy not agreed.")
+                return null
+            }
+
             val prefDevice = PrefDevice.from(context)
 
-            var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
-            if (sv?.isNotEmpty() == true) return sv
+            prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
+                ?.notEmpty()?.let { return it }
 
             SavedAccount.clearRegistrationCache()
 
-            try {
+            return try {
                 val device_token = getFirebaseMessagingToken(context)
-                    ?: return null
+                    ?: error("getFirebaseMessagingToken returns null")
 
                 val request = Request.Builder()
                     .url("$APP_SERVER/counter")
@@ -124,28 +124,21 @@ class PollingWorker private constructor(contextArg: Context) {
 
                 val call = App1.ok_http_client.newCall(request)
                 job?.currentCall = WeakReference(call)
-                val response = call.await()
+                call.await().use { response ->
+                    val body = response.body?.string()
 
-                val body = response.body?.string()
+                    if (!response.isSuccessful || body?.isEmpty() != false) {
+                        log.e(TootApiClient.formatResponse(response, "getInstallId: get/counter failed."))
+                        return null
+                    }
 
-                if (!response.isSuccessful || body?.isEmpty() != false) {
-                    log.e(
-                        TootApiClient.formatResponse(
-                            response,
-                            "getInstallId: get/counter failed."
-                        )
-                    )
-                    return null
+                    (device_token + UUID.randomUUID() + body).digestSHA256Base64Url()
+                        .also { prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, it).apply() }
                 }
-
-                sv = (device_token + UUID.randomUUID() + body).digestSHA256Base64Url()
-                prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply()
-
-                return sv
             } catch (ex: Throwable) {
                 log.trace(ex, "prepareInstallId failed.")
+                null
             }
-            return null
         }
 
         //////////////////////////////////////////////////////////////////////

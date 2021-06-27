@@ -10,7 +10,7 @@ object ToastUtils {
     private val log = LogCategory("ToastUtils")
     private var refToast: WeakReference<Toast>? = null
 
-    internal fun showToastImpl(context: Context, bLong: Boolean, message: String) {
+    internal fun showToastImpl(context: Context, bLong: Boolean, message: String): Boolean {
         runOnMainLooper {
 
             // 前回のトーストの表示を終了する
@@ -41,21 +41,18 @@ object ToastUtils {
             // at android.widget.Toast$TN.handleShow (Toast.java:435)
             // at android.widget.Toast$TN$2.handleMessage (Toast.java:345)
         }
+        return false
     }
 }
 
-fun Context.showToast(bLong: Boolean, caption: String?) {
+fun Context.showToast(bLong: Boolean, caption: String?): Boolean =
     ToastUtils.showToastImpl(this, bLong, caption ?: "(null)")
-}
 
-fun Context.showToast(ex: Throwable, caption: String) {
+fun Context.showToast(ex: Throwable, caption: String): Boolean =
     ToastUtils.showToastImpl(this, true, ex.withCaption(caption))
-}
 
-fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any) {
+fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any): Boolean =
     ToastUtils.showToastImpl(this, bLong, getString(stringId, *args))
-}
 
-fun Context.showToast(ex: Throwable, stringId: Int, vararg args: Any) {
+fun Context.showToast(ex: Throwable, stringId: Int, vararg args: Any): Boolean =
     ToastUtils.showToastImpl(this, true, ex.withCaption(resources, stringId, *args))
-}

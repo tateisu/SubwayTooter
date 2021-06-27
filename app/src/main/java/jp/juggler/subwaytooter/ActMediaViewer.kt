@@ -539,13 +539,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             return Pair(result, null)
         }
 
-        if (!client.sendRequest(
-                result,
-                tmpOkhttpClient = App1.ok_http_client_media_viewer
-            ) {
+        if (!client.sendRequest(result, tmpOkhttpClient = App1.ok_http_client_media_viewer) {
                 request
-            }
-        ) return Pair(result, null)
+            }) return Pair(result, null)
 
         if (client.isApiCancelled) return Pair(null, null)
 
@@ -637,15 +633,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     internal class DownloadHistory(val time: Long, val url: String)
 
     private fun download(ta: TootAttachmentLike) {
-
-        val permissionCheck = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            preparePermission()
-            return
-        }
+        if (!checkPermission()) return
 
         val downLoadManager: DownloadManager = systemService(this)
             ?: error("missing DownloadManager system service")
@@ -808,37 +796,30 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun preparePermission() {
+    private fun checkPermission(): Boolean {
+        val permissionCheck = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) return true
+
         if (Build.VERSION.SDK_INT >= 23) {
             ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSION_REQUEST_CODE
             )
         } else {
             showToast(true, R.string.missing_permission_to_access_media)
         }
+        return false
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE -> {
-                var bNotGranted = false
-                var i = 0
-                val ie = permissions.size
-                while (i < ie) {
-                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                        bNotGranted = true
-                    }
-                    ++i
-                }
-                if (bNotGranted) {
-                    showToast(true, R.string.missing_permission_to_access_media)
-                } else {
-                    download(mediaList[idx])
-                }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            when (permissions.indices.all { grantResults[it] == PackageManager.PERMISSION_GRANTED }) {
+                false -> showToast(true, R.string.missing_permission_to_access_media)
+                else -> download(mediaList[idx])
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

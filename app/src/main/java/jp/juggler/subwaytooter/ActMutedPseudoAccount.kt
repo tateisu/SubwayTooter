@@ -19,7 +19,6 @@ import java.util.*
 class ActMutedPseudoAccount : AppCompatActivity() {
 
     companion object {
-
         private val log = LogCategory("ActMutedPseudoAccount")
     }
 

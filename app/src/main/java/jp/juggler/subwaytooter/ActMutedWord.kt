@@ -19,7 +19,6 @@ import java.util.*
 class ActMutedWord : AppCompatActivity() {
 
     companion object {
-
         private val log = LogCategory("ActMutedWord")
     }
 

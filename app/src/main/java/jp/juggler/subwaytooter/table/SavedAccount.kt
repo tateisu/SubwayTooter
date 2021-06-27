@@ -347,7 +347,7 @@ class SavedAccount(
 
         const val table = "access_info"
 
-        private val columnList = ColumnMeta.List(table)
+        val columnList = ColumnMeta.List(table)
 
         private val COL_ID = ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
         private val COL_HOST = ColumnMeta(columnList, 0, "h", "text not null")

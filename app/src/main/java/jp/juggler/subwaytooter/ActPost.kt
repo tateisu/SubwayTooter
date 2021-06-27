@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
@@ -29,9 +29,6 @@ import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import kotlinx.coroutines.Job
-import okhttp3.Request
-import okhttp3.internal.closeQuietly
-import ru.gildor.coroutines.okhttp.await
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 
@@ -45,113 +42,56 @@ class ActPost : AppCompatActivity(),
 
         var refActPost: WeakReference<ActPost>? = null
 
-        internal const val EXTRA_POSTED_ACCT = "posted_acct"
-        internal const val EXTRA_POSTED_STATUS_ID = "posted_status_id"
-        internal const val EXTRA_POSTED_REPLY_ID = "posted_reply_id"
-        internal const val EXTRA_POSTED_REDRAFT_ID = "posted_redraft_id"
-        internal const val EXTRA_MULTI_WINDOW = "multiWindow"
+        const val EXTRA_POSTED_ACCT = "posted_acct"
+        const val EXTRA_POSTED_STATUS_ID = "posted_status_id"
+        const val EXTRA_POSTED_REPLY_ID = "posted_reply_id"
+        const val EXTRA_POSTED_REDRAFT_ID = "posted_redraft_id"
+        const val EXTRA_MULTI_WINDOW = "multiWindow"
 
-        internal const val KEY_ACCOUNT_DB_ID = "account_db_id"
-        internal const val KEY_REPLY_STATUS = "reply_status"
-        internal const val KEY_REDRAFT_STATUS = "redraft_status"
-        internal const val KEY_INITIAL_TEXT = "initial_text"
-        internal const val KEY_SHARED_INTENT = "sent_intent"
-        internal const val KEY_QUOTE = "quote"
-        internal const val KEY_SCHEDULED_STATUS = "scheduled_status"
+        const val KEY_ACCOUNT_DB_ID = "account_db_id"
+        const val KEY_REPLY_STATUS = "reply_status"
+        const val KEY_REDRAFT_STATUS = "redraft_status"
+        const val KEY_INITIAL_TEXT = "initial_text"
+        const val KEY_SHARED_INTENT = "sent_intent"
+        const val KEY_QUOTE = "quote"
+        const val KEY_SCHEDULED_STATUS = "scheduled_status"
 
-        internal const val KEY_ATTACHMENT_LIST = "attachment_list"
-        internal const val KEY_IN_REPLY_TO_ID = "in_reply_to_id"
-        internal const val KEY_IN_REPLY_TO_TEXT = "in_reply_to_text"
-        internal const val KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image"
+        const val KEY_ATTACHMENT_LIST = "attachment_list"
+        const val KEY_IN_REPLY_TO_ID = "in_reply_to_id"
+        const val KEY_IN_REPLY_TO_TEXT = "in_reply_to_text"
+        const val KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image"
 
         const val STATE_ALL = "all"
 
         /////////////////////////////////////////////////
 
         fun createIntent(
-            activity: Activity,
-
+            context: Context,
             accountDbId: Long,
-
             multiWindowMode: Boolean,
-
             // 再編集する投稿。アカウントと同一のタンスであること
             redraftStatus: TootStatus? = null,
-
             // 返信対象の投稿。同一タンス上に同期済みであること
             replyStatus: TootStatus? = null,
-
             //初期テキスト
             initialText: String? = null,
-
             // 外部アプリから共有されたインテント
             sharedIntent: Intent? = null,
-
             // 返信ではなく引用トゥートを作成する
             quote: Boolean = false,
-
             //(Mastodon) 予約投稿の編集
             scheduledStatus: TootScheduled? = null,
-
-            ) = Intent(activity, ActPost::class.java).apply {
-
+        ) = Intent(context, ActPost::class.java).apply {
             putExtra(EXTRA_MULTI_WINDOW, multiWindowMode)
-
             putExtra(KEY_ACCOUNT_DB_ID, accountDbId)
-
-            if (redraftStatus != null) {
-                putExtra(KEY_REDRAFT_STATUS, redraftStatus.json.toString())
-            }
-
-            if (replyStatus != null) {
-                putExtra(KEY_REPLY_STATUS, replyStatus.json.toString())
+            initialText?.let { putExtra(KEY_INITIAL_TEXT, it) }
+            redraftStatus?.let { putExtra(KEY_REDRAFT_STATUS, it.json.toString()) }
+            replyStatus?.let {
+                putExtra(KEY_REPLY_STATUS, it.json.toString())
                 putExtra(KEY_QUOTE, quote)
             }
-
-            if (initialText != null) {
-                putExtra(KEY_INITIAL_TEXT, initialText)
-            }
-
-            if (sharedIntent != null) {
-                putExtra(KEY_SHARED_INTENT, sharedIntent)
-            }
-
-            if (scheduledStatus != null) {
-                putExtra(KEY_SCHEDULED_STATUS, scheduledStatus.src.toString())
-            }
-        }
-
-        internal suspend fun checkExist(url: String?): Boolean {
-            if (url?.isEmpty() != false) return false
-            try {
-                val request = Request.Builder().url(url).build()
-                val call = App1.ok_http_client.newCall(request)
-                val response = call.await()
-                try {
-                    if (response.isSuccessful) return true
-                    log.e(TootApiClient.formatResponse(response, "check_exist failed."))
-                } finally {
-                    response.closeQuietly()
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-            return false
-        }
-
-        fun Double?.finiteOrZero(): Double = if (this?.isFinite() == true) this else 0.0
-
-        // poll type string to spinner index
-        fun String?.toPollTypeIndex() = when (this) {
-            "mastodon" -> 1
-            "friendsNico" -> 2
-            else -> 0
-        }
-
-        fun Int?.toPollTypeString() = when (this) {
-            1 -> "mastodon"
-            2 -> "friendsNico"
-            else -> ""
+            sharedIntent?.let { putExtra(KEY_SHARED_INTENT, it) }
+            scheduledStatus?.let { putExtra(KEY_SCHEDULED_STATUS, it.src.toString()) }
         }
     }
 
@@ -180,7 +120,7 @@ class ActPost : AppCompatActivity(),
     lateinit var etExpireMinutes: EditText
 
     lateinit var tvCharCount: TextView
-    internal lateinit var handler: Handler
+    lateinit var handler: Handler
     lateinit var formRoot: ActPostRootLinearLayout
 
     lateinit var llReply: View
@@ -192,37 +132,37 @@ class ActPost : AppCompatActivity(),
     lateinit var ibSchedule: ImageButton
     lateinit var ibScheduleReset: ImageButton
 
-    internal lateinit var pref: SharedPreferences
-    internal lateinit var appState: AppState
+    lateinit var pref: SharedPreferences
+    lateinit var appState: AppState
     lateinit var attachmentUploader: AttachmentUploader
     lateinit var attachmentPicker: AttachmentPicker
     lateinit var completionHelper: CompletionHelper
+
+    var density: Float = 0f
+
+    ///////////////////////////////////////////////////
+
+    // SavedAccount.acctAscii => FeaturedTagCache
+    val featuredTagCache = ConcurrentHashMap<String, FeaturedTagCache>()
+
+    // background job
+    var jobFeaturedTag: WeakReference<Job>? = null
+    var jobMaxCharCount: WeakReference<Job>? = null
 
     ///////////////////////////////////////////////////
 
     var states = ActPostStates()
 
-    internal var account: SavedAccount? = null
-
+    var accountList: ArrayList<SavedAccount> = ArrayList()
+    var account: SavedAccount? = null
     var attachmentList = ArrayList<PostAttachment>()
     var isPostComplete: Boolean = false
-
-    internal var density: Float = 0f
-
-    var accountList: ArrayList<SavedAccount> = ArrayList()
-
     var scheduledStatus: TootScheduled? = null
 
-    // key is SavedAccount.acctAscii
-    val featuredTagCache = ConcurrentHashMap<String, FeaturedTagCache>()
-
-    var jobFeaturedTag: WeakReference<Job>? = null
-    var jobMaxCharCount: WeakReference<Job>? = null
-
+    // カスタムサムネイルを指定する添付メディア
     var paThumbnailTarget: PostAttachment? = null
 
-    val scrollListener: ViewTreeObserver.OnScrollChangedListener =
-        ViewTreeObserver.OnScrollChangedListener { completionHelper.onScrollChanged() }
+    /////////////////////////////////////////////////////////////////////
 
     val isMultiWindowPost: Boolean
         get() = intent.getBooleanExtra(EXTRA_MULTI_WINDOW, false)
@@ -338,8 +278,10 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun onBackPressed() {
-        saveDraft()
         super.onBackPressed()
+        // 戻るボタンを押したときとonPauseで2回保存することになるが、
+        // 同じ内容はDB上は重複しないはず…
+        saveDraft()
     }
 
     override fun onClick(v: View) {
@@ -495,11 +437,9 @@ class ActPost : AppCompatActivity(),
         )
 
         tvCharCount = findViewById(R.id.tvCharCount)
-
         llReply = findViewById(R.id.llReply)
         tvReplyTo = findViewById(R.id.tvReplyTo)
         ivReply = findViewById(R.id.ivReply)
-
         tvSchedule = findViewById(R.id.tvSchedule)
         ibSchedule = findViewById(R.id.ibSchedule)
         ibScheduleReset = findViewById(R.id.ibScheduleReset)
@@ -532,12 +472,8 @@ class ActPost : AppCompatActivity(),
         })
 
         val textWatcher: TextWatcher = object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-            }
-
-            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-            }
-
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
             override fun afterTextChanged(editable: Editable) {
                 updateTextCount()
             }
@@ -548,6 +484,9 @@ class ActPost : AppCompatActivity(),
         for (et in etChoices) {
             et.addTextChangedListener(textWatcher)
         }
+
+        val scrollListener: ViewTreeObserver.OnScrollChangedListener =
+            ViewTreeObserver.OnScrollChangedListener { completionHelper.onScrollChanged() }
 
         scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
 

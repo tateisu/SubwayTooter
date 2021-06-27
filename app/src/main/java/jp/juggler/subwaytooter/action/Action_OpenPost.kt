@@ -72,7 +72,7 @@ fun ActMain.openActPostImpl(
     val useMultiWindow = useManyWindow || PrefB.bpMultiWindowPost(pref)
 
     val intent = ActPost.createIntent(
-        activity = this,
+        context = this,
         accountDbId = accountDbId,
         redraftStatus = redraftStatus,
         replyStatus = replyStatus,

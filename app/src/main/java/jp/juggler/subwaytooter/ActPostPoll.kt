@@ -1,8 +1,9 @@
 package jp.juggler.subwaytooter
 
-import jp.juggler.subwaytooter.ActPost.Companion.finiteOrZero
 import jp.juggler.util.notEmpty
 import jp.juggler.util.vg
+
+private fun Double?.finiteOrZero(): Double = if (this?.isFinite() == true) this else 0.0
 
 fun ActPost.showPoll() {
     val i = spPollType.selectedItemPosition

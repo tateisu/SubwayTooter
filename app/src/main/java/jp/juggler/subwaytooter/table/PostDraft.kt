@@ -82,15 +82,15 @@ class PostDraft {
 
             try {
                 // make hash
-                val sb = StringBuilder()
-                json.keys.toMutableList().apply { sort() }.forEach { k ->
-                    val v = json[k]?.toString() ?: "(null)"
-                    sb.append("&")
-                    sb.append(k)
-                    sb.append("=")
-                    sb.append(v)
-                }
-                val hash = sb.toString().digestSHA256Hex()
+                val hash = StringBuilder().also { sb ->
+                    json.keys.sorted().forEach { k ->
+                        val v = json[k]?.toString() ?: "(null)"
+                        sb.append("&")
+                        sb.append(k)
+                        sb.append("=")
+                        sb.append(v)
+                    }
+                }.toString().digestSHA256Hex()
 
                 // save to db
                 App1.database.replace(table, null, ContentValues().apply {
@@ -113,16 +113,14 @@ class PostDraft {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
-                log.e(ex, "hasDraft failed.")
+                log.trace(ex, "hasDraft failed.")
             }
-
             return false
         }
 
         fun createCursor(): Cursor? {
-            try {
-                return App1.database.query(
+            return try {
+                App1.database.query(
                     table,
                     null,
                     null,
@@ -132,33 +130,29 @@ class PostDraft {
                     "$COL_TIME_SAVE desc"
                 )
             } catch (ex: Throwable) {
-                log.trace(ex)
-                log.e(ex, "createCursor failed.")
+                log.trace(ex, "createCursor failed.")
+                null
             }
-
-            return null
         }
 
         fun loadFromCursor(cursor: Cursor, colIdxArg: ColIdx?, position: Int): PostDraft? {
-            val colIdx = colIdxArg ?: ColIdx(cursor)
-
-            if (!cursor.moveToPosition(position)) {
+            return if (!cursor.moveToPosition(position)) {
                 log.d("loadFromCursor: move failed. position=$position")
-                return null
+                null
+            } else {
+                PostDraft().also { dst ->
+                    val colIdx = colIdxArg ?: ColIdx(cursor)
+                    dst.id = cursor.getLong(colIdx.idx_id)
+                    dst.time_save = cursor.getLong(colIdx.idx_time_save)
+                    dst.hash = cursor.getString(colIdx.idx_hash)
+                    dst.json = try {
+                        cursor.getString(colIdx.idx_json).decodeJsonObject()
+                    } catch (ex: Throwable) {
+                        log.trace(ex)
+                        JsonObject()
+                    }
+                }
             }
-
-            val dst = PostDraft()
-            dst.id = cursor.getLong(colIdx.idx_id)
-            dst.time_save = cursor.getLong(colIdx.idx_time_save)
-            try {
-                dst.json = cursor.getString(colIdx.idx_json).decodeJsonObject()
-            } catch (ex: Throwable) {
-                log.trace(ex)
-                dst.json = JsonObject()
-            }
-
-            dst.hash = cursor.getString(colIdx.idx_hash)
-            return dst
         }
     }
 }

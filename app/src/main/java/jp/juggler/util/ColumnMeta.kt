@@ -75,15 +75,20 @@ class ColumnMeta(
         fun createParams(): String =
             sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }
 
+        val maxVersion: Int
+            get() = this.maxOfOrNull{ it.version} ?: 0
+
+        fun addColumnsSql(oldVersion: Int, newVersion: Int) =
+            sorted()
+                .filter { oldVersion < it.version && newVersion >= it.version }
+                .map { "alter table $table add column ${it.name} ${it.typeSpec}" }
+
         fun addColumns(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            for (column in this) {
-                if (oldVersion < column.version && newVersion >= column.version) {
-                    val sql = "alter table $table add column ${column.name} ${column.typeSpec}"
-                    try {
-                        db.execSQL(sql)
-                    } catch (ex: Throwable) {
-                        log.trace(ex, "addColumns $table ${column.name} failed. $sql")
-                    }
+            for (sql in addColumnsSql(oldVersion, newVersion)) {
+                try {
+                    db.execSQL(sql)
+                } catch (ex: Throwable) {
+                    log.trace(ex, "addColumns failed. $sql")
                 }
             }
         }
@@ -91,9 +96,13 @@ class ColumnMeta(
 
     // テーブル作成時のソート
     override fun compareTo(other: ColumnMeta): Int {
-        val ia = if (this.primary) 1 else 0
-        val ib = if (other.primary) 1 else 0
-        return ia.compareTo(ib).notZero() ?: name.compareTo(other.name)
+        // プライマリキーを先頭にする
+        val ia = if (this.primary) -1 else 0
+        val ib = if (other.primary) -1 else 0
+        ia.compareTo(ib).notZero()?.let{ return it}
+
+        // 残りはカラム名順
+        return name.compareTo(other.name)
     }
 
     override fun toString(): String = name

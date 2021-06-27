@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.ActPost.Companion.toPollTypeIndex
-import jp.juggler.subwaytooter.ActPost.Companion.toPollTypeString
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -14,6 +12,8 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
 import kotlinx.coroutines.isActive
+import okhttp3.Request
+import ru.gildor.coroutines.okhttp.await
 
 private val log = LogCategory("ActPostDrafts")
 
@@ -30,7 +30,6 @@ private const val DRAFT_REPLY_ID = "reply_id"
 private const val DRAFT_REPLY_TEXT = "reply_text"
 private const val DRAFT_REPLY_IMAGE = "reply_image"
 private const val DRAFT_REPLY_URL = "reply_url"
-private const val DRAFT_IS_ENQUETE = "is_enquete"
 private const val DRAFT_POLL_TYPE = "poll_type"
 private const val DRAFT_POLL_MULTIPLE = "poll_multiple"
 private const val DRAFT_POLL_HIDE_TOTALS = "poll_hide_totals"
@@ -39,6 +38,34 @@ private const val DRAFT_POLL_EXPIRE_HOUR = "poll_expire_hour"
 private const val DRAFT_POLL_EXPIRE_MINUTE = "poll_expire_minute"
 private const val DRAFT_ENQUETE_ITEMS = "enquete_items"
 private const val DRAFT_QUOTE = "quotedRenote" // 歴史的な理由で名前がMisskey用になってる
+private const val DRAFT_IS_ENQUETE = "is_enquete" // deprecated. old draft may use this.
+
+// poll type string to spinner index
+private fun String?.toPollTypeIndex() = when (this) {
+    "mastodon" -> 1
+    "friendsNico" -> 2
+    else -> 0
+}
+
+private fun Int?.toPollTypeString() = when (this) {
+    1 -> "mastodon"
+    2 -> "friendsNico"
+    else -> ""
+}
+
+private suspend fun checkExist(url: String?): Boolean {
+    if (url?.isEmpty() != false) return false
+    try {
+        val request = Request.Builder().url(url).build()
+        App1.ok_http_client.newCall(request).await().use { response ->
+            if (response.isSuccessful) return true
+            log.e(TootApiClient.formatResponse(response, "check_exist failed."))
+        }
+    } catch (ex: Throwable) {
+        log.trace(ex)
+    }
+    return false
+}
 
 fun ActPost.saveDraft() {
     val content = etContent.text.toString()
@@ -92,9 +119,6 @@ fun ActPost.saveDraft() {
 
         states.visibility?.id?.toString()?.let { json.put(DRAFT_VISIBILITY, it) }
         states.inReplyToId?.putTo(json, DRAFT_REPLY_ID)
-
-        // deprecated. but still used in old draft.
-        // json.put(DRAFT_IS_ENQUETE, isEnquete)
 
         PostDraft.save(System.currentTimeMillis(), json)
     } catch (ex: Throwable) {
@@ -177,7 +201,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                     while (it.hasNext()) {
                         if (isTaskCancelled()) return@runWithProgress null
                         val ta = TootAttachment.decodeJson(it.next())
-                        if (ActPost.checkExist(ta.url)) continue
+                        if (checkExist(ta.url)) continue
                         it.remove()
                         isSomeAttachmentRemoved = true
                         // 本文からURLを除去する

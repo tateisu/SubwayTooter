@@ -15,7 +15,7 @@ import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
 import kotlinx.coroutines.isActive
 
-private val log = LogCategory("ActPostRedraft")
+private val log = LogCategory("ActPostDrafts")
 
 // DlgDraftPickerから参照される
 const val DRAFT_CONTENT = "content"

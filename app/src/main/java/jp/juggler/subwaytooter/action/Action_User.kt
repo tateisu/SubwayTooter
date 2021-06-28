@@ -23,7 +23,7 @@ import kotlinx.coroutines.*
 import okhttp3.Request
 import java.util.*
 
-private val log = LogCategory("Action_User")
+// private val log = LogCategory("Action_User")
 
 fun ActMain.clickMute(
     accessInfo: SavedAccount,

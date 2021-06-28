@@ -40,9 +40,6 @@ class Column(
     val columnId: String,
 ) {
     companion object {
-
-        private val log = LogCategory("Column")
-
         internal const val LOOP_TIMEOUT = 10000L
         internal const val LOOP_READ_ENOUGH = 30 // フィルタ後のデータ数がコレ以上ならループを諦めます
         internal const val RELATIONSHIP_LOAD_STEP = 40

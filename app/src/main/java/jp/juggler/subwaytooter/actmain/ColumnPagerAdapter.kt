@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.actmain
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
+import androidx.viewpager.widget.PagerAdapter
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getColumnName
@@ -13,7 +14,7 @@ import jp.juggler.subwaytooter.util.Benchmark
 import jp.juggler.util.LogCategory
 import java.util.*
 
-internal class ColumnPagerAdapter(private val activity: ActMain) : androidx.viewpager.widget.PagerAdapter() {
+internal class ColumnPagerAdapter(private val activity: ActMain) : PagerAdapter() {
 
     companion object {
         val log = LogCategory("ColumnPagerAdapter")

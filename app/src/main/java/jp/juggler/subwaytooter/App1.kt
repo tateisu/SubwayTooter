@@ -465,7 +465,7 @@ class App1 : Application() {
                     .setUncaughtThrowableStrategy(catcher).build()
             )
 
-            builder.setDiskCache(InternalCacheDiskCacheFactory(context, 10 * 1024 * 1024))
+            builder.setDiskCache(InternalCacheDiskCacheFactory(context, 10L * 1024L * 1024L))
 
             // DEBUG 画像のディスクキャッシュの消去
             //			new Thread(new Runnable() {

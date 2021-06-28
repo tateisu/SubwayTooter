@@ -31,25 +31,22 @@ private val log = LogCategory("ActMainIntent")
 
 // ActOAuthCallbackで受け取ったUriを処理する
 fun ActMain.handleIntentUri(uri: Uri) {
-
-    log.d("handleIntentUri $uri")
-
-    when (uri.scheme) {
-        "subwaytooter", "misskeyclientproto" -> {
-            try {
-                handleCustomSchemaUri(uri)
-            } catch (ex: Throwable) {
-                log.trace(ex)
-                showToast(ex, "handleCustomSchemaUri failed.")
-            }
-            return
+    try {
+        log.d("handleIntentUri $uri")
+        when (uri.scheme) {
+            "subwaytooter", "misskeyclientproto" -> handleCustomSchemaUri(uri)
+            else -> handleOtherUri(uri)
         }
+    } catch (ex: Throwable) {
+        log.trace(ex)
+        showToast(ex, "handleIntentUri failed.")
     }
+}
 
+private fun ActMain.handleOtherUri(uri: Uri){
     val url = uri.toString()
 
-    val statusInfo = url.findStatusIdFromUrl()
-    if (statusInfo != null) {
+    url.findStatusIdFromUrl()?.let { statusInfo ->
         // ステータスをアプリ内で開く
         conversationOtherInstance(
             defaultInsertPosition,
@@ -61,9 +58,8 @@ fun ActMain.handleIntentUri(uri: Uri) {
         return
     }
 
-    // ユーザページをアプリ内で開く
-    var m = TootAccount.reAccountUrl.matcher(url)
-    if (m.find()) {
+    TootAccount.reAccountUrl.matcher(url).takeIf { it.find() }?.let { m ->
+        // ユーザページをアプリ内で開く
         val host = m.groupEx(1)!!
         val user = m.groupEx(2)!!.decodePercent()
         val instance = m.groupEx(3)?.decodePercent()
@@ -87,12 +83,10 @@ fun ActMain.handleIntentUri(uri: Uri) {
         return
     }
 
-    // intentFilterの都合でこの形式のURLが飛んでくることはないのだが…。
-    m = TootAccount.reAccountUrl2.matcher(url)
-    if (m.find()) {
+    TootAccount.reAccountUrl2.matcher(url).takeIf { it.find() }?.let { m ->
+        // intentFilterの都合でこの形式のURLが飛んでくることはないのだが…。
         val host = m.groupEx(1)!!
         val user = m.groupEx(2)!!.decodePercent()
-
         userProfile(
             defaultInsertPosition,
             null,
@@ -157,7 +151,7 @@ fun ActMain.handleIntentUri(uri: Uri) {
         .show()
 }
 
-fun ActMain.handleCustomSchemaUri(uri: Uri) {
+private fun ActMain.handleCustomSchemaUri(uri: Uri) {
     val dataIdString = uri.getQueryParameter("db_id")
     if (dataIdString != null) {
         // subwaytooter://notification_click/?db_id=(db_id)
@@ -169,7 +163,7 @@ fun ActMain.handleCustomSchemaUri(uri: Uri) {
     }
 }
 
-fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
+private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
     try {
         val account = dataIdString.toLongOrNull()?.let { SavedAccount.loadAccount(this, it) }
         if (account == null) {
@@ -200,7 +194,7 @@ fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
     }
 }
 
-fun ActMain.handleOAuth2Callback(uri: Uri) {
+private fun ActMain.handleOAuth2Callback(uri: Uri) {
     launchMain {
         var resultTootAccount: TootAccount? = null
         var resultSavedAccount: SavedAccount? = null
@@ -212,7 +206,6 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
             if (uriStr.startsWith("subwaytooter://misskey/auth_callback") ||
                 uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
             ) {
-
                 // Misskey 認証コールバック
                 val token = uri.getQueryParameter("token")?.notBlank()
                     ?: return@runApiTask TootApiResult("missing token in callback URL")
@@ -231,7 +224,7 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
 
                     // update access token
                     else -> try {
-                        val sa = SavedAccount.loadAccount(this@handleOAuth2Callback, dbId)
+                        val sa = SavedAccount.loadAccount(applicationContext, dbId)
                             ?: return@runApiTask TootApiResult("missing account db_id=$dbId")
                         resultSavedAccount = sa
                         client.account = sa
@@ -248,20 +241,11 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
                 resultApDomain = ti.uri?.let { Host.parse(it) }
 
                 val parser = TootParser(
-                    this@handleOAuth2Callback,
-                    linkHelper = LinkHelper.create(
-                        instance,
-                        misskeyVersion = ti.misskeyVersion
-                    )
+                    applicationContext,
+                    linkHelper = LinkHelper.create(instance, misskeyVersion = ti.misskeyVersion)
                 )
-
-                client.authentication2Misskey(
-                    PrefS.spClientName(pref),
-                    token,
-                    ti.misskeyVersion
-                )?.also {
-                    resultTootAccount = parser.account(it.jsonObject)
-                }
+                client.authentication2Misskey(PrefS.spClientName(pref), token, ti.misskeyVersion)
+                    ?.also { resultTootAccount = parser.account(it.jsonObject) }
             } else {
                 // Mastodon 認証コールバック
 
@@ -273,9 +257,7 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
                 val error = uri.getQueryParameter("error")
                 val errorDescription = uri.getQueryParameter("error_description")
                 if (error != null || errorDescription != null) {
-                    return@runApiTask TootApiResult(
-                        errorDescription.notBlank() ?: error.notBlank() ?: "?"
-                    )
+                    return@runApiTask TootApiResult(errorDescription.notBlank() ?: error.notBlank() ?: "?")
                 }
 
                 // subwaytooter://oauth(\d*)/
@@ -292,7 +274,7 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
                     when {
                         param.startsWith("db:") -> try {
                             val dataId = param.substring(3).toLong(10)
-                            val sa = SavedAccount.loadAccount(this@handleOAuth2Callback, dataId)
+                            val sa = SavedAccount.loadAccount(applicationContext, dataId)
                                 ?: return@runApiTask TootApiResult("missing account db_id=$dataId")
                             resultSavedAccount = sa
                             client.account = sa
@@ -312,14 +294,16 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
 
                 val apiHost = client.apiHost
                     ?: return@runApiTask TootApiResult("missing instance in callback url.")
+
                 resultApiHost = apiHost
 
                 val parser = TootParser(
-                    this@handleOAuth2Callback,
+                    applicationContext,
                     linkHelper = LinkHelper.create(apiHost)
                 )
 
                 val refToken = AtomicReference<String>(null)
+
                 client.authentication2Mastodon(
                     PrefS.spClientName(pref),
                     code,
@@ -342,7 +326,7 @@ fun ActMain.handleOAuth2Callback(uri: Uri) {
             if (ta != null && apiHost?.isValid == true && sa == null) {
                 val acct = Acct.parse(ta.username, apDomain ?: apiHost)
                 // アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
-                sa = SavedAccount.loadAccountByAcct(this@handleOAuth2Callback, acct.ascii)
+                sa = SavedAccount.loadAccountByAcct(applicationContext, acct.ascii)
             }
             afterAccountVerify(result, ta, sa, apiHost, apDomain)
         }
@@ -363,14 +347,9 @@ fun ActMain.afterAccountVerify(
     val error = result.error
 
     when {
-        error != null ->
-            showToast(true, "${result.error} ${result.requestInfo}".trim())
-
-        tokenInfo == null ->
-            showToast(true, "can't get access token.")
-
-        jsonObject == null ->
-            showToast(true, "can't parse json response.")
+        error != null -> showToast(true, "${result.error} ${result.requestInfo}".trim())
+        tokenInfo == null -> showToast(true, "can't get access token.")
+        jsonObject == null -> showToast(true, "can't parse json response.")
 
         // 自分のユーザネームを取れなかった
         // …普通はエラーメッセージが設定されてるはずだが
@@ -378,87 +357,99 @@ fun ActMain.afterAccountVerify(
 
         // アクセストークン更新時
         // インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
-        sa != null -> if (sa.username != ta.username) {
-            showToast(true, R.string.user_name_not_match)
-        } else {
-            showToast(false, R.string.access_token_updated_for, sa.acct.pretty)
+        sa != null -> return afterAccessTokenUpdate(ta, sa, tokenInfo)
 
-            // DBの情報を更新する
-            sa.updateTokenInfo(tokenInfo)
-
-            // 各カラムの持つアカウント情報をリロードする
-            reloadAccountSetting()
-
-            // 自動でリロードする
-            appState.columnList
-                .filter { it.accessInfo == sa }
-                .forEach { it.startLoading() }
-
-            // 通知の更新が必要かもしれない
-            PushSubscriptionHelper.clearLastCheck(sa)
-            PollingWorker.queueUpdateNotification(this@afterAccountVerify)
-            return true
-        }
-
-        apiHost != null -> {
-            // アカウント追加時
-            val user = Acct.parse(ta.username, apDomain ?: apiHost)
-
-            val rowId = SavedAccount.insert(
-                acct = user.ascii,
-                host = apiHost.ascii,
-                domain = (apDomain ?: apiHost).ascii,
-                account = jsonObject,
-                token = tokenInfo,
-                misskeyVersion = TootInstance.parseMisskeyVersion(tokenInfo)
-            )
-            val account = SavedAccount.loadAccount(this@afterAccountVerify, rowId)
-            if (account != null) {
-                var bModified = false
-
-                if (account.loginAccount?.locked == true) {
-                    bModified = true
-                    account.visibility = TootVisibility.PrivateFollowers
-                }
-                if (!account.isMisskey) {
-                    val source = ta.source
-                    if (source != null) {
-                        val privacy = TootVisibility.parseMastodon(source.privacy)
-                        if (privacy != null) {
-                            bModified = true
-                            account.visibility = privacy
-                        }
-
-                        // XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
-                        // 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
-                    }
-
-                    if (bModified) {
-                        account.saveSetting()
-                    }
-                }
-
-                showToast(false, R.string.account_confirmed)
-
-                // 通知の更新が必要かもしれない
-                PollingWorker.queueUpdateNotification(this@afterAccountVerify)
-
-                // 適当にカラムを追加する
-                val count = SavedAccount.count
-                if (count > 1) {
-                    addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
-                } else {
-                    addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
-                    addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
-                    addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
-                    addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
-                }
-
-                return true
-            }
-        }
+        apiHost != null -> return afterAccountAdd(apDomain, apiHost, ta, jsonObject, tokenInfo)
     }
     return false
+}
+
+private fun ActMain.afterAccessTokenUpdate(ta: TootAccount, sa: SavedAccount, tokenInfo: JsonObject?): Boolean {
+    if (sa.username != ta.username) {
+        showToast(true, R.string.user_name_not_match)
+        return false
+    }
+
+    // DBの情報を更新する
+    sa.updateTokenInfo(tokenInfo)
+
+    // 各カラムの持つアカウント情報をリロードする
+    reloadAccountSetting()
+
+    // 自動でリロードする
+    appState.columnList
+        .filter { it.accessInfo == sa }
+        .forEach { it.startLoading() }
+
+    // 通知の更新が必要かもしれない
+    PushSubscriptionHelper.clearLastCheck(sa)
+    PollingWorker.queueUpdateNotification(applicationContext)
+
+    showToast(false, R.string.access_token_updated_for, sa.acct.pretty)
+    return true
+}
+
+private fun ActMain.afterAccountAdd(
+    apDomain: Host?,
+    apiHost: Host,
+    ta: TootAccount,
+    jsonObject: JsonObject,
+    tokenInfo: JsonObject,
+): Boolean {
+    // アカウント追加時
+    val user = Acct.parse(ta.username, apDomain ?: apiHost)
+
+    val rowId = SavedAccount.insert(
+        acct = user.ascii,
+        host = apiHost.ascii,
+        domain = (apDomain ?: apiHost).ascii,
+        account = jsonObject,
+        token = tokenInfo,
+        misskeyVersion = TootInstance.parseMisskeyVersion(tokenInfo)
+    )
+    val account = SavedAccount.loadAccount(applicationContext, rowId)
+    if (account == null) {
+        showToast(false, "loadAccount failed.")
+        return false
+    }
+
+    var bModified = false
+
+    if (account.loginAccount?.locked == true) {
+        bModified = true
+        account.visibility = TootVisibility.PrivateFollowers
+    }
+
+    if (!account.isMisskey) {
+        val source = ta.source
+        if (source != null) {
+            val privacy = TootVisibility.parseMastodon(source.privacy)
+            if (privacy != null) {
+                bModified = true
+                account.visibility = privacy
+            }
+
+            // XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+            // 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
+        }
+
+        if (bModified) {
+            account.saveSetting()
+        }
+    }
+
+    // 適当にカラムを追加する
+    addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
+    if (SavedAccount.count == 1) {
+        addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
+        addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
+        addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
+    }
+
+    // 通知の更新が必要かもしれない
+    PollingWorker.queueUpdateNotification(applicationContext)
+    showToast(false, R.string.account_confirmed)
+    return true
 }
 
 fun ActMain.handleSharedIntent(intent: Intent) {

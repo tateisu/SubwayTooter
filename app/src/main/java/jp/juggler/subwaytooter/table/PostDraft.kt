@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.table
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
@@ -14,26 +15,19 @@ class PostDraft {
     var json: JsonObject? = null
     var hash: String? = null
 
-    class ColIdx(cursor: Cursor) {
-        internal val idx_id: Int
-        internal val idx_time_save: Int
-        internal val idx_json: Int
-        internal val idx_hash: Int
-
-        init {
-            idx_id = cursor.getColumnIndex(COL_ID)
-            idx_time_save = cursor.getColumnIndex(COL_TIME_SAVE)
-            idx_json = cursor.getColumnIndex(COL_JSON)
-            idx_hash = cursor.getColumnIndex(COL_HASH)
-        }
-    }
-
     fun delete() {
         try {
             App1.database.delete(table, "$COL_ID=?", arrayOf(id.toString()))
         } catch (ex: Throwable) {
             log.e(ex, "delete failed.")
         }
+    }
+
+    class ColIdx(cursor: Cursor) {
+        val idx_id = cursor.getColumnIndex(COL_ID)
+        val idx_time_save = cursor.getColumnIndex(COL_TIME_SAVE)
+        val idx_json = cursor.getColumnIndex(COL_JSON)
+        val idx_hash = cursor.getColumnIndex(COL_HASH)
     }
 
     companion object : TableCompanion {
@@ -77,9 +71,7 @@ class PostDraft {
         }
 
         fun save(now: Long, json: JsonObject) {
-
             deleteOld(now)
-
             try {
                 // make hash
                 val hash = StringBuilder().also { sb ->
@@ -118,8 +110,10 @@ class PostDraft {
             return false
         }
 
-        fun createCursor(): Cursor? {
-            return try {
+        // caller must close the cursor
+        @SuppressLint("Recycle")
+        fun createCursor(): Cursor? =
+            try {
                 App1.database.query(
                     table,
                     null,
@@ -133,7 +127,6 @@ class PostDraft {
                 log.trace(ex, "createCursor failed.")
                 null
             }
-        }
 
         fun loadFromCursor(cursor: Cursor, colIdxArg: ColIdx?, position: Int): PostDraft? {
             return if (!cursor.moveToPosition(position)) {

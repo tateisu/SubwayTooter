@@ -643,13 +643,13 @@ class SavedAccount(
             return false
         }
 
-        val count: Long
+        val count: Int
             get() {
                 try {
                     App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
                         .use { cursor ->
                             if (cursor.moveToNext()) {
-                                return cursor.getLong(0)
+                                return cursor.getInt(0)
                             }
                         }
                 } catch (ex: Throwable) {
@@ -658,7 +658,7 @@ class SavedAccount(
                     errorEx(ex, "SavedAccount.getCount failed.")
                 }
 
-                return 0L
+                return 0
             }
 
         fun isNicoru(acct: Acct): Boolean {

@@ -38,7 +38,7 @@ class JobItem(
     val abWorkerAttached = AtomicBoolean()
 
     val bPollingRequired = AtomicBoolean(false)
-    lateinit var mutedApp: HashSet<String>
+    private lateinit var mutedApp: HashSet<String>
     lateinit var mutedWord: WordTrieTree
     lateinit var favMuteSet: HashSet<Acct>
     var bPollingComplete = false

@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.text.method.LinkMovementMethod

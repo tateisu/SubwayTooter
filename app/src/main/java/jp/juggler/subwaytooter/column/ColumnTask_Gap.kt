@@ -5,7 +5,6 @@ import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
-import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.columnviewholder.getListItemOffset
 import jp.juggler.subwaytooter.columnviewholder.setListItemTop
 import jp.juggler.subwaytooter.notification.PollingWorker
@@ -151,12 +150,12 @@ class ColumnTask_Gap(
                     try {
                         restoreY = holder.getListItemOffset(restoreIdx)
                     } catch (ex: IndexOutOfBoundsException) {
-                        Column.log.w(ex, "getListItemOffset failed.")
+                        log.w(ex, "getListItemOffset failed.")
                         restoreIdx = position
                         try {
                             restoreY = holder.getListItemOffset(restoreIdx)
                         } catch (ex2: IndexOutOfBoundsException) {
-                            Column.log.w(ex2, "getListItemOffset failed.")
+                            log.w(ex2, "getListItemOffset failed.")
                             restoreIdx = -1
                         }
                     }

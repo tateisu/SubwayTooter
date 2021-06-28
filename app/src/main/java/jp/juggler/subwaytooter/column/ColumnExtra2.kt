@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Environment
 import androidx.annotation.RawRes
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.column.Column.Companion.log
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -13,6 +12,8 @@ import jp.juggler.subwaytooter.columnviewholder.saveScrollPosition
 import jp.juggler.util.*
 import java.io.File
 import java.util.*
+
+private val log = LogCategory("ColumnExtra2")
 
 val Column.isMastodon: Boolean
     get() = accessInfo.isMastodon
@@ -170,7 +171,7 @@ suspend fun Column.updateRelation(
 ) {
     if (accessInfo.isPseudo) return
 
-    val env = UpdateRelationEnv(this)
+    val env = UserRelationLoader(this)
 
     env.add(whoRef)
 

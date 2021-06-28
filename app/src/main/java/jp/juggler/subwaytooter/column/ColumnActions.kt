@@ -8,9 +8,12 @@ import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.AdapterChange
 import jp.juggler.util.AdapterChangeType
+import jp.juggler.util.LogCategory
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.set
+
+private val log = LogCategory("ColumnActions")
 
 /*
     なんらかアクションを行った後にカラムデータを更新する処理など
@@ -377,12 +380,12 @@ fun replaceConversationSummary(
             changeList.add(AdapterChange(AdapterChangeType.RangeChange, i, 1))
             listData[i] = newItem
             removeSet.add(newItem.id)
-            Column.log.d("replaceConversationSummary: in-place update")
+            log.d("replaceConversationSummary: in-place update")
         } else {
             // 投稿が異なるので古い方を削除して、リストの順序を変える
             changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
             listData.removeAt(i)
-            Column.log.d("replaceConversationSummary: order change")
+            log.d("replaceConversationSummary: order change")
         }
     }
 

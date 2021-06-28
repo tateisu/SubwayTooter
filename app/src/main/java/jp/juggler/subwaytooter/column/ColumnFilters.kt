@@ -11,11 +11,10 @@ import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.AdapterChange
-import jp.juggler.util.AdapterChangeType
-import jp.juggler.util.WordTrieTree
-import jp.juggler.util.launchMain
+import jp.juggler.util.*
 import java.util.regex.Pattern
+
+private val log = LogCategory("ColumnFilters")
 
 val Column.isFilterEnabled: Boolean
     get() = withAttachment ||
@@ -152,7 +151,7 @@ fun Column.initFilter() {
                     }
                 }
         } catch (ex: Throwable) {
-            Column.log.trace(ex)
+            log.trace(ex)
         }
     }
 
@@ -177,7 +176,7 @@ fun Column.isFiltered(status: TootStatus): Boolean {
     val filterTrees = keywordFilterTrees
     if (filterTrees != null) {
         if (status.isKeywordFiltered(accessInfo, filterTrees.treeIrreversible)) {
-            Column.log.d("status filtered by treeIrreversible")
+            log.d("status filtered by treeIrreversible")
             return true
         }
 
@@ -297,7 +296,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
             }
         }
     ) {
-        Column.log.d("isFiltered: ${item.type} notification filtered.")
+        log.d("isFiltered: ${item.type} notification filtered.")
         return true
     }
 
@@ -305,7 +304,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
     val filterTrees = keywordFilterTrees
     if (status != null && filterTrees != null) {
         if (status.isKeywordFiltered(accessInfo, filterTrees.treeIrreversible)) {
-            Column.log.d("isFiltered: status muted by treeIrreversible.")
+            log.d("isFiltered: status muted by treeIrreversible.")
             return true
         }
 
@@ -315,7 +314,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
     if (checkLanguageFilter(status)) return true
 
     if (status?.checkMuted() == true) {
-        Column.log.d("isFiltered: status muted by in-app muted words.")
+        log.d("isFiltered: status muted by in-app muted words.")
         return true
     }
 
@@ -334,7 +333,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
         TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
             val who = item.account
             if (who != null && favMuteSet?.contains(accessInfo.getFullAcct(who)) == true) {
-                Column.log.d("${accessInfo.getFullAcct(who)} is in favMuteSet.")
+                log.d("${accessInfo.getFullAcct(who)} is in favMuteSet.")
                 return true
             }
         }
@@ -424,7 +423,7 @@ fun reloadFilter(context: Context, accessInfo: SavedAccount) {
         }
 
         resultList?.let {
-            Column.log.d("update filters for ${accessInfo.acct.pretty}")
+            log.d("update filters for ${accessInfo.acct.pretty}")
             for (column in App1.getAppState(context).columnList) {
                 if (column.accessInfo == accessInfo) {
                     column.onFiltersChanged2(it)

@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-
 import android.app.Dialog
 import android.net.Uri
 import android.view.View

@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser

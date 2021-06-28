@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.util.notEmpty
 import jp.juggler.util.vg

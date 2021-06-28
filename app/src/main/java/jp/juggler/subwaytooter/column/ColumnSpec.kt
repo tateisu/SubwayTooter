@@ -4,6 +4,9 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.LogCategory
+
+private val log = LogCategory("ColumnSpec")
 
 object ColumnSpec {
 
@@ -161,7 +164,7 @@ object ColumnSpec {
                 else -> true
             }
         } catch (ex: Throwable) {
-            Column.log.trace(ex)
+            log.trace(ex)
             false
         }
     }

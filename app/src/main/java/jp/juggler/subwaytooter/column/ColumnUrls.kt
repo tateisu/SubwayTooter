@@ -12,6 +12,8 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.syncAccountByAcct
 import jp.juggler.util.*
 
+private val log = LogCategory("ColumnUrls")
+
 private const val PATH_HOME = "/api/v1/timelines/home?limit=${ApiPath.READ_LIMIT}"
 private const val PATH_LOCAL = "/api/v1/timelines/public?local=true&limit=${ApiPath.READ_LIMIT}"
 
@@ -207,7 +209,7 @@ suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
             val (result, whoRef) = client.syncAccountByAcct(accessInfo, hashtagAcct)
             result ?: return null // cancelled.
             if (whoRef == null) {
-                Column.log.w("makeHashtagAcctUrl: ${result.error ?: "?"}")
+                log.w("makeHashtagAcctUrl: ${result.error ?: "?"}")
                 return null
             }
             profileId = whoRef.get().id
@@ -350,7 +352,6 @@ fun Column.makeProfileStatusesUrl(profileId: EntityId?): String {
     if (dontShowReply) path += "&exclude_replies=1"
     return path
 }
-
 
 fun StringBuilder.appendHashtagExtra(column: Column): StringBuilder {
     val limit = (Column.HASHTAG_ELLIPSIZE * 2 - kotlin.math.min(length, Column.HASHTAG_ELLIPSIZE)) / 3

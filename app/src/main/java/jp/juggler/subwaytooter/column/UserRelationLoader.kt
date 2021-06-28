@@ -6,11 +6,15 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctSet
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.util.LogCategory
 import jp.juggler.util.toJsonArray
 import jp.juggler.util.toPostRequestBuilder
 import java.util.HashSet
 
-class UpdateRelationEnv(val column: Column) {
+class UserRelationLoader(val column: Column) {
+    companion object {
+        private val log = LogCategory("UserRelationLoader")
+    }
 
     val whoSet = HashSet<EntityId>()
     val acctSet = HashSet<String>()
@@ -63,7 +67,7 @@ class UpdateRelationEnv(val column: Column) {
                     UserRelation.saveListMisskey(now, column.accessInfo.db_id, whoList, start, step)
                     start += step
                 }
-                Column.log.d("updateRelation: update $end relations.")
+                log.d("updateRelation: update $end relations.")
             }
 
             // 2018/11/1 Misskeyにもリレーション取得APIができた
@@ -108,7 +112,7 @@ class UpdateRelationEnv(val column: Column) {
                         UserRelation.saveListMisskeyRelationApi(now, column.accessInfo.db_id, list)
                     }
                 }
-                Column.log.d("updateRelation: update $n relations.")
+                log.d("updateRelation: update $n relations.")
             }
         } else {
             // アカウントIDの集合からRelationshipを取得してデータベースに記録する
@@ -137,7 +141,7 @@ class UpdateRelationEnv(val column: Column) {
                         list
                     )
                 }
-                Column.log.d("updateRelation: update $n relations.")
+                log.d("updateRelation: update $n relations.")
             }
         }
 
@@ -156,7 +160,7 @@ class UpdateRelationEnv(val column: Column) {
                 AcctSet.saveList(now, acctList, n, length)
                 n += length
             }
-            Column.log.d("updateRelation: update $n acct.")
+            log.d("updateRelation: update $n acct.")
         }
 
         // 出現したタグをデータベースに記録する
@@ -174,7 +178,7 @@ class UpdateRelationEnv(val column: Column) {
                 TagSet.saveList(now, tagList, n, length)
                 n += length
             }
-            Column.log.d("updateRelation: update $n tag.")
+            log.d("updateRelation: update $n tag.")
         }
     }
 }

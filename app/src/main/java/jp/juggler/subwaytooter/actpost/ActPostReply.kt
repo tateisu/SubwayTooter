@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost

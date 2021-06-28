@@ -6,9 +6,8 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
-import jp.juggler.subwaytooter.column.*
-import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.util.OpenSticker
 import jp.juggler.util.*
 import java.util.*

@@ -7,10 +7,13 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
+import jp.juggler.util.LogCategory
 import jp.juggler.util.getAdaptiveRippleDrawable
 import jp.juggler.util.notZero
 import jp.juggler.util.showToast
 import org.jetbrains.anko.backgroundDrawable
+
+private val log = LogCategory("ColumnExtra1")
 
 ///////////////////////////////////////////////////
 // ViewHolderとの連携
@@ -155,19 +158,19 @@ fun Column.onActivityStart() {
 
     // 破棄されたカラムなら何もしない
     if (isDispose.get()) {
-        Column.log.d("onStart: column was disposed.")
+        log.d("onStart: column was disposed.")
         return
     }
 
     // 未初期化なら何もしない
     if (!bFirstInitialized) {
-        Column.log.d("onStart: column is not initialized.")
+        log.d("onStart: column is not initialized.")
         return
     }
 
     // 初期ロード中なら何もしない
     if (bInitialLoading) {
-        Column.log.d("onStart: column is in initial loading.")
+        log.d("onStart: column is in initial loading.")
         return
     }
 
@@ -181,7 +184,7 @@ fun Column.onActivityStart() {
     // 始端リフレッシュの最中だった
     // リフレッシュ終了時に自動でストリーミング開始するはず
     if (bRefreshingTop) {
-        Column.log.d("onStart: bRefreshingTop is true.")
+        log.d("onStart: bRefreshingTop is true.")
         return
     }
 
@@ -191,7 +194,7 @@ fun Column.onActivityStart() {
         !dontAutoRefresh
     ) {
         // リフレッシュしてからストリーミング開始
-        Column.log.d("onStart: start auto refresh.")
+        log.d("onStart: start auto refresh.")
         startRefresh(bSilent = true, bBottom = false)
     } else if (isSearchColumn) {
         // 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい

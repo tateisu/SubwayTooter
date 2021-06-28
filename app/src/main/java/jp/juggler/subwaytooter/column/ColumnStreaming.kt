@@ -4,30 +4,28 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.columnviewholder.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.StreamStatus
 import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.util.AdapterChange
-import jp.juggler.util.AdapterChangeType
-import jp.juggler.util.notEmpty
-import jp.juggler.util.runOnMainLooper
+import jp.juggler.util.*
 import kotlin.math.max
 import kotlin.math.min
+
+private val log = LogCategory("ColumnStreaming")
 
 // 別スレッドから呼ばれるが大丈夫か
 fun Column.canStreamingState() = when {
     // 未初期化なら何もしない
     !bFirstInitialized -> {
-        if (StreamManager.traceDelivery) Column.log.v("canStartStreaming: column is not initialized.")
+        if (StreamManager.traceDelivery) log.v("canStartStreaming: column is not initialized.")
         false
     }
 
     // 初期ロード中なら何もしない
     bInitialLoading -> {
-        if (StreamManager.traceDelivery) Column.log.v("canStartStreaming: is in initial loading.")
+        if (StreamManager.traceDelivery) log.v("canStartStreaming: is in initial loading.")
         false
     }
 
@@ -109,7 +107,7 @@ fun Column.mergeStreamingMessage() {
         } catch (ex: Throwable) {
             // IDを取得できないタイプのオブジェクトだった
             // ストリームに来るのは通知かステータスだから、多分ここは通らない
-            Column.log.trace(ex)
+            log.trace(ex)
         }
     }
 
@@ -136,7 +134,7 @@ fun Column.mergeStreamingMessage() {
                 restoreIdx = holder.findFirstVisibleListItem()
                 restoreY = holder.getListItemOffset(restoreIdx)
             } catch (ex: IndexOutOfBoundsException) {
-                Column.log.w(ex, "findFirstVisibleListItem failed.")
+                log.w(ex, "findFirstVisibleListItem failed.")
                 restoreIdx = -2
                 restoreY = 0
             }
@@ -201,7 +199,7 @@ private fun Column.addGapAfterStreaming(listNew: ArrayList<TimelineItem>, newIdM
             }
         }
     } catch (ex: Throwable) {
-        Column.log.e(ex, "can't put gap.")
+        log.e(ex, "can't put gap.")
     }
 }
 
@@ -220,24 +218,24 @@ private fun Column.scrollAfterStreaming(added: Int, holderSp: ScrollPosition?, r
         when {
             holderSp == null -> {
                 // スクロール位置が先頭なら先頭にする
-                Column.log.d("mergeStreamingMessage: has VH. missing scroll position.")
+                log.d("mergeStreamingMessage: has VH. missing scroll position.")
                 viewHolder?.scrollToTop()
             }
 
             holderSp.isHead -> {
                 // スクロール位置が先頭なら先頭にする
-                Column.log.d("mergeStreamingMessage: has VH. keep head. $holderSp")
+                log.d("mergeStreamingMessage: has VH. keep head. $holderSp")
                 holder.setScrollPosition(ScrollPosition())
             }
 
             restoreIdx < -1 -> {
                 // 可視範囲の検出に失敗
-                Column.log.d("mergeStreamingMessage: has VH. can't get visible range.")
+                log.d("mergeStreamingMessage: has VH. can't get visible range.")
             }
 
             else -> {
                 // 現在の要素が表示され続けるようにしたい
-                Column.log.d("mergeStreamingMessage: has VH. added=$added")
+                log.d("mergeStreamingMessage: has VH. added=$added")
                 holder.setListItemTop(restoreIdx + added, restoreY)
             }
         }
@@ -251,7 +249,7 @@ fun Column.runOnMainLooperForStreamingEvent(proc: () -> Unit) {
 }
 
 fun Column.onStreamStatusChanged(status: StreamStatus) {
-    Column.log.d(
+    log.d(
         "onStreamStatusChanged status=$status, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${accessInfo.acct}/${
             getColumnName(true)
         }"
@@ -268,7 +266,7 @@ fun Column.onStreamStatusChanged(status: StreamStatus) {
 }
 
 fun Column.onStreamingTimelineItem(item: TimelineItem) {
-    if (StreamManager.traceDelivery) Column.log.v("${accessInfo.acct} onTimelineItem")
+    if (StreamManager.traceDelivery) log.v("${accessInfo.acct} onTimelineItem")
     if (!canHandleStreamingMessage()) return
 
     when (item) {
@@ -368,7 +366,7 @@ fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {
     // （でないとリアクションの2重カウントなどが発生してしまう)
     val myId = EntityId.from(accessInfo.token_info, TootApiClient.KEY_USER_ID)
     if (myId == null) {
-        Column.log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
+        log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
     }
 
     val byMe = myId == ev.userId

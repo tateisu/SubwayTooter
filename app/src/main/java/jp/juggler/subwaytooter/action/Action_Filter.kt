@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
-import jp.juggler.subwaytooter.onFilterDeleted
+import jp.juggler.subwaytooter.column.onFilterDeleted
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.launchMain
 import jp.juggler.util.showToast

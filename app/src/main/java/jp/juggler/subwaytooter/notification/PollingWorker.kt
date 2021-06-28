@@ -658,7 +658,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
     // return false if app data import started.
     fun onStartTask(taskId: TaskId): Boolean {
-        @Suppress("NON_EXHAUSTIVE_WHEN")
+        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (taskId) {
             TaskId.AppDataImportBefore -> {
 

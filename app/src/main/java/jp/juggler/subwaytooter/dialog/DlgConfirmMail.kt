@@ -42,7 +42,7 @@ class DlgConfirmMail(
             etEmail.isEnabledAlpha = isChecked
         }
 
-        arrayOf(
+        intArrayOf(
             R.id.btnCancel,
             R.id.btnOk
         ).forEach {

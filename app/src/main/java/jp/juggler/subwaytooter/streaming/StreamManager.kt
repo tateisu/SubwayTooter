@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.AppState
-import jp.juggler.subwaytooter.Column
+import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient

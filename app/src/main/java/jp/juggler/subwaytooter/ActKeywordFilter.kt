@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -42,7 +43,7 @@ class ActKeywordFilter
         internal const val STATE_EXPIRE_SPINNER = "expire_spinner"
         internal const val STATE_EXPIRE_AT = "expire_at"
 
-        private val expire_duration_list = arrayOf(
+        private val expire_duration_list = intArrayOf(
             -1, // dont change
             0, // unlimited
             1800,

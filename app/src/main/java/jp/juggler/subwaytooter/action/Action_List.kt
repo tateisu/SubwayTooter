@@ -2,11 +2,15 @@ package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.MisskeyAntenna
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.onListListUpdated
+import jp.juggler.subwaytooter.column.onListNameUpdated
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput

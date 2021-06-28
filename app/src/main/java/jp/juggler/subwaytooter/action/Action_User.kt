@@ -6,8 +6,10 @@ import android.view.Gravity
 import android.view.View
 import android.widget.*
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
@@ -19,7 +21,6 @@ import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
 import kotlinx.coroutines.*
 import okhttp3.Request
-import java.lang.StringBuilder
 import java.util.*
 
 private val log = LogCategory("Action_User")
@@ -271,14 +272,11 @@ fun ActMain.userMuteConfirm(
     val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
     val hasMuteNotification = !accessInfo.isMisskey && !accessInfo.isPseudo
     cbMuteNotification.isChecked = hasMuteNotification
-    cbMuteNotification.vg(hasMuteNotification)?.apply {
-        setText(R.string.confirm_mute_notification_for_user)
-    }
+    cbMuteNotification.vg(hasMuteNotification)
+        ?.setText(R.string.confirm_mute_notification_for_user)
 
     launchMain {
-
         val spMuteDuration: Spinner = view.findViewById(R.id.spMuteDuration)
-
         val hasMuteDuration = try {
             when {
                 accessInfo.isMisskey || accessInfo.isPseudo -> false

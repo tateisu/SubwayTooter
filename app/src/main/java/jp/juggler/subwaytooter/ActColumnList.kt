@@ -15,6 +15,8 @@ import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.column.ColumnEncoder
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.util.*
 import java.util.*
 

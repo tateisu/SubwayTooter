@@ -4,6 +4,9 @@ import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.fireShowContent
+import jp.juggler.subwaytooter.column.updateEmojiReactionByApiResponse
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.dialog.pickAccount

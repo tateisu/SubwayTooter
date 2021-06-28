@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.ColumnViewHolder
+import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount

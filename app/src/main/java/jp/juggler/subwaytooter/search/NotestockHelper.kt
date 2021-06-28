@@ -1,13 +1,15 @@
 package jp.juggler.subwaytooter.search
 
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.addWithFilterStatus
+import jp.juggler.subwaytooter.column.addWithFilterStatus
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.column.ColumnTask_Loading
+import jp.juggler.subwaytooter.column.ColumnTask_Refresh
 import jp.juggler.util.*
 import okhttp3.Request
 

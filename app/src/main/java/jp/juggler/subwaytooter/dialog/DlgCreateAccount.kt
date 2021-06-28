@@ -54,7 +54,7 @@ class DlgCreateAccount(
     init {
         viewRoot.findViewById<TextView>(R.id.tvInstance).text = apiHost.pretty
 
-        arrayOf(
+        intArrayOf(
             R.id.btnRules,
             R.id.btnTerms,
             R.id.btnCancel,

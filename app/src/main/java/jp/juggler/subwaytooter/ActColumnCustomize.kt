@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.column.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor

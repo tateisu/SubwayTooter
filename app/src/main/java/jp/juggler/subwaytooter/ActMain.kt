@@ -16,10 +16,19 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.actmain.*
+import jp.juggler.subwaytooter.actmain.TabletColumnViewHolder
+import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
+import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
+import jp.juggler.subwaytooter.columnviewholder.ViewHolderHeaderBase
+import jp.juggler.subwaytooter.columnviewholder.ViewHolderItem
 import jp.juggler.subwaytooter.dialog.*
+import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
+import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
@@ -59,7 +68,7 @@ class ActMain : AppCompatActivity(),
         var refActMain: WeakReference<ActMain>? = null
 
         // 外部からインテントを受信した後、アカウント選択中に画面回転したらアカウント選択からやり直す
-        internal var sent_intent2: Intent? = null
+        internal var sharedIntent2: Intent? = null
 
         // アプリ設定のキャッシュ
         var boostButtonSize = 1
@@ -104,7 +113,7 @@ class ActMain : AppCompatActivity(),
     // 画面上のUI操作で生成されて
     // onPause,onPageDestroy 等のタイミングで閉じられる
     // 状態保存の必要なし
-    internal var listItemPopup: StatusButtonsPopup? = null
+    internal var popupStatusButtons: StatusButtonsPopup? = null
 
     var phoneViews: PhoneViews? = null
     var tabletViews: TabletViews? = null
@@ -117,13 +126,13 @@ class ActMain : AppCompatActivity(),
 
     var dlgPrivacyPolicy: WeakReference<Dialog>? = null
 
-    var quickTootVisibility: TootVisibility = TootVisibility.AccountSetting
+    var quickPostVisibility: TootVisibility = TootVisibility.AccountSetting
 
     lateinit var llFormRoot: LinearLayout
-    lateinit var llQuickTootBar: LinearLayout
-    lateinit var etQuickToot: MyEditText
+    lateinit var llQuickPostBar: LinearLayout
+    lateinit var etQuickPost: MyEditText
     lateinit var btnQuickToot: ImageButton
-    lateinit var btnQuickTootMenu: ImageButton
+    lateinit var btnQuickPostMenu: ImageButton
     lateinit var llEmpty: View
     lateinit var llColumnStrip: ColumnStripLinearLayout
     lateinit var svColumnStrip: HorizontalScrollView
@@ -197,27 +206,27 @@ class ActMain : AppCompatActivity(),
 
     val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
         override var visibility: TootVisibility
-            get() = quickTootVisibility
+            get() = quickPostVisibility
             set(value) {
-                if (value != quickTootVisibility) {
-                    quickTootVisibility = value
+                if (value != quickPostVisibility) {
+                    quickPostVisibility = value
                     pref.edit().put(PrefS.spQuickTootVisibility, value.id.toString()).apply()
-                    showQuickTootVisibility()
+                    showQuickPostVisibility()
                 }
             }
 
         override fun onMacro(text: String) {
-            val editable = etQuickToot.text
+            val editable = etQuickPost.text
             if (editable?.isNotEmpty() == true) {
-                val start = etQuickToot.selectionStart
-                val end = etQuickToot.selectionEnd
+                val start = etQuickPost.selectionStart
+                val end = etQuickPost.selectionEnd
                 editable.replace(start, end, text)
-                etQuickToot.requestFocus()
-                etQuickToot.setSelection(start + text.length)
+                etQuickPost.requestFocus()
+                etQuickPost.setSelection(start + text.length)
             } else {
-                etQuickToot.setText(text)
-                etQuickToot.requestFocus()
-                etQuickToot.setSelection(text.length)
+                etQuickPost.setText(text)
+                etQuickPost.requestFocus()
+                etQuickPost.setSelection(text.length)
             }
         }
     })
@@ -317,7 +326,7 @@ class ActMain : AppCompatActivity(),
     val arActPost = activityResultHandler { ar ->
         ar?.data?.let { data ->
             if (ar.resultCode == Activity.RESULT_OK) {
-                etQuickToot.setText("")
+                etQuickPost.setText("")
                 onCompleteActPost(data)
             }
         }
@@ -385,7 +394,7 @@ class ActMain : AppCompatActivity(),
         PollingWorker.queueUpdateNotification(this)
 
         if (savedInstanceState != null) {
-            sent_intent2?.let { handleSentIntent(it) }
+            sharedIntent2?.let { handleSharedIntent(it) }
         }
 
         checkPrivacyPolicy()
@@ -560,7 +569,7 @@ class ActMain : AppCompatActivity(),
 
         completionHelper.closeAcctPopup()
 
-        closeListItemPopup()
+        closePopup()
 
         appState.streamManager.onScreenStop()
 
@@ -617,7 +626,7 @@ class ActMain : AppCompatActivity(),
         // 外部から受け取ったUriの処理
         val intent = ActCallback.sent_intent.getAndSet(null)
         if (intent != null) {
-            handleSentIntent(intent)
+            handleSharedIntent(intent)
         }
     }
 
@@ -762,7 +771,7 @@ class ActMain : AppCompatActivity(),
         when (v.id) {
             R.id.btnToot -> openPost()
             R.id.btnQuickToot -> performQuickPost(null)
-            R.id.btnQuickTootMenu -> performQuickTootMenu()
+            R.id.btnQuickTootMenu -> toggleQuickPostMenu()
             R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.openDrawer(GravityCompat.START)
             }
@@ -885,24 +894,24 @@ class ActMain : AppCompatActivity(),
         vFooterDivider2 = findViewById(R.id.vFooterDivider2)
         llColumnStrip = findViewById(R.id.llColumnStrip)
         svColumnStrip = findViewById(R.id.svColumnStrip)
-        llQuickTootBar = findViewById(R.id.llQuickTootBar)
-        etQuickToot = findViewById(R.id.etQuickToot)
+        llQuickPostBar = findViewById(R.id.llQuickTootBar)
+        etQuickPost = findViewById(R.id.etQuickToot)
         btnQuickToot = findViewById(R.id.btnQuickToot)
-        btnQuickTootMenu = findViewById(R.id.btnQuickTootMenu)
+        btnQuickPostMenu = findViewById(R.id.btnQuickTootMenu)
 
         btnToot.setOnClickListener(this)
         btnMenu.setOnClickListener(this)
         btnQuickToot.setOnClickListener(this)
-        btnQuickTootMenu.setOnClickListener(this)
+        btnQuickPostMenu.setOnClickListener(this)
     }
 
     internal fun initUI() {
         setContentView(R.layout.act_main)
         App1.initEdgeToEdge(this)
 
-        quickTootVisibility =
+        quickPostVisibility =
             TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility(pref))
-                ?: quickTootVisibility
+                ?: quickPostVisibility
 
         Column.reloadDefaultColor(this, pref)
 
@@ -922,7 +931,7 @@ class ActMain : AppCompatActivity(),
 
         justifyWindowContentPortrait()
 
-        initUIQuickToot()
+        initUIQuickPost()
 
         svColumnStrip.isHorizontalFadingEdgeEnabled = true
 

@@ -19,6 +19,7 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.model.GlideUrl
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache
@@ -432,7 +433,7 @@ class App1 : Application() {
                 log.trace(ex)
                 // java.lang.NoSuchFieldError:
                 // at jp.juggler.subwaytooter.App1$Companion.sound (App1.kt:544)
-                // at jp.juggler.subwaytooter.Column$startRefresh$task$1.onPostExecute (Column.kt:2432)
+                // at jp.juggler.subwaytooter.column.Column$startRefresh$task$1.onPostExecute (Column.kt:2432)
             }
         }
 

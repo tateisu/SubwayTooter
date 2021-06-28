@@ -84,6 +84,7 @@ internal class SafeToastContext(base: Context, private val toast: Toast) : Conte
     }
 }
 
+@Suppress("TooManyFunctions")
 class ToastCompat private constructor(
     context: Context,
     private val base: Toast

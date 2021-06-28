@@ -405,14 +405,14 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             setDropDownViewResource(R.layout.lv_spinner_dropdown)
         }
 
-        listEtFieldName = arrayOf(
+        listEtFieldName = intArrayOf(
             R.id.etFieldName1,
             R.id.etFieldName2,
             R.id.etFieldName3,
             R.id.etFieldName4
         ).map { findViewById(it) }
 
-        listEtFieldValue = arrayOf(
+        listEtFieldValue = intArrayOf(
             R.id.etFieldValue1,
             R.id.etFieldValue2,
             R.id.etFieldValue3,

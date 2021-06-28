@@ -3,8 +3,14 @@ package jp.juggler.subwaytooter.action
 import android.content.Intent
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.reloadAccountSetting
+import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.findStatus
+import jp.juggler.subwaytooter.column.onScheduleDeleted
+import jp.juggler.subwaytooter.column.onStatusRemoved
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.pickAccount

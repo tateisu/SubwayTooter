@@ -1,15 +1,15 @@
 package jp.juggler.subwaytooter.action
 
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ColumnType
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.addColumn
+import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost

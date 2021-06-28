@@ -7,6 +7,9 @@ import android.util.DisplayMetrics
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.app.ShareCompat
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.currentPostTarget
+import jp.juggler.subwaytooter.actmain.quickPostText
+import jp.juggler.subwaytooter.actpost.updateText
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootScheduled
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -112,7 +115,7 @@ fun ActMain.openActPostImpl(
 
 // 投稿画面を開く。初期テキストを指定する
 fun ActMain.openPost(
-    initialText: String? = quickTootText,
+    initialText: String? = quickPostText,
 ) {
     initialText ?: return
 

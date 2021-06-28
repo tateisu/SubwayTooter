@@ -77,10 +77,10 @@ class ActText : AppCompatActivity() {
 
             R.id.btnMuteWord -> muteWord()
 
-            R.id.btnTranslate -> CustomShare.invoke(
+            R.id.btnTranslate -> CustomShare.invokeText(
+                CustomShareTarget.Translate,
                 this,
                 selection,
-                CustomShareTarget.Translate
             )
 
             R.id.btnSearchTS -> searchToot(RESULT_SEARCH_TS)

@@ -6,8 +6,8 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.onStatusRemoved
-import jp.juggler.subwaytooter.reloadFilter
+import jp.juggler.subwaytooter.column.onStatusRemoved
+import jp.juggler.subwaytooter.column.reloadFilter
 import jp.juggler.util.*
 import okhttp3.Response
 import okhttp3.WebSocket

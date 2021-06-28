@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.canStreamingType
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.canStreamingType
 
 // ストリーミング接続の状態
 enum class StreamStatus {

@@ -185,7 +185,7 @@ class TaskRunner(
 
     private fun beforePolling(): Boolean {
         // タスクによってはポーリング前にすることがある
-        @Suppress("NON_EXHAUSTIVE_WHEN")
+        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (taskId) {
 
             TaskId.BootCompleted ->

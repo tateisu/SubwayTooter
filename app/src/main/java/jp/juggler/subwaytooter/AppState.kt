@@ -11,6 +11,10 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnEncoder
+import jp.juggler.subwaytooter.column.getBackgroundImageDir
+import jp.juggler.subwaytooter.column.onMuteUpdated
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -80,6 +84,7 @@ class AppState(
                         } else {
                             log.d("saveColumnList: rename ok: $outFile")
                         }
+                        Unit
                     } finally {
                         tmpFile.delete() // ignore return value
                     }

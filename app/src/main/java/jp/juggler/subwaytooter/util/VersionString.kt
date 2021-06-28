@@ -61,8 +61,10 @@ class VersionString(src: String?) : Comparable<VersionString> {
 
                         if (DUMP) {
                             if (m.find(next)) {
+                                @Suppress("ForbiddenMethodCall")
                                 println("next=$next, match_start=${m.start()}")
                             } else {
+                                @Suppress("ForbiddenMethodCall")
                                 println("next=$next, not match.")
                             }
                         }
@@ -133,7 +135,10 @@ class VersionString(src: String?) : Comparable<VersionString> {
             loop@ while (true) {
                 val ao = if (idx >= a.nodeList.size) null else a.nodeList[idx]
                 val bo = if (idx >= b.nodeList.size) null else b.nodeList[idx]
-                if (DUMP) println("a=$ao,b=$bo")
+                if (DUMP) {
+                    @Suppress("ForbiddenMethodCall")
+                    println("a=$ao,b=$bo")
+                }
 
                 val i = when {
                     ao == null -> {

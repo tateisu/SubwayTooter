@@ -97,10 +97,10 @@ object CustomShare {
         return Pair(label, icon)
     }
 
-    fun invoke(
+    fun invokeText(
+        target: CustomShareTarget,
         context: Context,
         text: String,
-        target: CustomShareTarget,
     ) {
         // convert "pkgName/className" string to ComponentName object.
         val cn = getCustomShareComponentName(App1.pref, target)
@@ -119,11 +119,22 @@ object CustomShare {
             }
             return
         }
+
+        // Google翻訳は共有したテキストの先頭にURLがあるとGoogle翻訳のページをブラウザに飛ばすようになって、
+        // しかもFirefoxだと開けなくて全然ダメなので対策する
+        val textSanitized = if (cnStr.startsWith("com.google.android.apps.translate") &&
+            text.startsWith("http")
+        ) {
+            "■ $text"
+        } else {
+            text
+        }
+
         try {
             val intent = Intent()
             intent.action = Intent.ACTION_SEND
             intent.type = "text/plain"
-            intent.putExtra(Intent.EXTRA_TEXT, text)
+            intent.putExtra(Intent.EXTRA_TEXT, textSanitized)
             intent.component = cn
             context.startActivity(intent)
         } catch (ex: ActivityNotFoundException) {
@@ -131,15 +142,15 @@ object CustomShare {
             context.showToast(true, R.string.custom_share_app_not_found)
         } catch (ex: Throwable) {
             log.trace(ex)
-            context.showToast(ex, "invoke() failed.")
+            context.showToast(ex, "invokeText() failed.")
         }
     }
 
-    fun invoke(
+    fun invokeStatusText(
+        target: CustomShareTarget,
         context: Context,
         accessInfo: SavedAccount,
         status: TootStatus?,
-        target: CustomShareTarget,
     ) {
         status ?: return
         try {
@@ -149,12 +160,11 @@ object CustomShare {
                 context.showToast(true, R.string.custom_share_app_not_found)
                 return
             }
-
             val sv = TootTextEncoder.encodeStatusForTranslate(context, accessInfo, status)
-            invoke(context, sv, target)
+            invokeText(target, context, sv)
         } catch (ex: Throwable) {
             log.trace(ex)
-            context.showToast(ex, "invoke() failed.")
+            context.showToast(ex, "invokeStatusText() failed.")
         }
     }
 

@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
-import jp.juggler.subwaytooter.ColumnViewHolder
+import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 
 class ScrollPosition {
 

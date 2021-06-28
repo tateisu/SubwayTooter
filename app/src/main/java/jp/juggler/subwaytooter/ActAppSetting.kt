@@ -23,6 +23,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.appsetting.AppDataExporter
+import jp.juggler.subwaytooter.appsetting.AppSettingItem
+import jp.juggler.subwaytooter.appsetting.SettingType
+import jp.juggler.subwaytooter.appsetting.appSettingRoot
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.AcctColor

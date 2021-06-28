@@ -13,6 +13,7 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import jp.juggler.subwaytooter.App1
@@ -106,7 +107,7 @@ private fun mixColor(col1: Int, col2: Int): Int = Color.rgb(
 
 fun Context.setSwitchColor(
     pref: SharedPreferences,
-    root: View?
+    root: View?,
 ) {
     val colorBg = attrColor(R.attr.colorWindowBackground)
     val colorOn = PrefI.ipSwitchOnColor(pref)
@@ -190,9 +191,7 @@ private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
 }
 
 fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
-
     window?.apply {
-
         // 古い端末ではナビゲーションバーのアイコン色を設定できないため
         // メディアビューア画面ではステータスバーやナビゲーションバーの色を設定しない…
         if (forceDark && Build.VERSION.SDK_INT < 26) return
@@ -209,10 +208,21 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
 
         var c = when {
             forceDark -> Color.BLACK
-            else -> PrefI.ipStatusBarColor(App1.pref).notZero()
-                ?: attrColor(R.attr.colorPrimaryDark)
+            else -> PrefI.ipStatusBarColor(App1.pref).notZero() ?: attrColor(R.attr.colorPrimaryDark)
         }
-        statusBarColor = c or Color.BLACK
+        setStatusBarColorCompat(c)
+
+        c = when {
+            forceDark -> Color.BLACK
+            else -> PrefI.ipNavigationBarColor(App1.pref)
+        }
+        setNavigationBarColorCompat(c)
+    }
+}
+
+private fun AppCompatActivity.setStatusBarColorCompat(@ColorInt c: Int) {
+    window?.apply {
+        statusBarColor = Color.BLACK or c
 
         if (Build.VERSION.SDK_INT >= 30) {
             decorView.windowInsetsController?.run {
@@ -232,35 +242,37 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
                     decorView.systemUiVisibility and bit.inv()
                 }
         }
+    }
+}
 
-        c = when {
-            forceDark -> Color.BLACK
-            else -> PrefI.ipNavigationBarColor(App1.pref)
-        }
+private fun AppCompatActivity.setNavigationBarColorCompat(@ColorInt c: Int) {
+    if (c == 0) {
+        // no way to restore to system default, need restart app.
+        return
+    }
 
-        if (c != 0) {
-            navigationBarColor = c or Color.BLACK
+    window?.apply {
+        navigationBarColor = c or Color.BLACK
 
-            if (Build.VERSION.SDK_INT >= 30) {
-                decorView.windowInsetsController?.run {
-                    val bit = WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-                    setSystemBarsAppearance(if (rgbToLab(c).first >= 50f) bit else 0, bit)
+        if (Build.VERSION.SDK_INT >= 30) {
+            decorView.windowInsetsController?.run {
+                val bit = WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                setSystemBarsAppearance(if (rgbToLab(c).first >= 50f) bit else 0, bit)
+            }
+        } else if (Build.VERSION.SDK_INT >= 26) {
+            @Suppress("DEPRECATION")
+            val bit = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            @Suppress("DEPRECATION")
+            decorView.systemUiVisibility = when {
+                rgbToLab(c).first >= 50f -> {
+                    //Dark Text to show up on your light status bar
+                    decorView.systemUiVisibility or bit
                 }
-            } else if (Build.VERSION.SDK_INT >= 26) {
-                @Suppress("DEPRECATION")
-                val bit = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                @Suppress("DEPRECATION")
-                decorView.systemUiVisibility = when {
-                    rgbToLab(c).first >= 50f -> {
-                        //Dark Text to show up on your light status bar
-                        decorView.systemUiVisibility or bit
-                    }
-                    else -> {
-                        //Light Text to show up on your dark status bar
-                        decorView.systemUiVisibility and bit.inv()
-                    }
+                else -> {
+                    //Light Text to show up on your dark status bar
+                    decorView.systemUiVisibility and bit.inv()
                 }
             }
-        } // else: need restart app.
+        }
     }
 }

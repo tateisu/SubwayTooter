@@ -6,8 +6,11 @@ import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.addColumn
+import jp.juggler.subwaytooter.actmain.afterAccountVerify
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.SavedAccount

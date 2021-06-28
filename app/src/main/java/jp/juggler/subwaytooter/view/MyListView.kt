@@ -6,7 +6,7 @@ import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.ListView
-import jp.juggler.subwaytooter.StatusButtonsPopup
+import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 
 import jp.juggler.util.LogCategory
 

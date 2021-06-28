@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils

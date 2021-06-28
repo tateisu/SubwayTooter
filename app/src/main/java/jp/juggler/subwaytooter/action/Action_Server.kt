@@ -2,8 +2,14 @@ package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.addColumn
+import jp.juggler.subwaytooter.actmain.defaultInsertPosition
+import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.onDomainBlockChanged
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost

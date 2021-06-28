@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
-import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TimelineItem
+import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.streaming.StreamSpec.Companion.CHANNEL
 import jp.juggler.subwaytooter.streaming.StreamSpec.Companion.PARAMS
 import jp.juggler.subwaytooter.streaming.StreamSpec.Companion.STREAM

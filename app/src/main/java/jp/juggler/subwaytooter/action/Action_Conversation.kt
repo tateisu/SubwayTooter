@@ -2,8 +2,12 @@ package jp.juggler.subwaytooter.action
 
 import android.content.Context
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.findStatus
+import jp.juggler.subwaytooter.columnviewholder.ItemListAdapter
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount

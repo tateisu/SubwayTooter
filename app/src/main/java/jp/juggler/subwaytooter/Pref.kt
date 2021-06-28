@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.preference.PreferenceManager
+import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.util.optInt
 
 fun Context.pref(): SharedPreferences =
@@ -28,7 +29,7 @@ abstract class BasePref<T>(val key: String, val defVal: T) {
     }
 
     abstract fun put(editor: SharedPreferences.Editor, v: T)
-    abstract fun invoke(pref: SharedPreferences): T
+    abstract operator fun invoke(pref: SharedPreferences): T
 
     override fun equals(other: Any?) =
         this === other
@@ -172,7 +173,7 @@ object PrefB {
         false
     )
 
-    val bpDontUseActionButtonWithQuickTootBar = BooleanPref(
+    val bpDontUseActionButtonWithQuickPostBar = BooleanPref(
         "dont_use_action_button",
         false
     )
@@ -230,7 +231,7 @@ object PrefB {
         false
     )
 
-    val bpQuickTootBar = BooleanPref(
+    val bpQuickPostBar = BooleanPref(
         "quick_toot_bar",
         false
     )

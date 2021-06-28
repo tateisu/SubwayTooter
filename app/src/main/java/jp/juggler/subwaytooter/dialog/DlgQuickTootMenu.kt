@@ -19,7 +19,7 @@ class DlgQuickTootMenu(
 ) : View.OnClickListener {
 
     companion object {
-        val etTextIds = arrayOf(
+        val etTextIds = intArrayOf(
             R.id.etText0,
             R.id.etText1,
             R.id.etText2,
@@ -27,7 +27,7 @@ class DlgQuickTootMenu(
             R.id.etText4,
             R.id.etText5
         )
-        val btnTextIds = arrayOf(
+        val btnTextIds = intArrayOf(
             R.id.btnText0,
             R.id.btnText1,
             R.id.btnText2,

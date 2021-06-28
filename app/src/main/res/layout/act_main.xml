@@ -40,7 +40,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <jp.juggler.subwaytooter.view.TabletModeRecyclerView
+            <jp.juggler.subwaytooter.actmain.TabletModeRecyclerView
                 android:id="@+id/rvPager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
@@ -77,7 +77,7 @@
                 android:fillViewport="true"
                 android:scrollbars="none">
 
-                <jp.juggler.subwaytooter.view.ColumnStripLinearLayout
+                <jp.juggler.subwaytooter.actmain.ColumnStripLinearLayout
                     android:id="@+id/llColumnStrip"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

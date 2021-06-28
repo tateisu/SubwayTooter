@@ -3,11 +3,11 @@ package jp.juggler.subwaytooter.action
 import android.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.column.onListMemberUpdated
 import jp.juggler.subwaytooter.dialog.DlgConfirm
-import jp.juggler.subwaytooter.onListMemberUpdated
-import jp.juggler.subwaytooter.showColumnMatchAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Request

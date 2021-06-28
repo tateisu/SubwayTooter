@@ -43,7 +43,7 @@ fun ActMain.handleIntentUri(uri: Uri) {
     }
 }
 
-private fun ActMain.handleOtherUri(uri: Uri){
+private fun ActMain.handleOtherUri(uri: Uri) {
     val url = uri.toString()
 
     url.findStatusIdFromUrl()?.let { statusInfo ->

@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.actmain
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.view.MyViewPager
 
-class PhoneViews(val actMain: ActMain) {
+class ActMainPhoneViews(val actMain: ActMain) {
     internal lateinit var pager: MyViewPager
     internal lateinit var pagerAdapter: ColumnPagerAdapter
 

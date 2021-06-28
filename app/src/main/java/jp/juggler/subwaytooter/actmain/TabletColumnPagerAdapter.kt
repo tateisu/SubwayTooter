@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.actmain
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.columnviewholder.TabletColumnViewHolder
 
 internal class TabletColumnPagerAdapter(
     private val activity: ActMain,

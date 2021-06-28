@@ -1,13 +1,10 @@
-package jp.juggler.subwaytooter.actmain
+package jp.juggler.subwaytooter.columnviewholder
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.startLoading
-import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
-import jp.juggler.subwaytooter.columnviewholder.onPageCreate
-import jp.juggler.subwaytooter.columnviewholder.onPageDestroy
 import jp.juggler.util.LogCategory
 
 internal class TabletColumnViewHolder(

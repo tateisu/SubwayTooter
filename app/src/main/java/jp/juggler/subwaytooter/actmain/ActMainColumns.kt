@@ -7,11 +7,9 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.PrefB
-import jp.juggler.subwaytooter.PrefS
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.columnviewholder.TabletColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop2
 import jp.juggler.subwaytooter.columnviewholder.showColumnSetting
 import jp.juggler.subwaytooter.table.AcctColor
@@ -355,7 +353,26 @@ fun ActMain.scrollToColumn(index: Int, smoothScroll: Boolean = true) {
     )
 }
 
-fun ActMain.resizeColumnWidth(views: TabletViews) {
+// onCreate時に前回のカラムまでスクロールする
+fun ActMain.scrollToLastColumn() {
+    if (appState.columnCount <= 0) return
+
+    val columnPos = PrefI.ipLastColumnPos(pref)
+    log.d("ipLastColumnPos load $columnPos")
+
+    // 前回最後に表示していたカラムの位置にスクロールする
+    if (columnPos in 0 until appState.columnCount) {
+        scrollToColumn(columnPos, false)
+    }
+
+    // 表示位置に合わせたイベントを発行
+    phoneTab(
+        { env -> onPageSelected(env.pager.currentItem) },
+        { env -> resizeColumnWidth(env) }
+    )
+}
+
+fun ActMain.resizeColumnWidth(views: ActMainTabletViews) {
 
     var columnWMinDp = ActMain.COLUMN_WIDTH_MIN_DP
     val sv = PrefS.spColumnWidth(pref)

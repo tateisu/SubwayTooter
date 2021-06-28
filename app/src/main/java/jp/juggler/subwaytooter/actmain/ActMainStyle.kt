@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.view.ListDivider
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundDrawable
 import java.util.*
+import kotlin.math.max
 
 private val log = LogCategory("ActMainStyle")
 
@@ -118,6 +119,18 @@ fun ActMain.reloadMediaHeight() {
         }
     }
     appState.mediaThumbHeight = (0.5f + mediaThumbHeightDp * density).toInt()
+}
+
+private fun Float.clipFontSize(): Float =
+    if (isNaN()) this else max(1f, this)
+
+fun ActMain.reloadTextSize() {
+    timelineFontSizeSp = PrefF.fpTimelineFontSize(pref).clipFontSize()
+    acctFontSizeSp = PrefF.fpAcctFontSize(pref).clipFontSize()
+    notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize(pref).clipFontSize()
+    headerTextSizeSp = PrefF.fpHeaderTextSize(pref).clipFontSize()
+    val fv = PrefS.spTimelineSpacing(pref).toFloatOrNull()
+    timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
 }
 
 fun ActMain.loadColumnMin(density: Float): Int {

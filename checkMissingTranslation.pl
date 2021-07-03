@@ -151,12 +151,8 @@ print "(total)string resource count=$nameCount\n";
 
 $hasError and die "please fix error(s).\n";
 
-# ブランチがmainなら直接コミットさせない
 print "# branch=$branch\n";
-if($preCommit){
-	# mainブランチに直接コミットすることはなくなった
-	$branch eq 'main' and die "!!!! current branch is main. Direct commits and pushes are prohibited. !!!!\n";
-}
+($branch eq 'main') and $preCommit and say "main ブランチへの直接のコミットはなるべく避けましょう";
 
 # Weblateの未マージのブランチがあるか調べる
 system qq(git fetch weblate -q);

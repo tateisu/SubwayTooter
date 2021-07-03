@@ -21,7 +21,6 @@
     <string name="account_picker_reply">どのアカウントで返信しますか?</string>
     <string name="account_picker_toot">どのアカウントでトゥートしますか?</string>
     <string name="account_picker_quote_toot">どのアカウントで引用トゥートしますか?</string>
-
     <string name="account_remove">アカウントの削除</string>
     <string name="account_select_please">アカウントを選択してください</string>
     <string name="account_setting">アカウント設定</string>
@@ -215,7 +214,6 @@
     <string name="display_replies_count">返信の数の表示</string>
     <string name="display_boost_count">ブーストの数の表示</string>
     <string name="display_favourite_count">お気に入りの数の表示</string>
-
     <string name="domain_block_from_local">自分のサーバーはドメインブロックできません</string>
     <string name="domain_block_from_pseudo">疑似アカウントではドメインブロックできません</string>
     <string name="domain_count">接続中のサーバー数</string>
@@ -359,7 +357,8 @@
     <string name="hide_media_default">全ての画像を隠す</string>
     <string name="highlight_desc">フリックで削除。登録内容を反映するにはカラムのリロードが必要です</string>
     <string name="highlight_word">強調表示する単語</string>
-    <string name="home">ホーム</string><!-- ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್ -->
+    <string name="home">ホーム</string>
+    <!-- ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್ -->
     <string name="ignore_suggestion">提案を無視</string>
     <string name="image">画像</string>
     <string name="image_alpha">画像の不透明度</string>
@@ -416,7 +415,7 @@
     <string name="local_timeline">ローカルタイムライン</string>
     <string name="locked_account">非公開アカウント</string>
     <string name="login_failed">ログインできません。</string>
-    <string name="login_required">アカウント設定からアクセストークンの更新を行ってください</string>
+    <string name="login_required">アカウント設定からアクセストークンの更新を行ってください。</string>
     <string name="long_side_pixel">長辺 %1$d ピクセル</string>
     <string name="resize_square_pixels">%1$d平方ピクセル(%2$dx%2$d相当)</string>
     <string name="resize_square_pixels_2">%1$d平方ピクセル(%2$s相当)</string>
@@ -465,7 +464,7 @@
     <string name="muted_app">ミュートしたアプリ</string>
     <string name="muted_users">ミュートしたユーザ</string>
     <string name="muted_word">ミュートした単語</string>
-    <string name="network_error">通信エラー</string>
+    <string name="network_error">通信エラー。</string>
     <string name="new_item">新しい項目を作成…</string>
     <string name="next">次</string>
     <string name="nickname">通称</string>
@@ -531,7 +530,7 @@
     <string name="pick_images">画像を選択</string>
     <string name="pick_videos">動画を選択</string>
     <string name="pick_audios">音声を選択</string>
-    <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください</string>
+    <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください。</string>
     <string name="please_donate">開発継続のために寄付をお願いします！</string>
     <string name="please_rate">ストアで評価やレビューをお願いします！</string>
     <string name="plugin">プラグイン</string>
@@ -1052,7 +1051,6 @@
     <string name="gap">ギャップ</string>
     <string name="powered_by_open_sticker">OpenStickerのAPIを利用します。</string>
     <string name="duration">期間</string>
-
     <string name="duration_indefinite">無期限</string>
     <string name="duration_minutes_5">5分</string>
     <string name="duration_minutes_30">30分</string>
@@ -1085,7 +1083,6 @@
     <string name="keep_reaction_space">リアクション表示用の空間を確保する</string>
     <string name="long_tap_to_delete">長押しで削除</string>
     <string name="suggestion_source">推奨する理由</string>
-
     <string name="cant_leave_empty_keyword">キーワードを指定してください</string>
     <string name="cant_save_duplicated_keyword">既に存在するキーワードを重複保存できません</string>
     <string name="discard_changes">変更を破棄しますか?</string>
@@ -1093,8 +1090,11 @@
     <string name="not_available_for_current_accounts">この機能を利用できるアカウントがありません</string>
     <string name="confirm_reaction">%2$s から %1$s でリアクションしますか?</string>
     <string name="confirm_reaction_to_pleroma">%2$s からカスタム絵文字 %1$s でリアクションしようとしていますが、送り先 %3$s はカスタム絵文字のリアクションに対応してないかもしれません。続けますか?</string>
-
     <string name="multi_window_post">投稿画面を別ウィンドウで表示する (実験機能)</string>
     <string name="many_window_post">投稿画面を多くのウィンドウで表示する (実験機能)</string>
-
+    <string name="show_emoji_picker_other_category">絵文字ピッカーの「その他」カテゴリを表示する</string>
+    <string name="size_1920_1080">1920x1080(Full HD)</string>
+    <string name="emoji_category_others">その他</string>
+    <string name="account_picker_block">どのアカウントで %1$s をブロックしますか\?</string>
+    <string name="account_picker_mute">どのアカウントで %1$s をミュートしますか\?</string>
 </resources>

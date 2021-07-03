@@ -8,7 +8,7 @@ use Data::Dump qw(dump);
 use utf8;
 use feature qw(say);
 
-binmode $_ for \*STDOUT,\*STDERR;
+binmode $_,":utf8" for \*STDOUT,\*STDERR;
 
 my $preCommit = grep{ $_ eq '--pre-commit'} @ARGV;
 

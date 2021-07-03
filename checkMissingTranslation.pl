@@ -6,6 +6,7 @@ use File::Find;
 use XML::Simple;
 use Data::Dump qw(dump);
 use utf8;
+use feature qw(say);
 
 binmode $_ for \*STDOUT,\*STDERR;
 
@@ -30,6 +31,7 @@ open(my $fh,"-|","git status --porcelain --branch")
 	or die "can't check git status. $!";
 
 my @untrackedFiles;
+my $branch;
 while(<$fh>){
 	s/[\x0d\x0a]+//;
 	if(/^\?\?\s*(\S+)/){
@@ -37,12 +39,7 @@ while(<$fh>){
 		next if $path =~ /\.idea|_Emoji/;
 		push @untrackedFiles,$path
 	}elsif( /^##\s*(\S+?)(?:\.\.|$)/ ){
-		my $branch=$1;
-		print "# branch=$branch\n";
-		if($preCommit){
-			# mainブランチに直接コミットすることはなくなった
-			$branch eq 'main' and warn "!!!! current branch is main. Direct commits and pushes are prohibited. !!!!\n";
-		}
+		$branch=$1;
 #	}else{
 #		warn "working tree is not clean.\n";
 #		cmd "git status";
@@ -153,6 +150,13 @@ my $nameCount = 0+ keys %allNames;
 print "(total)string resource count=$nameCount\n";
 
 $hasError and die "please fix error(s).\n";
+
+# ブランチがmainなら直接コミットさせない
+print "# branch=$branch\n";
+if($preCommit){
+	# mainブランチに直接コミットすることはなくなった
+	$branch eq 'main' and die "!!!! current branch is main. Direct commits and pushes are prohibited. !!!!\n";
+}
 
 # Weblateの未マージのブランチがあるか調べる
 system qq(git fetch weblate -q);

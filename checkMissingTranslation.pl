@@ -9,6 +9,7 @@ use utf8;
 
 binmode $_ for \*STDOUT,\*STDERR;
 
+my $preCommit = grep{ $_ eq '--pre-commit'} @ARGV;
 
 sub cmd($){
 	print "+ ",$_[0],"\n";
@@ -38,8 +39,10 @@ while(<$fh>){
 	}elsif( /^##\s*(\S+?)(?:\.\.|$)/ ){
 		my $branch=$1;
 		print "# branch=$branch\n";
-		$branch eq 'trunk'
-			or warn "!!!! current branch is not trunk !!!!\n";
+		if($preCommit){
+			# mainブランチに直接コミットすることはなくなった
+			$branch eq 'main' and warn "!!!! current branch is main. Direct commits and pushes are prohibited. !!!!\n";
+		}
 #	}else{
 #		warn "working tree is not clean.\n";
 #		cmd "git status";
@@ -77,12 +80,13 @@ for my $file(@files){
 	}else{
 		$lang=$default_name;
 	}
+
 	my $data = $xml->XMLin($file);
 	if( not $data->{string} or ($data->{string}{content} and not ref $data->{string}{content} )){
 		warn "?? please make at least 2 string entries in $file\n";
 		next;
 	}
-	
+
 	my %names;
 	while(my($name,$o)=each %{$data->{string}}){
 		if(not $o->{content}){
@@ -109,11 +113,12 @@ my %allNames;
 for my $lang ( sort keys %langs ){
 	my $names = $langs{$lang};
 	while(my($name,$value)=each %$names){
-		
+
 		$allNames{$name}=1;
 		if(not $master->{$name} ){
 			$missing{$name} =1;
 		}
+
 		my @params = $value =~ /(%\d+\$[\d\.]*[sdxf])/g;
 		my $params = join ',', sort @params;
 		my $master_params = $params{$name} // '';
@@ -131,7 +136,7 @@ for my $lang ( sort keys %langs ){
 			$hasError =1;
 			print "!! ($lang)$name : broken param: $sv // $value\n";
 		}
-		
+
 		# エスケープされていないシングルクォートがあればエラー
 		if( $value =~ m/(?<!\\)['"]/ ){
 			print "!! ($lang)$name : containg single or double quote without escape.\n";

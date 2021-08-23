@@ -186,11 +186,11 @@ dependencies {
 
     implementation 'org.hjson:hjson:3.0.0'
 
-    implementation 'com.google.android:flexbox:2.0.1' // 1.1.0 から AndroidX 依存
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.14.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.15.0'
     /*
     WARNING: [Processor] Library '…\exoplayer-ui-2.12.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
     Example of androidX reference: 'androidx/core/app/NotificationCompat$Builder'

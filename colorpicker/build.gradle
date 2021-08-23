@@ -1,31 +1,30 @@
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion compile_sdk_version
+    compileSdkVersion compile_sdk_version
 
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
-  defaultConfig {
-    targetSdkVersion target_sdk_version
-    minSdkVersion min_sdk_version
-  }
+    defaultConfig {
+        targetSdkVersion target_sdk_version
+        minSdkVersion min_sdk_version
+    }
 
 
-  lintOptions {
-    abortOnError false
-  }
+    lintOptions {
+        abortOnError false
+    }
 
-  resourcePrefix "cpv_"
+    resourcePrefix "cpv_"
 }
 
 dependencies {
-  implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
 
-  implementation 'com.google.android:flexbox:2.0.1'
-
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 }
 
 //apply plugin: 'com.getkeepsafe.dexcount'

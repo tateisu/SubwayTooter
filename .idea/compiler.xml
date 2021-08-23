@@ -3,11 +3,6 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.8">
       <module name="apng" target="1.7" />
-      <module name="SubwayTooter.apng_android" target="11" />
-      <module name="SubwayTooter.app" target="11" />
-      <module name="SubwayTooter.colorpicker" target="11" />
-      <module name="SubwayTooter.emoji" target="11" />
-      <module name="SubwayTooter.sample_apng" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

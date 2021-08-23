@@ -144,7 +144,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             log.d("exoPlayer onRepeatModeChanged $repeatMode")
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
+        override fun onPlayerError(error: PlaybackException) {
             log.d("exoPlayer onPlayerError")
             showToast(error, "player error.")
         }
@@ -178,8 +178,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         this.idx = savedInstanceState?.getInt(EXTRA_IDX) ?: intent.getIntExtra(EXTRA_IDX, idx)
 
         this.serviceType = ServiceType.values()[
-            savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
-                ?: intent.getIntExtra(EXTRA_SERVICE_TYPE, 0)
+                savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
+                    ?: intent.getIntExtra(EXTRA_SERVICE_TYPE, 0)
         ]
 
         this.mediaList = decodeMediaList(
@@ -815,7 +815,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         return false
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
+    ) {
         if (requestCode == PERMISSION_REQUEST_CODE) {
             when (permissions.indices.all { grantResults[it] == PackageManager.PERMISSION_GRANTED }) {
                 false -> showToast(true, R.string.missing_permission_to_access_media)

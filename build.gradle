@@ -13,7 +13,7 @@ buildscript {
 
     ext.junit_version='4.13.2'
 
-    ext.detekt_version='1.17.1'
+    ext.detekt_version='1.18.0'
 
     repositories {
         google()
@@ -22,7 +22,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.2'
-        classpath 'com.google.gms:google-services:4.3.8'
+        classpath 'com.google.gms:google-services:4.3.10'
 
         //noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

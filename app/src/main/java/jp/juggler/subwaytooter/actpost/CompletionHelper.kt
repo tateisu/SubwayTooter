@@ -83,9 +83,9 @@ class CompletionHelper(
                 val c = cp.toChar()
 
                 return '0' <= c && c <= '9' ||
-                    'A' <= c && c <= 'Z' ||
-                    'a' <= c && c <= 'z' ||
-                    c == '_' || c == '-' || c == '.'
+                        'A' <= c && c <= 'Z' ||
+                        'a' <= c && c <= 'z' ||
+                        c == '_' || c == '-' || c == '.'
             }
 
             // Letter | Mark | Decimal_Number | Connector_Punctuation
@@ -348,15 +348,13 @@ class CompletionHelper(
             }
         })
 
-        et.setOnSelectionChangeListener(object : MyEditText.OnSelectionChangeListener {
-            override fun onSelectionChanged(selStart: Int, selEnd: Int) {
-                if (selStart != selEnd) {
-                    // 範囲選択されてるならポップアップは閉じる
-                    log.d("onSelectionChanged: range selected")
-                    closeAcctPopup()
-                }
+        // 範囲選択されてるならポップアップは閉じる
+        et.onSelectionChange = { selStart, selEnd ->
+            if (selStart != selEnd) {
+                log.d("onSelectionChange: range selected")
+                closeAcctPopup()
             }
-        })
+        }
 
         // 全然動いてなさそう…
         // et.setCustomSelectionActionModeCallback( action_mode_callback );

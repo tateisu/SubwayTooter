@@ -3,19 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="jp.juggler.subwaytooter">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
-    <!--<uses-permission android:name="android.permission.CAMERA"/>-->
-
     <queries>
-
         <!-- (自アプリ以外で)指定URLを開けるアプリの存在確認 -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
@@ -62,6 +50,20 @@
         <!-- </intent>-->
     </queries>
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
+    <!--<uses-permission android:name="android.permission.CAMERA"/>-->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:name=".App1"
         android:allowBackup="true"
@@ -75,30 +77,11 @@
         android:theme="@style/AppTheme.Light"
         tools:ignore="UnusedAttribute">
 
-        <receiver android:name=".EventReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.ACTION_MY_PACKAGE_REPLACED" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-        </receiver>
-
-        <service
-            android:name=".notification.PollingService"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-
-        <service android:name=".notification.PollingForegrounder" />
-
         <activity
             android:name=".ActMain"
+            android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -108,9 +91,8 @@
 
         <activity
             android:name=".ActCallback"
-            android:label="@string/app_name"
-
-            >
+            android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -195,111 +177,140 @@
 
         <activity
             android:name=".ActPost"
+            android:exported="false"
             android:label="@string/act_post"
-
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="adjustResize">
 
             <!--suppress AndroidElementNotAllowed -->
             <layout
-                android:defaultWidth="320dp"
                 android:defaultHeight="480dp"
+                android:defaultWidth="320dp"
                 android:gravity="center"
-                android:minWidth="64dp"
                 android:minHeight="64dp"
+                android:minWidth="64dp"
                 tools:ignore="UnusedAttribute" />
 
         </activity>
 
         <activity
             android:name=".ActAccountSetting"
+            android:exported="false"
             android:label="@string/account_setting"
-
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActAppSetting"
+            android:exported="false"
             android:label="@string/app_setting"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActColumnList"
+            android:exported="false"
             android:label="@string/column_list"
-
             android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".ActAbout"
-            android:label="@string/app_about"
+            android:exported="false"
+            android:label="@string/app_about" />
 
-            />
         <activity
             android:name=".ActOSSLicense"
-            android:label="@string/oss_license"
+            android:exported="false"
+            android:label="@string/oss_license" />
 
-            />
         <activity
             android:name=".ActMutedApp"
+            android:exported="false"
             android:label="@string/muted_app" />
+
         <activity
             android:name=".ActMutedPseudoAccount"
+            android:exported="false"
             android:label="@string/muted_users_from_pseudo_account" />
 
         <activity
             android:name=".ActMutedWord"
+            android:exported="false"
             android:label="@string/muted_word" />
 
         <activity
             android:name=".ActFavMute"
+            android:exported="false"
             android:label="@string/fav_muted_user_long" />
 
         <activity
             android:name=".ActKeywordFilter"
+            android:exported="false"
             android:label="@string/keyword_filter_new"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActHighlightWordList"
+            android:exported="false"
             android:label="@string/highlight_word" />
+
         <activity
             android:name=".ActHighlightWordEdit"
+            android:exported="false"
             android:label="@string/highlight_word" />
 
         <activity
             android:name=".ActColumnCustomize"
+            android:exported="false"
             android:label="@string/color_and_background"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActLanguageFilter"
+            android:exported="false"
             android:label="@string/language_filter"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
-
         <activity
             android:name=".ActDrawableList"
+            android:exported="false"
             android:label="@string/drawable_list"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActNickname"
+            android:exported="false"
             android:label="@string/nickname_and_color_and_notification_sound"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActText"
+            android:exported="false"
             android:label="@string/select_and_copy"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActMediaViewer"
+            android:exported="false"
             android:theme="@style/AppTheme.Dark.NoActionBar" />
 
         <activity
             android:name=".ActExitReasons"
+            android:exported="false"
             android:label="@string/exit_reasons"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <meta-data
             android:name="android.max_aspect"
             android:value="100.0" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/Light_colorAccent" />
+
+        <meta-data
+            android:name="android.allow_multiple_resumed_activities"
+            android:value="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -311,37 +322,49 @@
                 android:resource="@xml/file_provider_path" />
         </provider>
 
-        <receiver android:name=".DownloadReceiver">
+        <receiver
+            android:name=".EventReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_MY_PACKAGE_REPLACED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </receiver>
+
+        <receiver
+            android:name=".DownloadReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
 
+        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
+             See README(https://goo.gl/l4GJaQ) for more. -->
+        <service
+            android:name=".notification.PollingService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
+             notification message. See README(https://goo.gl/6BKBk7) for more. -->
+        <service android:name=".notification.PollingForegrounder" />
+
+        <!--https://android-developers.googleblog.com/2018/11/get-your-app-ready-for-foldable-phones.html-->
         <service
             android:name=".MyFirebaseMessagingService"
+            android:exported="true"
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
-             See README(https://goo.gl/l4GJaQ) for more. -->
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_notification" />
-
-        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
-             notification message. See README(https://goo.gl/6BKBk7) for more. -->
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/Light_colorAccent" />
-
-        <!--https://android-developers.googleblog.com/2018/11/get-your-app-ready-for-foldable-phones.html-->
-        <meta-data
-            android:name="android.allow_multiple_resumed_activities"
-            android:value="true" />
 
     </application>
 

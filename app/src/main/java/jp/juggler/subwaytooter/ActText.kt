@@ -98,7 +98,7 @@ class ActText : AppCompatActivity() {
         return true
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.act_text, menu)
         return super.onCreateOptionsMenu(menu)
     }

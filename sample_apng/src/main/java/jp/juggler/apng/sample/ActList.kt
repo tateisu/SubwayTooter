@@ -78,21 +78,12 @@ class ActList : AppCompatActivity(), CoroutineScope {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE_STORAGE -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return
+        if( requestCode == PERMISSION_REQUEST_CODE_STORAGE){
+            if (grantResults.all{ it == PackageManager.PERMISSION_GRANTED }) {
+                // 特に何もしてないらしい
             }
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun load() = launch {

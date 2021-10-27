@@ -31,7 +31,7 @@ class MyClickableSpan(val linkInfo: LinkInfo) : ClickableSpan() {
         var showLinkUnderline = true
     }
 
-    val colorFg: Int
+    private val colorFg: Int
     val colorBg: Int
 
     init {

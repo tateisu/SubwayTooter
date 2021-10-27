@@ -775,7 +775,7 @@ class ItemViewHolder(
         }
     }
 
-    fun _LinearLayout.inflateConversationIconOne() =
+    private fun _LinearLayout.inflateConversationIconOne() =
         myNetworkImageView {
             scaleType = ImageView.ScaleType.CENTER_CROP
         }.lparams(dip(24), dip(24)) {

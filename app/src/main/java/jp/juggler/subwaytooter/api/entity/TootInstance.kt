@@ -379,7 +379,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             val result = Channel<Pair<TootInstance?, TootApiResult?>>()
         }
 
-        fun queuedRequest(
+        private fun queuedRequest(
             allowPixelfed: Boolean,
             get: suspend (cached: TootInstance?) -> Pair<TootInstance?, TootApiResult?>,
         ) = QueuedRequest(allowPixelfed, get)

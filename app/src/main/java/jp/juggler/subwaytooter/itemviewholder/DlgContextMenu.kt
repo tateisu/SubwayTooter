@@ -552,7 +552,7 @@ internal class DlgContextMenu(
         return true
     }
 
-    fun onClickUpdateGroup(v: View): Boolean = when (v.id) {
+    private fun onClickUpdateGroup(v: View): Boolean = when (v.id) {
         R.id.btnGroupStatusCrossAccount -> updateGroup(
             btnGroupStatusCrossAccount,
             llGroupStatusCrossAccount,

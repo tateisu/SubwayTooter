@@ -80,7 +80,7 @@ class ColumnViewHolder(
     lateinit var llColumnHeader: View
     lateinit var tvColumnIndex: TextView
     lateinit var tvColumnStatus: TextView
-    lateinit var tvColumnContext: TextView
+    private lateinit var tvColumnContext: TextView
     lateinit var ivColumnIcon: ImageView
     lateinit var tvColumnName: TextView
 
@@ -143,7 +143,7 @@ class ColumnViewHolder(
     lateinit var btnQuickFilterVote: ImageButton
 
     lateinit var llRefreshError: FrameLayout
-    lateinit var ivRefreshError: ImageView
+    private lateinit var ivRefreshError: ImageView
     lateinit var tvRefreshError: TextView
 
     lateinit var llListList: View

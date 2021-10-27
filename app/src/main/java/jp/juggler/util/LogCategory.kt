@@ -23,7 +23,7 @@ class LogCategory(category: String) {
     ///////////////////////////////
     // string
 
-    fun msg(priority: Int, msg: String): Boolean {
+    private fun msg(priority: Int, msg: String): Boolean {
         Log.println(priority, tag, msg)
         return false
     }
@@ -37,7 +37,7 @@ class LogCategory(category: String) {
     ///////////////////////////////
     // Resources.getString()
 
-    fun msg(priority: Int, res: Resources, @StringRes stringId: Int, args: Array<out Any?>) =
+    private fun msg(priority: Int, res: Resources, @StringRes stringId: Int, args: Array<out Any?>) =
         msg(priority, res.getString(stringId, *args))
 
     fun e(res: Resources, @StringRes stringId: Int, vararg args: Any) =
@@ -58,7 +58,7 @@ class LogCategory(category: String) {
     ///////////////////////////////
     // Throwable + string
 
-    fun msg(priority: Int, ex: Throwable, caption: String = "exception.") =
+    private fun msg(priority: Int, ex: Throwable, caption: String = "exception.") =
         msg(priority, ex.withCaption(caption))
 
     fun e(ex: Throwable, caption: String = "exception") = msg(Log.ERROR, ex, caption)

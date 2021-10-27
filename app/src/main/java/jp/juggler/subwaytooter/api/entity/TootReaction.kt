@@ -36,7 +36,7 @@ class TootReaction(
 ) {
     companion object {
 
-        fun appendDomain(name: String, domain: String?) =
+        private fun appendDomain(name: String, domain: String?) =
             if (domain?.isNotEmpty() == true) {
                 "$name@$domain"
             } else {
@@ -164,7 +164,7 @@ class TootReaction(
         }
     }
 
-    fun chooseUrl() = when {
+    private fun chooseUrl() = when {
         PrefB.bpDisableEmojiAnimation(App1.pref) -> staticUrl
         else -> url
     }

@@ -84,8 +84,8 @@ class StatusButtons(
     private val colorAccent: Int
         get() = activity.attrColor(R.attr.colorImageButtonAccent)
 
-    var optionalButtonFirst: View? = null
-    var optionalButtonCount = 0
+    private var optionalButtonFirst: View? = null
+    private var optionalButtonCount = 0
     var ti: TootInstance? = null
 
     init {

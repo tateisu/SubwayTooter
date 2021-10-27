@@ -42,8 +42,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         internal const val COLOR_DIALOG_ID_ACCT_TEXT = 4
         internal const val COLOR_DIALOG_ID_CONTENT_TEXT = 5
 
-        internal const val REQUEST_CODE_PICK_BACKGROUND = 1
-
         internal const val PROGRESS_MAX = 65536
 
         fun createIntent(activity: ActMain, idx: Int) =
@@ -72,7 +70,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     private var lastImageUri: String? = null
     private var lastImageBitmap: Bitmap? = null
 
-    val arColumnBackgroundImage = activityResultHandler { ar ->
+    private val arColumnBackgroundImage = activityResultHandler { ar ->
         val data = ar?.data
         if (data != null && ar.resultCode == RESULT_OK) {
             data.handleGetContentResult(contentResolver)

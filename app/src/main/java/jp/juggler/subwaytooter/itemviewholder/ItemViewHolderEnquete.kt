@@ -324,7 +324,7 @@ fun ItemViewHolder.onClickEnqueteChoice(
                 TootPollsType.Mastodon -> client.request(
                     "/api/v1/polls/${enquete.pollId}/votes",
                     jsonObject {
-                        put("choices", jp.juggler.util.jsonArray { add(idx) })
+                        put("choices", jsonArray { add(idx) })
                     }.toPostRequestBuilder()
                 )
                 TootPollsType.FriendsNico -> client.request(
@@ -406,7 +406,7 @@ fun ItemViewHolder.sendMultiple(
             client.request(
                 "/api/v1/polls/${enquete.pollId}/votes",
                 jsonObject {
-                    put("choices", jp.juggler.util.jsonArray {
+                    put("choices", jsonArray {
                         enquete.items.forEachIndexed { index, choice ->
                             if (choice.checked) add(index)
                         }

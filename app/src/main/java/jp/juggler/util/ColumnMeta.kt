@@ -3,6 +3,7 @@ package jp.juggler.util
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import androidx.annotation.IntRange
 
 /////////////////////////////////////////////////////////////
 // SQLite にBooleanをそのまま保存することはできないのでInt型との変換が必要になる
@@ -19,16 +20,21 @@ fun Int.i2b() = this != 0
 //    getBoolean(getColumnIndex(key))
 
 fun Cursor.getInt(key: String) =
-    getInt(getColumnIndex(key))
+    getColumnIndex(key).takeIf { it >= 0 }?.let { getInt(it) }
+        ?: error("getInt: missing column named $key")
 
-fun Cursor.getIntOrNull(idx: Int) =
-    if (isNull(idx)) null else getInt(idx)
+fun Cursor.getIntOrNull(@IntRange(from = 0) idx: Int) = when {
+    idx < 0 -> error("getIntOrNull: invalid index $idx")
+    isNull(idx) -> null
+    else -> getInt(idx)
+}
 
 fun Cursor.getIntOrNull(key: String) =
-    getIntOrNull(getColumnIndex(key))
+    getColumnIndex(key).takeIf { it >= 0 }?.let { getIntOrNull(it) }
 
 fun Cursor.getLong(key: String) =
-    getLong(getColumnIndex(key))
+    getColumnIndex(key).takeIf { it >= 0 }?.let { getLong(it) }
+        ?: error("getLong: missing column named $key")
 
 //fun Cursor.getLongOrNull(idx:Int) =
 //	if(isNull(idx)) null else getLong(idx)
@@ -37,7 +43,8 @@ fun Cursor.getLong(key: String) =
 //	getLongOrNull(getColumnIndex(key))
 
 fun Cursor.getString(key: String): String =
-    getString(getColumnIndex(key))
+    getColumnIndex(key).takeIf { it >= 0 }?.let { getString(it)!! }
+        ?: error("getString: missing column named $key")
 
 fun Cursor.getStringOrNull(keyIdx: Int) =
     if (isNull(keyIdx)) null else getString(keyIdx)
@@ -69,7 +76,7 @@ class ColumnMeta(
 
     class List(
         val table: String,
-        val initialVersion: Int,
+        private val initialVersion: Int,
         var createExtra: () -> Array<String> = { emptyArray() },
         var deleteBeforeCreate: Boolean = false,
     ) : ArrayList<ColumnMeta>() {
@@ -143,15 +150,9 @@ fun ContentValues.put(key: ColumnMeta, v: Float?) = put(key.name, v)
 fun ContentValues.put(key: ColumnMeta, v: Double?) = put(key.name, v)
 fun ContentValues.put(key: ColumnMeta, v: ByteArray?) = put(key.name, v)
 
-fun Cursor.getInt(key: ColumnMeta) = getInt(getColumnIndex(key.name))
-
-fun Cursor.getBoolean(key: ColumnMeta) = getInt(key).i2b()
-fun Cursor.getLong(key: ColumnMeta) = getLong(getColumnIndex(key.name))
-
-@Suppress("unused")
-fun Cursor.getIntOrNull(key: ColumnMeta) = getIntOrNull(getColumnIndex(key.name))
-fun Cursor.getString(key: ColumnMeta): String = getString(getColumnIndex(key.name))
-fun Cursor.getStringOrNull(key: ColumnMeta): String? {
-    val idx = key.getIndex(this)
-    return if (isNull(idx)) null else getString(idx)
-}
+fun Cursor.getInt(key: ColumnMeta) = getInt(key.name)
+fun Cursor.getBoolean(key: ColumnMeta) = getInt(key.name).i2b()
+fun Cursor.getLong(key: ColumnMeta) = getLong(key.name)
+fun Cursor.getIntOrNull(key: ColumnMeta) = getIntOrNull(key.name)
+fun Cursor.getString(key: ColumnMeta): String = getString(key.name)
+fun Cursor.getStringOrNull(key: ColumnMeta): String? = getStringOrNull(key.name)

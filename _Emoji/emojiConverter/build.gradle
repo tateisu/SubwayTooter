@@ -11,17 +11,17 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'src/lib')
+    implementation fileTree(include: ['*.jar'], dir: 'src/lib')
     implementation "com.google.guava:guava:28.1-jre"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
-    def ktor_version="1.5.0"
-    implementation "io.ktor:ktor-client-core:$ktor_version"
-    implementation "io.ktor:ktor-client-cio:$ktor_version"
-    implementation "io.ktor:ktor-client-features:$ktor_version"
-    implementation "io.ktor:ktor-client-encoding:$ktor_version"
+    def ktorVersion="1.5.0"
+    implementation "io.ktor:ktor-client-core:$ktorVersion"
+    implementation "io.ktor:ktor-client-cio:$ktorVersion"
+    implementation "io.ktor:ktor-client-features:$ktorVersion"
+    implementation "io.ktor:ktor-client-encoding:$ktorVersion"
 
     // StringEscapeUtils.unescapeHtml4
     implementation "org.apache.commons:commons-text:1.9"
@@ -32,4 +32,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }

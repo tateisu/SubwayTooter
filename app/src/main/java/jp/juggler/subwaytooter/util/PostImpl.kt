@@ -69,10 +69,10 @@ class PostImpl(
 
     private var visibilityChecked: TootVisibility? = null
 
-    var bConfirmTag: Boolean = false
+    private var bConfirmTag: Boolean = false
     var bConfirmAccount: Boolean = false
-    var bConfirmRedraft: Boolean = false
-    var bConfirmTagCharacter: Boolean = false
+    private var bConfirmRedraft: Boolean = false
+    private var bConfirmTagCharacter: Boolean = false
 
     private val choiceMaxChars = when {
         account.isMisskey -> 15
@@ -229,9 +229,9 @@ class PostImpl(
         return true
     }
 
-    var resultStatus: TootStatus? = null
-    var resultCredentialTmp: TootAccount? = null
-    var resultScheduledStatusSucceeded = false
+    private var resultStatus: TootStatus? = null
+    private var resultCredentialTmp: TootAccount? = null
+    private var resultScheduledStatusSucceeded = false
 
     private suspend fun getCredential(
         client: TootApiClient,

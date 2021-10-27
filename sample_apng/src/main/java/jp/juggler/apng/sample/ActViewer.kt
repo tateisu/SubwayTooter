@@ -117,7 +117,7 @@ class ActViewer : AppCompatActivity() , CoroutineScope {
 			
 			dir.mkdirs()
 			if(! dir.exists() ) {
-				Log.e(TAG, "Directory not exists: ${dir}")
+				Log.e(TAG, "Directory not exists: $dir")
 				return@launch
 			}
 			val frames = apngFrames.frames
@@ -127,7 +127,7 @@ class ActViewer : AppCompatActivity() , CoroutineScope {
 			}
 			var i=0
 			for( f in frames) {
-				Log.d(TAG, "${title}[${i}] timeWidth=${f.timeWidth}")
+				Log.d(TAG, "$title[$i] timeWidth=${f.timeWidth}")
 				val bitmap = f.bitmap
 				
 				FileOutputStream( File(dir,"${title}_${i}.png")).use{ fo ->

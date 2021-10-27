@@ -223,7 +223,7 @@ class AttachmentPicker(
         }
     }
 
-    fun performCapture(action: String, errorCaption: String) {
+    private fun performCapture(action: String, errorCaption: String) {
         try {
             arCapture.launch(Intent(action))
         } catch (ex: Throwable) {

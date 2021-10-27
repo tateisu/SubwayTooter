@@ -472,7 +472,7 @@ class PushSubscriptionHelper(
         }
     }
 
-    suspend fun canSkipSubscriptionMastodon(
+    private suspend fun canSkipSubscriptionMastodon(
         client: TootApiClient,
         clientIdentifier: String,
         endpoint: String,

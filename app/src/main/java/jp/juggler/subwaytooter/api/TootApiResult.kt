@@ -105,7 +105,7 @@ open class TootApiResult(
     }
 
     // アカウント作成APIのdetailsを読むため、エラー応答のjsonオブジェクトを保持する
-    var errorJson: JsonObject? = null
+    private var errorJson: JsonObject? = null
 
     internal fun simplifyErrorHtml(
         sv: String,

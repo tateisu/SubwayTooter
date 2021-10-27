@@ -141,22 +141,22 @@ public class ColorPanelView extends View {
     } else if (shape == ColorShape.CIRCLE) {
       final int outerRadius = getMeasuredWidth() / 2;
       if (borderWidthPx > 0) {
-        canvas.drawCircle(getMeasuredWidth() / 2,
-            getMeasuredHeight() / 2,
+        canvas.drawCircle(getMeasuredWidth() / 2f,
+            getMeasuredHeight() / 2f,
             outerRadius,
             borderPaint);
       }
       if (Color.alpha(color) < 255) {
-        canvas.drawCircle(getMeasuredWidth() / 2,
-            getMeasuredHeight() / 2,
+        canvas.drawCircle(getMeasuredWidth() / 2f,
+            getMeasuredHeight() / 2f,
             outerRadius - borderWidthPx, alphaPaint);
       }
       if (showOldColor) {
         canvas.drawArc(centerRect, 90, 180, true, originalPaint);
         canvas.drawArc(centerRect, 270, 180, true, colorPaint);
       } else {
-        canvas.drawCircle(getMeasuredWidth() / 2,
-            getMeasuredHeight() / 2,
+        canvas.drawCircle(getMeasuredWidth() / 2f,
+            getMeasuredHeight() / 2f,
             outerRadius - borderWidthPx,
             colorPaint);
       }
@@ -169,6 +169,7 @@ public class ColorPanelView extends View {
       int height = MeasureSpec.getSize(heightMeasureSpec);
       setMeasuredDimension(width, height);
     } else if (shape == ColorShape.CIRCLE) {
+      //noinspection SuspiciousNameCombination
       super.onMeasure(widthMeasureSpec, widthMeasureSpec);
       setMeasuredDimension(getMeasuredWidth(), getMeasuredWidth());
     } else {

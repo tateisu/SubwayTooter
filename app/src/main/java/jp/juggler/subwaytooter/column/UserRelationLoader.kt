@@ -18,7 +18,7 @@ class UserRelationLoader(val column: Column) {
 
     val whoSet = HashSet<EntityId>()
     val acctSet = HashSet<String>()
-    val tagSet = HashSet<String>()
+    private val tagSet = HashSet<String>()
 
     fun add(whoRef: TootAccountRef?) {
         add(whoRef?.get())

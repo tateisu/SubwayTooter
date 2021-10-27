@@ -15,7 +15,7 @@ class ColumnTask_Refresh(
     private val bSilent: Boolean,
     val bBottom: Boolean,
     internal val postedStatusId: EntityId? = null,
-    internal val refreshAfterToot: Int = -1,
+    private val refreshAfterToot: Int = -1,
 ) : ColumnTask(
     columnArg,
     if (bBottom) ColumnTaskType.REFRESH_BOTTOM else ColumnTaskType.REFRESH_TOP

@@ -14,8 +14,6 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.inputmethod.InputConnectionCompat
-import androidx.core.view.inputmethod.InputContentInfoCompat
 import jp.juggler.subwaytooter.action.saveWindowSize
 import jp.juggler.subwaytooter.actpost.*
 import jp.juggler.subwaytooter.api.*
@@ -56,11 +54,6 @@ class ActPost : AppCompatActivity(),
         const val KEY_QUOTE = "quote"
         const val KEY_SCHEDULED_STATUS = "scheduled_status"
 
-        const val KEY_ATTACHMENT_LIST = "attachment_list"
-        const val KEY_IN_REPLY_TO_ID = "in_reply_to_id"
-        const val KEY_IN_REPLY_TO_TEXT = "in_reply_to_text"
-        const val KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image"
-
         const val STATE_ALL = "all"
 
         /////////////////////////////////////////////////
@@ -97,8 +90,8 @@ class ActPost : AppCompatActivity(),
 
     lateinit var btnAccount: Button
     lateinit var btnVisibility: ImageButton
-    lateinit var btnAttachment: ImageButton
-    lateinit var btnPost: ImageButton
+    private lateinit var btnAttachment: ImageButton
+    private lateinit var btnPost: ImageButton
     lateinit var llAttachment: View
     lateinit var ivMedia: List<MyNetworkImageView>
     lateinit var cbNSFW: CheckBox
@@ -121,7 +114,7 @@ class ActPost : AppCompatActivity(),
 
     lateinit var tvCharCount: TextView
     lateinit var handler: Handler
-    lateinit var formRoot: ActPostRootLinearLayout
+    private lateinit var formRoot: ActPostRootLinearLayout
 
     lateinit var llReply: View
     lateinit var tvReplyTo: TextView
@@ -129,8 +122,8 @@ class ActPost : AppCompatActivity(),
     lateinit var scrollView: ScrollView
 
     lateinit var tvSchedule: TextView
-    lateinit var ibSchedule: ImageButton
-    lateinit var ibScheduleReset: ImageButton
+    private lateinit var ibSchedule: ImageButton
+    private lateinit var ibScheduleReset: ImageButton
 
     lateinit var pref: SharedPreferences
     lateinit var appState: AppState
@@ -183,41 +176,6 @@ class ActPost : AppCompatActivity(),
                 }
         }
     }
-
-    val commitContentListener =
-        InputConnectionCompat.OnCommitContentListener {
-                inputContentInfo: InputContentInfoCompat,
-                flags: Int,
-                _: Bundle?,
-            ->
-            // Intercepts InputConnection#commitContent API calls.
-            // - inputContentInfo : content to be committed
-            // - flags : {@code 0} or {@link #INPUT_CONTENT_GRANT_READ_URI_PERMISSION}
-            // - opts : optional bundle data. This can be {@code null}
-            // return
-            // - true if this request is accepted by the application,
-            //   no matter if the request is already handled or still being handled in background.
-            // - false to use the default implementation
-
-            // read and display inputContentInfo asynchronously
-
-            if (Build.VERSION.SDK_INT >= 25 &&
-                flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0
-            ) {
-                try {
-                    inputContentInfo.requestPermission()
-                } catch (ignored: Exception) {
-                    // return false if failed
-                    return@OnCommitContentListener false
-                }
-            }
-
-            addAttachment(inputContentInfo.contentUri) {
-                inputContentInfo.releasePermission()
-            }
-
-            true
-        }
 
     ////////////////////////////////////////////////////////////////
 
@@ -331,7 +289,11 @@ class ActPost : AppCompatActivity(),
         openBrowser(span.linkInfo.url)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         attachmentPicker.onRequestPermissionsResult(requestCode, permissions, grantResults)
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
@@ -407,7 +369,12 @@ class ActPost : AppCompatActivity(),
                     updateTextCount()
                 }
 
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
                     showPoll()
                     updateTextCount()
                 }
@@ -463,13 +430,17 @@ class ActPost : AppCompatActivity(),
         cbContentWarning.setOnCheckedChangeListener { _, _ -> showContentWarningEnabled() }
 
         completionHelper = CompletionHelper(this, pref, appState.handler)
-        completionHelper.attachEditText(formRoot, etContent, false, object : CompletionHelper.Callback2 {
-            override fun onTextUpdate() {
-                updateTextCount()
-            }
+        completionHelper.attachEditText(
+            formRoot,
+            etContent,
+            false,
+            object : CompletionHelper.Callback2 {
+                override fun onTextUpdate() {
+                    updateTextCount()
+                }
 
-            override fun canOpenPopup(): Boolean = true
-        })
+                override fun canOpenPopup(): Boolean = true
+            })
 
         val textWatcher: TextWatcher = object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
@@ -491,6 +462,6 @@ class ActPost : AppCompatActivity(),
         scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
 
         etContent.contentMineTypeArray = AttachmentUploader.acceptableMimeTypes.toTypedArray()
-        etContent.commitContentListener = commitContentListener
+        etContent.contentCallback = { addAttachment(it) }
     }
 }

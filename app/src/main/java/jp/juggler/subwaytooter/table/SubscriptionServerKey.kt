@@ -13,7 +13,7 @@ object SubscriptionServerKey : TableCompanion {
 
     private val log = LogCategory("ServerKey")
 
-    private const val table = "subscription_server_key2"
+    override val table = "subscription_server_key2"
     private const val COL_ID = BaseColumns._ID
     private const val COL_CLIENT_IDENTIFIER = "ci"
     private const val COL_SERVER_KEY = "sk"

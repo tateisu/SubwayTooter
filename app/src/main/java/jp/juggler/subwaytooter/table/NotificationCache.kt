@@ -28,7 +28,7 @@ class NotificationCache(private val account_db_id: Long) {
 
         private val log = LogCategory("NotificationCache")
 
-        private const val table = "noti_cache"
+        override val table = "noti_cache"
 
         private const val COL_ID = BaseColumns._ID
 

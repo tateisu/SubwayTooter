@@ -41,7 +41,8 @@ android {
         ]
     }
     buildFeatures {
-        compose true
+        // 諸事情でまだcomposeを導入できない。詳細は依存関係の項に記載
+        // compose true
     }
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
@@ -115,6 +116,10 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation fileTree(include: ['*.aar'], dir: 'src/main/libs')
 
+    // targetSdkVersion 31 で androidTest 時に android:exported 云々で怒られる問題の対策
+    // https://github.com/android/android-test/issues/1022
+    androidTestImplementation "androidx.test:core:1.4.0"
+
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -152,7 +157,6 @@ dependencies {
     // https://firebase.google.com/support/release-notes/android
     implementation "com.google.firebase:firebase-messaging:22.0.0"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
 
@@ -176,7 +180,7 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
-    androidTestImplementation "'com.squareup.okhttp3:mockwebserver:$okhttpVersion"
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
 
     def glideVersion = '4.12.0'
     implementation "com.github.bumptech.glide:glide:$glideVersion"
@@ -241,18 +245,19 @@ dependencies {
     // optional - Test helpers for LiveData
     testImplementation "androidx.arch.core:core-testing:$arch_version"
 
-    implementation "com.google.accompanist:accompanist-flowlayout:0.20.0"
 
-
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
-    implementation "androidx.compose.material:material-icons-extended:$compose_version"
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
-
-    implementation 'androidx.activity:activity-compose:1.4.0-rc01'
+    // composeはkotlin 1.5.31を要求するが
+    // https://gist.github.com/tateisu/cbda451135d2b5c9b69f7ac4599f9833 の問題があるので1.5.31を使えない
+    // 治るまでcompose導入を諦める
+//    implementation "androidx.compose.ui:ui:$compose_version"
+//    implementation "androidx.compose.material:material:$compose_version"
+//    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+//    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
+//    implementation "androidx.compose.material:material-icons-extended:$compose_version"
+//    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+//    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+//    implementation 'androidx.activity:activity-compose:1.4.0-rc01'
+//    implementation "com.google.accompanist:accompanist-flowlayout:0.20.0"
 
 }
 

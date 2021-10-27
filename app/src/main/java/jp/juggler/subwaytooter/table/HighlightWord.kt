@@ -19,7 +19,7 @@ class HighlightWord {
         const val SOUND_TYPE_DEFAULT = 1
         const val SOUND_TYPE_CUSTOM = 2
 
-        const val table = "highlight_word"
+        override val table = "highlight_word"
         const val COL_ID = BaseColumns._ID
         const val COL_NAME = "name"
         private const val COL_TIME_SAVE = "time_save"

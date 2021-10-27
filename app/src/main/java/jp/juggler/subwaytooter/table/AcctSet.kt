@@ -16,7 +16,7 @@ object AcctSet : TableCompanion {
 
     private val log = LogCategory("AcctSet")
 
-    private const val table = "acct_set"
+    override val table = "acct_set"
 
     val columnList: ColumnMeta.List = ColumnMeta.List(table, 7).apply {
         ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)

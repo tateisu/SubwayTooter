@@ -11,7 +11,7 @@ import jp.juggler.util.*
 object ContentWarning : TableCompanion {
     private val log = LogCategory("ContentWarning")
 
-    private const val table = "content_warning"
+    override val table = "content_warning"
 
     val columnList: ColumnMeta.List = ColumnMeta.List(table, 0).apply {
         ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)

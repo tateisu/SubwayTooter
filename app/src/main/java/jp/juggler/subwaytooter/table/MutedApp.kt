@@ -14,7 +14,7 @@ object MutedApp : TableCompanion {
 
     private val log = LogCategory("MutedApp")
 
-    internal const val table = "app_mute"
+    override val table = "app_mute"
     const val COL_ID = "_id"
     const val COL_NAME = "name"
     private const val COL_TIME_SAVE = "time_save"

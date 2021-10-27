@@ -131,9 +131,9 @@ class App1 : Application() {
         // 2021/5/11 59=>60 SavedAccountテーブルに項目追加
         // 2021/5/23 60=>61 SavedAccountテーブルに項目追加
 
-        internal const val DB_VERSION = 61
+        const val DB_VERSION = 61
 
-        private val tableList = arrayOf(
+        val tableList = arrayOf(
             LogData,
             SavedAccount,
             ClientInfo,

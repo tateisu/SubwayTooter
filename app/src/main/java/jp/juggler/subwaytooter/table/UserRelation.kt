@@ -48,7 +48,7 @@ class UserRelation {
 
         private val log = LogCategory("UserRelationMisskey")
 
-        private const val table = "user_relation_misskey"
+        override val table = "user_relation_misskey"
 
         val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
             createExtra = {
@@ -60,7 +60,8 @@ class UserRelation {
             deleteBeforeCreate = true
         }
 
-        val COL_ID = ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
+        val COL_ID =
+            ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
         private val COL_TIME_SAVE = ColumnMeta(columnList, 0, "time_save", "integer not null")
 
         // SavedAccount のDB_ID。 疑似アカウント用のエントリは -2L
@@ -73,10 +74,12 @@ class UserRelation {
         private val COL_BLOCKING = ColumnMeta(columnList, 0, "blocking", "integer not null")
         private val COL_MUTING = ColumnMeta(columnList, 0, "muting", "integer not null")
         private val COL_REQUESTED = ColumnMeta(columnList, 0, "requested", "integer not null")
-        private val COL_FOLLOWING_REBLOGS = ColumnMeta(columnList, 0, "following_reblogs", "integer not null")
+        private val COL_FOLLOWING_REBLOGS =
+            ColumnMeta(columnList, 0, "following_reblogs", "integer not null")
         private val COL_ENDORSED = ColumnMeta(columnList, 32, "endorsed", "integer default 0")
         private val COL_BLOCKED_BY = ColumnMeta(columnList, 34, "blocked_by", "integer default 0")
-        private val COL_REQUESTED_BY = ColumnMeta(columnList, 35, "requested_by", "integer default 0")
+        private val COL_REQUESTED_BY =
+            ColumnMeta(columnList, 35, "requested_by", "integer default 0")
         private val COL_NOTE = ColumnMeta(columnList, 55, "note", "text default null")
         private val COL_NOTIFYING = ColumnMeta(columnList, 58, "notifying", "integer default 0")
 

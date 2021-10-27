@@ -13,7 +13,7 @@ object MutedWord : TableCompanion {
 
     private val log = LogCategory("MutedWord")
 
-    const val table = "word_mute"
+    override val table = "word_mute"
     const val COL_ID = "_id"
     const val COL_NAME = "name"
     private const val COL_TIME_SAVE = "time_save"

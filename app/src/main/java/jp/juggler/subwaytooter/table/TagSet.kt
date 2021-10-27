@@ -2,18 +2,16 @@ package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
+import java.util.*
 
 object TagSet : TableCompanion {
 
     private val log = LogCategory("TagSet")
 
-    private const val table = "tag_set"
+    override val table = "tag_set"
     private const val COL_TIME_SAVE = "time_save"
     private const val COL_TAG = "tag" // タグ。先頭の#を含まない
 

@@ -83,7 +83,12 @@ class NotificationTracking {
                 val cv = ContentValues()
                 postId.putTo(cv, COL_POST_ID)
                 cv.put(COL_POST_TIME, postTime)
-                val rows = App1.database.update(table, cv, WHERE_AID, arrayOf(accountDbId.toString(), notificationType))
+                val rows = App1.database.update(
+                    table,
+                    cv,
+                    WHERE_AID,
+                    arrayOf(accountDbId.toString(), notificationType)
+                )
                 log.d("updatePost account_db_id=$accountDbId, nt=$notificationType, post=$postId,$postTime update_rows=$rows")
                 dirty = false
                 clearCache(accountDbId, notificationType)
@@ -97,7 +102,7 @@ class NotificationTracking {
 
         private val log = LogCategory("NotificationTracking")
 
-        private const val table = "noti_trac"
+        override val table = "noti_trac"
 
         private const val COL_ID = BaseColumns._ID
 
@@ -179,9 +184,13 @@ class NotificationTracking {
 
         /////////////////////////////////////////////////////////////////////////////////
 
-        private val cache = ConcurrentHashMap<Long, ConcurrentHashMap<String, NotificationTracking>>()
+        private val cache =
+            ConcurrentHashMap<Long, ConcurrentHashMap<String, NotificationTracking>>()
 
-        private fun <K : Any, V : Any> ConcurrentHashMap<K, V>.getOrCreate(key: K, creator: () -> V): V {
+        private fun <K : Any, V : Any> ConcurrentHashMap<K, V>.getOrCreate(
+            key: K,
+            creator: () -> V
+        ): V {
             var v = this[key]
             if (v == null) v = creator().also { this[key] = it }
             return v
@@ -193,7 +202,11 @@ class NotificationTracking {
         private fun clearCache(accountDbId: Long, notificationType: String): NotificationTracking? =
             cache[accountDbId]?.remove(notificationType)
 
-        private fun saveCache(accountDbId: Long, notificationType: String, nt: NotificationTracking) {
+        private fun saveCache(
+            accountDbId: Long,
+            notificationType: String,
+            nt: NotificationTracking
+        ) {
             cache.getOrCreate(accountDbId) {
                 ConcurrentHashMap<String, NotificationTracking>()
             }[notificationType] = nt
@@ -248,7 +261,8 @@ class NotificationTracking {
                                     log.i("$acct/$notificationType read>show! clip to $show")
                                     val cv = ContentValues()
                                     show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
-                                    val where_args = arrayOf(accountDbId.toString(), notificationType)
+                                    val where_args =
+                                        arrayOf(accountDbId.toString(), notificationType)
                                     App1.database.update(table, cv, WHERE_AID, where_args)
                                 }
                             }

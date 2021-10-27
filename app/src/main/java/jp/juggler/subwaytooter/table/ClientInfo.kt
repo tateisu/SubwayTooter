@@ -9,7 +9,7 @@ import jp.juggler.util.*
 object ClientInfo : TableCompanion {
     private val log = LogCategory("ClientInfo")
 
-    const val table = "client_info2"
+    override val table = "client_info2"
     val columnList: ColumnMeta.List = ColumnMeta.List(table, 19).apply {
         ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
         createExtra = {

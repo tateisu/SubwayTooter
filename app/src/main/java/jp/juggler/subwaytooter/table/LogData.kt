@@ -6,7 +6,7 @@ import jp.juggler.util.TableCompanion
 object LogData : TableCompanion {
     // private const val TAG = "SubwayTooter"
 
-    internal const val table = "warning"
+    override val table = "warning"
 
     private const val COL_TIME = "t"
     private const val COL_LEVEL = "l"

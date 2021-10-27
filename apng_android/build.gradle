@@ -34,8 +34,8 @@ repositories {
 
 dependencies {
     testImplementation "junit:junit:$junit_version"
-    androidTestImplementation 'androidx.test:runner:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     api project(':apng')
     // 'api' に指定した依存関係はこのライブラリの利用者に公開されます

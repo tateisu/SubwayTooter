@@ -344,7 +344,7 @@ class SavedAccount(
 
         private val log = LogCategory("SavedAccount")
 
-        const val table = "access_info"
+        override val table = "access_info"
 
         val columnList = ColumnMeta.List(table, 0).apply {
             createExtra = {
@@ -355,7 +355,8 @@ class SavedAccount(
             }
         }
 
-        private val COL_ID = ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
+        private val COL_ID =
+            ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
         private val COL_HOST = ColumnMeta(columnList, 0, "h", "text not null")
         private val COL_DOMAIN = ColumnMeta(columnList, 56, "d", "text")
         private val COL_USER = ColumnMeta(columnList, 0, "u", "text not null")
@@ -363,30 +364,48 @@ class SavedAccount(
         private val COL_TOKEN = ColumnMeta(columnList, 0, "t", "text not null")
 
         private val COL_VISIBILITY = ColumnMeta(columnList, 0, "visibility", "text")
-        private val COL_CONFIRM_BOOST = ColumnMeta(columnList, 0, "confirm_boost", ColumnMeta.TS_TRUE)
-        private val COL_DONT_HIDE_NSFW = ColumnMeta(columnList, 0, "dont_hide_nsfw", ColumnMeta.TS_ZERO)
+        private val COL_CONFIRM_BOOST =
+            ColumnMeta(columnList, 0, "confirm_boost", ColumnMeta.TS_TRUE)
+        private val COL_DONT_HIDE_NSFW =
+            ColumnMeta(columnList, 0, "dont_hide_nsfw", ColumnMeta.TS_ZERO)
 
-        private val COL_NOTIFICATION_MENTION = ColumnMeta(columnList, 2, "notification_mention", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_BOOST = ColumnMeta(columnList, 2, "notification_boost", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_FAVOURITE = ColumnMeta(columnList, 2, "notification_favourite", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_FOLLOW = ColumnMeta(columnList, 2, "notification_follow", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_MENTION =
+            ColumnMeta(columnList, 2, "notification_mention", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_BOOST =
+            ColumnMeta(columnList, 2, "notification_boost", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_FAVOURITE =
+            ColumnMeta(columnList, 2, "notification_favourite", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_FOLLOW =
+            ColumnMeta(columnList, 2, "notification_follow", ColumnMeta.TS_TRUE)
         private val COL_NOTIFICATION_FOLLOW_REQUEST =
             ColumnMeta(columnList, 44, "notification_follow_request", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_REACTION = ColumnMeta(columnList, 33, "notification_reaction", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_VOTE = ColumnMeta(columnList, 33, "notification_vote", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_POST = ColumnMeta(columnList, 57, "notification_post", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_REACTION =
+            ColumnMeta(columnList, 33, "notification_reaction", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_VOTE =
+            ColumnMeta(columnList, 33, "notification_vote", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_POST =
+            ColumnMeta(columnList, 57, "notification_post", ColumnMeta.TS_TRUE)
 
-        private val COL_CONFIRM_FOLLOW = ColumnMeta(columnList, 10, "confirm_follow", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_FOLLOW_LOCKED = ColumnMeta(columnList, 10, "confirm_follow_locked", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNFOLLOW = ColumnMeta(columnList, 10, "confirm_unfollow", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_POST = ColumnMeta(columnList, 10, "confirm_post", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_FAVOURITE = ColumnMeta(columnList, 23, "confirm_favourite", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNBOOST = ColumnMeta(columnList, 24, "confirm_unboost", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNFAVOURITE = ColumnMeta(columnList, 24, "confirm_unfavourite", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_REACTION = ColumnMeta(columnList, 61, "confirm_reaction", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_FOLLOW =
+            ColumnMeta(columnList, 10, "confirm_follow", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_FOLLOW_LOCKED =
+            ColumnMeta(columnList, 10, "confirm_follow_locked", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNFOLLOW =
+            ColumnMeta(columnList, 10, "confirm_unfollow", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_POST =
+            ColumnMeta(columnList, 10, "confirm_post", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_FAVOURITE =
+            ColumnMeta(columnList, 23, "confirm_favourite", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNBOOST =
+            ColumnMeta(columnList, 24, "confirm_unboost", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNFAVOURITE =
+            ColumnMeta(columnList, 24, "confirm_unfavourite", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_REACTION =
+            ColumnMeta(columnList, 61, "confirm_reaction", ColumnMeta.TS_TRUE)
 
         // スキーマ13から
-        val COL_NOTIFICATION_TAG = ColumnMeta(columnList, 13, "notification_server", ColumnMeta.TS_EMPTY)
+        val COL_NOTIFICATION_TAG =
+            ColumnMeta(columnList, 13, "notification_server", ColumnMeta.TS_EMPTY)
 
         // スキーマ14から
         val COL_REGISTER_KEY = ColumnMeta(columnList, 14, "register_key", ColumnMeta.TS_EMPTY)
@@ -396,29 +415,40 @@ class SavedAccount(
         private val COL_SOUND_URI = ColumnMeta(columnList, 16, "sound_uri", ColumnMeta.TS_EMPTY)
 
         // スキーマ18から
-        private val COL_DONT_SHOW_TIMEOUT = ColumnMeta(columnList, 18, "dont_show_timeout", ColumnMeta.TS_ZERO)
+        private val COL_DONT_SHOW_TIMEOUT =
+            ColumnMeta(columnList, 18, "dont_show_timeout", ColumnMeta.TS_ZERO)
 
         // スキーマ27から
-        private val COL_DEFAULT_TEXT = ColumnMeta(columnList, 27, "default_text", ColumnMeta.TS_EMPTY)
+        private val COL_DEFAULT_TEXT =
+            ColumnMeta(columnList, 27, "default_text", ColumnMeta.TS_EMPTY)
 
         // スキーマ28から
-        private val COL_MISSKEY_VERSION = ColumnMeta(columnList, 28, "is_misskey", ColumnMeta.TS_ZERO)
+        private val COL_MISSKEY_VERSION =
+            ColumnMeta(columnList, 28, "is_misskey", ColumnMeta.TS_ZERO)
         // カラム名がおかしいのは、昔はboolean扱いだったから
         // 0: not misskey
         // 1: old(v10) misskey
         // 11: misskey v11
 
-        private val COL_DEFAULT_SENSITIVE = ColumnMeta(columnList, 38, "default_sensitive", ColumnMeta.TS_ZERO)
+        private val COL_DEFAULT_SENSITIVE =
+            ColumnMeta(columnList, 38, "default_sensitive", ColumnMeta.TS_ZERO)
         private val COL_EXPAND_CW = ColumnMeta(columnList, 38, "expand_cw", ColumnMeta.TS_ZERO)
-        private val COL_MAX_TOOT_CHARS = ColumnMeta(columnList, 39, "max_toot_chars", ColumnMeta.TS_ZERO)
+        private val COL_MAX_TOOT_CHARS =
+            ColumnMeta(columnList, 39, "max_toot_chars", ColumnMeta.TS_ZERO)
 
-        private val COL_LAST_NOTIFICATION_ERROR = ColumnMeta(columnList, 42, "last_notification_error", "text")
-        private val COL_LAST_SUBSCRIPTION_ERROR = ColumnMeta(columnList, 45, "last_subscription_error", "text")
-        private val COL_LAST_PUSH_ENDPOINT = ColumnMeta(columnList, 46, "last_push_endpoint", "text")
+        private val COL_LAST_NOTIFICATION_ERROR =
+            ColumnMeta(columnList, 42, "last_notification_error", "text")
+        private val COL_LAST_SUBSCRIPTION_ERROR =
+            ColumnMeta(columnList, 45, "last_subscription_error", "text")
+        private val COL_LAST_PUSH_ENDPOINT =
+            ColumnMeta(columnList, 46, "last_push_endpoint", "text")
 
-        private val COL_IMAGE_RESIZE = ColumnMeta(columnList, 59, "image_resize", "text default null")
-        private val COL_IMAGE_MAX_MEGABYTES = ColumnMeta(columnList, 59, "image_max_megabytes", "text default null")
-        private val COL_MOVIE_MAX_MEGABYTES = ColumnMeta(columnList, 59, "movie_max_megabytes", "text default null")
+        private val COL_IMAGE_RESIZE =
+            ColumnMeta(columnList, 59, "image_resize", "text default null")
+        private val COL_IMAGE_MAX_MEGABYTES =
+            ColumnMeta(columnList, 59, "image_max_megabytes", "text default null")
+        private val COL_MOVIE_MAX_MEGABYTES =
+            ColumnMeta(columnList, 59, "movie_max_megabytes", "text default null")
 
         private val COL_PUSH_POLICY = ColumnMeta(columnList, 60, "push_policy", "text default null")
 
@@ -563,7 +593,10 @@ class SavedAccount(
                 } catch (ex: Throwable) {
                     log.trace(ex)
                     log.e(ex, "loadAccountList failed.")
-                    context.showToast(true, ex.withCaption("(SubwayTooter) broken in-app database?"))
+                    context.showToast(
+                        true,
+                        ex.withCaption("(SubwayTooter) broken in-app database?")
+                    )
                 }
             }
 
@@ -827,7 +860,14 @@ class SavedAccount(
                         this.loginAccount = ta
                         ContentValues().apply {
                             put(COL_ACCOUNT, result.jsonObject.toString())
-                        }.let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
+                        }.let {
+                            App1.database.update(
+                                table,
+                                it,
+                                "$COL_ID=?",
+                                arrayOf(db_id.toString())
+                            )
+                        }
                         PollingWorker.queueUpdateNotification(context)
                     }
                 }

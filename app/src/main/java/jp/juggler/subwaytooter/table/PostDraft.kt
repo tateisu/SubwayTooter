@@ -34,7 +34,7 @@ class PostDraft {
 
         private val log = LogCategory("PostDraft")
 
-        private const val table = "post_draft"
+        override val table = "post_draft"
         private const val COL_ID = BaseColumns._ID
         private const val COL_TIME_SAVE = "time_save"
         private const val COL_JSON = "json"

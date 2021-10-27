@@ -10,7 +10,7 @@ import jp.juggler.util.*
 object MediaShown : TableCompanion {
     private val log = LogCategory("MediaShown")
 
-    private const val table = "media_shown_misskey"
+    override val table = "media_shown_misskey"
 
     val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
         ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)

@@ -17,6 +17,8 @@ import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
+import jp.juggler.util.getBlobOrNull
+import jp.juggler.util.getLong
 import kotlinx.coroutines.channels.Channel
 import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
@@ -55,7 +57,7 @@ class CustomEmojiCache(
 
         companion object : TableCompanion {
 
-            const val table = "custom_emoji_cache"
+            override val table = "custom_emoji_cache"
 
             const val COL_ID = BaseColumns._ID
             const val COL_TIME_SAVE = "time_save"
@@ -91,9 +93,9 @@ class CustomEmojiCache(
                 )?.use { cursor ->
                     if (cursor.moveToNext()) {
                         DbCache(
-                            id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
-                            timeUsed = cursor.getLong(cursor.getColumnIndex(COL_TIME_USED)),
-                            data = cursor.getBlob(cursor.getColumnIndex(COL_DATA))
+                            id = cursor.getLong(COL_ID),
+                            timeUsed = cursor.getLong(COL_TIME_USED),
+                            data = cursor.getBlobOrNull(COL_DATA)!!
                         ).apply {
                             if (now - timeUsed >= 5 * 3600000L) {
                                 db.update(

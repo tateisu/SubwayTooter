@@ -3,12 +3,11 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
-import androidx.preference.PreferenceManager
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.util.optInt
 
 fun Context.pref(): SharedPreferences =
-    PreferenceManager.getDefaultSharedPreferences(this)
+    this.getSharedPreferences(this.packageName + "_preferences", Context.MODE_PRIVATE)
 
 @Suppress("EqualsOrHashCode")
 abstract class BasePref<T>(val key: String, val defVal: T) {
@@ -503,7 +502,8 @@ object PrefI {
     const val VS_MISSKEY = 2
     val ipVisibilityStyle = IntPref("ipVisibilityStyle", VS_BY_ACCOUNT)
 
-    val ipAdditionalButtonsPosition = IntPref("AdditionalButtonsPosition", AdditionalButtonsPosition.End.idx)
+    val ipAdditionalButtonsPosition =
+        IntPref("AdditionalButtonsPosition", AdditionalButtonsPosition.End.idx)
 
     val ipFooterButtonBgColor = IntPref("footer_button_bg_color", 0)
     val ipFooterButtonFgColor = IntPref("footer_button_fg_color", 0)

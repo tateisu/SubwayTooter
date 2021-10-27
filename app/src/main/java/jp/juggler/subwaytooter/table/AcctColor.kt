@@ -75,7 +75,7 @@ class AcctColor {
 
         private val log = LogCategory("AcctColor")
 
-        const val table = "acct_color"
+        override val table = "acct_color"
 
         val columnList: ColumnMeta.List = ColumnMeta.List(table, 9).apply {
             // not used, but must be defined

@@ -52,9 +52,16 @@ fun Cursor.getStringOrNull(keyIdx: Int) =
 fun Cursor.getStringOrNull(key: String) =
     getStringOrNull(getColumnIndex(key))
 
+fun Cursor.getBlobOrNull(keyIdx: Int) =
+    if (isNull(keyIdx)) null else getBlob(keyIdx)
+
+fun Cursor.getBlobOrNull(key: String) =
+    getBlobOrNull(getColumnIndex(key))
+
 /////////////////////////////////////////////////////////////
 
 interface TableCompanion {
+    val table: String
     fun onDBCreate(db: SQLiteDatabase)
     fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int)
 }

@@ -13,7 +13,7 @@ object FavMute : TableCompanion {
 
     private val log = LogCategory("FavMute")
 
-    const val table = "fav_mute"
+    override val table = "fav_mute"
     const val COL_ID = "_id"
     const val COL_ACCT = "acct"
 

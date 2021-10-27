@@ -128,7 +128,12 @@ class PollingWorker private constructor(contextArg: Context) {
                     val body = response.body?.string()
 
                     if (!response.isSuccessful || body?.isEmpty() != false) {
-                        log.e(TootApiClient.formatResponse(response, "getInstallId: get/counter failed."))
+                        log.e(
+                            TootApiClient.formatResponse(
+                                response,
+                                "getInstallId: get/counter failed."
+                            )
+                        )
                         return null
                     }
 
@@ -149,7 +154,7 @@ class PollingWorker private constructor(contextArg: Context) {
         private fun scheduleJob(context: Context, jobId: JobId) {
 
             val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE)
-                as? JobScheduler
+                    as? JobScheduler
                 ?: throw NotImplementedError("missing JobScheduler system service")
 
             val component = ComponentName(context, PollingService::class.java)
@@ -343,7 +348,11 @@ class PollingWorker private constructor(contextArg: Context) {
                 // ジョブが完了した？
                 val now = SystemClock.elapsedRealtime()
                 if (!pw.hasJob(JobId.Push)) {
-                    log.d("handleFCMMessage: JOB_FCM completed. time=${(now - time_start).div(1000f).toString("%.2f")}")
+                    log.d(
+                        "handleFCMMessage: JOB_FCM completed. time=${
+                            (now - time_start).div(1000f).toString("%.2f")
+                        }"
+                    )
                     break
                 }
 
@@ -359,7 +368,7 @@ class PollingWorker private constructor(contextArg: Context) {
             try {
                 scheduleJob(context, JobId.Polling)
             } catch (ex: Throwable) {
-                ActAppSetting.log.trace(ex, "PollingWorker.scheduleJob failed.")
+                log.trace(ex, "PollingWorker.scheduleJob failed.")
             }
         }
     }

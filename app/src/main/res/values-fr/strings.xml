@@ -41,7 +41,7 @@
     <string name="background_color">Couleur d\'arrière plan</string>
     <string name="block">Bloquer</string>
     <string name="block_succeeded">Bloqué</string>
-    <string name="blocked_users">Utilisateurs bloqués</string>
+    <string name="blocked_users">Utilisateur·rice·s bloqué·e·s</string>
     <string name="boost">Booster</string>
     <string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
     <string name="boost_succeeded">Boosté</string>
@@ -754,7 +754,7 @@
     <string name="follow_request_cancelled">Demande d’abonnement annulée.</string>
     <string name="confirm_cancel_follow_request_who_from">Annuler la demande d’abonnement de %2$s à %1$s \?</string>
     <string name="reaction">Réaction</string>
-    <string name="timeout_for_embed_media_viewer">Délai d’expiration du visualiseur multimédia intégré (unité: secondes, redémarrage de l’application (suppression de l’historique de application) requis)</string>
+    <string name="timeout_for_embed_media_viewer">Délai d’expiration du visualiseur multimédia intégré (unité : secondes, redémarrage de l’application requis (suppression de l’historique de application))</string>
     <string name="media_attachment_max_byte_size_movie">Taille limite des octets de la pièce jointe (vidéo) (Unité : MB. La valeur par défaut est 40)</string>
     <string name="link_color">Couleur des liens (redémarrage requis)</string>
     <string name="dont_use_custom_tabs">Ne pas utiliser d’«onglets personnalisés» (Chrome/Firefox) lors de l’ouverture des liens</string>
@@ -1042,6 +1042,8 @@
     <string name="pixelfed_does_not_allow_post_without_media">Pixelfed n\'autorise pas les publications (hors réponse) sans média attaché.</string>
     <string name="quote_to">Citation de %1$s</string>
     <string name="account_picker_quote_toot">Avec quel compte citer le pouet \?</string>
-    <string name="display_name_posted_by">%1$s posté</string>
+    <string name="display_name_posted_by">%1$s a publié</string>
     <string name="server_has_no_support_of_visibility">Le serveur ne prend pas en charge la visibilité « %1$s ».</string>
+    <string name="notification_type_post">Publication</string>
+    <string name="toot_search_notestock">Recherche Notestock</string>
 </resources>

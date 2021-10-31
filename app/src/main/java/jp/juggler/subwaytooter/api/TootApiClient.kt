@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import okhttp3.*
+import okhttp3.internal.closeQuietly
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -266,42 +267,44 @@ class TootApiClient(
         progressPath: String? = null,
         jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): String? {
+        val response = result.response ?: return null
+        try {
+            if (isApiCancelled) return null
 
-        if (isApiCancelled) return null
-
-        val response = result.response!!
-
-        val request = response.request
-        publishApiProgress(
-            context.getString(
-                R.string.reading_api,
-                request.method,
-                progressPath ?: result.caption
+            val request = response.request
+            publishApiProgress(
+                context.getString(
+                    R.string.reading_api,
+                    request.method,
+                    progressPath ?: result.caption
+                )
             )
-        )
 
-        val bodyString = response.body?.string()
-        if (isApiCancelled) return null
+            val bodyString = response.body?.string()
+            if (isApiCancelled) return null
 
-        // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
-        if (bodyString?.isEmpty() != false && response.code in 200 until 300) {
-            result.bodyString = ""
-            return ""
-        }
+            // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
+            if (bodyString?.isEmpty() != false && response.code in 200 until 300) {
+                result.bodyString = ""
+                return ""
+            }
 
-        if (!response.isSuccessful || bodyString?.isEmpty() != false) {
-            result.parseErrorResponse(
-                bodyString?.notEmpty() ?: NO_INFORMATION,
-                jsonErrorParser
-            )
-        }
+            if (!response.isSuccessful || bodyString?.isEmpty() != false) {
+                result.parseErrorResponse(
+                    bodyString?.notEmpty() ?: NO_INFORMATION,
+                    jsonErrorParser
+                )
+            }
 
-        return if (result.error != null) {
-            null
-        } else {
-            publishApiProgress(context.getString(R.string.parsing_response))
-            result.bodyString = bodyString
-            bodyString
+            return if (result.error != null) {
+                null
+            } else {
+                publishApiProgress(context.getString(R.string.parsing_response))
+                result.bodyString = bodyString
+                bodyString
+            }
+        }finally{
+            response.body?.closeQuietly()
         }
     }
 

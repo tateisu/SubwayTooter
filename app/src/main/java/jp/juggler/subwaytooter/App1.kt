@@ -42,6 +42,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.math.max
 
+
 class App1 : Application() {
 
     override fun onCreate() {
@@ -244,6 +245,8 @@ class App1 : Application() {
             timeoutSecondsConnect: Int,
             timeoutSecondsRead: Int,
         ): OkHttpClient.Builder {
+
+            Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
 
             var cookieJar = this.cookieJar
             if (cookieJar == null) {

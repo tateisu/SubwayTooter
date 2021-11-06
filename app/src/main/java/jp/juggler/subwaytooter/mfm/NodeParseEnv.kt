@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter.mfm
 
-import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoderExt.mapAllowInside
-import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoderExt.nodeParserMap
 import jp.juggler.util.firstNonNull
 import java.util.*
 import java.util.regex.Pattern

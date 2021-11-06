@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.mfm
 
-import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoderExt.trimBlock
 import jp.juggler.util.encodePercent
 import jp.juggler.util.notEmpty
 
@@ -168,7 +167,9 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
     }),
 
     FUNCTION({
-        if (decorationEnabled && showUnsupportedMarkup) {
+        if (!decorationEnabled || !showUnsupportedMarkup) {
+            fireRenderChildNodes(it)
+        } else {
             val name = it.args.elementAtOrNull(0)
             appendText("[")
             appendText(name ?: "")
@@ -176,7 +177,6 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             fireRenderChildNodes(it)
             appendText("]")
         }
-        //
     }),
 
     ITALIC({

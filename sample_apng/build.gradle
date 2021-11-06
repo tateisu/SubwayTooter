@@ -32,6 +32,18 @@ android {
         // https://github.com/Kotlin/kotlinx.coroutines/issues/1064
         pickFirst("META-INF/atomicfu.kotlin_module")
     }
+
+    kotlinOptions {
+        jvmTarget = jvm_target
+        useIR = true
+        freeCompilerArgs += [
+                "-Xopt-in=kotlin.ExperimentalStdlibApi",
+                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
+        ]
+    }
 }
 
 dependencies {

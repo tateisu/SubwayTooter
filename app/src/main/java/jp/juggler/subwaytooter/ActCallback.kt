@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.util.LogCategory
 import jp.juggler.util.digestSHA256Hex
+import jp.juggler.util.showToast
 import okhttp3.internal.toHexString
 import org.apache.commons.io.IOUtils
 import java.io.File
@@ -29,6 +30,20 @@ class ActCallback : AppCompatActivity() {
             this.startsWith("audio/") -> true
             else -> false
         }
+
+        @Volatile
+        private var uriFromApp: Uri? = null
+
+        fun setUriFromApp(uri: Uri?) {
+            synchronized(this) {
+                uriFromApp = uri
+            }
+        }
+
+        fun containsUriFromApp(uri: Uri?) =
+            synchronized(this) {
+                uri == uriFromApp
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +79,11 @@ class ActCallback : AppCompatActivity() {
                     if (intent != null) {
                         sent_intent.set(intent)
                     }
+                } else if (forbidUriFromApp(intent)) {
+                    // last_uriをクリアする
+                    last_uri.set(null)
+                    // ダイアログを閉じるまで画面遷移しない
+                    return
                 } else {
                     val uri = intent.data
                     if (uri != null) {
@@ -74,7 +94,12 @@ class ActCallback : AppCompatActivity() {
         }
 
         // どうであれメイン画面に戻る
-        intent = Intent(this, ActMain::class.java)
+        afterDispatch()
+
+    }
+
+    private fun afterDispatch() {
+        val intent = Intent(this, ActMain::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
         finish()
@@ -219,5 +244,22 @@ class ActCallback : AppCompatActivity() {
         } catch (ex: Throwable) {
             log.trace(ex)
         }
+    }
+
+    // return true if open app chooser dialog
+    private fun forbidUriFromApp(src: Intent): Boolean {
+        if (src.action != Intent.ACTION_VIEW) return false
+
+        val uri = src.data ?: return false
+        if (!containsUriFromApp(uri)) return false
+        setUriFromApp(null)
+
+        try {
+            startActivity(Intent.createChooser(src, uri.toString()))
+            finish()
+        } catch (ex: Throwable) {
+            showToast(ex, "can't open chooser for $uri")
+        }
+        return true
     }
 }

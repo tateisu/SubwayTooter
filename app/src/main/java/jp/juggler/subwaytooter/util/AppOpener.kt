@@ -4,19 +4,17 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.action.conversationLocal
+import jp.juggler.subwaytooter.action.conversationOtherInstance
+import jp.juggler.subwaytooter.action.tagDialog
+import jp.juggler.subwaytooter.action.userProfile
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
-import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -30,97 +28,95 @@ import java.util.*
 
 private val log = LogCategory("AppOpener")
 
-// returns true if activity is opened.
-// returns false if fallback required
-private fun Activity.openBrowserExcludeMe(
-    pref: SharedPreferences,
-    intent: Intent,
-    startAnimationBundle: Bundle? = null
-): Boolean {
+// 例外を出す
+private fun Activity.openBrowserExcludeMe(intent: Intent) {
+//    if (intent.component == null) {
+//        val cn = PrefS.spWebBrowser(pref).cn()
+//        if (cn?.exists(this) == true) {
+//            intent.component = cn
+//        }
+//    }
+    ActCallback.setUriFromApp(intent.data)
+    startActivity(intent)
+//
+//        // このアプリのパッケージ名
+//        val myName = packageName
+//
+//        val filter: (ResolveInfo) -> Boolean = {
+//            when {
+//                it.activityInfo.packageName == myName -> false
+//                !it.activityInfo.exported -> false
+//
+//                // Huaweiの謎Activityのせいでうまく働かないことがある
+//                -1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
+//
+//                // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
+//                it.activityInfo.packageName == "android" -> false
+//                it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
+//                it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
+//
+//                // たぶんChromeとかfirefoxとか
+//                else -> true
+//            }
+//        }
+//
+//        // resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう
+//        // ただしAndroid M以降はMATCH_DEFAULT_ONLYだと「常時」が設定されてないとnullを返す
+//        val ri = packageManager!!.resolveActivity(
+//            intent,
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                PackageManager.MATCH_ALL
+//            } else {
+//                PackageManager.MATCH_DEFAULT_ONLY
+//            }
+//        )?.takeIf(filter)
+//
+//        return when {
+//
+//            ri != null -> {
+//                intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
+//                log.d("startActivityExcludeMyApp(1) $intent")
+//                startActivity(intent, startAnimationBundle)
+//                true
+//            }
+//
+//            else -> DlgAppPicker(
+//                this,
+//                intent,
+//                autoSelect = true,
+//                filter = filter,
+//                addCopyAction = false
+//            ) {
+//                try {
+//                    intent.component = it.cn()
+//                    log.d("startActivityExcludeMyApp(2) $intent")
+//                    startActivity(intent, startAnimationBundle)
+//                } catch (ex: Throwable) {
+//                    log.trace(ex)
+//                    showToast(ex, "can't open. ${intent.data}")
+//                }
+//            }.show()
+//        }
+//    } catch (ex: Throwable) {
+//        log.trace(ex)
+//        showToast(ex, "can't open. ${intent.data}")
+//    }
+}
+
+fun Activity.openBrowser(uri: Uri?) {
+    uri ?: return
     try {
-        if (intent.component == null) {
-            val cn = PrefS.spWebBrowser(pref).cn()
-            if (cn?.exists(this) == true) {
-                intent.component = cn
-            }
-        }
-
-        // このアプリのパッケージ名
-        val myName = packageName
-
-        val filter: (ResolveInfo) -> Boolean = {
-            when {
-                it.activityInfo.packageName == myName -> false
-                !it.activityInfo.exported -> false
-
-                // Huaweiの謎Activityのせいでうまく働かないことがある
-                -1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
-
-                // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
-                it.activityInfo.packageName == "android" -> false
-                it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
-                it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
-
-                // たぶんChromeとかfirefoxとか
-                else -> true
-            }
-        }
-
-        // resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう
-        // ただしAndroid M以降はMATCH_DEFAULT_ONLYだと「常時」が設定されてないとnullを返す
-        val ri = packageManager!!.resolveActivity(
-            intent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PackageManager.MATCH_ALL
-            } else {
-                PackageManager.MATCH_DEFAULT_ONLY
-            }
-        )?.takeIf(filter)
-
-        return when {
-
-            ri != null -> {
-                intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
-                log.d("startActivityExcludeMyApp(1) $intent")
-                startActivity(intent, startAnimationBundle)
-                true
-            }
-
-            else -> DlgAppPicker(
-                this,
-                intent,
-                autoSelect = true,
-                filter = filter,
-                addCopyAction = false
-            ) {
-                try {
-                    intent.component = it.cn()
-                    log.d("startActivityExcludeMyApp(2) $intent")
-                    startActivity(intent, startAnimationBundle)
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                    showToast(ex, "can't open. ${intent.data}")
-                }
-            }.show()
-        }
+        openBrowserExcludeMe(
+            Intent(Intent.ACTION_VIEW, uri).apply { addCategory(Intent.CATEGORY_BROWSABLE) }
+        )
     } catch (ex: Throwable) {
         log.trace(ex)
         showToast(ex, "can't open. ${intent.data}")
-        return true // fallback not required in this case
     }
 }
 
-fun Activity.openBrowser(uri: Uri?, pref: SharedPreferences = pref()) {
-    uri ?: return
-    val rv = openBrowserExcludeMe(
-        pref,
-        Intent(Intent.ACTION_VIEW, uri)
-            .apply { addCategory(Intent.CATEGORY_BROWSABLE) }
-    )
-    if (!rv) showToast(true, "there is no app that can open $uri")
-}
-
-fun Activity.openBrowser(url: String?, pref: SharedPreferences = pref()) = openBrowser(url.mayUri(), pref)
+fun Activity.openBrowser(url: String?) =
+    openBrowser(url.mayUri())
 
 // Chrome Custom Tab を開く
 fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
@@ -132,11 +128,12 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
     }
 
     if (PrefB.bpDontUseCustomTabs(pref)) {
-        openBrowser(url, pref)
+        openBrowser(url)
         return
     }
 
     try {
+        // 例外を出す
         fun startCustomTabIntent(cn: ComponentName?) =
             CustomTabsIntent.Builder()
                 .setDefaultColorSchemeParams(
@@ -149,12 +146,10 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
                 .let {
                     log.w("startCustomTabIntent ComponentName=$cn")
                     openBrowserExcludeMe(
-                        pref,
                         it.intent.also { intent ->
                             if (cn != null) intent.component = cn
                             intent.data = url.toUri()
                         },
-                        it.startAnimationBundle
                     )
                 }
 
@@ -165,15 +160,14 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
                     "com.android.chrome",
                     "com.google.android.apps.chrome.Main"
                 )
-                if (startCustomTabIntent(cn)) return
+                startCustomTabIntent(cn)
             } catch (ex2: Throwable) {
                 log.e(ex2, "openCustomTab: missing chrome. retry to other application.")
             }
         }
 
         // Chromeがないようなのでcomponent指定なしでリトライ
-        if (startCustomTabIntent(null)) return
-        showToast(true, "the browser app is not installed.")
+        startCustomTabIntent(null)
     } catch (ex: Throwable) {
         log.trace(ex)
         val scheme = url.mayUri()?.scheme ?: url

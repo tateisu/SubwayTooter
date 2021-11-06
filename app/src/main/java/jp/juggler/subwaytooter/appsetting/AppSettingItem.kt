@@ -257,42 +257,42 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpDontUseCustomTabs, R.string.dont_use_custom_tabs)
         sw(PrefB.bpPriorChrome, R.string.prior_chrome_custom_tabs)
 
-        item(
-            SettingType.TextWithSelector,
-            PrefS.spWebBrowser,
-            R.string.web_browser
-        ) {
-            onClickEdit = {
-                openWebBrowserChooser(
-                    this@item,
-                    intent = Intent(Intent.ACTION_VIEW, "https://joinmastodon.org/".toUri()).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        addCategory(Intent.CATEGORY_BROWSABLE)
-                    },
-                    filter = {
-                        when {
-                            it.activityInfo.packageName == packageName -> false
-                            !it.activityInfo.exported -> false
-
-                            // Huaweiの謎Activityのせいでうまく働かないことがある
-                            -1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
-
-                            // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
-                            it.activityInfo.packageName == "android" -> false
-                            it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
-                            it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
-
-                            // たぶんChromeとかfirefoxとか
-                            else -> true
-                        }
-                    }
-                )
-            }
-            onClickReset = { setWebBrowser(this@item, "") }
-            showTextView = {
-                showWebBrowser(it, this@item.pref.cast<StringPref>()!!.invoke(pref))
-            }
-        }
+//        item(
+//            SettingType.TextWithSelector,
+//            PrefS.spWebBrowser,
+//            R.string.web_browser
+//        ) {
+//            onClickEdit = {
+//                openWebBrowserChooser(
+//                    this@item,
+//                    intent = Intent(Intent.ACTION_VIEW, "https://joinmastodon.org/".toUri()).apply {
+//                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//                        addCategory(Intent.CATEGORY_BROWSABLE)
+//                    },
+//                    filter = {
+//                        when {
+//                            it.activityInfo.packageName == packageName -> false
+//                            !it.activityInfo.exported -> false
+//
+//                            // Huaweiの謎Activityのせいでうまく働かないことがある
+//                            -1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
+//
+//                            // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
+//                            it.activityInfo.packageName == "android" -> false
+//                            it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
+//                            it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
+//
+//                            // たぶんChromeとかfirefoxとか
+//                            else -> true
+//                        }
+//                    }
+//                )
+//            }
+//            onClickReset = { setWebBrowser(this@item, "") }
+//            showTextView = {
+//                showWebBrowser(it, this@item.pref.cast<StringPref>()!!.invoke(pref))
+//            }
+//        }
 
         sw(PrefB.bpAllowColumnDuplication, R.string.allow_column_duplication)
         sw(PrefB.bpForceGap, R.string.force_gap_when_refresh)

@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord

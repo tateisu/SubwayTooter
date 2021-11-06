@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.net.Uri
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.util.MisskeyMarkdownDecoder
+import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.util.*
 import java.util.regex.Pattern
 

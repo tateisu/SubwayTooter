@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.mfm.SpannableStringBuilderEx
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
@@ -319,7 +320,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 // Markdownのデコード結果からmentionsを読むのだった
                 val mentions1 =
-                    (decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+                    (decoded_content as? SpannableStringBuilderEx)?.mentions
 
                 val sv = src.string("cw")?.cleanCW()
                 this.spoiler_text = when {
@@ -351,7 +352,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 if (this.highlightAny == null) this.highlightAny = options.highlightAny
 
                 val mentions2 =
-                    (decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+                    (decoded_spoiler_text as? SpannableStringBuilderEx)?.mentions
 
                 this.mentions = mergeMentions(mentions1, mentions2)
                 this.decoded_mentions =

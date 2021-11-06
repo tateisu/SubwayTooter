@@ -458,9 +458,19 @@ object PrefB {
         "MultiWindowPost",
         false
     )
+
     val bpManyWindowPost = BooleanPref(
         "ManyWindowPost",
         false
+    )
+
+    val bpMfmDecorationEnabled = BooleanPref(
+        "MfmDecorationEnabled",
+        true
+    )
+    val bpMfmDecorationShowUnsupportedMarkup = BooleanPref(
+        "MfmDecorationShowUnsupportedMarkup",
+        true
     )
 }
 

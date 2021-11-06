@@ -460,44 +460,42 @@ class CustomEmojiCache(
         }
 
         private fun decodeAPNG(data: ByteArray, url: String): ApngFrames? {
+            val errors = ArrayList<Throwable>()
+
             try {
                 // APNGをデコード
                 val x = ApngFrames.parse(64) { ByteArrayInputStream(data) }
                 if (x != null) return x
-                // fall thru
+                error("ApngFrames.parse returns null.")
             } catch (ex: Throwable) {
                 if (DEBUG) log.trace(ex)
-                log.e(ex, "PNG decode failed. $url ")
+                errors.add(ex)
             }
 
             // 通常のビットマップでのロードを試みる
             try {
                 val b = decodeBitmap(data, 128)
-                if (b != null) {
-                    if (DEBUG) log.d("bitmap decoded.")
-                    return ApngFrames(b)
-                } else {
-                    log.e("Bitmap decode returns null. $url")
-                }
-
-                // fall thru
+                if (b != null) return ApngFrames(b)
+                error("decodeBitmap returns null.")
             } catch (ex: Throwable) {
-                log.e(ex, "Bitmap decode failed. $url")
+                if (DEBUG) log.trace(ex)
+                errors.add(ex)
             }
 
             // SVGのロードを試みる
             try {
                 val b = decodeSVG(url, data, 128.toFloat())
-                if (b != null) {
-                    if (DEBUG) log.d("SVG decoded.")
-                    return ApngFrames(b)
-                }
-
-                // fall thru
+                if (b != null) return ApngFrames(b)
+                error("decodeSVG returns null.")
             } catch (ex: Throwable) {
-                log.e(ex, "SVG decode failed. $url")
+                if (DEBUG) log.trace(ex)
+                errors.add(ex)
             }
 
+            // 全部ダメだった
+            log.e("decode failed. url=$url, errors=${
+                errors.joinToString(", ") { "${it.javaClass} ${it.message}" }
+            }")
             return null
         }
 
@@ -514,10 +512,8 @@ class CustomEmojiCache(
             BitmapFactory.decodeByteArray(data, 0, data.size, options)
             var w = options.outWidth
             var h = options.outHeight
-            if (w <= 0 || h <= 0) {
-                log.e("can't decode bounds.")
-                return null
-            }
+            if (w <= 0 || h <= 0) error("decodeBitmap: can't decode bounds.")
+
             var bits = 0
             while (w > pixelMax || h > pixelMax) {
                 ++bits

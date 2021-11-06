@@ -1108,4 +1108,6 @@
     <string name="confirm_reaction_to_pleroma">Reaction custom emoji %1$s from %2$s to server %3$s that may not support custom emoji reaction. Continue?</string>
     <string name="multi_window_post">Multi window for post activity (experimental)</string>
     <string name="many_window_post">Many window for post activity (experimental)</string>
+    <string name="mfm_decoration_enabled">(Misskey)Show text decorations</string>
+    <string name="mfm_show_unsupported_markup">(Misskey)Show unsupported markups</string>
 </resources>

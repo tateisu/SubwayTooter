@@ -30,6 +30,13 @@ fun <T : Any> MutableCollection<T>.removeFirst(check: (T) -> Boolean): T? {
     }
     return null
 }
+
+// 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
+inline fun <T, V> Array<out T>.firstNonNull(predicate: (T) -> V?): V? {
+    for (element in this) return predicate(element) ?: continue
+    return null
+}
+
 //
 //object Utils {
 //

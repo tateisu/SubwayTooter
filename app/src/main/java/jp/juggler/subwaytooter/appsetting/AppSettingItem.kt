@@ -745,6 +745,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         sw(PrefB.bpLinksInContextMenu, R.string.show_links_in_context_menu)
         sw(PrefB.bpShowLinkUnderline, R.string.show_link_underline)
+
+        sw(PrefB.bpMfmDecorationEnabled, R.string.mfm_decoration_enabled)
+        sw(PrefB.bpMfmDecorationShowUnsupportedMarkup, R.string.mfm_show_unsupported_markup)
+
         sw(
             PrefB.bpMoveNotificationsQuickFilter,
             R.string.move_notifications_quick_filter_to_column_setting

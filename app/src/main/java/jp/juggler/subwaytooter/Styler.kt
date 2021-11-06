@@ -15,6 +15,8 @@ import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation

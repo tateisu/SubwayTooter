@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.content.SharedPreferences
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.*
 

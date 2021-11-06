@@ -17,7 +17,7 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefI
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import org.xmlpull.v1.XmlPullParser
 import kotlin.math.pow

@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.ActText
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount

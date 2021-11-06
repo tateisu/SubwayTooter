@@ -21,6 +21,9 @@ import com.bumptech.glide.load.model.GlideUrl
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.emoji.EmojiMap
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister

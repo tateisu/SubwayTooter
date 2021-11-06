@@ -15,6 +15,8 @@ import jp.juggler.subwaytooter.action.userProfile
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*

@@ -16,6 +16,8 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.getBackgroundImageDir
+import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.pref.impl.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils

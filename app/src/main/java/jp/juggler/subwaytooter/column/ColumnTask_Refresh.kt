@@ -6,6 +6,8 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.columnviewholder.setScrollPosition
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
 

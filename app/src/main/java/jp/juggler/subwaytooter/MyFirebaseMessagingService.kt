@@ -7,6 +7,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import jp.juggler.subwaytooter.notification.PollingForegrounder
 import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.pref.PrefDevice
 
 import jp.juggler.util.LogCategory
 

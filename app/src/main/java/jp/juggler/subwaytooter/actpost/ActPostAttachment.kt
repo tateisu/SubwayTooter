@@ -5,7 +5,7 @@ import android.net.Uri
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.ApiTask

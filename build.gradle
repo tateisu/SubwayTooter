@@ -1,6 +1,6 @@
 buildscript {
 
-    ext.jvm_target = "14"
+    ext.jvm_target = "11"
 
     ext.min_sdk_version = 21
     ext.target_sdk_version = 31

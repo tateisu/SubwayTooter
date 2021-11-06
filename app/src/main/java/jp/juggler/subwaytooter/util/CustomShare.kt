@@ -5,7 +5,7 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefS
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount

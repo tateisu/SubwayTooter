@@ -8,6 +8,8 @@ import android.widget.LinearLayout
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
+import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.pref.impl.StringPref
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.view.ListDivider

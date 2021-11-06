@@ -6,8 +6,8 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.PrefDevice
-import jp.juggler.subwaytooter.PrefS
+import jp.juggler.subwaytooter.pref.PrefDevice
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationOtherInstance
 import jp.juggler.subwaytooter.action.openActPostImpl

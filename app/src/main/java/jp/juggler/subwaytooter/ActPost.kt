@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.actpost.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.*
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.SavedAccount

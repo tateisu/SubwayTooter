@@ -56,6 +56,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         internal const val EXTRA_IDX = "idx"
         internal const val EXTRA_DATA = "data"
         internal const val EXTRA_SERVICE_TYPE = "serviceType"
+        internal const val EXTRA_SHOW_DESCRIPTION = "showDescription"
 
         internal const val STATE_PLAYER_POS = "playerPos"
         internal const val STATE_PLAYER_PLAY_WHEN_READY = "playerPlayWhenReady"
@@ -74,6 +75,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         fun open(
             activity: ActMain,
+            showDescription: Boolean,
             serviceType: ServiceType,
             list: ArrayList<TootAttachmentLike>,
             idx: Int,
@@ -82,6 +84,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             intent.putExtra(EXTRA_IDX, idx)
             intent.putExtra(EXTRA_SERVICE_TYPE, serviceType.ordinal)
             intent.putExtra(EXTRA_DATA, encodeMediaList(list))
+            intent.putExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
             activity.startActivity(intent)
             activity.overridePendingTransition(R.anim.slide_from_bottom, android.R.anim.fade_out)
         }
@@ -90,6 +93,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     internal var idx: Int = 0
     private lateinit var mediaList: ArrayList<TootAttachment>
     private lateinit var serviceType: ServiceType
+    private var showDescription = true
 
     private lateinit var pbvImage: PinchBitmapView
     private lateinit var btnPrevious: View
@@ -174,6 +178,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         App1.setActivityTheme(this, noActionBar = true, forceDark = true)
 
         val intent = intent
+
+        this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
 
         this.idx = savedInstanceState?.getInt(EXTRA_IDX) ?: intent.getIntExtra(EXTRA_IDX, idx)
 
@@ -303,7 +309,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
         val ta = mediaList[idx]
         val description = ta.description
-        if (description?.isNotEmpty() == true) {
+        if (showDescription && description?.isNotEmpty() == true) {
             svDescription.visibility = View.VISIBLE
             tvDescription.text = description
         }

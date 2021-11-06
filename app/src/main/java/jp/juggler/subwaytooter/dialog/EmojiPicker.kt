@@ -14,6 +14,9 @@ import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.emoji.*
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.view.HeaderGridView
 import jp.juggler.subwaytooter.view.MyViewPager

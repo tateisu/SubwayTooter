@@ -18,6 +18,8 @@ import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.DlgQRCode
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount

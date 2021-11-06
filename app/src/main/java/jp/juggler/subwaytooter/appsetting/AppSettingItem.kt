@@ -11,6 +11,8 @@ import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
+import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.pref.impl.*
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*

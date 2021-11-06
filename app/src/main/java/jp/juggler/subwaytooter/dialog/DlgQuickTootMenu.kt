@@ -12,6 +12,8 @@ import java.lang.ref.WeakReference
 import android.view.Gravity
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.put
 
 class DlgQuickTootMenu(
     internal val activity: ActMain,

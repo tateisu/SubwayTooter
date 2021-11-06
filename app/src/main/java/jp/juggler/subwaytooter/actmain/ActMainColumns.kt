@@ -12,6 +12,9 @@ import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.columnviewholder.TabletColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop2
 import jp.juggler.subwaytooter.columnviewholder.showColumnSetting
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*

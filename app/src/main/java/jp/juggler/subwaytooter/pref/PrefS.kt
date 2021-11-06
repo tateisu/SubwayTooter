@@ -1,0 +1,52 @@
+package jp.juggler.subwaytooter.pref
+
+import jp.juggler.subwaytooter.pref.impl.StringPref
+
+object PrefS {
+
+    // string
+    val spColumnWidth = StringPref("ColumnWidth", "")
+    val spMediaThumbHeight = StringPref("MediaThumbHeight", "")
+    val spClientName = StringPref("client_name", "")
+    val spQuoteNameFormat = StringPref("quote_name_format", "")
+    val spAutoCWLines = StringPref("auto_cw_lines", "0")
+    val spCardDescriptionLength = StringPref("CardDescriptionLength", "64")
+    val spAvatarIconSize = StringPref("avatar_icon_size", "48")
+    val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "24")
+    val spBoostButtonSize = StringPref("BoostButtonSize", "35")
+    val spReplyIconSize = StringPref("ReplyIconSize", "24")
+    val spHeaderIconSize = StringPref("HeaderIconSize", "24")
+    val spStripIconSize = StringPref("StripIconSize", "30")
+
+    // val spMediaSizeMax = StringPref("max_media_size", "8")
+    // val spMovieSizeMax = StringPref("max_movie_size", "40")
+    // val spMediaSizeMaxPixelfed = StringPref("MediaSizeMaxPixelfed", "15")
+
+    val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
+    val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)
+    val spMspUserToken = StringPref("mastodon_search_portal_user_token", "")
+    val spEmojiPickerRecent = StringPref("emoji_picker_recent", "")
+    val spRoundRatio = StringPref("round_ratio", "33")
+    val spBoostAlpha = StringPref("BoostAlpha", "60")
+
+    val spScreenBottomPadding = StringPref("ScreenBottomPadding", "8")
+
+    val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
+    val spUserAgent = StringPref("UserAgent", "")
+
+    val spMediaReadTimeout = StringPref("spMediaReadTimeout", "60")
+    val spAgreedPrivacyPolicyDigest = StringPref("spAgreedPrivacyPolicyDigest", "")
+
+    val spTimeZone = StringPref("TimeZone", "")
+
+    val spQuickTootMacro = StringPref("QuickTootMacro", "")
+    val spQuickTootVisibility = StringPref("QuickTootVisibility", "")
+
+    val spTranslateAppComponent = StringPref("TranslateAppComponent", "")
+    val spCustomShare1 = StringPref("CustomShare1", "")
+    val spCustomShare2 = StringPref("CustomShare2", "")
+    val spCustomShare3 = StringPref("CustomShare3", "")
+    // val spWebBrowser = StringPref("WebBrowser", "")
+
+    val spTimelineSpacing = StringPref("TimelineSpacing", "")
+}

@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult

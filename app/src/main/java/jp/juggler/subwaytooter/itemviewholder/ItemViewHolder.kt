@@ -20,6 +20,8 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.columnviewholder.ItemListAdapter
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*

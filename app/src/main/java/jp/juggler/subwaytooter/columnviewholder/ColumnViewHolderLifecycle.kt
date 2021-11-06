@@ -4,8 +4,8 @@ import android.view.View
 import android.widget.ImageView
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
-import jp.juggler.subwaytooter.PrefI
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.column.*
@@ -151,6 +151,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         extraInvalidatorList.clear()
 
         cbDontCloseColumn.isCheckedNoAnime = column.dontClose
+        cbShowMediaDescription.isCheckedNoAnime = column.showMediaDescription
         cbRemoteOnly.isCheckedNoAnime = column.remoteOnly
         cbWithAttachment.isCheckedNoAnime = column.withAttachment
         cbWithHighlight.isCheckedNoAnime = column.withHighlight

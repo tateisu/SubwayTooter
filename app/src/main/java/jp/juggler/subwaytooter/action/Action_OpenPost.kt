@@ -16,6 +16,9 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.dialog.pickAccount
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefDevice
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.LogCategory

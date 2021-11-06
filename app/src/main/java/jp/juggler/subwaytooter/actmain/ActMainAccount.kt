@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.actmain
 
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefL
+import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.column.fireShowColumnHeader
 import jp.juggler.subwaytooter.table.SavedAccount
 import java.util.ArrayList

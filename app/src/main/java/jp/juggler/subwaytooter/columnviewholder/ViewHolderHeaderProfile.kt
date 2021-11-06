@@ -17,6 +17,8 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.itemviewholder.DlgContextMenu
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan

@@ -9,6 +9,8 @@ import jp.juggler.subwaytooter.actmain.checkAutoCW
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.OpenSticker
@@ -297,7 +299,7 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
             if (mediaAttachments.isEmpty()) null else mediaAttachments[0] as? TootAttachment
         btnShowMedia.blurhash = m0?.blurhash
 
-        if (sb.isNotEmpty()) {
+        if (sb.isNotEmpty() && column.showMediaDescription) {
             tvMediaDescription.visibility = View.VISIBLE
             tvMediaDescription.text = sb
         }

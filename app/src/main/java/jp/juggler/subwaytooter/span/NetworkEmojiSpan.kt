@@ -8,7 +8,7 @@ import android.text.style.ReplacementSpan
 import androidx.annotation.IntRange
 import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.LogCategory
 import java.lang.ref.WeakReference
 

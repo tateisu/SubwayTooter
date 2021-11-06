@@ -18,6 +18,7 @@ object ColumnEncoder {
     const val KEY_ACCOUNT_ROW_ID = "account_id"
     const val KEY_TYPE = "type"
     const val KEY_DONT_CLOSE = "dont_close"
+    const val KEY_SHOW_MEDIA_DESCRIPTION = "showMediaDescription"
 
     private const val KEY_COLUMN_ID = "column_id"
     private const val KEY_WITH_ATTACHMENT = "with_attachment"
@@ -120,6 +121,7 @@ object ColumnEncoder {
             dst[KEY_ANNOUNCEMENT_HIDE_TIME] = announcementHideTime
 
             dst.putIfTrue(KEY_DONT_CLOSE, dontClose)
+            dst.putIfTrue(KEY_SHOW_MEDIA_DESCRIPTION, showMediaDescription)
             dst.putIfTrue(KEY_WITH_ATTACHMENT, withAttachment)
             dst.putIfTrue(KEY_WITH_HIGHLIGHT, withHighlight)
             dst.putIfTrue(KEY_DONT_SHOW_BOOST, dontShowBoost)
@@ -249,6 +251,7 @@ object ColumnEncoder {
     fun decode(column: Column, src: JsonObject) {
         column.run {
             dontClose = src.optBoolean(KEY_DONT_CLOSE)
+            showMediaDescription = src.optBoolean(KEY_SHOW_MEDIA_DESCRIPTION,true)
             withAttachment = src.optBoolean(KEY_WITH_ATTACHMENT)
             withHighlight = src.optBoolean(KEY_WITH_HIGHLIGHT)
             dontShowBoost = src.optBoolean(KEY_DONT_SHOW_BOOST)

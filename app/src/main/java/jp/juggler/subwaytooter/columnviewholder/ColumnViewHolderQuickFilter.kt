@@ -5,7 +5,7 @@ import android.graphics.Color
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.util.applyAlphaMultiplier

@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.pref
+import jp.juggler.subwaytooter.pref.put
 import jp.juggler.util.decodeUTF8
 import jp.juggler.util.digestSHA256
 import jp.juggler.util.encodeBase64Url

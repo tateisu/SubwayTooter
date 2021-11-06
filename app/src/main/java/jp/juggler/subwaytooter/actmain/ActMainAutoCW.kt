@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.PrefS
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.optInt

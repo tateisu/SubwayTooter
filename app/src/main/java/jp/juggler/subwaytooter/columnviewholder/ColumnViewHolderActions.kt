@@ -71,6 +71,12 @@ fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Bool
             activity.appState.saveColumnList()
         }
 
+        cbShowMediaDescription->{
+            column.showMediaDescription = isChecked
+            activity.appState.saveColumnList()
+            column.startLoading()
+        }
+
         cbWithAttachment -> {
             column.withAttachment = isChecked
             activity.appState.saveColumnList()

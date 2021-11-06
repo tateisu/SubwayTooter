@@ -5,8 +5,8 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.PrefB
-import jp.juggler.subwaytooter.PrefI
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.openColumnList
 import jp.juggler.subwaytooter.action.openPost

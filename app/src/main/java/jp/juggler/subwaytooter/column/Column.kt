@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.streaming.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
@@ -132,6 +133,8 @@ class Column(
     internal var dontShowVote = false // 通知カラムのみ
 
     internal var quickFilter = QUICK_FILTER_ALL
+
+    internal var showMediaDescription = true
 
     @Volatile
     internal var dontStreaming = false

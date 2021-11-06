@@ -1099,4 +1099,5 @@
     <string name="account_picker_mute">どのアカウントで %1$s をミュートしますか\?</string>
     <string name="mfm_decoration_enabled">(Misskey)テキスト装飾を表示する</string>
     <string name="mfm_show_unsupported_markup">(Misskey)未対応のマークアップを表示する</string>
+    <string name="show_media_description">添付メディアの説明文を表示する</string>
 </resources>

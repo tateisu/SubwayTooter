@@ -7,12 +7,12 @@ import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
-import jp.juggler.subwaytooter.pref
+import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan

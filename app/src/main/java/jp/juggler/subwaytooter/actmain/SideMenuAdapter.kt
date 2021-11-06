@@ -24,6 +24,7 @@ import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser

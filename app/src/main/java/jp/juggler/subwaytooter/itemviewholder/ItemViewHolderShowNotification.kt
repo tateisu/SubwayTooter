@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.itemviewholder
 
 import android.view.Gravity
 import android.view.View
-import jp.juggler.subwaytooter.PrefI
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.addColumn

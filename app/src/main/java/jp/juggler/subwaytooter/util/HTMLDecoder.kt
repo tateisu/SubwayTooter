@@ -7,7 +7,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.*
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder

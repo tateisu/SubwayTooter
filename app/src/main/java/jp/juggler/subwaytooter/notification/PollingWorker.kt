@@ -19,6 +19,9 @@ import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.pref.PrefDevice
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*

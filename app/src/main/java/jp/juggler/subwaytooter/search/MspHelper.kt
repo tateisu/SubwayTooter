@@ -9,6 +9,8 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.column.ColumnTask_Loading
 import jp.juggler.subwaytooter.column.ColumnTask_Refresh
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.put
 import jp.juggler.util.*
 import okhttp3.Request
 

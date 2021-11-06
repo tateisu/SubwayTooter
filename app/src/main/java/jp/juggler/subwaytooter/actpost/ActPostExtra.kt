@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.onCompleteActPost
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*

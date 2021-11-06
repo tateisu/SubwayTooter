@@ -21,6 +21,7 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.streaming.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.*
@@ -108,6 +109,7 @@ class ColumnViewHolder(
     lateinit var ivColumnBackgroundImage: ImageView
     lateinit var llSearch: View
     lateinit var cbDontCloseColumn: CheckBox
+    lateinit var cbShowMediaDescription: CheckBox
     lateinit var cbRemoteOnly: CheckBox
     lateinit var cbWithAttachment: CheckBox
     lateinit var cbWithHighlight: CheckBox
@@ -403,6 +405,7 @@ class ColumnViewHolder(
         arrayOf(
             cbDontAutoRefresh,
             cbDontCloseColumn,
+            cbShowMediaDescription,
             cbDontShowBoost,
             cbDontShowFavourite,
             cbDontShowFollow,
@@ -810,8 +813,8 @@ class ColumnViewHolder(
                     text = context.getString(R.string.remote_only)
                 }.lparams(matchParent, wrapContent)
 
-                cbWithAttachment = checkBox {
-                    text = context.getString(R.string.with_attachment)
+                cbShowMediaDescription = checkBox {
+                    text = context.getString(R.string.show_media_description)
                 }.lparams(matchParent, wrapContent)
 
                 cbWithHighlight = checkBox {
@@ -864,6 +867,10 @@ class ColumnViewHolder(
 
                 cbHideMediaDefault = checkBox {
                     text = context.getString(R.string.hide_media_default)
+                }.lparams(matchParent, wrapContent)
+
+                cbWithAttachment = checkBox {
+                    text = context.getString(R.string.with_attachment)
                 }.lparams(matchParent, wrapContent)
 
                 cbSystemNotificationNotRelated = checkBox {

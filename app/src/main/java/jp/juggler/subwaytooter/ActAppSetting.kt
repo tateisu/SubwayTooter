@@ -29,6 +29,11 @@ import jp.juggler.subwaytooter.appsetting.SettingType
 import jp.juggler.subwaytooter.appsetting.appSettingRoot
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.pref.impl.BooleanPref
+import jp.juggler.subwaytooter.pref.impl.FloatPref
+import jp.juggler.subwaytooter.pref.impl.IntPref
+import jp.juggler.subwaytooter.pref.impl.StringPref
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CustomShare

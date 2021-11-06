@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.columnviewholder.getListItemOffset
 import jp.juggler.subwaytooter.columnviewholder.setListItemTop
 import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.*
 import java.lang.StringBuilder
 

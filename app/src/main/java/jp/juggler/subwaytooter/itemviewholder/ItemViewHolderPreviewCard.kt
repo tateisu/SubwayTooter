@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.itemviewholder
 
 import android.view.View
-import jp.juggler.subwaytooter.PrefB
-import jp.juggler.subwaytooter.PrefS
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType

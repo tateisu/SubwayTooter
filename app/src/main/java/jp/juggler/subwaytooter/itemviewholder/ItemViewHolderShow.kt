@@ -20,6 +20,8 @@ import jp.juggler.subwaytooter.column.getAcctColor
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.columnviewholder.ItemListAdapter
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.Benchmark

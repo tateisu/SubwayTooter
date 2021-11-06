@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter
+package jp.juggler.subwaytooter.pref
 
 import android.content.Context
 import android.content.SharedPreferences

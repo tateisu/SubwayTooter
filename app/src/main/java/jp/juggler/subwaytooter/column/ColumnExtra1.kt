@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getAdaptiveRippleDrawable
 import jp.juggler.util.notZero

@@ -23,7 +23,7 @@ import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.LogCategory
 import jp.juggler.util.clipRange
 

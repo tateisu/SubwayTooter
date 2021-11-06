@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion compile_sdk_version
@@ -11,6 +12,7 @@ android {
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
+        vectorDrawables.useSupportLibrary = true
     }
 
 
@@ -19,6 +21,18 @@ android {
     }
 
     resourcePrefix "cpv_"
+
+    kotlinOptions {
+        jvmTarget = jvm_target
+        useIR = true
+        freeCompilerArgs += [
+                "-Xopt-in=kotlin.ExperimentalStdlibApi",
+                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
+        ]
+    }
 }
 
 dependencies {

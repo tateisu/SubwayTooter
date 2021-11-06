@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.actmain
 import android.content.Intent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.PrefI
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.column.ColumnType

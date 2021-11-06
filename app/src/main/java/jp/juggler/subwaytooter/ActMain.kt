@@ -30,6 +30,10 @@ import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.SavedAccount

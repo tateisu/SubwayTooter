@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.actmain
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.view.MyViewPager
 

@@ -4,12 +4,12 @@ import android.view.View
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMediaViewer
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.startGap
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.openCustomTab
@@ -48,10 +48,29 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             llReply -> clickReplyInfo(pos, accessInfo, column.type, statusReply, statusShowing)
 
             llFollow -> clickFollowInfo(pos, accessInfo, followAccount) { whoRef ->
-                DlgContextMenu(this, column, whoRef, null, (item as? TootNotification), tvContent).show()
+                DlgContextMenu(
+                    this,
+                    column,
+                    whoRef,
+                    null,
+                    (item as? TootNotification),
+                    tvContent
+                ).show()
             }
-            btnFollow -> clickFollowInfo(pos, accessInfo, followAccount, forceMenu = true) { whoRef ->
-                DlgContextMenu(this, column, whoRef, null, (item as? TootNotification), tvContent).show()
+            btnFollow -> clickFollowInfo(
+                pos,
+                accessInfo,
+                followAccount,
+                forceMenu = true
+            ) { whoRef ->
+                DlgContextMenu(
+                    this,
+                    column,
+                    whoRef,
+                    null,
+                    (item as? TootNotification),
+                    tvContent
+                ).show()
             }
 
             btnGapHead -> column.startGap(item.cast(), isHead = true)
@@ -59,11 +78,24 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             btnSearchTag, llTrendTag -> clickTag(pos, item)
             btnListTL -> clickListTl(pos, accessInfo, item)
             btnListMore -> clickListMoreButton(pos, accessInfo, item)
-            btnFollowRequestAccept -> clickFollowRequestAccept(accessInfo, followAccount, accept = true)
-            btnFollowRequestDeny -> clickFollowRequestAccept(accessInfo, followAccount, accept = false)
+            btnFollowRequestAccept -> clickFollowRequestAccept(
+                accessInfo,
+                followAccount,
+                accept = true
+            )
+            btnFollowRequestDeny -> clickFollowRequestAccept(
+                accessInfo,
+                followAccount,
+                accept = false
+            )
             llFilter -> openFilterMenu(accessInfo, item.cast())
             ivCardImage -> clickCardImage(pos, accessInfo, statusShowing?.card)
-            llConversationIcons -> clickConversation(pos, accessInfo, listAdapter, summary = item.cast())
+            llConversationIcons -> clickConversation(
+                pos,
+                accessInfo,
+                listAdapter,
+                summary = item.cast()
+            )
         }
     }
 }
@@ -82,8 +114,22 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                 longClickBoostedInfo(boostAccount)
 
             llReply ->
-                clickReplyInfo(pos, accessInfo, column.type, statusReply, statusShowing, longClick = true) { status ->
-                    DlgContextMenu(this, column, status.accountRef, status, item.cast(), tvContent).show()
+                clickReplyInfo(
+                    pos,
+                    accessInfo,
+                    column.type,
+                    statusReply,
+                    statusShowing,
+                    longClick = true
+                ) { status ->
+                    DlgContextMenu(
+                        this,
+                        column,
+                        status.accountRef,
+                        status,
+                        item.cast(),
+                        tvContent
+                    ).show()
                 }
 
             llFollow ->
@@ -164,6 +210,7 @@ private fun ItemViewHolder.clickMedia(i: Int) {
                 PrefB.bpUseInternalMediaViewer(App1.pref) ->
                     ActMediaViewer.open(
                         activity,
+                        column.showMediaDescription,
                         when (accessInfo.isMisskey) {
                             true -> ServiceType.MISSKEY
                             else -> ServiceType.MASTODON
@@ -219,7 +266,12 @@ private fun ItemViewHolder.clickTag(pos: Int, item: TimelineItem?) {
         when (item) {
             is TootTag -> tagTimeline(pos, accessInfo, item.name)
             is TootSearchGap -> column.startGap(item, isHead = true)
-            is TootConversationSummary -> clickConversation(pos, accessInfo, listAdapter, summary = item)
+            is TootConversationSummary -> clickConversation(
+                pos,
+                accessInfo,
+                listAdapter,
+                summary = item
+            )
             is TootGap -> clickTootGap(column, item)
             is TootDomainBlock -> clickDomainBlock(accessInfo, item)
             is TootScheduled -> clickScheduledToot(accessInfo, item, column)

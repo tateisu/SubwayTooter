@@ -5,7 +5,7 @@ import android.text.Spanned
 import android.text.style.RelativeSizeSpan
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.PrefB
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootMention

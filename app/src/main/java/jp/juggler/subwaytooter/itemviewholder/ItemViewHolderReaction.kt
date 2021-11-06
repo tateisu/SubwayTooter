@@ -10,8 +10,8 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.PrefB
-import jp.juggler.subwaytooter.PrefI
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.reactionAdd
 import jp.juggler.subwaytooter.action.reactionFromAnotherAccount

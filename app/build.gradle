@@ -27,6 +27,7 @@ android {
         versionName "4.6.6"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
 
     kotlinOptions {

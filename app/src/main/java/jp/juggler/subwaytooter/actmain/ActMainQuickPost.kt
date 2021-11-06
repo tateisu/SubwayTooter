@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.actpost.CompletionHelper
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.PostCompleteCallback
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.util.hideKeyboard

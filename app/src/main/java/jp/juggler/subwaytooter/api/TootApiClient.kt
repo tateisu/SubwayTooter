@@ -3,6 +3,8 @@ package jp.juggler.subwaytooter.api
 import android.content.Context
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.pref.PrefDevice
+import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*

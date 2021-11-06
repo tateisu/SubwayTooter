@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <ScrollView
@@ -10,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:clipToPadding="false"
-        android:paddingStart="12dp"
-        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
         android:paddingEnd="12dp"
-        android:paddingBottom="6dp">
+        android:paddingStart="12dp"
+        android:paddingTop="6dp">
 
         <TextView
             android:id="@+id/tvDescription"
@@ -30,7 +31,7 @@
             android:id="@+id/pbvImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/media_background" />
+            />
 
         <com.google.android.exoplayer2.ui.PlayerView
             android:id="@+id/exoView"
@@ -45,54 +46,22 @@
             android:padding="12dp" />
     </FrameLayout>
 
-    <LinearLayout
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/flFooter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <FrameLayout
-
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp">
-
-            <CheckBox
-                android:id="@+id/cbMute"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="@string/mute"
-                />
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginBottom="6dp"
-                android:alpha="0.5"
-                android:gravity="end|bottom"
-                android:textColor="#ffffff"
-                android:textSize="12sp" />
-        </FrameLayout>
+        app:alignItems="flex_start"
+        app:flexWrap="wrap"
+        app:flexDirection="row_reverse"
+        app:justifyContent="flex_start">
 
         <ImageButton
-            android:id="@+id/btnPrevious"
+            android:id="@+id/btnMore"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:contentDescription="@string/previous"
-
+            android:contentDescription="@string/more"
             android:minWidth="48dp"
-            android:src="@drawable/ic_arrow_start"
-            app:tint="?attr/colorVectorDrawable" />
-
-        <ImageButton
-            android:id="@+id/btnNext"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/next"
-            android:minWidth="48dp"
-            android:src="@drawable/ic_arrow_end"
+            android:src="@drawable/ic_more"
             app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
@@ -105,29 +74,44 @@
             app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
-            android:id="@+id/btnMore"
+            android:id="@+id/btnNext"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:contentDescription="@string/more"
+            android:contentDescription="@string/next"
             android:minWidth="48dp"
-            android:src="@drawable/ic_more"
+            android:src="@drawable/ic_arrow_end"
             app:tint="?attr/colorVectorDrawable" />
 
+        <ImageButton
+            android:id="@+id/btnPrevious"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/previous"
 
-    </LinearLayout>
+            android:minWidth="48dp"
+            android:src="@drawable/ic_arrow_start"
+            app:tint="?attr/colorVectorDrawable" />
 
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="12dp"
+            android:alpha="0.5"
+            tools:text="x1.3\n1200x1200"
+            android:gravity="end|center_vertical"
+            android:textColor="#ffffff"
+            android:textSize="12dp"
+            app:layout_flexGrow="1"
+            tools:ignore="SpUsage" />
 
-<!--        <com.google.android.flexbox.FlexboxLayout-->
+        <CheckBox
+            android:id="@+id/cbMute"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:text="@string/mute" />
 
-<!--            android:id="@+id/flFooter"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            app:alignItems="flex_start"-->
-<!--            app:flexWrap="wrap"-->
-<!--            app:justifyContent="flex_start">-->
-
-
-<!--        </com.google.android.flexbox.FlexboxLayout>-->
-
-
+    </com.google.android.flexbox.FlexboxLayout>
 </LinearLayout>

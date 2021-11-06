@@ -30,6 +30,10 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
+    viewBinding {
+        enabled = true
+    }
+
     kotlinOptions {
         jvmTarget = jvm_target
         useIR = true

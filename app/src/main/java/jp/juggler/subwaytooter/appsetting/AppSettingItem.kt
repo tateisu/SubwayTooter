@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.pref.impl.*
@@ -374,7 +375,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         spinner(
             PrefI.ipAdditionalButtonsPosition,
             R.string.additional_buttons_position,
-            *(AdditionalButtonsPosition.values().sortedBy { it.idx }.map { it.captionId }.toIntArray())
+            *(AdditionalButtonsPosition.values().sortedBy { it.idx }.map { it.captionId }
+                .toIntArray())
         )
 
         sw(PrefB.bpEnablePixelfed, R.string.enable_connect_to_pixelfed_server)
@@ -499,6 +501,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
     section(R.string.media_attachment) {
         sw(PrefB.bpUseInternalMediaViewer, R.string.use_internal_media_viewer)
+
+        spinner(PrefI.ipMediaBackground, R.string.background_pattern) {
+            MediaBackgroundDrawable.Kind.values().map { it.name }
+        }
+
         sw(PrefB.bpPriorLocalURL, R.string.prior_local_url_when_open_attachment)
         text(PrefS.spMediaThumbHeight, R.string.media_thumbnail_height, InputTypeEx.number)
         sw(PrefB.bpDontCropMediaThumb, R.string.dont_crop_media_thumbnail)

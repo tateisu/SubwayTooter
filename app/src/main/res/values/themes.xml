@@ -3,7 +3,6 @@
     <style name="AppTheme.Light" parent="AppTheme.Light.Base">
     </style>
 
-
     <!-- dark theme -->
     <style name="AppTheme.Dark" parent="AppTheme.Dark.Base">
     </style>

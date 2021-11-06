@@ -111,4 +111,8 @@
     <color name="Dark_colorColumnListDeleteText">#fff</color>
     <color name="Dark_colorRegexFilterError">#f00</color>
 
+    <!-- スプラッシュ画面の背景色はテーマ関係なし -->
+    <color name="Other_splashBackground">#0080ff</color>
+    windowSplashScreenAnimationDuration
+
 </resources>

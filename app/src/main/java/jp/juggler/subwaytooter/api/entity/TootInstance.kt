@@ -139,6 +139,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
     var pleromaFeatures: Set<String>? = null
 
+    var configuration: JsonObject? = null
+
     // XXX: urls をパースしてない。使ってないから…
 
     init {
@@ -213,6 +215,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             this.fedibird_capabilities = src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()
             this.pleromaFeatures =
                 src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")?.stringList()?.toSet()
+
+            this.configuration = src.jsonObject("configuration")
         }
     }
 

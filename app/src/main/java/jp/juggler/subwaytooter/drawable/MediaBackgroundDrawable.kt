@@ -49,25 +49,30 @@ class MediaBackgroundDrawable(
 
     override fun draw(canvas: Canvas) {
         val bounds = this.bounds
+        val c1 = kind.c1
+        val c2 = kind.c2
+        if (c2 == 0) {
+            paint.color = c1
+            canvas.drawRect(bounds, paint)
+            return
+        }
+
         val xStart = bounds.left
         val xRepeat = (bounds.right - bounds.left + tileStep - 1) / tileStep
         val yStart = bounds.top
         val yRepeat = (bounds.bottom - bounds.top + tileStep - 1) / tileStep
         for (y in 0 until yRepeat) {
+            val ys = yStart + y * tileStep
+            rect.top = ys
+            rect.bottom = min(bounds.bottom, ys + tileStep)
             for (x in 0 until xRepeat) {
-                paint.color = if (kind.c2 != 0 && (x + y).and(1) != 0) {
-                    kind.c2
-                } else {
-                    kind.c1
+                paint.color = when ((x + y).and(1)) {
+                    0 -> c1
+                    else -> c2
                 }
                 val xs = xStart + x * tileStep
-                val ys = yStart + y * tileStep
-                rect.set(
-                    xs,
-                    ys,
-                    min(bounds.right, xs + tileStep),
-                    min(bounds.bottom, ys + tileStep),
-                )
+                rect.left = xs
+                rect.right = min(bounds.right, xs + tileStep)
                 canvas.drawRect(rect, paint)
             }
         }

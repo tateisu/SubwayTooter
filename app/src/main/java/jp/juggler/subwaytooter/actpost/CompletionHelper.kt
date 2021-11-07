@@ -7,7 +7,6 @@ import android.text.style.ForegroundColorSpan
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -17,6 +16,7 @@ import jp.juggler.subwaytooter.dialog.EmojiPickerResult
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiBase
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.AcctSet
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -38,6 +38,20 @@ class CompletionHelper(
     companion object {
         private val log = LogCategory("CompletionHelper")
         private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiPattern()
+
+        // 無視するスパン
+        // ($を.に変換済)
+        val ignoreSpans = setOf(
+            "android.text.DynamicLayout.ChangeWatcher",
+            "android.text.method.TextKeyListener",
+            "android.text.method.Touch.DragState",
+            "android.text.Selection.END",
+            "android.text.Selection.START",
+            "android.widget.Editor.SpanController",
+            "android.widget.TextView.ChangeWatcher",
+        )
+
+        private val reRemoveSpan = """\Qandroid.text.style.\E.+Span""".toRegex()
     }
 
     interface Callback2 {
@@ -343,7 +357,30 @@ class CompletionHelper(
                 handler.postDelayed(procTextChanged, if (popup?.isShowing == true) 100L else 500L)
             }
 
+
             override fun afterTextChanged(s: Editable) {
+                // ペースト時に余計な装飾を取り除く
+                s.getSpans(0, s.length, Any::class.java)
+                    ?.filter {
+                        val name = (it?.javaClass?.name ?: "").replace('$', '.')
+                        when {
+                            ignoreSpans.contains(name) -> false
+                            reRemoveSpan.matches(name) -> {
+                                log.i("span remove $name")
+                                true
+                            }
+                            else -> {
+                                log.i("span keep $name")
+                                false
+                            }
+                        }
+                    }
+                    ?.map { Triple(it, s.getSpanStart(it), s.getSpanEnd(it)) }
+                    ?.sortedBy { -it.second }
+                    ?.forEach {
+                        s.removeSpan(it.first)
+                    }
+
                 this@CompletionHelper.callback2?.onTextUpdate()
             }
         })

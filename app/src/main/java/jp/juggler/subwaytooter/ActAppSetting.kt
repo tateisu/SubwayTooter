@@ -18,7 +18,6 @@ import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -40,6 +39,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
+import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import java.io.File
@@ -391,8 +391,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         }
 
     private fun getViewPath(path: String, convertView: View?): View {
-        val tv: AppCompatTextView =
-            convertView.cast() ?: AppCompatTextView(this@ActAppSetting).apply {
+        val tv: MyTextView =
+            convertView.cast() ?: MyTextView(this@ActAppSetting).apply {
                 layoutParams = AbsListView.LayoutParams(
                     AbsListView.LayoutParams.MATCH_PARENT,
                     AbsListView.LayoutParams.WRAP_CONTENT

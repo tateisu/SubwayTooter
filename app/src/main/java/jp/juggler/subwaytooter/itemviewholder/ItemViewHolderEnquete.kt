@@ -3,11 +3,10 @@ package jp.juggler.subwaytooter.itemviewholder
 import android.content.Context
 import android.text.SpannableStringBuilder
 import android.view.View
-import android.widget.Button
 import android.widget.CheckBox
 import android.widget.LinearLayout
-import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.AppCompatTextView
+import androidx.emoji2.widget.EmojiButton
+import androidx.emoji2.widget.EmojiTextView
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootPolls
@@ -121,7 +120,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
 
     if (!canVote) {
 
-        val b = AppCompatTextView(activity)
+        val b = EmojiTextView(activity)
         b.layoutParams = lp
 
         b.text = text
@@ -181,7 +180,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         }
         llExtra.addView(b)
     } else {
-        val b = AppCompatButton(activity)
+        val b = EmojiButton(activity)
         b.layoutParams = lp
         b.isAllCaps = false
         b.text = text
@@ -228,7 +227,7 @@ fun ItemViewHolder.makeEnqueteFooterMastodon(
             topMargin = (0.5f + density * 3f).toInt()
         }
 
-        val b = AppCompatButton(activity)
+        val b = EmojiButton(activity)
         b.layoutParams = lp
         b.isAllCaps = false
         b.text = activity.getString(R.string.vote_button)
@@ -240,7 +239,7 @@ fun ItemViewHolder.makeEnqueteFooterMastodon(
         llExtra.addView(b)
     }
 
-    val tv = AppCompatTextView(activity)
+    val tv = EmojiTextView(activity)
     val lp = LinearLayout.LayoutParams(
         LinearLayout.LayoutParams.MATCH_PARENT,
         LinearLayout.LayoutParams.WRAP_CONTENT

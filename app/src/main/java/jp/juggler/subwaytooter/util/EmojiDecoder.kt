@@ -408,10 +408,11 @@ object EmojiDecoder {
                         } else {
                             null
                         }
-                        if (emoji != null) {
-                            builder.addImageSpan(part, emoji)
-                        } else {
+
+                        if (emoji == null) {
                             builder.addUnicodeString(part)
+                        } else {
+                            builder.addImageSpan(part, emoji)
                         }
                     }
                 }
@@ -475,7 +476,7 @@ object EmojiDecoder {
 
             val sb = SpannableStringBuilder()
 
-            if(PrefB.bpUseTwemoji(context)){
+            if (PrefB.bpUseTwemoji(context)) {
                 val start = 0
                 sb.append(' ')
                 val end = sb.length
@@ -486,7 +487,7 @@ object EmojiDecoder {
                     end,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
-            }else{
+            } else {
                 sb.append(emoji.unifiedCode)
             }
 

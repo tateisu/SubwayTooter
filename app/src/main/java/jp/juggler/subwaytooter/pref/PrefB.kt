@@ -322,8 +322,7 @@ object PrefB {
 
     val bpUseTwemoji = BooleanPref(
         "UseTwemoji",
-        // Android 12 以上ではデフォルトfalse
-        Build.VERSION.SDK_INT < 31
+        false
     )
 
     val bpKeepReactionSpace = BooleanPref(

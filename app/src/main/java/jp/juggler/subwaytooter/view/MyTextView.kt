@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
-import androidx.appcompat.widget.AppCompatTextView
+import androidx.emoji2.widget.EmojiTextView
 
-class MyTextView : AppCompatTextView {
+open class MyTextView : EmojiTextView {
 
     internal var linkHit: Boolean = false
 

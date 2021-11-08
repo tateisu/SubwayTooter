@@ -10,11 +10,15 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import androidx.appcompat.widget.AppCompatButton
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.emoji2.widget.EmojiButton
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -77,7 +81,7 @@ class ItemViewHolder(
 
     lateinit var llContentWarning: View
     lateinit var tvContentWarning: MyTextView
-    lateinit var btnContentWarning: AppCompatButton
+    lateinit var btnContentWarning: EmojiButton
 
     lateinit var llContents: View
     lateinit var tvMentions: MyTextView
@@ -96,7 +100,7 @@ class ItemViewHolder(
     lateinit var llButtonBar: View
 
     lateinit var llSearchTag: View
-    lateinit var btnSearchTag: AppCompatButton
+    lateinit var btnSearchTag: EmojiButton
     lateinit var btnGapHead: ImageButton
     lateinit var btnGapTail: ImageButton
     lateinit var llTrendTag: View
@@ -106,7 +110,7 @@ class ItemViewHolder(
     lateinit var cvTagHistory: TagHistoryView
 
     lateinit var llList: View
-    lateinit var btnListTL: AppCompatButton
+    lateinit var btnListTL: EmojiButton
     lateinit var btnListMore: ImageButton
 
     lateinit var llFollowRequest: View

@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.SparseIntArray
-import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.util.LogCategory
 import kotlin.math.cos
 import kotlin.math.pow
@@ -145,7 +144,7 @@ class Blurhash(blurhash: String, punch: Float = 1f) {
     }
 }
 
-class BlurhashView : AppCompatTextView {
+class BlurhashView : MyTextView {
 
     companion object {
         val log = LogCategory("BlurhashView")
@@ -155,13 +154,13 @@ class BlurhashView : AppCompatTextView {
     }
 
     constructor(context: Context) :
-        super(context)
+            super(context)
 
     constructor(context: Context, attrs: AttributeSet) :
-        super(context, attrs)
+            super(context, attrs)
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
-        super(context, attrs, defStyleAttr)
+            super(context, attrs, defStyleAttr)
 
     // keep bitmap and IntArray to reuse it.
     private val pixels = IntArray(bitmapWidth * bitmapHeight)

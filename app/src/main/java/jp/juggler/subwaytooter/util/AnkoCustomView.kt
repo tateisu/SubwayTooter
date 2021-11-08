@@ -1,15 +1,14 @@
 package jp.juggler.subwaytooter.util
 
 import android.view.ViewManager
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.emoji2.widget.EmojiButton
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.flexbox.FlexboxLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.view.*
 import org.jetbrains.anko.custom.ankoView
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.AppCompatTextView
-import com.google.android.flexbox.FlexboxLayout
-import jp.juggler.subwaytooter.R
 
 // Anko Layout中にカスタムビューを指定する為に拡張関数を定義する
 
@@ -20,13 +19,14 @@ inline fun ViewManager.myNetworkImageView(init: MyNetworkImageView.() -> Unit): 
 inline fun ViewManager.myTextView(init: MyTextView.() -> Unit): MyTextView {
     return ankoView({ MyTextView(it) }, theme = 0, init = init)
 }
+
 inline fun ViewManager.myEditText(init: MyEditText.() -> Unit): MyEditText {
     return ankoView({ MyEditText(it) }, theme = 0, init = init)
 }
-inline fun ViewManager.compatButton(init: AppCompatButton.() -> Unit): AppCompatButton {
-    return ankoView({ AppCompatButton(it) }, theme = 0, init = init)
+
+inline fun ViewManager.compatButton(init: EmojiButton.() -> Unit): EmojiButton {
+    return ankoView({ EmojiButton(it) }, theme = 0, init = init)
 }
-inline fun ViewManager.compatTextView(init: AppCompatTextView.() -> Unit) = myTextView(init)
 
 inline fun ViewManager.trendTagHistoryView(init: TagHistoryView.() -> Unit): TagHistoryView {
     return ankoView({ TagHistoryView(it) }, theme = 0, init = init)

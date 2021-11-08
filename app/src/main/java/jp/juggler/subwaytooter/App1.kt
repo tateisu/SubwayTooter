@@ -11,6 +11,8 @@ import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.emoji2.bundled.BundledEmojiCompatConfig
+import androidx.emoji2.text.EmojiCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
@@ -306,6 +308,10 @@ class App1 : Application() {
 
             // initialize EmojiMap
             EmojiMap.load(appContext)
+
+            // initialize EmojiCompat
+            val config = BundledEmojiCompatConfig(appContext)
+            EmojiCompat.init(config)
 
             // initialize Conscrypt
             Security.insertProviderAt(

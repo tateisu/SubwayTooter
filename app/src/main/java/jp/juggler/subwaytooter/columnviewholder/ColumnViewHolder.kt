@@ -11,6 +11,7 @@ import android.text.SpannableStringBuilder
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -70,8 +71,8 @@ class ColumnViewHolder(
     var pageIdx: Int = 0
 
     lateinit var llLoading: View
-    lateinit var btnConfirmMail: Button
-    lateinit var tvLoading: TextView
+    lateinit var btnConfirmMail: AppCompatButton
+    lateinit var tvLoading: MyTextView
 
     lateinit var listView: RecyclerView
     lateinit var refreshLayout: SwipyRefreshLayout
@@ -79,11 +80,11 @@ class ColumnViewHolder(
     lateinit var listLayoutManager: LinearLayoutManager
 
     lateinit var llColumnHeader: View
-    lateinit var tvColumnIndex: TextView
-    lateinit var tvColumnStatus: TextView
-    private lateinit var tvColumnContext: TextView
+    lateinit var tvColumnIndex: MyTextView
+    lateinit var tvColumnStatus: MyTextView
+    private lateinit var tvColumnContext: MyTextView
     lateinit var ivColumnIcon: ImageView
-    lateinit var tvColumnName: TextView
+    lateinit var tvColumnName: MyTextView
 
     lateinit var llColumnSetting: View
     private lateinit var llColumnSettingInside: LinearLayout
@@ -93,10 +94,10 @@ class ColumnViewHolder(
     lateinit var btnEmojiAdd: ImageButton
     lateinit var etSearch: EditText
     lateinit var flEmoji: FlexboxLayout
-    lateinit var tvEmojiDesc: TextView
+    lateinit var tvEmojiDesc: MyTextView
     lateinit var cbResolve: CheckBox
     lateinit var etRegexFilter: EditText
-    lateinit var tvRegexFilterError: TextView
+    lateinit var tvRegexFilterError: MyTextView
 
     lateinit var btnAnnouncementsBadge: ImageView
     lateinit var btnAnnouncements: ImageButton
@@ -129,12 +130,12 @@ class ColumnViewHolder(
     lateinit var cbEnableSpeech: CheckBox
     lateinit var cbOldApi: CheckBox
     lateinit var llRegexFilter: View
-    lateinit var btnDeleteNotification: Button
-    lateinit var btnColor: Button
-    lateinit var btnLanguageFilter: Button
+    lateinit var btnDeleteNotification: AppCompatButton
+    lateinit var btnColor: AppCompatButton
+    lateinit var btnLanguageFilter: AppCompatButton
 
     lateinit var svQuickFilter: HorizontalScrollView
-    lateinit var btnQuickFilterAll: Button
+    lateinit var btnQuickFilterAll: AppCompatButton
     lateinit var btnQuickFilterMention: ImageButton
     lateinit var btnQuickFilterFavourite: ImageButton
     lateinit var btnQuickFilterBoost: ImageButton
@@ -146,7 +147,7 @@ class ColumnViewHolder(
 
     lateinit var llRefreshError: FrameLayout
     private lateinit var ivRefreshError: ImageView
-    lateinit var tvRefreshError: TextView
+    lateinit var tvRefreshError: MyTextView
 
     lateinit var llListList: View
     lateinit var etListName: EditText
@@ -158,12 +159,12 @@ class ColumnViewHolder(
     lateinit var etHashtagExtraNone: EditText
 
     lateinit var llAnnouncementsBox: View
-    lateinit var tvAnnouncementsCaption: TextView
-    lateinit var tvAnnouncementsIndex: TextView
+    lateinit var tvAnnouncementsCaption: MyTextView
+    lateinit var tvAnnouncementsIndex: MyTextView
     lateinit var btnAnnouncementsPrev: ImageButton
     lateinit var btnAnnouncementsNext: ImageButton
     lateinit var llAnnouncements: View
-    lateinit var tvAnnouncementPeriod: TextView
+    lateinit var tvAnnouncementPeriod: MyTextView
     lateinit var tvAnnouncementContent: MyTextView
     lateinit var llAnnouncementExtra: LinearLayout
 
@@ -343,7 +344,7 @@ class ColumnViewHolder(
         viewRoot.scan { v ->
             try {
                 // ボタンではないTextViewのフォントを変更する
-                if (v is TextView && v !is Button) {
+                if (v is MyTextView && v !is AppCompatButton) {
                     v.typeface = ActMain.timelineFont
                 }
             } catch (ex: Throwable) {
@@ -564,7 +565,7 @@ class ColumnViewHolder(
                 lparams(matchParent, wrapContent)
                 gravity = Gravity.BOTTOM
 
-                tvColumnContext = textView {
+                tvColumnContext = myTextView {
                     gravity = Gravity.END
                     startPadding = dip(4)
                     endPadding = dip(4)
@@ -574,7 +575,7 @@ class ColumnViewHolder(
                     weight = 1f
                 }
 
-                tvColumnStatus = textView {
+                tvColumnStatus = myTextView {
                     gravity = Gravity.END
                     textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                     textSize = 12f
@@ -582,7 +583,7 @@ class ColumnViewHolder(
                     marginStart = dip(12)
                 }
 
-                tvColumnIndex = textView {
+                tvColumnIndex = myTextView {
                     gravity = Gravity.END
                     textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                     textSize = 12f
@@ -605,7 +606,7 @@ class ColumnViewHolder(
                     endMargin = dip(4)
                 }
 
-                tvColumnName = textView {
+                tvColumnName = myTextView {
                     // Kannada語の  "ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್" の上下が途切れることがあるらしい
                     // GS10+では再現しなかった
                 }.lparams(dip(0), wrapContent) {
@@ -739,7 +740,7 @@ class ColumnViewHolder(
     }
 
     private fun _LinearLayout.inflateColumnSetting() {
-        var label: TextView? = null
+        var label: MyTextView? = null
         llColumnSetting = maxHeightScrollView {
             lparams(matchParent, wrapContent)
             isScrollbarFadingEnabled = false
@@ -759,13 +760,13 @@ class ColumnViewHolder(
                 llHashtagExtra = verticalLayout {
                     lparams(matchParent, wrapContent)
 
-                    label = textView {
+                    label = myTextView {
                         textColor =
                             context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         text = context.getString(R.string.hashtag_extra_any)
                     }.lparams(matchParent, wrapContent)
 
-                    etHashtagExtraAny = editText {
+                    etHashtagExtraAny = myEditText {
                         id = View.generateViewId()
                         inputType = InputType.TYPE_CLASS_TEXT
                         maxLines = 1
@@ -774,13 +775,13 @@ class ColumnViewHolder(
                     }.lparams(matchParent, wrapContent)
                     label?.labelFor = etHashtagExtraAny.id
 
-                    label = textView {
+                    label = myTextView {
                         textColor =
                             context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         text = context.getString(R.string.hashtag_extra_all)
                     }.lparams(matchParent, wrapContent)
 
-                    etHashtagExtraAll = editText {
+                    etHashtagExtraAll = myEditText {
                         id = View.generateViewId()
                         inputType = InputType.TYPE_CLASS_TEXT
                         maxLines = 1
@@ -789,13 +790,13 @@ class ColumnViewHolder(
                     }.lparams(matchParent, wrapContent)
                     label?.labelFor = etHashtagExtraAll.id
 
-                    label = textView {
+                    label = myTextView {
                         textColor =
                             context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         text = context.getString(R.string.hashtag_extra_none)
                     }.lparams(matchParent, wrapContent)
 
-                    etHashtagExtraNone = editText {
+                    etHashtagExtraNone = myEditText {
                         id = View.generateViewId()
                         inputType = InputType.TYPE_CLASS_TEXT
                         maxLines = 1
@@ -888,13 +889,13 @@ class ColumnViewHolder(
                 llRegexFilter = linearLayout {
                     lparams(matchParent, wrapContent)
 
-                    label = textView {
+                    label = myTextView {
                         textColor =
                             context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         text = context.getString(R.string.regex_filter)
                     }.lparams(wrapContent, wrapContent)
 
-                    tvRegexFilterError = textView {
+                    tvRegexFilterError = myTextView {
                         textColor = context.attrColor(R.attr.colorRegexFilterError)
                     }.lparams(0, wrapContent) {
                         weight = 1f
@@ -902,7 +903,7 @@ class ColumnViewHolder(
                     }
                 }
 
-                etRegexFilter = editText {
+                etRegexFilter = myEditText {
                     id = View.generateViewId()
                     inputType = InputType.TYPE_CLASS_TEXT
                     maxLines = 1
@@ -912,17 +913,17 @@ class ColumnViewHolder(
 
                 label?.labelFor = etRegexFilter.id
 
-                btnDeleteNotification = button {
+                btnDeleteNotification = compatButton {
                     isAllCaps = false
                     text = context.getString(R.string.notification_delete)
                 }.lparams(matchParent, wrapContent)
 
-                btnColor = button {
+                btnColor = compatButton {
                     isAllCaps = false
                     text = context.getString(R.string.color_and_background)
                 }.lparams(matchParent, wrapContent)
 
-                btnLanguageFilter = button {
+                btnLanguageFilter = compatButton {
                     isAllCaps = false
                     text = context.getString(R.string.language_filter)
                 }.lparams(matchParent, wrapContent)
@@ -954,7 +955,7 @@ class ColumnViewHolder(
 
                 gravity = Gravity.CENTER_VERTICAL or Gravity.END
 
-                tvAnnouncementsCaption = textView {
+                tvAnnouncementsCaption = myTextView {
                     gravity = Gravity.END or Gravity.CENTER_VERTICAL
                     text = context.getString(R.string.announcements)
                 }.lparams(0, wrapContent) {
@@ -974,7 +975,7 @@ class ColumnViewHolder(
                     marginStart = dip(4)
                 }
 
-                tvAnnouncementsIndex = textView {
+                tvAnnouncementsIndex = myTextView {
                 }.lparams(wrapContent, wrapContent) {
                     marginStart = dip(4)
                 }
@@ -1011,7 +1012,7 @@ class ColumnViewHolder(
                     lparams(matchParent, wrapContent)
 
                     // 期間があれば表示する
-                    tvAnnouncementPeriod = textView {
+                    tvAnnouncementPeriod = myTextView {
                         gravity = Gravity.END
                     }.lparams(matchParent, wrapContent) {
                         bottomMargin = dip(3)
@@ -1043,7 +1044,7 @@ class ColumnViewHolder(
                 isBaselineAligned = false
                 gravity = Gravity.CENTER
 
-                etSearch = editText {
+                etSearch = myEditText {
                     id = View.generateViewId()
                     imeOptions = EditorInfo.IME_ACTION_SEARCH
                     inputType = InputType.TYPE_CLASS_TEXT
@@ -1097,7 +1098,7 @@ class ColumnViewHolder(
                 text = context.getString(R.string.resolve_non_local_account)
             }.lparams(wrapContent, wrapContent) // チェックボックスの余白はタッチ判定外
 
-            tvEmojiDesc = textView {
+            tvEmojiDesc = myTextView {
                 text = context.getString(R.string.long_tap_to_delete)
                 textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                 textSize = 12f
@@ -1112,7 +1113,7 @@ class ColumnViewHolder(
             isBaselineAligned = false
             gravity = Gravity.CENTER
 
-            etListName = editText {
+            etListName = myEditText {
                 hint = context.getString(R.string.list_create_hint)
                 imeOptions = EditorInfo.IME_ACTION_SEND
                 inputType = InputType.TYPE_CLASS_TEXT
@@ -1142,7 +1143,7 @@ class ColumnViewHolder(
             linearLayout {
                 lparams(matchParent, dip(40))
 
-                btnQuickFilterAll = button {
+                btnQuickFilterAll = compatButton {
                     backgroundResource = R.drawable.btn_bg_transparent_round6dp
                     minWidthCompat = dip(40)
                     startPadding = dip(4)
@@ -1221,11 +1222,11 @@ class ColumnViewHolder(
 
                 gravity = Gravity.CENTER
 
-                tvLoading = textView {
+                tvLoading = myTextView {
                     gravity = Gravity.CENTER
                 }.lparams(matchParent, wrapContent)
 
-                btnConfirmMail = button {
+                btnConfirmMail = compatButton {
                     text = context.getString(R.string.resend_confirm_mail)
                     background = ContextCompat.getDrawable(
                         context,
@@ -1268,7 +1269,7 @@ class ColumnViewHolder(
                     startMargin = dip(4)
                 }
 
-                tvRefreshError = textView {
+                tvRefreshError = myTextView {
                     textColor = Color.WHITE
                 }.lparams(matchParent, wrapContent) {
                     gravity = Gravity.TOP or Gravity.START

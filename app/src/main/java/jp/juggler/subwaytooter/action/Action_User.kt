@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.view.Gravity
 import android.view.View
 import android.widget.*
+import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.*
@@ -49,10 +50,12 @@ fun ActMain.clickNicknameCustomize(
 ) = arNickname.launch(ActNickname.createIntent(this, accessInfo.getFullAcct(who), true))
 
 fun ActMain.openAvatarImage(who: TootAccount) {
-    openCustomTab(when {
-        who.avatar.isNullOrEmpty() -> who.avatar_static
-        else -> who.avatar
-    })
+    openCustomTab(
+        when {
+            who.avatar.isNullOrEmpty() -> who.avatar_static
+            else -> who.avatar
+        }
+    )
 }
 
 fun ActMain.clickHideFavourite(
@@ -670,7 +673,7 @@ fun ActMain.userProfile(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
-                val b = Button(activity)
+                val b = AppCompatButton(activity)
                 b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)
                 b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
                 b.isAllCaps = false
@@ -785,7 +788,13 @@ fun ActMain.userSetShowBoosts(
                 jsonObjectOf("reblogs" to bShow).toPostRequestBuilder()
             )?.also { result ->
                 val parser = TootParser(this, accessInfo)
-                resultRelation = accessInfo.saveUserRelation(parseItem(::TootRelationShip, parser, result.jsonObject))
+                resultRelation = accessInfo.saveUserRelation(
+                    parseItem(
+                        ::TootRelationShip,
+                        parser,
+                        result.jsonObject
+                    )
+                )
             }
         }?.let { result ->
             when (resultRelation) {
@@ -804,7 +813,12 @@ fun ActMain.userSuggestionDelete(
     if (!bConfirmed) {
         val name = who.decodeDisplayName(applicationContext)
         AlertDialog.Builder(this)
-            .setMessage(name.intoStringResource(applicationContext, R.string.delete_succeeded_confirm))
+            .setMessage(
+                name.intoStringResource(
+                    applicationContext,
+                    R.string.delete_succeeded_confirm
+                )
+            )
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.ok) { _, _ ->
                 userSuggestionDelete(accessInfo, who, bConfirmed = true)

@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.*
@@ -53,30 +54,30 @@ class ItemViewHolder(
 
     lateinit var llBoosted: View
     lateinit var ivBoosted: ImageView
-    lateinit var tvBoosted: TextView
-    lateinit var tvBoostedAcct: TextView
-    lateinit var tvBoostedTime: TextView
+    lateinit var tvBoosted: MyTextView
+    lateinit var tvBoostedAcct: MyTextView
+    lateinit var tvBoostedTime: MyTextView
 
     lateinit var llReply: View
     lateinit var ivReply: ImageView
-    lateinit var tvReply: TextView
+    lateinit var tvReply: MyTextView
 
     lateinit var llFollow: View
     lateinit var ivFollow: MyNetworkImageView
-    lateinit var tvFollowerName: TextView
-    lateinit var tvFollowerAcct: TextView
+    lateinit var tvFollowerName: MyTextView
+    lateinit var tvFollowerAcct: MyTextView
     lateinit var btnFollow: ImageButton
     lateinit var ivFollowedBy: ImageView
 
     lateinit var llStatus: View
     lateinit var ivAvatar: MyNetworkImageView
-    lateinit var tvName: TextView
-    lateinit var tvTime: TextView
-    lateinit var tvAcct: TextView
+    lateinit var tvName: MyTextView
+    lateinit var tvTime: MyTextView
+    lateinit var tvAcct: MyTextView
 
     lateinit var llContentWarning: View
     lateinit var tvContentWarning: MyTextView
-    lateinit var btnContentWarning: Button
+    lateinit var btnContentWarning: AppCompatButton
 
     lateinit var llContents: View
     lateinit var tvMentions: MyTextView
@@ -95,17 +96,17 @@ class ItemViewHolder(
     lateinit var llButtonBar: View
 
     lateinit var llSearchTag: View
-    lateinit var btnSearchTag: Button
+    lateinit var btnSearchTag: AppCompatButton
     lateinit var btnGapHead: ImageButton
     lateinit var btnGapTail: ImageButton
     lateinit var llTrendTag: View
-    lateinit var tvTrendTagName: TextView
-    lateinit var tvTrendTagDesc: TextView
-    lateinit var tvTrendTagCount: TextView
+    lateinit var tvTrendTagName: MyTextView
+    lateinit var tvTrendTagDesc: MyTextView
+    lateinit var tvTrendTagCount: MyTextView
     lateinit var cvTagHistory: TagHistoryView
 
     lateinit var llList: View
-    lateinit var btnListTL: Button
+    lateinit var btnListTL: AppCompatButton
     lateinit var btnListMore: ImageButton
 
     lateinit var llFollowRequest: View
@@ -113,10 +114,10 @@ class ItemViewHolder(
     lateinit var btnFollowRequestDeny: ImageButton
 
     lateinit var llFilter: View
-    lateinit var tvFilterPhrase: TextView
-    lateinit var tvFilterDetail: TextView
+    lateinit var tvFilterPhrase: MyTextView
+    lateinit var tvFilterDetail: MyTextView
 
-    lateinit var tvMediaDescription: TextView
+    lateinit var tvMediaDescription: MyTextView
 
     lateinit var llCardOuter: View
     lateinit var tvCardText: MyTextView
@@ -133,18 +134,18 @@ class ItemViewHolder(
     lateinit var ivConversationIcon2: MyNetworkImageView
     lateinit var ivConversationIcon3: MyNetworkImageView
     lateinit var ivConversationIcon4: MyNetworkImageView
-    lateinit var tvConversationIconsMore: TextView
-    lateinit var tvConversationParticipants: TextView
+    lateinit var tvConversationIconsMore: MyTextView
+    lateinit var tvConversationParticipants: MyTextView
 
-    lateinit var tvApplication: TextView
+    lateinit var tvApplication: MyTextView
 
-    lateinit var tvMessageHolder: TextView
+    lateinit var tvMessageHolder: MyTextView
 
     lateinit var llOpenSticker: View
     lateinit var ivOpenSticker: MyNetworkImageView
-    lateinit var tvOpenSticker: TextView
+    lateinit var tvOpenSticker: MyTextView
 
-    lateinit var tvLastStatusAt: TextView
+    lateinit var tvLastStatusAt: MyTextView
 
     lateinit var accessInfo: SavedAccount
 
@@ -371,7 +372,7 @@ class ItemViewHolder(
                 linearLayout {
                     lparams(matchParent, wrapContent)
 
-                    tvBoostedAcct = textView {
+                    tvBoostedAcct = myTextView {
                         ellipsize = TextUtils.TruncateAt.END
                         gravity = Gravity.END
                         maxLines = 1
@@ -381,7 +382,7 @@ class ItemViewHolder(
                         weight = 1f
                     }
 
-                    tvBoostedTime = textView {
+                    tvBoostedTime = myTextView {
 
                         startPadding = dip(2)
 
@@ -392,7 +393,7 @@ class ItemViewHolder(
                     }.lparams(wrapContent, wrapContent)
                 }
 
-                tvBoosted = textView {
+                tvBoosted = myTextView {
                     // tools:text = "～にブーストされました"
                 }.lparams(matchParent, wrapContent)
             }
@@ -420,11 +421,11 @@ class ItemViewHolder(
                     weight = 1f
                 }
 
-                tvFollowerName = textView {
+                tvFollowerName = myTextView {
                     // tools:text="Follower Name"
                 }.lparams(matchParent, wrapContent)
 
-                tvFollowerAcct = textView {
+                tvFollowerAcct = myTextView {
                     setPaddingStartEnd(dip(4), dip(4))
                     textSize = 12f // SP
                 }.lparams(matchParent, wrapContent)
@@ -571,7 +572,10 @@ class ItemViewHolder(
                     }
                     btnCardImageHide = imageButton {
                         background =
-                            ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.btn_bg_transparent_round6dp
+                            )
                         contentDescription = context.getString(R.string.hide)
                         imageResource = R.drawable.ic_close
                     }.lparams(dip(32), matchParent) {
@@ -606,7 +610,7 @@ class ItemViewHolder(
                 endMargin = dip(4)
             }
 
-            tvReply = textView {
+            tvReply = myTextView {
             }.lparams(dip(0), wrapContent) {
                 weight = 1f
             }
@@ -621,7 +625,7 @@ class ItemViewHolder(
             }
             gravity = Gravity.CENTER_VERTICAL
 
-            btnContentWarning = button {
+            btnContentWarning = compatButton {
                 backgroundDrawable =
                     ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
                 minWidthCompat = dip(40)
@@ -663,7 +667,7 @@ class ItemViewHolder(
                 else -> inflateHorizontalMedia(thumbnailHeight)
             }
 
-            tvMediaDescription = textView {}.lparams(matchParent, wrapContent)
+            tvMediaDescription = myTextView {}.lparams(matchParent, wrapContent)
 
             inflateCard(actMain)
 
@@ -676,7 +680,7 @@ class ItemViewHolder(
     }
 
     private fun _LinearLayout.inflateStatusButtons(actMain: ActMain) {
-        // button bar
+        // compatButton bar
         statusButtonsViewHolder = StatusButtonsViewHolder(
             actMain,
             matchParent,
@@ -701,7 +705,7 @@ class ItemViewHolder(
                 isBaselineAligned = false
             }
 
-            tvOpenSticker = textView {
+            tvOpenSticker = myTextView {
                 setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
                 gravity = Gravity.CENTER_VERTICAL
                 setPaddingStartEnd(dip(4f), dip(4f))
@@ -715,7 +719,7 @@ class ItemViewHolder(
     private fun _LinearLayout.inflateStatusAcctTime() {
         linearLayout {
             lparams(matchParent, wrapContent)
-            tvAcct = textView {
+            tvAcct = myTextView {
                 ellipsize = TextUtils.TruncateAt.END
                 gravity = Gravity.END
                 maxLines = 1
@@ -725,7 +729,7 @@ class ItemViewHolder(
                 weight = 1f
             }
 
-            tvTime = textView {
+            tvTime = myTextView {
                 gravity = Gravity.END
                 startPadding = dip(2)
                 textSize = 12f // SP
@@ -760,7 +764,7 @@ class ItemViewHolder(
                 verticalLayout {
                     lparams(0, wrapContent) { weight = 1f }
 
-                    tvName = textView {
+                    tvName = myTextView {
                     }.lparams(matchParent, wrapContent)
 
                     inflateOpenSticker()
@@ -769,7 +773,7 @@ class ItemViewHolder(
                     inflateStatusContents(actMain)
                     inflateStatusButtons(actMain)
 
-                    tvApplication = textView {
+                    tvApplication = myTextView {
                         gravity = Gravity.END
                     }.lparams(matchParent, wrapContent)
                 }
@@ -791,7 +795,7 @@ class ItemViewHolder(
             isBaselineAligned = false
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
 
-            tvConversationParticipants = textView {
+            tvConversationParticipants = myTextView {
                 text = context.getString(R.string.participants)
             }.lparams(wrapContent, wrapContent) {
                 endMargin = dip(3)
@@ -802,7 +806,7 @@ class ItemViewHolder(
             ivConversationIcon3 = inflateConversationIconOne()
             ivConversationIcon4 = inflateConversationIconOne()
 
-            tvConversationIconsMore = textView {}.lparams(wrapContent, wrapContent)
+            tvConversationIconsMore = myTextView {}.lparams(wrapContent, wrapContent)
         }
     }
 
@@ -810,7 +814,7 @@ class ItemViewHolder(
         llSearchTag = linearLayout {
             lparams(matchParent, wrapContent)
 
-            btnSearchTag = button {
+            btnSearchTag = compatButton {
                 background =
                     ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
                 allCaps = false
@@ -855,13 +859,13 @@ class ItemViewHolder(
                     weight = 1f
                 }
 
-                tvTrendTagName = textView {}.lparams(matchParent, wrapContent)
+                tvTrendTagName = myTextView {}.lparams(matchParent, wrapContent)
 
-                tvTrendTagDesc = textView {
+                tvTrendTagDesc = myTextView {
                     textSize = 12f // SP
                 }.lparams(matchParent, wrapContent)
             }
-            tvTrendTagCount = textView {}.lparams(wrapContent, wrapContent) {
+            tvTrendTagCount = myTextView {}.lparams(wrapContent, wrapContent) {
                 startMargin = dip(6)
                 endMargin = dip(6)
             }
@@ -878,7 +882,7 @@ class ItemViewHolder(
             isBaselineAligned = false
             minimumHeight = dip(40)
 
-            btnListTL = button {
+            btnListTL = compatButton {
                 background =
                     ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
                 allCaps = false
@@ -898,7 +902,7 @@ class ItemViewHolder(
     }
 
     private fun _LinearLayout.inflateMessageHolder() {
-        tvMessageHolder = textView {
+        tvMessageHolder = myTextView {
             padding = dip(4)
         }.lparams(matchParent, wrapContent)
     }
@@ -936,11 +940,11 @@ class ItemViewHolder(
             }
             minimumHeight = dip(40)
 
-            tvFilterPhrase = textView {
+            tvFilterPhrase = myTextView {
                 typeface = Typeface.DEFAULT_BOLD
             }.lparams(matchParent, wrapContent)
 
-            tvFilterDetail = textView {
+            tvFilterDetail = myTextView {
                 textSize = 12f // SP
             }.lparams(matchParent, wrapContent)
         }

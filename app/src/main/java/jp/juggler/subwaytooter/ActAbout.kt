@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.LogCategory
 
@@ -125,7 +126,7 @@ class ActAbout : AppCompatActivity() {
         val padding = (0.5f + density * 8).toInt()
 
         for (who in translators) {
-            ll.addView(Button(this).apply {
+            ll.addView(AppCompatButton(this).apply {
                 //
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,

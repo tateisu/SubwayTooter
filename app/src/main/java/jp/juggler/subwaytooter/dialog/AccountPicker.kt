@@ -8,10 +8,10 @@ import android.text.SpannableStringBuilder
 import android.text.style.RelativeSizeSpan
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -129,7 +129,7 @@ suspend fun AppCompatActivity.pickAccount(
 
             val ac = AcctColor.load(a)
 
-            val b = Button(activity)
+            val b = AppCompatButton(activity)
 
             if (AcctColor.hasColorBackground(ac)) {
                 b.background = getAdaptiveRippleDrawableRound(activity, ac.color_bg, ac.color_fg)

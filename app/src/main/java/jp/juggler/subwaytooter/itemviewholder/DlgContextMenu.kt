@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.annotation.IdRes
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.action.*
@@ -241,7 +242,7 @@ internal class DlgContextMenu(
                 var insPos = 0
 
                 fun addLinkButton(span: MyClickableSpan, caption: String) {
-                    val b = Button(activity)
+                    val b = AppCompatButton(activity)
                     val lp = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
@@ -397,8 +398,8 @@ internal class DlgContextMenu(
 
                 btnDomainTimeline.vg(
                     PrefB.bpEnableDomainTimeline(activity.pref) &&
-                        !accessInfo.isPseudo &&
-                        !accessInfo.isMisskey
+                            !accessInfo.isPseudo &&
+                            !accessInfo.isMisskey
                 )
             }
 
@@ -606,7 +607,12 @@ internal class DlgContextMenu(
     }
 
     @Suppress("ComplexMethod")
-    private fun ActMain.onClickUser(v: View, pos: Int, who: TootAccount, whoRef: TootAccountRef): Boolean {
+    private fun ActMain.onClickUser(
+        v: View,
+        pos: Int,
+        who: TootAccount,
+        whoRef: TootAccountRef
+    ): Boolean {
         when (v.id) {
             R.id.btnReportUser -> userReportForm(accessInfo, who)
             R.id.btnFollow -> clickFollow(pos, accessInfo, whoRef, relation)
@@ -621,12 +627,21 @@ internal class DlgContextMenu(
             R.id.btnFollowRequestNG -> followRequestAuthorize(accessInfo, whoRef, false)
             R.id.btnFollowFromAnotherAccount -> followFromAnotherAccount(pos, accessInfo, who)
             R.id.btnSendMessageFromAnotherAccount -> mentionFromAnotherAccount(accessInfo, who)
-            R.id.btnOpenProfileFromAnotherAccount -> userProfileFromAnotherAccount(pos, accessInfo, who)
+            R.id.btnOpenProfileFromAnotherAccount -> userProfileFromAnotherAccount(
+                pos,
+                accessInfo,
+                who
+            )
             R.id.btnNickname -> clickNicknameCustomize(accessInfo, who)
-            R.id.btnAccountQrCode -> DlgQRCode.open(activity, whoRef.decoded_display_name, who.getUserUrl())
+            R.id.btnAccountQrCode -> DlgQRCode.open(
+                activity,
+                whoRef.decoded_display_name,
+                who.getUserUrl()
+            )
             R.id.btnDomainBlock -> clickDomainBlock(accessInfo, who)
             R.id.btnOpenTimeline -> who.apiHost.valid()?.let { timelineLocal(pos, it) }
-            R.id.btnDomainTimeline -> who.apiHost.valid()?.let { timelineDomain(pos, accessInfo, it) }
+            R.id.btnDomainTimeline -> who.apiHost.valid()
+                ?.let { timelineDomain(pos, accessInfo, it) }
             R.id.btnAvatarImage -> openAvatarImage(who)
             R.id.btnQuoteName -> quoteName(who)
             R.id.btnHideBoost -> userSetShowBoosts(accessInfo, who, false)
@@ -635,7 +650,10 @@ internal class DlgContextMenu(
             R.id.btnShowFavourite -> clickShowFavourite(accessInfo, who)
             R.id.btnListMemberAddRemove -> DlgListMember(activity, who, accessInfo).show()
             R.id.btnInstanceInformation -> serverInformation(pos, getUserApiHost())
-            R.id.btnProfileDirectory -> serverProfileDirectoryFromInstanceInformation(column, getUserApiHost())
+            R.id.btnProfileDirectory -> serverProfileDirectoryFromInstanceInformation(
+                column,
+                getUserApiHost()
+            )
             R.id.btnEndorse -> userEndorsement(accessInfo, who, !relation.endorsed)
             R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
             R.id.btnOpenAccountInAdminWebUi -> openBrowser("https://${accessInfo.apiHost.ascii}/admin/accounts/${who.id}")
@@ -667,7 +685,12 @@ internal class DlgContextMenu(
             R.id.btnMuteApp -> appMute(status.application)
             R.id.btnBoostedBy -> clickBoostBy(pos, accessInfo, status, ColumnType.BOOSTED_BY)
             R.id.btnFavouritedBy -> clickBoostBy(pos, accessInfo, status, ColumnType.FAVOURITED_BY)
-            R.id.btnTranslate -> CustomShare.invokeStatusText(CustomShareTarget.Translate, activity, accessInfo, status)
+            R.id.btnTranslate -> CustomShare.invokeStatusText(
+                CustomShareTarget.Translate,
+                activity,
+                accessInfo,
+                status
+            )
             R.id.btnQuoteUrlStatus -> openPost(status.url?.notEmpty())
             R.id.btnShareUrlStatus -> shareText(status.url?.notEmpty())
             R.id.btnConversationMute -> conversationMute(accessInfo, status)

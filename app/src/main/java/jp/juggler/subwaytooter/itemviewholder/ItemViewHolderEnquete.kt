@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.LinearLayout
+import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
@@ -180,7 +181,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         }
         llExtra.addView(b)
     } else {
-        val b = Button(activity)
+        val b = AppCompatButton(activity)
         b.layoutParams = lp
         b.isAllCaps = false
         b.text = text
@@ -227,7 +228,7 @@ fun ItemViewHolder.makeEnqueteFooterMastodon(
             topMargin = (0.5f + density * 3f).toInt()
         }
 
-        val b = Button(activity)
+        val b = AppCompatButton(activity)
         b.layoutParams = lp
         b.isAllCaps = false
         b.text = activity.getString(R.string.vote_button)

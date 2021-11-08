@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.columnviewholder
 
-import android.widget.Button
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexboxLayout
 import jp.juggler.subwaytooter.ActMain
@@ -78,7 +78,7 @@ fun ColumnViewHolder.updateReactionQueryView() {
     TootReaction.decodeEmojiQuery(column.searchQuery).forEachIndexed { index, reaction ->
         val ssb = reaction.toSpannableStringBuilder(options, status = null)
 
-        val b = Button(activity).apply {
+        val b = AppCompatButton(activity).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
                 buttonHeight

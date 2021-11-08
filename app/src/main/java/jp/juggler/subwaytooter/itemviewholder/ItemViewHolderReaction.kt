@@ -3,15 +3,13 @@ package jp.juggler.subwaytooter.itemviewholder
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.reactionAdd
 import jp.juggler.subwaytooter.action.reactionFromAnotherAccount
@@ -19,6 +17,8 @@ import jp.juggler.subwaytooter.action.reactionRemove
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
@@ -76,7 +76,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         val ssb = reaction.toSpannableStringBuilder(options, status)
             .also { it.append(" ${reaction.count}") }
 
-        val b = Button(act).apply {
+        val b = AppCompatButton(act).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
                 buttonHeight,
@@ -91,7 +91,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 // 自分がリアクションしたやつは背景を変える
                 getAdaptiveRippleDrawableRound(
                     act,
-                    PrefI.ipButtonReactionedColor(act.pref).notZero() ?: act.attrColor(R.attr.colorImageButtonAccent),
+                    PrefI.ipButtonReactionedColor(act.pref).notZero()
+                        ?: act.attrColor(R.attr.colorImageButtonAccent),
                     act.attrColor(R.attr.colorRippleEffect),
                     roundNormal = true
                 )

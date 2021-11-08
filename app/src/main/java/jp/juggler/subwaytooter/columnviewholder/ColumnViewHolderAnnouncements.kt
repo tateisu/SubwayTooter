@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
@@ -126,7 +127,11 @@ private fun ColumnViewHolder.showAnnouncementsEmpty() {
     llColumnHeader.invalidate()
 }
 
-private fun ColumnViewHolder.showAnnouncementColors(expand: Boolean, enablePaging: Boolean, contentColor: Int) {
+private fun ColumnViewHolder.showAnnouncementColors(
+    expand: Boolean,
+    enablePaging: Boolean,
+    contentColor: Int
+) {
     val alphaPrevNext = if (enablePaging) 1f else 0.3f
 
     setIconDrawableId(
@@ -250,7 +255,19 @@ private fun ColumnViewHolder.showReactionBox(
     showReactionPlus(box, item, buttonHeight, marginBetween, contentColor, paddingV)
     item.reactions?.filter { it.count > 0L }
         ?.notEmpty()
-        ?.let { showReactions(box, item, it, column, buttonHeight, marginBetween, contentColor, paddingH, paddingV) }
+        ?.let {
+            showReactions(
+                box,
+                item,
+                it,
+                column,
+                buttonHeight,
+                marginBetween,
+                contentColor,
+                paddingH,
+                paddingV
+            )
+        }
     llAnnouncementExtra.addView(box)
 }
 
@@ -327,7 +344,7 @@ private fun ColumnViewHolder.showReactions(
             reaction.url.notEmpty() ?: reaction.staticUrl.notEmpty()
         }
 
-        val b = Button(activity).also { btn ->
+        val b = AppCompatButton(activity).also { btn ->
             btn.layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
                 buttonHeight

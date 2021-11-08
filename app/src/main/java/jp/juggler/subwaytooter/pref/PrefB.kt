@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.pref
 
+import android.os.Build
 import jp.juggler.subwaytooter.pref.impl.BooleanPref
 
 object PrefB {
@@ -321,7 +322,8 @@ object PrefB {
 
     val bpUseTwemoji = BooleanPref(
         "UseTwemoji",
-        false
+        // Android 12 以上ではデフォルトfalse
+        Build.VERSION.SDK_INT < 31
     )
 
     val bpKeepReactionSpace = BooleanPref(

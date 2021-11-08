@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootPolls
@@ -98,7 +98,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
                 sb.append(
                     when {
                         v == null ||
-                            (column.isSearchColumn && column.accessInfo.isNA) ->
+                                (column.isSearchColumn && column.accessInfo.isNA) ->
                             activity.getString(R.string.vote_count_unavailable)
                         else ->
                             activity.getString(R.string.vote_count_text, v)
@@ -120,7 +120,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
 
     if (!canVote) {
 
-        val b = TextView(activity)
+        val b = AppCompatTextView(activity)
         b.layoutParams = lp
 
         b.text = text
@@ -239,7 +239,7 @@ fun ItemViewHolder.makeEnqueteFooterMastodon(
         llExtra.addView(b)
     }
 
-    val tv = TextView(activity)
+    val tv = AppCompatTextView(activity)
     val lp = LinearLayout.LayoutParams(
         LinearLayout.LayoutParams.MATCH_PARENT,
         LinearLayout.LayoutParams.WRAP_CONTENT

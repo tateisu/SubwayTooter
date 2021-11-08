@@ -10,6 +10,8 @@ import android.util.TypedValue
 import android.view.*
 import android.widget.*
 import androidx.annotation.StringRes
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.emoji2.widget.EmojiTextView
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
@@ -275,7 +277,7 @@ class EmojiPicker(
             customCategories.add(CustomCategory(
                 rangeStart,
                 rangeLength,
-                TextView(activity).apply {
+                AppCompatTextView(activity).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.WRAP_CONTENT
@@ -470,7 +472,7 @@ class EmojiPicker(
                 }
                 view.setTag(R.id.btnAbout, item)
                 (view as? NetworkEmojiView)?.setEmoji(customEmojiMap[item.name]?.url)
-            } else if(PrefB.bpUseTwemoji(App1.pref)){
+            } else if (PrefB.bpUseTwemoji(App1.pref)) {
                 view = viewOld
                     ?: ImageView(activity).apply {
                         layoutParams = AbsListView.LayoutParams(wh, wh)
@@ -492,9 +494,9 @@ class EmojiPicker(
                             .into(view)
                     }
                 }
-            }else{
+            } else {
                 view = viewOld
-                    ?: TextView(activity).apply {
+                    ?: EmojiTextView(activity).apply {
                         layoutParams = AbsListView.LayoutParams(wh, wh)
                     }
 
@@ -505,8 +507,8 @@ class EmojiPicker(
 
                     view.text = unicodeEmoji.unifiedCode
                     view.gravity = Gravity.CENTER
-                    view.setLineSpacing(0f,0f)
-                    view.setTextSize(TypedValue.COMPLEX_UNIT_PX, wh.toFloat()*0.7f)
+                    view.setLineSpacing(0f, 0f)
+                    view.setTextSize(TypedValue.COMPLEX_UNIT_PX, wh.toFloat() * 0.7f)
                 }
             }
 

@@ -3,11 +3,11 @@ package jp.juggler.subwaytooter.actmain
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.util.optInt
 import java.lang.ref.WeakReference
 
@@ -53,8 +53,9 @@ fun ActMain.checkAutoCW(status: TootStatus, text: CharSequence) {
     autoCw.decodedSpoilerText = null
 
     // テキストをレイアウトして行数を測定
-    val tv = TextView(this).apply {
-        layoutParams = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
+    val tv = AppCompatTextView(this).apply {
+        layoutParams =
+            LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
         if (!timelineFontSizeSp.isNaN()) {
             textSize = timelineFontSizeSp
         }

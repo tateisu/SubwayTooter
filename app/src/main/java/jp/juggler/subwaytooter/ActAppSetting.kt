@@ -18,6 +18,7 @@ import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -100,7 +101,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     val arTimelineFontBold = activityResultHandler { ar ->
         if (ar?.resultCode == RESULT_OK) {
-            ar.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, it, "TimelineFontBold") }
+            ar.data?.let {
+                handleFontResult(
+                    AppSettingItem.TIMELINE_FONT_BOLD,
+                    it,
+                    "TimelineFontBold"
+                )
+            }
         }
     }
 
@@ -384,16 +391,17 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         }
 
     private fun getViewPath(path: String, convertView: View?): View {
-        val tv: TextView = convertView.cast() ?: TextView(this@ActAppSetting).apply {
-            layoutParams = AbsListView.LayoutParams(
-                AbsListView.LayoutParams.MATCH_PARENT,
-                AbsListView.LayoutParams.WRAP_CONTENT
-            )
-            val padX = 0
-            val padY = dip(3)
-            setTypeface(typeface, Typeface.BOLD)
-            setPaddingRelative(padX, padY, padX, padY)
-        }
+        val tv: AppCompatTextView =
+            convertView.cast() ?: AppCompatTextView(this@ActAppSetting).apply {
+                layoutParams = AbsListView.LayoutParams(
+                    AbsListView.LayoutParams.MATCH_PARENT,
+                    AbsListView.LayoutParams.WRAP_CONTENT
+                )
+                val padX = 0
+                val padY = dip(3)
+                setTypeface(typeface, Typeface.BOLD)
+                setPaddingRelative(padX, padY, padX, padY)
+            }
         tv.text = path
         return tv
     }
@@ -1037,7 +1045,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         }
 
         override fun getDropDownView(position: Int, viewOld: View?, parent: ViewGroup): View {
-            val view = viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
+            val view =
+                viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
             view.findViewById<TextView>(android.R.id.text1).text = when (position) {
                 0 -> getString(R.string.ask_always)
                 else -> AcctColor.getNickname(list[position - 1])
@@ -1187,7 +1196,11 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
     }
 
-    fun openWebBrowserChooser(appSettingItem: AppSettingItem, intent: Intent, filter: (ResolveInfo) -> Boolean) {
+    fun openWebBrowserChooser(
+        appSettingItem: AppSettingItem,
+        intent: Intent,
+        filter: (ResolveInfo) -> Boolean
+    ) {
         try {
             val rv = DlgAppPicker(
                 this,
@@ -1204,7 +1217,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     }
 
     fun setWebBrowser(appSettingItem: AppSettingItem, value: String) {
-        val sp: StringPref = appSettingItem.pref.cast() ?: error("${getString(appSettingItem.caption)}: not StringPref")
+        val sp: StringPref = appSettingItem.pref.cast()
+            ?: error("${getString(appSettingItem.caption)}: not StringPref")
         pref.edit().put(sp, value).apply()
 
         showWebBrowser(findItemViewHolder(appSettingItem)?.textView1, value)

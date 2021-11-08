@@ -7,11 +7,11 @@ import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
@@ -32,13 +32,14 @@ object EmojiDecoder {
 
     private const val cpZwsp = '\u200B'.code
 
-    var handleUnicodeEmoji = true
+    var useTwemoji = true
 
-    fun customEmojiSeparator(pref: SharedPreferences) = if (PrefB.bpCustomEmojiSeparatorZwsp(pref)) {
-        '\u200B'
-    } else {
-        ' '
-    }
+    fun customEmojiSeparator(pref: SharedPreferences) =
+        if (PrefB.bpCustomEmojiSeparatorZwsp(pref)) {
+            '\u200B'
+        } else {
+            ' '
+        }
 
     // タンス側が落ち着いたら [^[:almun:]_] から [:space:]に切り替える
     //	private fun isHeadOrAfterWhitespace( s:CharSequence,index:Int):Boolean {
@@ -168,26 +169,33 @@ object EmojiDecoder {
 
         fun addImageSpan(text: String, emoji: UnicodeEmoji) {
             val context = options.context
-            if (context == null) {
-                openNormalText()
-                sb.append(text)
-            } else {
-                closeNormalText()
-                val start = sb.length
-                sb.append(text)
-                val end = sb.length
-                sb.setSpan(
-                    emoji.createSpan(context, scale = options.enlargeEmoji),
-                    start,
-                    end,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+            when {
+                context == null -> {
+                    openNormalText()
+                    sb.append(text)
+                }
+                PrefB.bpUseTwemoji(context) -> {
+                    closeNormalText()
+                    val start = sb.length
+                    sb.append(text)
+                    val end = sb.length
+                    sb.setSpan(
+                        emoji.createSpan(context, scale = options.enlargeEmoji),
+                        start,
+                        end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+                else -> {
+                    openNormalText()
+                    sb.append(emoji.unifiedCode)
+                }
             }
         }
 
         fun addUnicodeString(s: String) {
 
-            if (!handleUnicodeEmoji) {
+            if (!useTwemoji) {
                 openNormalText()
                 sb.append(s)
                 return
@@ -466,16 +474,21 @@ object EmojiDecoder {
             val emoji = EmojiMap.shortNameMap[shortCode] ?: continue
 
             val sb = SpannableStringBuilder()
-            val start = 0
-            sb.append(' ')
-            val end = sb.length
 
-            sb.setSpan(
-                emoji.createSpan(context),
-                start,
-                end,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
+            if(PrefB.bpUseTwemoji(context)){
+                val start = 0
+                sb.append(' ')
+                val end = sb.length
+
+                sb.setSpan(
+                    emoji.createSpan(context),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }else{
+                sb.append(emoji.unifiedCode)
+            }
 
             sb.append(' ')
                 .append(':')

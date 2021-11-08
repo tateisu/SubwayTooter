@@ -1112,4 +1112,5 @@
     <string name="mfm_show_unsupported_markup">(Misskey)Show unsupported markups</string>
     <string name="show_media_description">Show media description</string>
     <string name="background_pattern">Background pattern</string>
+    <string name="use_twemoji_emoji">Use Twemoji emoji</string>
 </resources>

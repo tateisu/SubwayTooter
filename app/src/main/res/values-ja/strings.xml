@@ -1101,4 +1101,5 @@
     <string name="mfm_show_unsupported_markup">(Misskey)未対応のマークアップを表示する</string>
     <string name="show_media_description">添付メディアの説明文を表示する</string>
     <string name="background_pattern">背景パターン</string>
+    <string name="use_twemoji_emoji">Twemoji絵文字を使う</string>
 </resources>

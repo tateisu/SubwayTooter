@@ -319,9 +319,9 @@ object PrefB {
         false
     )
 
-    val bpInAppUnicodeEmoji = BooleanPref(
-        "InAppUnicodeEmoji",
-        true
+    val bpUseTwemoji = BooleanPref(
+        "UseTwemoji",
+        false
     )
 
     val bpKeepReactionSpace = BooleanPref(

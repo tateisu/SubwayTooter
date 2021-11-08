@@ -12,9 +12,10 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.emoji.EmojiMap
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
@@ -384,14 +385,24 @@ fun SpannableStringBuilder.appendMisskeyReaction(
     emojiUtf16: String,
     text: String
 ): SpannableStringBuilder {
-    val start = this.length
-    this.append(text)
-    val end = this.length
 
-    this.setSpan(
-        EmojiMap.unicodeMap[emojiUtf16]!!.createSpan(context),
-        start, end,
-        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-    )
+    val emoji = EmojiMap.unicodeMap[emojiUtf16]
+    when {
+        emoji == null ->
+            append("text")
+
+        PrefB.bpUseTwemoji(context) -> {
+            val start = this.length
+            append(text)
+            val end = this.length
+            this.setSpan(
+                emoji.createSpan(context),
+                start, end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+        else ->
+            this.append(emoji.unifiedCode)
+    }
     return this
 }

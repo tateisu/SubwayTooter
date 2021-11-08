@@ -568,39 +568,50 @@ internal class ViewHolderHeaderProfile(
         }
     }
 
-    private fun encodeAcctText(who: TootAccount, whoDetail: TootAccount?) = SpannableStringBuilder().apply {
-        append("@")
-        append(accessInfo.getFullAcct(who).pretty)
-        if (whoDetail?.locked ?: who.locked) {
-            append(" ")
-            val emoji = EmojiMap.shortNameMap["lock"]
-            if (emoji != null) {
-                appendSpan("locked", emoji.createSpan(activity))
-            } else {
-                append("locked")
-            }
-        }
+    private fun encodeAcctText(who: TootAccount, whoDetail: TootAccount?) =
+        SpannableStringBuilder().apply {
+            append("@")
+            append(accessInfo.getFullAcct(who).pretty)
+            if (whoDetail?.locked ?: who.locked) {
+                append(" ")
+                val emoji = EmojiMap.shortNameMap["lock"]
+                when {
+                    emoji == null ->
+                        append("locked")
+                    PrefB.bpUseTwemoji(App1.pref) ->
+                        appendSpan("locked", emoji.createSpan(activity))
+                    else ->
+                        append(emoji.unifiedCode)
+                }
 
-        if (who.bot) {
-            append(" ")
-            val emoji = EmojiMap.shortNameMap["robot_face"]
-            if (emoji != null) {
-                appendSpan("bot", emoji.createSpan(activity))
-            } else {
-                append("bot")
             }
-        }
 
-        if (who.suspended) {
-            append(" ")
-            val emoji = EmojiMap.shortNameMap["cross_mark"]
-            if (emoji != null) {
-                appendSpan("suspended", emoji.createSpan(activity))
-            } else {
-                append("suspended")
+            if (who.bot) {
+                append(" ")
+                val emoji = EmojiMap.shortNameMap["robot_face"]
+                when {
+                    emoji == null ->
+                        append("bot")
+                    PrefB.bpUseTwemoji(App1.pref) ->
+                        appendSpan("bot", emoji.createSpan(activity))
+                    else ->
+                        append(emoji.unifiedCode)
+                }
+            }
+
+            if (who.suspended) {
+                append(" ")
+                val emoji = EmojiMap.shortNameMap["cross_mark"]
+                when {
+                    emoji == null ->
+                        append("suspended")
+                    PrefB.bpUseTwemoji(App1.pref) ->
+                        appendSpan("suspended", emoji.createSpan(activity))
+                    else ->
+                        append(emoji.unifiedCode)
+                }
             }
         }
-    }
 
     private fun encodeMisskeyExtra(whoDetail: TootAccount?) = SpannableStringBuilder().apply {
         var s = whoDetail?.location

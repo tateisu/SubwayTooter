@@ -137,8 +137,13 @@ dependencies {
     implementation project(':emoji')
     implementation project(':apng_android')
 
-
     implementation "androidx.appcompat:appcompat:$appcompat_version"
+
+    def emojiVersion = "1.0.0-rc01"
+    implementation "androidx.emoji2:emoji2:$emojiVersion"
+    implementation "androidx.emoji2:emoji2-bundled:$emojiVersion"
+    implementation "androidx.emoji2:emoji2-views:$emojiVersion"
+    implementation "androidx.emoji2:emoji2-views-helper:$emojiVersion"
 
     // DrawerLayout
     implementation "androidx.drawerlayout:drawerlayout:1.1.1"
@@ -157,7 +162,7 @@ dependencies {
     // Recyclerview
     implementation "androidx.recyclerview:recyclerview:1.2.1"
 
-    kapt 'androidx.annotation:annotation:1.2.0'
+    kapt 'androidx.annotation:annotation:1.3.0'
 
     // https://firebase.google.com/support/release-notes/android
     implementation "com.google.firebase:firebase-messaging:23.0.0"
@@ -228,7 +233,7 @@ dependencies {
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.15.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.16.0'
     /*
     WARNING: [Processor] Library '…\exoplayer-ui-2.12.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
     Example of androidX reference: 'androidx/core/app/NotificationCompat$Builder'

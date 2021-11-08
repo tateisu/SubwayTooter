@@ -8,14 +8,16 @@ import android.text.style.ReplacementSpan
 import androidx.annotation.IntRange
 import com.caverock.androidsvg.SVG
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.LogCategory
 
 // 絵文字リソースの種類によって異なるスパンを作る
-fun UnicodeEmoji.createSpan(context: Context, scale: Float = 1f) = if (isSvg) {
-    SvgEmojiSpan(context, assetsName!!, scale = scale)
-} else {
-    EmojiImageSpan(context, drawableId, scale = scale)
-}
+fun UnicodeEmoji.createSpan(context: Context, scale: Float = 1f) =
+    if (isSvg) {
+        SvgEmojiSpan(context, assetsName!!, scale = scale)
+    } else {
+        EmojiImageSpan(context, drawableId, scale = scale)
+    }
 
 // SVG絵文字スパン
 class SvgEmojiSpan internal constructor(

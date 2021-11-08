@@ -784,7 +784,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpEmojioneShortcode, R.string.emojione_shortcode_support) {
             desc = R.string.emojione_shortcode_support_desc
         }
-        sw(PrefB.bpInAppUnicodeEmoji, R.string.in_app_unicode_emoji)
+        sw(PrefB.bpUseTwemoji, R.string.use_twemoji_emoji)
 
         sw(PrefB.bpKeepReactionSpace, R.string.keep_reaction_space)
     }

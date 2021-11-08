@@ -343,7 +343,7 @@ class ActMain : AppCompatActivity(),
         density = appState.density
         completionHelper = CompletionHelper(this, pref, appState.handler)
 
-        EmojiDecoder.handleUnicodeEmoji = PrefB.bpInAppUnicodeEmoji(pref)
+        EmojiDecoder.useTwemoji = PrefB.bpUseTwemoji(pref)
 
         acctPadLr = (0.5f + 4f * density).toInt()
         reloadTextSize()

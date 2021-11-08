@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.graphics.Typeface
 import android.graphics.drawable.PictureDrawable
 import android.util.SparseArray
+import android.util.TypedValue
 import android.view.*
 import android.widget.*
 import androidx.annotation.StringRes
@@ -463,8 +464,13 @@ class EmojiPicker(
             val view: View
             val item = page.emojiList[position]
             var unicodeEmoji = item.unicodeEmoji
-            if (unicodeEmoji != null) {
-
+            if (unicodeEmoji == null) {
+                view = viewOld ?: NetworkEmojiView(activity).apply {
+                    layoutParams = AbsListView.LayoutParams(wh, wh)
+                }
+                view.setTag(R.id.btnAbout, item)
+                (view as? NetworkEmojiView)?.setEmoji(customEmojiMap[item.name]?.url)
+            } else if(PrefB.bpUseTwemoji(App1.pref)){
                 view = viewOld
                     ?: ImageView(activity).apply {
                         layoutParams = AbsListView.LayoutParams(wh, wh)
@@ -486,12 +492,22 @@ class EmojiPicker(
                             .into(view)
                     }
                 }
-            } else {
-                view = viewOld ?: NetworkEmojiView(activity).apply {
-                    layoutParams = AbsListView.LayoutParams(wh, wh)
-                }
+            }else{
+                view = viewOld
+                    ?: TextView(activity).apply {
+                        layoutParams = AbsListView.LayoutParams(wh, wh)
+                    }
+
                 view.setTag(R.id.btnAbout, item)
-                (view as? NetworkEmojiView)?.setEmoji(customEmojiMap[item.name]?.url)
+
+                if (view is TextView && view.activity?.isDestroyed == false) {
+                    if (page.hasSkinTone) unicodeEmoji = applySkinTone(unicodeEmoji)
+
+                    view.text = unicodeEmoji.unifiedCode
+                    view.gravity = Gravity.CENTER
+                    view.setLineSpacing(0f,0f)
+                    view.setTextSize(TypedValue.COMPLEX_UNIT_PX, wh.toFloat()*0.7f)
+                }
             }
 
             return view

@@ -20,11 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.Player.TimelineChangeReason
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.*
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
@@ -41,6 +37,7 @@ import java.io.IOException
 import java.util.*
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
+
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
@@ -97,7 +94,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private var showDescription = true
 
     private lateinit var viewBinding: ActMediaViewerBinding
-    private lateinit var exoPlayer: SimpleExoPlayer
+    private lateinit var exoPlayer: ExoPlayer
 
     private var lastVolume = Float.NaN
 
@@ -278,7 +275,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }
         })
 
-        exoPlayer = SimpleExoPlayer.Builder(this).build()
+        exoPlayer = ExoPlayer.Builder(this).build()
         exoPlayer.addListener(playerListener)
         viewBinding.exoView.player = exoPlayer
     }
@@ -346,25 +343,16 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             showError("missing media attachment url.")
             return
         }
+        val uri = url.mayUri()
+        if (uri == null) {
+            showError("can't parse URI: $url")
+            return
+        }
 
         // https://github.com/google/ExoPlayer/issues/1819
         HttpsURLConnection.setDefaultSSLSocketFactory(MySslSocketFactory)
-
         viewBinding.exoView.visibility = View.VISIBLE
-
-        val defaultBandwidthMeter = DefaultBandwidthMeter.Builder(this).build()
-        val extractorsFactory = DefaultExtractorsFactory()
-
-        val dataSourceFactory = DefaultDataSourceFactory(
-            this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
-        )
-
-        val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
-            .createMediaSource(MediaItem.Builder().setUri(url.toUri()).build())
-
-        mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)
-
-        exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.setMediaItem(MediaItem.fromUri(uri))
         exoPlayer.prepare()
         exoPlayer.repeatMode = when (ta.type) {
             TootAttachmentType.Video -> Player.REPEAT_MODE_OFF

@@ -51,6 +51,8 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
     val status: TootStatus?    //	The Status associated with the notification, if applicable
     var reaction: TootReaction? = null
 
+    val reblog_visibility: TootVisibility
+
     private val created_at: String?    //	The time the notification was created
     val time_created_at: Long
 
@@ -84,6 +86,8 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
                 ?.notEmpty()
                 ?.let { TootReaction.parseMisskey(it) }
 
+            reblog_visibility = TootVisibility.Unknown
+
             // Misskeyの通知APIはページネーションをIDでしか行えない
             // これは改善される予定 https://github.com/syuilo/misskey/issues/2275
         } else {
@@ -100,8 +104,17 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
             reaction = src.jsonObject("emoji_reaction")
                 ?.notEmpty()
                 ?.let { TootReaction.parseFedibird(it) }
-                // pleroma unicode emoji
+                    // pleroma unicode emoji
                 ?: src.string("emoji")?.let { TootReaction(name = it) }
+
+            // fedibird
+            // https://github.com/fedibird/mastodon/blob/7974fd3c7ec11ea9f7bef4ad7f4009fff53f62af/app/serializers/rest/notification_serializer.rb#L9
+            val visibilityString = when {
+                src.boolean("limited") == true -> "limited"
+                else -> src.string("reblog_visibility")
+            }
+            this.reblog_visibility = TootVisibility.parseMastodon(visibilityString)
+                ?: TootVisibility.Unknown
         }
     }
 }

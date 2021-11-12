@@ -36,7 +36,7 @@ http://userguide.icu-project.org/strings/regexp
 fun @receiver:Language("RegExp") String.asciiPattern(flags: Int = 0): Pattern =
     Pattern.compile(this.asciiPatternString(), flags)
 
-fun @receiver:Language("RegExp") String.asciiRegex(opflags: Int = 0): Regex =
+fun @receiver:Language("RegExp") String.asciiRegex(): Regex =
     this.asciiPatternString().toRegex()
 
 fun @receiver:Language("RegExp") String.asciiRegex(option: RegexOption): Regex =

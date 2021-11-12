@@ -61,14 +61,14 @@ fun ItemViewHolder.bind(
 
                 is TextView -> v.typeface = when {
                     v === tvName ||
-                        v === tvFollowerName ||
-                        v === tvBoosted ||
-                        v === tvReply ||
-                        v === tvTrendTagCount ||
-                        v === tvTrendTagName ||
-                        v === tvConversationIconsMore ||
-                        v === tvConversationParticipants ||
-                        v === tvFilterPhrase -> fontBold
+                            v === tvFollowerName ||
+                            v === tvBoosted ||
+                            v === tvReply ||
+                            v === tvTrendTagCount ||
+                            v === tvTrendTagName ||
+                            v === tvConversationIconsMore ||
+                            v === tvConversationParticipants ||
+                            v === tvFilterPhrase -> fontBold
                     else -> fontNormal
                 }
             }
@@ -315,6 +315,7 @@ fun ItemViewHolder.showBoost(
     @StringRes stringId: Int,
     reaction: TootReaction? = null,
     boostStatus: TootStatus? = null,
+    reblogVisibility: TootVisibility? = null,
 ) {
     boostAccount = whoRef
 
@@ -350,7 +351,14 @@ fun ItemViewHolder.showBoost(
 
     boostTime = time
     llBoosted.visibility = View.VISIBLE
-    showStatusTime(activity, tvBoostedTime, who, time = time, status = boostStatus)
+    showStatusTime(
+        activity,
+        tvBoostedTime,
+        who,
+        time = time,
+        status = boostStatus,
+        reblogVisibility = reblogVisibility
+    )
     tvBoosted.text = text
     boostInvalidator.register(text)
     setAcct(tvBoostedAcct, accessInfo, who)
@@ -491,6 +499,7 @@ fun ItemViewHolder.showStatusTime(
     @Suppress("UNUSED_PARAMETER") who: TootAccount,
     status: TootStatus? = null,
     time: Long? = null,
+    reblogVisibility: TootVisibility? = null,
 ) {
     val sb = SpannableStringBuilder()
 
@@ -593,6 +602,22 @@ fun ItemViewHolder.showStatusTime(
         if (status.isFeatured) {
             if (sb.isNotEmpty()) sb.append(' ')
             sb.append(activity.getString(R.string.featured))
+        }
+    } else {
+        reblogVisibility?.takeIf { it != TootVisibility.Unknown }?.let { visibility ->
+            val visIconId = Styler.getVisibilityIconId(accessInfo.isMisskey, visibility)
+            if (R.drawable.ic_public != visIconId) {
+                if (sb.isNotEmpty()) sb.append('\u200B')
+                sb.appendColorShadeIcon(
+                    activity,
+                    visIconId,
+                    Styler.getVisibilityString(
+                        activity,
+                        accessInfo.isMisskey,
+                        visibility
+                    )
+                )
+            }
         }
     }
 
@@ -763,7 +788,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
     }
     llSearchTag.visibility = View.VISIBLE
     btnSearchTag.text = activity.getString(R.string.scheduled_status) + " " +
-        TootStatus.formatTime(activity, item.timeScheduledAt, true)
+            TootStatus.formatTime(activity, item.timeScheduledAt, true)
 }
 
 fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {

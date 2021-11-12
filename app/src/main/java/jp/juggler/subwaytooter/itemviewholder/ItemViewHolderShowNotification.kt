@@ -147,7 +147,8 @@ private fun ItemViewHolder.showNotificationReblog(n: TootNotification, nAccountR
             n.time_created_at,
             R.drawable.ic_repeat,
             R.string.display_name_boosted_by,
-            boostStatus = null
+            boostStatus = null,
+            reblogVisibility = n.reblog_visibility
         )
     }
     val colorBg = PrefI.ipEventBgColorBoost(activity.pref)

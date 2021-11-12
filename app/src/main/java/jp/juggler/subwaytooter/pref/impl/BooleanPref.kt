@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.pref.impl
 
 import android.content.SharedPreferences
+import jp.juggler.subwaytooter.App1
 
 class BooleanPref(key: String, defVal: Boolean) : BasePref<Boolean>(key, defVal) {
 

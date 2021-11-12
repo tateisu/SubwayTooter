@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.pref.impl
 
 import android.content.SharedPreferences
+import jp.juggler.subwaytooter.App1
 
 class IntPref(key: String, defVal: Int) : BasePref<Int>(key, defVal) {
 

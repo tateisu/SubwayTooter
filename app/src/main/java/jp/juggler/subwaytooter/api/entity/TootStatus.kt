@@ -15,6 +15,10 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.TimeZone
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
@@ -398,9 +402,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                     // 別の投稿を参照して、かつこの投稿自体が何かコンテンツを持つなら引用トゥートである
                     else -> content?.isNotEmpty() == true ||
-                        spoiler_text.isNotEmpty() ||
-                        media_attachments?.isNotEmpty() == true ||
-                        enquete != null
+                            spoiler_text.isNotEmpty() ||
+                            media_attachments?.isNotEmpty() == true ||
+                            enquete != null
                 }
 
                 this.quote_id = when {
@@ -851,8 +855,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     fun canPin(accessInfo: SavedAccount): Boolean =
         reblog == null &&
-            accessInfo.isMe(account) &&
-            visibility.canPin(accessInfo.isMisskey)
+                accessInfo.isMe(account) &&
+                visibility.canPin(accessInfo.isMisskey)
 
     // 内部で使う
     private var _filteredWord: String? = null
@@ -1175,69 +1179,72 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             return null
         }
 
-        private val tz_utc = TimeZone.getTimeZone("UTC")
-
-        private val reDate = """\A\d+\D+\d+\D+\d+\z""".asciiPattern()
+        private val reDate = """\A(\d+\D+\d+\D+\d+)\z"""
+            .asciiRegex()
 
         private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
-            .asciiPattern()
+            .asciiRegex()
 
         private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
-            .asciiPattern()
+            .asciiRegex()
 
+        // 時刻を解釈してエポック秒(ミリ単位)を返す
+        // 解釈に失敗すると0Lを返す
         fun parseTime(strTime: String?): Long {
-            if (strTime != null && strTime.isNotEmpty()) {
-                try {
-                    var m = reTime.matcher(strTime)
-                    if (m.find()) {
-                        val g = GregorianCalendar(tz_utc)
-                        g.set(
-                            m.groupEx(1).optInt() ?: 1,
-                            (m.groupEx(2).optInt() ?: 1) - 1,
-                            m.groupEx(3).optInt() ?: 1,
-                            m.groupEx(4).optInt() ?: 0,
-                            m.groupEx(5).optInt() ?: 0,
-                            m.groupEx(6).optInt() ?: 0
-                        )
-                        g.set(Calendar.MILLISECOND, m.groupEx(7).optInt() ?: 0)
-                        return g.timeInMillis
-                    }
-                    // last_status_at などでは YYYY-MM-DD になることがある
-                    m = reDate.matcher(strTime)
-                    if (m.find()) return parseTime("${strTime}T00:00:00.000Z")
+            if (strTime?.isNotBlank() != true) return 0L
 
-                    log.w("invalid time format: $strTime")
-                } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
-                    log.trace(ex)
-                    log.e(ex, "TootStatus.parseTime failed. src=$strTime")
-                }
+            // last_status_at などでは YYYY-MM-DD になることがある
+            reDate.find(strTime)?.groupValues?.let { gv ->
+                return parseTime("${gv[1]}T00:00:00.000Z")
             }
+
+            // kotlinx-datetime で雑にパース
+            try {
+                return Instant.parse(strTime).toEpochMilliseconds()
+            } catch (ex: Throwable) {
+                log.w(ex, "Instant.parse failed. $strTime")
+            }
+
+            // 古い処理にフォールバック
+            try {
+                val gv = reTime.find(strTime)?.groupValues
+                    ?: error("time format not match.")
+                return LocalDateTime(
+                    gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
+                    gv.elementAtOrNull(2)?.toIntOrNull() ?: 1,
+                    gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
+                    gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
+                    gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
+                    gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
+                    (gv.elementAtOrNull(7)?.toIntOrNull() ?: 0) * 1_000_000,
+                )
+                    .toInstant(TimeZone.UTC)
+                    .toEpochMilliseconds()
+            } catch (ex2: Throwable) {
+                log.w(ex2, "parseTime failed(2)")
+            }
+
             return 0L
         }
 
         private fun parseTimeMSP(strTime: String?): Long {
-            if (strTime != null && strTime.isNotEmpty()) {
-                try {
-                    val m = reMSPTime.matcher(strTime)
-                    if (!m.find()) {
-                        log.d("invalid time format: $strTime")
-                    } else {
-                        val g = GregorianCalendar(tz_utc)
-                        g.set(
-                            m.groupEx(1).optInt() ?: 1,
-                            (m.groupEx(2).optInt() ?: 1) - 1,
-                            m.groupEx(3).optInt() ?: 1,
-                            m.groupEx(4).optInt() ?: 0,
-                            m.groupEx(5).optInt() ?: 0,
-                            m.groupEx(6).optInt() ?: 0
-                        )
-                        g.set(Calendar.MILLISECOND, 500)
-                        return g.timeInMillis
-                    }
-                } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
-                    log.trace(ex)
-                    log.e(ex, "parseTimeMSP failed. src=$strTime")
-                }
+            if (strTime?.isNotBlank() != true) return 0L
+            try {
+                val gv = reMSPTime.find(strTime)?.groupValues
+                    ?: error("time format not match.")
+                return LocalDateTime(
+                    gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
+                    gv.elementAtOrNull(2)?.toIntOrNull() ?: 1,
+                    gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
+                    gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
+                    gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
+                    gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
+                    (500) * 1_000_000,
+                )
+                    .toInstant(TimeZone.UTC)
+                    .toEpochMilliseconds()
+            } catch (ex: Throwable) {
+                log.w(ex, "parseTimeMSP failed. src=$strTime")
             }
             return 0L
         }

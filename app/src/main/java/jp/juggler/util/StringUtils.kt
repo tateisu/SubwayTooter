@@ -188,14 +188,6 @@ fun ByteArray.encodeHexLower(): String {
     return sb.toString()
 }
 
-fun String?.optInt(): Int? {
-    return try {
-        this?.toInt(10)
-    } catch (ignored: Throwable) {
-        null
-    }
-}
-
 fun String?.filterNotEmpty(): String? = when {
     this == null -> null
     this.isEmpty() -> null

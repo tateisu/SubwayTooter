@@ -36,6 +36,15 @@ http://userguide.icu-project.org/strings/regexp
 fun @receiver:Language("RegExp") String.asciiPattern(flags: Int = 0): Pattern =
     Pattern.compile(this.asciiPatternString(), flags)
 
+fun @receiver:Language("RegExp") String.asciiRegex(opflags: Int = 0): Regex =
+    this.asciiPatternString().toRegex()
+
+fun @receiver:Language("RegExp") String.asciiRegex(option: RegexOption): Regex =
+    this.asciiPatternString().toRegex(option)
+
+fun @receiver:Language("RegExp") String.asciiRegex(options: Set<RegexOption>): Regex =
+    this.asciiPatternString().toRegex(options)
+
 fun @receiver:Language("RegExp") String.asciiPatternString(): String {
     val dst = StringBuilder()
     dst.ensureCapacity(this.length)
@@ -52,7 +61,8 @@ fun @receiver:Language("RegExp") String.asciiPatternString(): String {
                     'd' -> dst.append(if (insideSet > 0) "0-9" else "[0-9]")
 
                     // W,Dは文字セット内では対応できないのでそのまま通す
-                    'W' -> if (insideSet > 0) dst.append('\\').append(c) else dst.append("[^A-Za-z0-9_]")
+                    'W' -> if (insideSet > 0) dst.append('\\')
+                        .append(c) else dst.append("[^A-Za-z0-9_]")
                     'D' -> if (insideSet > 0) dst.append('\\').append(c) else dst.append("[^0-9]")
 
                     else -> dst.append('\\').append(c)

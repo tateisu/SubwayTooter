@@ -8,13 +8,12 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.util.optInt
 import java.lang.ref.WeakReference
 
 // AutoCWの基準幅を計算する
 fun ActMain.resizeAutoCW(columnW: Int) {
     val sv = PrefS.spAutoCWLines(pref)
-    nAutoCwLines = sv.optInt() ?: -1
+    nAutoCwLines = sv.toIntOrNull() ?: -1
     if (nAutoCwLines > 0) {
         val lvPad = (0.5f + 12 * density).toInt()
         val iconWidth = avatarIconSize

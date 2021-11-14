@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.pref.impl
 
 import android.content.SharedPreferences
-import jp.juggler.subwaytooter.App1
 
 class FloatPref(key: String, defVal: Float) : BasePref<Float>(key, defVal) {
 

@@ -12,14 +12,13 @@ class JsonException : RuntimeException {
 
 private const val CHAR0 = '\u0000'
 
+private val reDecimal ="""\A-0\z|[.eE]""".toRegex()
+
 // Tests if the value should be tried as a decimal.
 // It makes no test if there are actual digits.
 // return true if the string is "-0" or if it contains '.', 'e', or 'E', false otherwise.
 private fun String.isDecimalNotation(): Boolean =
-    indexOf('.') > -1 ||
-        indexOf('e') > -1 ||
-        indexOf('E') > -1 ||
-        this == "-0"
+    reDecimal.matches(this)
 
 private fun isNumberStart(initial: Char?) = when (initial) {
     in '0'..'9' -> true
@@ -286,9 +285,12 @@ class JsonObject : LinkedHashMap<String, Any?>() {
         if (value != null) put(name, value)
     }
 
-    fun putIfTrue(key: String, value: Boolean) {
-        if (value) put(key, true)
+    fun putIfNotDefault(key: String, value: Boolean, defVal: Boolean?) {
+        if (value != defVal) put(key, value)
     }
+
+    fun putIfTrue(key: String, value: Boolean) =
+        putIfNotDefault(key, value, true)
 }
 
 class JsonTokenizer(reader: Reader) {
@@ -902,7 +904,12 @@ private fun Writer.indent(indentFactor: Int, indent: Int): Writer {
     return this
 }
 
-private fun Writer.writeCollection(indentFactor: Int, indent: Int, src: Collection<*>, sort: Boolean): Writer =
+private fun Writer.writeCollection(
+    indentFactor: Int,
+    indent: Int,
+    src: Collection<*>,
+    sort: Boolean
+): Writer =
     try {
         append('[')
         when (src.size) {

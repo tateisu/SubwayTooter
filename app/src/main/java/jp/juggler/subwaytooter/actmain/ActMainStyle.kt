@@ -200,7 +200,8 @@ fun ActMain.reloadTimeZone() {
         if (tzId.isNotEmpty()) {
             tz = TimeZone.getTimeZone(tzId)
         }
-        TootStatus.date_format.timeZone = tz
+        log.w("reloadTimeZone: tz=${tz.displayName}")
+        TootStatus.dateFormatFull.timeZone = tz
     } catch (ex: Throwable) {
         log.e(ex, "getTimeZone failed.")
     }

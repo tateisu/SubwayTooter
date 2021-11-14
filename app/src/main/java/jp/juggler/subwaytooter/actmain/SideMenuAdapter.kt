@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
@@ -32,6 +33,9 @@ import jp.juggler.util.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference
+import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class SideMenuAdapter(
     private val actMain: ActMain,
@@ -165,10 +169,12 @@ class SideMenuAdapter(
         IT_NORMAL(0),
         IT_GROUP_HEADER(1),
         IT_DIVIDER(2),
-        IT_VERSION(3)
+        IT_VERSION(3),
+        IT_TIMEZONE(4)
     }
 
     private class Item(
+        // 項目の文字列リソース or 0: divider, 1: バージョン表記, 2: タイムゾーン
         val title: Int = 0,
         val icon: Int = 0,
         val action: ActMain.() -> Unit = {}
@@ -178,6 +184,7 @@ class SideMenuAdapter(
             get() = when {
                 title == 0 -> ItemType.IT_DIVIDER
                 title == 1 -> ItemType.IT_VERSION
+                title == 2 -> ItemType.IT_TIMEZONE
                 icon == 0 -> ItemType.IT_GROUP_HEADER
                 else -> ItemType.IT_NORMAL
             }
@@ -192,6 +199,7 @@ class SideMenuAdapter(
     private val list = arrayOf(
 
         Item(icon = R.drawable.ic_info, title = 1),
+        Item(icon = R.drawable.ic_info, title = 2),
 
         Item(),
         Item(title = R.string.account),
@@ -398,7 +406,7 @@ class SideMenuAdapter(
         resId: Int
     ): T =
         (view ?: actMain.layoutInflater.inflate(resId, parent, false))
-            as? T ?: error("invalid view type! ${T::class.java.simpleName}")
+                as? T ?: error("invalid view type! ${T::class.java.simpleName}")
 
     override fun getView(position: Int, view: View?, parent: ViewGroup?): View =
         list[position].run {
@@ -436,8 +444,51 @@ class SideMenuAdapter(
                         background = null
                         text = versionRow
                     }
+                ItemType.IT_TIMEZONE ->
+                    viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
+                        textSize = 14f
+                        isAllCaps = false
+                        background = null
+                        text = getTimeZoneString(context)
+                    }
             }
         }
+
+    private fun getTimeZoneString(context: Context): String {
+        try {
+            var tz = TimeZone.getDefault()
+            val tzId = PrefS.spTimeZone()
+            if (tzId.isBlank()) {
+                return tz.displayName +"("+context.getString(R.string.device_timezone)+")"
+            }
+            tz = TimeZone.getTimeZone(tzId)
+            var offset = tz.rawOffset.toLong()
+            return when (offset) {
+                0L -> "(UTC\u00B100:00) ${tz.id} ${tz.displayName}"
+                else -> {
+
+                    val format = when {
+                        offset > 0 -> "(UTC+%02d:%02d) %s %s"
+                        else -> "(UTC-%02d:%02d) %s %s"
+                    }
+
+                    offset = abs(offset)
+
+                    val hours = TimeUnit.MILLISECONDS.toHours(offset)
+                    val minutes =
+                        TimeUnit.MILLISECONDS.toMinutes(offset) - TimeUnit.HOURS.toMinutes(hours)
+
+                    String.format(format, hours, minutes, tz.id, tz.displayName)
+                }
+            }
+        } catch (ex: Throwable) {
+            return "(incorrect TimeZone)"
+        }
+    }
+
+    fun onActivityStart() {
+        this.notifyDataSetChanged()
+    }
 
     init {
         checkVersion(actMain.applicationContext, handler)

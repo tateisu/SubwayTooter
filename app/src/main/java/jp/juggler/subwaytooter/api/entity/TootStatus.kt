@@ -25,6 +25,7 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.jvm.Throws
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -1188,6 +1189,34 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
             .asciiRegex()
 
+        private val reDateTimeWorkaround = """([+-]\d{2})(\d{2})\z""".toRegex()
+
+        @Throws(Throwable::class)
+        fun parseTime1(strTime: String): Long {
+            val gv = reTime.find(strTime)?.groupValues
+                ?: error("time format not match.")
+            return LocalDateTime(
+                gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
+                gv.elementAtOrNull(2)?.toIntOrNull() ?: 1,
+                gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
+                gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
+                gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
+                gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
+                (gv.elementAtOrNull(7)?.toIntOrNull() ?: 0) * 1_000_000,
+            )
+                .toInstant(TimeZone.UTC)
+                .toEpochMilliseconds()
+        }
+
+
+        @Throws(Throwable::class)
+        fun parseTime2(strTime: String): Long {
+            // https://github.com/Kotlin/kotlinx-datetime/issues/139
+            val src = reDateTimeWorkaround.replace(strTime, "\$1:\$2")
+
+            return Instant.parse(src).toEpochMilliseconds()
+        }
+
         // 時刻を解釈してエポック秒(ミリ単位)を返す
         // 解釈に失敗すると0Lを返す
         fun parseTime(strTime: String?): Long {
@@ -1200,28 +1229,16 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
             // kotlinx-datetime で雑にパース
             try {
-                return Instant.parse(strTime).toEpochMilliseconds()
+                return parseTime2(strTime)
             } catch (ex: Throwable) {
-                log.w(ex, "Instant.parse failed. $strTime")
+                log.w(ex, "parseTime2 failed. $strTime")
             }
 
             // 古い処理にフォールバック
             try {
-                val gv = reTime.find(strTime)?.groupValues
-                    ?: error("time format not match.")
-                return LocalDateTime(
-                    gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
-                    gv.elementAtOrNull(2)?.toIntOrNull() ?: 1,
-                    gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
-                    gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
-                    gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
-                    gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
-                    (gv.elementAtOrNull(7)?.toIntOrNull() ?: 0) * 1_000_000,
-                )
-                    .toInstant(TimeZone.UTC)
-                    .toEpochMilliseconds()
-            } catch (ex2: Throwable) {
-                log.w(ex2, "parseTime failed(2)")
+                return parseTime1(strTime)
+            } catch (ex: Throwable) {
+                log.w(ex, "parseTime1 failed. $strTime")
             }
 
             return 0L
@@ -1250,10 +1267,10 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         }
 
         @SuppressLint("SimpleDateFormat")
-        internal val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val dateFormatFull = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
         @SuppressLint("SimpleDateFormat")
-        internal val date_format2 = SimpleDateFormat("yyyy-MM-dd")
+        val date_format2 = SimpleDateFormat("yyyy-MM-dd")
 
         fun formatTime(
             context: Context,
@@ -1323,7 +1340,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 // fall back to absolute time
             }
 
-            return formatDate(t, date_format, omitZeroSecond = false, omitYear = false)
+            return formatDate(t, dateFormatFull, omitZeroSecond = false, omitYear = false)
         }
 
         // 告知の開始/終了日付
@@ -1358,12 +1375,12 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             val strStart = when {
                 start <= 0L -> ""
                 allDay -> formatDate(start, date_format2, omitZeroSecond = false, omitYear = true)
-                else -> formatDate(start, date_format, omitZeroSecond = true, omitYear = true)
+                else -> formatDate(start, dateFormatFull, omitZeroSecond = true, omitYear = true)
             }
             val strEnd = when {
                 end <= 0L -> ""
                 allDay -> formatDate(end, date_format2, omitZeroSecond = false, omitYear = true)
-                else -> formatDate(end, date_format, omitZeroSecond = true, omitYear = true)
+                else -> formatDate(end, dateFormatFull, omitZeroSecond = true, omitYear = true)
             }
             // 終了日は先頭と同じ部分を省略する
             var skip = 0

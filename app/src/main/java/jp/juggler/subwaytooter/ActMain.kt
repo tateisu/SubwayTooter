@@ -8,10 +8,7 @@ import android.content.res.Configuration
 import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
-import android.view.KeyEvent
-import android.view.View
-import android.view.Window
-import android.view.WindowManager
+import android.view.*
 import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -142,6 +139,8 @@ class ActMain : AppCompatActivity(),
     lateinit var pref: SharedPreferences
     lateinit var handler: Handler
     lateinit var appState: AppState
+
+    lateinit var sideMenuAdapter: SideMenuAdapter
 
     //////////////////////////////////////////////////////////////////
     // 読み取り専用のプロパティ
@@ -433,6 +432,9 @@ class ActMain : AppCompatActivity(),
         benchmark("onStart total") {
             benchmark("reload color") { reloadColors() }
             benchmark("reload timezone") { reloadTimeZone() }
+
+            sideMenuAdapter.onActivityStart()
+
             // 残りの処理はActivityResultの処理より後回しにしたい
             handler.postDelayed(onStartAfter, 1L)
         }
@@ -707,7 +709,7 @@ class ActMain : AppCompatActivity(),
         drawer.addDrawerListener(this)
         drawer.setExclusionSize(stripIconSize)
 
-        SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
+        sideMenuAdapter = SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
 
         llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
 

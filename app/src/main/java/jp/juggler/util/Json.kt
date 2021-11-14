@@ -12,13 +12,13 @@ class JsonException : RuntimeException {
 
 private const val CHAR0 = '\u0000'
 
-private val reDecimal ="""\A-0\z|[.eE]""".toRegex()
+private val reDecimal ="""(?:\A\-0\z)|[.eE]""".toRegex()
 
 // Tests if the value should be tried as a decimal.
 // It makes no test if there are actual digits.
 // return true if the string is "-0" or if it contains '.', 'e', or 'E', false otherwise.
-private fun String.isDecimalNotation(): Boolean =
-    reDecimal.matches(this)
+fun String.isDecimalNotation(): Boolean =
+    reDecimal.containsMatchIn(this)
 
 private fun isNumberStart(initial: Char?) = when (initial) {
     in '0'..'9' -> true

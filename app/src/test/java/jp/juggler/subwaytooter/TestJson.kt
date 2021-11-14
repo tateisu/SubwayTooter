@@ -1,15 +1,14 @@
 package jp.juggler.subwaytooter
 
-import jp.juggler.util.jsonArray
-import jp.juggler.util.jsonObject
-import jp.juggler.util.decodeJsonValue
-import jp.juggler.util.writeJsonValue
+import jp.juggler.util.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.Assert.*
 import java.io.StringWriter
 
 class TestJson {
     companion object {
+        private val epsilon = java.lang.Double.longBitsToDouble(971L shl 52)
+
         fun Any?.encodeSimpleJsonValue(indentFactor: Int): String {
             val sw = StringWriter()
             synchronized(sw.buffer) {
@@ -97,5 +96,70 @@ class TestJson {
         assertEquals("[\"b\"]", a.encodeSimpleJsonValue(0))
         a[0] = "c"
         assertEquals("[\"c\"]", a.encodeSimpleJsonValue(0))
+    }
+
+
+    @Test
+    fun testDecimalNotation() {
+        fun x(expect: Boolean, n: Number) {
+            val encoded = n.toString()
+            val actual = encoded.isDecimalNotation()
+            assertEquals("${n.javaClass.simpleName} $n", expect, actual)
+        }
+        // integers and longs
+        x(false, 0)
+        x(false, -0)
+        x(false, Int.MIN_VALUE)
+        x(false, Int.MAX_VALUE)
+        x(false, Long.MIN_VALUE)
+        x(false, Long.MAX_VALUE)
+
+        // floats
+        x(true, 0f) // as "0.0"
+        x(true, -0f) // as "-0.0"
+        x(true, 0.5f)
+        x(true, -0.5f)
+        x(true, Float.MAX_VALUE)
+        x(true, Float.MIN_VALUE)
+
+        // doubles
+        x(true, 0.0) // as "0.0"
+        x(true, -0.0) // as "-0.0"
+        x(true, 0.5)
+        x(true, -0.5)
+        x(true, Double.MAX_VALUE)
+        x(true, Double.MIN_VALUE)
+        x(true, epsilon)
+    }
+
+    @Test
+    fun testNumberEncode() {
+        fun x(n: Number) {
+            val encodedObject = jsonObjectOf("n" to n).toString()
+            val decodedObject = encodedObject.decodeJsonObject()
+            val decoded = decodedObject["n"]
+            assertEquals("$n type $encodedObject", n.javaClass, decoded?.javaClass)
+            assertEquals("$n value $encodedObject", n, decoded)
+        }
+        x(0)
+        x(0f)
+        x(0.0)
+        x(-0)
+        x(-0f)
+        x(-0.0)
+        x(0.5f)
+        x(0.5)
+        x(-0.5f)
+        x(-0.5)
+        x(Int.MIN_VALUE)
+        x(Int.MAX_VALUE)
+        x(Long.MIN_VALUE)
+        x(Long.MAX_VALUE)
+        x(Float.MAX_VALUE)
+        x(Float.MIN_VALUE)
+        x(Double.MAX_VALUE)
+        x(Double.MIN_VALUE)
+
+        x(epsilon)
     }
 }

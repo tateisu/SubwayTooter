@@ -15,10 +15,6 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.TimeZone
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
@@ -1186,35 +1182,85 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
             .asciiRegex()
 
+        private val reTimeWithZone =
+            """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?(?:(Z|[+-])(\d+):?(\d*))?"""
+                .asciiRegex()
+
         private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
             .asciiRegex()
 
-        private val reDateTimeWorkaround = """([+-]\d{2})(\d{2})\z""".toRegex()
+        private val tzUtc = TimeZone.getTimeZone("UTC")
 
         @Throws(Throwable::class)
-        fun parseTime1(strTime: String): Long {
+        fun parseTimeUtc(strTime: String): Long {
             val gv = reTime.find(strTime)?.groupValues
                 ?: error("time format not match.")
-            return LocalDateTime(
-                gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
-                gv.elementAtOrNull(2)?.toIntOrNull() ?: 1,
-                gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
-                gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
-                gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
-                gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
-                (gv.elementAtOrNull(7)?.toIntOrNull() ?: 0) * 1_000_000,
-            )
-                .toInstant(TimeZone.UTC)
-                .toEpochMilliseconds()
+            return GregorianCalendar.getInstance()
+                .apply {
+                    timeZone = tzUtc
+                    set(
+                        gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
+                        (gv.elementAtOrNull(2)?.toIntOrNull() ?: 1) - 1,
+                        gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
+                        gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
+                        gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
+                        gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
+                    )
+                    set(Calendar.MILLISECOND, (gv.elementAtOrNull(7)?.toIntOrNull() ?: 0))
+                }.timeInMillis
         }
 
+        // ISO-8601の Z,[+-]HH:mm,[+-]HHmm,[+-]HH 部分を解釈してオフセット(ミリ秒)を返す
+        @Throws(Throwable::class)
+        fun parseTimeZoneOffset(sign: String?, hArg: String?, mArg: String?): Long {
+            val minutes = when {
+                sign == null || sign == "Z" || hArg == null || hArg.isEmpty() -> {
+                    // Z or missing hour part
+                    0
+                }
+                mArg != null && mArg.isNotEmpty() -> {
+                    // HH:mm or H:m
+                    val h = hArg.toInt()
+                    val m = mArg.toInt()
+                    h * 60 + m
+                }
+                hArg.length >= 3 -> {
+                    // HHmm or Hmm
+                    val h = hArg.substring(0, hArg.length - 2).toInt()
+                    val m = hArg.substring(hArg.length - 2).toInt()
+                    h * 60 + m
+                }
+                else -> {
+                    // HH or H
+                    val h = hArg.toInt()
+                    h * 60
+                }
+            }
+            return minutes.toLong() * 60000L * (if (sign == "-") -1L else 1L)
+        }
 
         @Throws(Throwable::class)
-        fun parseTime2(strTime: String): Long {
-            // https://github.com/Kotlin/kotlinx-datetime/issues/139
-            val src = reDateTimeWorkaround.replace(strTime, "\$1:\$2")
-
-            return Instant.parse(src).toEpochMilliseconds()
+        fun parseTimeIso8601(strTime: String): Long {
+            val gv = reTimeWithZone.find(strTime)?.groupValues
+                ?: error("time format not match.")
+            return GregorianCalendar.getInstance()
+                .apply {
+                    timeZone = tzUtc
+                    set(
+                        gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
+                        (gv.elementAtOrNull(2)?.toIntOrNull() ?: 1) - 1,
+                        gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
+                        gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
+                        gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
+                        gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
+                    )
+                    set(Calendar.MILLISECOND, (gv.elementAtOrNull(7)?.toIntOrNull() ?: 0))
+                }.timeInMillis -
+                    parseTimeZoneOffset(
+                        gv.elementAtOrNull(8),
+                        gv.elementAtOrNull(9),
+                        gv.elementAtOrNull(10),
+                    )
         }
 
         // 時刻を解釈してエポック秒(ミリ単位)を返す
@@ -1227,16 +1273,16 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 return parseTime("${gv[1]}T00:00:00.000Z")
             }
 
-            // kotlinx-datetime で雑にパース
+            // タイムゾーン指定を考慮したパース
             try {
-                return parseTime2(strTime)
+                return parseTimeIso8601(strTime)
             } catch (ex: Throwable) {
                 log.w(ex, "parseTime2 failed. $strTime")
             }
 
             // 古い処理にフォールバック
             try {
-                return parseTime1(strTime)
+                return parseTimeUtc(strTime)
             } catch (ex: Throwable) {
                 log.w(ex, "parseTime1 failed. $strTime")
             }
@@ -1249,17 +1295,19 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             try {
                 val gv = reMSPTime.find(strTime)?.groupValues
                     ?: error("time format not match.")
-                return LocalDateTime(
-                    gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
-                    gv.elementAtOrNull(2)?.toIntOrNull() ?: 1,
-                    gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
-                    gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
-                    gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
-                    gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
-                    (500) * 1_000_000,
-                )
-                    .toInstant(TimeZone.UTC)
-                    .toEpochMilliseconds()
+                return GregorianCalendar.getInstance()
+                    .apply {
+                        timeZone = tzUtc
+                        set(
+                            gv.elementAtOrNull(1)?.toIntOrNull() ?: 1,
+                            (gv.elementAtOrNull(2)?.toIntOrNull() ?: 1) - 1,
+                            gv.elementAtOrNull(3)?.toIntOrNull() ?: 1,
+                            gv.elementAtOrNull(4)?.toIntOrNull() ?: 0,
+                            gv.elementAtOrNull(5)?.toIntOrNull() ?: 0,
+                            gv.elementAtOrNull(6)?.toIntOrNull() ?: 0,
+                        )
+                        set(Calendar.MILLISECOND, 500)
+                    }.timeInMillis
             } catch (ex: Throwable) {
                 log.w(ex, "parseTimeMSP failed. src=$strTime")
             }

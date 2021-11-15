@@ -174,7 +174,6 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
     implementation "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-datetime:0.3.1"
 
     // Anko Layouts
     // sdk15, sdk19, sdk21, sdk23 are also available

@@ -360,26 +360,34 @@ class CompletionHelper(
 
             override fun afterTextChanged(s: Editable) {
                 // ペースト時に余計な装飾を取り除く
-                s.getSpans(0, s.length, Any::class.java)
-                    ?.filter {
+                val spans = s.getSpans(0, s.length, Any::class.java)
+
+                val isImeComposing =
+                    spans.any { it?.javaClass?.name == "android.view.inputmethod.ComposingText" }
+
+                if(!isImeComposing){
+                    spans?.filter {
                         val name = (it?.javaClass?.name ?: "").replace('$', '.')
                         when {
                             ignoreSpans.contains(name) -> false
+
                             reRemoveSpan.matches(name) -> {
                                 log.i("span remove $name")
                                 true
                             }
+
                             else -> {
                                 log.i("span keep $name")
                                 false
                             }
                         }
                     }
-                    ?.map { Triple(it, s.getSpanStart(it), s.getSpanEnd(it)) }
-                    ?.sortedBy { -it.second }
-                    ?.forEach {
-                        s.removeSpan(it.first)
-                    }
+                        ?.map { Triple(it, s.getSpanStart(it), s.getSpanEnd(it)) }
+                        ?.sortedBy { -it.second }
+                        ?.forEach {
+                            s.removeSpan(it.first)
+                        }
+                }
 
                 this@CompletionHelper.callback2?.onTextUpdate()
             }

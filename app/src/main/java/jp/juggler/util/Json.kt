@@ -12,7 +12,7 @@ class JsonException : RuntimeException {
 
 private const val CHAR0 = '\u0000'
 
-private val reDecimal ="""(?:\A\-0\z)|[.eE]""".toRegex()
+private val reDecimal = """(?:\A\-0\z)|[.eE]""".toRegex()
 
 // Tests if the value should be tried as a decimal.
 // It makes no test if there are actual digits.
@@ -289,8 +289,9 @@ class JsonObject : LinkedHashMap<String, Any?>() {
         if (value != defVal) put(key, value)
     }
 
-    fun putIfTrue(key: String, value: Boolean) =
-        putIfNotDefault(key, value, true)
+    fun putIfTrue(key: String, value: Boolean) {
+        if (value) put(key, value)
+    }
 }
 
 class JsonTokenizer(reader: Reader) {

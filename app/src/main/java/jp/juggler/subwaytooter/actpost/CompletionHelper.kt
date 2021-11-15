@@ -49,6 +49,7 @@ class CompletionHelper(
             "android.text.Selection.START",
             "android.widget.Editor.SpanController",
             "android.widget.TextView.ChangeWatcher",
+            "android.text.style.SpellCheckSpan",
         )
 
         private val reRemoveSpan = """\Qandroid.text.style.\E.+Span""".toRegex()

@@ -1,12 +1,16 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.AlertDialog
+import android.net.Uri
 import jp.juggler.subwaytooter.ActColumnList
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.currentColumn
+import jp.juggler.subwaytooter.actmain.handleOtherUri
 import jp.juggler.subwaytooter.api.entity.TootApplication
+import jp.juggler.subwaytooter.dialog.DlgOpenUrl
 import jp.juggler.subwaytooter.table.MutedApp
+import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 
 // カラム一覧を開く
@@ -32,4 +36,16 @@ fun ActMain.appMute(
     MutedApp.save(application.name)
     appState.onMuteUpdated()
     showToast(false, R.string.app_was_muted)
+}
+
+fun ActMain.openColumnFromUrl() {
+    DlgOpenUrl.show(this) { dialog, url ->
+        try {
+            if (handleOtherUri(Uri.parse(url))) {
+                dialog.dismissSafe()
+            }
+        } catch (ex: Throwable) {
+            showToast(ex, R.string.url_parse_failed)
+        }
+    }
 }

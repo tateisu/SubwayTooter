@@ -1113,4 +1113,8 @@
     <string name="show_media_description">Show media description</string>
     <string name="background_pattern">Background pattern</string>
     <string name="use_twemoji_emoji">Use Twemoji emoji</string>
+    <string name="open_column_from_url">Open column from URL…</string>
+    <string name="url_empty">please input URL of user or status.</string>
+    <string name="url_of_user_or_status">URL of user or status</string>
+    <string name="url_parse_failed">parse error.</string>
 </resources>

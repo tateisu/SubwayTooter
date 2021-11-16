@@ -1102,4 +1102,8 @@
     <string name="show_media_description">添付メディアの説明文を表示する</string>
     <string name="background_pattern">背景パターン</string>
     <string name="use_twemoji_emoji">Twemoji絵文字を使う</string>
+    <string name="open_column_from_url">URLからカラムを開く</string>
+    <string name="url_empty">ユーザや投稿のURLを指定してください。</string>
+    <string name="url_parse_failed">URLの指定が変です</string>
+    <string name="url_of_user_or_status">ユーザや投稿のURL</string>
 </resources>

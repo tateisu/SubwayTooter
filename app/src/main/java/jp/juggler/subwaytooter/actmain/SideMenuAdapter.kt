@@ -223,6 +223,10 @@ class SideMenuAdapter(
             closeColumnAll()
         },
 
+        Item(icon = R.drawable.ic_paste, title = R.string.open_column_from_url) {
+            openColumnFromUrl()
+        },
+
         Item(icon = R.drawable.ic_home, title = R.string.home) {
             timeline(defaultInsertPosition, ColumnType.HOME)
         },
@@ -459,7 +463,7 @@ class SideMenuAdapter(
             var tz = TimeZone.getDefault()
             val tzId = PrefS.spTimeZone()
             if (tzId.isBlank()) {
-                return tz.displayName +"("+context.getString(R.string.device_timezone)+")"
+                return tz.displayName + "(" + context.getString(R.string.device_timezone) + ")"
             }
             tz = TimeZone.getTimeZone(tzId)
             var offset = tz.rawOffset.toLong()

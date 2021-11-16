@@ -43,7 +43,7 @@ fun ActMain.handleIntentUri(uri: Uri) {
     }
 }
 
-private fun ActMain.handleOtherUri(uri: Uri) {
+fun ActMain.handleOtherUri(uri: Uri): Boolean {
     val url = uri.toString()
 
     url.findStatusIdFromUrl()?.let { statusInfo ->
@@ -55,7 +55,7 @@ private fun ActMain.handleOtherUri(uri: Uri) {
             statusInfo.host,
             statusInfo.statusId
         )
-        return
+        return true
     }
 
     TootAccount.reAccountUrl.matcher(url).takeIf { it.find() }?.let { m ->
@@ -80,7 +80,7 @@ private fun ActMain.handleOtherUri(uri: Uri) {
                 userUrl = url,
             )
         }
-        return
+        return true
     }
 
     TootAccount.reAccountUrl2.matcher(url).takeIf { it.find() }?.let { m ->
@@ -93,7 +93,7 @@ private fun ActMain.handleOtherUri(uri: Uri) {
             acct = Acct.parse(user, host),
             userUrl = url,
         )
-        return
+        return true
     }
 
     // このアプリでは処理できないURLだった
@@ -139,7 +139,7 @@ private fun ActMain.handleOtherUri(uri: Uri) {
 
         // 指定した選択肢でチューザーを作成して開く
         startActivity(chooser)
-        return
+        return true
     } catch (ex: Throwable) {
         log.trace(ex)
     }
@@ -149,6 +149,7 @@ private fun ActMain.handleOtherUri(uri: Uri) {
         .setMessage(errorMessage)
         .setPositiveButton(R.string.close, null)
         .show()
+    return false
 }
 
 private fun ActMain.handleCustomSchemaUri(uri: Uri) {
@@ -176,8 +177,8 @@ private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
         val columnList = appState.columnList
         val column = columnList.firstOrNull {
             it.type == ColumnType.NOTIFICATIONS &&
-                it.accessInfo == account &&
-                !it.systemNotificationNotRelated
+                    it.accessInfo == account &&
+                    !it.systemNotificationNotRelated
         }?.also {
             scrollToColumn(columnList.indexOf(it))
         } ?: addColumn(
@@ -257,7 +258,9 @@ private fun ActMain.handleOAuth2Callback(uri: Uri) {
                 val error = uri.getQueryParameter("error")
                 val errorDescription = uri.getQueryParameter("error_description")
                 if (error != null || errorDescription != null) {
-                    return@runApiTask TootApiResult(errorDescription.notBlank() ?: error.notBlank() ?: "?")
+                    return@runApiTask TootApiResult(
+                        errorDescription.notBlank() ?: error.notBlank() ?: "?"
+                    )
                 }
 
                 // subwaytooter://oauth(\d*)/
@@ -364,7 +367,11 @@ fun ActMain.afterAccountVerify(
     return false
 }
 
-private fun ActMain.afterAccessTokenUpdate(ta: TootAccount, sa: SavedAccount, tokenInfo: JsonObject?): Boolean {
+private fun ActMain.afterAccessTokenUpdate(
+    ta: TootAccount,
+    sa: SavedAccount,
+    tokenInfo: JsonObject?
+): Boolean {
     if (sa.username != ta.username) {
         showToast(true, R.string.user_name_not_match)
         return false

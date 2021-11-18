@@ -13,8 +13,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
-import androidx.emoji2.widget.EmojiButton
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
@@ -81,7 +81,7 @@ class ItemViewHolder(
 
     lateinit var llContentWarning: View
     lateinit var tvContentWarning: MyTextView
-    lateinit var btnContentWarning: EmojiButton
+    lateinit var btnContentWarning: AppCompatButton
 
     lateinit var llContents: View
     lateinit var tvMentions: MyTextView
@@ -100,7 +100,7 @@ class ItemViewHolder(
     lateinit var llButtonBar: View
 
     lateinit var llSearchTag: View
-    lateinit var btnSearchTag: EmojiButton
+    lateinit var btnSearchTag: AppCompatButton
     lateinit var btnGapHead: ImageButton
     lateinit var btnGapTail: ImageButton
     lateinit var llTrendTag: View
@@ -110,7 +110,7 @@ class ItemViewHolder(
     lateinit var cvTagHistory: TagHistoryView
 
     lateinit var llList: View
-    lateinit var btnListTL: EmojiButton
+    lateinit var btnListTL: AppCompatButton
     lateinit var btnListMore: ImageButton
 
     lateinit var llFollowRequest: View

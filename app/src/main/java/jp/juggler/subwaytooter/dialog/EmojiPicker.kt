@@ -10,7 +10,7 @@ import android.util.TypedValue
 import android.view.*
 import android.widget.*
 import androidx.annotation.StringRes
-import androidx.emoji2.widget.EmojiTextView
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
@@ -276,7 +276,7 @@ class EmojiPicker(
             customCategories.add(CustomCategory(
                 rangeStart,
                 rangeLength,
-                EmojiTextView(activity).apply {
+                AppCompatTextView(activity).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.WRAP_CONTENT
@@ -495,7 +495,7 @@ class EmojiPicker(
                 }
             } else {
                 view = viewOld
-                    ?: EmojiTextView(activity).apply {
+                    ?: AppCompatTextView(activity).apply {
                         layoutParams = AbsListView.LayoutParams(wh, wh)
                     }
 

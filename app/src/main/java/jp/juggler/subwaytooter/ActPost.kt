@@ -265,24 +265,15 @@ class ActPost : AppCompatActivity(),
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent?): Boolean {
         return when {
-            super.onKeyDown(keyCode, event) -> true
-            event == null -> false
-            else -> event.isCtrlPressed
-        }
-    }
-
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        val rv = super.onKeyUp(keyCode, event)
-        if (event?.isCtrlPressed == true) {
-            log.d("onKeyUp code=$keyCode rv=$rv")
-            when (keyCode) {
-                KeyEvent.KEYCODE_T -> btnPost.performClick()
+            super.onKeyShortcut(keyCode, event) -> true
+            event?.isCtrlPressed == true && keyCode == KeyEvent.KEYCODE_T -> {
+                btnPost.performClick()
+                true
             }
-            return true
+            else -> false
         }
-        return rv
     }
 
     override fun onMyClickableSpanClicked(viewClicked: View, span: MyClickableSpan) {

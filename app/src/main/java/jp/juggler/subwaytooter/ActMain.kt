@@ -302,7 +302,10 @@ class ActMain : AppCompatActivity(),
         when (ar?.resultCode) {
             ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(ar.data, ColumnType.SEARCH_MSP)
             ActText.RESULT_SEARCH_TS -> searchFromActivityResult(ar.data, ColumnType.SEARCH_TS)
-            ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(ar.data, ColumnType.SEARCH_NOTESTOCK)
+            ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(
+                ar.data,
+                ColumnType.SEARCH_NOTESTOCK
+            )
         }
     }
 
@@ -642,26 +645,15 @@ class ActMain : AppCompatActivity(),
         completionHelper.closeAcctPopup()
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (super.onKeyDown(keyCode, event)) return true
-        if (event != null) {
-            if (event.isCtrlPressed) return true
-        }
-        return false
-    }
-
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        val rv = super.onKeyUp(keyCode, event)
-        if (event != null) {
-            if (event.isCtrlPressed) {
-                log.d("onKeyUp code=$keyCode rv=$rv")
-                when (keyCode) {
-                    KeyEvent.KEYCODE_N -> btnToot.performClick()
-                }
-                return true
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent?): Boolean {
+        return when {
+            super.onKeyShortcut(keyCode, event) -> true
+            event?.isCtrlPressed == true && keyCode == KeyEvent.KEYCODE_N -> {
+                btnToot.performClick()
+                true
             }
+            else -> false
         }
-        return rv
     }
 
     //////////////////////////////////////////////////////////////////

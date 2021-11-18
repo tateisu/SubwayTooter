@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.SparseIntArray
-import androidx.emoji2.widget.EmojiTextView
+import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.util.LogCategory
 import kotlin.math.cos
 import kotlin.math.pow
@@ -145,7 +145,7 @@ class Blurhash(blurhash: String, punch: Float = 1f) {
     }
 }
 
-class BlurhashView : EmojiTextView {
+class BlurhashView : AppCompatTextView {
 
     companion object {
         val log = LogCategory("BlurhashView")

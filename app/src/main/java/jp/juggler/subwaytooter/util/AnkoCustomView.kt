@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import android.view.ViewManager
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.emoji2.widget.EmojiButton
+import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
@@ -24,8 +24,8 @@ inline fun ViewManager.myEditText(init: MyEditText.() -> Unit): MyEditText {
     return ankoView({ MyEditText(it) }, theme = 0, init = init)
 }
 
-inline fun ViewManager.compatButton(init: EmojiButton.() -> Unit): EmojiButton {
-    return ankoView({ EmojiButton(it) }, theme = 0, init = init)
+inline fun ViewManager.compatButton(init: AppCompatButton.() -> Unit): AppCompatButton {
+    return ankoView({ AppCompatButton(it) }, theme = 0, init = init)
 }
 
 inline fun ViewManager.trendTagHistoryView(init: TagHistoryView.() -> Unit): TagHistoryView {

@@ -309,9 +309,11 @@ class App1 : Application() {
             // initialize EmojiMap
             EmojiMap.load(appContext)
 
-            // initialize EmojiCompat
-            val config = BundledEmojiCompatConfig(appContext)
-            EmojiCompat.init(config)
+            // emoji2 はデフォルトで自動初期化を行うのだが、新し目のPlayサービスに依存してるため
+            // Playサービスが古い端末ではEmojiCompatの初期化がまだ行われていない状態になる
+            // ワークアラウンドとして、アプリ内にバンドルしたデータを使うBundledEmojiCompatConfigで初期化する
+            // (初期化が既に行われている場合は無害である)
+            EmojiCompat.init(BundledEmojiCompatConfig(appContext))
 
             // initialize Conscrypt
             Security.insertProviderAt(

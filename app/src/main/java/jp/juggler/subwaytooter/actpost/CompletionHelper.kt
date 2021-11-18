@@ -42,13 +42,16 @@ class CompletionHelper(
         // 無視するスパン
         // ($を.に変換済)
         val ignoreSpans = setOf(
-            "android.text.DynamicLayout.ChangeWatcher",
-            "android.text.method.TextKeyListener",
-            "android.text.method.Touch.DragState",
             "android.text.Selection.END",
             "android.text.Selection.START",
             "android.widget.Editor.SpanController",
             "android.widget.TextView.ChangeWatcher",
+            "androidx.emoji2.text.SpannableBuilder.WatcherWrapper",
+            "androidx.emoji2.viewsintegration.EmojiKeyListener",
+
+            "android.text.DynamicLayout.ChangeWatcher",
+            "android.text.method.TextKeyListener",
+            "android.text.method.Touch.DragState",
             "android.text.style.SpellCheckSpan",
         )
 
@@ -366,7 +369,7 @@ class CompletionHelper(
                 val isImeComposing =
                     spans.any { it?.javaClass?.name == "android.view.inputmethod.ComposingText" }
 
-                if(!isImeComposing){
+                if (!isImeComposing) {
                     spans?.filter {
                         val name = (it?.javaClass?.name ?: "").replace('$', '.')
                         when {

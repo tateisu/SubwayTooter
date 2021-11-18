@@ -11,8 +11,8 @@ import android.text.SpannableStringBuilder
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
-import androidx.emoji2.widget.EmojiButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexWrap
@@ -71,7 +71,7 @@ class ColumnViewHolder(
     var pageIdx: Int = 0
 
     lateinit var llLoading: View
-    lateinit var btnConfirmMail: EmojiButton
+    lateinit var btnConfirmMail: AppCompatButton
     lateinit var tvLoading: MyTextView
 
     lateinit var listView: RecyclerView
@@ -130,12 +130,12 @@ class ColumnViewHolder(
     lateinit var cbEnableSpeech: CheckBox
     lateinit var cbOldApi: CheckBox
     lateinit var llRegexFilter: View
-    lateinit var btnDeleteNotification: EmojiButton
-    lateinit var btnColor: EmojiButton
-    lateinit var btnLanguageFilter: EmojiButton
+    lateinit var btnDeleteNotification: AppCompatButton
+    lateinit var btnColor: AppCompatButton
+    lateinit var btnLanguageFilter: AppCompatButton
 
     lateinit var svQuickFilter: HorizontalScrollView
-    lateinit var btnQuickFilterAll: EmojiButton
+    lateinit var btnQuickFilterAll: AppCompatButton
     lateinit var btnQuickFilterMention: ImageButton
     lateinit var btnQuickFilterFavourite: ImageButton
     lateinit var btnQuickFilterBoost: ImageButton
@@ -344,7 +344,7 @@ class ColumnViewHolder(
         viewRoot.scan { v ->
             try {
                 // ボタンではないTextViewのフォントを変更する
-                if (v is MyTextView && v !is EmojiButton) {
+                if (v is MyTextView && v !is Button) {
                     v.typeface = ActMain.timelineFont
                 }
             } catch (ex: Throwable) {

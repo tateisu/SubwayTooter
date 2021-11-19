@@ -10,7 +10,7 @@ buildscript {
     ext.lifecycle_version = "2.4.0"
     ext.arch_version = "2.1.0"
 
-    ext.kotlin_version = '1.5.31'
+    ext.kotlin_version = '1.6.0'
     ext.kotlinx_coroutines_version = '1.5.2'
 
     ext.anko_version = '0.10.8'

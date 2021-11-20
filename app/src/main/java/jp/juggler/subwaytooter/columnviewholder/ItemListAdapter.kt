@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.columnviewholder
 
+import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.SystemClock
 import android.view.ViewGroup
@@ -165,6 +166,7 @@ class ItemListAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun notifyChange(
         reason: String,
         changeList: List<AdapterChange>? = null,

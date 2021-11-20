@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.actmain
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.view.View
@@ -375,6 +376,7 @@ fun ActMain.scrollToLastColumn() {
     )
 }
 
+@SuppressLint("NotifyDataSetChanged")
 fun ActMain.resizeColumnWidth(views: ActMainTabletViews) {
 
     var columnWMinDp = ActMain.COLUMN_WIDTH_MIN_DP

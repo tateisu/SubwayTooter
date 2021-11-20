@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.itemviewholder
 import android.view.View
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMediaViewer
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*

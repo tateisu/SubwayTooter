@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.jrummyapps.android.colorpicker
 
-package com.jrummyapps.android.colorpicker;
+import androidx.annotation.IntDef
 
-import android.content.Context;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
-
-final class DrawingUtils {
-
-  static int dpToPx(Context c, float dipValue) {
-    DisplayMetrics metrics = c.getResources().getDisplayMetrics();
-    float val = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics);
-    int res = (int) (val + 0.5); // Round
-    // Ensure at least 1 pixel if val was > 0
-    return res == 0 && val > 0 ? 1 : res;
-  }
-
+/**
+ * The shape of the color preview
+ */
+@Retention(AnnotationRetention.SOURCE)
+@IntDef(ColorShape.SQUARE, ColorShape.CIRCLE)
+annotation class ColorShape {
+    companion object {
+        const val SQUARE = 0
+        const val CIRCLE = 1
+    }
 }

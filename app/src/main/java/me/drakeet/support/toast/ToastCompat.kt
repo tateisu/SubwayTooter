@@ -92,6 +92,7 @@ class ToastCompat private constructor(
 
     companion object {
 
+        @SuppressLint("DiscouragedPrivateApi")
         private fun setContextCompat(view: View?, contextCreator: () -> Context) {
             if (view != null && Build.VERSION.SDK_INT == 25) {
                 try {

@@ -213,10 +213,10 @@ class ActHighlightWordEdit
 
     override fun onDialogDismissed(dialogId: Int) {}
 
-    override fun onColorSelected(dialogId: Int, color: Int) {
+    override fun onColorSelected(dialogId: Int, newColor: Int) {
         when (dialogId) {
-            COLOR_DIALOG_ID_TEXT -> item.color_fg = color or Color.BLACK
-            COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = color.notZero() ?: 0x01000000
+            COLOR_DIALOG_ID_TEXT -> item.color_fg = newColor or Color.BLACK
+            COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = newColor.notZero() ?: 0x01000000
         }
         showColor()
     }

@@ -13,8 +13,8 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
         vectorDrawables.useSupportLibrary = true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-
 
     lintOptions {
         abortOnError false
@@ -39,8 +39,12 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
-}
 
-//apply plugin: 'com.getkeepsafe.dexcount'
-//apply from: 'https://raw.githubusercontent.com/jaredrummler/android-artifact-push/master/artifactory/publication.gradle'
-//apply from: 'https://raw.githubusercontent.com/jaredrummler/android-artifact-push/master/maven/gradle-mvn-push.gradle'
+    testImplementation "junit:junit:$junit_version"
+
+    androidTestImplementation "androidx.test:core:1.4.0"
+
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}

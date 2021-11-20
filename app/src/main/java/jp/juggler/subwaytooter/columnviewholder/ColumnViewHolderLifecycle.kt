@@ -3,12 +3,11 @@ package jp.juggler.subwaytooter.columnviewholder
 import android.view.View
 import android.widget.ImageView
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.endPadding
 import jp.juggler.subwaytooter.util.startPadding
 import jp.juggler.subwaytooter.view.ListDivider

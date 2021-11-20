@@ -59,11 +59,11 @@ import jp.juggler.util.LogCategory
 // 2021/5/11 59=>60 SavedAccountテーブルに項目追加
 // 2021/5/23 60=>61 SavedAccountテーブルに項目追加
 
-private const val DB_VERSION = 61
-private const val DB_NAME = "app_db"
+const val DB_VERSION = 61
+const val DB_NAME = "app_db"
 private val log = LogCategory("AppDatabase")
 
-val tables = arrayOf(
+val TABLE_LIST = arrayOf(
     LogData,
     SavedAccount,
     ClientInfo,
@@ -87,13 +87,13 @@ private class DBOpenHelper(context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        for (ti in tables) {
+        for (ti in TABLE_LIST) {
             ti.onDBCreate(db)
         }
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        for (ti in tables) {
+        for (ti in TABLE_LIST) {
             ti.onDBUpgrade(db, oldVersion, newVersion)
         }
     }

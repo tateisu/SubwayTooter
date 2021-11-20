@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.DB_VERSION
+import jp.juggler.subwaytooter.global.TABLE_LIST
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,9 +38,9 @@ class TestDatabase {
         val helper = MockDbHelper(
             context,
             dbName,
-            App1.DB_VERSION,
+            DB_VERSION,
             create = { db ->
-                App1.tableList.forEach {
+                TABLE_LIST.forEach {
                     val ex = try {
                         it.onDBCreate(db)
                         null
@@ -49,7 +51,7 @@ class TestDatabase {
                 }
             },
             upgrade = { db, oldV, newV ->
-                App1.tableList.forEach {
+                TABLE_LIST.forEach {
                     val ex = try {
                         it.onDBUpgrade(db, oldV, newV)
                         null

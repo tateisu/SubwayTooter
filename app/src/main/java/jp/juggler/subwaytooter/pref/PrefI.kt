@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.pref
 
 import android.graphics.Color
-import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.subwaytooter.pref.impl.IntPref
 
@@ -115,5 +114,5 @@ object PrefI {
     //	const val TTCS_WEEKLY = 0
     //	const val TTCS_DAILY = 1
 
-    val ipMediaBackground = IntPref("MediaBackground", 1 )
+    val ipMediaBackground = IntPref("MediaBackground", 1)
 }

@@ -6,11 +6,10 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.*
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -469,7 +468,13 @@ object HTMLDecoder {
             else -> false
         }
 
-        fun canSkipEncode(isBlockParent: Boolean, curr: Node, parent: Node, prev: Node?, next: Node?) = when {
+        fun canSkipEncode(
+            isBlockParent: Boolean,
+            curr: Node,
+            parent: Node,
+            prev: Node?,
+            next: Node?
+        ) = when {
             !isBlockParent -> false
             curr.tag != TAG_TEXT -> false
             curr.text.isNotBlank() -> false
@@ -504,7 +509,10 @@ object HTMLDecoder {
                 ) {
                     sb.append(options.decodeEmoji(title))
                     return
-                } else if (cssClass == "emoji" && url != null && alt != null && reNotestockEmojiAlt.matches(alt)) {
+                } else if (cssClass == "emoji" && url != null && alt != null && reNotestockEmojiAlt.matches(
+                        alt
+                    )
+                ) {
                     // notestock custom emoji
                     sb.run {
                         val start = length
@@ -529,7 +537,15 @@ object HTMLDecoder {
                 sb.append(caption.notEmpty() ?: url)
                 if (reUrlStart.find(url) != null) {
                     val span =
-                        MyClickableSpan(LinkInfo(url = url, ac = null, tag = null, caption = caption, mention = null))
+                        MyClickableSpan(
+                            LinkInfo(
+                                url = url,
+                                ac = null,
+                                tag = null,
+                                caption = caption,
+                                mention = null
+                            )
+                        )
                     sb.setSpan(span, start, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
                 sb.append(" ")
@@ -549,7 +565,12 @@ object HTMLDecoder {
         val originalFlusher: EncodeSpanEnv.() -> Unit = {
             when (tag) {
                 "s", "strike", "del" -> {
-                    sb.setSpan(StrikethroughSpan(), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StrikethroughSpan(),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "em" -> {
                     sb.setSpan(
@@ -560,7 +581,12 @@ object HTMLDecoder {
                     )
                 }
                 "strong" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "tr" -> {
                     sb.append("|")
@@ -570,37 +596,122 @@ object HTMLDecoder {
                     // sb_tmpにレンダリングした分は読み捨てる
                 }
                 "h1" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(1.8f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(1.8f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "h2" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(1.6f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(1.6f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "h3" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(1.4f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(1.4f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "h4" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(1.2f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(1.2f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "h5" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(1.0f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(1.0f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "h6" -> {
-                    sb.setSpan(StyleSpan(Typeface.BOLD), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(0.8f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(0.8f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "pre" -> {
-                    sb.setSpan(BackgroundColorSpan(0x40808080), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(0.7f), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(fontSpan(Typeface.MONOSPACE), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        BackgroundColorSpan(0x40808080),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        RelativeSizeSpan(0.7f),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        fontSpan(Typeface.MONOSPACE),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "code" -> {
-                    sb.setSpan(BackgroundColorSpan(0x40808080), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(fontSpan(Typeface.MONOSPACE), spanStart, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(
+                        BackgroundColorSpan(0x40808080),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    sb.setSpan(
+                        fontSpan(Typeface.MONOSPACE),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                 }
                 "hr" -> sb.append("----------")
             }

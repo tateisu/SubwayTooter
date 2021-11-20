@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.pref
 
-import android.os.Build
 import jp.juggler.subwaytooter.pref.impl.BooleanPref
 
 object PrefB {

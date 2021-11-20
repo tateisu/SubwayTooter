@@ -29,19 +29,15 @@ class ProgressResponseBody private constructor(
 
         internal val log = LogCategory("ProgressResponseBody")
 
-        // please append this for OkHttpClient.Builder#addInterceptor().
-        // ex) builder.addInterceptor( ProgressResponseBody.makeInterceptor() );
-        fun makeInterceptor(): Interceptor = object : Interceptor {
-            override fun intercept(chain: Interceptor.Chain): Response {
-                val originalResponse = chain.proceed(chain.request())
+        fun makeInterceptor(): Interceptor = Interceptor { chain ->
+            val originalResponse = chain.proceed(chain.request())
 
-                val originalBody = originalResponse.body
-                    ?: error("makeInterceptor: originalResponse.body() returns null.")
+            val originalBody = originalResponse.body
+                ?: error("makeInterceptor: originalResponse.body() returns null.")
 
-                return originalResponse.newBuilder()
-                    .body(ProgressResponseBody(originalBody))
-                    .build()
-            }
+            originalResponse.newBuilder()
+                .body(ProgressResponseBody(originalBody))
+                .build()
         }
 
         @Throws(IOException::class)

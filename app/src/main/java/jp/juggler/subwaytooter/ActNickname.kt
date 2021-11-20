@@ -240,10 +240,10 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         }
     }
 
-    override fun onColorSelected(dialogId: Int, @ColorInt color: Int) {
+    override fun onColorSelected(dialogId: Int, @ColorInt newColor: Int) {
         when (dialogId) {
-            1 -> colorFg = -0x1000000 or color
-            2 -> colorBg = -0x1000000 or color
+            1 -> colorFg = -0x1000000 or newColor
+            2 -> colorBg = -0x1000000 or newColor
         }
         show()
     }

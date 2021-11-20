@@ -430,12 +430,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     override fun onDialogDismissed(dialogId: Int) {
     }
 
-    override fun onColorSelected(dialogId: Int, @ColorInt colorSelected: Int) {
+    override fun onColorSelected(dialogId: Int, @ColorInt newColor: Int) {
         val colorTarget = this.colorTarget ?: return
         val ip: IntPref = colorTarget.pref.cast() ?: error("$colorTarget has no in pref")
         val c = when (colorTarget.type) {
-            SettingType.ColorAlpha -> colorSelected.notZero() ?: 0x01000000
-            else -> colorSelected or Color.BLACK
+            SettingType.ColorAlpha -> newColor.notZero() ?: 1
+            else -> newColor or Color.BLACK
         }
         pref.edit().put(ip, c).apply()
         findItemViewHolder(colorTarget)?.showColor()
@@ -1216,7 +1216,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         }
     }
 
-    fun setWebBrowser(appSettingItem: AppSettingItem, value: String) {
+    private fun setWebBrowser(appSettingItem: AppSettingItem, value: String) {
         val sp: StringPref = appSettingItem.pref.cast()
             ?: error("${getString(appSettingItem.caption)}: not StringPref")
         pref.edit().put(sp, value).apply()
@@ -1224,7 +1224,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         showWebBrowser(findItemViewHolder(appSettingItem)?.textView1, value)
     }
 
-    fun showWebBrowser(tv: TextView?, prefValue: String) {
+    private fun showWebBrowser(tv: TextView?, prefValue: String) {
         tv ?: return
         val cn = prefValue.cn()
         val (label, icon) = CustomShare.getInfo(this, cn)

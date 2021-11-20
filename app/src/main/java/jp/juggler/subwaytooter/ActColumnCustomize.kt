@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -205,25 +206,22 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         }
     }
 
-    // 0xFF000000 と書きたいがkotlinではこれはlong型定数になってしまう
-    private val colorFF000000: Int = (0xff shl 24)
-
-    override fun onColorSelected(dialogId: Int, @ColorInt colorSelected: Int) {
+    override fun onColorSelected(dialogId: Int, @ColorInt newColor: Int) {
         when (dialogId) {
-            COLOR_DIALOG_ID_HEADER_BACKGROUND -> column.headerBgColor = colorFF000000 or
-                colorSelected
-            COLOR_DIALOG_ID_HEADER_FOREGROUND -> column.headerFgColor = colorFF000000 or
-                colorSelected
-            COLOR_DIALOG_ID_COLUMN_BACKGROUND -> column.columnBgColor = colorFF000000 or
-                colorSelected
+            COLOR_DIALOG_ID_HEADER_BACKGROUND ->
+                column.headerBgColor = Color.BLACK or newColor
 
-            COLOR_DIALOG_ID_ACCT_TEXT -> {
-                column.acctColor = colorSelected.notZero() ?: 1
-            }
+            COLOR_DIALOG_ID_HEADER_FOREGROUND ->
+                column.headerFgColor = Color.BLACK or newColor
 
-            COLOR_DIALOG_ID_CONTENT_TEXT -> {
-                column.contentColor = colorSelected.notZero() ?: 1
-            }
+            COLOR_DIALOG_ID_COLUMN_BACKGROUND ->
+                column.columnBgColor = Color.BLACK or newColor
+
+            COLOR_DIALOG_ID_ACCT_TEXT ->
+                column.acctColor = newColor.notZero() ?: 1
+
+            COLOR_DIALOG_ID_CONTENT_TEXT ->
+                column.contentColor = newColor.notZero() ?: 1
         }
         show()
     }
@@ -236,7 +234,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             runApiTask { client ->
                 try {
                     val backgroundDir = getBackgroundImageDir(this@ActColumnCustomize)
-                    val file = File(backgroundDir, "${column.columnId}:${System.currentTimeMillis()}")
+                    val file =
+                        File(backgroundDir, "${column.columnId}:${System.currentTimeMillis()}")
                     val fileUri = Uri.fromFile(file)
 
                     client.publishApiProgress("loading image from $uriArg")
@@ -319,7 +318,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         sbColumnBackgroundAlpha = findViewById(R.id.sbColumnBackgroundAlpha)
         sbColumnBackgroundAlpha.max = PROGRESS_MAX
 
-        sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {}

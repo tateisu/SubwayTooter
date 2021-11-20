@@ -272,7 +272,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         fun dip(dp: Int): Int = (activity.density * dp + 0.5f).toInt()
         val context = activity
 
-        val announcementsBgColor = PrefI.ipAnnouncementsBgColor(App1.pref).notZero()
+        val announcementsBgColor = PrefI.ipAnnouncementsBgColor().notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
         btnAnnouncementsCutout.apply {
@@ -285,7 +285,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
             setPadding(0, padV, 0, padV)
         }
 
-        val searchBgColor = PrefI.ipSearchBgColor(App1.pref).notZero()
+        val searchBgColor = PrefI.ipSearchBgColor().notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
         llSearch.apply {

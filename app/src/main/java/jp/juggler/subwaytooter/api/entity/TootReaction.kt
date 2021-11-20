@@ -165,7 +165,7 @@ class TootReaction(
     }
 
     private fun chooseUrl() = when {
-        PrefB.bpDisableEmojiAnimation(App1.pref) -> staticUrl
+        PrefB.bpDisableEmojiAnimation() -> staticUrl
         else -> url
     }
 

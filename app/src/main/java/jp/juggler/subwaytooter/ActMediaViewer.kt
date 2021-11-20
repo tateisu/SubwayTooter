@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
+import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.util.ProgressResponseBody
@@ -338,7 +339,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             exoPlayer.volume = 0f
         }
 
-        val url = ta.getLargeUrl(App1.pref)
+        val url = ta.getLargeUrl(appPref)
         if (url == null) {
             showError("missing media attachment url.")
             return
@@ -562,7 +563,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         viewBinding.cbMute.visibility = View.INVISIBLE
 
-        val urlList = ta.getLargeUrlList(App1.pref)
+        val urlList = ta.getLargeUrlList(appPref)
         if (urlList.isEmpty()) {
             showError("missing media attachment url.")
             return
@@ -628,7 +629,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             ?: error("missing DownloadManager system service")
 
         val url = if (ta is TootAttachment) {
-            ta.getLargeUrl(App1.pref)
+            ta.getLargeUrl(appPref)
         } else {
             null
         } ?: return
@@ -743,7 +744,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun more(ta: TootAttachmentLike) {
         val ad = ActionsDialog()
         if (ta is TootAttachment) {
-            val url = ta.getLargeUrl(App1.pref) ?: return
+            val url = ta.getLargeUrl(appPref) ?: return
             ad.addAction(getString(R.string.open_in_browser)) { share(Intent.ACTION_VIEW, url) }
             ad.addAction(getString(R.string.share_url)) { share(Intent.ACTION_SEND, url) }
             ad.addAction(getString(R.string.copy_url)) { copy(url) }
@@ -823,7 +824,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         for (k in MediaBackgroundDrawable.Kind.values()) {
             ad.addAction(k.name) {
                 val idx = k.toIndex()
-                App1.pref.edit().put(PrefI.ipMediaBackground, idx).apply()
+                appPref.edit().put(PrefI.ipMediaBackground, idx).apply()
 
                 viewBinding.pbvImage.background = MediaBackgroundDrawable(
                     tileStep = tileStep,

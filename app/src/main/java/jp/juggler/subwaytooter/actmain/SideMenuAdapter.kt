@@ -79,7 +79,7 @@ class SideMenuAdapter(
                     )
                 )
                 val newRelease = releaseInfo?.jsonObject(
-                    if (PrefB.bpCheckBetaVersion(App1.pref)) "beta" else "stable"
+                    if (PrefB.bpCheckBetaVersion()) "beta" else "stable"
                 )
 
                 val newVersion =

@@ -8,14 +8,21 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.*
-import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.emoji.EmojiMap
-import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
+import jp.juggler.subwaytooter.action.followFromAnotherAccount
+import jp.juggler.subwaytooter.action.userProfileLocal
 import jp.juggler.subwaytooter.actmain.nextPosition
-import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.itemviewholder.DlgContextMenu
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
@@ -26,7 +33,10 @@ import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.openCustomTab
+import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
@@ -310,10 +320,9 @@ internal class ViewHolderHeaderProfile(
             it.movementMethod = MyLinkMovementMethod
         }
 
-        ivBackground.setImageUrl(activity.pref, 0f, accessInfo.supplyBaseUrl(who.header_static))
+        ivBackground.setImageUrl(0f, accessInfo.supplyBaseUrl(who.header_static))
 
         ivAvatar.setImageUrl(
-            activity.pref,
             Styler.calcIconRound(ivAvatar.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
@@ -388,7 +397,6 @@ internal class ViewHolderHeaderProfile(
 
         ivMoved.layoutParams.width = activity.avatarIconSize
         ivMoved.setImageUrl(
-            activity.pref,
             Styler.calcIconRound(ivMoved.layoutParams),
             accessInfo.supplyBaseUrl(moved.avatar_static)
         )
@@ -538,7 +546,7 @@ internal class ViewHolderHeaderProfile(
         val ac = AcctColor.load(accessInfo, who)
         tv.text = when {
             AcctColor.hasNickname(ac) -> ac.nickname
-            PrefB.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
+            PrefB.bpShortAcctLocalUser() -> "@${who.acct.pretty}"
             else -> "@${ac.nickname}"
         }
 
@@ -578,7 +586,7 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("locked")
-                    PrefB.bpUseTwemoji(App1.pref) ->
+                    PrefB.bpUseTwemoji() ->
                         appendSpan("locked", emoji.createSpan(activity))
                     else ->
                         append(emoji.unifiedCode)
@@ -592,7 +600,7 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("bot")
-                    PrefB.bpUseTwemoji(App1.pref) ->
+                    PrefB.bpUseTwemoji() ->
                         appendSpan("bot", emoji.createSpan(activity))
                     else ->
                         append(emoji.unifiedCode)
@@ -605,7 +613,7 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("suspended")
-                    PrefB.bpUseTwemoji(App1.pref) ->
+                    PrefB.bpUseTwemoji() ->
                         appendSpan("suspended", emoji.createSpan(activity))
                     else ->
                         append(emoji.unifiedCode)

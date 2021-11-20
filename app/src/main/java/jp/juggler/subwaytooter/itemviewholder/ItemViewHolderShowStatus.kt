@@ -4,7 +4,8 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.ImageView
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.checkAutoCW
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
@@ -62,7 +63,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
             ?: (activity.attrColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
     } else {
         colorBg.notZero() ?: when (status.bookmarked) {
-            true -> PrefI.ipEventBgColorBookmark(App1.pref)
+            true -> PrefI.ipEventBgColorBookmark()
             false -> 0
         }.notZero() ?: when (status.getBackgroundColorType(accessInfo)) {
             TootVisibility.UnlistedHome -> ItemViewHolder.toot_color_unlisted
@@ -86,7 +87,6 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     tvName.text = whoRef.decoded_display_name
     nameInvalidator.register(whoRef.decoded_display_name)
     ivAvatar.setImageUrl(
-        activity.pref,
         Styler.calcIconRound(ivAvatar.layoutParams),
         accessInfo.supplyBaseUrl(who.avatar_static),
         accessInfo.supplyBaseUrl(who.avatar)
@@ -230,11 +230,11 @@ private fun ItemViewHolder.showOpenSticker(who: TootAccount) {
         val host = who.apDomain
 
         // LTLでホスト名が同じならTickerを表示しない
-        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (column.type) {
             ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
                 if (host == accessInfo.apDomain) return
             }
+            else -> Unit
         }
 
         val item = OpenSticker.lastList[host.ascii] ?: return
@@ -249,7 +249,7 @@ private fun ItemViewHolder.showOpenSticker(who: TootAccount) {
         lp.width = (density * item.imageWidth + 0.5f).toInt()
 
         ivOpenSticker.layoutParams = lp
-        ivOpenSticker.setImageUrl(activity.pref, 0f, item.favicon)
+        ivOpenSticker.setImageUrl(0f, item.favicon)
         val colorBg = item.bgColor
         when (colorBg.size) {
             1 -> {
@@ -330,7 +330,7 @@ fun ItemViewHolder.setMedia(
 
     iv.setFocusPoint(ta.focusX, ta.focusY)
 
-    if (PrefB.bpDontCropMediaThumb(App1.pref)) {
+    if (PrefB.bpDontCropMediaThumb()) {
         iv.scaleType = ImageView.ScaleType.FIT_CENTER
     } else {
         iv.setScaleTypeForMedia()
@@ -342,14 +342,14 @@ fun ItemViewHolder.setMedia(
         TootAttachmentType.Audio -> {
             iv.setMediaType(0)
             iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_music))
-            iv.setImageUrl(activity.pref, 0f, ta.urlForThumbnail(activity.pref))
+            iv.setImageUrl(0f, ta.urlForThumbnail(activity.pref))
             showUrl = true
         }
 
         TootAttachmentType.Unknown -> {
             iv.setMediaType(0)
             iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_question))
-            iv.setImageUrl(activity.pref, 0f, null)
+            iv.setImageUrl(0f, null)
             showUrl = true
         }
 
@@ -357,7 +357,7 @@ fun ItemViewHolder.setMedia(
             null, "" -> {
                 iv.setMediaType(0)
                 iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_question))
-                iv.setImageUrl(activity.pref, 0f, null)
+                iv.setImageUrl(0f, null)
                 showUrl = true
             }
 
@@ -371,7 +371,6 @@ fun ItemViewHolder.setMedia(
                 )
                 iv.setDefaultImage(null)
                 iv.setImageUrl(
-                    activity.pref,
                     0f,
                     accessInfo.supplyBaseUrl(urlThumbnail),
                     accessInfo.supplyBaseUrl(urlThumbnail)

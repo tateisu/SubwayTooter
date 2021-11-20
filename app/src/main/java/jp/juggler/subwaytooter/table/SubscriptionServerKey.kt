@@ -3,8 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-
-import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
 import jp.juggler.util.getString
@@ -48,7 +47,7 @@ object SubscriptionServerKey : TableCompanion {
         try {
             val whereArgs = findWhereArgs.get() ?: arrayOfNulls<String?>(1)
             whereArgs[0] = clientIdentifier
-            App1.database.query(
+            appDatabase.query(
                 table,
                 findColumns,
                 "$COL_CLIENT_IDENTIFIER=?",
@@ -73,7 +72,7 @@ object SubscriptionServerKey : TableCompanion {
             val cv = ContentValues()
             cv.put(COL_CLIENT_IDENTIFIER, clientIdentifier)
             cv.put(COL_SERVER_KEY, serverKey)
-            App1.database.replace(table, null, cv)
+            appDatabase.replace(table, null, cv)
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
             log.trace(ex)

@@ -4,12 +4,11 @@ import android.content.Context
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.widget.TextView
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -136,7 +135,11 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             ServiceType.MISSKEY -> {
 
                 this.custom_emojis =
-                    parseMapOrNull(CustomEmoji.decodeMisskey, parser.apDomain, src.jsonArray("emojis"))
+                    parseMapOrNull(
+                        CustomEmoji.decodeMisskey,
+                        parser.apDomain,
+                        src.jsonArray("emojis")
+                    )
                 this.profile_emojis = null
 
                 this.username = src.stringOrThrow("username")
@@ -218,7 +221,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 // notestock はActivityPub 準拠のサービスなので、サーバ内IDというのは特にない
                 this.id = EntityId.DEFAULT
 
-                this.username = src.stringOrThrow("display_name") // notestockはdisplay_nameとusernameが入れ替わってる？
+                this.username =
+                    src.stringOrThrow("display_name") // notestockはdisplay_nameとusernameが入れ替わってる？
                 this.display_name = src.stringOrThrow("username")
 
                 val tmpAcct = src.string("subject")?.let { Acct.parse(it) }
@@ -272,7 +276,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             else -> {
 
                 // 絵文字データは先に読んでおく
-                this.custom_emojis = parseMapOrNull(CustomEmoji.decode, parser.apDomain, src.jsonArray("emojis"))
+                this.custom_emojis =
+                    parseMapOrNull(CustomEmoji.decode, parser.apDomain, src.jsonArray("emojis"))
 
                 this.profile_emojis = when (val o = src["profile_emojis"]) {
                     is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
@@ -324,7 +329,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                         this.apiHost = apiHost
                         this.apDomain = apDomain
 
-                        this.acct = Acct.parse(username, if (tmpAcct.contains('@')) apDomain else null)
+                        this.acct =
+                            Acct.parse(username, if (tmpAcct.contains('@')) apDomain else null)
 
                         this.followers_count = src.long("followers_count")
                         this.following_count = src.long("following_count")
@@ -477,7 +483,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         fromProfileHeader: Boolean = false,
         suggestionSource: String? = null,
     ): SpannableStringBuilder? {
-        val pref = App1.pref
         val context = tv.context
 
         var sb: SpannableStringBuilder? = null
@@ -491,15 +496,22 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 .append(suggestionSource)
         }
 
-        if (PrefB.bpDirectoryLastActive(pref) && last_status_at > 0L) {
+        if (PrefB.bpDirectoryLastActive() && last_status_at > 0L) {
             prepareSb()
                 .append(context.getString(R.string.last_active))
                 .append(delm)
-                .append(TootStatus.formatTime(context, last_status_at, bAllowRelative = true, onlyDate = true))
+                .append(
+                    TootStatus.formatTime(
+                        context,
+                        last_status_at,
+                        bAllowRelative = true,
+                        onlyDate = true
+                    )
+                )
         }
 
         if (!fromProfileHeader) {
-            if (PrefB.bpDirectoryTootCount(pref) &&
+            if (PrefB.bpDirectoryTootCount() &&
                 (statuses_count ?: 0L) > 0L
             ) {
                 prepareSb()
@@ -508,8 +520,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     .append(statuses_count.toString())
             }
 
-            if (PrefB.bpDirectoryFollowers(pref) &&
-                !PrefB.bpHideFollowCount(pref) &&
+            if (PrefB.bpDirectoryFollowers() &&
+                !PrefB.bpHideFollowCount() &&
                 (followers_count ?: 0L) > 0L
             ) {
                 prepareSb()
@@ -518,7 +530,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     .append(followers_count.toString())
             }
 
-            if (PrefB.bpDirectoryNote(pref) && note?.isNotEmpty() == true) {
+            if (PrefB.bpDirectoryNote() && note?.isNotEmpty() == true) {
                 val decodedNote = DecodeOptions(
                     context,
                     accessInfo,

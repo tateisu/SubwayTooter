@@ -49,12 +49,12 @@ fun Column.canReloadWhenRefreshTop(): Boolean = when (type) {
 // カラム操作的にリフレッシュを許容するかどうか
 fun Column.canRefreshTopBySwipe(): Boolean =
     canReloadWhenRefreshTop() ||
-        when (type) {
-            ColumnType.CONVERSATION,
-            ColumnType.INSTANCE_INFORMATION,
-            -> false
-            else -> true
-        }
+            when (type) {
+                ColumnType.CONVERSATION,
+                ColumnType.INSTANCE_INFORMATION,
+                -> false
+                else -> true
+            }
 
 // カラム操作的にリフレッシュを許容するかどうか
 fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
@@ -96,7 +96,8 @@ fun Column.getContentColor() = contentColor.notZero() ?: Column.defaultColorCont
 
 fun Column.getAcctColor() = acctColor.notZero() ?: Column.defaultColorContentAcct
 
-fun Column.getHeaderPageNumberColor() = headerFgColor.notZero() ?: Column.defaultColorHeaderPageNumber
+fun Column.getHeaderPageNumberColor() =
+    headerFgColor.notZero() ?: Column.defaultColorHeaderPageNumber
 
 fun Column.getHeaderNameColor() = headerFgColor.notZero() ?: Column.defaultColorHeaderName
 
@@ -308,7 +309,6 @@ fun Column.startRefreshForPost(
     postedStatusId: EntityId,
     postedReplyId: EntityId?,
 ) {
-    @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
     when (type) {
         ColumnType.HOME,
         ColumnType.LOCAL,
@@ -347,6 +347,8 @@ fun Column.startRefreshForPost(
             } catch (_: Throwable) {
             }
         }
+
+        else -> Unit
     }
 }
 

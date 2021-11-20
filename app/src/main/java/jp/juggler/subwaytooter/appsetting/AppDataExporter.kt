@@ -11,13 +11,16 @@ import android.provider.BaseColumns
 import android.util.JsonReader
 import android.util.JsonToken
 import android.util.JsonWriter
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.AppState
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.getBackgroundImageDir
-import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.global.appDatabase
+import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.pref.impl.*
+import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
@@ -113,7 +116,7 @@ object AppDataExporter {
         writer.name(jsonKey)
         writer.beginArray()
 
-        App1.database.query(table, null, null, null, null, null, null)
+        appDatabase.query(table, null, null, null, null, null, null)
             ?.use { cursor ->
                 val names = ArrayList<String>()
                 val column_count = cursor.columnCount
@@ -162,7 +165,7 @@ object AppDataExporter {
 
     @Throws(IOException::class)
     private fun importTable(reader: JsonReader, table: String, idMap: HashMap<Long, Long>?) {
-        val db = App1.database
+        val db = appDatabase
         if (table == SavedAccount.table) {
             SavedAccount.onDBDelete(db)
             SavedAccount.onDBCreate(db)
@@ -226,7 +229,8 @@ object AppDataExporter {
                     }
                 }
                 reader.endObject()
-                val new_id = db.insertWithOnConflict(table, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
+                val new_id =
+                    db.insertWithOnConflict(table, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
                 if (new_id == -1L) error("importTable: invalid row_id")
                 idMap?.put(old_id, new_id)
             }

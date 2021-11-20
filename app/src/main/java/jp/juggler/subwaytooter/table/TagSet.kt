@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
 import java.util.*
@@ -47,7 +47,7 @@ object TagSet : TableCompanion {
     //		try {
     //			// 古いデータを掃除する
     //			val expire = now - 86400000L * 365
-    //			App1.database.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
+    //			appDatabase.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
     //
     //		} catch(ex : Throwable) {
     //			warning.e(ex, "deleteOld failed.")
@@ -73,7 +73,7 @@ object TagSet : TableCompanion {
             cv.put(COL_TIME_SAVE, now)
 
             var bOK = false
-            val db = App1.database
+            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
             try {
                 for (i in 0 until length) {
@@ -121,7 +121,7 @@ object TagSet : TableCompanion {
         try {
             val where_arg = prefix_search_where_arg.get() ?: arrayOfNulls<String?>(1)
             where_arg[0] = makePattern(prefix)
-            App1.database.query(
+            appDatabase.query(
                 table,
                 null,
                 prefix_search_where,

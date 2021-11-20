@@ -28,6 +28,7 @@ import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.notification.NotificationHelper
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
@@ -260,7 +261,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
 
         App1.setActivityTheme(this)
-        this.pref = App1.pref
+        this.pref = appPref
 
         initUI()
 
@@ -706,9 +707,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
         account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
         account.image_resize = (
-            imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
-                ?: SavedAccount.defaultResizeConfig
-            ).spec
+                imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
+                    ?: SavedAccount.defaultResizeConfig
+                ).spec
 
         account.push_policy =
             pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
@@ -1006,8 +1007,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         ?.also { result ->
                             val jsonObject = result.jsonObject
                             if (jsonObject != null) {
-                                resultAccount = TootParser(this@ActAccountSetting, account).account(jsonObject)
-                                    ?: return@runApiTask TootApiResult("TootAccount parse failed.")
+                                resultAccount =
+                                    TootParser(this@ActAccountSetting, account).account(jsonObject)
+                                        ?: return@runApiTask TootApiResult("TootAccount parse failed.")
                             }
                         }
                 }
@@ -1027,14 +1029,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         profileBusy = true
         try {
             ivProfileAvatar.setImageUrl(
-                App1.pref,
                 Styler.calcIconRound(ivProfileAvatar.layoutParams),
                 src.avatar_static,
                 src.avatar
             )
 
             ivProfileHeader.setImageUrl(
-                App1.pref,
                 0f,
                 src.header_static,
                 src.header
@@ -1304,8 +1304,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                             multipartBodyBuilder.build().toPatch()
                         )?.also { result ->
                             result.jsonObject?.let {
-                                resultAccount = TootParser(this@ActAccountSetting, account).account(it)
-                                    ?: return@runApiTask TootApiResult("TootAccount parse failed.")
+                                resultAccount =
+                                    TootParser(this@ActAccountSetting, account).account(it)
+                                        ?: return@runApiTask TootApiResult("TootAccount parse failed.")
                             }
                         }
                     }

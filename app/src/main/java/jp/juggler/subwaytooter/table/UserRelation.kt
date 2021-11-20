@@ -4,12 +4,12 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 
 class UserRelation {
@@ -94,7 +94,7 @@ class UserRelation {
         fun deleteOld(now: Long) {
             try {
                 val expire = now - 86400000L * 365
-                App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+                appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
             } catch (ex: Throwable) {
                 log.e(ex, "deleteOld failed.")
             }
@@ -104,7 +104,7 @@ class UserRelation {
                 val table = "user_relation"
                 val COL_TIME_SAVE = "time_save"
                 val expire = now - 86400000L * 365
-                App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+                appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
             } catch (_: Throwable) {
             }
         }
@@ -149,7 +149,7 @@ class UserRelation {
                     put(COL_DB_ID, dbId)
                     put(COL_WHO_ID, id)
                     fromTootRelationShip(src)
-                }.let { App1.database.replaceOrThrow(table, null, it) }
+                }.let { appDatabase.replaceOrThrow(table, null, it) }
                 mMemoryCache.remove(key(dbId, id))
             } catch (ex: Throwable) {
                 log.e(ex, "save failed.")
@@ -159,7 +159,7 @@ class UserRelation {
 
         // マストドン用
         fun saveListMastodon(now: Long, dbId: Long, srcList: Iterable<TootRelationShip>) {
-            val db = App1.database
+            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
 
             val bOK = try {
@@ -198,7 +198,7 @@ class UserRelation {
                     put(COL_DB_ID, dbId)
                     put(COL_WHO_ID, whoId)
                     fromUserRelation(src)
-                }.let { App1.database.replaceOrThrow(table, null, it) }
+                }.let { appDatabase.replaceOrThrow(table, null, it) }
                 mMemoryCache.remove(key(dbId, whoId))
             } catch (ex: Throwable) {
                 log.e(ex, "save failed.")
@@ -212,7 +212,7 @@ class UserRelation {
             start: Int,
             end: Int,
         ) {
-            val db = App1.database
+            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
             val bOK = try {
                 val cv = ContentValues()
@@ -248,7 +248,7 @@ class UserRelation {
 
         // Misskeyのリレーション取得APIから
         fun saveListMisskeyRelationApi(now: Long, dbId: Long, list: ArrayList<TootRelationShip>) {
-            val db = App1.database
+            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
             val bOK = try {
                 val cv = ContentValues()
@@ -301,7 +301,7 @@ class UserRelation {
                 val where_arg = loadWhereArg.get() ?: arrayOfNulls<String?>(2)
                 where_arg[0] = dbId.toString()
                 where_arg[1] = whoId
-                App1.database.query(table, null, loadWhere, where_arg, null, null, null)
+                appDatabase.query(table, null, loadWhere, where_arg, null, null, null)
                     .use { cursor ->
                         if (cursor.moveToNext()) {
                             val dst = UserRelation()
@@ -355,7 +355,7 @@ class UserRelation {
         fun loadPseudo(acct: Acct) = load(DB_ID_PSEUDO, acct.ascii)
 
         fun createCursorPseudo(): Cursor =
-            App1.database.query(
+            appDatabase.query(
                 table,
                 arrayOf(COL_ID.name, COL_WHO_ID.name),
                 "$COL_DB_ID=$DB_ID_PSEUDO and ( $COL_MUTING=1 or $COL_BLOCKING=1 )",
@@ -367,7 +367,7 @@ class UserRelation {
 
         fun deletePseudo(rowId: Long) {
             try {
-                App1.database.delete(table, "$COL_ID=$rowId", null)
+                appDatabase.delete(table, "$COL_ID=$rowId", null)
             } catch (ex: Throwable) {
                 log.trace(ex)
             }

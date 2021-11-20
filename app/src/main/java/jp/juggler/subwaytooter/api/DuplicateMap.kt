@@ -38,18 +38,17 @@ class DuplicateMap {
         }
 
         when (o) {
-			is TootReport,
-			is TootStatus,
-			is TootAccount,
-			is TootAccountRef,
-			is TootNotification,
-			-> {
-				val id = o.getOrderId()
-				if (id.notDefaultOrConfirming) {
-					if (idSet.contains(id)) return true
-					idSet.add(id)
-				}
-			}
+            is TootReport,
+            is TootStatus,
+            is TootAccountRef,
+            is TootNotification,
+            -> {
+                val id = o.getOrderId()
+                if (id.notDefaultOrConfirming) {
+                    if (idSet.contains(id)) return true
+                    idSet.add(id)
+                }
+            }
         }
 
         return false

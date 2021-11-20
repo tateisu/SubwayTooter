@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.serverProfileDirectoryFromInstanceInformation
 import jp.juggler.subwaytooter.action.timeline
@@ -94,7 +93,7 @@ internal class ViewHolderHeaderInstance(
             btnEmail.isEnabledAlpha = false
             tvDescription.text = "?"
             tvShortDescription.text = "?"
-            ivThumbnail.setImageUrl(App1.pref, 0f, null)
+            ivThumbnail.setImageUrl(0f, null)
             tvLanguages.text = "?"
             tvInvitesEnabled.text = "?"
             btnContact.text = "?"
@@ -172,7 +171,7 @@ internal class ViewHolderHeaderInstance(
                     it
                 }
             }.notEmpty()
-            ivThumbnail.setImageUrl(App1.pref, 0f, thumbnail, thumbnail)
+            ivThumbnail.setImageUrl(0f, thumbnail, thumbnail)
         }
 
         tvHandshake.text = if (handshake == null) {
@@ -181,30 +180,30 @@ internal class ViewHolderHeaderInstance(
             val sb = SpannableStringBuilder("${handshake.tlsVersion}, ${handshake.cipherSuite}")
             val certs = handshake.peerCertificates.joinToString("\n") { cert ->
                 "\n============================\n" +
-                    if (cert is OpenSSLX509Certificate) {
+                        if (cert is OpenSSLX509Certificate) {
 
-                        log.d(cert.toString())
+                            log.d(cert.toString())
 
-                        """
+                            """
 						Certificate : ${cert.type}
 						subject : ${cert.subjectDN}
 						subjectAlternativeNames : ${
-                            cert.subjectAlternativeNames
-                                ?.joinToString(", ") {
-                                    try {
-                                        it?.last()
-                                    } catch (ignored: Throwable) {
-                                        it
+                                cert.subjectAlternativeNames
+                                    ?.joinToString(", ") {
+                                        try {
+                                            it?.last()
+                                        } catch (ignored: Throwable) {
+                                            it
+                                        }
+                                            ?.toString() ?: "null"
                                     }
-                                        ?.toString() ?: "null"
-                                }
-                        }
+                            }
 						issuer : ${cert.issuerX500Principal}
 						end : ${cert.notAfter}
 						""".trimIndent()
-                    } else {
-                        cert.javaClass.name + "\n" + cert.toString()
-                    }
+                        } else {
+                            cert.javaClass.name + "\n" + cert.toString()
+                        }
             }
             if (certs.isNotEmpty()) {
                 sb.append('\n')

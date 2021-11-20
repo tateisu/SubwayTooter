@@ -3,8 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-
-import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
 import jp.juggler.util.WordTrieTree
@@ -44,19 +43,19 @@ object MutedWord : TableCompanion {
             val cv = ContentValues()
             cv.put(COL_NAME, word)
             cv.put(COL_TIME_SAVE, now)
-            App1.database.replace(table, null, cv)
+            appDatabase.replace(table, null, cv)
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
         }
     }
 
     fun createCursor(): Cursor {
-        return App1.database.query(table, null, null, null, null, null, "$COL_NAME asc")
+        return appDatabase.query(table, null, null, null, null, null, "$COL_NAME asc")
     }
 
     fun delete(name: String) {
         try {
-            App1.database.delete(table, "$COL_NAME=?", arrayOf(name))
+            appDatabase.delete(table, "$COL_NAME=?", arrayOf(name))
         } catch (ex: Throwable) {
             log.e(ex, "delete failed.")
         }
@@ -92,7 +91,7 @@ object MutedWord : TableCompanion {
         get() {
             val dst = WordTrieTree()
             try {
-                App1.database.query(table, null, null, null, null, null, null)
+                appDatabase.query(table, null, null, null, null, null, null)
                     .use { cursor ->
                         val idx_name = cursor.getColumnIndex(COL_NAME)
                         while (cursor.moveToNext()) {

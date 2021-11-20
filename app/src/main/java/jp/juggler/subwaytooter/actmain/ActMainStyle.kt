@@ -5,10 +5,15 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
-import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefF
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.impl.StringPref
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.CustomShare
@@ -220,7 +225,7 @@ fun ActMain.reloadColors() {
     MyClickableSpan.defaultLinkColor = PrefI.ipLinkColor(pref).notZero()
         ?: attrColor(R.attr.colorLink)
 
-    CustomShare.reloadCache(this, pref)
+    CustomShare.reloadCache(this)
 }
 
 fun ActMain.showFooterColor() {
@@ -251,7 +256,9 @@ fun ActMain.showFooterColor() {
     btnQuickPostMenu.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 
-    val csl = ColorStateList.valueOf(footerButtonFgColor.notZero() ?: attrColor(R.attr.colorVectorDrawable))
+    val csl = ColorStateList.valueOf(
+        footerButtonFgColor.notZero() ?: attrColor(R.attr.colorVectorDrawable)
+    )
     btnToot.imageTintList = csl
     btnMenu.imageTintList = csl
     btnQuickToot.imageTintList = csl
@@ -261,7 +268,8 @@ fun ActMain.showFooterColor() {
     vFooterDivider1.setBackgroundColor(c)
     vFooterDivider2.setBackgroundColor(c)
 
-    llColumnStrip.indicatorColor = footerTabIndicatorColor.notZero() ?: attrColor(R.attr.colorAccent)
+    llColumnStrip.indicatorColor =
+        footerTabIndicatorColor.notZero() ?: attrColor(R.attr.colorAccent)
 }
 
 fun ActMain.closePopup() {

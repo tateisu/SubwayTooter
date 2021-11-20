@@ -1,11 +1,10 @@
 package jp.juggler.subwaytooter.actmain
 
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.column.fireShowColumnHeader
+import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.table.SavedAccount
-import java.util.ArrayList
+import java.util.*
 
 // デフォルトの投稿先アカウントを探す。アカウント選択が必要な状況ならnull
 val ActMain.currentPostTarget: SavedAccount?
@@ -19,7 +18,7 @@ val ActMain.currentPostTarget: SavedAccount?
         },
         { env ->
 
-            val dbId = PrefL.lpTabletTootDefaultAccount(App1.pref)
+            val dbId = PrefL.lpTabletTootDefaultAccount()
             if (dbId != -1L) {
                 val a = SavedAccount.loadAccount(this@currentPostTarget, dbId)
                 if (a != null && !a.isPseudo) return a
@@ -48,7 +47,11 @@ val ActMain.currentPostTarget: SavedAccount?
             }
         })
 
-fun ActMain.reloadAccountSetting(newAccounts: ArrayList<SavedAccount> = SavedAccount.loadAccountList(this)) {
+fun ActMain.reloadAccountSetting(
+    newAccounts: ArrayList<SavedAccount> = SavedAccount.loadAccountList(
+        this
+    )
+) {
     for (column in appState.columnList) {
         val a = column.accessInfo
         if (!a.isNA) a.reloadSetting(this, newAccounts.find { it.acct == a.acct })

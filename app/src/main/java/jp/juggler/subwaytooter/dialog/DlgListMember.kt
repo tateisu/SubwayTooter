@@ -8,7 +8,6 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.*
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.action.*
@@ -70,7 +69,6 @@ class DlgListMember(
         view.findViewById<View>(R.id.btnClose).setOnClickListener(this)
 
         ivUser.setImageUrl(
-            App1.pref,
             Styler.calcIconRound(ivUser.layoutParams),
             who.avatar_static,
             who.avatar
@@ -372,7 +370,11 @@ class DlgListMember(
                     if (!bSuccess) revokeCheckedChanged(willRegistered)
                 }
             } else {
-                activity.listMemberDelete(listOwner, item.id, whoLocal) { willRegistered, bSuccess ->
+                activity.listMemberDelete(
+                    listOwner,
+                    item.id,
+                    whoLocal
+                ) { willRegistered, bSuccess ->
                     if (!bSuccess) revokeCheckedChanged(willRegistered)
                 }
             }

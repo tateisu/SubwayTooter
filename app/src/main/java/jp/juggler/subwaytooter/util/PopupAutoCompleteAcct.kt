@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
@@ -46,7 +47,7 @@ internal class PopupAutoCompleteAcct(
     private val popupWidth: Int
     val handler: Handler
 
-    private val pref: SharedPreferences = App1.pref
+    private val pref: SharedPreferences = appPref
 
     private var popupRows: Int = 0
 

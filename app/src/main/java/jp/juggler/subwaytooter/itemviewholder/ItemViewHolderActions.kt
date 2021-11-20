@@ -207,7 +207,7 @@ private fun ItemViewHolder.clickMedia(i: Int) {
                 }
 
                 // 内蔵メディアビューアを使う
-                PrefB.bpUseInternalMediaViewer(App1.pref) ->
+                PrefB.bpUseInternalMediaViewer() ->
                     ActMediaViewer.open(
                         activity,
                         column.showMediaDescription,

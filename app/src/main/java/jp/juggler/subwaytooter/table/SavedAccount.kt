@@ -5,12 +5,12 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
@@ -181,7 +181,7 @@ class SavedAccount(
 
     fun delete() {
         try {
-            App1.database.delete(table, "$COL_ID=?", arrayOf(db_id.toString()))
+            appDatabase.delete(table, "$COL_ID=?", arrayOf(db_id.toString()))
         } catch (ex: Throwable) {
             log.trace(ex)
             errorEx(ex, "SavedAccount.delete failed.")
@@ -197,7 +197,7 @@ class SavedAccount(
 
         ContentValues().apply {
             put(COL_TOKEN, token_info.toString())
-        }.let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
+        }.let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
     }
 
     fun saveSetting() {
@@ -243,7 +243,7 @@ class SavedAccount(
             // 以下のデータはUIからは更新しない
             // notification_tag
             // register_key
-        }.let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
+        }.let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
     }
 
     //	fun saveNotificationTag() {
@@ -253,7 +253,7 @@ class SavedAccount(
     //		val cv = ContentValues()
     //		cv.put(COL_NOTIFICATION_TAG, notification_tag)
     //
-    //		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+    //		appDatabase.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
     //	}
     //
     //	fun saveRegisterKey() {
@@ -264,7 +264,7 @@ class SavedAccount(
     //		cv.put(COL_REGISTER_KEY, register_key)
     //		cv.put(COL_REGISTER_TIME, register_time)
     //
-    //		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+    //		appDatabase.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
     //	}
 
     // onResumeの時に設定を読み直す
@@ -533,7 +533,7 @@ class SavedAccount(
                     put(COL_ACCOUNT, account.toString())
                     put(COL_TOKEN, token.toString())
                     put(COL_MISSKEY_VERSION, misskeyVersion)
-                }.let { App1.database.insert(table, null, it) }
+                }.let { appDatabase.insert(table, null, it) }
             } catch (ex: Throwable) {
                 log.trace(ex)
                 errorEx(ex, "SavedAccount.insert failed.")
@@ -546,12 +546,12 @@ class SavedAccount(
             ContentValues().apply {
                 put(COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED)
                 put(COL_REGISTER_TIME, 0L)
-            }.let { App1.database.update(table, it, null, null) }
+            }.let { appDatabase.update(table, it, null, null) }
         }
 
         fun loadAccount(context: Context, dbId: Long): SavedAccount? {
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     "$COL_ID=?",
@@ -577,7 +577,7 @@ class SavedAccount(
         fun loadAccountList(context: Context) =
             ArrayList<SavedAccount>().also { result ->
                 try {
-                    App1.database.query(
+                    appDatabase.query(
                         table,
                         null,
                         null,
@@ -603,7 +603,7 @@ class SavedAccount(
         fun loadByTag(context: Context, tag: String): ArrayList<SavedAccount> {
             val result = ArrayList<SavedAccount>()
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     "$COL_NOTIFICATION_TAG=?",
@@ -629,7 +629,7 @@ class SavedAccount(
 
         fun loadAccountByAcct(context: Context, fullAcct: String): SavedAccount? {
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     "$COL_USER=?",
@@ -653,7 +653,7 @@ class SavedAccount(
 
         fun hasRealAccount(): Boolean {
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     "$COL_USER NOT LIKE '?@%'",
@@ -679,7 +679,7 @@ class SavedAccount(
         val count: Int
             get() {
                 try {
-                    App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
+                    appDatabase.query(table, arrayOf("count(*)"), null, null, null, null, null)
                         .use { cursor ->
                             if (cursor.moveToNext()) {
                                 return cursor.getInt(0)
@@ -762,7 +762,7 @@ class SavedAccount(
 
             val list = ArrayList<Long>()
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     "$COL_ACCOUNT like ?",
@@ -782,7 +782,7 @@ class SavedAccount(
 
             list.forEach {
                 try {
-                    App1.database.delete(table, "$COL_ID=?", arrayOf(it.toString()))
+                    appDatabase.delete(table, "$COL_ID=?", arrayOf(it.toString()))
                 } catch (ex: Throwable) {
                     log.trace(ex)
                     log.e(ex, "sweepBuggieData failed.")
@@ -861,7 +861,7 @@ class SavedAccount(
                         ContentValues().apply {
                             put(COL_ACCOUNT, result.jsonObject.toString())
                         }.let {
-                            App1.database.update(
+                            appDatabase.update(
                                 table,
                                 it,
                                 "$COL_ID=?",
@@ -883,7 +883,7 @@ class SavedAccount(
         if (db_id != INVALID_DB_ID) {
             ContentValues()
                 .apply { put(col, value) }
-                .let { App1.database.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
+                .let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
         }
     }
 

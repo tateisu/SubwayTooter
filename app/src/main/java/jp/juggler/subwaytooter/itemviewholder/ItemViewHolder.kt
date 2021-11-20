@@ -568,7 +568,7 @@ class ItemViewHolder(
                     ivCardImage = myNetworkImageView {
                         contentDescription = context.getString(R.string.thumbnail)
                         scaleType = when {
-                            PrefB.bpDontCropMediaThumb(App1.pref) -> ImageView.ScaleType.FIT_CENTER
+                            PrefB.bpDontCropMediaThumb() -> ImageView.ScaleType.FIT_CENTER
                             else -> ImageView.ScaleType.CENTER_CROP
                         }
                     }.lparams(0, matchParent) {
@@ -689,7 +689,7 @@ class ItemViewHolder(
             actMain,
             matchParent,
             3f,
-            justifyContent = when (PrefI.ipBoostButtonJustify(App1.pref)) {
+            justifyContent = when (PrefI.ipBoostButtonJustify()) {
                 0 -> JustifyContent.FLEX_START
                 1 -> JustifyContent.CENTER
                 else -> JustifyContent.FLEX_END

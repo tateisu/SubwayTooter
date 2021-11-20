@@ -1,11 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
@@ -54,7 +53,7 @@ object InstanceCapability {
             ai.isMisskey -> true
             else ->
                 ti?.fedibird_capabilities?.contains("emoji_reaction") == true ||
-                    ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
+                        ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
         }
 
     fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
@@ -212,9 +211,11 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.invites_enabled = src.boolean("invites_enabled")
 
-            this.fedibird_capabilities = src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()
+            this.fedibird_capabilities =
+                src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()
             this.pleromaFeatures =
-                src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")?.stringList()?.toSet()
+                src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")
+                    ?.stringList()?.toSet()
 
             this.configuration = src.jsonObject("configuration")
         }
@@ -403,8 +404,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 when {
                     pair.first?.instanceType == InstanceType.Pixelfed &&
-                        !PrefB.bpEnablePixelfed(App1.pref) &&
-                        !req.allowPixelfed ->
+                            !PrefB.bpEnablePixelfed() &&
+                            !req.allowPixelfed ->
                         Pair(
                             null, TootApiResult("currently Pixelfed instance is not supported.")
                         )

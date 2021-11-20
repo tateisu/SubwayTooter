@@ -1354,7 +1354,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
             }
 
-            if (bAllowRelative && PrefB.bpRelativeTimestamp(App1.pref)) {
+            if (bAllowRelative && PrefB.bpRelativeTimestamp()) {
 
                 delta = abs(delta)
 

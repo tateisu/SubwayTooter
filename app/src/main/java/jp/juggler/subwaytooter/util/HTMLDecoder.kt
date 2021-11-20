@@ -874,7 +874,7 @@ object HTMLDecoder {
             val linkInfo = if (fullAcct != null) {
                 LinkInfo(
                     url = item.url,
-                    caption = "@${(if (PrefB.bpMentionFullAcct(App1.pref)) fullAcct else item.acct).pretty}",
+                    caption = "@${(if (PrefB.bpMentionFullAcct()) fullAcct else item.acct).pretty}",
                     ac = AcctColor.load(fullAcct),
                     mention = item,
                     tag = link_tag
@@ -964,7 +964,7 @@ object HTMLDecoder {
 
                 fun afterFullAcctResolved(fullAcct: Acct) {
                     linkInfo.ac = AcctColor.load(fullAcct)
-                    if (options.mentionFullAcct || PrefB.bpMentionFullAcct(App1.pref)) {
+                    if (options.mentionFullAcct || PrefB.bpMentionFullAcct()) {
                         linkInfo.caption = "@${fullAcct.pretty}"
                     }
                 }

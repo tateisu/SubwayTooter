@@ -6,7 +6,6 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
@@ -384,7 +383,7 @@ object EmojiDecoder {
                 val emojiCustom = emojiMapCustom?.get(name)
                 if (emojiCustom != null) {
                     val url = when {
-                        PrefB.bpDisableEmojiAnimation(App1.pref) && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl
+                        PrefB.bpDisableEmojiAnimation() && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl
                         else -> emojiCustom.url
                     }
                     builder.addNetworkEmojiSpan(part, url)
@@ -430,7 +429,7 @@ object EmojiDecoder {
         s: String,
         emojiMapCustom: HashMap<String, CustomEmoji>? = null
     ): String {
-        val decodeEmojioneShortcode = PrefB.bpEmojioneShortcode(App1.pref)
+        val decodeEmojioneShortcode = PrefB.bpEmojioneShortcode()
 
         val sb = StringBuilder()
 

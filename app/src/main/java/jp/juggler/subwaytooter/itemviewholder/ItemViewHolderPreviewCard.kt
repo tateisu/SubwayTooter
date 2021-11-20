@@ -1,11 +1,11 @@
 package jp.juggler.subwaytooter.itemviewholder
 
 import android.view.View
-import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
@@ -135,7 +135,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             }
 
             val imageUrl = accessInfo.supplyBaseUrl(image)
-            ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
+            ivCardImage.setImageUrl(0f, imageUrl, imageUrl)
 
             btnCardImageShow.blurhash = card.blurhash
 

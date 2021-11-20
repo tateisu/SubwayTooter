@@ -1189,7 +1189,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     fun showCustomShareIcon(tv: TextView?, target: CustomShareTarget) {
         tv ?: return
-        val cn = CustomShare.getCustomShareComponentName(pref, target)
+        val cn = CustomShare.getCustomShareComponentName(target)
         val (label, icon) = CustomShare.getInfo(this, cn)
         tv.text = label ?: getString(R.string.not_selected)
         tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)

@@ -5,7 +5,6 @@ import android.net.Uri
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.ApiTask
@@ -15,6 +14,7 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgFocusPoint
 import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -59,7 +59,7 @@ fun ActPost.showMediaAttachmentOne(iv: MyNetworkImageView, idx: Int) {
             a == null || pa.status != PostAttachment.Status.Ok -> {
                 iv.setDefaultImage(Styler.defaultColorIcon(this, R.drawable.ic_upload))
                 iv.setErrorImage(Styler.defaultColorIcon(this, R.drawable.ic_clip))
-                iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), null)
+                iv.setImageUrl(Styler.calcIconRound(iv.layoutParams.width), null)
             }
 
             else -> {
@@ -73,7 +73,7 @@ fun ActPost.showMediaAttachmentOne(iv: MyNetworkImageView, idx: Int) {
                 }
                 iv.setDefaultImage(Styler.defaultColorIcon(this, defaultIconId))
                 iv.setErrorImage(Styler.defaultColorIcon(this, defaultIconId))
-                iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
+                iv.setImageUrl(Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
             }
         }
     }
@@ -101,7 +101,11 @@ fun ActPost.addAttachment(
         attachmentList.size >= 4 -> showToast(false, R.string.attachment_too_many)
         account == null -> showToast(false, R.string.account_select_please)
         mimeType?.isEmpty() != false -> showToast(false, R.string.mime_type_missing)
-        !attachmentUploader.isAcceptableMimeType(instance, mimeType, isReply) -> Unit // エラーメッセージ出力済み
+        !attachmentUploader.isAcceptableMimeType(
+            instance,
+            mimeType,
+            isReply
+        ) -> Unit // エラーメッセージ出力済み
         else -> {
             saveAttachmentList()
             val pa = PostAttachment(this)
@@ -275,7 +279,11 @@ fun ActPost.editAttachmentDescription(pa: PostAttachment) {
                 val attachmentId = pa.attachment?.id ?: return
                 val account = this@editAttachmentDescription.account ?: return
                 launchMain {
-                    val (result, newAttachment) = attachmentUploader.setAttachmentDescription(account, attachmentId, text)
+                    val (result, newAttachment) = attachmentUploader.setAttachmentDescription(
+                        account,
+                        attachmentId,
+                        text
+                    )
                     when (newAttachment) {
                         null -> result?.error?.let { showToast(true, it) }
                         else -> {

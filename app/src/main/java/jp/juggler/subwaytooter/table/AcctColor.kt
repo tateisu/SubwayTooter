@@ -10,9 +10,9 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import androidx.annotation.StringRes
 import androidx.collection.LruCache
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 
 class AcctColor {
@@ -63,7 +63,7 @@ class AcctColor {
                 COL_NOTIFICATION_SOUND,
                 if (notification_sound == null) "" else notification_sound
             )
-            App1.database.replace(table, null, cv)
+            appDatabase.replace(table, null, cv)
             mMemoryCache.remove(key)
         } catch (ex: Throwable) {
             log.trace(ex)
@@ -104,7 +104,8 @@ class AcctColor {
         private val COL_NICKNAME = ColumnMeta(columnList, 0, "nick", "text")
 
         // 未設定ならnullか空文字列
-        private val COL_NOTIFICATION_SOUND = ColumnMeta(columnList, 17, "notification_sound", "text default ''")
+        private val COL_NOTIFICATION_SOUND =
+            ColumnMeta(columnList, 17, "notification_sound", "text default ''")
 
         private const val CHAR_REPLACE: Char = 0x328A.toChar()
 
@@ -136,7 +137,7 @@ class AcctColor {
             try {
                 val where_arg = load_where_arg.get() ?: arrayOfNulls<String?>(1)
                 where_arg[0] = key
-                App1.database.query(table, null, load_where, where_arg, null, null, null)
+                appDatabase.query(table, null, load_where, where_arg, null, null, null)
                     .use { cursor ->
                         if (cursor.moveToNext()) {
 

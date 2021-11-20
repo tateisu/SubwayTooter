@@ -44,7 +44,7 @@ fun ActPost.showReplyTo() {
             decodeEmoji = true,
             mentionDefaultHostDomain = account ?: unknownHostAndDomain
         ).decodeHTML(states.inReplyToText)
-        ivReply.setImageUrl(pref, Styler.calcIconRound(ivReply.layoutParams), states.inReplyToImage)
+        ivReply.setImageUrl(Styler.calcIconRound(ivReply.layoutParams), states.inReplyToImage)
     }
 }
 

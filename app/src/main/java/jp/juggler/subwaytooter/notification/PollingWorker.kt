@@ -19,6 +19,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.pref
@@ -404,7 +405,7 @@ class PollingWorker private constructor(contextArg: Context) {
         // クラッシュレポートによると App1.onCreate より前にここを通る場合がある
         // データベースへアクセスできるようにする
         this.appState = App1.prepare(context, "PollingWorker.init")
-        this.pref = App1.pref
+        this.pref = appPref
 
         this.connectivityManager = systemService(context)
             ?: error("missing ConnectivityManager system service")
@@ -670,7 +671,6 @@ class PollingWorker private constructor(contextArg: Context) {
 
     // return false if app data import started.
     fun onStartTask(taskId: TaskId): Boolean {
-        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (taskId) {
             TaskId.AppDataImportBefore -> {
 
@@ -689,6 +689,8 @@ class PollingWorker private constructor(contextArg: Context) {
                 NotificationTracking.resetPostAll()
                 // fall
             }
+
+            else -> Unit
         }
 
         // アプリデータのインポート処理がビジーな間、他のジョブは実行されない

@@ -3,9 +3,8 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
 
@@ -39,7 +38,7 @@ object FavMute : TableCompanion {
         try {
             val cv = ContentValues()
             cv.put(COL_ACCT, acct.ascii)
-            App1.database.replace(table, null, cv)
+            appDatabase.replace(table, null, cv)
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
         }
@@ -47,20 +46,20 @@ object FavMute : TableCompanion {
 
     fun delete(acct: Acct) {
         try {
-            App1.database.delete(table, "$COL_ACCT=?", arrayOf(acct.ascii))
+            appDatabase.delete(table, "$COL_ACCT=?", arrayOf(acct.ascii))
         } catch (ex: Throwable) {
             log.e(ex, "delete failed.")
         }
     }
 
     fun createCursor(): Cursor {
-        return App1.database.query(table, null, null, null, null, null, "$COL_ACCT asc")
+        return appDatabase.query(table, null, null, null, null, null, "$COL_ACCT asc")
     }
 
     val acctSet: HashSet<Acct>
         get() = HashSet<Acct>().also { dst ->
             try {
-                App1.database.query(table, null, null, null, null, null, null)
+                appDatabase.query(table, null, null, null, null, null, null)
                     .use { cursor ->
                         val idx_name = cursor.getColumnIndex(COL_ACCT)
                         while (cursor.moveToNext()) {
@@ -76,7 +75,7 @@ object FavMute : TableCompanion {
     fun contains(acct: Acct): Boolean {
         var found = false
         try {
-            App1.database.query(table, null, "$COL_ACCT=?", arrayOf(acct.ascii), null, null, null)
+            appDatabase.query(table, null, "$COL_ACCT=?", arrayOf(acct.ascii), null, null, null)
                 .use { cursor ->
                     while (cursor.moveToNext()) {
                         found = true

@@ -290,7 +290,6 @@ object ColumnEncoder {
             columnBgImage = src.string(KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
             columnBgImageAlpha = src.optFloat(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1f)
 
-            @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
             when (type) {
 
                 ColumnType.CONVERSATION,
@@ -369,6 +368,8 @@ object ColumnEncoder {
                 ColumnType.DOMAIN_TIMELINE -> {
                     instanceUri = src.optString(KEY_INSTANCE_URI)
                 }
+
+                else -> Unit
             }
         }
     }

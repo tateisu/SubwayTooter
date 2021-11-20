@@ -16,6 +16,7 @@ import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.emoji.*
+import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.put
@@ -101,8 +102,7 @@ class EmojiPicker(
     init {
 
         // recentをロードする
-        val pref = App1.pref
-        val sv = PrefS.spEmojiPickerRecent(pref)
+        val sv = PrefS.spEmojiPickerRecent()
         if (sv.isNotEmpty()) {
             try {
                 for (item in sv.decodeJsonArray().objectList()) {
@@ -471,7 +471,7 @@ class EmojiPicker(
                 }
                 view.setTag(R.id.btnAbout, item)
                 (view as? NetworkEmojiView)?.setEmoji(customEmojiMap[item.name]?.url)
-            } else if (PrefB.bpUseTwemoji(App1.pref)) {
+            } else if (PrefB.bpUseTwemoji()) {
                 view = viewOld
                     ?: ImageView(activity).apply {
                         layoutParams = AbsListView.LayoutParams(wh, wh)
@@ -542,13 +542,11 @@ class EmojiPicker(
     // name はスキントーン適用済みであること
     internal fun selected(emoji: EmojiBase) {
 
-        val pref = App1.pref
-
         if (closeOnSelected) dialog.dismissSafe()
 
         // Recentをロード(他インスタンスの絵文字を含む)
         val list: MutableList<JsonObject> = try {
-            PrefS.spEmojiPickerRecent(pref).decodeJsonArray().objectList()
+            PrefS.spEmojiPickerRecent().decodeJsonArray().objectList()
         } catch (_: Throwable) {
             emptyList()
         }.toMutableList()
@@ -591,7 +589,7 @@ class EmojiPicker(
         // 保存する
         try {
             val sv = list.toJsonArray().toString()
-            App1.pref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
+            appPref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
         } catch (ignored: Throwable) {
         }
 

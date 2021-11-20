@@ -3,13 +3,13 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -77,7 +77,7 @@ class NotificationCache(private val account_db_id: Long) {
             try {
                 val cv = ContentValues()
                 cv.put(COL_LAST_LOAD, 0L)
-                App1.database.update(table, cv, WHERE_AID, arrayOf(dbId.toString()))
+                appDatabase.update(table, cv, WHERE_AID, arrayOf(dbId.toString()))
             } catch (ex: Throwable) {
                 log.e(ex, "resetLastLoad(db_id) failed.")
             }
@@ -87,7 +87,7 @@ class NotificationCache(private val account_db_id: Long) {
             try {
                 val cv = ContentValues()
                 cv.put(COL_LAST_LOAD, 0L)
-                App1.database.update(table, cv, null, null)
+                appDatabase.update(table, cv, null, null)
             } catch (ex: Throwable) {
                 log.e(ex, "resetLastLoad() failed.")
             }
@@ -149,7 +149,7 @@ class NotificationCache(private val account_db_id: Long) {
                 cv.put(COL_ACCOUNT_DB_ID, dbId)
                 cv.put(COL_LAST_LOAD, 0L)
                 cv.putNull(COL_DATA)
-                App1.database.replaceOrThrow(table, null, cv)
+                appDatabase.replaceOrThrow(table, null, cv)
             } catch (ex: Throwable) {
                 log.e(ex, "deleteCache failed.")
             }
@@ -159,7 +159,7 @@ class NotificationCache(private val account_db_id: Long) {
     // load into this object
     fun load() {
         try {
-            App1.database.query(
+            appDatabase.query(
                 table,
                 null,
                 WHERE_AID,
@@ -192,7 +192,7 @@ class NotificationCache(private val account_db_id: Long) {
             cv.put(COL_LAST_LOAD, last_load)
             cv.put(COL_DATA, data.toJsonArray().toString())
 
-            val rv = App1.database.replaceOrThrow(table, null, cv)
+            val rv = appDatabase.replaceOrThrow(table, null, cv)
             if (rv != -1L && id == -1L) id = rv
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
@@ -358,7 +358,7 @@ class NotificationCache(private val account_db_id: Long) {
     //			val cv = ContentValues()
     //			post_id.putTo(cv, COL_POST_ID)
     //			cv.put(COL_POST_TIME, post_time)
-    //			val rows = App1.database.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString()))
+    //			val rows = appDatabase.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString()))
     //			log.d(
     //				"updatePost account_db_id=%s,post=%s,%s last_data=%s,update_rows=%s"
     //				, account_db_id

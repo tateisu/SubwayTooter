@@ -16,9 +16,8 @@ import android.widget.CompoundButton
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.pref.PrefI
 import org.xmlpull.v1.XmlPullParser
 import kotlin.math.pow
 
@@ -200,7 +199,7 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
             @Suppress("DEPRECATION")
             clearFlags(
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
-                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
             )
         }
 
@@ -208,13 +207,13 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
 
         var c = when {
             forceDark -> Color.BLACK
-            else -> PrefI.ipStatusBarColor(App1.pref).notZero() ?: attrColor(R.attr.colorPrimaryDark)
+            else -> PrefI.ipStatusBarColor().notZero() ?: attrColor(R.attr.colorPrimaryDark)
         }
         setStatusBarColorCompat(c)
 
         c = when {
             forceDark -> Color.BLACK
-            else -> PrefI.ipNavigationBarColor(App1.pref)
+            else -> PrefI.ipNavigationBarColor()
         }
         setNavigationBarColorCompat(c)
     }

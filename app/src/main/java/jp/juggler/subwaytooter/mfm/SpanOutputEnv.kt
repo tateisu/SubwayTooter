@@ -218,9 +218,7 @@ class SpanOutputEnv(
         // リンク表記はユーザの記述やアプリ設定の影響を受ける
         val caption = "@${
             when {
-                PrefB.bpMentionFullAcct(
-                    App1.pref
-                ) -> fullAcct
+                PrefB.bpMentionFullAcct() -> fullAcct
                 else -> rawAcct
             }.pretty
         }"

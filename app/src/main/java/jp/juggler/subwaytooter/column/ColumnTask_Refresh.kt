@@ -291,7 +291,7 @@ class ColumnTask_Refresh(
             isCancelled -> false
             listTmp?.isNotEmpty() != true -> false
             willAddGap -> true
-            else -> PrefB.bpForceGap(App1.pref)
+            else -> PrefB.bpForceGap()
         }
 
         if (doesAddGap()) {
@@ -310,7 +310,6 @@ class ColumnTask_Refresh(
         repeatReading: Boolean = false,
     ): TootApiResult? {
 
-        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (column.pagingType) {
             ColumnPagingType.None ->
                 return TootApiResult(context.getString(R.string.end_of_list))
@@ -319,6 +318,8 @@ class ColumnTask_Refresh(
                 if (column.idOld == null) {
                     return TootApiResult(context.getString(R.string.end_of_list))
                 }
+
+            else -> Unit
         }
 
         val addToHead = false
@@ -583,7 +584,6 @@ class ColumnTask_Refresh(
         repeatReading: Boolean = false,
     ): TootApiResult? {
 
-        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (column.pagingType) {
             ColumnPagingType.None ->
                 return TootApiResult(context.getString(R.string.end_of_list))
@@ -592,6 +592,8 @@ class ColumnTask_Refresh(
                 if (column.idOld == null) {
                     return TootApiResult(context.getString(R.string.end_of_list))
                 }
+
+            else -> Unit
         }
 
         val addToHead = false

@@ -3,9 +3,9 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.putMayNull
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
 import jp.juggler.util.getLong
@@ -63,7 +63,7 @@ class NotificationTracking {
                 post_id.putMayNull(cv, COL_POST_ID)
                 cv.put(COL_POST_TIME, post_time)
 
-                val rv = App1.database.replaceOrThrow(table, null, cv)
+                val rv = appDatabase.replaceOrThrow(table, null, cv)
                 if (rv != -1L && id == -1L) id = rv
 
                 log.d("$acct/$notificationType save. post=($post_id,$post_time)")
@@ -83,7 +83,7 @@ class NotificationTracking {
                 val cv = ContentValues()
                 postId.putTo(cv, COL_POST_ID)
                 cv.put(COL_POST_TIME, postTime)
-                val rows = App1.database.update(
+                val rows = appDatabase.update(
                     table,
                     cv,
                     WHERE_AID,
@@ -230,7 +230,7 @@ class NotificationTracking {
             dst.accountDbId = accountDbId
             dst.notificationType = notificationType
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     WHERE_AID,
@@ -263,7 +263,7 @@ class NotificationTracking {
                                     show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
                                     val where_args =
                                         arrayOf(accountDbId.toString(), notificationType)
-                                    App1.database.update(table, cv, WHERE_AID, where_args)
+                                    appDatabase.update(table, cv, WHERE_AID, where_args)
                                 }
                             }
                         }
@@ -286,7 +286,7 @@ class NotificationTracking {
         fun updateRead(accountDbId: Long, notificationType: String) {
             try {
                 val where_args = arrayOf(accountDbId.toString(), notificationType)
-                App1.database.query(
+                appDatabase.query(
                     table,
                     arrayOf(COL_NID_SHOW, COL_NID_READ),
                     WHERE_AID,
@@ -312,7 +312,7 @@ class NotificationTracking {
                                     log.i("updateRead[$accountDbId,$notificationType]: update nid_read as $nid_show...")
                                     val cv = ContentValues()
                                     nid_show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
-                                    App1.database.update(table, cv, WHERE_AID, where_args)
+                                    appDatabase.update(table, cv, WHERE_AID, where_args)
                                     clearCache(accountDbId, notificationType)
                                 }
                             }
@@ -329,7 +329,7 @@ class NotificationTracking {
                 val cv = ContentValues()
                 cv.putNull(COL_POST_ID)
                 cv.put(COL_POST_TIME, 0)
-                App1.database.update(table, cv, null, null)
+                appDatabase.update(table, cv, null, null)
                 cache.clear()
             } catch (ex: Throwable) {
                 log.e(ex, "resetPostAll failed.")
@@ -340,7 +340,7 @@ class NotificationTracking {
         fun resetTrackingState(accountDbId: Long?) {
             accountDbId ?: return
             try {
-                App1.database.delete(table, "$COL_ACCOUNT_DB_ID=?", arrayOf(accountDbId.toString()))
+                appDatabase.delete(table, "$COL_ACCOUNT_DB_ID=?", arrayOf(accountDbId.toString()))
                 cache.remove(accountDbId)
             } catch (ex: Throwable) {
                 log.e(ex, "resetTrackingState failed.")

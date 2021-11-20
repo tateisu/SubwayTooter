@@ -185,7 +185,6 @@ class TaskRunner(
 
     private fun beforePolling(): Boolean {
         // タスクによってはポーリング前にすることがある
-        @Suppress("NON_EXHAUSTIVE_WHEN", "MissingWhenCase")
         when (taskId) {
 
             TaskId.BootCompleted ->
@@ -272,6 +271,8 @@ class TaskRunner(
                 }
                 return false
             }
+
+            else -> Unit
         }
         return true
     }
@@ -371,7 +372,7 @@ class TaskRunner(
                 val who = it.account
                 when {
                     it.type == TootNotification.TYPE_FOLLOW ||
-                        it.type == TootNotification.TYPE_FOLLOW_REQUEST -> true
+                            it.type == TootNotification.TYPE_FOLLOW_REQUEST -> true
 
                     who == null -> true
                     account.isMe(who) -> true
@@ -630,12 +631,18 @@ class TaskRunner(
 
                             Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification(pref) -> {
                                 updateNotificationDivided(notificationTag, nt)
-                                nt.updatePost(first.notification.id, first.notification.time_created_at)
+                                nt.updatePost(
+                                    first.notification.id,
+                                    first.notification.time_created_at
+                                )
                             }
 
                             else -> {
                                 updateNotificationMerged(notificationTag, first)
-                                nt.updatePost(first.notification.id, first.notification.time_created_at)
+                                nt.updatePost(
+                                    first.notification.id,
+                                    first.notification.time_created_at
+                                )
                             }
                         }
                     }
@@ -656,12 +663,16 @@ class TaskRunner(
             }
 
             @TargetApi(23)
-            private fun updateNotificationDivided(notificationTag: String, nt: NotificationTracking) {
+            private fun updateNotificationDivided(
+                notificationTag: String,
+                nt: NotificationTracking
+            ) {
                 log.d("updateNotificationDivided[${account.acct.pretty}] creating notification(1)")
 
-                val activeNotificationMap = notificationManager.activeNotifications?.filterNotNull()?.filter {
-                    it.id == PollingWorker.NOTIFICATION_ID && it.tag.startsWith("$notificationTag/")
-                }?.map { Pair(it.tag, it) }?.toMutableMap() ?: mutableMapOf()
+                val activeNotificationMap =
+                    notificationManager.activeNotifications?.filterNotNull()?.filter {
+                        it.id == PollingWorker.NOTIFICATION_ID && it.tag.startsWith("$notificationTag/")
+                    }?.map { Pair(it.tag, it) }?.toMutableMap() ?: mutableMapOf()
 
                 val lastPostTime = nt.post_time
                 val lastPostId = nt.post_id
@@ -684,7 +695,10 @@ class TaskRunner(
                         continue
                     }
 
-                    createNotification(itemTag, notificationId = item.notification.id.toString()) { builder ->
+                    createNotification(
+                        itemTag,
+                        notificationId = item.notification.id.toString()
+                    ) { builder ->
                         builder.setWhen(item.notification.time_created_at)
                         val summary = item.getNotificationLine()
                         builder.setContentTitle(summary)
@@ -736,7 +750,10 @@ class TaskRunner(
 
             // Android 8 未満ではチャネルではなく通知に個別にスタイルを設定する
             @TargetApi(25)
-            private fun setNotificationSound25(builder: NotificationCompat.Builder, item: NotificationData) {
+            private fun setNotificationSound25(
+                builder: NotificationCompat.Builder,
+                item: NotificationData
+            ) {
                 var iv = 0
                 if (PrefB.bpNotificationSound(pref)) {
                     var soundUri: Uri? = null
@@ -810,7 +827,7 @@ class TaskRunner(
                     }.joinToString("&")
 
                     val flag = PendingIntent.FLAG_UPDATE_CURRENT or
-                        (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
+                            (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
 
                     PendingIntent.getActivity(
                         context,
@@ -851,7 +868,11 @@ class TaskRunner(
                 setContent(builder)
 
                 log.d("showNotification[${account.acct.pretty}] set notification...")
-                notificationManager.notify(notificationTag, PollingWorker.NOTIFICATION_ID, builder.build())
+                notificationManager.notify(
+                    notificationTag,
+                    PollingWorker.NOTIFICATION_ID,
+                    builder.build()
+                )
             }
         }
     }

@@ -5,7 +5,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 
 class PostDraft {
@@ -17,7 +17,7 @@ class PostDraft {
 
     fun delete() {
         try {
-            App1.database.delete(table, "$COL_ID=?", arrayOf(id.toString()))
+            appDatabase.delete(table, "$COL_ID=?", arrayOf(id.toString()))
         } catch (ex: Throwable) {
             log.e(ex, "delete failed.")
         }
@@ -64,7 +64,7 @@ class PostDraft {
             try {
                 // 古いデータを掃除する
                 val expire = now - 86400000L * 30
-                App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+                appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
             } catch (ex: Throwable) {
                 log.e(ex, "deleteOld failed.")
             }
@@ -85,7 +85,7 @@ class PostDraft {
                 }.toString().digestSHA256Hex()
 
                 // save to db
-                App1.database.replace(table, null, ContentValues().apply {
+                appDatabase.replace(table, null, ContentValues().apply {
                     put(COL_TIME_SAVE, now)
                     put(COL_JSON, json.toString())
                     put(COL_HASH, hash)
@@ -97,7 +97,7 @@ class PostDraft {
 
         fun hasDraft(): Boolean {
             try {
-                App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
+                appDatabase.query(table, arrayOf("count(*)"), null, null, null, null, null)
                     .use { cursor ->
                         if (cursor.moveToNext()) {
                             val count = cursor.getInt(0)
@@ -114,7 +114,7 @@ class PostDraft {
         @SuppressLint("Recycle")
         fun createCursor(): Cursor? =
             try {
-                App1.database.query(
+                appDatabase.query(
                     table,
                     null,
                     null,

@@ -38,7 +38,7 @@ class GifDecoder(val callback : GifDecoderCallback) {
 			var nRead = 0
 			while(nRead < length) {
 				val delta = bis.read(ba, offset + nRead, length - nRead)
-				if(delta == - 1) throw error("unexpected End of Stream")
+				if(delta == - 1) error("unexpected End of Stream")
 				nRead += delta
 			}
 		}

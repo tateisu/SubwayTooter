@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
@@ -58,7 +57,11 @@ class MyNetworkImageView : AppCompatImageView {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    )
 
     fun setDefaultImage(defaultImage: Drawable?) {
         mDefaultImage = defaultImage
@@ -71,7 +74,6 @@ class MyNetworkImageView : AppCompatImageView {
     }
 
     fun setImageUrl(
-        pref: SharedPreferences,
         r: Float,
         url: String?,
         gifUrlArg: String? = null,
@@ -79,7 +81,7 @@ class MyNetworkImageView : AppCompatImageView {
 
         mCornerRadius = r
 
-        val gifUrl = if (PrefB.bpEnableGifAnimation(pref)) gifUrlArg else null
+        val gifUrl = if (PrefB.bpEnableGifAnimation()) gifUrlArg else null
 
         if (gifUrl?.isNotEmpty() == true) {
             mUrl = gifUrl

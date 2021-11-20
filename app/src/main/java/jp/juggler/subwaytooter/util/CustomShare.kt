@@ -4,10 +4,9 @@ import android.content.*
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
 import jp.juggler.util.attrColor
@@ -31,29 +30,28 @@ object CustomShare {
         "com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
 
     fun getCustomShareComponentName(
-        pref: SharedPreferences,
         target: CustomShareTarget,
     ): ComponentName? {
         val src: String
         val defaultComponentName: String?
         when (target) {
             CustomShareTarget.Translate -> {
-                src = PrefS.spTranslateAppComponent(pref)
+                src = PrefS.spTranslateAppComponent()
                 defaultComponentName = translate_app_component_default
             }
 
             CustomShareTarget.CustomShare1 -> {
-                src = PrefS.spCustomShare1(pref)
+                src = PrefS.spCustomShare1()
                 defaultComponentName = null
             }
 
             CustomShareTarget.CustomShare2 -> {
-                src = PrefS.spCustomShare2(pref)
+                src = PrefS.spCustomShare2()
                 defaultComponentName = null
             }
 
             CustomShareTarget.CustomShare3 -> {
-                src = PrefS.spCustomShare3(pref)
+                src = PrefS.spCustomShare3()
                 defaultComponentName = null
             }
         }
@@ -103,7 +101,7 @@ object CustomShare {
         text: String,
     ) {
         // convert "pkgName/className" string to ComponentName object.
-        val cn = getCustomShareComponentName(App1.pref, target)
+        val cn = getCustomShareComponentName(target)
         if (cn == null) {
             context.showToast(true, R.string.custom_share_app_not_found)
             return
@@ -155,7 +153,7 @@ object CustomShare {
         status ?: return
         try {
             // convert "pkgName/className" string to ComponentName object.
-            val cn = getCustomShareComponentName(App1.pref, target)
+            val cn = getCustomShareComponentName(target)
             if (cn == null) {
                 context.showToast(true, R.string.custom_share_app_not_found)
                 return
@@ -172,9 +170,9 @@ object CustomShare {
 
     fun getCache(target: CustomShareTarget) = cache[target]
 
-    fun reloadCache(context: Context, pref: SharedPreferences) {
+    fun reloadCache(context: Context) {
         CustomShareTarget.values().forEach { target ->
-            val cn = getCustomShareComponentName(pref, target)
+            val cn = getCustomShareComponentName(target)
             val pair = getInfo(context, cn)
             cache[target] = pair
         }

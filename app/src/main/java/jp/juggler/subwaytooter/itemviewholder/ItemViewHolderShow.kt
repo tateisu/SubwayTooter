@@ -261,7 +261,6 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
     val who = whoRef.get()
     llFollow.visibility = View.VISIBLE
     ivFollow.setImageUrl(
-        activity.pref,
         Styler.calcIconRound(ivFollow.layoutParams),
         accessInfo.supplyBaseUrl(who.avatar_static),
         accessInfo.supplyBaseUrl(who.avatar)
@@ -434,7 +433,7 @@ fun ItemViewHolder.showGap() {
     btnGapTail.vg(column.type.gapDirection(column, false))
         ?.imageTintList = contentColorCsl
 
-    val c = PrefI.ipEventBgColorGap(App1.pref)
+    val c = PrefI.ipEventBgColorGap()
     if (c != 0) this.viewRoot.backgroundColor = c
 }
 
@@ -710,7 +709,6 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
         tvName.text = whoRef.decoded_display_name
         nameInvalidator.register(whoRef.decoded_display_name)
         ivAvatar.setImageUrl(
-            activity.pref,
             Styler.calcIconRound(ivAvatar.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
@@ -814,7 +812,6 @@ fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
 
             val who = accountsOther[idx].get()
             iv.setImageUrl(
-                activity.pref,
                 Styler.calcIconRound(iv.layoutParams),
                 accessInfo.supplyBaseUrl(who.avatar_static),
                 accessInfo.supplyBaseUrl(who.avatar)
@@ -841,7 +838,7 @@ fun ItemViewHolder.setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAcco
     val ac = AcctColor.load(accessInfo, who)
     tv.text = when {
         AcctColor.hasNickname(ac) -> ac.nickname
-        PrefB.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
+        PrefB.bpShortAcctLocalUser() -> "@${who.acct.pretty}"
         else -> "@${ac.nickname}"
     }
     tv.textColor = ac.color_fg.notZero() ?: this.acctColor

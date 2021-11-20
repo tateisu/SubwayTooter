@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -69,7 +70,7 @@ class HighlightWord {
 
         fun load(name: String): HighlightWord? {
             try {
-                App1.database.query(table, null, selection_name, arrayOf(name), null, null, null)
+                appDatabase.query(table, null, selection_name, arrayOf(name), null, null, null)
                     .use { cursor ->
                         if (cursor.moveToNext()) {
                             return HighlightWord(cursor)
@@ -84,7 +85,15 @@ class HighlightWord {
 
         fun load(id: Long): HighlightWord? {
             try {
-                App1.database.query(table, null, selection_id, arrayOf(id.toString()), null, null, null)
+                appDatabase.query(
+                    table,
+                    null,
+                    selection_id,
+                    arrayOf(id.toString()),
+                    null,
+                    null,
+                    null
+                )
                     .use { cursor ->
                         if (cursor.moveToNext()) {
                             return HighlightWord(cursor)
@@ -98,14 +107,14 @@ class HighlightWord {
         }
 
         fun createCursor(): Cursor {
-            return App1.database.query(table, null, null, null, null, null, "$COL_NAME asc")
+            return appDatabase.query(table, null, null, null, null, null, "$COL_NAME asc")
         }
 
         val nameSet: WordTrieTree?
             get() {
                 val dst = WordTrieTree()
                 try {
-                    App1.database.query(table, columns_name, null, null, null, null, null)
+                    appDatabase.query(table, columns_name, null, null, null, null, null)
                         .use { cursor ->
                             val idx_name = cursor.getColumnIndex(COL_NAME)
                             while (cursor.moveToNext()) {
@@ -128,7 +137,7 @@ class HighlightWord {
                 if (cached == null) {
                     cached = false
                     try {
-                        App1.database.query(
+                        appDatabase.query(
                             table,
                             columns_name,
                             selection_speech,
@@ -218,9 +227,9 @@ class HighlightWord {
             cv.put(COL_SPEECH, speech)
 
             if (id == -1L) {
-                id = App1.database.replace(table, null, cv)
+                id = appDatabase.replace(table, null, cv)
             } else {
-                App1.database.update(table, cv, selection_id, arrayOf(id.toString()))
+                appDatabase.update(table, cv, selection_id, arrayOf(id.toString()))
             }
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
@@ -234,7 +243,7 @@ class HighlightWord {
 
     fun delete(context: Context) {
         try {
-            App1.database.delete(table, selection_id, arrayOf(id.toString()))
+            appDatabase.delete(table, selection_id, arrayOf(id.toString()))
         } catch (ex: Throwable) {
             log.e(ex, "delete failed.")
         }

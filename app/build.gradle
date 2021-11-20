@@ -5,15 +5,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
 apply plugin: "io.gitlab.arturbosch.detekt"
+apply plugin: 'com.google.gms.google-services'
 
 android {
 
     compileSdkVersion compile_sdk_version
 
     // exoPlayer 2.9.0 以降は Java 8 compiler support を要求する
-    // https://github.com/google/ExoPlayer/blob/release-v2/RELEASENOTES.md
-    // Invoke-customs are only supported starting with Android O (--min-api 26)
-    // Default interface methods are only supported starting with Android N (--min-api 24)
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -45,10 +43,12 @@ android {
                 "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
-    buildFeatures {
-        // 諸事情でまだcomposeを導入できない。詳細は依存関係の項に記載
-        // compose true
-    }
+
+    // kotlin 1.6.0にすると This version (1.0.5) of the Compose Compiler requires Kotlin version 1.5.31 but you appear to be using Kotlin version 1.6.0 which is not known to be compatible. と怒られる
+    //    buildFeatures {
+    //        compose true
+    //    }
+
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
     }
@@ -241,7 +241,6 @@ dependencies {
 
     implementation 'com.caverock:androidsvg-aar:1.4'
 
-
     // ViewModel
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     // LiveData
@@ -268,9 +267,18 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:$arch_version"
 
 
-    // composeはkotlin 1.5.31を要求するが
-    // https://gist.github.com/tateisu/cbda451135d2b5c9b69f7ac4599f9833 の問題があるので1.5.31を使えない
-    // 治るまでcompose導入を諦める
+    def roomVersion = "2.3.0"
+    implementation "androidx.room:room-runtime:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+
+    def workVersion = "2.7.1"
+    implementation "androidx.work:work-runtime:$workVersion"
+    implementation "androidx.work:work-runtime-ktx:$workVersion"
+
+    implementation "androidx.startup:startup-runtime:1.1.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
+
 //    implementation "androidx.compose.ui:ui:$compose_version"
 //    implementation "androidx.compose.material:material:$compose_version"
 //    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -278,17 +286,21 @@ dependencies {
 //    implementation "androidx.compose.material:material-icons-extended:$compose_version"
 //    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
 //    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
-//    implementation 'androidx.activity:activity-compose:1.4.0-rc01'
+
+//    implementation "androidx.activity:activity-compose:1.4.0"
 //    implementation "com.google.accompanist:accompanist-flowlayout:0.20.0"
 
+    // Koin main features for Android
+    implementation "io.insert-koin:koin-android:$koin_version"
+    implementation "io.insert-koin:koin-android-compat:$koin_version"
+    implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
+    // implementation "io.insert-koin:koin-androidx-navigation:$koin_version"
+    // implementation "io.insert-koin:koin-androidx-compose:$koin_version"
 }
 
 repositories {
     mavenCentral()
 }
-
-apply plugin: 'com.google.gms.google-services'
-
 
 detekt {
     // relative path from module path.

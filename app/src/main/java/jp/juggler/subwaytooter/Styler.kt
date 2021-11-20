@@ -39,7 +39,7 @@ object Styler {
         }
 
     fun getVisibilityIconId(isMisskeyData: Boolean, visibility: TootVisibility): Int {
-        val isMisskey = when (PrefI.ipVisibilityStyle(App1.pref)) {
+        val isMisskey = when (PrefI.ipVisibilityStyle()) {
             PrefI.VS_MASTODON -> false
             PrefI.VS_MISSKEY -> true
             else -> isMisskeyData
@@ -87,7 +87,7 @@ object Styler {
         isMisskeyData: Boolean,
         visibility: TootVisibility
     ): String {
-        val isMisskey = when (PrefI.ipVisibilityStyle(App1.pref)) {
+        val isMisskey = when (PrefI.ipVisibilityStyle()) {
             PrefI.VS_MASTODON -> false
             PrefI.VS_MISSKEY -> true
             else -> isMisskeyData
@@ -302,7 +302,7 @@ object Styler {
         val widthDp = dm.widthPixels / dm.density
         if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
             val pad_lr = (0.5f + dpDelta * dm.density).toInt()
-            when (PrefI.ipJustifyWindowContentPortrait(App1.pref)) {
+            when (PrefI.ipJustifyWindowContentPortrait()) {
                 PrefI.JWCP_START -> {
                     v.setPaddingRelative(pad_lr, pad_t, pad_lr + dm.widthPixels / 2, pad_b)
                     return
@@ -331,7 +331,7 @@ object Styler {
             log.d("fixHorizontalMargin: orientation=$orientationString, w=${widthDp}dp, h=${dm.heightPixels / dm.density}")
 
             if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                when (PrefI.ipJustifyWindowContentPortrait(App1.pref)) {
+                when (PrefI.ipJustifyWindowContentPortrait()) {
                     PrefI.JWCP_START -> {
                         lp.marginStart = 0
                         lp.marginEnd = dm.widthPixels / 2

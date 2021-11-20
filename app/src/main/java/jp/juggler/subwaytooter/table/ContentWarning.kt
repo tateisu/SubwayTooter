@@ -3,9 +3,8 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 
 object ContentWarning : TableCompanion {
@@ -44,7 +43,7 @@ object ContentWarning : TableCompanion {
         try {
             // 古いデータを掃除する
             val expire = now - 86400000L * 365
-            App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+            appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
         } catch (ex: Throwable) {
             log.e(ex, "deleteOld failed.")
         }
@@ -56,7 +55,7 @@ object ContentWarning : TableCompanion {
                 put(COL_STATUS_URI, uri)
                 put(COL_SHOWN, isShown)
                 put(COL_TIME_SAVE, System.currentTimeMillis())
-            }.let { App1.database.replace(table, null, it) }
+            }.let { appDatabase.replace(table, null, it) }
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
         }
@@ -64,7 +63,7 @@ object ContentWarning : TableCompanion {
 
     private fun isShownImpl(uri: String, defaultValue: Boolean): Boolean {
         try {
-            App1.database.query(
+            appDatabase.query(
                 table,
                 projection_shown,
                 "$COL_STATUS_URI=?",

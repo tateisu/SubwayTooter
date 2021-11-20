@@ -3,8 +3,8 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
 
 object MediaShown : TableCompanion {
@@ -44,7 +44,7 @@ object MediaShown : TableCompanion {
     fun deleteOld(now: Long) {
         try {
             val expire = now - 86400000L * 365
-            App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+            appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
         } catch (ex: Throwable) {
             log.e(ex, "deleteOld failed.")
         }
@@ -54,7 +54,7 @@ object MediaShown : TableCompanion {
             val table = "media_shown"
             val COL_TIME_SAVE = "time_save"
             val expire = now - 86400000L * 365
-            App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+            appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
         } catch (ignored: Throwable) {
         }
     }
@@ -66,7 +66,7 @@ object MediaShown : TableCompanion {
                 put(COL_STATUS_ID, id)
                 put(COL_SHOWN, isShown)
                 put(COL_TIME_SAVE, System.currentTimeMillis())
-            }.let { App1.database.replace(table, null, it) }
+            }.let { appDatabase.replace(table, null, it) }
         } catch (ex: Throwable) {
             log.e(ex, "saveImpl failed.")
         }
@@ -74,7 +74,7 @@ object MediaShown : TableCompanion {
 
     private fun isShownImpl(host: String, id: String, defaultValue: Boolean): Boolean {
         try {
-            App1.database.query(
+            appDatabase.query(
                 table,
                 projection_shown,
                 "h=? and si=?",

@@ -3,14 +3,13 @@ package jp.juggler.subwaytooter.util
 import android.os.SystemClock
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -150,7 +149,7 @@ class PostImpl(
             return false
         }
 
-        if (!bConfirmTagCharacter && PrefB.bpWarnHashtagAsciiAndNonAscii(App1.pref)) {
+        if (!bConfirmTagCharacter && PrefB.bpWarnHashtagAsciiAndNonAscii()) {
             val tags = TootTag.findHashtags(content, account.isMisskey)
             val badTags = tags
                 ?.filter {
@@ -269,7 +268,12 @@ class PostImpl(
     ) {
         if (actual != extra || checkFun(instance)) return
         val strVisibility = Styler.getVisibilityString(activity, account.isMisskey, extra)
-        errorApiResult(activity.getString(R.string.server_has_no_support_of_visibility, strVisibility))
+        errorApiResult(
+            activity.getString(
+                R.string.server_has_no_support_of_visibility,
+                strVisibility
+            )
+        )
     }
 
     private suspend fun checkVisibility(
@@ -281,8 +285,18 @@ class PostImpl(
             TootVisibility.WebSetting -> getWebVisibility(client, parser, instance)
             else -> visibilityArg
         }
-        checkServerHasVisibility(v, TootVisibility.Mutual, instance, InstanceCapability::visibilityMutual)
-        checkServerHasVisibility(v, TootVisibility.Limited, instance, InstanceCapability::visibilityLimited)
+        checkServerHasVisibility(
+            v,
+            TootVisibility.Mutual,
+            instance,
+            InstanceCapability::visibilityMutual
+        )
+        checkServerHasVisibility(
+            v,
+            TootVisibility.Limited,
+            instance,
+            InstanceCapability::visibilityLimited
+        )
         return v
     }
 
@@ -407,9 +421,11 @@ class PostImpl(
 
         json["status"] = EmojiDecoder.decodeShortCode(content, emojiMapCustom = emojiMapCustom)
         json["sensitive"] = bNSFW
-        json["spoiler_text"] = EmojiDecoder.decodeShortCode(spoilerText ?: "", emojiMapCustom = emojiMapCustom)
+        json["spoiler_text"] =
+            EmojiDecoder.decodeShortCode(spoilerText ?: "", emojiMapCustom = emojiMapCustom)
 
-        inReplyToId?.toString()?.let { json[if (useQuoteToot) "quote_id" else "in_reply_to_id"] = it }
+        inReplyToId?.toString()
+            ?.let { json[if (useQuoteToot) "quote_id" else "in_reply_to_id"] = it }
 
         if (attachmentList != null) {
             json["media_ids"] = jsonArray {
@@ -556,7 +572,7 @@ class PostImpl(
 
                 val requestBuilder = bodyString.toRequestBody(MEDIA_TYPE_JSON).toPost()
 
-                if (!PrefB.bpDontDuplicationCheck(App1.pref)) {
+                if (!PrefB.bpDontDuplicationCheck()) {
                     val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
                     requestBuilder.header("Idempotency-Key", digest)
                 }
@@ -575,7 +591,8 @@ class PostImpl(
                     } else {
                         val status = parser.status(
                             when {
-                                account.isMisskey -> jsonObject?.jsonObject("createdNote") ?: jsonObject
+                                account.isMisskey -> jsonObject?.jsonObject("createdNote")
+                                    ?: jsonObject
                                 else -> jsonObject
                             }
                         )

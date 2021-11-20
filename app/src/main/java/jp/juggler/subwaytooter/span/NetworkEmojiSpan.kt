@@ -89,7 +89,7 @@ class NetworkEmojiSpan internal constructor(
         } ?: return
 
         val t = when {
-            PrefB.bpDisableEmojiAnimation(App1.pref) -> 0L
+            PrefB.bpDisableEmojiAnimation() -> 0L
             else -> invalidateCallback.timeFromStart
         }
 
@@ -152,7 +152,7 @@ class NetworkEmojiSpan internal constructor(
 
         // 少し後に描画しなおす
         val delay = mFrameFindResult.delay
-        if (delay != Long.MAX_VALUE && !PrefB.bpDisableEmojiAnimation(App1.pref)) {
+        if (delay != Long.MAX_VALUE && !PrefB.bpDisableEmojiAnimation()) {
             invalidateCallback.delayInvalidate(delay)
         }
     }

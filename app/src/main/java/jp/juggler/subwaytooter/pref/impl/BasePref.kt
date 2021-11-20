@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.pref.impl
 
 import android.content.Context
 import android.content.SharedPreferences
-import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.pref
 
 @Suppress("EqualsOrHashCode")
@@ -34,7 +34,7 @@ abstract class BasePref<T>(val key: String, val defVal: T) {
     open operator fun invoke(context: Context): T =
         invoke(context.pref())
 
-    operator fun invoke(): T = invoke(App1.pref)
+    operator fun invoke(): T = invoke(appPref)
 
     fun remove(e: SharedPreferences.Editor): SharedPreferences.Editor =
         e.remove(key)

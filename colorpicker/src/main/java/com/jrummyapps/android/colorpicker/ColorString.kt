@@ -14,8 +14,8 @@ fun parseColorString(src: String): Int {
 
     return when (src.length - start) {
         0 -> Color.BLACK
-        1 -> Color.argb(255, 0, 0, c1(0))
-        2 -> Color.argb(255, 0, 0, c2(0))
+        1 -> Color.argb(255, c1(0), c1(0), c1(0))
+        2 -> Color.argb(255, c1(0), c1(1), 0)
         3 -> Color.argb(255, c1(0), c1(1), c1(2))
         4 -> Color.argb(c1(0), c1(1), c1(2), c1(3))
         5 -> Color.argb(255, c2(0), c2(2), c1(4))

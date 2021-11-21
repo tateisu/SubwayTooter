@@ -16,8 +16,8 @@ class TestColorString {
             assertEquals("#$s", expect, parseColorString("#$s"))
         }
         a("", Color.BLACK)
-        a("8", Color.BLACK or 0x00_00_88)
-        a("56", Color.BLACK or 0x00_00_56)
+        a("8", Color.BLACK or 0x88_88_88)
+        a("56", Color.BLACK or 0x55_66_00)
         a("123", Color.BLACK or 0x11_22_33)
         a("1234", 0x11_22_33_44)
         a("12345", Color.BLACK or 0x12_34_55)

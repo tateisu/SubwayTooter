@@ -33,8 +33,8 @@ object EmojiDecoder {
 
     var useTwemoji = true
 
-    fun customEmojiSeparator(pref: SharedPreferences) =
-        if (PrefB.bpCustomEmojiSeparatorZwsp(pref)) {
+    fun customEmojiSeparator() =
+        if (PrefB.bpCustomEmojiSeparatorZwsp()) {
             '\u200B'
         } else {
             ' '

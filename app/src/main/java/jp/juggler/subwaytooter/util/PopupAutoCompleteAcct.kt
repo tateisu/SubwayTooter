@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.SharedPreferences
 import android.os.Handler
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -16,14 +15,9 @@ import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.view.MyEditText
-import jp.juggler.util.LogCategory
-import jp.juggler.util.asciiPattern
-import jp.juggler.util.attrColor
-import jp.juggler.util.groupEx
+import jp.juggler.util.*
 import java.util.*
-import kotlin.math.min
 
 @SuppressLint("InflateParams")
 internal class PopupAutoCompleteAcct(
@@ -32,9 +26,7 @@ internal class PopupAutoCompleteAcct(
     private val formRoot: View,
     private val bMainScreen: Boolean
 ) {
-
     companion object {
-
         internal val log = LogCategory("PopupAutoCompleteAcct")
 
         // 絵文字ショートコードにマッチするとても雑な正規表現
@@ -46,8 +38,6 @@ internal class PopupAutoCompleteAcct(
     val density: Float
     private val popupWidth: Int
     val handler: Handler
-
-    private val pref: SharedPreferences = appPref
 
     private var popupRows: Int = 0
 
@@ -118,63 +108,69 @@ internal class PopupAutoCompleteAcct(
             ++popupRows
         }
 
-        if (acctList != null) {
-            var i = 0
-            while (true) {
-                if (i >= acctList.size) break
-                val acct = acctList[i]
-                val v = activity.layoutInflater
-                    .inflate(R.layout.lv_spinner_dropdown, llItems, false) as CheckedTextView
-                v.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
-                v.text = acct
-                if (acct is Spannable) {
-                    NetworkEmojiInvalidator(handler, v).register(acct)
-                }
-                v.setOnClickListener {
-
-                    val start: Int
-                    val editable = et.text ?: ""
-                    val sb = SpannableStringBuilder()
-
-                    val srcLength = editable.length
-                    start = min(srcLength, selStart)
-                    val end = min(srcLength, selEnd)
-                    sb.append(editable.subSequence(0, start))
-                    val remain = editable.subSequence(end, srcLength)
-
-                    if (acct[0] == ' ') {
-                        // 絵文字ショートコード
-                        val separator = EmojiDecoder.customEmojiSeparator(pref)
-                        if (!EmojiDecoder.canStartShortCode(sb, start)) sb.append(separator)
-                        sb.append(findShortCode(acct.toString()))
-                        // セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
-                        if (separator != ' ') sb.append(separator)
-                    } else if (acct[0] == '@' && null != acct.find { it >= 0x80.toChar() }) {
-                        // @user@host IDNドメインを含む
-                        // 直後に空白を付与する
-                        sb.append("@" + Acct.parse(acct.toString().substring(1)).ascii).append(" ")
-                    } else {
-                        // @user@host
-                        // #hashtag
-                        // 直後に空白を付与する
-                        sb.append(acct).append(" ")
-                    }
-
-                    val newSelection = sb.length
-                    sb.append(remain)
-
-                    et.text = sb
-                    et.setSelection(newSelection)
-                    acctPopup.dismiss()
-                }
-
-                llItems.addView(v)
-                ++popupRows
-                ++i
+        acctList?.forEach { acct ->
+            val v = activity.layoutInflater
+                .inflate(R.layout.lv_spinner_dropdown, llItems, false) as CheckedTextView
+            v.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
+            v.text = acct
+            if (acct is Spannable) {
+                NetworkEmojiInvalidator(handler, v).register(acct)
             }
+            v.setOnClickListener { handleItemClick(et, selStart, selEnd, acct) }
+            llItems.addView(v)
+            ++popupRows
         }
 
         updatePosition()
+    }
+
+    private fun handleItemClick(et: EditText, selStart: Int, selEnd: Int, acct: CharSequence) {
+        val src = et.text ?: ""
+        val srcLength = src.length
+        val start = selStart.clip(0, srcLength)
+        val end = selEnd.clip(0, srcLength)
+
+        val sb = SpannableStringBuilder()
+        sb.append(src.subSequence(0, start))
+        val remain = src.subSequence(end, srcLength)
+
+        when (acct[0]) {
+            '#' -> {
+                // #hashtag
+                // 直後に空白を付与する
+                sb.append(acct).append(" ")
+            }
+            '@' -> if (acct.any { it >= 0x80.toChar() }) {
+                // @user@host IDNドメインを含む
+                // 直後に空白を付与する
+                sb.append("@" + Acct.parse(acct.toString().substring(1)).ascii).append(" ")
+            } else {
+                // @user@host
+                // 直後に空白を付与する
+                sb.append(acct).append(" ")
+            }
+            ' ' -> {
+                // 絵文字ショートコード(カスタム絵文字 or twemoji)
+                val separator = EmojiDecoder.customEmojiSeparator()
+                if (!EmojiDecoder.canStartShortCode(sb, start)) sb.append(separator)
+                sb.append(findShortCode(acct.toString()))
+                // セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
+                if (separator != ' ') sb.append(separator)
+            }
+            else -> {
+                // 絵文字(noto unicode emoji)
+                val delm = acct.indexOf(' ')
+                if (delm != -1) {
+                    sb.append(acct.subSequence(0, delm))
+                }
+            }
+        }
+        val newSelection = sb.length
+        sb.append(remain)
+
+        et.text = sb
+        et.setSelection(newSelection)
+        acctPopup.dismiss()
     }
 
     private fun findShortCode(acct: String): String {

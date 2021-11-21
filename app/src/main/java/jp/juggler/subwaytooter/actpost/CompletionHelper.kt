@@ -37,7 +37,7 @@ class CompletionHelper(
 ) {
     companion object {
         private val log = LogCategory("CompletionHelper")
-        private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiPattern()
+        private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiRegex()
 
         // 無視するスパン
         // ($を.に変換済)
@@ -56,6 +56,39 @@ class CompletionHelper(
         )
 
         private val reRemoveSpan = """\Qandroid.text.style.\E.+Span""".toRegex()
+
+        private fun matchUserNameOrAsciiDomain(cp: Int): Boolean {
+            if (cp >= 0x7f) return false
+            val c = cp.toChar()
+
+            return '0' <= c && c <= '9' ||
+                    'A' <= c && c <= 'Z' ||
+                    'a' <= c && c <= 'z' ||
+                    c == '_' || c == '-' || c == '.'
+        }
+
+        // Letter | Mark | Decimal_Number | Connector_Punctuation
+        private fun matchIdnWord(cp: Int) = when (Character.getType(cp).toByte()) {
+            // Letter
+            // LCはエイリアスなので文字から得られることはないはず
+            Character.UPPERCASE_LETTER,
+            Character.LOWERCASE_LETTER,
+            Character.TITLECASE_LETTER,
+            Character.MODIFIER_LETTER,
+            Character.OTHER_LETTER,
+            -> true
+            // Mark
+            Character.NON_SPACING_MARK,
+            Character.COMBINING_SPACING_MARK,
+            Character.ENCLOSING_MARK,
+            -> true
+            // Decimal_Number
+            Character.DECIMAL_DIGIT_NUMBER -> true
+            // Connector_Punctuation
+            Character.CONNECTOR_PUNCTUATION -> true
+
+            else -> false
+        }
     }
 
     interface Callback2 {
@@ -79,230 +112,190 @@ class CompletionHelper(
         if (popup?.isShowing == true) procTextChanged.run()
     }
 
-    private val procTextChanged = object : Runnable {
-
-        override fun run() {
-            val et = this@CompletionHelper.et
-            if (et == null || // EditTextを特定できない
-                et.selectionStart != et.selectionEnd || // 範囲選択中
-                callback2?.canOpenPopup() != true // 何らかの理由でポップアップが許可されていない
-            ) {
-                closeAcctPopup()
-                return
-            }
-
+    private val procTextChanged: Runnable = Runnable {
+        val et = this.et
+        if (et == null || et.selectionStart != et.selectionEnd || callback2?.canOpenPopup() != true) {
+            // EditTextを特定できない
+            // 範囲選択中
+            // 何らかの理由でポップアップが許可されていない
+            closeAcctPopup()
+        } else {
             checkMention(et, et.text.toString())
         }
+    }
 
-        private fun checkMention(et: MyEditText, src: String) {
 
-            fun matchUserNameOrAsciiDomain(cp: Int): Boolean {
-                if (cp >= 0x7f) return false
-                val c = cp.toChar()
+    private fun checkMention(et: MyEditText, src: String) {
+        // 選択範囲末尾からスキャン
+        var count_atMark = 0
+        var start: Int = -1
+        val end = et.selectionEnd
+        var i = end
+        while (i > 0) {
+            val cp = src.codePointBefore(i)
+            i -= Character.charCount(cp)
 
-                return '0' <= c && c <= '9' ||
-                        'A' <= c && c <= 'Z' ||
-                        'a' <= c && c <= 'z' ||
-                        c == '_' || c == '-' || c == '.'
-            }
-
-            // Letter | Mark | Decimal_Number | Connector_Punctuation
-            fun matchIdnWord(cp: Int) = when (Character.getType(cp).toByte()) {
-                // Letter
-                // LCはエイリアスなので文字から得られることはないはず
-                Character.UPPERCASE_LETTER,
-                Character.LOWERCASE_LETTER,
-                Character.TITLECASE_LETTER,
-                Character.MODIFIER_LETTER,
-                Character.OTHER_LETTER,
-                -> true
-                // Mark
-                Character.NON_SPACING_MARK,
-                Character.COMBINING_SPACING_MARK,
-                Character.ENCLOSING_MARK,
-                -> true
-                // Decimal_Number
-                Character.DECIMAL_DIGIT_NUMBER -> true
-                // Connector_Punctuation
-                Character.CONNECTOR_PUNCTUATION -> true
-
-                else -> false
-            }
-
-            var count_atMark = 0
-            val end = et.selectionEnd
-            var start: Int = -1
-            var i = end
-            while (i > 0) {
-                val cp = src.codePointBefore(i)
-                i -= Character.charCount(cp)
-
-                if (cp == '@'.code) {
-                    start = i
-                    if (++count_atMark >= 2) break else continue
-                } else if (count_atMark == 1) {
-                    // @username@host の username部分はUnicodeを含まない
-                    if (matchUserNameOrAsciiDomain(cp)) continue else break
-                } else {
-                    // @username@host のhost 部分か、 @username のusername部分
-                    // ここはUnicodeを含むかもしれない
-                    if (matchUserNameOrAsciiDomain(cp) || matchIdnWord(cp)) continue else break
-                }
-            }
-
-            if (start == -1) {
-                checkTag(et, src)
-                return
-            }
-
-            // 最低でも2文字ないと補完しない
-            if (end - start < 2) {
-                closeAcctPopup()
-                return
-            }
-
-            val limit = 100
-            val s = src.substring(start, end)
-            val acct_list = AcctSet.searchPrefix(s, limit)
-            log.d("search for $s, result=${acct_list.size}")
-            if (acct_list.isEmpty()) {
-                closeAcctPopup()
+            if (cp == '@'.code) {
+                start = i
+                if (++count_atMark >= 2) break else continue
+            } else if (count_atMark == 1) {
+                // @username@host の username部分はUnicodeを含まない
+                if (matchUserNameOrAsciiDomain(cp)) continue else break
             } else {
-                openPopup()?.setList(et, start, end, acct_list, null, null)
+                // @username@host のhost 部分か、 @username のusername部分
+                // ここはUnicodeを含むかもしれない
+                if (matchUserNameOrAsciiDomain(cp) || matchIdnWord(cp)) continue else break
             }
         }
 
-        private fun checkTag(et: MyEditText, src: String) {
-
-            val end = et.selectionEnd
-
-            val last_sharp = src.lastIndexOf('#', end - 1)
-
-            if (last_sharp == -1 || end - last_sharp < 2) {
-                checkEmoji(et, src)
-                return
-            }
-
-            val part = src.substring(last_sharp + 1, end)
-            if (!TootTag.isValid(part, accessInfo?.isMisskey == true)) {
-                checkEmoji(et, src)
-                return
-            }
-
-            val limit = 100
-            val s = src.substring(last_sharp + 1, end)
-            val tag_list = TagSet.searchPrefix(s, limit)
-            log.d("search for $s, result=${tag_list.size}")
-            if (tag_list.isEmpty()) {
-                closeAcctPopup()
-            } else {
-                openPopup()?.setList(et, last_sharp, end, tag_list, null, null)
-            }
+        if (start == -1) {
+            checkTag(et, src)
+            return
         }
 
-        private fun checkEmoji(et: MyEditText, src: String) {
+        // 最低でも2文字ないと補完しない
+        if (end - start < 2) {
+            closeAcctPopup()
+            return
+        }
 
-            val end = et.selectionEnd
-            val last_colon = src.lastIndexOf(':', end - 1)
-            if (last_colon == -1 || end - last_colon < 1) {
-                closeAcctPopup()
-                return
-            }
+        val limit = 100
+        val s = src.substring(start, end)
+        val acct_list = AcctSet.searchPrefix(s, limit)
+        log.d("search for $s, result=${acct_list.size}")
+        if (acct_list.isEmpty()) {
+            closeAcctPopup()
+        } else {
+            openPopup()?.setList(et, start, end, acct_list, null, null)
+        }
+    }
 
-            if (!EmojiDecoder.canStartShortCode(src, last_colon)) {
-                // : の手前は始端か改行か空白でなければならない
-                log.d("checkEmoji: invalid character before shortcode.")
-                closeAcctPopup()
-                return
-            }
+    private fun checkTag(et: MyEditText, src: String) {
 
-            val part = src.substring(last_colon + 1, end)
+        val end = et.selectionEnd
+        val last_sharp = src.lastIndexOf('#', end - 1)
+        if (last_sharp == -1 || end - last_sharp < 2) {
+            checkEmoji(et, src)
+            return
+        }
 
-            if (part.isEmpty()) {
-                // :を入力した直後は候補は0で、「閉じる」と「絵文字を選ぶ」だけが表示されたポップアップを出す
-                openPopup()?.setList(
-                    et, last_colon, end, null, pickerCaptionEmoji, openPickerEmoji
-                )
-                return
-            }
+        val part = src.substring(last_sharp + 1, end)
+        if (!TootTag.isValid(part, accessInfo?.isMisskey == true)) {
+            checkEmoji(et, src)
+            return
+        }
 
-            if (reCharsNotEmoji.matcher(part).find()) {
-                // 範囲内に絵文字に使えない文字がある
-                closeAcctPopup()
-                return
-            }
+        val limit = 100
+        val s = src.substring(last_sharp + 1, end)
+        val tag_list = TagSet.searchPrefix(s, limit)
+        log.d("search for $s, result=${tag_list.size}")
+        if (tag_list.isEmpty()) {
+            closeAcctPopup()
+        } else {
+            openPopup()?.setList(et, last_sharp, end, tag_list, null, null)
+        }
+    }
 
-            val code_list = ArrayList<CharSequence>()
-            val limit = 100
+    private fun checkEmoji(et: MyEditText, src: String) {
+        val end = et.selectionEnd
+        val last_colon = src.lastIndexOf(':', end - 1)
+        if (last_colon == -1 || end - last_colon < 1) {
+            closeAcctPopup()
+            return
+        }
 
-            // カスタム絵文字の候補を部分一致検索
-            code_list.addAll(customEmojiCodeList(accessInfo, limit, part))
+        if (!EmojiDecoder.canStartShortCode(src, last_colon)) {
+            // : の手前は始端か改行か空白でなければならない
+            log.d("checkEmoji: invalid character before shortcode.")
+            closeAcctPopup()
+            return
+        }
 
-            // 通常の絵文字を部分一致で検索
-            val remain = limit - code_list.size
-            if (remain > 0) {
-                val s =
-                    src.substring(last_colon + 1, end).lowercase().replace('-', '_')
-                val matches = EmojiDecoder.searchShortCode(activity, s, remain)
-                log.d("checkEmoji: search for $s, result=${matches.size}")
-                code_list.addAll(matches)
-            }
+        val part = src.substring(last_colon + 1, end)
 
+        if (part.isEmpty()) {
+            // :を入力した直後は候補は0で、「閉じる」と「絵文字を選ぶ」だけが表示されたポップアップを出す
             openPopup()?.setList(
-                et,
-                last_colon,
-                end,
-                code_list,
-                pickerCaptionEmoji,
-                openPickerEmoji
+                et, last_colon, end, null, pickerCaptionEmoji, openPickerEmoji
             )
+            return
         }
 
-        // カスタム絵文字の候補を作る
-        private fun customEmojiCodeList(
-            accessInfo: SavedAccount?,
-            @Suppress("SameParameterValue") limit: Int,
-            needle: String,
-        ) = ArrayList<CharSequence>().also { dst ->
+        if (reCharsNotEmoji.containsMatchIn(part)) {
+            // 範囲内に絵文字に使えない文字がある
+            closeAcctPopup()
+            return
+        }
 
-            accessInfo ?: return@also
+        val code_list = ArrayList<CharSequence>()
+        val limit = 100
 
-            val custom_list =
-                App1.custom_emoji_lister.getListWithAliases(accessInfo, onEmojiListLoad)
-                    ?: return@also
+        // カスタム絵文字の候補を部分一致検索
+        code_list.addAll(customEmojiCodeList(accessInfo, limit, part))
 
-            for (item in custom_list) {
-                if (dst.size >= limit) break
-                if (!item.shortcode.contains(needle)) continue
+        // 通常の絵文字を部分一致で検索
+        val remain = limit - code_list.size
+        if (remain > 0) {
+            val s = src.substring(last_colon + 1, end)
+                    .lowercase()
+                    .replace('-', '_')
+            val matches = EmojiDecoder.searchShortCode(activity, s, remain)
+            log.d("checkEmoji: search for $s, result=${matches.size}")
+            code_list.addAll(matches)
+        }
 
-                val sb = SpannableStringBuilder()
-                sb.append(' ')
+        openPopup()?.setList(
+            et,
+            last_colon,
+            end,
+            code_list,
+            pickerCaptionEmoji,
+            openPickerEmoji
+        )
+    }
+
+    // カスタム絵文字の候補を作る
+    private fun customEmojiCodeList(
+        accessInfo: SavedAccount?,
+        @Suppress("SameParameterValue") limit: Int,
+        needle: String,
+    ) = buildList<CharSequence> {
+        accessInfo ?: return@buildList
+
+        val custom_list =
+            App1.custom_emoji_lister.getListWithAliases(accessInfo, onEmojiListLoad)
+                ?: return@buildList
+
+        for (item in custom_list) {
+            if (size >= limit) break
+            if (!item.shortcode.contains(needle)) continue
+
+            val sb = SpannableStringBuilder()
+            sb.append(' ')
+            sb.setSpan(
+                NetworkEmojiSpan(item.url),
+                0,
+                sb.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            sb.append(' ')
+            if (item.alias != null) {
+                val start = sb.length
+                sb.append(":")
+                sb.append(item.alias)
+                sb.append(": → ")
                 sb.setSpan(
-                    NetworkEmojiSpan(item.url),
-                    0,
+                    ForegroundColorSpan(activity.attrColor(R.attr.colorTimeSmall)),
+                    start,
                     sb.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
-                sb.append(' ')
-                if (item.alias != null) {
-                    val start = sb.length
-                    sb.append(":")
-                    sb.append(item.alias)
-                    sb.append(": → ")
-                    sb.setSpan(
-                        ForegroundColorSpan(activity.attrColor(R.attr.colorTimeSmall)),
-                        start,
-                        sb.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                }
-
-                sb.append(':')
-                sb.append(item.shortcode)
-                sb.append(':')
-
-                dst.add(sb)
             }
+
+            sb.append(':')
+            sb.append(item.shortcode)
+            sb.append(':')
+            add(sb)
         }
     }
 
@@ -417,7 +410,7 @@ class CompletionHelper(
         emoji: EmojiBase,
     ): SpannableStringBuilder {
 
-        val separator = EmojiDecoder.customEmojiSeparator(pref)
+        val separator = EmojiDecoder.customEmojiSeparator()
         when (emoji) {
             is CustomEmoji -> {
                 // カスタム絵文字は常にshortcode表現

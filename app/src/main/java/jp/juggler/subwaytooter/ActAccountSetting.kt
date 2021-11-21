@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.RingtoneManager
@@ -20,15 +19,14 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.notification.NotificationHelper
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
@@ -37,7 +35,6 @@ import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -91,72 +88,17 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
     var state = State()
 
-    internal lateinit var account: SavedAccount
-    internal lateinit var pref: SharedPreferences
+    lateinit var handler: Handler
 
-    private lateinit var tvInstance: TextView
-    private lateinit var tvUser: TextView
-    private lateinit var btnAccessToken: Button
-    private lateinit var btnInputAccessToken: Button
-    private lateinit var btnAccountRemove: Button
-    private lateinit var btnLoadPreference: Button
+    lateinit var account: SavedAccount
 
-    private lateinit var btnVisibility: Button
-
-    private lateinit var swNSFWOpen: SwitchCompat
-    private lateinit var swDontShowTimeout: SwitchCompat
-    private lateinit var swExpandCW: SwitchCompat
-    private lateinit var swMarkSensitive: SwitchCompat
-
-    private lateinit var btnOpenBrowser: Button
-    private lateinit var btnPushSubscription: Button
-    private lateinit var btnPushSubscriptionNotForce: Button
-    private lateinit var btnResetNotificationTracking: Button
-
-    private lateinit var cbNotificationMention: CheckBox
-    private lateinit var cbNotificationBoost: CheckBox
-    private lateinit var cbNotificationFavourite: CheckBox
-    private lateinit var cbNotificationFollow: CheckBox
-    private lateinit var cbNotificationFollowRequest: CheckBox
-    private lateinit var cbNotificationReaction: CheckBox
-    private lateinit var cbNotificationVote: CheckBox
-    private lateinit var cbNotificationPost: CheckBox
-
-    private lateinit var cbConfirmFollow: CheckBox
-    private lateinit var cbConfirmFollowLockedUser: CheckBox
-    private lateinit var cbConfirmUnfollow: CheckBox
-    private lateinit var cbConfirmBoost: CheckBox
-    private lateinit var cbConfirmFavourite: CheckBox
-    private lateinit var cbConfirmUnboost: CheckBox
-    private lateinit var cbConfirmUnfavourite: CheckBox
-    private lateinit var cbConfirmToot: CheckBox
-    private lateinit var cbConfirmReaction: CheckBox
-
-    private lateinit var tvUserCustom: TextView
-    private lateinit var btnUserCustom: View
-
-    private lateinit var btnNotificationSoundEdit: Button
-    private lateinit var btnNotificationSoundReset: Button
-    private lateinit var btnNotificationStyleEdit: Button
-    private lateinit var btnNotificationStyleEditReply: Button
+    private lateinit var viewBinding: ActAccountSettingBinding
 
     private var notificationSoundUri: String? = null
-
-    private lateinit var ivProfileHeader: MyNetworkImageView
-    private lateinit var ivProfileAvatar: MyNetworkImageView
-    private lateinit var btnProfileAvatar: View
-    private lateinit var btnProfileHeader: View
-    private lateinit var etDisplayName: EditText
-    private lateinit var btnDisplayName: View
-    private lateinit var etNote: EditText
-    private lateinit var cbLocked: CheckBox
-    private lateinit var btnNote: View
-    private lateinit var etDefaultText: EditText
 
     private lateinit var nameInvalidator: NetworkEmojiInvalidator
     private lateinit var noteInvalidator: NetworkEmojiInvalidator
     private lateinit var defaultTextInvalidator: NetworkEmojiInvalidator
-    internal lateinit var handler: Handler
 
     private var loadingBusy = false
     private var profileBusy = false
@@ -166,16 +108,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private lateinit var listFieldNameInvalidator: List<NetworkEmojiInvalidator>
     private lateinit var listFieldValueInvalidator: List<NetworkEmojiInvalidator>
     private lateinit var btnFields: View
-
-    private lateinit var etMaxTootChars: EditText
-
-    private lateinit var etMediaSizeMax: EditText
-
-    private lateinit var etMovieSizeMax: EditText
-
-    private lateinit var spResizeImage: Spinner
-
-    private lateinit var spPushPolicy: Spinner
 
     private class ResizeItem(val config: ResizeConfig, val caption: String)
 
@@ -261,7 +193,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
 
         App1.setActivityTheme(this)
-        this.pref = appPref
 
         initUI()
 
@@ -275,7 +206,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
         initializeProfile()
 
-        btnOpenBrowser.text = getString(R.string.open_instance_website, account.apiHost.pretty)
+        viewBinding.btnOpenBrowser.text =
+            getString(R.string.open_instance_website, account.apiHost.pretty)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -298,247 +230,187 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private fun initUI() {
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
-        setContentView(R.layout.act_account_setting)
+        this.viewBinding = ActAccountSettingBinding.inflate(layoutInflater, null, false)
+        setContentView(viewBinding.root)
+
         App1.initEdgeToEdge(this)
+        Styler.fixHorizontalPadding(viewBinding.root)
+        setSwitchColor(viewBinding.root)
 
-        val root: View = findViewById(R.id.svContent)
+        viewBinding.apply {
+            btnPushSubscriptionNotForce.vg(BuildConfig.DEBUG)
 
-        Styler.fixHorizontalPadding(root)
-
-        setSwitchColor(pref, root)
-
-        tvInstance = findViewById(R.id.tvInstance)
-        tvUser = findViewById(R.id.tvUser)
-        btnAccessToken = findViewById(R.id.btnAccessToken)
-        btnInputAccessToken = findViewById(R.id.btnInputAccessToken)
-        btnAccountRemove = findViewById(R.id.btnAccountRemove)
-        btnLoadPreference = findViewById(R.id.btnLoadPreference)
-        btnVisibility = findViewById(R.id.btnVisibility)
-        swNSFWOpen = findViewById(R.id.swNSFWOpen)
-        swDontShowTimeout = findViewById(R.id.swDontShowTimeout)
-        swExpandCW = findViewById(R.id.swExpandCW)
-        swMarkSensitive = findViewById(R.id.swMarkSensitive)
-        btnOpenBrowser = findViewById(R.id.btnOpenBrowser)
-        btnPushSubscription = findViewById(R.id.btnPushSubscription)
-        btnPushSubscriptionNotForce = findViewById(R.id.btnPushSubscriptionNotForce)
-        btnPushSubscriptionNotForce.vg(BuildConfig.DEBUG)
-        btnResetNotificationTracking = findViewById(R.id.btnResetNotificationTracking)
-
-        cbNotificationMention = findViewById(R.id.cbNotificationMention)
-        cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
-        cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
-        cbNotificationFollow = findViewById(R.id.cbNotificationFollow)
-        cbNotificationFollowRequest = findViewById(R.id.cbNotificationFollowRequest)
-
-        cbNotificationReaction = findViewById(R.id.cbNotificationReaction)
-        cbNotificationVote = findViewById(R.id.cbNotificationVote)
-        cbNotificationPost = findViewById(R.id.cbNotificationPost)
-
-        cbConfirmFollow = findViewById(R.id.cbConfirmFollow)
-        cbConfirmFollowLockedUser = findViewById(R.id.cbConfirmFollowLockedUser)
-        cbConfirmUnfollow = findViewById(R.id.cbConfirmUnfollow)
-        cbConfirmBoost = findViewById(R.id.cbConfirmBoost)
-        cbConfirmFavourite = findViewById(R.id.cbConfirmFavourite)
-        cbConfirmUnboost = findViewById(R.id.cbConfirmUnboost)
-        cbConfirmUnfavourite = findViewById(R.id.cbConfirmUnfavourite)
-        cbConfirmToot = findViewById(R.id.cbConfirmToot)
-        cbConfirmReaction = findViewById(R.id.cbConfirmReaction)
-
-        tvUserCustom = findViewById(R.id.tvUserCustom)
-        btnUserCustom = findViewById(R.id.btnUserCustom)
-
-        ivProfileHeader = findViewById(R.id.ivProfileHeader)
-        ivProfileAvatar = findViewById(R.id.ivProfileAvatar)
-        btnProfileAvatar = findViewById(R.id.btnProfileAvatar)
-        btnProfileHeader = findViewById(R.id.btnProfileHeader)
-        etDisplayName = findViewById(R.id.etDisplayName)
-        etDefaultText = findViewById(R.id.etDefaultText)
-        etMaxTootChars = findViewById(R.id.etMaxTootChars)
-        btnDisplayName = findViewById(R.id.btnDisplayName)
-        etNote = findViewById(R.id.etNote)
-        btnNote = findViewById(R.id.btnNote)
-        cbLocked = findViewById(R.id.cbLocked)
-
-        etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
-        etMovieSizeMax = findViewById(R.id.etMovieSizeMax)
-        spResizeImage = findViewById(R.id.spResizeImage)
-        spPushPolicy = findViewById(R.id.spPushPolicy)
-
-        imageResizeItems = SavedAccount.resizeConfigList.map {
-            val caption = when (it.type) {
-                ResizeType.None -> getString(R.string.dont_resize)
-                ResizeType.LongSide -> getString(R.string.long_side_pixel, it.size)
-                ResizeType.SquarePixel -> if (it.extraStringId != 0) {
-                    getString(
-                        R.string.resize_square_pixels_2,
-                        it.size * it.size,
-                        getString(it.extraStringId)
-                    )
-                } else {
-                    getString(
-                        R.string.resize_square_pixels,
-                        it.size * it.size,
-                        it.size
-                    )
+            imageResizeItems = SavedAccount.resizeConfigList.map {
+                val caption = when (it.type) {
+                    ResizeType.None -> getString(R.string.dont_resize)
+                    ResizeType.LongSide -> getString(R.string.long_side_pixel, it.size)
+                    ResizeType.SquarePixel -> if (it.extraStringId != 0) {
+                        getString(
+                            R.string.resize_square_pixels_2,
+                            it.size * it.size,
+                            getString(it.extraStringId)
+                        )
+                    } else {
+                        getString(
+                            R.string.resize_square_pixels,
+                            it.size * it.size,
+                            it.size
+                        )
+                    }
                 }
+                ResizeItem(it, caption)
             }
-            ResizeItem(it, caption)
-        }
-        spResizeImage.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            imageResizeItems.map { it.caption }.toTypedArray()
-        ).apply {
-            setDropDownViewResource(R.layout.lv_spinner_dropdown)
-        }
-
-        pushPolicyItems = listOf(
-            PushPolicyItem(null, getString(R.string.unspecified)),
-            PushPolicyItem("all", getString(R.string.all)),
-            PushPolicyItem("followed", getString(R.string.following)),
-            PushPolicyItem("follower", getString(R.string.followers)),
-            PushPolicyItem("none", getString(R.string.no_one)),
-        )
-
-        spPushPolicy.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            pushPolicyItems.map { it.caption }.toTypedArray()
-        ).apply {
-            setDropDownViewResource(R.layout.lv_spinner_dropdown)
-        }
-
-        listEtFieldName = intArrayOf(
-            R.id.etFieldName1,
-            R.id.etFieldName2,
-            R.id.etFieldName3,
-            R.id.etFieldName4
-        ).map { findViewById(it) }
-
-        listEtFieldValue = intArrayOf(
-            R.id.etFieldValue1,
-            R.id.etFieldValue2,
-            R.id.etFieldValue3,
-            R.id.etFieldValue4
-        ).map { findViewById(it) }
-
-        btnFields = findViewById(R.id.btnFields)
-        btnNotificationSoundEdit = findViewById(R.id.btnNotificationSoundEdit)
-        btnNotificationSoundReset = findViewById(R.id.btnNotificationSoundReset)
-        btnNotificationStyleEdit = findViewById(R.id.btnNotificationStyleEdit)
-        btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
-        btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup(pref))
-
-        nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
-        noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
-        defaultTextInvalidator = NetworkEmojiInvalidator(handler, etDefaultText)
-
-        listFieldNameInvalidator = listEtFieldName.map {
-            NetworkEmojiInvalidator(handler, it)
-        }
-
-        listFieldValueInvalidator = listEtFieldValue.map {
-            NetworkEmojiInvalidator(handler, it)
-        }
-
-        etDefaultText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                saveUIToData()
+            spResizeImage.adapter = ArrayAdapter(
+                this@ActAccountSetting,
+                android.R.layout.simple_spinner_item,
+                imageResizeItems.map { it.caption }.toTypedArray()
+            ).apply {
+                setDropDownViewResource(R.layout.lv_spinner_dropdown)
             }
 
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int,
-            ) {
+            pushPolicyItems = listOf(
+                PushPolicyItem(null, getString(R.string.unspecified)),
+                PushPolicyItem("all", getString(R.string.all)),
+                PushPolicyItem("followed", getString(R.string.following)),
+                PushPolicyItem("follower", getString(R.string.followers)),
+                PushPolicyItem("none", getString(R.string.no_one)),
+            )
+
+            spPushPolicy.adapter = ArrayAdapter(
+                this@ActAccountSetting,
+                android.R.layout.simple_spinner_item,
+                pushPolicyItems.map { it.caption }.toTypedArray()
+            ).apply {
+                setDropDownViewResource(R.layout.lv_spinner_dropdown)
             }
 
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int,
-            ) {
-            }
-        })
+            listEtFieldName = intArrayOf(
+                R.id.etFieldName1,
+                R.id.etFieldName2,
+                R.id.etFieldName3,
+                R.id.etFieldName4
+            ).map { findViewById(it) }
 
-        etMaxTootChars.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int,
-            ) {
-            }
+            listEtFieldValue = intArrayOf(
+                R.id.etFieldValue1,
+                R.id.etFieldValue2,
+                R.id.etFieldValue3,
+                R.id.etFieldValue4
+            ).map { findViewById(it) }
 
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int,
-            ) {
+            btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup())
+
+            nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
+            noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
+            defaultTextInvalidator = NetworkEmojiInvalidator(handler, etDefaultText)
+
+            listFieldNameInvalidator = listEtFieldName.map {
+                NetworkEmojiInvalidator(handler, it)
             }
 
-            override fun afterTextChanged(s: Editable?) {
-                val num = etMaxTootChars.parseInt()
-                if (num != null && num >= 0) {
+            listFieldValueInvalidator = listEtFieldValue.map {
+                NetworkEmojiInvalidator(handler, it)
+            }
+
+            etDefaultText.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
                     saveUIToData()
                 }
-            }
-        })
 
-        arrayOf(
-            btnOpenBrowser,
-            btnPushSubscription,
-            btnPushSubscriptionNotForce,
-            btnResetNotificationTracking,
-            btnAccessToken,
-            btnInputAccessToken,
-            btnAccountRemove,
-            btnLoadPreference,
-            btnVisibility,
-            btnUserCustom,
-            btnProfileAvatar,
-            btnProfileHeader,
-            btnDisplayName,
-            btnNote,
-            btnFields,
-            btnNotificationSoundEdit,
-            btnNotificationSoundReset,
-            btnNotificationStyleEdit,
-            btnNotificationStyleEditReply,
-        ).forEach { it.setOnClickListener(this) }
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {
+                }
 
-        arrayOf(
-            swNSFWOpen,
-            swDontShowTimeout,
-            swExpandCW,
-            swMarkSensitive,
-            cbNotificationMention,
-            cbNotificationBoost,
-            cbNotificationFavourite,
-            cbNotificationFollow,
-            cbNotificationFollowRequest,
-            cbNotificationReaction,
-            cbNotificationVote,
-            cbNotificationPost,
-            cbLocked,
-            cbConfirmFollow,
-            cbConfirmFollowLockedUser,
-            cbConfirmUnfollow,
-            cbConfirmBoost,
-            cbConfirmFavourite,
-            cbConfirmUnboost,
-            cbConfirmUnfavourite,
-            cbConfirmToot,
-            cbConfirmReaction,
-        ).forEach { it.setOnCheckedChangeListener(this) }
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) {
+                }
+            })
 
-        arrayOf(
-            spResizeImage,
-            spPushPolicy,
-        ).forEach { it.onItemSelectedListener = this }
+            etMaxTootChars.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {
+                }
+
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) {
+                }
+
+                override fun afterTextChanged(s: Editable?) {
+                    val num = etMaxTootChars.parseInt()
+                    if (num != null && num >= 0) {
+                        saveUIToData()
+                    }
+                }
+            })
+
+            arrayOf(
+                btnOpenBrowser,
+                btnPushSubscription,
+                btnPushSubscriptionNotForce,
+                btnResetNotificationTracking,
+                btnAccessToken,
+                btnInputAccessToken,
+                btnAccountRemove,
+                btnLoadPreference,
+                btnVisibility,
+                btnUserCustom,
+                btnProfileAvatar,
+                btnProfileHeader,
+                btnDisplayName,
+                btnNote,
+                btnFields,
+                btnNotificationSoundEdit,
+                btnNotificationSoundReset,
+                btnNotificationStyleEdit,
+                btnNotificationStyleEditReply,
+            ).forEach { it.setOnClickListener(this@ActAccountSetting) }
+
+            arrayOf(
+                swNSFWOpen,
+                swDontShowTimeout,
+                swExpandCW,
+                swMarkSensitive,
+                cbNotificationMention,
+                cbNotificationBoost,
+                cbNotificationFavourite,
+                cbNotificationFollow,
+                cbNotificationFollowRequest,
+                cbNotificationReaction,
+                cbNotificationVote,
+                cbNotificationPost,
+                cbLocked,
+                cbConfirmFollow,
+                cbConfirmFollowLockedUser,
+                cbConfirmUnfollow,
+                cbConfirmBoost,
+                cbConfirmFavourite,
+                cbConfirmUnboost,
+                cbConfirmUnfavourite,
+                cbConfirmToot,
+                cbConfirmReaction,
+            ).forEach { it.setOnCheckedChangeListener(this@ActAccountSetting) }
+
+            arrayOf(
+                spResizeImage,
+                spPushPolicy,
+            ).forEach { it.onItemSelectedListener = this@ActAccountSetting }
+        }
     }
 
     private fun EditText.parseInt(): Int? =
@@ -546,179 +418,191 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
     private fun loadUIFromData(a: SavedAccount) {
         this.account = a
-
-        tvInstance.text = a.apiHost.pretty
-        tvUser.text = a.acct.pretty
-
         this.visibility = a.visibility
-
         loadingBusy = true
+        try {
 
-        swNSFWOpen.isChecked = a.dont_hide_nsfw
-        swDontShowTimeout.isChecked = a.dont_show_timeout
-        swExpandCW.isChecked = a.expand_cw
-        swMarkSensitive.isChecked = a.default_sensitive
-        cbNotificationMention.isChecked = a.notification_mention
-        cbNotificationBoost.isChecked = a.notification_boost
-        cbNotificationFavourite.isChecked = a.notification_favourite
-        cbNotificationFollow.isChecked = a.notification_follow
-        cbNotificationFollowRequest.isChecked = a.notification_follow_request
-        cbNotificationReaction.isChecked = a.notification_reaction
-        cbNotificationVote.isChecked = a.notification_vote
-        cbNotificationPost.isChecked = a.notification_post
+            viewBinding.apply {
 
-        cbConfirmFollow.isChecked = a.confirm_follow
-        cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
-        cbConfirmUnfollow.isChecked = a.confirm_unfollow
-        cbConfirmBoost.isChecked = a.confirm_boost
-        cbConfirmFavourite.isChecked = a.confirm_favourite
-        cbConfirmUnboost.isChecked = a.confirm_unboost
-        cbConfirmUnfavourite.isChecked = a.confirm_unfavourite
+                tvInstance.text = a.apiHost.pretty
+                tvUser.text = a.acct.pretty
+                swNSFWOpen.isChecked = a.dont_hide_nsfw
+                swDontShowTimeout.isChecked = a.dont_show_timeout
+                swExpandCW.isChecked = a.expand_cw
+                swMarkSensitive.isChecked = a.default_sensitive
+                cbNotificationMention.isChecked = a.notification_mention
+                cbNotificationBoost.isChecked = a.notification_boost
+                cbNotificationFavourite.isChecked = a.notification_favourite
+                cbNotificationFollow.isChecked = a.notification_follow
+                cbNotificationFollowRequest.isChecked = a.notification_follow_request
+                cbNotificationReaction.isChecked = a.notification_reaction
+                cbNotificationVote.isChecked = a.notification_vote
+                cbNotificationPost.isChecked = a.notification_post
 
-        cbConfirmToot.isChecked = a.confirm_post
-        cbConfirmReaction.isChecked = a.confirm_reaction
+                cbConfirmFollow.isChecked = a.confirm_follow
+                cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
+                cbConfirmUnfollow.isChecked = a.confirm_unfollow
+                cbConfirmBoost.isChecked = a.confirm_boost
+                cbConfirmFavourite.isChecked = a.confirm_favourite
+                cbConfirmUnboost.isChecked = a.confirm_unboost
+                cbConfirmUnfavourite.isChecked = a.confirm_unfavourite
+                cbConfirmToot.isChecked = a.confirm_post
+                cbConfirmReaction.isChecked = a.confirm_reaction
+                cbConfirmUnbookmark.isChecked = a.confirm_unbookmark
 
-        notificationSoundUri = a.sound_uri
 
-        etDefaultText.setText(a.default_text)
-        etMaxTootChars.setText(a.max_toot_chars.toString())
+                notificationSoundUri = a.sound_uri
 
-        loadingBusy = false
+                etDefaultText.setText(a.default_text)
+                etMaxTootChars.setText(a.max_toot_chars.toString())
 
-        val enabled = !a.isPseudo
+                loadingBusy = false
 
-        arrayOf(
-            btnAccessToken,
-            btnInputAccessToken,
-            btnVisibility,
-            btnPushSubscription,
-            btnPushSubscriptionNotForce,
-            btnResetNotificationTracking,
-            cbNotificationMention,
-            cbNotificationBoost,
-            cbNotificationFavourite,
-            cbNotificationFollow,
-            cbNotificationFollowRequest,
-            cbNotificationReaction,
-            cbNotificationVote,
-            cbNotificationPost,
-            cbConfirmFollow,
-            cbConfirmFollowLockedUser,
-            cbConfirmUnfollow,
-            cbConfirmBoost,
-            cbConfirmFavourite,
-            cbConfirmUnboost,
-            cbConfirmUnfavourite,
-            cbConfirmToot,
-            cbConfirmReaction,
-        ).forEach { it.isEnabledAlpha = enabled }
+                val enabled = !a.isPseudo
 
-        val enabledOldNotification = enabled && Build.VERSION.SDK_INT < 26
-        arrayOf(
-            btnNotificationSoundEdit,
-            btnNotificationSoundReset,
-        ).forEach { it.isEnabledAlpha = enabledOldNotification }
+                arrayOf(
+                    btnAccessToken,
+                    btnInputAccessToken,
+                    btnVisibility,
+                    btnPushSubscription,
+                    btnPushSubscriptionNotForce,
+                    btnResetNotificationTracking,
+                    cbNotificationMention,
+                    cbNotificationBoost,
+                    cbNotificationFavourite,
+                    cbNotificationFollow,
+                    cbNotificationFollowRequest,
+                    cbNotificationReaction,
+                    cbNotificationVote,
+                    cbNotificationPost,
+                    cbConfirmFollow,
+                    cbConfirmFollowLockedUser,
+                    cbConfirmUnfollow,
+                    cbConfirmBoost,
+                    cbConfirmFavourite,
+                    cbConfirmUnboost,
+                    cbConfirmUnfavourite,
+                    cbConfirmToot,
+                    cbConfirmReaction,
+                ).forEach { it.isEnabledAlpha = enabled }
 
-        val enabledNewNotification = enabled && Build.VERSION.SDK_INT >= 26
-        arrayOf(
-            btnNotificationStyleEdit,
-            btnNotificationStyleEditReply,
-        ).forEach { it.isEnabledAlpha = enabledNewNotification }
+                val enabledOldNotification = enabled && Build.VERSION.SDK_INT < 26
+                arrayOf(
+                    btnNotificationSoundEdit,
+                    btnNotificationSoundReset,
+                ).forEach { it.isEnabledAlpha = enabledOldNotification }
 
-        val ti = TootInstance.getCached(a)
-        if (ti == null) {
-            etMediaSizeMax.setText(a.image_max_megabytes ?: "")
-            etMovieSizeMax.setText(a.movie_max_megabytes ?: "")
-        } else {
-            etMediaSizeMax.setText(
-                a.image_max_megabytes
-                    ?: a.getImageMaxBytes(ti).div(1000000).toString()
-            )
-            etMovieSizeMax.setText(
-                a.movie_max_megabytes
-                    ?: a.getMovieMaxBytes(ti).div(1000000).toString()
-            )
+                val enabledNewNotification = enabled && Build.VERSION.SDK_INT >= 26
+                arrayOf(
+                    btnNotificationStyleEdit,
+                    btnNotificationStyleEditReply,
+                ).forEach { it.isEnabledAlpha = enabledNewNotification }
+
+                val ti = TootInstance.getCached(a)
+                if (ti == null) {
+                    etMediaSizeMax.setText(a.image_max_megabytes ?: "")
+                    etMovieSizeMax.setText(a.movie_max_megabytes ?: "")
+                } else {
+                    etMediaSizeMax.setText(
+                        a.image_max_megabytes
+                            ?: a.getImageMaxBytes(ti).div(1000000).toString()
+                    )
+                    etMovieSizeMax.setText(
+                        a.movie_max_megabytes
+                            ?: a.getMovieMaxBytes(ti).div(1000000).toString()
+                    )
+                }
+
+                val currentResizeConfig = a.getResizeConfig()
+                var index =
+                    imageResizeItems.indexOfFirst { it.config.spec == currentResizeConfig.spec }
+                log.d("ResizeItem current ${currentResizeConfig.spec} index=$index ")
+                if (index == -1) index =
+                    imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
+                spResizeImage.setSelection(index, false)
+
+                val currentPushPolicy = a.push_policy
+                index = pushPolicyItems.indexOfFirst { it.id == currentPushPolicy }
+                if (index == -1) index = 0
+                spPushPolicy.setSelection(index, false)
+            }
+
+            showVisibility()
+            showAcctColor()
+        } finally {
+            loadingBusy = false
         }
 
-        val currentResizeConfig = a.getResizeConfig()
-        var index = imageResizeItems.indexOfFirst { it.config.spec == currentResizeConfig.spec }
-        log.d("ResizeItem current ${currentResizeConfig.spec} index=$index ")
-        if (index == -1) index =
-            imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
-        spResizeImage.setSelection(index, false)
-
-        val currentPushPolicy = a.push_policy
-        index = pushPolicyItems.indexOfFirst { it.id == currentPushPolicy }
-        if (index == -1) index = 0
-        spPushPolicy.setSelection(index, false)
-
-        showVisibility()
-        showAcctColor()
     }
 
     private fun showAcctColor() {
         val sa = this.account
         val ac = AcctColor.load(sa)
-        tvUserCustom.backgroundColor = ac.color_bg
-        tvUserCustom.text = ac.nickname
-        tvUserCustom.textColor = ac.color_fg.notZero()
-            ?: attrColor(R.attr.colorTimeSmall)
+        viewBinding.tvUserCustom.apply {
+            backgroundColor = ac.color_bg
+            text = ac.nickname
+            textColor = ac.color_fg.notZero() ?: attrColor(R.attr.colorTimeSmall)
+        }
     }
 
     private fun saveUIToData() {
         if (!::account.isInitialized) return
-
         if (loadingBusy) return
-
         account.visibility = visibility
-        account.dont_hide_nsfw = swNSFWOpen.isChecked
-        account.dont_show_timeout = swDontShowTimeout.isChecked
-        account.expand_cw = swExpandCW.isChecked
-        account.default_sensitive = swMarkSensitive.isChecked
-        account.notification_mention = cbNotificationMention.isChecked
-        account.notification_boost = cbNotificationBoost.isChecked
-        account.notification_favourite = cbNotificationFavourite.isChecked
-        account.notification_follow = cbNotificationFollow.isChecked
-        account.notification_follow_request = cbNotificationFollowRequest.isChecked
-        account.notification_reaction = cbNotificationReaction.isChecked
-        account.notification_vote = cbNotificationVote.isChecked
-        account.notification_post = cbNotificationPost.isChecked
 
-        account.sound_uri = notificationSoundUri ?: ""
+        viewBinding.apply {
 
-        account.confirm_follow = cbConfirmFollow.isChecked
-        account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
-        account.confirm_unfollow = cbConfirmUnfollow.isChecked
-        account.confirm_boost = cbConfirmBoost.isChecked
-        account.confirm_favourite = cbConfirmFavourite.isChecked
-        account.confirm_unboost = cbConfirmUnboost.isChecked
-        account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
-        account.confirm_post = cbConfirmToot.isChecked
-        account.confirm_reaction = cbConfirmReaction.isChecked
-        account.default_text = etDefaultText.text.toString()
+            account.dont_hide_nsfw = swNSFWOpen.isChecked
+            account.dont_show_timeout = swDontShowTimeout.isChecked
+            account.expand_cw = swExpandCW.isChecked
+            account.default_sensitive = swMarkSensitive.isChecked
+            account.notification_mention = cbNotificationMention.isChecked
+            account.notification_boost = cbNotificationBoost.isChecked
+            account.notification_favourite = cbNotificationFavourite.isChecked
+            account.notification_follow = cbNotificationFollow.isChecked
+            account.notification_follow_request = cbNotificationFollowRequest.isChecked
+            account.notification_reaction = cbNotificationReaction.isChecked
+            account.notification_vote = cbNotificationVote.isChecked
+            account.notification_post = cbNotificationPost.isChecked
 
-        val num = etMaxTootChars.parseInt()
-        account.max_toot_chars = if (num != null && num >= 0) {
-            num
-        } else {
-            0
+            account.confirm_follow = cbConfirmFollow.isChecked
+            account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
+            account.confirm_unfollow = cbConfirmUnfollow.isChecked
+            account.confirm_boost = cbConfirmBoost.isChecked
+            account.confirm_favourite = cbConfirmFavourite.isChecked
+            account.confirm_unboost = cbConfirmUnboost.isChecked
+            account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
+            account.confirm_post = cbConfirmToot.isChecked
+            account.confirm_reaction = cbConfirmReaction.isChecked
+            account.confirm_unbookmark = cbConfirmUnbookmark.isChecked
+
+            account.sound_uri = notificationSoundUri ?: ""
+            account.default_text = etDefaultText.text.toString()
+
+            val num = etMaxTootChars.parseInt()
+            account.max_toot_chars = if (num != null && num >= 0) {
+                num
+            } else {
+                0
+            }
+
+            account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
+            account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
+            account.image_resize = (
+                    imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
+                        ?: SavedAccount.defaultResizeConfig
+                    ).spec
+
+            account.push_policy =
+                pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
         }
 
-        account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
-        account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
-        account.image_resize = (
-                imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
-                    ?: SavedAccount.defaultResizeConfig
-                ).spec
-
-        account.push_policy =
-            pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
 
         account.saveSetting()
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-        if (buttonView == cbLocked) {
+        if (buttonView == viewBinding.cbLocked) {
             if (!profileBusy) sendLocked(isChecked)
         } else {
             saveUIToData()
@@ -786,7 +670,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     }
 
     private fun showVisibility() {
-        btnVisibility.text = Styler.getVisibilityString(this, account.isMisskey, visibility)
+        viewBinding.btnVisibility.text =
+            Styler.getVisibilityString(this, account.isMisskey, visibility)
     }
 
     private fun performVisibility() {
@@ -856,19 +741,19 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                     val tmpDefaultSensitive = json.boolean("posting:default:sensitive")
                     if (tmpDefaultSensitive != null) {
                         bChanged = true
-                        swMarkSensitive.isChecked = tmpDefaultSensitive
+                        viewBinding.swMarkSensitive.isChecked = tmpDefaultSensitive
                     }
 
                     val tmpExpandMedia = json.string("reading:expand:media")
                     if (tmpExpandMedia?.isNotEmpty() == true) {
                         bChanged = true
-                        swNSFWOpen.isChecked = (tmpExpandMedia == "show_all")
+                        viewBinding.swNSFWOpen.isChecked = (tmpExpandMedia == "show_all")
                     }
 
                     val tmpExpandCW = json.boolean("reading:expand:spoilers")
                     if (tmpExpandCW != null) {
                         bChanged = true
-                        swExpandCW.isChecked = tmpExpandCW
+                        viewBinding.swExpandCW.isChecked = tmpExpandCW
                     }
                 } finally {
                     loadingBusy = false
@@ -949,38 +834,43 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private fun initializeProfile() {
         // 初期状態
         val questionId = R.drawable.wide_question
-        ivProfileAvatar.setErrorImage(defaultColorIcon(this, questionId))
-        ivProfileAvatar.setDefaultImage(defaultColorIcon(this, questionId))
-
         val loadingText = when (account.isPseudo) {
             true -> "(disabled for pseudo account)"
             else -> "(loading…)"
         }
-        etDisplayName.setText(loadingText)
-        etNote.setText(loadingText)
 
-        // 初期状態では編集不可能
-        arrayOf(
-            btnProfileAvatar,
-            btnProfileHeader,
-            etDisplayName,
-            btnDisplayName,
-            etNote,
-            btnNote,
-            cbLocked,
-        ).forEach { it.isEnabledAlpha = false }
+        viewBinding.apply {
 
-        for (et in listEtFieldName) {
-            et.setText(loadingText)
-            et.isEnabledAlpha = false
+
+            ivProfileAvatar.setErrorImage(defaultColorIcon(this@ActAccountSetting, questionId))
+            ivProfileAvatar.setDefaultImage(defaultColorIcon(this@ActAccountSetting, questionId))
+
+            etDisplayName.setText(loadingText)
+            etNote.setText(loadingText)
+
+            // 初期状態では編集不可能
+            arrayOf(
+                btnProfileAvatar,
+                btnProfileHeader,
+                etDisplayName,
+                btnDisplayName,
+                etNote,
+                btnNote,
+                cbLocked,
+            ).forEach { it.isEnabledAlpha = false }
+
+            for (et in listEtFieldName) {
+                et.setText(loadingText)
+                et.isEnabledAlpha = false
+            }
+            for (et in listEtFieldValue) {
+                et.setText(loadingText)
+                et.isEnabledAlpha = false
+            }
+
+            // 疑似アカウントなら編集不可のまま
+            if (!account.isPseudo) loadProfile()
         }
-        for (et in listEtFieldValue) {
-            et.setText(loadingText)
-            et.isEnabledAlpha = false
-        }
-
-        // 疑似アカウントなら編集不可のまま
-        if (!account.isPseudo) loadProfile()
     }
 
     // サーバから情報をロードする
@@ -1028,13 +918,13 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
         profileBusy = true
         try {
-            ivProfileAvatar.setImageUrl(
-                Styler.calcIconRound(ivProfileAvatar.layoutParams),
+            viewBinding.ivProfileAvatar.setImageUrl(
+                Styler.calcIconRound(viewBinding.ivProfileAvatar.layoutParams),
                 src.avatar_static,
                 src.avatar
             )
 
-            ivProfileHeader.setImageUrl(
+            viewBinding.ivProfileHeader.setImageUrl(
                 0f,
                 src.header_static,
                 src.header
@@ -1050,7 +940,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
             val displayName = src.display_name
             val name = decodeOptions.decodeEmoji(displayName)
-            etDisplayName.setText(name)
+            viewBinding.etDisplayName.setText(name)
             nameInvalidator.register(name)
 
             val noteString = src.source?.note ?: src.note
@@ -1064,21 +954,23 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 }
             }
 
-            etNote.setText(noteSpannable)
+            viewBinding.etNote.setText(noteSpannable)
             noteInvalidator.register(noteSpannable)
 
-            cbLocked.isChecked = src.locked
+            viewBinding.cbLocked.isChecked = src.locked
 
             // 編集可能にする
-            arrayOf(
-                btnProfileAvatar,
-                btnProfileHeader,
-                etDisplayName,
-                btnDisplayName,
-                etNote,
-                btnNote,
-                cbLocked,
-            ).forEach { it.isEnabledAlpha = true }
+            viewBinding.apply {
+                arrayOf(
+                    btnProfileAvatar,
+                    btnProfileHeader,
+                    etDisplayName,
+                    btnDisplayName,
+                    etNote,
+                    btnNote,
+                    cbLocked,
+                ).forEach { it.isEnabledAlpha = true }
+            }
 
             if (src.source?.fields != null) {
                 val fields = src.source.fields
@@ -1327,7 +1219,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                         val value = arg.second
                         if (key == "locked" && value is Boolean) {
                             profileBusy = true
-                            cbLocked.isChecked = !value
+                            viewBinding.cbLocked.isChecked = !value
                             profileBusy = false
                         }
                     }
@@ -1337,7 +1229,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     }
 
     private fun sendDisplayName(bConfirmed: Boolean = false) {
-        val sv = etDisplayName.text.toString()
+        val sv = viewBinding.etDisplayName.text.toString()
         if (!bConfirmed) {
             val length = sv.codePointCount(0, sv.length)
             if (length > max_length_display_name) {
@@ -1361,7 +1253,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     }
 
     private fun sendNote(bConfirmed: Boolean = false) {
-        val sv = etNote.text.toString()
+        val sv = viewBinding.etNote.text.toString()
         if (!bConfirmed) {
 
             val length = TootAccount.countText(sv)

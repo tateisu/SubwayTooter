@@ -495,6 +495,11 @@
             android:text="@string/unfavourite" />
 
         <CheckBox
+            android:id="@+id/cbConfirmUnbookmark"
+            style="@style/setting_row_form"
+            android:text="@string/unbookmark" />
+
+        <CheckBox
             android:id="@+id/cbConfirmToot"
             style="@style/setting_row_form"
             android:text="@string/act_post" />

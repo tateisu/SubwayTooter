@@ -104,13 +104,10 @@ private fun mixColor(col1: Int, col2: Int): Int = Color.rgb(
     (Color.blue(col1) + Color.blue(col2)) ushr 1
 )
 
-fun Context.setSwitchColor(
-    pref: SharedPreferences,
-    root: View?,
-) {
+fun Context.setSwitchColor(root: View?) {
     val colorBg = attrColor(R.attr.colorWindowBackground)
-    val colorOn = PrefI.ipSwitchOnColor(pref)
-    val colorOff = /* PrefI.ipSwitchOffColor(pref).notZero() ?: */
+    val colorOn = PrefI.ipSwitchOnColor()
+    val colorOff = /* PrefI.ipSwitchOffColor().notZero() ?: */
         attrColor(android.R.attr.colorPrimary)
 
     val colorDisabled = mixColor(colorBg, colorOff)

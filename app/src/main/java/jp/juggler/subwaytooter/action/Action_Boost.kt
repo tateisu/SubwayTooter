@@ -41,7 +41,7 @@ private class BoostImpl(
 
     // Mastodonは非公開トゥートをブーストできるのは本人だけ
     private val isPrivateToot = accessInfo.isMastodon &&
-        statusArg.visibility == TootVisibility.PrivateFollowers
+            statusArg.visibility == TootVisibility.PrivateFollowers
 
     private var bConfirmed = false
 
@@ -205,7 +205,8 @@ private class BoostImpl(
                 )?.also { result ->
                     val jsonObject = result.jsonObject
                     if (jsonObject != null) {
-                        val outerStatus = parser.status(jsonObject.jsonObject("createdNote") ?: jsonObject)
+                        val outerStatus =
+                            parser.status(jsonObject.jsonObject("createdNote") ?: jsonObject)
                         val innerStatus = outerStatus?.reblog ?: outerStatus
                         if (outerStatus != null && innerStatus != null && outerStatus != innerStatus) {
                             innerStatus.myRenoteId = outerStatus.id
@@ -241,14 +242,15 @@ private class BoostImpl(
         activity.showColumnMatchAccount(accessInfo)
 
         launchMain {
-            val result = activity.runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
-                try {
-                    val targetStatus = syncStatus(client)
-                    boostApi(client, targetStatus)
-                } catch (ex: TootApiResultException) {
-                    ex.result
+            val result =
+                activity.runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
+                    try {
+                        val targetStatus = syncStatus(client)
+                        boostApi(client, targetStatus)
+                    } catch (ex: TootApiResultException) {
+                        ex.result
+                    }
                 }
-            }
             // 更新中状態をリセット
             activity.appState.resetBusyBoost(accessInfo, statusArg)
             // カラムデータの書き換え
@@ -289,7 +291,7 @@ fun ActMain.boostFromAnotherAccount(
         val statusOwner = timelineAccount.getFullAcct(status.account)
 
         val isPrivateToot = timelineAccount.isMastodon &&
-            status.visibility == TootVisibility.PrivateFollowers
+                status.visibility == TootVisibility.PrivateFollowers
 
         if (isPrivateToot) {
             val list = ArrayList<SavedAccount>()

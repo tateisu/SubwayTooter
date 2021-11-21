@@ -63,6 +63,7 @@ class SavedAccount(
     var confirm_unfollow: Boolean = false
     var confirm_post: Boolean = false
     var confirm_reaction: Boolean = true
+    var confirm_unbookmark: Boolean = true
 
     var notification_tag: String? = null
     private var register_key: String? = null
@@ -134,6 +135,7 @@ class SavedAccount(
         confirm_unfollow = cursor.getBoolean(COL_CONFIRM_UNFOLLOW)
         confirm_post = cursor.getBoolean(COL_CONFIRM_POST)
         confirm_reaction = cursor.getBoolean(COL_CONFIRM_REACTION)
+        confirm_unbookmark = cursor.getBoolean(COL_CONFIRM_UNBOOKMARK)
 
         notification_mention = cursor.getBoolean(COL_NOTIFICATION_MENTION)
         notification_boost = cursor.getBoolean(COL_NOTIFICATION_BOOST)
@@ -206,10 +208,6 @@ class SavedAccount(
 
         ContentValues().apply {
             put(COL_VISIBILITY, visibility.id.toString())
-            put(COL_CONFIRM_BOOST, confirm_boost)
-            put(COL_CONFIRM_FAVOURITE, confirm_favourite)
-            put(COL_CONFIRM_UNBOOST, confirm_unboost)
-            put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite)
 
             put(COL_DONT_HIDE_NSFW, dont_hide_nsfw)
             put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout)
@@ -222,11 +220,16 @@ class SavedAccount(
             put(COL_NOTIFICATION_VOTE, notification_vote)
             put(COL_NOTIFICATION_POST, notification_post)
 
+            put(COL_CONFIRM_BOOST, confirm_boost)
+            put(COL_CONFIRM_FAVOURITE, confirm_favourite)
+            put(COL_CONFIRM_UNBOOST, confirm_unboost)
+            put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite)
             put(COL_CONFIRM_FOLLOW, confirm_follow)
             put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked)
             put(COL_CONFIRM_UNFOLLOW, confirm_unfollow)
             put(COL_CONFIRM_POST, confirm_post)
             put(COL_CONFIRM_REACTION, confirm_reaction)
+            put(COL_CONFIRM_UNBOOKMARK, confirm_unbookmark)
 
             put(COL_SOUND_URI, sound_uri)
             put(COL_DEFAULT_TEXT, default_text)
@@ -282,6 +285,7 @@ class SavedAccount(
         this.confirm_unfavourite = b.confirm_unfavourite
         this.confirm_post = b.confirm_post
         this.confirm_reaction = b.confirm_reaction
+        this.confirm_unbookmark = b.confirm_unbookmark
 
         this.dont_hide_nsfw = b.dont_hide_nsfw
         this.dont_show_timeout = b.dont_show_timeout
@@ -402,6 +406,8 @@ class SavedAccount(
             ColumnMeta(columnList, 24, "confirm_unfavourite", ColumnMeta.TS_TRUE)
         private val COL_CONFIRM_REACTION =
             ColumnMeta(columnList, 61, "confirm_reaction", ColumnMeta.TS_TRUE)
+        private val COL_CONFIRM_UNBOOKMARK =
+            ColumnMeta(columnList, 62, "confirm_unbookmark", ColumnMeta.TS_TRUE)
 
         // スキーマ13から
         val COL_NOTIFICATION_TAG =

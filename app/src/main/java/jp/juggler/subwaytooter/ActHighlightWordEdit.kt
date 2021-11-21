@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
 import org.jetbrains.anko.textColor
@@ -139,8 +138,8 @@ class ActHighlightWordEdit
         swSpeech = findViewById(R.id.swSpeech)
         swSpeech.setOnCheckedChangeListener(this)
 
-        setSwitchColor(appPref, swSound)
-        setSwitchColor(appPref, swSpeech)
+        setSwitchColor(swSound)
+        setSwitchColor(swSpeech)
 
         intArrayOf(
             R.id.btnTextColorEdit,

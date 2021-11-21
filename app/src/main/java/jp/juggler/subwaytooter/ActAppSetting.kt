@@ -552,7 +552,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             item.pref.cast() ?: error("$name has no boolean pref")
                         showCaption(name)
                         swSwitch.vg(false) // skip animation
-                        setSwitchColor(pref, swSwitch)
+                        setSwitchColor(swSwitch)
                         swSwitch.isEnabledAlpha = item.enabled
                         swSwitch.isChecked = bp(pref)
                         swSwitch.vg(true)
@@ -889,8 +889,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         }
     }
 
+    // リスト内部のSwitchCompat全ての色を更新する
     fun setSwitchColor() =
-        setSwitchColor(pref, lvList)
+        setSwitchColor(lvList)
 
     //////////////////////////////////////////////////////
 

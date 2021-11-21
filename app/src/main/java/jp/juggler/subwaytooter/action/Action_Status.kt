@@ -300,22 +300,32 @@ fun ActMain.bookmark(
     // 必要なら確認を出す
     // ブックマークは解除する時だけ確認する
     if (!bConfirmed && !bSet) {
-        DlgConfirm.openSimple(
+        DlgConfirm.open(
             this,
             getString(
                 R.string.confirm_unbookmark_from,
                 AcctColor.getNickname(accessInfo)
-            )
-        ) {
-            bookmark(
-                accessInfo,
-                statusArg,
-                crossAccountMode,
-                callback,
-                bSet = bSet,
-                bConfirmed = true
-            )
-        }
+            ),
+            object : DlgConfirm.Callback {
+                override var isConfirmEnabled: Boolean
+                    get() = accessInfo.confirm_unbookmark
+                    set(value) {
+                        accessInfo.confirm_unbookmark = value
+                        accessInfo.saveSetting()
+                        reloadAccountSetting(accessInfo)
+                    }
+
+                override fun onOK() {
+                    bookmark(
+                        accessInfo = accessInfo,
+                        statusArg = statusArg,
+                        crossAccountMode = crossAccountMode,
+                        callback = callback,
+                        bSet = bSet,
+                        bConfirmed = true,
+                    )
+                }
+            })
         return
     }
 

@@ -58,8 +58,9 @@ import jp.juggler.util.LogCategory
 // 2021/2/10 58=>59 SavedAccountテーブルに項目追加
 // 2021/5/11 59=>60 SavedAccountテーブルに項目追加
 // 2021/5/23 60=>61 SavedAccountテーブルに項目追加
+// 2021/11/21 61=>62 SavedAccountテーブルに項目追加
 
-const val DB_VERSION = 61
+const val DB_VERSION = 62
 const val DB_NAME = "app_db"
 private val log = LogCategory("AppDatabase")
 

@@ -304,7 +304,7 @@ class StatusButtons(
     }
 
     private fun bindBookmarkButton(status: TootStatus) {
-        btnBookmark.vg(PrefB.bpShowBookmarkButton(activity.pref))
+        btnBookmark.vg(PrefB.bpShowBookmarkButton())
             ?.let { btn ->
                 when {
                     activity.appState.isBusyBookmark(accessInfo, status) ->
@@ -322,7 +322,8 @@ class StatusButtons(
                             true,
                             when {
                                 status.bookmarked ->
-                                    PrefI.ipButtonBookmarkedColor(activity.pref).notZero() ?: colorAccent
+                                    PrefI.ipButtonBookmarkedColor(activity.pref).notZero()
+                                        ?: colorAccent
                                 else ->
                                     colorNormal
                             },
@@ -520,7 +521,12 @@ class StatusButtons(
             val pos = nextPosition(column)
             when (v) {
                 btnMore -> clickMore(status)
-                btnConversation -> clickConversation(pos, accessInfo, itemViewHolder.listAdapter, status = status)
+                btnConversation -> clickConversation(
+                    pos,
+                    accessInfo,
+                    itemViewHolder.listAdapter,
+                    status = status
+                )
                 btnReply -> clickReply(accessInfo, status)
                 btnQuote -> clickQuote(accessInfo, status)
                 btnBoost -> clickBoost(accessInfo, status, willToast = bSimpleList)
@@ -551,7 +557,11 @@ class StatusButtons(
                 btnQuote -> quoteFromAnotherAccount(accessInfo, status)
                 btnReaction -> reactionFromAnotherAccount(accessInfo, status)
                 btnConversation -> conversationOtherInstance(nextPosition(column), status)
-                btnFollow2 -> followFromAnotherAccount(nextPosition(column), accessInfo, status.account)
+                btnFollow2 -> followFromAnotherAccount(
+                    nextPosition(column),
+                    accessInfo,
+                    status.account
+                )
 
                 // 以下、長押し
                 btnTranslate -> shareStatusUrl(status, CustomShareTarget.Translate)

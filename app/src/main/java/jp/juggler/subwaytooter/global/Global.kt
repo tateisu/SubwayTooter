@@ -24,7 +24,7 @@ object Global {
 
     private var isPrepared = false
 
-    fun prepare(context: Context,caller:String): Global {
+    fun prepare(contextArg: Context,caller:String): Global {
         // double check befort/after lock
         if (!isPrepared) {
             synchronized(this) {
@@ -32,7 +32,7 @@ object Global {
                     isPrepared = true
                     log.i("prepare. caller=$caller")
                     startKoin {
-                        androidContext(context)
+                        androidContext(contextArg)
                         modules(module {
                             single<AppPrefHolder> {
                                 val context: Context = get()

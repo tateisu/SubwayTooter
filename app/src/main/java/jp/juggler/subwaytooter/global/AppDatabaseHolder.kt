@@ -62,7 +62,6 @@ import jp.juggler.util.LogCategory
 
 const val DB_VERSION = 62
 const val DB_NAME = "app_db"
-private val log = LogCategory("AppDatabase")
 
 val TABLE_LIST = arrayOf(
     LogData,
@@ -84,43 +83,45 @@ val TABLE_LIST = arrayOf(
     SubscriptionServerKey
 )
 
-private class DBOpenHelper(context: Context) :
-    SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
-
-    override fun onCreate(db: SQLiteDatabase) {
-        for (ti in TABLE_LIST) {
-            ti.onDBCreate(db)
-        }
-    }
-
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        for (ti in TABLE_LIST) {
-            ti.onDBUpgrade(db, oldVersion, newVersion)
-        }
-    }
-}
-
 interface AppDatabaseHolder {
     val database: SQLiteDatabase
+
+    fun afterGlobalPrepare()
 }
 
 class AppDatabaseHolderImpl(context: Context) : AppDatabaseHolder {
-    private var openHelperNullable: DBOpenHelper? = null
+    companion object{
+        private val log = LogCategory("AppDatabaseHolderImpl")
+    }
 
-    override val database: SQLiteDatabase
-        get() = openHelperNullable!!.writableDatabase
-
-    init {
-        if (openHelperNullable == null) {
-            log.d("create DBOpenHelper")
-            openHelperNullable = DBOpenHelper(context.applicationContext)
+    private class DBOpenHelper(context: Context) :
+        SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
+        companion object{
+            private val log = LogCategory("DBOpenHelper")
         }
 
-        //			if( BuildConfig.DEBUG){
-        //				SQLiteDatabase db = db_open_helper.getWritableDatabase();
-        //				db_open_helper.onCreate( db );
-        //			}
+        override fun onCreate(db: SQLiteDatabase) {
+            log.d("onCreate")
 
+            for (ti in TABLE_LIST) {
+                ti.onDBCreate(db)
+            }
+        }
+
+        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            log.d("onUpgrade $oldVersion => $newVersion")
+            for (ti in TABLE_LIST) {
+                ti.onDBUpgrade(db, oldVersion, newVersion)
+            }
+        }
+    }
+
+    private val openHelper = DBOpenHelper(context.applicationContext)
+
+    override val database: SQLiteDatabase
+        get() = openHelper.writableDatabase
+
+    override fun afterGlobalPrepare() {
         log.d("call deleteOld…")
         val now = System.currentTimeMillis()
         AcctSet.deleteOld(now)

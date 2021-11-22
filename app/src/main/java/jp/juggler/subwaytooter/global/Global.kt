@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.global
 
 import android.content.Context
 import androidx.startup.Initializer
+import jp.juggler.util.LogCategory
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.Koin
 import org.koin.core.context.startKoin
@@ -19,21 +20,33 @@ val appPref by lazy {
 fun getKoin(): Koin = KoinPlatformTools.defaultContext().get()
 
 object Global {
+    private val log = LogCategory("Global")
 
     private var isPrepared = false
 
-    fun prepare(context: Context): Global {
+    fun prepare(context: Context,caller:String): Global {
+        // double check befort/after lock
         if (!isPrepared) {
             synchronized(this) {
                 if (!isPrepared) {
                     isPrepared = true
+                    log.i("prepare. caller=$caller")
                     startKoin {
                         androidContext(context)
                         modules(module {
-                            single<AppDatabaseHolder> { AppDatabaseHolderImpl(get()) }
-                            single<AppPrefHolder> { AppPrefHolderImpl(get()) }
+                            single<AppPrefHolder> {
+                                val context: Context = get()
+                                log.i("AppPrefHolderImpl: context=$context")
+                                AppPrefHolderImpl(context)
+                            }
+                            single<AppDatabaseHolder> {
+                                val context: Context = get()
+                                log.i("AppDatabaseHolderImpl: context=$context")
+                                AppDatabaseHolderImpl(context)
+                            }
                         })
                     }
+                    getKoin().get<AppDatabaseHolder>(). afterGlobalPrepare()
                 }
             }
         }
@@ -47,6 +60,6 @@ class GlobalInitializer : Initializer<Global> {
     }
 
     override fun create(context: Context): Global {
-        return Global.prepare(context)
+        return Global.prepare(context,"GlobalInitializer")
     }
 }

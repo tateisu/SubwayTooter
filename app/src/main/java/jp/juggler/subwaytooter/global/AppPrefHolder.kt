@@ -9,5 +9,5 @@ interface AppPrefHolder {
 }
 
 class AppPrefHolderImpl(context: Context) : AppPrefHolder {
-    override val pref = context.pref()
+    override val pref = context.applicationContext.pref()
 }

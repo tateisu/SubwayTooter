@@ -224,7 +224,7 @@ class App1 : Application() {
 
             initializeFont()
 
-            Global.prepare(appContext)
+            Global.prepare(appContext, "App1.prepare($caller)")
 
             // We want at least 2 threads and at most 4 threads in the core pool,
             // preferring to have 1 less than the CPU count to avoid saturating

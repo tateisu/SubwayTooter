@@ -372,7 +372,7 @@
             android:exported="false"
             tools:node="merge">
             <meta-data
-                android:name="${applicationId}.global.GlobalInitializer"
+                android:name="jp.juggler.subwaytooter.global.GlobalInitializer"
                 android:value="androidx.startup" />
         </provider>
     </application>

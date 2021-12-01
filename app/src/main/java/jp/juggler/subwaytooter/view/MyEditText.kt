@@ -12,8 +12,11 @@ import androidx.core.view.OnReceiveContentListener
 import androidx.core.view.ViewCompat
 import jp.juggler.util.LogCategory
 
-
-class MyEditText : AppCompatEditText {
+class MyEditText @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = androidx.appcompat.R.attr.editTextStyle
+) : AppCompatEditText(context, attrs, defStyleAttr) {
 
     companion object {
         private val log = LogCategory("MyEditText")
@@ -31,32 +34,27 @@ class MyEditText : AppCompatEditText {
 
     var contentMineTypeArray: Array<String>? = null
 
-    private val receiveContentListener = object : OnReceiveContentListener {
-        override fun onReceiveContent(view: View, payload: ContentInfoCompat): ContentInfoCompat {
-            // 受け付けない状況では何も受け取らずに残りを返す
-            val contentCallback = contentCallback ?: return payload
+    private val receiveContentListener =
+        OnReceiveContentListener { _: View, payload: ContentInfoCompat ->
+            // コールバックが設定されていないなら何も受け取らない
+            val contentCallback = contentCallback
+                ?: return@OnReceiveContentListener payload
 
-            val pair = payload.partition { item -> item.uri != null }
-            val uriContent = pair.first
-            val remaining = pair.second
-            if (uriContent != null) {
+            // URIを含むかデータとそれ以外とに分離する
+            // どちらもNullable
+            val pair = payload.partition { it.uri != null }
+
+            pair.first?.let { uriContent ->
                 val clip = uriContent.clip
                 for (i in 0 until clip.itemCount) {
                     val uri = clip.getItemAt(i).uri
                     contentCallback(uri)
                 }
             }
-            return remaining
-        }
-    }
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
-    )
+            // returns remaining (may null)
+            pair.second
+        }
 
     init {
         ViewCompat.setOnReceiveContentListener(this, MIME_TYPES, receiveContentListener)

@@ -75,6 +75,12 @@ fun ActMain.reloadIconSize() {
     ActMain.headerIconSize = parseIconSize(PrefS.spHeaderIconSize)
     ActMain.stripIconSize = parseIconSize(PrefS.spStripIconSize)
     ActMain.screenBottomPadding = parseIconSize(PrefS.spScreenBottomPadding, minDp = 0f)
+
+    ActMain.eventFadeAlpha = PrefS.spEventTextAlpha()
+        .toFloatOrNull()
+        ?.takeIf{ it.isFinite()}
+        ?.clip(0f,1f)
+        ?: 1f
 }
 
 // initUIから呼ばれる

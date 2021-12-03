@@ -1118,4 +1118,5 @@
     <string name="url_of_user_or_status">URL of user or status</string>
     <string name="url_parse_failed">parse error.</string>
     <string name="unbookmark">Unbookmark</string>
+    <string name="event_text_alpha">Text alpha value for some notifications (0.0～1.0, default:1)</string>
 </resources>

@@ -787,6 +787,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpUseTwemoji, R.string.use_twemoji_emoji)
 
         sw(PrefB.bpKeepReactionSpace, R.string.keep_reaction_space)
+
+        text(PrefS.spEventTextAlpha, R.string.event_text_alpha, InputTypeEx.numberDecimal)
     }
 
     section(R.string.color) {

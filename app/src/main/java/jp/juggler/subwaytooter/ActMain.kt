@@ -75,6 +75,7 @@ class ActMain : AppCompatActivity(),
         var screenBottomPadding = 0
         var timelineFont: Typeface = Typeface.DEFAULT
         var timeline_font_bold: Typeface = Typeface.DEFAULT_BOLD
+        var eventFadeAlpha = 1f
     }
 
     // アプリ設定のキャッシュ

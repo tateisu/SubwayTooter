@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.itemviewholder
 
 import android.view.View
+import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
@@ -45,7 +46,7 @@ private fun addLinkAndCaption(
     }
 }
 
-fun ItemViewHolder.showPreviewCard(status: TootStatus) {
+fun ItemViewHolder.showPreviewCard(status: TootStatus, fadeText: Boolean) {
 
     if (PrefB.bpDontShowPreviewCard(activity.pref)) return
 
@@ -73,6 +74,12 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
                 tvCardText.visibility = View.VISIBLE
                 tvCardText.text = text
                 bShowOuter = true
+
+                val fadeAlpha = ActMain.eventFadeAlpha
+                if (fadeAlpha < 1f) {
+                    val a = if (fadeText) fadeAlpha else 1f
+                    tvCardText.alpha = a
+                }
             }
         }
     }

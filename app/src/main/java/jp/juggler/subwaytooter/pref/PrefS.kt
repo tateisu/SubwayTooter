@@ -49,4 +49,6 @@ object PrefS {
     // val spWebBrowser = StringPref("WebBrowser", "")
 
     val spTimelineSpacing = StringPref("TimelineSpacing", "")
+
+    val spEventTextAlpha = StringPref("EventTextAlpha", "")
 }

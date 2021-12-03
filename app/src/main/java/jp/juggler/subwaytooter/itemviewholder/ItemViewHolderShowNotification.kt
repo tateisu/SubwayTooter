@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.itemviewholder
 
 import android.view.Gravity
 import android.view.View
-import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.addColumn
@@ -12,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.notZero
 import org.jetbrains.anko.backgroundColor
 
@@ -68,29 +68,53 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
     }
 }
 
-private fun ItemViewHolder.showNotificationFollow(n: TootNotification, nAccountRef: TootAccountRef?) {
+private fun ItemViewHolder.showNotificationFollow(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?
+) {
     val colorBg = PrefI.ipEventBgColorFollow(activity.pref)
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
-        showBoost(it, n.time_created_at, R.drawable.ic_follow_plus, R.string.display_name_followed_by)
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_follow_plus,
+            R.string.display_name_followed_by
+        )
         showAccount(it)
     }
 }
 
-private fun ItemViewHolder.showNotificationUnfollow(n: TootNotification, nAccountRef: TootAccountRef?) {
+private fun ItemViewHolder.showNotificationUnfollow(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?
+) {
     val colorBg = PrefI.ipEventBgColorUnfollow(activity.pref)
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
-        showBoost(it, n.time_created_at, R.drawable.ic_follow_cross, R.string.display_name_unfollowed_by)
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_follow_cross,
+            R.string.display_name_unfollowed_by
+        )
         showAccount(it)
     }
 }
 
-private fun ItemViewHolder.showNotificationFollowRequest(n: TootNotification, nAccountRef: TootAccountRef?) {
+private fun ItemViewHolder.showNotificationFollowRequest(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?
+) {
     val colorBg = PrefI.ipEventBgColorFollowRequest(activity.pref)
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
-        showBoost(it, n.time_created_at, R.drawable.ic_follow_wait, R.string.display_name_follow_request_by)
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_follow_wait,
+            R.string.display_name_follow_request_by
+        )
         showAccount(it)
     }
     boostedAction = {
@@ -98,16 +122,28 @@ private fun ItemViewHolder.showNotificationFollowRequest(n: TootNotification, nA
     }
 }
 
-private fun ItemViewHolder.showNotificationFollowRequestAccepted(n: TootNotification, nAccountRef: TootAccountRef?) {
+private fun ItemViewHolder.showNotificationFollowRequestAccepted(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?
+) {
     val colorBg = PrefI.ipEventBgColorFollow(activity.pref)
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
-        showBoost(it, n.time_created_at, R.drawable.ic_follow_plus, R.string.display_name_follow_request_accepted_by)
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_follow_plus,
+            R.string.display_name_follow_request_accepted_by
+        )
         showAccount(it)
     }
 }
 
-private fun ItemViewHolder.showNotificationPost(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
+private fun ItemViewHolder.showNotificationPost(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
     val colorBg = PrefI.ipEventBgColorStatus(activity.pref)
     val iconId = when (nStatus) {
         null -> R.drawable.ic_question
@@ -117,7 +153,11 @@ private fun ItemViewHolder.showNotificationPost(n: TootNotification, nAccountRef
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationReaction(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
+private fun ItemViewHolder.showNotificationReaction(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
     val colorBg = PrefI.ipEventBgColorReaction(activity.pref)
     nAccountRef?.let {
         showBoost(
@@ -131,16 +171,24 @@ private fun ItemViewHolder.showNotificationReaction(n: TootNotification, nAccoun
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationFavourite(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
+private fun ItemViewHolder.showNotificationFavourite(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
     nAccountRef?.let {
         val iconId = if (accessInfo.isNicoru(it.get())) R.drawable.ic_nicoru else R.drawable.ic_star
         showBoost(it, n.time_created_at, iconId, R.string.display_name_favourited_by)
     }
     val colorBg = PrefI.ipEventBgColorFavourite(activity.pref)
-    nStatus?.let { showNotificationStatus(it, colorBg) }
+    nStatus?.let { showNotificationStatus(it, colorBg, fadeText = true) }
 }
 
-private fun ItemViewHolder.showNotificationReblog(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
+private fun ItemViewHolder.showNotificationReblog(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
     nAccountRef?.let {
         showBoost(
             it,
@@ -152,19 +200,33 @@ private fun ItemViewHolder.showNotificationReblog(n: TootNotification, nAccountR
         )
     }
     val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
-    nStatus?.let { showNotificationStatus(it, colorBg) }
+    nStatus?.let { showNotificationStatus(it, colorBg, fadeText = true) }
 }
 
-private fun ItemViewHolder.showNotificationRenote(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
+private fun ItemViewHolder.showNotificationRenote(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
     // 引用のないreblog
     nAccountRef?.let {
-        showBoost(it, n.time_created_at, R.drawable.ic_repeat, R.string.display_name_boosted_by, boostStatus = nStatus)
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_repeat,
+            R.string.display_name_boosted_by,
+            boostStatus = nStatus
+        )
     }
     val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationMention(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
+private fun ItemViewHolder.showNotificationMention(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
     // メンション通知に「～～からの返信」を表示するカラムなのかどうか
     fun willShowReplyInfo(status: TootStatus?): Boolean = when {
         // メンションではなく返信の場合、トゥート内部に「～への返信」を表示するので
@@ -176,34 +238,85 @@ private fun ItemViewHolder.showNotificationMention(n: TootNotification, nAccount
     }
 
     if (willShowReplyInfo(nStatus)) {
-        nAccountRef?.let { showBoost(it, n.time_created_at, R.drawable.ic_reply, R.string.display_name_mentioned_by) }
+        nAccountRef?.let {
+            showBoost(
+                it,
+                n.time_created_at,
+                R.drawable.ic_reply,
+                R.string.display_name_mentioned_by
+            )
+        }
     }
 
     val colorBg = PrefI.ipEventBgColorMention(activity.pref)
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationQuote(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
-    nAccountRef?.let { showBoost(it, n.time_created_at, R.drawable.ic_repeat, R.string.display_name_quoted_by) }
+private fun ItemViewHolder.showNotificationQuote(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
+    nAccountRef?.let {
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_repeat,
+            R.string.display_name_quoted_by
+        )
+    }
 
     val colorBg = PrefI.ipEventBgColorQuote(activity.pref)
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationVote(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
-    nAccountRef?.let { showBoost(it, n.time_created_at, R.drawable.ic_vote, R.string.display_name_voted_by) }
+private fun ItemViewHolder.showNotificationVote(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
+    nAccountRef?.let {
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_vote,
+            R.string.display_name_voted_by
+        )
+    }
     val colorBg = PrefI.ipEventBgColorVote(activity.pref)
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationPoll(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
-    nAccountRef?.let { showBoost(it, n.time_created_at, R.drawable.ic_vote, R.string.end_of_polling_from) }
+private fun ItemViewHolder.showNotificationPoll(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
+    nAccountRef?.let {
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_vote,
+            R.string.end_of_polling_from
+        )
+    }
     val colorBg = 0
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
-private fun ItemViewHolder.showNotificationUnknown(n: TootNotification, nAccountRef: TootAccountRef?, nStatus: TootStatus?) {
-    nAccountRef?.let { showBoost(it, n.time_created_at, R.drawable.ic_question, R.string.unknown_notification_from) }
+private fun ItemViewHolder.showNotificationUnknown(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
+    nAccountRef?.let {
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_question,
+            R.string.unknown_notification_from
+        )
+    }
     val colorBg = 0
     nStatus?.let { showNotificationStatus(it, colorBg) }
 
@@ -212,21 +325,25 @@ private fun ItemViewHolder.showNotificationUnknown(n: TootNotification, nAccount
     tvMessageHolder.gravity = Gravity.CENTER
 }
 
-private fun ItemViewHolder.showNotificationStatus(item: TootStatus, colorBgDefault: Int) {
+private fun ItemViewHolder.showNotificationStatus(
+    item: TootStatus,
+    colorBgDefault: Int,
+    fadeText: Boolean = false
+) {
     val reblog = item.reblog
     when {
-        reblog == null -> showStatusOrReply(item, colorBgDefault)
+        reblog == null -> showStatusOrReply(item, colorBgDefault, fadeText = fadeText)
 
         item.isQuoteToot -> {
             // 引用Renote
             showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
-            showStatus(item, PrefI.ipEventBgColorQuote(activity.pref))
+            showStatus(item, PrefI.ipEventBgColorQuote(activity.pref), fadeText = fadeText)
         }
 
         else -> {
             // 通常のブースト。引用なしブースト。
             // ブースト表示は通知イベントと被るのでしない
-            showStatusOrReply(reblog, PrefI.ipEventBgColorBoost(activity.pref))
+            showStatusOrReply(reblog, PrefI.ipEventBgColorBoost(activity.pref), fadeText = fadeText)
         }
     }
 }

@@ -4,6 +4,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.ImageView
+import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.checkAutoCW
@@ -20,7 +21,11 @@ import jp.juggler.util.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 
-fun ItemViewHolder.showStatusOrReply(item: TootStatus, colorBgArg: Int = 0) {
+fun ItemViewHolder.showStatusOrReply(
+    item: TootStatus,
+    colorBgArg: Int = 0,
+    fadeText: Boolean = false
+) {
     var colorBg = colorBgArg
     val reply = item.reply
     val inReplyToId = item.in_reply_to_id
@@ -36,10 +41,14 @@ fun ItemViewHolder.showStatusOrReply(item: TootStatus, colorBgArg: Int = 0) {
             if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention(activity.pref)
         }
     }
-    showStatus(item, colorBg)
+    showStatus(item, colorBg, fadeText = fadeText)
 }
 
-fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
+fun ItemViewHolder.showStatus(
+    status: TootStatus,
+    colorBg: Int = 0,
+    fadeText: Boolean = false
+) {
 
     val filteredWord = status.filteredWord
     if (filteredWord != null) {
@@ -115,6 +124,15 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     //				tvTags.setText( status.decoded_tags );
     //			}
 
+    val fadeAlpha = ActMain.eventFadeAlpha
+    if (fadeAlpha < 1f) {
+        val a = if (fadeText) fadeAlpha else 1f
+        tvMentions.alpha = a
+        tvContentWarning.alpha = a
+        tvContent.alpha = a
+        tvApplication.alpha = a
+    }
+
     if (status.decoded_mentions.isEmpty()) {
         tvMentions.visibility = View.GONE
     } else {
@@ -129,7 +147,7 @@ fun ItemViewHolder.showStatus(status: TootStatus, colorBg: Int = 0) {
     val r = status.auto_cw
     tvContent.minLines = r?.originalLineCount ?: -1
 
-    showPreviewCard(status)
+    showPreviewCard(status, fadeText = fadeText)
     showSpoilerTextAndContent(status)
     showAttachments(status)
     makeReactionsView(status)

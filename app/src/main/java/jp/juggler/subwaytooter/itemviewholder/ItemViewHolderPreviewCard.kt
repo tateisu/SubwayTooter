@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
 import jp.juggler.util.ellipsize
+import jp.juggler.util.textOrGone
 import jp.juggler.util.vg
 
 private fun addLinkAndCaption(
@@ -70,16 +71,10 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus, fadeText: Boolean) {
                 forceHtml = true,
                 mentionDefaultHostDomain = status.account
             ).decodeHTML(sb.toString())
-            if (text.isNotEmpty()) {
-                tvCardText.visibility = View.VISIBLE
-                tvCardText.text = text
-                bShowOuter = true
 
-                val fadeAlpha = ActMain.eventFadeAlpha
-                if (fadeAlpha < 1f) {
-                    val a = if (fadeText) fadeAlpha else 1f
-                    tvCardText.alpha = a
-                }
+            if (text.isNotEmpty()) {
+                tvCardText.textOrGone = text
+                bShowOuter = true
             }
         }
     }

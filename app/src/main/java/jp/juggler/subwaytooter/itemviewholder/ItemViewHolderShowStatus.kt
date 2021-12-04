@@ -131,14 +131,10 @@ fun ItemViewHolder.showStatus(
         tvContentWarning.alpha = a
         tvContent.alpha = a
         tvApplication.alpha = a
+        tvCardText.alpha = a
     }
 
-    if (status.decoded_mentions.isEmpty()) {
-        tvMentions.visibility = View.GONE
-    } else {
-        tvMentions.visibility = View.VISIBLE
-        tvMentions.text = status.decoded_mentions
-    }
+    tvMentions.textOrGone =status.decoded_mentions
 
     tvContent.text = modifiedContent
     contentInvalidator.register(modifiedContent)

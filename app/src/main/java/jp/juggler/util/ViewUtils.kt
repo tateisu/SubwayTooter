@@ -13,6 +13,7 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
@@ -272,3 +273,9 @@ private fun AppCompatActivity.setNavigationBarColorCompat(@ColorInt c: Int) {
         }
     }
 }
+
+var TextView.textOrGone :CharSequence?
+    get() = text
+    set(value){
+        vg(value?.isNotEmpty() ==true)?.text = value
+    }

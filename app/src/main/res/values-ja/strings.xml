@@ -1107,5 +1107,5 @@
     <string name="url_parse_failed">URLの指定が変です</string>
     <string name="url_of_user_or_status">ユーザや投稿のURL</string>
     <string name="unbookmark">ブックマーク解除</string>
-    <string name="event_text_alpha">一部の通知の本文アルファ値(0.0～1.0, デフォルト:1)</string>
+    <string name="event_text_alpha">一部の通知の本文アルファ値(0.0～1.0, デフォルト:1。アプリ再起動が必要)</string>
 </resources>

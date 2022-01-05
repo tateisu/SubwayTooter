@@ -1130,7 +1130,7 @@
     <string name="movie_transcode_mode">Mode</string>
     <string name="movie_transcode_max_bitrate">Max bitrate (Unit:bits per second. default=2,000,000. Also it may be reduced by server configuration.)</string>
     <string name="movie_transcode_max_frame_rate">Max frame rate(Unit:frames per second. default=30. Also it may be reduced by server configuration.)</string>
-    <string name="movie_transcode_max_square_pixels">Max square pixels(default=2304000)</string>
+    <string name="movie_transcode_max_square_pixels">Max square pixels(default=2304000. Also it may be reduced by server configuration.)</string>
     <string name="always">Always</string>
     <string name="auto">Auto</string>
 </resources>

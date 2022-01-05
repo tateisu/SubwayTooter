@@ -320,9 +320,10 @@ class AttachmentUploader(
             val opener = createOpener(
                 uri,
                 mimeType,
+                mediaConfig = mediaConfig,
                 imageResizeConfig = imageResizeConfig,
                 movieResizeConfig = movieResizeConfig,
-                pa,
+                postAttachment = pa,
             )
 
             val mediaSizeMax = when {
@@ -572,6 +573,7 @@ class AttachmentUploader(
     private suspend fun createOpener(
         uri: Uri,
         mimeType: String,
+        mediaConfig: JsonObject? = null,
         imageResizeConfig: ResizeConfig,
         movieResizeConfig: MovieResizeConfig? = null,
         postAttachment: PostAttachment? = null,
@@ -604,6 +606,7 @@ class AttachmentUploader(
                 return createResizedMovieOpener(
                     uri,
                     mimeType,
+                    mediaConfig = mediaConfig,
                     movieResizeConfig,
                     postAttachment,
                 )
@@ -669,8 +672,9 @@ class AttachmentUploader(
     private suspend fun createResizedMovieOpener(
         uri: Uri,
         mimeType: String,
-        movieResizeConfig: MovieResizeConfig? = null,
-        postAttachment: PostAttachment? = null,
+        mediaConfig: JsonObject?,
+        movieResizeConfig: MovieResizeConfig?,
+        postAttachment: PostAttachment?,
     ): InputStreamOpener {
         movieResizeConfig ?: error("missing movieResizeConfig.")
 
@@ -680,17 +684,22 @@ class AttachmentUploader(
 
         val tempFile = File(cacheDir, "movie." + Thread.currentThread().id + ".tmp")
         val outFile = File(cacheDir, "movie." + Thread.currentThread().id + ".mp4")
+        var resultFile: File? = null
+
         // 入力ファイルをコピーする
         (context.contentResolver.openInputStream(uri)
             ?: error("openInputStream returns null.")).use { inStream ->
             FileOutputStream(tempFile).use { inStream.copyTo(it) }
         }
-        var resultFile: File? = null
+
         try {
+            val limitFileSize = mediaConfig?.long("video_size_limit")?.takeIf { it > 0L }
+
             val result = transcodeVideo(
                 tempFile,
                 outFile,
                 movieResizeConfig,
+                limitFileSize
             ) {
                 val percent = (it * 100f).toInt()
                 postAttachment?.progress =
@@ -837,7 +846,7 @@ class AttachmentUploader(
 
             val resizeConfig = ResizeConfig(ResizeType.SquarePixel, 400)
 
-            val opener = createOpener(src.uri, mimeType, resizeConfig)
+            val opener = createOpener(src.uri, mimeType, imageResizeConfig = resizeConfig)
 
             val mediaSizeMax = 1000000
 

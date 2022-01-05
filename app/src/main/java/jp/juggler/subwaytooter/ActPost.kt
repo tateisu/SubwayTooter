@@ -290,7 +290,13 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun onPostAttachmentProgress() {
-        launchIO{ progressChannel.send(Unit) }
+        launchIO{
+            try{
+                progressChannel.send(Unit)
+            }catch(ex:Throwable){
+                log.w(ex)
+            }
+        }
     }
 
     override fun onPostAttachmentComplete(pa: PostAttachment) {

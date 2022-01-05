@@ -1119,7 +1119,7 @@
     <string name="movie_transcode_mode">モード</string>
     <string name="movie_transcode_max_bitrate">最大ビットレート(単位:秒間ビット数。デフォルト=2,000,000。サーバからの指定でより少なくなる場合があります。)</string>
     <string name="movie_transcode_max_frame_rate">最大フレームレート(単位:秒間フレーム数。デフォルト=30。サーバからの指定でより少なくなる場合があります。)</string>
-    <string name="movie_transcode_max_square_pixels">最大平方ピクセル数(デフォルト=2304000)</string>
+    <string name="movie_transcode_max_square_pixels">最大平方ピクセル数(デフォルト=2304000。サーバからの指定でより少なくなる場合があります。)</string>
     <string name="always">常に</string>
     <string name="auto">自動</string>
 </resources>

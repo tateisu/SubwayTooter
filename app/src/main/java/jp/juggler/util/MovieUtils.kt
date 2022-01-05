@@ -15,6 +15,7 @@ import java.io.FileInputStream
 import kotlin.coroutines.resumeWithException
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 private val log = LogCategory("MovieUtils")
@@ -51,16 +52,29 @@ suspend fun transcodeVideo(
     inFile: File,
     outFile: File,
     resizeConfig: MovieResizeConfig,
+    limitFileSize: Long?,
     onProgress: (Float) -> Unit,
 ): File = try {
     withContext(Dispatchers.IO) {
+        val info = inFile.videoInfo
+
+        // サーバに指定された上限ファイルサイズと
+        // 入力動画の時間帳があれば
+        // ビットレート制限を更新できる
+        limitFileSize?.takeIf { it > 0L }?.let { size ->
+            info.duration?.takeIf { it > 0f }?.let { duration ->
+                (size.toFloat() / duration).toLong()
+            }
+        }?.let { limitBps ->
+            resizeConfig.limitBitrate = min(resizeConfig.limitBitrate, limitBps)
+        }
+
         when (resizeConfig.mode) {
             MovieResizeConfig.MODE_NO ->
                 return@withContext inFile
             MovieResizeConfig.MODE_AUTO -> {
-                val info = inFile.videoInfo
                 if (info.size.w * info.size.h <= resizeConfig.limitPixelMatrix &&
-                    (info.actualBps ?: 0) <= resizeConfig.limitBitrate &&
+                    (info.actualBps ?: 0).toFloat() <= resizeConfig.limitBitrate * 1.5f &&
                     (info.frameRatio?.toInt() ?: 0) <= resizeConfig.limitFrameRate
                 ) {
                     log.i("transcodeVideo skip.")

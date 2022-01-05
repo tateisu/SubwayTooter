@@ -681,7 +681,7 @@ class AttachmentUploader(
             }
 
             // アカウント別の動画トランスコード設定
-            // ビットレート、フレームレート、平方ピクセル数をサーバ指定により制限する
+            // ビットレート、フレームレート、平方ピクセル数をサーバからの情報によりさらに制限する
             val movieResizeConfig = account.getMovieResizeConfig()
                 .restrict(
                     limitBitrate = limitBitrate,

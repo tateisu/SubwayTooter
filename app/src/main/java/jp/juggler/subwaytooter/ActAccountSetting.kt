@@ -151,7 +151,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 ?.handleGetContentResult(contentResolver)
                 ?.firstOrNull()
                 ?.let {
-                    addAttachment(
+                    uploadImage(
                         state.propName,
                         it.uri,
                         it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
@@ -166,7 +166,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             val uri = ar.data?.data ?: state.uriCameraImage
             if (uri != null) {
                 val type = contentResolver.getType(uri)
-                addAttachment(state.propName, uri, type)
+                uploadImage(state.propName, uri, type)
             }
         } else {
             // 失敗したら DBからデータを削除
@@ -1439,13 +1439,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 val bitmap = createResizedBitmap(this, uriArg, resizeTo)
                 if (bitmap != null) {
                     try {
-                        val cacheDir = externalCacheDir
+                        val cacheDir = externalCacheDir?.apply{ mkdirs() }
                         if (cacheDir == null) {
                             showToast(false, "getExternalCacheDir returns null.")
                             break
                         }
-
-                        cacheDir.mkdir()
 
                         val tempFile = File(
                             cacheDir,
@@ -1502,7 +1500,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
     }
 
-    private fun addAttachment(propName: String, uri: Uri, mimeType: String?) {
+    private fun uploadImage(propName: String, uri: Uri, mimeType: String?) {
 
         if (mimeType == null) {
             showToast(false, "mime type is not provided.")

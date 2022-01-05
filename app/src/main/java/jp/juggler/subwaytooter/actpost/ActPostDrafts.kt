@@ -71,11 +71,11 @@ private suspend fun checkExist(url: String?): Boolean {
 }
 
 fun ActPost.saveDraft() {
-    val content = etContent.text.toString()
+    val content = views.etContent.text.toString()
     val contentWarning =
-        if (cbContentWarning.isChecked) etContentWarning.text.toString() else ""
+        if (views.cbContentWarning.isChecked) views.etContentWarning.text.toString() else ""
 
-    val isEnquete = spPollType.selectedItemPosition > 0
+    val isEnquete = views.spPollType.selectedItemPosition > 0
 
     val strChoice = arrayOf(
         if (isEnquete) etChoices[0].text.toString() else "",
@@ -104,20 +104,20 @@ fun ActPost.saveDraft() {
         val json = JsonObject()
         json[DRAFT_CONTENT] = content
         json[DRAFT_CONTENT_WARNING] = contentWarning
-        json[DRAFT_CONTENT_WARNING_CHECK] = cbContentWarning.isChecked
-        json[DRAFT_NSFW_CHECK] = cbNSFW.isChecked
+        json[DRAFT_CONTENT_WARNING_CHECK] = views.cbContentWarning.isChecked
+        json[DRAFT_NSFW_CHECK] = views.cbNSFW.isChecked
         json[DRAFT_ACCOUNT_DB_ID] = account?.db_id ?: -1L
         json[DRAFT_ATTACHMENT_LIST] = tmpAttachmentList
         json[DRAFT_REPLY_TEXT] = states.inReplyToText
         json[DRAFT_REPLY_IMAGE] = states.inReplyToImage
         json[DRAFT_REPLY_URL] = states.inReplyToUrl
-        json[DRAFT_QUOTE] = cbQuote.isChecked
-        json[DRAFT_POLL_TYPE] = spPollType.selectedItemPosition.toPollTypeString()
-        json[DRAFT_POLL_MULTIPLE] = cbMultipleChoice.isChecked
-        json[DRAFT_POLL_HIDE_TOTALS] = cbHideTotals.isChecked
-        json[DRAFT_POLL_EXPIRE_DAY] = etExpireDays.text.toString()
-        json[DRAFT_POLL_EXPIRE_HOUR] = etExpireHours.text.toString()
-        json[DRAFT_POLL_EXPIRE_MINUTE] = etExpireMinutes.text.toString()
+        json[DRAFT_QUOTE] = views.cbQuote.isChecked
+        json[DRAFT_POLL_TYPE] = views.spPollType.selectedItemPosition.toPollTypeString()
+        json[DRAFT_POLL_MULTIPLE] = views.cbMultipleChoice.isChecked
+        json[DRAFT_POLL_HIDE_TOTALS] = views.cbHideTotals.isChecked
+        json[DRAFT_POLL_EXPIRE_DAY] = views.etExpireDays.text.toString()
+        json[DRAFT_POLL_EXPIRE_HOUR] = views.etExpireHours.text.toString()
+        json[DRAFT_POLL_EXPIRE_MINUTE] = views.etExpireMinutes.text.toString()
         json[DRAFT_ENQUETE_ITEMS] = strChoice.toJsonArray()
 
         states.visibility?.id?.toString()?.let { json.put(DRAFT_VISIBILITY, it) }
@@ -242,30 +242,30 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                 val evEmoji = DecodeOptions(this@restoreDraft, decodeEmoji = true)
                     .decodeEmoji(content)
 
-                etContent.setText(evEmoji)
-                etContent.setSelection(evEmoji.length)
-                etContentWarning.setText(contentWarning)
-                etContentWarning.setSelection(contentWarning.length)
-                cbContentWarning.isChecked = contentWarningChecked
-                cbNSFW.isChecked = nsfwChecked
+                views.etContent.setText(evEmoji)
+                views.etContent.setSelection(evEmoji.length)
+                views.etContentWarning.setText(contentWarning)
+                views.etContentWarning.setSelection(contentWarning.length)
+                views.cbContentWarning.isChecked = contentWarningChecked
+                views.cbNSFW.isChecked = nsfwChecked
                 if (draftVisibility != null) states.visibility = draftVisibility
 
-                cbQuote.isChecked = draft.optBoolean(DRAFT_QUOTE)
+                views.cbQuote.isChecked = draft.optBoolean(DRAFT_QUOTE)
 
                 val sv = draft.string(DRAFT_POLL_TYPE)
                 if (sv != null) {
-                    spPollType.setSelection(sv.toPollTypeIndex())
+                    views.spPollType.setSelection(sv.toPollTypeIndex())
                 } else {
                     // old draft
                     val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
-                    spPollType.setSelection(if (bv) 2 else 0)
+                    views.spPollType.setSelection(if (bv) 2 else 0)
                 }
 
-                cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
-                cbHideTotals.isChecked = draft.optBoolean(DRAFT_POLL_HIDE_TOTALS)
-                etExpireDays.setText(draft.optString(DRAFT_POLL_EXPIRE_DAY, "1"))
-                etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
-                etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
+                views.cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
+                views.cbHideTotals.isChecked = draft.optBoolean(DRAFT_POLL_HIDE_TOTALS)
+                views.etExpireDays.setText(draft.optString(DRAFT_POLL_EXPIRE_DAY, "1"))
+                views.etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
+                views.etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
 
                 val array = draft.jsonArray(DRAFT_ENQUETE_ITEMS)
                 if (array != null) {
@@ -350,7 +350,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
         }
 
-        cbNSFW.isChecked = baseStatus.sensitive == true
+        views.cbNSFW.isChecked = baseStatus.sensitive == true
 
         // 再編集の場合はdefault_textは反映されない
 
@@ -366,13 +366,13 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
         } else {
             decodeOptions.decodeHTML(baseStatus.content)
         }
-        etContent.setText(text)
-        etContent.setSelection(text.length)
+        views.etContent.setText(text)
+        views.etContent.setSelection(text.length)
 
         text = decodeOptions.decodeEmoji(baseStatus.spoiler_text)
-        etContentWarning.setText(text)
-        etContentWarning.setSelection(text.length)
-        cbContentWarning.isChecked = text.isNotEmpty()
+        views.etContentWarning.setText(text)
+        views.etContentWarning.setSelection(text.length)
+        views.cbContentWarning.isChecked = text.isNotEmpty()
 
         val srcEnquete = baseStatus.enquete
         val srcItems = srcEnquete?.items
@@ -387,7 +387,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
 
             else -> {
-                spPollType.setSelection(
+                views.spPollType.setSelection(
                     if (srcEnquete.pollType == TootPollsType.FriendsNico) {
                         2
                     } else {
@@ -395,8 +395,8 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
                     }
                 )
                 text = decodeOptions.decodeHTML(srcEnquete.question)
-                etContent.text = text
-                etContent.setSelection(text.length)
+                views.etContent.text = text
+                views.etContent.setSelection(text.length)
 
                 var srcIndex = 0
                 for (et in etChoices) {

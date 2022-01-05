@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
@@ -14,10 +13,7 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.LogCategory
-import jp.juggler.util.decodeJsonObject
-import jp.juggler.util.launchMain
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 
 private val log = LogCategory("ActPostReply")
 
@@ -29,22 +25,20 @@ fun ActPost.resetReply() {
 }
 
 fun ActPost.showQuotedRenote() {
-    cbQuote.visibility = if (states.inReplyToId != null) View.VISIBLE else View.GONE
+    views.cbQuote.vg(states.inReplyToId != null)
 }
 
 fun ActPost.showReplyTo() {
-    if (states.inReplyToId == null) {
-        llReply.visibility = View.GONE
-    } else {
-        llReply.visibility = View.VISIBLE
-        tvReplyTo.text = DecodeOptions(
+    views.llReply.vg(states.inReplyToId != null)?.let {
+        views.tvReplyTo.text = DecodeOptions(
             this,
             linkHelper = account,
             short = true,
             decodeEmoji = true,
             mentionDefaultHostDomain = account ?: unknownHostAndDomain
         ).decodeHTML(states.inReplyToText)
-        ivReply.setImageUrl(Styler.calcIconRound(ivReply.layoutParams), states.inReplyToImage)
+        views.ivReply.setImageUrl(Styler.calcIconRound(views.ivReply.layoutParams),
+            states.inReplyToImage)
     }
 }
 
@@ -65,15 +59,15 @@ fun ActPost.initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
 
         val isQuote = intent.getBooleanExtra(ActPost.KEY_QUOTE, false)
         if (isQuote) {
-            cbQuote.isChecked = true
+            views.cbQuote.isChecked = true
 
             // 引用リノートはCWやメンションを引き継がない
         } else {
 
             // CW をリプライ元に合わせる
             if (replyStatus.spoiler_text.isNotEmpty()) {
-                cbContentWarning.isChecked = true
-                etContentWarning.setText(replyStatus.spoiler_text)
+                views.cbContentWarning.isChecked = true
+                views.etContentWarning.setText(replyStatus.spoiler_text)
             }
 
             // 新しいメンションリスト

@@ -127,8 +127,8 @@ for my $lang ( sort keys %langs ){
 		# 残りの部分に%が登場したらエラー
 		my $sv = $value;
 		$sv =~ s/(%\d+\$[\d\.]*[sdxf])//g;
-		# Unit:%. を除外したい
-		$sv =~ s/%[\s.。]//g;
+		# Unit:%. や %% を除外したい
+		$sv =~ s/%[\s.。%]//g;
 		if( $sv =~ /%/  ){
 			$hasError =1;
 			print "!! ($lang)$name : broken param: $sv // $value\n";

@@ -85,6 +85,26 @@ class SavedAccount(
 
     var push_policy: String? = null
 
+    private val extraJson = JsonObject()
+
+    var movieTranscodeMode: Int by JsonProperty(
+        extraJson,
+        "movieTranscodeMode",
+        0)
+
+    var movieTranscodeBitrate: String by JsonProperty(
+        extraJson,
+        "movieTranscodeBitrate",
+        "2000000")
+    var movieTranscodeFramerate: String by JsonProperty(
+        extraJson,
+        "movieTranscodeFramerate",
+        "30")
+    var movieTranscodeSquarePixels: String by JsonProperty(
+        extraJson,
+        "movieTranscodeSquarePixels",
+        "2304000")
+
     init {
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
@@ -173,6 +193,14 @@ class SavedAccount(
         image_max_megabytes = cursor.getStringOrNull(COL_IMAGE_MAX_MEGABYTES)
         movie_max_megabytes = cursor.getStringOrNull(COL_MOVIE_MAX_MEGABYTES)
         push_policy = cursor.getStringOrNull(COL_PUSH_POLICY)
+        try {
+            cursor.getStringOrNull(COL_EXTRA_JSON)
+                ?.decodeJsonObject()
+                ?.entries
+                ?.forEach { extraJson[it.key] = it.value }
+        } catch (ex: Throwable) {
+            log.trace(ex)
+        }
     }
 
     val isNA: Boolean
@@ -242,6 +270,7 @@ class SavedAccount(
             put(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
             put(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
             put(COL_PUSH_POLICY, push_policy)
+            put(COL_EXTRA_JSON, extraJson.toString())
 
             // 以下のデータはUIからは更新しない
             // notification_tag
@@ -310,6 +339,11 @@ class SavedAccount(
         this.image_max_megabytes = b.image_max_megabytes
         this.movie_max_megabytes = b.movie_max_megabytes
         this.push_policy = b.push_policy
+
+        this.movieTranscodeMode = b.movieTranscodeMode
+        this.movieTranscodeBitrate = b.movieTranscodeBitrate
+        this.movieTranscodeFramerate = b.movieTranscodeFramerate
+        this.movieTranscodeSquarePixels = b.movieTranscodeSquarePixels
     }
 
     fun getFullAcct(who: TootAccount?) = getFullAcct(who?.acct)
@@ -457,6 +491,8 @@ class SavedAccount(
             ColumnMeta(columnList, 59, "movie_max_megabytes", "text default null")
 
         private val COL_PUSH_POLICY = ColumnMeta(columnList, 60, "push_policy", "text default null")
+
+        private val COL_EXTRA_JSON = ColumnMeta(columnList, 63, "extra_json", "text default null")
 
         /////////////////////////////////
         // login information
@@ -929,5 +965,21 @@ class SavedAccount(
         1,
         this.image_max_megabytes?.toIntOrNull()
             ?: if (ti.instanceType == InstanceType.Pixelfed) 15 else 8
+    )
+
+    fun getMovieResizeConfig(): MovieResizeConfig = MovieResizeConfig(
+        mode = when (movieTranscodeMode) {
+            MovieResizeConfig.MODE_NO,
+            MovieResizeConfig.MODE_AUTO,
+            MovieResizeConfig.NODE_ALWAYS,
+            -> movieTranscodeMode
+            else -> MovieResizeConfig.MODE_AUTO
+        },
+        limitBitrate = movieTranscodeBitrate.toLongOrNull()
+            ?.takeIf { it >= 100_000L } ?: 2_000_000L,
+        limitFrameRate = movieTranscodeFramerate.toIntOrNull()
+            ?.takeIf { it >= 1 } ?: 30,
+        limitPixelMatrix = movieTranscodeSquarePixels.toIntOrNull()
+            ?.takeIf { it > 0 } ?: 2304000,
     )
 }

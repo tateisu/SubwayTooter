@@ -296,6 +296,9 @@ dependencies {
     implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
     // implementation "io.insert-koin:koin-androidx-navigation:$koin_version"
     // implementation "io.insert-koin:koin-androidx-compose:$koin_version"
+
+    // video transcoder https://github.com/natario1/Transcoder
+    implementation "com.otaliastudios:transcoder:0.10.4"
 }
 
 repositories {

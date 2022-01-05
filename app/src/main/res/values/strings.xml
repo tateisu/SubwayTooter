@@ -1118,5 +1118,19 @@
     <string name="url_of_user_or_status">URL of user or status</string>
     <string name="url_parse_failed">parse error.</string>
     <string name="unbookmark">Unbookmark</string>
-    <string name="event_text_alpha">Text alpha for some notifications (0.0～1.0, default:1. app restart required)</string>
+    <string name="event_text_alpha">Text alpha for some notifications (0.0～1.0, default=1. app restart required)</string>
+    <string name="attachment_handling_start">Initializing…</string>
+    <string name="attachment_handling_compress">Compressing…</string>
+    <string name="attachment_handling_compress_ratio">Compressing %1$d%%…</string>
+    <string name="attachment_handling_uploading">Uploading %1$d%%…</string>
+    <string name="attachment_handling_waiting">Waiting response…</string>
+    <string name="attachment_handling_waiting2">Waiting response(asynchronized)…</string>
+    <string name="option_deprecated_mastodon342">(This option is deprecated for Mastodon 3.4.2+. App uses information from the server.)</string>
+    <string name="movie_transcode">Movie transcoding</string>
+    <string name="movie_transcode_mode">Mode</string>
+    <string name="movie_transcode_max_bitrate">Max bitrate (Unit:bits per second. default=2,000,000. Also it may be reduced by server configuration.)</string>
+    <string name="movie_transcode_max_frame_rate">Max frame rate(Unit:frames per second. default=30. Also it may be reduced by server configuration.)</string>
+    <string name="movie_transcode_max_square_pixels">Max square pixels(default=2304000)</string>
+    <string name="always">Always</string>
+    <string name="auto">Auto</string>
 </resources>

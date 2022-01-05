@@ -2,7 +2,6 @@
 <jp.juggler.subwaytooter.actpost.ActPostRootLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/viewRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -113,13 +112,13 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="4dp"
                 android:baselineAligned="false"
-                android:gravity="center_vertical"
+                android:gravity="top|start"
                 android:orientation="horizontal">
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia1"
                     android:layout_width="48dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="48dp"
                     android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
@@ -127,7 +126,7 @@
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia2"
                     android:layout_width="48dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="48dp"
                     android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
@@ -135,7 +134,7 @@
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia3"
                     android:layout_width="48dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="48dp"
                     android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
@@ -143,10 +142,20 @@
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia4"
                     android:layout_width="48dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="48dp"
                     android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tvAttachmentProgress"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:textSize="11sp"
+                    tools:text="アップロード中です"
+                    />
             </LinearLayout>
 
             <com.google.android.flexbox.FlexboxLayout
@@ -285,7 +294,7 @@
             </LinearLayout>
 
             <Spinner
-                android:id="@+id/spEnquete"
+                android:id="@+id/spPollType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"

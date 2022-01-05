@@ -57,12 +57,12 @@ fun ActPost.updateTextCount() {
     var length = 0
 
     length += TootAccount.countText(
-        EmojiDecoder.decodeShortCode(etContent.text.toString())
+        EmojiDecoder.decodeShortCode(views.etContent.text.toString())
     )
 
-    if (cbContentWarning.isChecked) {
+    if (views.cbContentWarning.isChecked) {
         length += TootAccount.countText(
-            EmojiDecoder.decodeShortCode(etContentWarning.text.toString())
+            EmojiDecoder.decodeShortCode(views.etContentWarning.text.toString())
         )
     }
 
@@ -76,7 +76,7 @@ fun ActPost.updateTextCount() {
         }
     }
 
-    when (spPollType.selectedItemPosition) {
+    when (views.spPollType.selectedItemPosition) {
         1 -> checkEnqueteLength()
 
         2 -> {
@@ -87,8 +87,8 @@ fun ActPost.updateTextCount() {
 
     val remain = max - length
 
-    tvCharCount.text = remain.toString()
-    tvCharCount.setTextColor(
+    views.tvCharCount.text = remain.toString()
+    views.tvCharCount.setTextColor(
         attrColor(
             when {
                 remain < 0 -> R.attr.colorRegexFilterError

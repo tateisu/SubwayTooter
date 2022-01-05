@@ -9,8 +9,9 @@ import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 
 fun ActPost.showVisibility() {
-    val iconId = Styler.getVisibilityIconId(account?.isMisskey == true, states.visibility ?: TootVisibility.Public)
-    btnVisibility.setImageResource(iconId)
+    val iconId = Styler.getVisibilityIconId(account?.isMisskey == true,
+        states.visibility ?: TootVisibility.Public)
+    views.btnVisibility.setImageResource(iconId)
 }
 
 fun ActPost.openVisibilityPicker() {

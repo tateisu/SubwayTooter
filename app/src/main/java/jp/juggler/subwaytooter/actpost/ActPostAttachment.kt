@@ -44,8 +44,17 @@ fun ActPost.decodeAttachments(sv: String) {
 
 fun ActPost.showMediaAttachment() {
     if (isFinishing) return
-    llAttachment.vg(attachmentList.isNotEmpty())
+    views.llAttachment.vg(attachmentList.isNotEmpty())
     ivMedia.forEachIndexed { i, v -> showMediaAttachmentOne(v, i) }
+}
+
+fun ActPost.showMedisAttachmentProgress() {
+    val mergedProgress = attachmentList
+        .mapNotNull { it.progress.notEmpty() }
+        .joinToString("\n")
+    views.tvAttachmentProgress
+        .vg(mergedProgress.isNotEmpty())
+        ?.text = mergedProgress
 }
 
 fun ActPost.showMediaAttachmentOne(iv: MyNetworkImageView, idx: Int) {
@@ -118,7 +127,7 @@ fun ActPost.addAttachment(
                     uri,
                     mimeType,
                     isReply = isReply,
-              //      onUploadEnd = onUploadEnd
+                    //      onUploadEnd = onUploadEnd
                 )
             )
         }
@@ -153,9 +162,9 @@ fun ActPost.onPostAttachmentCompleteImpl(pa: PostAttachment) {
 
                     // 投稿欄の末尾に追記する
                     if (PrefB.bpAppendAttachmentUrlToContent(pref)) {
-                        val selStart = etContent.selectionStart
-                        val selEnd = etContent.selectionEnd
-                        val e = etContent.editableText
+                        val selStart = views.etContent.selectionStart
+                        val selEnd = views.etContent.selectionEnd
+                        val e = views.etContent.editableText
                         val len = e.length
                         val lastChar = if (len <= 0) ' ' else e[len - 1]
                         if (!CharacterGroup.isWhitespace(lastChar.code)) {
@@ -163,7 +172,7 @@ fun ActPost.onPostAttachmentCompleteImpl(pa: PostAttachment) {
                         } else {
                             e.append(a.text_url)
                         }
-                        etContent.setSelection(selStart, selEnd)
+                        views.etContent.setSelection(selStart, selEnd)
                     }
                 }
             }
@@ -215,6 +224,9 @@ fun ActPost.deleteAttachment(pa: PostAttachment) {
         .setTitle(R.string.confirm_delete_attachment)
         .setPositiveButton(R.string.ok) { _, _ ->
             try {
+                pa.isCancelled = true
+                pa.status= PostAttachment.Status.Error
+                pa.job.cancel()
                 attachmentList.remove(pa)
             } catch (ignored: Throwable) {
             }

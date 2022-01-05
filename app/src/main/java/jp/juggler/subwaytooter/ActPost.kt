@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.action.saveWindowSize
 import jp.juggler.subwaytooter.actpost.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.databinding.ActPostBinding
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.*
@@ -27,7 +28,11 @@ import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.delay
 import java.lang.ref.WeakReference
+import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
 
 class ActPost : AppCompatActivity(),
@@ -88,43 +93,11 @@ class ActPost : AppCompatActivity(),
         }
     }
 
-    lateinit var btnAccount: Button
-    lateinit var btnVisibility: ImageButton
-    private lateinit var btnAttachment: ImageButton
-    private lateinit var btnPost: ImageButton
-    lateinit var llAttachment: View
+    val views by lazy { ActPostBinding.inflate(layoutInflater) }
     lateinit var ivMedia: List<MyNetworkImageView>
-    lateinit var cbNSFW: CheckBox
-    lateinit var cbContentWarning: CheckBox
-    lateinit var etContentWarning: MyEditText
-    lateinit var etContent: MyEditText
-
-    lateinit var cbQuote: CheckBox
-
-    lateinit var spPollType: Spinner
-    lateinit var llEnquete: View
     lateinit var etChoices: List<MyEditText>
 
-    lateinit var cbMultipleChoice: CheckBox
-    lateinit var cbHideTotals: CheckBox
-    lateinit var llExpire: LinearLayout
-    lateinit var etExpireDays: EditText
-    lateinit var etExpireHours: EditText
-    lateinit var etExpireMinutes: EditText
-
-    lateinit var tvCharCount: TextView
     lateinit var handler: Handler
-    private lateinit var formRoot: ActPostRootLinearLayout
-
-    lateinit var llReply: View
-    lateinit var tvReplyTo: TextView
-    lateinit var ivReply: MyNetworkImageView
-    lateinit var scrollView: ScrollView
-
-    lateinit var tvSchedule: TextView
-    private lateinit var ibSchedule: ImageButton
-    private lateinit var ibScheduleReset: ImageButton
-
     lateinit var pref: SharedPreferences
     lateinit var appState: AppState
     lateinit var attachmentUploader: AttachmentUploader
@@ -132,6 +105,8 @@ class ActPost : AppCompatActivity(),
     lateinit var completionHelper: CompletionHelper
 
     var density: Float = 0f
+
+    private lateinit var progressChannel : Channel<Unit>
 
     ///////////////////////////////////////////////////
 
@@ -165,8 +140,8 @@ class ActPost : AppCompatActivity(),
             ar.data?.getStringExtra("replace_key")
                 ?.let { text ->
                     when (states.mushroomInput) {
-                        0 -> applyMushroomText(etContent, text)
-                        1 -> applyMushroomText(etContentWarning, text)
+                        0 -> applyMushroomText(views.etContent, text)
+                        1 -> applyMushroomText(views.etContentWarning, text)
                         else -> for (i in 0..3) {
                             if (states.mushroomInput == i + 2) {
                                 applyMushroomText(etChoices[i], text)
@@ -191,6 +166,22 @@ class ActPost : AppCompatActivity(),
         density = resources.displayMetrics.density
         arMushroom.register(this, log)
 
+        progressChannel = Channel(capacity = Channel.CONFLATED )
+        launchMain {
+            try {
+                while (true) {
+                    progressChannel.receive()
+                    showMedisAttachmentProgress()
+                    delay(1000L)
+                }
+            }catch(ex:Throwable){
+                when(ex){
+                    is CancellationException, is ClosedReceiveChannelException -> Unit
+                    else -> log.trace(ex)
+                }
+            }
+        }
+
         initUI()
 
         when (savedInstanceState) {
@@ -200,6 +191,11 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun onDestroy() {
+        try {
+            progressChannel.close()
+        }catch(ex:Throwable){
+            log.e(ex)
+        }
         completionHelper.onDestroy()
         attachmentUploader.onActivityDestroy()
         super.onDestroy()
@@ -269,7 +265,7 @@ class ActPost : AppCompatActivity(),
         return when {
             super.onKeyShortcut(keyCode, event) -> true
             event?.isCtrlPressed == true && keyCode == KeyEvent.KEYCODE_T -> {
-                btnPost.performClick()
+                views.btnPost.performClick()
                 true
             }
             else -> false
@@ -283,7 +279,7 @@ class ActPost : AppCompatActivity(),
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         attachmentPicker.onRequestPermissionsResult(requestCode, permissions, grantResults)
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -291,6 +287,10 @@ class ActPost : AppCompatActivity(),
 
     override fun onPickAttachment(uri: Uri, mimeType: String?) {
         addAttachment(uri, mimeType)
+    }
+
+    override fun onPostAttachmentProgress() {
+        launchIO{ progressChannel.send(Unit) }
     }
 
     override fun onPostAttachmentComplete(pa: PostAttachment) {
@@ -302,7 +302,7 @@ class ActPost : AppCompatActivity(),
     }
 
     fun initUI() {
-        setContentView(R.layout.act_post)
+        setContentView(views.root)
         App1.initEdgeToEdge(this)
 
         if (PrefB.bpPostButtonBarTop(pref)) {
@@ -317,31 +317,19 @@ class ActPost : AppCompatActivity(),
             Styler.fixHorizontalMargin(findViewById(R.id.llFooterBar))
         }
 
-        formRoot = findViewById(R.id.viewRoot)
-        scrollView = findViewById(R.id.scrollView)
-        btnAccount = findViewById(R.id.btnAccount)
-        btnVisibility = findViewById(R.id.btnVisibility)
-        btnAttachment = findViewById(R.id.btnAttachment)
-        btnPost = findViewById(R.id.btnPost)
-        llAttachment = findViewById(R.id.llAttachment)
-        cbNSFW = findViewById(R.id.cbNSFW)
-        cbContentWarning = findViewById(R.id.cbContentWarning)
-        etContentWarning = findViewById(R.id.etContentWarning)
-        etContent = findViewById(R.id.etContent)
 
-        formRoot.callbackOnSizeChanged = { _, _, _, _ ->
+
+        views.root.callbackOnSizeChanged = { _, _, _, _ ->
             if (Build.VERSION.SDK_INT >= 24 && isMultiWindowPost) saveWindowSize()
             // ビューのw,hはシステムバーその他を含まないので使わない
         }
 
         // https://github.com/tateisu/SubwayTooter/issues/123
         // 早い段階で指定する必要がある
-        etContent.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
-        etContent.imeOptions = EditorInfo.IME_ACTION_NONE
+        views.etContent.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        views.etContent.imeOptions = EditorInfo.IME_ACTION_NONE
 
-        cbQuote = findViewById(R.id.cbQuote)
-
-        spPollType = findViewById<Spinner>(R.id.spEnquete).apply {
+        views.spPollType.apply {
             this.adapter = ArrayAdapter(
                 this@ActPost,
                 android.R.layout.simple_spinner_item,
@@ -364,7 +352,7 @@ class ActPost : AppCompatActivity(),
                     parent: AdapterView<*>?,
                     view: View?,
                     position: Int,
-                    id: Long
+                    id: Long,
                 ) {
                     showPoll()
                     updateTextCount()
@@ -372,58 +360,44 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        llEnquete = findViewById(R.id.llEnquete)
-        llExpire = findViewById(R.id.llExpire)
-        cbHideTotals = findViewById(R.id.cbHideTotals)
-        cbMultipleChoice = findViewById(R.id.cbMultipleChoice)
-        etExpireDays = findViewById(R.id.etExpireDays)
-        etExpireHours = findViewById(R.id.etExpireHours)
-        etExpireMinutes = findViewById(R.id.etExpireMinutes)
 
         ivMedia = listOf(
-            findViewById(R.id.ivMedia1),
-            findViewById(R.id.ivMedia2),
-            findViewById(R.id.ivMedia3),
-            findViewById(R.id.ivMedia4)
+            views.ivMedia1,
+            views.ivMedia2,
+            views.ivMedia3,
+            views.ivMedia4,
         )
 
         etChoices = listOf(
-            findViewById(R.id.etChoice1),
-            findViewById(R.id.etChoice2),
-            findViewById(R.id.etChoice3),
-            findViewById(R.id.etChoice4)
+            views.etChoice1,
+            views.etChoice2,
+            views.etChoice3,
+            views.etChoice4,
         )
 
-        tvCharCount = findViewById(R.id.tvCharCount)
-        llReply = findViewById(R.id.llReply)
-        tvReplyTo = findViewById(R.id.tvReplyTo)
-        ivReply = findViewById(R.id.ivReply)
-        tvSchedule = findViewById(R.id.tvSchedule)
-        ibSchedule = findViewById(R.id.ibSchedule)
-        ibScheduleReset = findViewById(R.id.ibScheduleReset)
 
         arrayOf(
-            ibSchedule,
-            ibScheduleReset,
-            btnAccount,
-            btnVisibility,
-            btnAttachment,
-            btnPost,
-            findViewById(R.id.btnRemoveReply),
-            findViewById(R.id.btnFeaturedTag),
-            findViewById(R.id.btnPlugin),
-            findViewById(R.id.btnEmojiPicker),
-            findViewById(R.id.btnMore),
+            views.ibSchedule,
+            views.ibScheduleReset,
+            views.btnAccount,
+            views.btnVisibility,
+            views.btnAttachment,
+            views.btnPost,
+            views.btnRemoveReply,
+            views.btnFeaturedTag,
+            views.btnPlugin,
+            views.btnEmojiPicker,
+            views.btnMore,
         ).forEach { it.setOnClickListener(this) }
 
         ivMedia.forEach { it.setOnClickListener(this) }
 
-        cbContentWarning.setOnCheckedChangeListener { _, _ -> showContentWarningEnabled() }
+        views.cbContentWarning.setOnCheckedChangeListener { _, _ -> showContentWarningEnabled() }
 
         completionHelper = CompletionHelper(this, pref, appState.handler)
         completionHelper.attachEditText(
-            formRoot,
-            etContent,
+            views.root,
+            views.etContent,
             false,
             object : CompletionHelper.Callback2 {
                 override fun onTextUpdate() {
@@ -441,7 +415,7 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        etContentWarning.addTextChangedListener(textWatcher)
+        views.etContentWarning.addTextChangedListener(textWatcher)
 
         for (et in etChoices) {
             et.addTextChangedListener(textWatcher)
@@ -450,9 +424,9 @@ class ActPost : AppCompatActivity(),
         val scrollListener: ViewTreeObserver.OnScrollChangedListener =
             ViewTreeObserver.OnScrollChangedListener { completionHelper.onScrollChanged() }
 
-        scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
+        views.scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
 
-        etContent.contentMineTypeArray = AttachmentUploader.acceptableMimeTypes.toTypedArray()
-        etContent.contentCallback = { addAttachment(it) }
+        views.etContent.contentMineTypeArray = AttachmentUploader.acceptableMimeTypes.toTypedArray()
+        views.etContent.contentCallback = { addAttachment(it) }
     }
 }

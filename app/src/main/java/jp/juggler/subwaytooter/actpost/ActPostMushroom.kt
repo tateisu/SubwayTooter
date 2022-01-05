@@ -63,14 +63,14 @@ fun ActPost.openMushroom() {
     try {
         var text: String? = null
         when {
-            etContentWarning.hasFocus() -> {
+            views.etContentWarning.hasFocus() -> {
                 states.mushroomInput = 1
-                text = prepareMushroomText(etContentWarning)
+                text = prepareMushroomText(views.etContentWarning)
             }
 
-            etContent.hasFocus() -> {
+            views.etContent.hasFocus() -> {
                 states.mushroomInput = 0
-                text = prepareMushroomText(etContent)
+                text = prepareMushroomText(views.etContent)
             }
 
             else -> for (i in 0..3) {
@@ -82,7 +82,7 @@ fun ActPost.openMushroom() {
         }
         if (text == null) {
             states.mushroomInput = 0
-            text = prepareMushroomText(etContent)
+            text = prepareMushroomText(views.etContent)
         }
 
         val intent = Intent("com.adamrocker.android.simeji.ACTION_INTERCEPT")

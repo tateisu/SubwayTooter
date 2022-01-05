@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.actpost
 
 import android.content.Intent
 import android.net.Uri
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.*
@@ -29,19 +28,19 @@ fun ActPost.appendContentText(
     ).decodeEmoji(src)
     if (svEmoji.isEmpty()) return
 
-    val editable = etContent.text
+    val editable = views.etContent.text
     if (editable == null) {
         val sb = StringBuilder()
         if (selectBefore) {
             val start = 0
             sb.append(' ')
             sb.append(svEmoji)
-            etContent.setText(sb)
-            etContent.setSelection(start)
+            views.etContent.setText(sb)
+            views.etContent.setSelection(start)
         } else {
             sb.append(svEmoji)
-            etContent.setText(sb)
-            etContent.setSelection(sb.length)
+            views.etContent.setText(sb)
+            views.etContent.setSelection(sb.length)
         }
     } else {
         if (editable.isNotEmpty() &&
@@ -54,12 +53,12 @@ fun ActPost.appendContentText(
             val start = editable.length
             editable.append(' ')
             editable.append(svEmoji)
-            etContent.text = editable
-            etContent.setSelection(start)
+            views.etContent.text = editable
+            views.etContent.setSelection(start)
         } else {
             editable.append(svEmoji)
-            etContent.text = editable
-            etContent.setSelection(editable.length)
+            views.etContent.text = editable
+            views.etContent.setSelection(editable.length)
         }
     }
 }
@@ -80,9 +79,9 @@ fun ActPost.appendContentText(src: Intent) {
 
 // returns true if has content
 fun ActPost.hasContent(): Boolean {
-    val content = etContent.text.toString()
+    val content = views.etContent.text.toString()
     val contentWarning =
-        if (cbContentWarning.isChecked) etContentWarning.text.toString() else ""
+        if (views.cbContentWarning.isChecked) views.etContentWarning.text.toString() else ""
 
     return when {
         content.isNotBlank() -> true
@@ -103,9 +102,9 @@ fun ActPost.resetText() {
     attachmentPicker.reset()
     scheduledStatus = null
     attachmentList.clear()
-    cbQuote.isChecked = false
-    etContent.setText("")
-    spPollType.setSelection(0, false)
+    views.cbQuote.isChecked = false
+    views.etContent.setText("")
+    views.spPollType.setSelection(0, false)
     etChoices.forEach { it.setText("") }
     accountList = SavedAccount.loadAccountList(this)
     SavedAccount.sort(accountList)
@@ -161,7 +160,7 @@ fun ActPost.updateText(
     resetText()
 
     // Android 9 から、明示的にフォーカスを当てる必要がある
-    etContent.requestFocus()
+    views.etContent.requestFocus()
 
     this.attachmentList.clear()
     saveAttachmentList()
@@ -188,7 +187,7 @@ fun ActPost.updateText(
     }
 
     appendContentText(account?.default_text, selectBefore = true)
-    cbNSFW.isChecked = account?.default_sensitive ?: false
+    views.cbNSFW.isChecked = account?.default_sensitive ?: false
 
     if (account != null) {
         // 再編集
@@ -261,13 +260,13 @@ fun ActPost.performMore() {
     }
 
     dialog.addAction(getString(R.string.clear_text)) {
-        etContent.setText("")
-        etContentWarning.setText("")
+        views.etContent.setText("")
+        views.etContentWarning.setText("")
     }
 
     dialog.addAction(getString(R.string.clear_text_and_media)) {
-        etContent.setText("")
-        etContentWarning.setText("")
+        views.etContent.setText("")
+        views.etContentWarning.setText("")
         attachmentList.clear()
         showMediaAttachment()
     }
@@ -296,13 +295,13 @@ fun ActPost.performPost() {
     var pollExpireSeconds = 0
     var pollHideTotals = false
     var pollMultipleChoice = false
-    when (spPollType.selectedItemPosition) {
+    when (views.spPollType.selectedItemPosition) {
         1 -> {
             pollType = TootPollsType.Mastodon
             pollItems = pollChoiceList()
             pollExpireSeconds = pollExpireSeconds()
-            pollHideTotals = cbHideTotals.isChecked
-            pollMultipleChoice = cbMultipleChoice.isChecked
+            pollHideTotals = views.cbHideTotals.isChecked
+            pollMultipleChoice = views.cbMultipleChoice.isChecked
         }
         2 -> {
             pollType = TootPollsType.FriendsNico
@@ -313,13 +312,13 @@ fun ActPost.performPost() {
     PostImpl(
         activity = this,
         account = account,
-        content = etContent.text.toString().trim { it <= ' ' },
+        content = views.etContent.text.toString().trim { it <= ' ' },
         spoilerText = when {
-            !cbContentWarning.isChecked -> null
-            else -> etContentWarning.text.toString().trim { it <= ' ' }
+            !views.cbContentWarning.isChecked -> null
+            else -> views.etContentWarning.text.toString().trim { it <= ' ' }
         },
         visibilityArg = states.visibility ?: TootVisibility.Public,
-        bNSFW = cbNSFW.isChecked,
+        bNSFW = views.cbNSFW.isChecked,
         inReplyToId = states.inReplyToId,
         attachmentListArg = this.attachmentList,
         enqueteItemsArg = pollItems,
@@ -331,7 +330,7 @@ fun ActPost.performPost() {
         scheduledId = scheduledStatus?.id,
         redraftStatusId = states.redraftStatusId,
         emojiMapCustom = App1.custom_emoji_lister.getMap(account),
-        useQuoteToot = cbQuote.isChecked,
+        useQuoteToot = views.cbQuote.isChecked,
         callback = object : PostCompleteCallback {
             override fun onPostComplete(targetAccount: SavedAccount, status: TootStatus) {
                 val data = Intent()
@@ -374,5 +373,5 @@ fun ActPost.performPost() {
 }
 
 fun ActPost.showContentWarningEnabled() {
-    etContentWarning.visibility = if (cbContentWarning.isChecked) View.VISIBLE else View.GONE
+    views.etContentWarning.vg(views.cbContentWarning.isChecked)
 }

@@ -30,6 +30,7 @@ import java.io.*
 import java.util.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.coroutineContext
+import kotlin.math.min
 
 class AttachmentRequest(
     val account: SavedAccount,
@@ -37,7 +38,6 @@ class AttachmentRequest(
     val uri: Uri,
     val mimeType: String,
     val isReply: Boolean,
-    val onUploadEnd: () -> Unit = {},
 )
 
 class AttachmentUploader(
@@ -92,7 +92,7 @@ class AttachmentUploader(
             add("video/m4v")
         }
 
-        private val imageHeaderList = arrayOf(
+        private val imageHeaderList = listOf(
             Pair(
                 "image/jpeg",
                 intArrayOf(0xff, 0xd8, 0xff).toByteArray()
@@ -103,21 +103,29 @@ class AttachmentUploader(
             ),
             Pair(
                 "image/gif",
-                charArrayOf('G', 'I', 'F').toLowerByteArray()
+                "GIF".toByteArray(Charsets.UTF_8)
             ),
             Pair(
                 "audio/wav",
-                charArrayOf('R', 'I', 'F', 'F').toLowerByteArray()
+                "RIFF".toByteArray(Charsets.UTF_8),
             ),
             Pair(
                 "audio/ogg",
-                charArrayOf('O', 'g', 'g', 'S').toLowerByteArray()
+                "OggS".toByteArray(Charsets.UTF_8),
             ),
             Pair(
                 "audio/flac",
-                charArrayOf('f', 'L', 'a', 'C').toLowerByteArray()
-            )
-        )
+                "fLaC".toByteArray(Charsets.UTF_8),
+            ),
+            Pair(
+                "image/bmp",
+                "BM".toByteArray(Charsets.UTF_8),
+            ),
+            Pair(
+                "image/webp",
+                "RIFF****WEBP".toByteArray(Charsets.UTF_8),
+            ),
+        ).sortedByDescending { it.second.size }
 
         private val sig3gp = arrayOf(
             "3ge6",
@@ -156,6 +164,25 @@ class AttachmentUploader(
             }
             return true
         }
+
+        private const val wild = '?'.code.toByte()
+
+        private fun ByteArray.startWithWildcard(
+            key: ByteArray,
+            thisOffset: Int = 0,
+            keyOffset: Int = 0,
+            length: Int = key.size - keyOffset,
+        ): Boolean {
+            if (thisOffset + length > this.size || keyOffset + length > key.size) {
+                return false
+            }
+            for (i in 0 until length) {
+                val cThis = this[i + thisOffset]
+                val cKey = key[i + keyOffset]
+                if (cKey != wild && cKey != cThis) return false
+            }
+            return true
+        }
     }
 
     private val context = contextArg.applicationContext!!
@@ -173,12 +200,37 @@ class AttachmentUploader(
                     channel = it
                     launchIO {
                         while (true) {
-                            try {
-                                handleRequest(it.receive())
+                            val request = try {
+                                it.receive()
                             } catch (ex: Throwable) {
                                 when (ex) {
                                     is CancellationException, is ClosedReceiveChannelException -> break
-                                    else -> context.showToast(ex)
+                                    else -> {
+                                        context.showToast(ex)
+                                        continue
+                                    }
+                                }
+                            }
+                            val result = try {
+                                if (request.pa.isCancelled) continue
+                                withContext(request.pa.job + Dispatchers.IO) {
+                                    request.upload()
+                                }
+                            } catch (ex: Throwable) {
+                                TootApiResult(ex.withCaption("upload failed."))
+                            }
+                            try {
+                                request.pa.progress = ""
+                                withContext(Dispatchers.Main) {
+                                    handleResult(request, result)
+                                }
+                            } catch (ex: Throwable) {
+                                when (ex) {
+                                    is CancellationException, is ClosedReceiveChannelException -> break
+                                    else -> {
+                                        context.showToast(ex)
+                                        continue
+                                    }
                                 }
                             }
                         }
@@ -199,6 +251,9 @@ class AttachmentUploader(
     }
 
     fun addRequest(request: AttachmentRequest) {
+
+        request.pa.progress = context.getString(R.string.attachment_handling_start)
+
         // アップロード開始トースト(連発しない)
         val now = System.currentTimeMillis()
         if (now - lastAttachmentAdd >= 5000L) {
@@ -212,23 +267,18 @@ class AttachmentUploader(
         launchIO { prepareChannel().send(request) }
     }
 
-    private suspend fun handleRequest(request: AttachmentRequest) {
-        val result = request.upload()
-        withContext(Dispatchers.Main) {
-            handleResult(request, result)
-        }
-    }
 
     @WorkerThread
     private suspend fun AttachmentRequest.upload(): TootApiResult? {
-        if (mimeType.isEmpty()) return TootApiResult("mime_type is empty.")
-
         try {
+            if (mimeType.isEmpty()) return TootApiResult("mime_type is empty.")
+
             val client = TootApiClient(context, callback = object : TootApiCallback {
                 override suspend fun isApiCancelled() = !coroutineContext.isActive
             })
 
             client.account = account
+            client.currentCallCallback = {}
 
             val (ti, tiResult) = TootInstance.get(client)
             ti ?: return tiResult
@@ -246,18 +296,44 @@ class AttachmentUploader(
                     )
                 }
             }
+            val mediaConfig = ti.configuration?.jsonObject("media_attachments")
+            val imageResizeConfig = mediaConfig?.int("image_matrix_limit")
+                ?.takeIf { it > 0 }
+                ?.let { ResizeConfig(ResizeType.SquarePixel, it) }
+                ?: account.getResizeConfig()
 
-            // 設定からリサイズ指定を読む
-            val resizeConfig = account.getResizeConfig()
+            val movieResizeConfig = account.getMovieResizeConfig()
 
-            val opener = createOpener(uri, mimeType, resizeConfig)
+            mediaConfig?.int("video_frame_rate_limit")
+                ?.takeIf { it >= 1f }
+                ?.let {
+                    movieResizeConfig.limitFrameRate = min(movieResizeConfig.limitFrameRate, it)
+                }
+
+            mediaConfig?.int("video_matrix_limit")
+                ?.takeIf { it > 1 }
+                ?.let {
+                    movieResizeConfig.limitPixelMatrix = min(movieResizeConfig.limitPixelMatrix, it)
+                }
+
+            // 入力データの変換など
+            val opener = createOpener(
+                uri,
+                mimeType,
+                imageResizeConfig = imageResizeConfig,
+                movieResizeConfig = movieResizeConfig,
+                pa,
+            )
 
             val mediaSizeMax = when {
                 mimeType.startsWith("video") || mimeType.startsWith("audio") ->
-                    account.getMovieMaxBytes(ti)
+                    mediaConfig?.int("video_size_limit")
+                        ?.takeIf { it > 0 }
+                        ?: account.getMovieMaxBytes(ti)
 
-                else ->
-                    account.getImageMaxBytes(ti)
+                else -> mediaConfig?.int("image_size_limit")
+                    ?.takeIf { it > 0 }
+                    ?: account.getImageMaxBytes(ti)
             }
 
             val contentLength = getStreamSize(true, opener.open())
@@ -284,6 +360,20 @@ class AttachmentUploader(
             }
 
             val fileName = fixDocumentName(getDocumentName(context.contentResolver, uri))
+            pa.progress = context.getString(R.string.attachment_handling_uploading, 0)
+            var nWrite = 0
+            fun writeProgress(delta: Int) {
+                nWrite += delta
+                if (contentLength > 0) {
+                    val percent = (100f * nWrite.toFloat() / contentLength.toFloat()).toInt()
+                    if (percent < 100) {
+                        pa.progress =
+                            context.getString(R.string.attachment_handling_uploading, percent)
+                    } else {
+                        pa.progress = context.getString(R.string.attachment_handling_waiting)
+                    }
+                }
+            }
 
             return if (account.isMisskey) {
                 val multipartBuilder = MultipartBody.Builder()
@@ -314,6 +404,7 @@ class AttachmentUploader(
                                 while (true) {
                                     val r = inData.read(tmp, 0, tmp.size)
                                     if (r <= 0) break
+                                    writeProgress(r)
                                     sink.write(tmp, 0, r)
                                 }
                             }
@@ -325,9 +416,7 @@ class AttachmentUploader(
                     "/api/drive/files/create",
                     multipartBuilder.build().toPost()
                 )
-
                 opener.deleteTempFile()
-                onUploadEnd()
 
                 val jsonObject = result?.jsonObject
                 if (jsonObject != null) {
@@ -364,6 +453,7 @@ class AttachmentUploader(
                                         while (true) {
                                             val r = inData.read(tmp, 0, tmp.size)
                                             if (r <= 0) break
+                                            writeProgress(r)
                                             sink.write(tmp, 0, r)
                                         }
                                     }
@@ -390,6 +480,7 @@ class AttachmentUploader(
                         // 202 accepted 以外はポーリングしない
                         code != 202 -> return result
                     }
+                    pa.progress = context.getString(R.string.attachment_handling_waiting2)
 
                     // ポーリングして処理完了を待つ
                     val id =
@@ -422,7 +513,6 @@ class AttachmentUploader(
 
                 val result = postV2()
                 opener.deleteTempFile()
-                onUploadEnd()
 
                 val jsonObject = result?.jsonObject
                 if (jsonObject != null) {
@@ -444,10 +534,14 @@ class AttachmentUploader(
         pa.status = when (pa.attachment) {
             null -> {
                 if (result != null) {
-                    context.showToast(
-                        true,
-                        "${result.error} ${result.response?.request?.method} ${result.response?.request?.url}"
-                    )
+                    when {
+                        // キャンセルはトーストを出さない
+                        result.error?.contains("cancel", ignoreCase = true) == true -> Unit
+                        else -> context.showToast(
+                            true,
+                            "${result.error} ${result.response?.request?.method} ${result.response?.request?.url}"
+                        )
+                    }
                 }
                 PostAttachment.Status.Error
             }
@@ -475,77 +569,51 @@ class AttachmentUploader(
         fun deleteTempFile()
     }
 
-    private fun createOpener(
+    private suspend fun createOpener(
         uri: Uri,
         mimeType: String,
-        resizeConfig: ResizeConfig,
+        imageResizeConfig: ResizeConfig,
+        movieResizeConfig: MovieResizeConfig? = null,
+        postAttachment: PostAttachment? = null,
     ): InputStreamOpener {
-
-        while (true) {
+        if (mimeType == MIME_TYPE_JPEG || mimeType == MIME_TYPE_PNG) {
+            // 静止画(リサイズできなくてもOK)
             try {
-                // 画像の種別
-                val isJpeg = MIME_TYPE_JPEG == mimeType
-                val isPng = MIME_TYPE_PNG == mimeType
-                if (!isJpeg && !isPng) {
-                    log.d("createOpener: source is not jpeg or png")
-                    break
-                }
-
-                val bitmap = createResizedBitmap(
-                    context,
+                return createResizedImageOpener(
                     uri,
-                    resizeConfig,
-                    skipIfNoNeedToResizeAndRotate = true
+                    mimeType,
+                    imageResizeConfig,
+                    postAttachment,
                 )
-                if (bitmap != null) {
-                    try {
-                        val cacheDir = context.externalCacheDir
-                        if (cacheDir == null) {
-                            context.showToast(false, "getExternalCacheDir returns null.")
-                            break
-                        }
-
-                        cacheDir.mkdir()
-
-                        val tempFile = File(cacheDir, "tmp." + Thread.currentThread().id)
-                        FileOutputStream(tempFile).use { os ->
-                            if (isJpeg) {
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
-                            } else {
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
-                            }
-                        }
-
-                        return object : InputStreamOpener {
-
-                            override val mimeType: String
-                                get() = mimeType
-
-                            @Throws(IOException::class)
-                            override fun open(): InputStream {
-                                return FileInputStream(tempFile)
-                            }
-
-                            override fun deleteTempFile() {
-                                tempFile.delete()
-                            }
-                        }
-                    } finally {
-                        bitmap.recycle()
-                    }
-                }
             } catch (ex: Throwable) {
-                log.trace(ex)
-                context.showToast(ex, "Resizing image failed.")
+                log.w(ex, "createResizedImageOpener failed. fall back to original image.")
             }
-
-            break
+        } else if (mimeType.startsWith("image/")) {
+            // 静止画(変換必須)
+            // 例外を投げるかもしれない
+            return createResizedImageOpener(
+                uri,
+                mimeType,
+                imageResizeConfig,
+                postAttachment,
+                forcePng = true
+            )
+        } else {
+            // 動画画(リサイズできなくてもOK)
+            try {
+                return createResizedMovieOpener(
+                    uri,
+                    mimeType,
+                    movieResizeConfig,
+                    postAttachment,
+                )
+            } catch (ex: Throwable) {
+                log.w(ex, "createResizedMovieOpener failed. fall back to original movie.")
+            }
         }
 
         return object : InputStreamOpener {
-
-            override val mimeType: String
-                get() = mimeType
+            override val mimeType = mimeType
 
             @Throws(IOException::class)
             override fun open(): InputStream {
@@ -557,6 +625,101 @@ class AttachmentUploader(
             }
         }
     }
+
+    private fun createResizedImageOpener(
+        uri: Uri,
+        mimeType: String,
+        imageResizeConfig: ResizeConfig,
+        postAttachment: PostAttachment? = null,
+        forcePng: Boolean = false,
+    ): InputStreamOpener {
+        val cacheDir = context.externalCacheDir
+            ?.apply { mkdirs() }
+            ?: error("getExternalCacheDir returns null.")
+
+        val outputMimeType = if (forcePng || mimeType == MIME_TYPE_PNG) {
+            MIME_TYPE_PNG
+        } else {
+            MIME_TYPE_JPEG
+        }
+
+        val tempFile = File(cacheDir, "tmp." + Thread.currentThread().id)
+        val bitmap = createResizedBitmap(
+            context,
+            uri,
+            imageResizeConfig,
+            skipIfNoNeedToResizeAndRotate = !forcePng
+        ) ?: error("createResizedBitmap returns null.")
+        postAttachment?.progress = context.getString(R.string.attachment_handling_compress)
+        try {
+            FileOutputStream(tempFile).use { os ->
+                if (outputMimeType == MIME_TYPE_PNG) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
+                } else {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
+                }
+            }
+            return createTempFileOpener(outputMimeType, tempFile)
+        } finally {
+            bitmap.recycle()
+        }
+    }
+
+
+    private suspend fun createResizedMovieOpener(
+        uri: Uri,
+        mimeType: String,
+        movieResizeConfig: MovieResizeConfig? = null,
+        postAttachment: PostAttachment? = null,
+    ): InputStreamOpener {
+        movieResizeConfig ?: error("missing movieResizeConfig.")
+
+        val cacheDir = context.externalCacheDir
+            ?.apply { mkdirs() }
+            ?: error("getExternalCacheDir returns null.")
+
+        val tempFile = File(cacheDir, "movie." + Thread.currentThread().id + ".tmp")
+        val outFile = File(cacheDir, "movie." + Thread.currentThread().id + ".mp4")
+        // 入力ファイルをコピーする
+        (context.contentResolver.openInputStream(uri)
+            ?: error("openInputStream returns null.")).use { inStream ->
+            FileOutputStream(tempFile).use { inStream.copyTo(it) }
+        }
+        var resultFile: File? = null
+        try {
+            val result = transcodeVideo(
+                tempFile,
+                outFile,
+                movieResizeConfig,
+            ) {
+                val percent = (it * 100f).toInt()
+                postAttachment?.progress =
+                    context.getString(R.string.attachment_handling_compress_ratio, percent)
+            }
+            resultFile = result
+            return createTempFileOpener(
+                when (result) {
+                    tempFile -> mimeType
+                    else -> "video/mp4"
+                },
+                result
+            )
+        } finally {
+            if (outFile != resultFile) outFile.delete()
+            if (tempFile != resultFile) tempFile.delete()
+        }
+    }
+
+    private fun createTempFileOpener(mimeType: String, file: File) =
+        object : InputStreamOpener {
+            override val mimeType = mimeType
+
+            @Throws(IOException::class)
+            override fun open() = FileInputStream(file)
+            override fun deleteTempFile() {
+                file.delete()
+            }
+        }
 
     fun getMimeType(uri: Uri, mimeTypeArg: String?): String? {
         // image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
@@ -593,7 +756,7 @@ class AttachmentUploader(
                 for (pair in imageHeaderList) {
                     val type = pair.first
                     val header = pair.second
-                    if (nRead >= header.size && data.startWith(header)) return type
+                    if (nRead >= header.size && data.startWithWildcard(header)) return type
                 }
 
                 // scan frame header
@@ -783,7 +946,11 @@ class AttachmentUploader(
         return Pair(result, resultAttachment)
     }
 
-    fun isAcceptableMimeType(instance: TootInstance?, mimeType: String, isReply: Boolean): Boolean {
+    fun isAcceptableMimeType(
+        instance: TootInstance?,
+        mimeType: String,
+        isReply: Boolean,
+    ): Boolean {
         if (instance?.instanceType == InstanceType.Pixelfed) {
             if (isReply) {
                 context.showToast(true, R.string.pixelfed_does_not_allow_reply_with_media)

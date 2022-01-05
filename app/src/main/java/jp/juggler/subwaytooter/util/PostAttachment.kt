@@ -1,10 +1,12 @@
 package jp.juggler.subwaytooter.util
 
 import jp.juggler.subwaytooter.api.entity.TootAttachment
+import kotlinx.coroutines.Job
 
 class PostAttachment : Comparable<PostAttachment> {
     interface Callback {
         fun onPostAttachmentComplete(pa: PostAttachment)
+        fun onPostAttachmentProgress()
     }
 
     enum class Status(val id: Int) {
@@ -13,9 +15,18 @@ class PostAttachment : Comparable<PostAttachment> {
         Error(3),
     }
 
+    var isCancelled = false
+    val job = Job()
     var status: Status
     var attachment: TootAttachment? = null
     var callback: Callback? = null
+    var progress =""
+        set(value){
+            if( field!=value){
+                field = value
+                callback?.onPostAttachmentProgress()
+            }
+        }
 
     constructor(callback: Callback) {
         this.status = Status.Progress

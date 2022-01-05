@@ -76,6 +76,29 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             Intent(activity, ActAccountSetting::class.java).apply {
                 putExtra(KEY_ACCOUNT_DB_ID, ai.db_id)
             }
+
+        fun simpleTextWatcher(block: () -> Unit) = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                block()
+            }
+
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+        }
+
     }
 
     @kotlinx.serialization.Serializable
@@ -268,6 +291,18 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 setDropDownViewResource(R.layout.lv_spinner_dropdown)
             }
 
+            spMovieTranscodeMode.adapter = ArrayAdapter(
+                this@ActAccountSetting,
+                android.R.layout.simple_spinner_item,
+                arrayOf(
+                    getString(R.string.auto),
+                    getString(R.string.no),
+                    getString(R.string.always),
+                )
+            ).apply {
+                setDropDownViewResource(R.layout.lv_spinner_dropdown)
+            }
+
             pushPolicyItems = listOf(
                 PushPolicyItem(null, getString(R.string.unspecified)),
                 PushPolicyItem("all", getString(R.string.all)),
@@ -312,52 +347,26 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 NetworkEmojiInvalidator(handler, it)
             }
 
-            etDefaultText.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    saveUIToData()
-                }
+            val watcher1 = simpleTextWatcher { saveUIToData() }
+            arrayOf(
+                etDefaultText,
+                etMediaSizeMax,
+                etMovieSizeMax,
+                etMovieBitrate,
+                etMovieFrameRate,
+                etMovieSquarePixels,
+            ).forEach {
+                it.addTextChangedListener(watcher1)
+            }
 
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int,
-                ) {
-                }
-
-                override fun onTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    before: Int,
-                    count: Int,
-                ) {
-                }
-            })
-
-            etMaxTootChars.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int,
-                ) {
-                }
-
-                override fun onTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    before: Int,
-                    count: Int,
-                ) {
-                }
-
-                override fun afterTextChanged(s: Editable?) {
+            etMaxTootChars.addTextChangedListener(
+                simpleTextWatcher{
                     val num = etMaxTootChars.parseInt()
                     if (num != null && num >= 0) {
                         saveUIToData()
                     }
                 }
-            })
+            )
 
             arrayOf(
                 btnOpenBrowser,
@@ -409,6 +418,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             arrayOf(
                 spResizeImage,
                 spPushPolicy,
+                spMovieTranscodeMode,
             ).forEach { it.onItemSelectedListener = this@ActAccountSetting }
         }
     }
@@ -456,6 +466,40 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 etDefaultText.setText(a.default_text)
                 etMaxTootChars.setText(a.max_toot_chars.toString())
 
+                val ti = TootInstance.getCached(a)
+                if (ti == null) {
+                    etMediaSizeMax.setText(a.image_max_megabytes ?: "")
+                    etMovieSizeMax.setText(a.movie_max_megabytes ?: "")
+                } else {
+                    etMediaSizeMax.setText(
+                        a.image_max_megabytes
+                            ?: a.getImageMaxBytes(ti).div(1000000).toString()
+                    )
+                    etMovieSizeMax.setText(
+                        a.movie_max_megabytes
+                            ?: a.getMovieMaxBytes(ti).div(1000000).toString()
+                    )
+                }
+
+                val currentResizeConfig = a.getResizeConfig()
+                var index =
+                    imageResizeItems.indexOfFirst { it.config.spec == currentResizeConfig.spec }
+                log.d("ResizeItem current ${currentResizeConfig.spec} index=$index ")
+                if (index == -1) index =
+                    imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
+                spResizeImage.setSelection(index, false)
+
+                val currentPushPolicy = a.push_policy
+                index = pushPolicyItems.indexOfFirst { it.id == currentPushPolicy }
+                if (index == -1) index = 0
+                spPushPolicy.setSelection(index, false)
+
+                spMovieTranscodeMode.setSelection(max(0, a.movieTranscodeMode), false)
+                etMovieFrameRate.setText(a.movieTranscodeFramerate)
+                etMovieBitrate.setText(a.movieTranscodeBitrate)
+                etMovieSquarePixels.setText(a.movieTranscodeSquarePixels)
+
+                // アカウントからUIへのデータロードはここまで
                 loadingBusy = false
 
                 val enabled = !a.isPseudo
@@ -497,34 +541,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                     btnNotificationStyleEdit,
                     btnNotificationStyleEditReply,
                 ).forEach { it.isEnabledAlpha = enabledNewNotification }
-
-                val ti = TootInstance.getCached(a)
-                if (ti == null) {
-                    etMediaSizeMax.setText(a.image_max_megabytes ?: "")
-                    etMovieSizeMax.setText(a.movie_max_megabytes ?: "")
-                } else {
-                    etMediaSizeMax.setText(
-                        a.image_max_megabytes
-                            ?: a.getImageMaxBytes(ti).div(1000000).toString()
-                    )
-                    etMovieSizeMax.setText(
-                        a.movie_max_megabytes
-                            ?: a.getMovieMaxBytes(ti).div(1000000).toString()
-                    )
-                }
-
-                val currentResizeConfig = a.getResizeConfig()
-                var index =
-                    imageResizeItems.indexOfFirst { it.config.spec == currentResizeConfig.spec }
-                log.d("ResizeItem current ${currentResizeConfig.spec} index=$index ")
-                if (index == -1) index =
-                    imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
-                spResizeImage.setSelection(index, false)
-
-                val currentPushPolicy = a.push_policy
-                index = pushPolicyItems.indexOfFirst { it.id == currentPushPolicy }
-                if (index == -1) index = 0
-                spPushPolicy.setSelection(index, false)
             }
 
             showVisibility()
@@ -595,8 +611,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
             account.push_policy =
                 pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
-        }
 
+            account.movieTranscodeMode = spMovieTranscodeMode.selectedItemPosition
+            account.movieTranscodeBitrate = etMovieBitrate.text.toString()
+            account.movieTranscodeFramerate = etMovieFrameRate.text.toString()
+            account.movieTranscodeSquarePixels = etMovieSquarePixels.text.toString()
+        }
 
         account.saveSetting()
     }
@@ -1439,7 +1459,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 val bitmap = createResizedBitmap(this, uriArg, resizeTo)
                 if (bitmap != null) {
                     try {
-                        val cacheDir = externalCacheDir?.apply{ mkdirs() }
+                        val cacheDir = externalCacheDir?.apply { mkdirs() }
                         if (cacheDir == null) {
                             showToast(false, "getExternalCacheDir returns null.")
                             break

@@ -1108,4 +1108,18 @@
     <string name="url_of_user_or_status">ユーザや投稿のURL</string>
     <string name="unbookmark">ブックマーク解除</string>
     <string name="event_text_alpha">一部の通知の本文アルファ値(0.0～1.0, デフォルト:1。アプリ再起動が必要)</string>
+    <string name="attachment_handling_start">初期化中…</string>
+    <string name="attachment_handling_compress">圧縮中…</string>
+    <string name="attachment_handling_compress_ratio">圧縮中 %1$d%%…</string>
+    <string name="attachment_handling_uploading">アップロード中 %1$d%%…</string>
+    <string name="attachment_handling_waiting">応答待ち…</string>
+    <string name="attachment_handling_waiting2">応答待ち(非同期)…</string>
+    <string name="option_deprecated_mastodon342">(Mastodon 3.4.2以降では指定した値ではなく、サーバから提供される情報が使われます)</string>
+    <string name="movie_transcode">動画の再圧縮</string>
+    <string name="movie_transcode_mode">モード</string>
+    <string name="movie_transcode_max_bitrate">最大ビットレート(単位:秒間ビット数。デフォルト=2,000,000。サーバからの指定でより少なくなる場合があります。)</string>
+    <string name="movie_transcode_max_frame_rate">最大フレームレート(単位:秒間フレーム数。デフォルト=30。サーバからの指定でより少なくなる場合があります。)</string>
+    <string name="movie_transcode_max_square_pixels">最大平方ピクセル数(デフォルト=2304000)</string>
+    <string name="always">常に</string>
+    <string name="auto">自動</string>
 </resources>

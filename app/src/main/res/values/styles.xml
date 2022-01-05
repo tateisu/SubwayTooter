@@ -230,6 +230,25 @@
         <item name="android:imeOptions">actionDone</item>
     </style>
 
+    <style name="setting_edit_text_indent1" parent="@style/setting_horizontal_stretch">
+        <item name="android:imeOptions">actionDone</item>
+
+        <item name="android:layout_marginLeft">48dp</item>
+        <item name="android:layout_marginRight">0dp</item>
+
+        <item name="android:layout_marginStart" tools:ignore="NewApi">48dp</item>
+        <item name="android:layout_marginEnd" tools:ignore="NewApi">0dp</item>
+    </style>
+
+    <style name="setting_spinner_indent1" parent="@style/setting_horizontal_stretch">
+
+        <item name="android:layout_marginLeft">48dp</item>
+        <item name="android:layout_marginRight">0dp</item>
+
+        <item name="android:layout_marginStart" tools:ignore="NewApi">48dp</item>
+        <item name="android:layout_marginEnd" tools:ignore="NewApi">0dp</item>
+    </style>
+
     <style name="recycler_view_with_scroll_bar">
         <item name="android:clipToPadding">false</item>
         <item name="android:fadeScrollbars">false</item>

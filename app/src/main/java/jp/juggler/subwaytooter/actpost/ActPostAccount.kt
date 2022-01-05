@@ -18,9 +18,9 @@ fun ActPost.selectAccount(a: SavedAccount?) {
     completionHelper.setInstance(a)
 
     if (a == null) {
-        btnAccount.text = getString(R.string.not_selected)
-        btnAccount.setTextColor(attrColor(android.R.attr.textColorPrimary))
-        btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
+        views.btnAccount.text = getString(R.string.not_selected)
+        views.btnAccount.setTextColor(attrColor(android.R.attr.textColorPrimary))
+        views.btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
     } else {
 
         // 先読みしてキャッシュに保持しておく
@@ -29,16 +29,16 @@ fun ActPost.selectAccount(a: SavedAccount?) {
         }
 
         val ac = AcctColor.load(a)
-        btnAccount.text = ac.nickname
+        views.btnAccount.text = ac.nickname
 
         if (AcctColor.hasColorBackground(ac)) {
-            btnAccount.background =
+            views.btnAccount.background =
                 getAdaptiveRippleDrawableRound(this, ac.color_bg, ac.color_fg)
         } else {
-            btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
+            views.btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
         }
 
-        btnAccount.textColor = ac.color_fg.notZero()
+        views.btnAccount.textColor = ac.color_fg.notZero()
             ?: attrColor(android.R.attr.textColorPrimary)
     }
     updateTextCount()

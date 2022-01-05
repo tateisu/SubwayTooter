@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RawRes
+import okhttp3.internal.closeQuietly
 import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -215,14 +216,13 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
     try {
         var size = 0L
         while (true) {
-            val r = IOUtils.skip(inStream, 16384)
+            val r = IOUtils.skip(inStream, 1000_000_000L)
             if (r <= 0) break
             size += r
         }
         return size
     } finally {
-        @Suppress("DEPRECATION")
-        if (bClose) IOUtils.closeQuietly(inStream)
+        if (bClose) inStream.closeQuietly()
     }
 }
 

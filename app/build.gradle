@@ -139,7 +139,7 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
-    def emojiVersion = "1.0.0"
+    def emojiVersion = "1.0.1"
     implementation "androidx.emoji2:emoji2:$emojiVersion"
     implementation "androidx.emoji2:emoji2-bundled:$emojiVersion"
 
@@ -267,7 +267,7 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:$arch_version"
 
 
-    def roomVersion = "2.3.0"
+    def roomVersion = "2.4.0"
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
     kapt "androidx.room:room-compiler:$roomVersion"

@@ -958,7 +958,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     vIndicator.setBackgroundColor(
                         footerTabIndicatorColor.notZero()
-                            ?: activity.attrColor(R.attr.colorAccent)
+                            ?: activity.attrColor(android.R.attr.colorAccent)
                     )
                 }
 

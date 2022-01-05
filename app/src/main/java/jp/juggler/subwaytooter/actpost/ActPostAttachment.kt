@@ -90,7 +90,7 @@ fun ActPost.openAttachment() {
 fun ActPost.addAttachment(
     uri: Uri,
     mimeTypeArg: String? = null,
-    onUploadEnd: () -> Unit = {},
+//    onUploadEnd: () -> Unit = {},
 ) {
     val account = this.account
     val mimeType = attachmentUploader.getMimeType(uri, mimeTypeArg)
@@ -118,7 +118,7 @@ fun ActPost.addAttachment(
                     uri,
                     mimeType,
                     isReply = isReply,
-                    onUploadEnd = onUploadEnd
+              //      onUploadEnd = onUploadEnd
                 )
             )
         }

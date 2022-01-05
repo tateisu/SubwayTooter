@@ -32,7 +32,7 @@ class AttachmentRequest(
     val uri: Uri,
     val mimeType: String,
     val isReply: Boolean,
-    val onUploadEnd: () -> Unit,
+    val onUploadEnd: () -> Unit ={},
 )
 
 class AttachmentUploader(

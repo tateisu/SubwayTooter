@@ -143,7 +143,7 @@ fun ItemViewHolder.showStatus(
     val r = status.auto_cw
     tvContent.minLines = r?.originalLineCount ?: -1
 
-    showPreviewCard(status, fadeText = fadeText)
+    showPreviewCard(status)
     showSpoilerTextAndContent(status)
     showAttachments(status)
     makeReactionsView(status)

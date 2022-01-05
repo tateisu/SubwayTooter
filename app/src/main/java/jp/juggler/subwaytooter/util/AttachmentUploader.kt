@@ -566,9 +566,9 @@ class AttachmentUploader(
         imageResizeConfig: ResizeConfig,
         postAttachment: PostAttachment? = null,
     ): InputStreamOpener {
-        if (mimeType == MIME_TYPE_JPEG || mimeType == MIME_TYPE_PNG) {
+        when {
             // 静止画(失敗したらオリジナルデータにフォールバックする)
-            try {
+            mimeType == MIME_TYPE_JPEG || mimeType == MIME_TYPE_PNG -> try {
                 return createResizedImageOpener(
                     uri,
                     mimeType,
@@ -578,19 +578,20 @@ class AttachmentUploader(
             } catch (ex: Throwable) {
                 log.w(ex, "createResizedImageOpener failed. fall back to original image.")
             }
-        } else if (mimeType.startsWith("image/")) {
+
             // 静止画(変換必須)
             // 例外を投げるかもしれない
-            return createResizedImageOpener(
-                uri,
-                mimeType,
-                imageResizeConfig,
-                postAttachment,
-                forcePng = true
-            )
-        } else if (mimeType.startsWith("video/")) {
+            mimeType.startsWith("image/") ->
+                return createResizedImageOpener(
+                    uri,
+                    mimeType,
+                    imageResizeConfig,
+                    postAttachment,
+                    forcePng = true
+                )
+
             // 動画のトランスコード(失敗したらオリジナルデータにフォールバックする)
-            try {
+            mimeType.startsWith("video/") -> try {
                 return createResizedMovieOpener(
                     account,
                     uri,
@@ -644,7 +645,6 @@ class AttachmentUploader(
             bitmap.recycle()
         }
     }
-
 
     private suspend fun createResizedMovieOpener(
         account: SavedAccount,
@@ -714,7 +714,6 @@ class AttachmentUploader(
             if (tempFile != resultFile) tempFile.delete()
         }
     }
-
 
     fun getMimeType(uri: Uri, mimeTypeArg: String?): String? {
         // image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い

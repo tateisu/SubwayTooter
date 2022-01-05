@@ -689,7 +689,7 @@ enum class ColumnType(
         loading = { client ->
             val whoResult = column.loadProfileAccount(client, parser, true)
             when {
-                client.isApiCancelled || column.whoAccount == null -> whoResult
+                client.isApiCancelled() || column.whoAccount == null -> whoResult
                 else -> column.profileTab.ct.loading(this, client)
             }
         },

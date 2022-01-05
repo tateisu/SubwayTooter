@@ -142,7 +142,8 @@ fun ActPost.restoreDraft(draft: JsonObject) {
             fun isTaskCancelled() = !this.coroutineContext.isActive
 
             var content = draft.string(DRAFT_CONTENT) ?: ""
-            val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
+            val tmpAttachmentList =
+                draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
 
             val accountDbId = draft.long(DRAFT_ACCOUNT_DB_ID) ?: -1L
             val account = SavedAccount.loadAccount(this@restoreDraft, accountDbId)
@@ -175,8 +176,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
 
             // アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
             val apiClient = TootApiClient(this@restoreDraft, callback = object : TootApiCallback {
-                override val isApiCancelled: Boolean
-                    get() = isTaskCancelled()
+                override suspend fun isApiCancelled() = isTaskCancelled()
 
                 override suspend fun publishApiProgress(s: String) {
                     progress.setMessageEx(s)
@@ -236,7 +236,8 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                 val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
                 val replyId = EntityId.from(draft, DRAFT_REPLY_ID)
 
-                val draftVisibility = TootVisibility.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
+                val draftVisibility =
+                    TootVisibility.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
 
                 val evEmoji = DecodeOptions(this@restoreDraft, decodeEmoji = true)
                     .decodeEmoji(content)
@@ -381,7 +382,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
 
             srcEnquete.pollType == TootPollsType.FriendsNico &&
-                srcEnquete.type != TootPolls.TYPE_ENQUETE -> {
+                    srcEnquete.type != TootPolls.TYPE_ENQUETE -> {
                 // フレニコAPIのアンケート結果は再編集の対象外
             }
 

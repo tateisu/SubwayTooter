@@ -32,8 +32,7 @@ class ColumnTask_Loading(
         }
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
-            override val isApiCancelled: Boolean
-                get() = isCancelled || column.isDispose.get()
+            override suspend fun isApiCancelled() = isCancelled || column.isDispose.get()
 
             override suspend fun publishApiProgress(s: String) {
                 runOnMainLooper {
@@ -1004,7 +1003,7 @@ class ColumnTask_Loading(
             // 祖先
             val listAsc = ArrayList<TootStatus>()
             while (true) {
-                if (client.isApiCancelled) return null
+                if (client.isApiCancelled()) return null
                 queryParams["offset"] = listAsc.size
                 result = client.request(
                     "/api/notes/conversation", queryParams.toPostRequestBuilder()
@@ -1021,7 +1020,7 @@ class ColumnTask_Loading(
             var untilId: EntityId? = null
 
             while (true) {
-                if (client.isApiCancelled) return null
+                if (client.isApiCancelled()) return null
 
                 when {
                     untilId == null -> {
@@ -1089,8 +1088,8 @@ class ColumnTask_Loading(
 
                 this.listTmp = ArrayList(
                     (conversationContext.ancestors?.size ?: 0) +
-                        (conversationContext.descendants?.size ?: 0) +
-                        1
+                            (conversationContext.descendants?.size ?: 0) +
+                            1
                 )
 
                 if (conversationContext.ancestors != null) {

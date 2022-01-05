@@ -541,7 +541,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 request
             }) return Pair(result, null)
 
-        if (client.isApiCancelled) return Pair(null, null)
+        if (client.isApiCancelled()) return Pair(null, null)
 
         val response = result.response!!
         if (!response.isSuccessful) {
@@ -557,7 +557,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 }
                 client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
             }
-            if (client.isApiCancelled) return Pair(null, null)
+            if (client.isApiCancelled()) return Pair(null, null)
             return Pair(result, ba)
         } catch (ignored: Throwable) {
             result.parseErrorResponse("?")

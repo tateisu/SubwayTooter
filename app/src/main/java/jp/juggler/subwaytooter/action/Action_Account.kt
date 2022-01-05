@@ -344,7 +344,7 @@ suspend fun Context.accountListWithFilter(
                 .mapNotNull { it.await() }
                 .let { accountListReorder(it, pickupHost) }
         }
-        if (client.isApiCancelled) null else TootApiResult()
+        if (client.isApiCancelled()) null else TootApiResult()
     }
     return resultList
 }
@@ -352,7 +352,7 @@ suspend fun Context.accountListWithFilter(
 suspend fun ActMain.accountListCanQuote(pickupHost: Host? = null) =
     accountListWithFilter(pickupHost) { client, a ->
         when {
-            client.isApiCancelled -> false
+            client.isApiCancelled() -> false
             a.isPseudo -> false
             a.isMisskey -> true
             else -> {
@@ -368,7 +368,7 @@ suspend fun ActMain.accountListCanQuote(pickupHost: Host? = null) =
 suspend fun ActMain.accountListCanReaction(pickupHost: Host? = null) =
     accountListWithFilter(pickupHost) { client, a ->
         when {
-            client.isApiCancelled -> false
+            client.isApiCancelled() -> false
             a.isPseudo -> false
             a.isMisskey -> true
             else -> {
@@ -384,7 +384,7 @@ suspend fun ActMain.accountListCanReaction(pickupHost: Host? = null) =
 suspend fun ActMain.accountListCanSeeMyReactions(pickupHost: Host? = null) =
     accountListWithFilter(pickupHost) { client, a ->
         when {
-            client.isApiCancelled -> false
+            client.isApiCancelled() -> false
             a.isPseudo -> false
             else -> {
                 val (ti, ri) = TootInstance.getEx(client.copy(), account = a)

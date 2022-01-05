@@ -120,8 +120,7 @@ private class TootTaskRunner(
     //////////////////////////////////////////////////////
     // implements TootApiClient.Callback
 
-    override val isApiCancelled: Boolean
-        get() = task?.isActive == false
+    override suspend fun isApiCancelled() = task?.isActive == false
 
     override suspend fun publishApiProgress(s: String) {
         synchronized(this) {

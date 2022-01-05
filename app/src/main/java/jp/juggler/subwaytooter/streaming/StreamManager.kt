@@ -1,12 +1,12 @@
 package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.AppState
-import jp.juggler.subwaytooter.column.Column
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
@@ -37,7 +37,7 @@ class StreamManager(val appState: AppState) {
     val client = TootApiClient(
         appState.context,
         callback = object : TootApiCallback {
-            override val isApiCancelled = false
+            override suspend fun isApiCancelled() = false
         }
     )
 

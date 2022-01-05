@@ -33,8 +33,7 @@ class ColumnTask_Refresh(
         ctStarted.set(true)
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
-            override val isApiCancelled: Boolean
-                get() = isCancelled || column.isDispose.get()
+            override suspend fun isApiCancelled() = isCancelled || column.isDispose.get()
 
             override suspend fun publishApiProgress(s: String) {
                 runOnMainLooper {

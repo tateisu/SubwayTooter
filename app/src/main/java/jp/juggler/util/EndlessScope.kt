@@ -22,7 +22,7 @@ private object EndlessScope : CoroutineScope {
 // メインスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
-    EndlessScope.launch(context = Dispatchers.Main) {
+    EndlessScope.launch(context = Dispatchers.Main.immediate) {
         try {
             block()
         } catch (ex: CancellationException) {

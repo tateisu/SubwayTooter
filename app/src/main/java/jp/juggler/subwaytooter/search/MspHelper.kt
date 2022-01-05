@@ -30,7 +30,7 @@ object MspHelper {
         var user_token: String? = PrefS.spMspUserToken(pref)
 
         for (nTry in 0 until 3) {
-            if (callback.isApiCancelled) return null
+            if (callback.isApiCancelled()) return null
 
             // ユーザトークンがなければ取得する
             if (user_token == null || user_token.isEmpty()) {

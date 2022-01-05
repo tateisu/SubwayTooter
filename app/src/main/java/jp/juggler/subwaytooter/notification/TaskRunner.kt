@@ -395,8 +395,8 @@ class TaskRunner(
             { currentCall = WeakReference(it) }
 
         private val client = TootApiClient(context, callback = object : TootApiCallback {
-            override val isApiCancelled: Boolean
-                get() = job.isJobCancelled || (suspendJob?.isCancelled == true)
+            override suspend fun isApiCancelled() =
+                job.isJobCancelled || (suspendJob?.isCancelled == true)
         }).apply {
             currentCallCallback = onCallCreated
         }

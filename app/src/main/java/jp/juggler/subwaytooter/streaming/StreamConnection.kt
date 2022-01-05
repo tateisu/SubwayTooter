@@ -1,21 +1,20 @@
 package jp.juggler.subwaytooter.streaming
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.onStatusRemoved
 import jp.juggler.subwaytooter.column.reloadFilter
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.net.ProtocolException
 import java.net.SocketException
-import java.util.ArrayList
-import java.util.HashSet
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -38,8 +37,7 @@ class StreamConnection(
 
     private val isDisposed = AtomicBoolean(false)
 
-    override val isApiCancelled: Boolean
-        get() = isDisposed.get()
+    override suspend fun isApiCancelled() = isDisposed.get()
 
     val client = TootApiClient(manager.context, callback = this)
         .apply { account = acctGroup.account }
@@ -270,7 +268,7 @@ class StreamConnection(
 
                             if (payload is TootNotification &&
                                 (payload.type == TootNotification.TYPE_EMOJI_REACTION ||
-                                    payload.type == TootNotification.TYPE_EMOJI_REACTION_PLEROMA)
+                                        payload.type == TootNotification.TYPE_EMOJI_REACTION_PLEROMA)
 
                             ) {
                                 log.d("emoji_reaction (notification) ${payload.status?.id}")

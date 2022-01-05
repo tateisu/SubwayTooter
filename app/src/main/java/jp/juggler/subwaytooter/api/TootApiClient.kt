@@ -1,7 +1,8 @@
 package jp.juggler.subwaytooter.api
 
 import android.content.Context
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.pref
@@ -169,8 +170,7 @@ class TootApiClient(
         }
 
     @Suppress("unused")
-    internal val isApiCancelled: Boolean
-        get() = callback.isApiCancelled
+    internal suspend fun isApiCancelled() = callback.isApiCancelled()
 
     suspend fun publishApiProgress(s: String) {
         callback.publishApiProgress(s)
@@ -271,7 +271,7 @@ class TootApiClient(
     ): String? {
         val response = result.response ?: return null
         try {
-            if (isApiCancelled) return null
+            if (isApiCancelled()) return null
 
             val request = response.request
             publishApiProgress(
@@ -283,7 +283,7 @@ class TootApiClient(
             )
 
             val bodyString = response.body?.string()
-            if (isApiCancelled) return null
+            if (isApiCancelled()) return null
 
             // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
             if (bodyString?.isEmpty() != false && response.code in 200 until 300) {
@@ -305,7 +305,7 @@ class TootApiClient(
                 result.bodyString = bodyString
                 bodyString
             }
-        }finally{
+        } finally {
             response.body?.closeQuietly()
         }
     }
@@ -318,7 +318,7 @@ class TootApiClient(
         jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): ByteArray? {
 
-        if (isApiCancelled) return null
+        if (isApiCancelled()) return null
 
         val response = result.response!!
 
@@ -332,7 +332,7 @@ class TootApiClient(
         )
 
         val bodyBytes = response.body?.bytes()
-        if (isApiCancelled) return null
+        if (isApiCancelled()) return null
 
         if (!response.isSuccessful || bodyBytes?.isEmpty() != false) {
             result.parseErrorResponse(
@@ -357,7 +357,7 @@ class TootApiClient(
     ): TootApiResult? {
         try {
             readBodyBytes(result, progressPath, jsonErrorParser)
-                ?: return if (isApiCancelled) null else result
+                ?: return if (isApiCancelled()) null else result
         } catch (ex: Throwable) {
             log.trace(ex)
             result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
@@ -372,7 +372,7 @@ class TootApiClient(
     ): TootApiResult? {
         try {
             val bodyString = readBodyString(result, progressPath, jsonErrorParser)
-                ?: return if (isApiCancelled) null else result
+                ?: return if (isApiCancelled()) null else result
 
             result.data = bodyString
         } catch (ex: Throwable) {
@@ -393,7 +393,7 @@ class TootApiClient(
 
         try {
             var bodyString = readBodyString(result, progressPath, jsonErrorParser)
-                ?: return if (isApiCancelled) null else result
+                ?: return if (isApiCancelled()) null else result
 
             if (bodyString.isEmpty()) {
 
@@ -641,9 +641,9 @@ class TootApiClient(
                 // クライアント名が一致してて
                 // パーミッションが同じ
                 tmpClientInfo != null &&
-                    clientName == tmpClientInfo.string("name") &&
-                    compareScopeArray(scopeArray, tmpClientInfo["permission"].cast()) &&
-                    appSecret?.isNotEmpty() == true -> {
+                        clientName == tmpClientInfo.string("name") &&
+                        compareScopeArray(scopeArray, tmpClientInfo["permission"].cast()) &&
+                        appSecret?.isNotEmpty() == true -> {
                     // クライアント情報を再利用する
                     result.data = prepareBrowserUrlMisskey(appSecret)
                     return result
@@ -1250,7 +1250,7 @@ class TootApiClient(
             val request = requestBuilder.url(url).build()
             publishApiProgress(context.getString(R.string.request_api, request.method, path))
             ws = httpClient.getWebSocket(request, wsListener)
-            if (isApiCancelled) {
+            if (isApiCancelled()) {
                 ws.cancel()
                 return Pair(null, null)
             }

@@ -111,7 +111,10 @@
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:layout_marginStart="12dp"
-            android:text="@string/mute" />
+            android:text="@string/mute"
+            android:visibility="gone"
+            tools:visibility="visible"
+            />
 
     </com.google.android.flexbox.FlexboxLayout>
 </LinearLayout>

@@ -89,6 +89,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    class DownloadHistory(val time: Long, val url: String)
+
     internal var idx: Int = 0
     private lateinit var mediaList: ArrayList<TootAttachment>
     private lateinit var serviceType: ServiceType
@@ -152,6 +154,63 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         override fun onPositionDiscontinuity(reason: Int) {
             log.d("exoPlayer onPositionDiscontinuity reason=$reason")
+        }
+    }
+
+
+    private val mediaSourceEventListener = object : MediaSourceEventListener {
+        override fun onLoadStarted(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+        ) {
+            log.d("onLoadStarted")
+        }
+
+        override fun onDownstreamFormatChanged(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            mediaLoadData: MediaLoadData,
+        ) {
+            log.d("onDownstreamFormatChanged")
+        }
+
+        override fun onUpstreamDiscarded(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId,
+            mediaLoadData: MediaLoadData,
+        ) {
+            log.d("onUpstreamDiscarded")
+        }
+
+        override fun onLoadCompleted(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+        ) {
+            log.d("onLoadCompleted")
+        }
+
+        override fun onLoadCanceled(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+        ) {
+            log.d("onLoadCanceled")
+        }
+
+        override fun onLoadError(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            loadEventInfo: LoadEventInfo,
+            mediaLoadData: MediaLoadData,
+            error: IOException,
+            wasCanceled: Boolean,
+        ) {
+            showError(error.withCaption("load error."))
         }
     }
 
@@ -291,11 +350,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     internal fun load(state: Bundle? = null) {
 
         exoPlayer.stop()
-        viewBinding.pbvImage.visibility = View.GONE
-        viewBinding.exoView.visibility = View.GONE
-        viewBinding.tvError.visibility = View.GONE
-        viewBinding.svDescription.visibility = View.GONE
-        viewBinding.tvStatus.visibility = View.GONE
+
+        // いったんすべて隠す
+        viewBinding.run {
+            pbvImage.gone()
+            exoView.gone()
+            tvError.gone()
+            svDescription.gone()
+            tvStatus.gone()
+        }
 
         if (idx < 0 || idx >= mediaList.size) {
             showError(getString(R.string.media_attachment_empty))
@@ -304,39 +367,39 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         val ta = mediaList[idx]
         val description = ta.description
         if (showDescription && description?.isNotEmpty() == true) {
-            viewBinding.svDescription.visibility = View.VISIBLE
+            viewBinding.svDescription.visible()
             viewBinding.tvDescription.text = description
         }
 
         when (ta.type) {
+            TootAttachmentType.Unknown,
+            -> showError(getString(R.string.media_attachment_type_error, ta.type.id))
 
-            TootAttachmentType.Unknown ->
-                showError(getString(R.string.media_attachment_type_error, ta.type.id))
-
-            TootAttachmentType.Image ->
-                loadBitmap(ta)
+            TootAttachmentType.Image,
+            -> loadBitmap(ta)
 
             TootAttachmentType.Video,
             TootAttachmentType.GIFV,
             TootAttachmentType.Audio,
-            ->
-                loadVideo(ta, state)
+            -> loadVideo(ta, state)
         }
     }
 
     private fun showError(message: String) {
-        viewBinding.exoView.visibility = View.GONE
-        viewBinding.pbvImage.visibility = View.GONE
-        viewBinding.tvError.visibility = View.VISIBLE
-        viewBinding.tvError.text = message
+        viewBinding.run {
+            exoView.gone()
+            pbvImage.gone()
+            tvError.visible().text = message
+        }
     }
 
     @SuppressLint("StaticFieldLeak")
     private fun loadVideo(ta: TootAttachment, state: Bundle? = null) {
 
-        viewBinding.cbMute.vg(true)
-        if (viewBinding.cbMute.isChecked && lastVolume.isFinite()) {
-            exoPlayer.volume = 0f
+        viewBinding.cbMute.visible().run {
+            if (isChecked && lastVolume.isFinite()) {
+                exoPlayer.volume = 0f
+            }
         }
 
         val url = ta.getLargeUrl(appPref)
@@ -366,62 +429,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             exoPlayer.playWhenReady = state.getBoolean(STATE_PLAYER_PLAY_WHEN_READY, true)
             exoPlayer.seekTo(max(0L, state.getLong(STATE_PLAYER_POS, 0L)))
             lastVolume = state.getFloat(STATE_LAST_VOLUME, 1f)
-        }
-    }
-
-    private val mediaSourceEventListener = object : MediaSourceEventListener {
-        override fun onLoadStarted(
-            windowIndex: Int,
-            mediaPeriodId: MediaSource.MediaPeriodId?,
-            loadEventInfo: LoadEventInfo,
-            mediaLoadData: MediaLoadData,
-        ) {
-            log.d("onLoadStarted")
-        }
-
-        override fun onDownstreamFormatChanged(
-            windowIndex: Int,
-            mediaPeriodId: MediaSource.MediaPeriodId?,
-            mediaLoadData: MediaLoadData,
-        ) {
-            log.d("onDownstreamFormatChanged")
-        }
-
-        override fun onUpstreamDiscarded(
-            windowIndex: Int,
-            mediaPeriodId: MediaSource.MediaPeriodId,
-            mediaLoadData: MediaLoadData,
-        ) {
-            log.d("onUpstreamDiscarded")
-        }
-
-        override fun onLoadCompleted(
-            windowIndex: Int,
-            mediaPeriodId: MediaSource.MediaPeriodId?,
-            loadEventInfo: LoadEventInfo,
-            mediaLoadData: MediaLoadData,
-        ) {
-            log.d("onLoadCompleted")
-        }
-
-        override fun onLoadCanceled(
-            windowIndex: Int,
-            mediaPeriodId: MediaSource.MediaPeriodId?,
-            loadEventInfo: LoadEventInfo,
-            mediaLoadData: MediaLoadData,
-        ) {
-            log.d("onLoadCanceled")
-        }
-
-        override fun onLoadError(
-            windowIndex: Int,
-            mediaPeriodId: MediaSource.MediaPeriodId?,
-            loadEventInfo: LoadEventInfo,
-            mediaLoadData: MediaLoadData,
-            error: IOException,
-            wasCanceled: Boolean,
-        ) {
-            showError(error.withCaption("load error."))
         }
     }
 
@@ -561,19 +568,17 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     @SuppressLint("StaticFieldLeak")
     private fun loadBitmap(ta: TootAttachment) {
 
-        viewBinding.cbMute.visibility = View.INVISIBLE
+        viewBinding.run {
+            cbMute.gone()
+            tvStatus.visible().text = null
+            pbvImage.visible().setBitmap(null)
+        }
 
         val urlList = ta.getLargeUrlList(appPref)
         if (urlList.isEmpty()) {
             showError("missing media attachment url.")
             return
         }
-
-        viewBinding.tvStatus.visibility = View.VISIBLE
-        viewBinding.tvStatus.text = null
-
-        viewBinding.pbvImage.visibility = View.VISIBLE
-        viewBinding.pbvImage.setBitmap(null)
 
         launchMain {
             val options = BitmapFactory.Options()
@@ -619,8 +624,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             showToast(ex, "action failed.")
         }
     }
-
-    class DownloadHistory(val time: Long, val url: String)
 
     private fun download(ta: TootAttachmentLike) {
         if (!checkPermission()) return

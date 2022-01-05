@@ -3,7 +3,6 @@ package jp.juggler.util
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
@@ -71,11 +70,24 @@ fun View.showKeyboard() {
 }
 
 // set visibility VISIBLE or GONE
-// return true if visible
+// return this or null
+// レシーバがnullableなのはplatform typeによるnull例外を避ける目的
 fun <T : View> T?.vg(visible: Boolean): T? {
     this?.visibility = if (visible) View.VISIBLE else View.GONE
     return if (visible) this else null
 }
+
+// set visibility VISIBLE or INVISIBLE
+// return this or null
+// レシーバがnullableなのはplatform typeによるnull例外を避ける目的
+fun <T : View> T?.visibleOrInvisible(visible: Boolean): T? {
+    this?.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+    return if (visible) this else null
+}
+
+fun <T : View> T.visible(): T = apply { visibility = View.VISIBLE }
+fun <T : View> T.invisible(): T = apply { visibility = View.INVISIBLE }
+fun <T : View> T.gone(): T = apply { visibility = View.GONE }
 
 fun ViewGroup.generateLayoutParamsEx(): ViewGroup.LayoutParams? =
     try {
@@ -274,8 +286,8 @@ private fun AppCompatActivity.setNavigationBarColorCompat(@ColorInt c: Int) {
     }
 }
 
-var TextView.textOrGone :CharSequence?
+var TextView.textOrGone: CharSequence?
     get() = text
-    set(value){
-        vg(value?.isNotEmpty() ==true)?.text = value
+    set(value) {
+        vg(value?.isNotEmpty() == true)?.text = value
     }

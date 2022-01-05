@@ -967,19 +967,14 @@ class SavedAccount(
             ?: if (ti.instanceType == InstanceType.Pixelfed) 15 else 8
     )
 
-    fun getMovieResizeConfig(): MovieResizeConfig = MovieResizeConfig(
-        mode = when (movieTranscodeMode) {
-            MovieResizeConfig.MODE_NO,
-            MovieResizeConfig.MODE_AUTO,
-            MovieResizeConfig.NODE_ALWAYS,
-            -> movieTranscodeMode
-            else -> MovieResizeConfig.MODE_AUTO
-        },
-        limitBitrate = movieTranscodeBitrate.toLongOrNull()
-            ?.takeIf { it >= 100_000L } ?: 2_000_000L,
-        limitFrameRate = movieTranscodeFramerate.toIntOrNull()
-            ?.takeIf { it >= 1 } ?: 30,
-        limitPixelMatrix = movieTranscodeSquarePixels.toIntOrNull()
-            ?.takeIf { it > 0 } ?: 2304000,
-    )
+    fun getMovieResizeConfig() =
+        MovieResizeConfig(
+            mode = MovideResizeMode.fromInt(movieTranscodeMode),
+            limitBitrate = movieTranscodeBitrate.toLongOrNull()
+                ?.takeIf { it >= 100_000L } ?: 2_000_000L,
+            limitFrameRate = movieTranscodeFramerate.toIntOrNull()
+                ?.takeIf { it >= 1 } ?: 30,
+            limitSquarePixels = movieTranscodeSquarePixels.toIntOrNull()
+                ?.takeIf { it > 0 } ?: 2304000,
+        )
 }

@@ -1124,7 +1124,7 @@
     <string name="attachment_handling_compress_ratio">Compressing %1$d%%…</string>
     <string name="attachment_handling_uploading">Uploading %1$d%%…</string>
     <string name="attachment_handling_waiting">Waiting response…</string>
-    <string name="attachment_handling_waiting2">Waiting response(asynchronized)…</string>
+    <string name="attachment_handling_waiting_async">Waiting response(asynchronized)…</string>
     <string name="option_deprecated_mastodon342">(This option is deprecated for Mastodon 3.4.2+. App uses information from the server.)</string>
     <string name="movie_transcode">Movie transcoding</string>
     <string name="movie_transcode_mode">Mode</string>

@@ -5,6 +5,7 @@ import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import java.io.File
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -125,6 +126,8 @@ class VideoInfo(
         mmr.int(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH) ?: 0,
         mmr.int(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT) ?: 0,
     )
+
+    val squarePixels: Int get() = max(1, size.w) * max(1, size.h)
 
     val bitrate = mmr.int(MediaMetadataRetriever.METADATA_KEY_BITRATE)
 

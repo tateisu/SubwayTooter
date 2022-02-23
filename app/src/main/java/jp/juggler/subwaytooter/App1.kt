@@ -274,8 +274,10 @@ class App1 : Application() {
 
                 Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
 
+                val apiReadTimeout = max(3, PrefS.spApiReadTimeout.toInt(appPref))
+
                 // API用のHTTP設定はキャッシュを使わない
-                ok_http_client = prepareOkHttp(60, 60)
+                ok_http_client = prepareOkHttp(apiReadTimeout, apiReadTimeout)
                     .build()
 
                 // ディスクキャッシュ
@@ -283,7 +285,7 @@ class App1 : Application() {
                 val cache = Cache(cacheDir, 30000000L)
 
                 // カスタム絵文字用のHTTP設定はキャッシュを使う
-                ok_http_client2 = prepareOkHttp(60, 60)
+                ok_http_client2 = prepareOkHttp(apiReadTimeout, apiReadTimeout)
                     .cache(cache)
                     .build()
 

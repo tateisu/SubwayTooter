@@ -706,6 +706,7 @@
     <string name="timeline_font_bold">タイムラインのフォント(太字)(アプリ再起動が必要)</string>
     <string name="timeline_font_size">タイムラインのフォントの大きさ\n(単位:sp。空欄でデフォルト。アプリ再起動が必要)\n…\n…</string>
     <string name="timeout_for_embed_media_viewer">内蔵メディアビューアのタイムアウト (単位:秒 アプリ再起動(アプリ履歴からの消去)が必要)</string>
+    <string name="timeout_for_server_api">サーバAPIアクセスのタイムアウト (単位:秒 アプリ再起動(アプリ履歴からの消去)が必要)</string>
     <string name="title">名前</string>
     <string name="token_exported">アプリデータのエクスポート、インポート、バックアップからの復元などでアクセストークンが他のデバイスでも使われている可能性があります。アクセストークンの更新をおすすめします。</string>
     <string name="token_not_specified">アクセストークンを入力してください</string>

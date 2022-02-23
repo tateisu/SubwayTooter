@@ -1002,6 +1002,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpDontUseStreaming, R.string.dont_use_streaming_api)
         sw(PrefB.bpDontRefreshOnResume, R.string.dont_refresh_on_activity_resume)
         text(PrefS.spMediaReadTimeout, R.string.timeout_for_embed_media_viewer, InputTypeEx.number)
+        text(PrefS.spApiReadTimeout, R.string.timeout_for_server_api, InputTypeEx.number)
         action(R.string.delete_custom_emoji_cache) {
             action = {
                 App1.custom_emoji_cache.delete()

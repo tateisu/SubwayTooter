@@ -163,6 +163,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
                     "com.google.android.apps.chrome.Main"
                 )
                 startCustomTabIntent(cn)
+                return
             } catch (ex2: Throwable) {
                 log.e(ex2, "openCustomTab: missing chrome. retry to other application.")
             }

@@ -292,7 +292,7 @@ detekt {
     allRules = false
 
     // a way of suppressing issues before introducing detekt
-    baseline = file("$rootDir/config/detekt/baseline.xml")
+    // baseline = file("$rootDir/config/detekt/baseline.xml")
 
     // point to your custom config defining rules to run, overwriting default behavior
     config = files("$rootDir/config/detekt/config.yml")

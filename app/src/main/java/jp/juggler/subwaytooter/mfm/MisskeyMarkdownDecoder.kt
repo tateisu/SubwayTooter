@@ -4,16 +4,13 @@ import android.graphics.Color
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.LogCategory
 import jp.juggler.util.removeEndWhitespaces
-import java.util.ArrayList
-
+import java.util.*
 
 object MisskeyMarkdownDecoder {
 
     internal val log = LogCategory("MisskeyMarkdownDecoder")
 
     internal const val DEBUG = false
-
-
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +34,6 @@ object MisskeyMarkdownDecoder {
         mixColor(Color.GRAY, 0xff0080),
         mixColor(Color.GRAY, 0x8000ff)
     )
-
 
     // 入力テキストからタグを抽出するために使う
     // #を含まないタグ文字列のリスト、またはnullを返す

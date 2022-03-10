@@ -106,7 +106,7 @@ class ActPost : AppCompatActivity(),
 
     var density: Float = 0f
 
-    private lateinit var progressChannel : Channel<Unit>
+    private lateinit var progressChannel: Channel<Unit>
 
     ///////////////////////////////////////////////////
 
@@ -166,7 +166,7 @@ class ActPost : AppCompatActivity(),
         density = resources.displayMetrics.density
         arMushroom.register(this, log)
 
-        progressChannel = Channel(capacity = Channel.CONFLATED )
+        progressChannel = Channel(capacity = Channel.CONFLATED)
         launchMain {
             try {
                 while (true) {
@@ -174,8 +174,8 @@ class ActPost : AppCompatActivity(),
                     showMedisAttachmentProgress()
                     delay(1000L)
                 }
-            }catch(ex:Throwable){
-                when(ex){
+            } catch (ex: Throwable) {
+                when (ex) {
                     is CancellationException, is ClosedReceiveChannelException -> Unit
                     else -> log.trace(ex)
                 }
@@ -193,7 +193,7 @@ class ActPost : AppCompatActivity(),
     override fun onDestroy() {
         try {
             progressChannel.close()
-        }catch(ex:Throwable){
+        } catch (ex: Throwable) {
             log.e(ex)
         }
         completionHelper.onDestroy()
@@ -290,10 +290,10 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun onPostAttachmentProgress() {
-        launchIO{
-            try{
+        launchIO {
+            try {
                 progressChannel.send(Unit)
-            }catch(ex:Throwable){
+            } catch (ex: Throwable) {
                 log.w(ex)
             }
         }
@@ -322,8 +322,6 @@ class ActPost : AppCompatActivity(),
             Styler.fixHorizontalMargin(findViewById(R.id.scrollView))
             Styler.fixHorizontalMargin(findViewById(R.id.llFooterBar))
         }
-
-
 
         views.root.callbackOnSizeChanged = { _, _, _, _ ->
             if (Build.VERSION.SDK_INT >= 24 && isMultiWindowPost) saveWindowSize()
@@ -366,7 +364,6 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-
         ivMedia = listOf(
             views.ivMedia1,
             views.ivMedia2,
@@ -380,7 +377,6 @@ class ActPost : AppCompatActivity(),
             views.etChoice3,
             views.etChoice4,
         )
-
 
         arrayOf(
             views.ibSchedule,

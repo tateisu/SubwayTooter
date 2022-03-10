@@ -17,7 +17,6 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.util.*
 import java.util.*
 
-
 // 装飾つきテキストの出力時に使うデータの集まり
 class SpanOutputEnv(
     val options: DecodeOptions,
@@ -28,7 +27,7 @@ class SpanOutputEnv(
     val decorationEnabled = PrefB.bpMfmDecorationEnabled(context)
     val showUnsupportedMarkup = PrefB.bpMfmDecorationShowUnsupportedMarkup(context)
 
-    val font_bold = ActMain.timeline_font_bold
+    val fontBold = ActMain.timeline_font_bold
     val linkHelper: LinkHelper? = options.linkHelper
     var spanList = SpanList()
 
@@ -43,13 +42,13 @@ class SpanOutputEnv(
     }
 
     internal fun fireRenderChildNodes(parent: Node): SpanList {
-        val parent_result = this.spanList
+        val parentResult = this.spanList
         parent.childNodes.forEach {
-            val child_result = fireRender(it)
-            parent_result.addAll(child_result)
+            val childResult = fireRender(it)
+            parentResult.addAll(childResult)
         }
-        this.spanList = parent_result
-        return parent_result
+        this.spanList = parentResult
+        return parentResult
     }
 
     // 直前の文字が改行文字でなければ改行する

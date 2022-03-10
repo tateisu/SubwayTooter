@@ -20,9 +20,9 @@ class PostAttachment : Comparable<PostAttachment> {
     var status: Status
     var attachment: TootAttachment? = null
     var callback: Callback? = null
-    var progress =""
-        set(value){
-            if( field!=value){
+    var progress = ""
+        set(value) {
+            if (field != value) {
                 field = value
                 callback?.onPostAttachmentProgress()
             }

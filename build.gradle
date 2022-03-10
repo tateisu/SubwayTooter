@@ -6,8 +6,8 @@ buildscript {
     ext.target_sdk_version = 31
     ext.compile_sdk_version = 31
 
-    ext.appcompat_version = "1.4.0"
-    ext.lifecycle_version = "2.4.0"
+    ext.appcompat_version = "1.4.1"
+    ext.lifecycle_version = "2.4.1"
     ext.arch_version = "2.1.0"
 
     ext.kotlin_version = '1.6.10'
@@ -17,7 +17,7 @@ buildscript {
 
     ext.junit_version = '4.13.2'
 
-    ext.detekt_version = '1.18.1'
+    ext.detekt_version = '1.19.0'
 
     ext.compose_version = '1.0.5'
 
@@ -54,7 +54,8 @@ allprojects {
         maven { url 'https://dl.bintray.com/google/exoplayer/' }
         maven { url 'https://dl.bintray.com/google/flexbox-layout/' }
 
-        maven { url "https://plugins.gradle.org/m2/" } // detekt
+        // detekt
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 }
 

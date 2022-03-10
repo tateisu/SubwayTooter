@@ -102,7 +102,12 @@ private fun ActMain.accountCreate(
                 r1
             }?.let { result ->
                 val sa: SavedAccount? = null
-                if (activity.afterAccountVerify(result, resultTootAccount, sa, apiHost, resultApDomain)) {
+                if (activity.afterAccountVerify(result,
+                        resultTootAccount,
+                        sa,
+                        apiHost,
+                        resultApDomain)
+                ) {
                     dialogHost.dismissSafe()
                     dialog_create.dismissSafe()
                 }
@@ -235,7 +240,6 @@ private fun appServerUnregister(context: Context, account: SavedAccount) {
                 }&app_id=${
                     context.packageName.encodePercent()
                 }&tag=$tag"
-
                     .toFormRequestBody()
                     .toPost()
                     .url(PollingWorker.APP_SERVER + "/unregister")

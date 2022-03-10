@@ -91,13 +91,13 @@ interface AppDatabaseHolder {
 }
 
 class AppDatabaseHolderImpl(context: Context) : AppDatabaseHolder {
-    companion object{
+    companion object {
         private val log = LogCategory("AppDatabaseHolderImpl")
     }
 
     private class DBOpenHelper(context: Context) :
         SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
-        companion object{
+        companion object {
             private val log = LogCategory("DBOpenHelper")
         }
 

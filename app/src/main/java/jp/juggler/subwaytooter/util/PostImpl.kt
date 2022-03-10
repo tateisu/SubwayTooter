@@ -27,6 +27,7 @@ interface PostCompleteCallback {
     fun onScheduledPostComplete(targetAccount: SavedAccount)
 }
 
+@Suppress("LongParameterList")
 class PostImpl(
     val activity: AppCompatActivity,
     val account: SavedAccount,

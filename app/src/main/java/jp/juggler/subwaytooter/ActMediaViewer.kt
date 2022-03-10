@@ -39,7 +39,6 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
 
-
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     companion object {
@@ -157,7 +156,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-
     private val mediaSourceEventListener = object : MediaSourceEventListener {
         override fun onLoadStarted(
             windowIndex: Int,
@@ -266,7 +264,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         super.finish()
         overridePendingTransition(R.anim.fade_in, R.anim.slide_to_bottom)
     }
-
 
     internal fun initUI() {
         viewBinding = ActMediaViewerBinding.inflate(layoutInflater)
@@ -742,7 +739,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             showToast(ex, "clipboard access failed.")
         }
     }
-
 
     private fun more(ta: TootAttachmentLike) {
         val ad = ActionsDialog()

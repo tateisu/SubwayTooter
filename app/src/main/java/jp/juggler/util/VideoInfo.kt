@@ -35,7 +35,6 @@ class VideoInfo(
         private fun MediaMetadataRetriever.long(key: Int) =
             string(key)?.toLongOrNull()
 
-
         /**
          * 調査のためコーデックを列挙して情報をログに出す
          */
@@ -47,6 +46,7 @@ class VideoInfo(
                     val caps = try {
                         info.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC) ?: continue
                     } catch (ex: Throwable) {
+                        log.w(ex)
                         continue
                     }
 
@@ -117,7 +117,6 @@ class VideoInfo(
         }
     }
 
-
     val mimeType = mmr.string(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
 
     val rotation = mmr.int(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: 0
@@ -185,5 +184,4 @@ class VideoInfo(
 
     override fun toString() =
         "rotation=$rotation, size=$size, frameRatio=$frameRatio, bitrate=${actualBps ?: bitrate}, audioSampleRate=$audioSampleRate, mimeType=$mimeType, file=${file.canonicalPath}"
-
 }

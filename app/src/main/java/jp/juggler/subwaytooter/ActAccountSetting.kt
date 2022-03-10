@@ -98,7 +98,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             ) {
             }
         }
-
     }
 
     @kotlinx.serialization.Serializable
@@ -250,6 +249,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
 
     var density: Float = 1f
 
+    @Suppress("LongMethod")
     private fun initUI() {
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
@@ -360,7 +360,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             }
 
             etMaxTootChars.addTextChangedListener(
-                simpleTextWatcher{
+                simpleTextWatcher {
                     val num = etMaxTootChars.parseInt()
                     if (num != null && num >= 0) {
                         saveUIToData()
@@ -460,7 +460,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 cbConfirmReaction.isChecked = a.confirm_reaction
                 cbConfirmUnbookmark.isChecked = a.confirm_unbookmark
 
-
                 notificationSoundUri = a.sound_uri
 
                 etDefaultText.setText(a.default_text)
@@ -548,7 +547,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         } finally {
             loadingBusy = false
         }
-
     }
 
     private fun showAcctColor() {
@@ -860,7 +858,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
 
         viewBinding.apply {
-
 
             ivProfileAvatar.setErrorImage(defaultColorIcon(this@ActAccountSetting, questionId))
             ivProfileAvatar.setDefaultImage(defaultColorIcon(this@ActAccountSetting, questionId))

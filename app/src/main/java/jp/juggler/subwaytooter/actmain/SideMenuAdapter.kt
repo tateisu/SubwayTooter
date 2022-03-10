@@ -41,10 +41,11 @@ class SideMenuAdapter(
     private val actMain: ActMain,
     val handler: Handler,
     navigationView: ViewGroup,
-    private val drawer: DrawerLayout
+    private val drawer: DrawerLayout,
 ) : BaseAdapter() {
 
     companion object {
+        private val log = LogCategory("SideMenuAdapter")
 
         private val itemTypeCount = ItemType.values().size
 
@@ -177,7 +178,7 @@ class SideMenuAdapter(
         // 項目の文字列リソース or 0: divider, 1: バージョン表記, 2: タイムゾーン
         val title: Int = 0,
         val icon: Int = 0,
-        val action: ActMain.() -> Unit = {}
+        val action: ActMain.() -> Unit = {},
     ) {
 
         val itemType: ItemType
@@ -407,7 +408,7 @@ class SideMenuAdapter(
     private inline fun <reified T : View> viewOrInflate(
         view: View?,
         parent: ViewGroup?,
-        resId: Int
+        resId: Int,
     ): T =
         (view ?: actMain.layoutInflater.inflate(resId, parent, false))
                 as? T ?: error("invalid view type! ${T::class.java.simpleName}")
@@ -486,6 +487,7 @@ class SideMenuAdapter(
                 }
             }
         } catch (ex: Throwable) {
+            log.w(ex)
             return "(incorrect TimeZone)"
         }
     }

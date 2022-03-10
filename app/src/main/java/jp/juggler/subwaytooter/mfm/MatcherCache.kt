@@ -1,9 +1,8 @@
 package jp.juggler.subwaytooter.mfm
 
-import java.util.HashMap
+import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-
 
 // 正規表現パターンごとにMatcherをキャッシュする
 // 対象テキストが変わったらキャッシュを捨てて更新する

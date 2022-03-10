@@ -225,7 +225,7 @@ fun ActPost.deleteAttachment(pa: PostAttachment) {
         .setPositiveButton(R.string.ok) { _, _ ->
             try {
                 pa.isCancelled = true
-                pa.status= PostAttachment.Status.Error
+                pa.status = PostAttachment.Status.Error
                 pa.job.cancel()
                 attachmentList.remove(pa)
             } catch (ignored: Throwable) {

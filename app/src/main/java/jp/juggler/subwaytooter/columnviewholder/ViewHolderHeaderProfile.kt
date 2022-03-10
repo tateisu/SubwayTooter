@@ -591,7 +591,6 @@ internal class ViewHolderHeaderProfile(
                     else ->
                         append(emoji.unifiedCode)
                 }
-
             }
 
             if (who.bot) {

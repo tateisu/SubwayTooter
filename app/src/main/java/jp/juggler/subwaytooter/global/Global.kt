@@ -24,7 +24,7 @@ object Global {
 
     private var isPrepared = false
 
-    fun prepare(contextArg: Context,caller:String): Global {
+    fun prepare(contextArg: Context, caller: String): Global {
         // double check befort/after lock
         if (!isPrepared) {
             synchronized(this) {
@@ -46,7 +46,7 @@ object Global {
                             }
                         })
                     }
-                    getKoin().get<AppDatabaseHolder>(). afterGlobalPrepare()
+                    getKoin().get<AppDatabaseHolder>().afterGlobalPrepare()
                 }
             }
         }
@@ -60,6 +60,6 @@ class GlobalInitializer : Initializer<Global> {
     }
 
     override fun create(context: Context): Global {
-        return Global.prepare(context,"GlobalInitializer")
+        return Global.prepare(context, "GlobalInitializer")
     }
 }

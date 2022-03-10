@@ -108,7 +108,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             closePreviousBlock()
 
             val text = it.args[0]
-            val kw_start = sb.length // キーワードの開始位置
+            val keywordStart = sb.length // キーワードの開始位置
             appendText(text)
             appendText(" ")
             start = sb.length // 検索リンクの開始位置
@@ -117,7 +117,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
                 context.getString(jp.juggler.subwaytooter.R.string.search),
                 "https://www.google.co.jp/search?q=${text.encodePercent()}"
             )
-            spanList.addLast(kw_start, sb.length, android.text.style.RelativeSizeSpan(1.2f))
+            spanList.addLast(keywordStart, sb.length, android.text.style.RelativeSizeSpan(1.2f))
 
             closeBlock()
         }
@@ -131,7 +131,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             fireRenderChildNodes(it)
             spanList.addLast(
                 start, sb.length,
-                jp.juggler.subwaytooter.span.MisskeyBigSpan(font_bold)
+                jp.juggler.subwaytooter.span.MisskeyBigSpan(fontBold)
             )
         }
     }),
@@ -142,7 +142,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
         } else {
             val start = this.start
             fireRenderChildNodes(it)
-            spanList.addLast(start, sb.length, jp.juggler.util.fontSpan(font_bold))
+            spanList.addLast(start, sb.length, jp.juggler.util.fontSpan(fontBold))
         }
     }),
 
@@ -306,7 +306,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
 
             fireRenderChildNodes(it)
 
-            val bg_color =
+            val bgColor =
                 MisskeyMarkdownDecoder.quoteNestColors[it.quoteNest % MisskeyMarkdownDecoder.quoteNestColors.size]
             // TextView の文字装飾では「ブロック要素の入れ子」を表現できない
             // 内容の各行の始端に何か追加するというのがまずキツい
@@ -325,7 +325,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
                     spanList.insert(i, 2)
                     spanList.addLast(
                         i, i + 1,
-                        android.text.style.BackgroundColorSpan(bg_color)
+                        android.text.style.BackgroundColorSpan(bgColor)
                     )
                 }
             }

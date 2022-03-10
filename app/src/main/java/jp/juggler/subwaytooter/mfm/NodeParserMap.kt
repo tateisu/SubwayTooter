@@ -171,7 +171,6 @@ fun String.removeOrphanedBrackets(urlSafe: Boolean = false): String {
     return substring(0, pos + 1)
 }
 
-
 // [title] 【title】
 // 直後に改行が必要だったが文末でも良いことになった https://github.com/syuilo/misskey/commit/79ffbf95db9d0cc019d06ab93b1bfa6ba0d4f9ae
 //		val titleParser = simpleParser(
@@ -209,7 +208,6 @@ private fun NodeParseEnv.titleParserImpl(): NodeDetected? {
 
     return null
 }
-
 
 @Suppress("SpellCheckingInspection")
 private val latexEscape = listOf(

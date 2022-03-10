@@ -46,7 +46,6 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.math.max
 
-
 class App1 : Application() {
 
     override fun onCreate() {
@@ -59,7 +58,6 @@ class App1 : Application() {
         log.d("onTerminate")
         super.onTerminate()
     }
-
 
     companion object {
 

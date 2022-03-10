@@ -24,7 +24,7 @@ import org.jetbrains.anko.textColor
 fun ItemViewHolder.showStatusOrReply(
     item: TootStatus,
     colorBgArg: Int = 0,
-    fadeText: Boolean = false
+    fadeText: Boolean = false,
 ) {
     var colorBg = colorBgArg
     val reply = item.reply
@@ -47,7 +47,7 @@ fun ItemViewHolder.showStatusOrReply(
 fun ItemViewHolder.showStatus(
     status: TootStatus,
     colorBg: Int = 0,
-    fadeText: Boolean = false
+    fadeText: Boolean = false,
 ) {
 
     val filteredWord = status.filteredWord
@@ -134,7 +134,7 @@ fun ItemViewHolder.showStatus(
         tvCardText.alpha = a
     }
 
-    tvMentions.textOrGone =status.decoded_mentions
+    tvMentions.textOrGone = status.decoded_mentions
 
     tvContent.text = modifiedContent
     contentInvalidator.register(modifiedContent)

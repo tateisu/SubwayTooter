@@ -78,8 +78,8 @@ fun ActMain.reloadIconSize() {
 
     ActMain.eventFadeAlpha = PrefS.spEventTextAlpha()
         .toFloatOrNull()
-        ?.takeIf{ it.isFinite()}
-        ?.clip(0f,1f)
+        ?.takeIf { it.isFinite() }
+        ?.clip(0f, 1f)
         ?: 1f
 }
 

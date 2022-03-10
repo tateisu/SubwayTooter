@@ -1,13 +1,15 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.MisskeyAntenna
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onListListUpdated
 import jp.juggler.subwaytooter.column.onListNameUpdated
@@ -192,7 +194,6 @@ fun ActMain.listRename(
                                 jsonObject {
                                     put("title", text)
                                 }
-
                                     .toPutRequestBuilder()
                             )
                         }?.also { result ->

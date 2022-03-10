@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues>
-  <!-- <ID>ArrayPrimitive:TagHistoryView.kt$TagHistoryView$Array&lt;Float&gt;?</ID> -->
-  </CurrentIssues>
-</SmellBaseline>

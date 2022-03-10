@@ -4,7 +4,6 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import java.util.*
 
-
 // 文字装飾の指定を溜めておいてノードの親子関係に応じて順序を調整して、最後にまとめて適用する
 class SpanList {
 

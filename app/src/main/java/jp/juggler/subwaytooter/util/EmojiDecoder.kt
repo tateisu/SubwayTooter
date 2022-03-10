@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
@@ -60,11 +59,13 @@ object EmojiDecoder {
                 Character.LOWERCASE_LETTER,
                 Character.TITLECASE_LETTER,
                 Character.MODIFIER_LETTER,
-                Character.OTHER_LETTER -> false
+                Character.OTHER_LETTER,
+                -> false
                 // Mark
                 Character.NON_SPACING_MARK,
                 Character.COMBINING_SPACING_MARK,
-                Character.ENCLOSING_MARK -> false
+                Character.ENCLOSING_MARK,
+                -> false
                 // Decimal_Number
                 Character.DECIMAL_DIGIT_NUMBER -> false
 
@@ -270,7 +271,7 @@ object EmojiDecoder {
         fun onShortCode(
             prevCodePoint: Int,
             part: String,
-            name: String
+            name: String,
         ) // part : ":shortcode:", name : "shortcode"
     }
 
@@ -279,7 +280,7 @@ object EmojiDecoder {
 
     private fun splitShortCode(
         s: String,
-        callback: ShortCodeSplitterCallback
+        callback: ShortCodeSplitterCallback,
     ) {
         val urlList = ArrayList<IntRange>().apply {
             val m = reUrl.matcher(s)
@@ -427,7 +428,7 @@ object EmojiDecoder {
     // カスタム絵文字の変換も行わない
     fun decodeShortCode(
         s: String,
-        emojiMapCustom: HashMap<String, CustomEmoji>? = null
+        emojiMapCustom: HashMap<String, CustomEmoji>? = null,
     ): String {
         val decodeEmojioneShortcode = PrefB.bpEmojioneShortcode()
 
@@ -464,7 +465,7 @@ object EmojiDecoder {
     internal fun searchShortCode(
         context: Context,
         prefix: String,
-        limit: Int
+        limit: Int,
     ): ArrayList<CharSequence> {
         val dst = ArrayList<CharSequence>()
         for (shortCode in EmojiMap.shortNameList) {

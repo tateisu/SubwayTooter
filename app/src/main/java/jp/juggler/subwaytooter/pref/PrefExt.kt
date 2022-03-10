@@ -26,4 +26,3 @@ fun SharedPreferences.Editor.put(item: LongPref, v: Long) =
 
 fun SharedPreferences.Editor.put(item: FloatPref, v: Float) =
     this.apply { item.put(this, v) }
-

@@ -266,7 +266,6 @@ class AttachmentUploader(
         launchIO { prepareChannel().send(request) }
     }
 
-
     @WorkerThread
     private suspend fun AttachmentRequest.upload(): TootApiResult? {
         try {

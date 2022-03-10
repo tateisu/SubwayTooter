@@ -85,10 +85,10 @@ complexity:
     includePrivateDeclarations: false
   ComplexMethod:
     active: true
-    threshold: 24
-    ignoreSingleWhenExpression: false
-    ignoreSimpleWhenEntries: false
-    ignoreNestingFunctions: false
+    threshold: 100
+    ignoreSingleWhenExpression: true
+    ignoreSimpleWhenEntries: true
+    ignoreNestingFunctions: true
     nestingFunctions: ['run', 'let', 'apply', 'with', 'also', 'use', 'forEach', 'isNotNull', 'ifNull']
   LabeledExpression:
     active: false
@@ -97,13 +97,13 @@ complexity:
     active: true
     threshold: 2000
   LongMethod:
-    active: true
-    threshold: 60
+    active: false
+    threshold: 100
   LongParameterList:
     active: true
-    functionThreshold: 6
-    constructorThreshold: 7
-    ignoreDefaultParameters: false
+    functionThreshold: 12
+    constructorThreshold: 12
+    ignoreDefaultParameters: true
     ignoreDataClasses: true
     ignoreAnnotated: []
   MethodOverloading:
@@ -127,14 +127,14 @@ complexity:
   TooManyFunctions:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    thresholdInFiles: 11
-    thresholdInClasses: 11
-    thresholdInInterfaces: 11
-    thresholdInObjects: 11
-    thresholdInEnums: 11
-    ignoreDeprecated: false
+    thresholdInFiles: 100
+    thresholdInClasses: 100
+    thresholdInInterfaces: 100
+    thresholdInObjects: 100
+    thresholdInEnums: 100
+    ignoreDeprecated: true
     ignorePrivate: false
-    ignoreOverridden: false
+    ignoreOverridden: true
 
 coroutines:
   active: true
@@ -270,7 +270,7 @@ formatting:
   Filename:
     active: true
   FinalNewline:
-    active: true
+    active: false
     autoCorrect: true
     insertFinalNewLine: true
   ImportOrdering:
@@ -436,7 +436,7 @@ naming:
     active: true
     mustBeFirst: true
   MemberNameEqualsClassName:
-    active: true
+    active: false
     ignoreOverridden: true
   NoNameShadowing:
     active: false

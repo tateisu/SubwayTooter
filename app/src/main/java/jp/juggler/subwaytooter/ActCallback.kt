@@ -95,7 +95,6 @@ class ActCallback : AppCompatActivity() {
 
         // どうであれメイン画面に戻る
         afterDispatch()
-
     }
 
     private fun afterDispatch() {

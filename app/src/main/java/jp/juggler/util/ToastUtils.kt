@@ -48,7 +48,7 @@ object ToastUtils {
 fun Context.showToast(bLong: Boolean, caption: String?): Boolean =
     ToastUtils.showToastImpl(this, bLong, caption ?: "(null)")
 
-fun Context.showToast(ex: Throwable, caption: String="error."): Boolean =
+fun Context.showToast(ex: Throwable, caption: String = "error."): Boolean =
     ToastUtils.showToastImpl(this, true, ex.withCaption(caption))
 
 fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any): Boolean =

@@ -1,3 +1,6 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektPlugin
+
 import java.text.SimpleDateFormat
 
 apply plugin: 'com.android.application'
@@ -296,29 +299,19 @@ detekt {
 
     // point to your custom config defining rules to run, overwriting default behavior
     config = files("$rootDir/config/detekt/config.yml")
+}
 
-    // detekt 1.19.0 でレポート出力先を指定できなくなった？
-    // app/build/reports/detekt に出力されてる
-    reports {
-        // checkstyle like format mainly for integrations like Jenkins
-        xml {
-            enabled = true
-            destination = file("detektReport/${name}.xml")
-        }
-        // observe findings in your browser with structure and code snippets
-        html {
-            enabled = true
-            destination = file("detektReport/${name}.html")
-        }
-        // similar to the console output, contains issue signature to manually edit baseline files
-        txt {
-            enabled = true
-            destination = file("detektReport/${name}.txt")
-        }
-        // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations with Github Code Scanning
-        sarif {
-            enabled = true
-            destination = file("detektReport/${name}.sarif")
+plugins.withType(DetektPlugin) {
+    tasks.withType(Detekt) {
+        reports {
+            xml.required.set(true)
+            xml.outputLocation = file("$buildDir/reports/detekt/st-${name}.xml")
+            html.required.set(true)
+            html.outputLocation = file("$buildDir/reports/detekt/st-${name}.html")
+            txt.required.set(true)
+            txt.outputLocation = file("$buildDir/reports/detekt/st-${name}.txt")
+            sarif.required.set(true)
+            sarif.outputLocation = file("$buildDir/reports/detekt/st-${name}.sarif")
         }
     }
 }

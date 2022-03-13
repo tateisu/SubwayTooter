@@ -215,8 +215,8 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
         var size = 0L
         val tmpBuffer = ByteArray(0x10000)
         while (true) {
-            val delta = inStream.read(tmpBuffer,0,tmpBuffer.size)
-            if( delta <= 0) break
+            val delta = inStream.read(tmpBuffer, 0, tmpBuffer.size)
+            if (delta <= 0) break
             size += delta.toLong()
         }
         return size

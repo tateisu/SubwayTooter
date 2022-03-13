@@ -22,7 +22,6 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.util.*
-import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
@@ -239,9 +238,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                     val fileUri = Uri.fromFile(file)
 
                     client.publishApiProgress("loading image from $uriArg")
-                    contentResolver.openInputStream(uriArg).use { inStream ->
+                    contentResolver.openInputStream(uriArg)?.use { inStream ->
                         FileOutputStream(file).use { outStream ->
-                            IOUtils.copy(inStream, outStream)
+                            inStream.copyTo(outStream)
                         }
                     }
 

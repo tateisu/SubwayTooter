@@ -6,18 +6,17 @@ import android.util.JsonReader
 import android.view.WindowManager
 import androidx.annotation.WorkerThread
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.util.*
 import kotlinx.coroutines.delay
-import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStreamReader
-import java.util.ArrayList
+import java.util.*
 import java.util.zip.ZipInputStream
 
 private val log = LogCategory("ActMainImportAppData")
@@ -52,16 +51,14 @@ fun ActMain.importAppData(uri: Uri) {
                 val cacheDir = cacheDir
                 cacheDir.mkdir()
                 val file = File(cacheDir, "SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp")
-                val source = contentResolver.openInputStream(uri)
-                if (source == null) {
+                val copyBytes = contentResolver.openInputStream(uri)?.let { inStream ->
+                    FileOutputStream(file).use { outStream ->
+                        inStream.copyTo(outStream)
+                    }
+                }
+                if (copyBytes == null) {
                     showToast(true, "openInputStream failed.")
                     return@runWithProgress null
-                }
-
-                source.use { inStream ->
-                    FileOutputStream(file).use { outStream ->
-                        IOUtils.copy(inStream, outStream)
-                    }
                 }
 
                 // 通知サービスを止める
@@ -115,7 +112,8 @@ fun ActMain.importAppData(uri: Uri) {
                 // zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
                 if (zipEntryCount == 0) {
                     InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
-                        newColumnList = AppDataExporter.decodeAppData(this@importAppData, JsonReader(inStream))
+                        newColumnList =
+                            AppDataExporter.decodeAppData(this@importAppData, JsonReader(inStream))
                     }
                 }
 

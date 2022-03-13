@@ -2,8 +2,6 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import jp.juggler.util.*
-import org.apache.commons.io.IOUtils
-import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.util.*
 
@@ -24,9 +22,7 @@ class TaskList {
 
             try {
                 context.openFileInput(FILE_TASK_LIST).use { inputStream ->
-                    val bao = ByteArrayOutputStream()
-                    IOUtils.copy(inputStream, bao)
-                    bao.toByteArray().decodeUTF8().decodeJsonArray().objectList().forEach {
+                    inputStream.readBytes().decodeUTF8().decodeJsonArray().objectList().forEach {
                         _list.add(it)
                     }
                 }
@@ -46,8 +42,9 @@ class TaskList {
         try {
             log.d("saveArray size=${list.size}")
             val data = JsonArray(list).toString().encodeUTF8()
-            context.openFileOutput(FILE_TASK_LIST, Context.MODE_PRIVATE)
-                .use { IOUtils.write(data, it) }
+            context.openFileOutput(FILE_TASK_LIST, Context.MODE_PRIVATE).use {
+                it.write(data)
+            }
         } catch (ex: Throwable) {
             log.trace(ex, "TaskList: saveArray failed.size=${list.size}")
         }

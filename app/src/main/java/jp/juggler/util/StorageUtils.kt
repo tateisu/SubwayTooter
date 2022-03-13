@@ -9,8 +9,6 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RawRes
 import okhttp3.internal.closeQuietly
-import org.apache.commons.io.IOUtils
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
 
@@ -216,7 +214,7 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
     try {
         var size = 0L
         while (true) {
-            val r = IOUtils.skip(inStream, 1000_000_000L)
+            val r = inStream.skip(1_000_000_000L)
             if (r <= 0) break
             size += r
         }
@@ -240,11 +238,7 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
 //}
 
 fun Context.loadRawResource(@RawRes resId: Int): ByteArray {
-    resources.openRawResource(resId).use { inStream ->
-        val bao = ByteArrayOutputStream(inStream.available())
-        IOUtils.copy(inStream, bao)
-        return bao.toByteArray()
-    }
+    return resources.openRawResource(resId).use { it.readBytes() }
 }
 
 fun intentOpenDocument(mimeType: String): Intent {

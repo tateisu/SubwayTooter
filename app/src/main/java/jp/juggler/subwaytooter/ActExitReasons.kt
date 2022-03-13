@@ -16,9 +16,6 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.LogCategory
 import jp.juggler.util.decodeUTF8
 import jp.juggler.util.withCaption
-import org.apache.commons.io.IOUtils
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 
 @RequiresApi(Build.VERSION_CODES.R)
 class ActExitReasons : AppCompatActivity() {
@@ -72,20 +69,6 @@ class ActExitReasons : AppCompatActivity() {
 
             else -> "?($v)"
         }
-
-        fun readStream(inStream: InputStream?) =
-            when (inStream) {
-                null -> "(null)"
-                else -> try {
-                    val bao = ByteArrayOutputStream()
-                    IOUtils.copy(inStream, bao)
-                    bao.toByteArray().decodeUTF8()
-                } catch (ex: Throwable) {
-                    ex.withCaption("readStream failed.")
-                } finally {
-                    inStream.close()
-                }
-            }
     }
 
     private lateinit var listView: ListView
@@ -118,6 +101,13 @@ class ActExitReasons : AppCompatActivity() {
         private val textView: TextView = viewRoot.findViewById(R.id.textView)
 
         fun bind(context: Context, info: ApplicationExitInfo) {
+            val trace = try {
+                info.traceInputStream?.use {
+                    it.readBytes().decodeUTF8()
+                } ?: "(null)"
+            } catch (ex: Throwable) {
+                ex.withCaption("can't read traceInputStream")
+            }
 
             textView.text = """
 				timestamp=${TootStatus.formatTime(context, info.timestamp, bAllowRelative = false)}
@@ -127,7 +117,7 @@ class ActExitReasons : AppCompatActivity() {
 				reason=${reasonString(info.reason)}
 				status=${info.status}
 				description=${info.description}
-				trace=${readStream(info.traceInputStream)}
+				trace=$trace
 			""".trimIndent()
         }
     }

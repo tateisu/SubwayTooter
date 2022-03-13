@@ -98,7 +98,6 @@ class TestJson {
         assertEquals("[\"c\"]", a.encodeSimpleJsonValue(0))
     }
 
-
     @Test
     fun testDecimalNotation() {
         fun x(expect: Boolean, n: Number) {

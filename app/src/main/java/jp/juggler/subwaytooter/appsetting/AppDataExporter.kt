@@ -23,7 +23,6 @@ import jp.juggler.subwaytooter.pref.impl.*
 import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
-import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -428,10 +427,10 @@ object AppDataExporter {
     ) {
         try {
             column.columnBgImage.mayUri()?.let { uri ->
-                context.contentResolver.openInputStream(uri).use { inStream ->
+                context.contentResolver.openInputStream(uri)?.use { inStream ->
                     zipStream.putNextEntry(ZipEntry("background-image/${column.columnId}"))
                     try {
-                        IOUtils.copy(inStream, zipStream)
+                        inStream.copyTo(zipStream)
                     } finally {
                         zipStream.closeEntry()
                     }
@@ -467,7 +466,7 @@ object AppDataExporter {
                 val file =
                     File(backgroundDir, "${column.columnId}:${System.currentTimeMillis()}")
                 FileOutputStream(file).use { outStream ->
-                    IOUtils.copy(inStream, outStream)
+                    inStream.copyTo(outStream)
                 }
                 column.columnBgImage = Uri.fromFile(file).toString()
             }

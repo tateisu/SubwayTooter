@@ -24,8 +24,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
-import org.apache.commons.io.IOUtils
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.ref.WeakReference
@@ -40,13 +38,13 @@ enum class DedupMode {
 
 class DedupItem(
     val text: String,
-    var time: Long = SystemClock.elapsedRealtime()
+    var time: Long = SystemClock.elapsedRealtime(),
 )
 
 class AppState(
     internal val context: Context,
     internal val handler: Handler,
-    internal val pref: SharedPreferences
+    internal val pref: SharedPreferences,
 ) {
 
     companion object {
@@ -98,17 +96,14 @@ class AppState(
         internal fun loadColumnList(context: Context, fileName: String): JsonArray? {
             synchronized(log) {
                 try {
-                    context.openFileInput(fileName).use { inData ->
-                        val bao = ByteArrayOutputStream(inData.available())
-                        IOUtils.copy(inData, bao)
-                        return bao.toByteArray().decodeUTF8().decodeJsonArray()
+                    return context.openFileInput(fileName).use { inData ->
+                        inData.readBytes().decodeUTF8().decodeJsonArray()
                     }
                 } catch (ignored: FileNotFoundException) {
                 } catch (ex: Throwable) {
                     log.trace(ex)
                     context.showToast(ex, "loadColumnList failed.")
                 }
-
                 return null
             }
         }

@@ -41,7 +41,6 @@ import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.*
-import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -981,7 +980,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             } else {
                 source.use { inStream ->
                     FileOutputStream(tmpFile).use { outStream ->
-                        IOUtils.copy(inStream, outStream)
+                        inStream.copyTo(outStream)
                     }
                 }
             }
@@ -1200,7 +1199,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     fun openWebBrowserChooser(
         appSettingItem: AppSettingItem,
         intent: Intent,
-        filter: (ResolveInfo) -> Boolean
+        filter: (ResolveInfo) -> Boolean,
     ) {
         try {
             val rv = DlgAppPicker(

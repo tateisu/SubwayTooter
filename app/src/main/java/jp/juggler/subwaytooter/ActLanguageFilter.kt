@@ -18,9 +18,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.util.*
-import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -455,19 +453,16 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                 "import language filter",
                 doInBackground = {
                     log.d("import2 type=${contentResolver.getType(uri)}")
-                    val source = contentResolver.openInputStream(uri)
-                    if (source == null) {
-                        showToast(true, "openInputStream failed.")
-                        null
-                    } else {
-                        source.use { inStream ->
-                            val bao = ByteArrayOutputStream()
-                            IOUtils.copy(inStream, bao)
-                            bao.toByteArray().decodeUTF8().decodeJsonObject()
+                    try {
+                        contentResolver.openInputStream(uri)!!.use {
+                            it.readBytes().decodeUTF8().decodeJsonObject()
                         }
+                    } catch (ex: Throwable) {
+                        showToast(ex, "openInputStream failed.")
+                        null
                     }
                 },
-                afterProc = { if (it != null) load(it) }
+                afterProc = { load(it) }
             )
         }
     }

@@ -9,7 +9,6 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.digestSHA256Hex
 import jp.juggler.util.showToast
 import okhttp3.internal.toHexString
-import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -212,7 +211,7 @@ class ActCallback : AppCompatActivity() {
             val source = contentResolver.openInputStream(uri)
                 ?: error("getContentResolver.openInputStream returns null.")
             source.use { inStream ->
-                IOUtils.copy(inStream, outStream)
+                inStream.copyTo(outStream)
             }
         }
         return FileProvider.getUriForFile(this, App1.FILE_PROVIDER_AUTHORITY, dst)

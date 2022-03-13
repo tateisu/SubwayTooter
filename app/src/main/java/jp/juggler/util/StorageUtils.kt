@@ -213,10 +213,11 @@ fun getDocumentName(contentResolver: ContentResolver, uri: Uri): String {
 fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
     try {
         var size = 0L
+        val tmpBuffer = ByteArray(0x10000)
         while (true) {
-            val r = inStream.skip(1_000_000_000L)
-            if (r <= 0) break
-            size += r
+            val delta = inStream.read(tmpBuffer,0,tmpBuffer.size)
+            if( delta <= 0) break
+            size += delta.toLong()
         }
         return size
     } finally {

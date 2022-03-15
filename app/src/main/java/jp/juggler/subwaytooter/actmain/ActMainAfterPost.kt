@@ -3,24 +3,34 @@ package jp.juggler.subwaytooter.actmain
 import android.content.Intent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.column.ColumnType
-import jp.juggler.subwaytooter.column.onStatusRemoved
-import jp.juggler.subwaytooter.column.startLoading
-import jp.juggler.subwaytooter.column.startRefreshForPost
+import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.util.decodeJsonObject
 import jp.juggler.util.isLiveActivity
 
 // マルチウィンドウモードでは投稿画面から直接呼ばれる
 // 通常モードでは activityResultHandler 経由で呼ばれる
 fun ActMain.onCompleteActPost(data: Intent) {
     if (!isLiveActivity) return
-    postedAcct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
+
+    this.postedAcct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
     if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
         postedStatusId = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
         postedReplyId = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
         postedRedraftId = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+
+        val postedStatusId = postedStatusId
+        val statusJson = data.getStringExtra(ActPost.KEY_EDIT_STATUS)
+            ?.decodeJsonObject()
+        if (statusJson != null && postedStatusId != null) {
+            appState.columnList
+                .filter { it.accessInfo.acct == postedAcct }
+                .forEach {
+                    it.replaceStatus(postedStatusId, statusJson)
+                }
+        }
     } else {
         postedStatusId = null
     }

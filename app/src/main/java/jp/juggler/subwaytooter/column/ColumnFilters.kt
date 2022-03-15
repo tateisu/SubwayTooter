@@ -18,18 +18,18 @@ private val log = LogCategory("ColumnFilters")
 
 val Column.isFilterEnabled: Boolean
     get() = withAttachment ||
-        withHighlight ||
-        regexText.isNotEmpty() ||
-        dontShowNormalToot ||
-        dontShowNonPublicToot ||
-        quickFilter != Column.QUICK_FILTER_ALL ||
-        dontShowBoost ||
-        dontShowFavourite ||
-        dontShowFollow ||
-        dontShowReply ||
-        dontShowReaction ||
-        dontShowVote ||
-        (languageFilter?.isNotEmpty() == true)
+            withHighlight ||
+            regexText.isNotEmpty() ||
+            dontShowNormalToot ||
+            dontShowNonPublicToot ||
+            quickFilter != Column.QUICK_FILTER_ALL ||
+            dontShowBoost ||
+            dontShowFavourite ||
+            dontShowFollow ||
+            dontShowReply ||
+            dontShowReaction ||
+            dontShowVote ||
+            (languageFilter?.isNotEmpty() == true)
 
 // マストドン2.4.3rcのキーワードフィルタのコンテキスト
 fun Column.getFilterContext() = when (type) {
@@ -66,7 +66,7 @@ fun Column.canNSFWDefault(): Boolean = canStatusFilter()
 fun Column.canFilterBoost(): Boolean = when (type) {
     ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
     ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
-    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL
+    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL,
     -> true
     ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
     ColumnType.HASHTAG_FROM_ACCT -> false
@@ -78,7 +78,7 @@ fun Column.canFilterBoost(): Boolean = when (type) {
 fun Column.canFilterReply(): Boolean = when (type) {
     ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
     ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
-    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL, ColumnType.DIRECT_MESSAGES
+    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL, ColumnType.DIRECT_MESSAGES,
     -> true
     ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
     ColumnType.HASHTAG_FROM_ACCT -> true
@@ -88,7 +88,7 @@ fun Column.canFilterReply(): Boolean = when (type) {
 fun Column.canFilterNormalToot(): Boolean = when (type) {
     ColumnType.NOTIFICATIONS -> true
     ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
-    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL
+    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL,
     -> true
     ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
     ColumnType.HASHTAG_FROM_ACCT -> true
@@ -97,7 +97,7 @@ fun Column.canFilterNormalToot(): Boolean = when (type) {
 
 fun Column.canFilterNonPublicToot(): Boolean = when (type) {
     ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
-    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL
+    ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL,
     -> true
     ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
     ColumnType.HASHTAG_FROM_ACCT -> true
@@ -245,26 +245,34 @@ fun Column.isFiltered(item: TootNotification): Boolean {
 
                 TootNotification.TYPE_REBLOG,
                 TootNotification.TYPE_RENOTE,
-                TootNotification.TYPE_QUOTE -> dontShowBoost
+                TootNotification.TYPE_QUOTE,
+                -> dontShowBoost
 
                 TootNotification.TYPE_FOLLOW,
                 TootNotification.TYPE_UNFOLLOW,
                 TootNotification.TYPE_FOLLOW_REQUEST,
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> dontShowFollow
+                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
+                -> dontShowFollow
 
                 TootNotification.TYPE_MENTION,
-                TootNotification.TYPE_REPLY -> dontShowReply
+                TootNotification.TYPE_REPLY,
+                -> dontShowReply
 
                 TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
                 TootNotification.TYPE_EMOJI_REACTION,
-                TootNotification.TYPE_REACTION -> dontShowReaction
+                TootNotification.TYPE_REACTION,
+                -> dontShowReaction
 
                 TootNotification.TYPE_VOTE,
                 TootNotification.TYPE_POLL,
-                TootNotification.TYPE_POLL_VOTE_MISSKEY -> dontShowVote
+                TootNotification.TYPE_POLL_VOTE_MISSKEY,
+                -> dontShowVote
 
                 TootNotification.TYPE_STATUS -> dontShowNormalToot
+
+                TootNotification.TYPE_UPDATE -> dontShowNormalToot && dontShowBoost
+
                 else -> false
             }
 
@@ -272,26 +280,33 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_FAVOURITE -> quickFilter != Column.QUICK_FILTER_FAVOURITE
                 TootNotification.TYPE_REBLOG,
                 TootNotification.TYPE_RENOTE,
-                TootNotification.TYPE_QUOTE -> quickFilter != Column.QUICK_FILTER_BOOST
+                TootNotification.TYPE_QUOTE,
+                -> quickFilter != Column.QUICK_FILTER_BOOST
 
                 TootNotification.TYPE_FOLLOW,
                 TootNotification.TYPE_UNFOLLOW,
                 TootNotification.TYPE_FOLLOW_REQUEST,
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quickFilter != Column.QUICK_FILTER_FOLLOW
+                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
+                -> quickFilter != Column.QUICK_FILTER_FOLLOW
 
                 TootNotification.TYPE_MENTION,
-                TootNotification.TYPE_REPLY -> quickFilter != Column.QUICK_FILTER_MENTION
+                TootNotification.TYPE_REPLY,
+                -> quickFilter != Column.QUICK_FILTER_MENTION
 
                 TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
                 TootNotification.TYPE_EMOJI_REACTION,
-                TootNotification.TYPE_REACTION -> quickFilter != Column.QUICK_FILTER_REACTION
+                TootNotification.TYPE_REACTION,
+                -> quickFilter != Column.QUICK_FILTER_REACTION
 
                 TootNotification.TYPE_VOTE,
                 TootNotification.TYPE_POLL,
-                TootNotification.TYPE_POLL_VOTE_MISSKEY -> quickFilter != Column.QUICK_FILTER_VOTE
+                TootNotification.TYPE_POLL_VOTE_MISSKEY,
+                -> quickFilter != Column.QUICK_FILTER_VOTE
 
                 TootNotification.TYPE_STATUS -> quickFilter != Column.QUICK_FILTER_POST
+
+                TootNotification.TYPE_UPDATE -> quickFilter != Column.QUICK_FILTER_POST
                 else -> true
             }
         }
@@ -330,7 +345,8 @@ fun Column.isFiltered(item: TootNotification): Boolean {
         TootNotification.TYPE_FOLLOW,
         TootNotification.TYPE_FOLLOW_REQUEST,
         TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
+        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
+        -> {
             val who = item.account
             if (who != null && favMuteSet?.contains(accessInfo.getFullAcct(who)) == true) {
                 log.d("${accessInfo.getFullAcct(who)} is in favMuteSet.")

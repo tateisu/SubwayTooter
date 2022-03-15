@@ -49,6 +49,9 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
         TootNotification.TYPE_STATUS ->
             showNotificationPost(n, nAccountRef, nStatus)
 
+        TootNotification.TYPE_UPDATE ->
+            showNotificationUpdate(n, nAccountRef, nStatus)
+
         TootNotification.TYPE_FOLLOW_REQUEST,
         TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
         -> showNotificationFollowRequest(n, nAccountRef)
@@ -150,6 +153,17 @@ private fun ItemViewHolder.showNotificationPost(
         else -> Styler.getVisibilityIconId(accessInfo.isMisskey, nStatus.visibility)
     }
     nAccountRef?.let { showBoost(it, n.time_created_at, iconId, R.string.display_name_posted_by) }
+    nStatus?.let { showNotificationStatus(it, colorBg) }
+}
+
+private fun ItemViewHolder.showNotificationUpdate(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?
+) {
+    val colorBg = PrefI.ipEventBgColorUpdate(activity.pref)
+    val iconId = R.drawable.ic_refresh
+    nAccountRef?.let { showBoost(it, n.time_created_at, iconId, R.string.display_name_updates_post) }
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 

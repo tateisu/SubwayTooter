@@ -422,3 +422,104 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
         log.trace(ex)
     }
 }
+
+fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
+    try {
+        val baseStatus =
+            TootParser(this, account).status(jsonText.decodeJsonObject())
+                ?: error("initializeFromEditStatus: parse failed.")
+
+        states.editStatusId = baseStatus.id
+
+        states.visibility = baseStatus.visibility
+
+        val srcAttachments = baseStatus.media_attachments
+        if (srcAttachments?.isNotEmpty() == true) {
+            saveAttachmentList()
+            this.attachmentList.clear()
+            try {
+                for (src in srcAttachments) {
+                    if (src is TootAttachment) {
+                        src.redraft = true
+                        val pa = PostAttachment(src)
+                        pa.status = PostAttachment.Status.Ok
+                        this.attachmentList.add(pa)
+                    }
+                }
+            } catch (ex: Throwable) {
+                log.trace(ex)
+            }
+        }
+
+        views.cbNSFW.isChecked = baseStatus.sensitive == true
+
+        // 再編集の場合はdefault_textは反映されない
+
+        val decodeOptions = DecodeOptions(
+            this,
+            mentionFullAcct = true,
+            mentions = baseStatus.mentions,
+            mentionDefaultHostDomain = account
+        )
+
+        var text: CharSequence = if (account.isMisskey) {
+            baseStatus.content ?: ""
+        } else {
+            decodeOptions.decodeHTML(baseStatus.content)
+        }
+        views.etContent.setText(text)
+        views.etContent.setSelection(text.length)
+
+        text = decodeOptions.decodeEmoji(baseStatus.spoiler_text)
+        views.etContentWarning.setText(text)
+        views.etContentWarning.setSelection(text.length)
+        views.cbContentWarning.isChecked = text.isNotEmpty()
+
+        val srcEnquete = baseStatus.enquete
+        val srcItems = srcEnquete?.items
+        when {
+            srcItems == null -> {
+                //
+            }
+
+            srcEnquete.pollType == TootPollsType.FriendsNico &&
+                    srcEnquete.type != TootPolls.TYPE_ENQUETE -> {
+                // フレニコAPIのアンケート結果は再編集の対象外
+            }
+
+            else -> {
+                views.spPollType.setSelection(
+                    if (srcEnquete.pollType == TootPollsType.FriendsNico) {
+                        2
+                    } else {
+                        1
+                    }
+                )
+                text = decodeOptions.decodeHTML(srcEnquete.question)
+                views.etContent.text = text
+                views.etContent.setSelection(text.length)
+
+                var srcIndex = 0
+                for (et in etChoices) {
+                    if (srcIndex < srcItems.size) {
+                        val choice = srcItems[srcIndex]
+                        when {
+                            srcIndex == srcItems.size - 1 && choice.text == "\uD83E\uDD14" -> {
+                                // :thinking_face: は再現しない
+                            }
+
+                            else -> {
+                                et.setText(decodeOptions.decodeEmoji(choice.text))
+                                ++srcIndex
+                                continue
+                            }
+                        }
+                    }
+                    et.setText("")
+                }
+            }
+        }
+    } catch (ex: Throwable) {
+        log.trace(ex)
+    }
+}

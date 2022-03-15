@@ -56,6 +56,7 @@ class SavedAccount(
     var notification_reaction: Boolean = false
     var notification_vote: Boolean = false
     var notification_post: Boolean = false
+    var notification_update: Boolean = true
     var sound_uri = ""
 
     var confirm_follow: Boolean = false
@@ -165,6 +166,7 @@ class SavedAccount(
         notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
         notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
         notification_post = cursor.getBoolean(COL_NOTIFICATION_POST)
+        notification_update = cursor.getBoolean(COL_NOTIFICATION_UPDATE)
 
         dont_hide_nsfw = cursor.getBoolean(COL_DONT_HIDE_NSFW)
         dont_show_timeout = cursor.getBoolean(COL_DONT_SHOW_TIMEOUT)
@@ -247,6 +249,7 @@ class SavedAccount(
             put(COL_NOTIFICATION_REACTION, notification_reaction)
             put(COL_NOTIFICATION_VOTE, notification_vote)
             put(COL_NOTIFICATION_POST, notification_post)
+            put(COL_NOTIFICATION_UPDATE, notification_update)
 
             put(COL_CONFIRM_BOOST, confirm_boost)
             put(COL_CONFIRM_FAVOURITE, confirm_favourite)
@@ -327,6 +330,7 @@ class SavedAccount(
         this.notification_reaction = b.notification_reaction
         this.notification_vote = b.notification_vote
         this.notification_post = b.notification_post
+        this.notification_update = b.notification_update
 
         this.notification_tag = b.notification_tag
         this.default_text = b.default_text
@@ -423,6 +427,8 @@ class SavedAccount(
             ColumnMeta(columnList, 33, "notification_vote", ColumnMeta.TS_TRUE)
         private val COL_NOTIFICATION_POST =
             ColumnMeta(columnList, 57, "notification_post", ColumnMeta.TS_TRUE)
+        private val COL_NOTIFICATION_UPDATE =
+            ColumnMeta(columnList, 64, "notification_update", ColumnMeta.TS_TRUE)
 
         private val COL_CONFIRM_FOLLOW =
             ColumnMeta(columnList, 10, "confirm_follow", ColumnMeta.TS_TRUE)
@@ -546,6 +552,7 @@ class SavedAccount(
                 notification_reaction = false
                 notification_vote = false
                 notification_post = false
+                notification_update = false
             }
         }
 
@@ -879,6 +886,8 @@ class SavedAccount(
         -> notification_vote
 
         TootNotification.TYPE_STATUS -> notification_post
+
+        TootNotification.TYPE_UPDATE -> notification_update
 
         else -> false
     }

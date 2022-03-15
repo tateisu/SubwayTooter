@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.column
 
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.onListListUpdated
 import jp.juggler.subwaytooter.notification.PollingWorker
@@ -8,6 +9,7 @@ import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.AdapterChange
 import jp.juggler.util.AdapterChangeType
+import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import java.util.*
 import kotlin.collections.ArrayList
@@ -236,6 +238,40 @@ fun Column.onMuteUpdated() {
         listData.clear()
         listData.addAll(tmpList)
         fireShowContent(reason = "onMuteUpdated")
+    }
+}
+
+fun Column.replaceStatus(statusId: EntityId, statusJson: JsonObject) {
+
+    fun createStatus() =
+        TootParser(context, accessInfo).status(statusJson)
+            ?: error("replaceStatus: parse failed.")
+
+    val tmpList = ArrayList(listData)
+    var changed = false
+    for (i in 0 until tmpList.size) {
+        when (val item = tmpList[i]) {
+            is TootStatus -> {
+                if (item.id == statusId) {
+                    tmpList[i] = createStatus()
+                    changed = true
+                } else if (item.reblog?.id == statusId) {
+                    item.reblog = createStatus().also { it.reblogParent = item }
+                    changed = true
+                }
+            }
+            is TootNotification -> {
+                if (item.status?.id == statusId) {
+                    item.status = createStatus()
+                    changed = true
+                }
+            }
+        }
+    }
+    if (changed) {
+        listData.clear()
+        listData.addAll(tmpList)
+        fireShowContent(reason = "replaceStatus")
     }
 }
 

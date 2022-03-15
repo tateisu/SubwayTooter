@@ -51,7 +51,8 @@ class PushSubscriptionHelper(
         account.notification_reaction.booleanToInt(16) +
         account.notification_vote.booleanToInt(32) +
         account.notification_follow_request.booleanToInt(64) +
-        account.notification_post.booleanToInt(128)
+        account.notification_post.booleanToInt(128) +
+            account.notification_update.booleanToInt(256)
 
     private val logBuffer = StringBuilder()
 
@@ -321,6 +322,7 @@ class PushSubscriptionHelper(
             put("poll", account.notification_vote)
             put("follow_request", account.notification_follow_request)
             put("status", account.notification_post)
+            put("update", account.notification_update)
             put("emoji_reaction", account.notification_reaction) // fedibird拡張
         }
 
@@ -531,6 +533,7 @@ class PushSubscriptionHelper(
                 "status" -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
                 "emoji_reaction" -> ti.versionGE(TootInstance.VERSION_3_4_0_rc1) &&
                     InstanceCapability.emojiReaction(account, ti)
+                "update" ->  ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
 
                 else -> {
                     log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")

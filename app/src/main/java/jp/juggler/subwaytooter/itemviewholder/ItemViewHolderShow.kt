@@ -217,7 +217,7 @@ fun ItemViewHolder.bind(
                         R.string.display_name_boosted_by,
                         boostStatus = item
                     )
-                    showStatusOrReply(item.reblog, colorBg)
+                    showStatusOrReply(reblog, colorBg)
                 }
             }
         }

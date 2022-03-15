@@ -98,6 +98,7 @@ fun ActPost.resetText() {
 
     resetMushroom()
     states.redraftStatusId = null
+    states.editStatusId = null
     states.timeSchedule = 0L
     attachmentPicker.reset()
     scheduledStatus = null
@@ -193,6 +194,10 @@ fun ActPost.updateText(
         // 再編集
         intent.getStringExtra(ActPost.KEY_REDRAFT_STATUS)
             ?.let { initializeFromRedraftStatus(account, it) }
+
+        // 再編集
+        intent.getStringExtra(ActPost.KEY_EDIT_STATUS)
+            ?.let { initializeFromEditStatus(account, it) }
 
         // 予約編集の再編集
         intent.getStringExtra(ActPost.KEY_SCHEDULED_STATUS)
@@ -329,6 +334,7 @@ fun ActPost.performPost() {
         scheduledAt = states.timeSchedule,
         scheduledId = scheduledStatus?.id,
         redraftStatusId = states.redraftStatusId,
+        editStatusId = states.editStatusId,
         emojiMapCustom = App1.custom_emoji_lister.getMap(account),
         useQuoteToot = views.cbQuote.isChecked,
         callback = object : PostCompleteCallback {
@@ -338,6 +344,9 @@ fun ActPost.performPost() {
                 status.id.putTo(data, ActPost.EXTRA_POSTED_STATUS_ID)
                 states.redraftStatusId?.putTo(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
                 status.in_reply_to_id?.putTo(data, ActPost.EXTRA_POSTED_REPLY_ID)
+                if (states.editStatusId != null) {
+                    data.putExtra(ActPost.KEY_EDIT_STATUS, status.json.toString())
+                }
                 ActMain.refActMain?.get()?.onCompleteActPost(data)
 
                 if (isMultiWindowPost) {

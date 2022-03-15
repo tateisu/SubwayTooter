@@ -6,12 +6,12 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PostCompleteCallback
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.util.hideKeyboard
@@ -124,6 +124,7 @@ fun ActMain.performQuickPost(account: SavedAccount?) {
         scheduledAt = 0L,
         scheduledId = null,
         redraftStatusId = null,
+        editStatusId = null,
         emojiMapCustom = App1.custom_emoji_lister.getMap(account),
         useQuoteToot = false,
         callback = object : PostCompleteCallback {

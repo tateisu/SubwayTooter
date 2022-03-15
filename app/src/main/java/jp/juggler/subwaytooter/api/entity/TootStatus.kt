@@ -125,8 +125,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     //	null or the ID of the account it replies to
     val in_reply_to_account_id: EntityId?
 
-    //	null or the reblogged Status
-    val reblog: TootStatus?
+    // null or the reblogged Status
+    // 投稿の更新が実装されたのでvarになった
+    var reblog: TootStatus? = null
 
     //One of: public, unlisted, private, direct
     val visibility: TootVisibility

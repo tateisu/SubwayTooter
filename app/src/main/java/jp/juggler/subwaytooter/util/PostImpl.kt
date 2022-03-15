@@ -48,6 +48,7 @@ class PostImpl(
     val scheduledAt: Long,
     val scheduledId: EntityId?,
     val redraftStatusId: EntityId?,
+    val editStatusId: EntityId?,
     val emojiMapCustom: HashMap<String, CustomEmoji>?,
     var useQuoteToot: Boolean,
 
@@ -548,8 +549,8 @@ class PostImpl(
                     return@runApiTask ex.result
                 }
 
-                // 元の投稿を削除する
                 if (redraftStatusId != null) {
+                    // 元の投稿を削除する
                     deleteStatus(client)
                 } else if (scheduledId != null) {
                     deleteScheduledStatus(client)
@@ -571,17 +572,34 @@ class PostImpl(
 
                 val bodyString = json.toString()
 
-                val requestBuilder = bodyString.toRequestBody(MEDIA_TYPE_JSON).toPost()
-
-                if (!PrefB.bpDontDuplicationCheck()) {
-                    val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
-                    requestBuilder.header("Idempotency-Key", digest)
+                fun createRequestBuilder(isPut: Boolean = false): Request.Builder {
+                    val requestBody = bodyString.toRequestBody(MEDIA_TYPE_JSON)
+                    return when {
+                        isPut -> Request.Builder().put(requestBody)
+                        else -> Request.Builder().post(requestBody)
+                    }.also {
+                        if (!PrefB.bpDontDuplicationCheck()) {
+                            val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
+                            it.header("Idempotency-Key", digest)
+                        }
+                    }
                 }
 
-                if (account.isMisskey) {
-                    client.request("/api/notes/create", requestBuilder)
-                } else {
-                    client.request("/api/v1/statuses", requestBuilder)
+                when {
+                    account.isMisskey -> client.request(
+                        "/api/notes/create",
+                        createRequestBuilder()
+                    )
+
+                    editStatusId != null -> client.request(
+                        "/api/v1/statuses/$editStatusId",
+                        createRequestBuilder(isPut = true)
+                    )
+
+                    else -> client.request(
+                        "/api/v1/statuses",
+                        createRequestBuilder()
+                    )
                 }?.also { result ->
                     val jsonObject = result.jsonObject
 

@@ -66,6 +66,7 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
         account.notification_reaction = false
         account.notification_vote = false
         account.notification_post = false
+        account.notification_update = false
         account.saveSetting()
         return account
     } catch (ex: Throwable) {

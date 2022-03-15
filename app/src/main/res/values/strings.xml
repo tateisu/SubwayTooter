@@ -91,6 +91,7 @@
     <string name="display_name_follow_request_accepted_by">%1$s accepted your follow request</string>
     <string name="display_name_quoted_by">%1$s quoted</string>
     <string name="display_name_posted_by">%1$s posted</string>
+    <string name="display_name_updates_post">%1$s updates the post</string>
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
     <string name="display_name_unfollowed_by">%1$s unfollowed you</string>
@@ -637,6 +638,7 @@
     <string name="notification_type_reaction">reaction</string>
     <string name="notification_type_vote">vote</string>
     <string name="notification_type_post">post</string>
+    <string name="notification_type_update">post update</string>
 
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="dont_show_non_public_toot">Don\'t show non-public toot</string>
@@ -699,6 +701,7 @@
     <string name="redraft_and_delete">Redraft and delete</string>
     <string name="cant_sync_toot">Can\'t synchronize toot.</string>
     <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>
+    <string name="cant_change_account_when_edit">Can\'t change account while edit the post.</string>
     <string name="delete_base_status_before_toot">Delete base status before posting.  All of favourites/boosts will be lost. Replies will be disconnected. Media attachments will not kept on Mastodon pre-2.4.1 . Are you sure?</string>
     <string name="notification_tl_font_size">Notification TL font size\n(Unit: sp. leave empty to default. app restart required)\n…\n…</string>
     <string name="notification_tl_icon_size">Notification TL icon size (Unit:dp. default:24. app restart required)</string>
@@ -1134,4 +1137,5 @@
     <string name="movie_transcode_max_square_pixels">Max square pixels(default=2304000. Also it may be reduced by server configuration.)</string>
     <string name="always">Always</string>
     <string name="auto">Auto</string>
+    <string name="status_edit">Edit (Mastodon 3.5.0+)</string>
 </resources>

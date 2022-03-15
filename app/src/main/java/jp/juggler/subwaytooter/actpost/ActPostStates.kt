@@ -31,6 +31,9 @@ data class ActPostStates(
     @Serializable(with = EntityIdSerializer::class)
     var redraftStatusId: EntityId? = null,
 
+    @Serializable(with = EntityIdSerializer::class)
+    var editStatusId: EntityId? = null,
+
     var mushroomInput: Int = 0,
     var mushroomStart: Int = 0,
     var mushroomEnd: Int = 0,

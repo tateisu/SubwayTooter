@@ -555,6 +555,10 @@
             style="@style/setting_row_form"
             android:text="@string/notification_type_post" />
 
+        <CheckBox
+            android:id="@+id/cbNotificationUpdate"
+            style="@style/setting_row_form"
+            android:text="@string/notification_type_update" />
         <TextView
             style="@style/setting_row_form"
             android:layout_marginTop="12dp"

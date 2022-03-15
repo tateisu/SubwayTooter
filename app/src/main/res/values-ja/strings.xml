@@ -102,6 +102,7 @@
 \n\"鍵付き\"ユーザーの場合はフォローリクエストが承認されるまでお待ちください。そうでなければ2…3回再試行してください。</string>
     <string name="cant_change_account_when_attachment_specified">添付ファイルがある状態ではアカウントを変更できません。</string>
     <string name="cant_change_account_when_redraft">再編集中は投稿先アカウントを変更できません</string>
+    <string name="cant_change_account_when_edit">投稿の編集中は投稿先アカウントを変更できません</string>
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">複数カラムが表示されてると戻るボタンではカラムを閉じられません</string>
     <string name="cant_follow_locked_user">鍵つきユーザをフォローできません</string>
     <string name="cant_get_misskey_app_secret">このMisskeyサーバーのアプリ登録APIは応答にapp secretが含まれません。Misskeyをアップデートするようサーバー運営に相談してください。</string>
@@ -206,6 +207,7 @@
     <string name="display_name_followed_by">%1$sにフォローされました</string>
     <string name="display_name_quoted_by">%1$sが引用しました</string>
     <string name="display_name_posted_by">%1$sが投稿しました</string>
+    <string name="display_name_updates_post">%1$sが投稿を更新しました</string>
     <string name="display_name_reaction_by">%1$sがリアクション</string>
     <string name="display_name_replied_by">%1$sからの返信</string>
     <string name="display_name_mentioned_by">%1$sからのメンション</string>
@@ -501,6 +503,7 @@
     <string name="notification_type_reaction">リアクション</string>
     <string name="notification_type_vote">投票</string>
     <string name="notification_type_post">投稿</string>
+    <string name="notification_type_update">投稿の更新</string>
     <string name="notifications">通知</string>
     <string name="nsfw">NSFW</string>
     <string name="ok">OK</string>
@@ -1123,4 +1126,5 @@
     <string name="movie_transcode_max_square_pixels">最大平方ピクセル数(デフォルト=2304000。サーバからの指定でより少なくなる場合があります。)</string>
     <string name="always">常に</string>
     <string name="auto">自動</string>
+    <string name="status_edit">編集(Mastodon 3.5.0+)</string>
 </resources>

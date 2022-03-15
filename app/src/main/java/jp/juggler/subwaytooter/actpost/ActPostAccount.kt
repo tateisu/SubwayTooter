@@ -46,26 +46,24 @@ fun ActPost.selectAccount(a: SavedAccount?) {
 }
 
 fun ActPost.canSwitchAccount(): Boolean {
+    val errStringId = when {
+        // 予約投稿の再編集はアカウント切り替えできない
+        scheduledStatus != null ->
+            R.string.cant_change_account_when_editing_scheduled_status
+        // 削除して再投稿はアカウント切り替えできない
+        states.redraftStatusId != null ->
+            R.string.cant_change_account_when_redraft
+        // 投稿の編集中はアカウント切り替えできない
+        states.editStatusId != null ->
+            R.string.cant_change_account_when_edit
+        // 添付ファイルがあったらはアカウント切り替えできない
+        attachmentList.isNotEmpty() ->
+            R.string.cant_change_account_when_attachment_specified
+        else -> null
+    } ?: return true
 
-    if (scheduledStatus != null) {
-        // 予約投稿の再編集ではアカウントを切り替えられない
-        showToast(false, R.string.cant_change_account_when_editing_scheduled_status)
-        return false
-    }
-
-    if (attachmentList.isNotEmpty()) {
-        // 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
-        showToast(false, R.string.cant_change_account_when_attachment_specified)
-        return false
-    }
-
-    if (states.redraftStatusId != null) {
-        // 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
-        showToast(false, R.string.cant_change_account_when_redraft)
-        return false
-    }
-
-    return true
+    showToast(true, errStringId)
+    return false
 }
 
 fun ActPost.performAccountChooser() {

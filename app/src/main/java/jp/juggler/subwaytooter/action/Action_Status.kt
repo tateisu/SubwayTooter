@@ -537,6 +537,51 @@ fun ActMain.statusRedraft(
     }
 }
 
+// 投稿画面を開く。初期テキストを指定する
+fun ActMain.statusEdit(
+    accessInfo: SavedAccount,
+    status: TootStatus?,
+) {
+    status ?: return
+
+    completionHelper.closeAcctPopup()
+
+    when {
+        accessInfo.isMisskey ->
+            openActPostImpl(
+                accessInfo.db_id,
+                editStatus = status,
+                replyStatus = status.reply
+            )
+
+        status.in_reply_to_id == null ->
+            openActPostImpl(
+                accessInfo.db_id,
+                editStatus = status
+            )
+
+        else -> launchMain {
+            var resultStatus: TootStatus? = null
+            runApiTask(accessInfo) { client ->
+                client.request("/api/v1/statuses/${status.in_reply_to_id}")
+                    ?.also { resultStatus = TootParser(this, accessInfo).status(it.jsonObject) }
+            }?.let { result ->
+                when (val replyStatus = resultStatus) {
+                    null -> showToast(
+                        true,
+                        "${getString(R.string.cant_sync_toot)} : ${result.error ?: "(no information)"}"
+                    )
+                    else -> openActPostImpl(
+                        accessInfo.db_id,
+                        editStatus = status,
+                        replyStatus = replyStatus
+                    )
+                }
+            }
+        }
+    }
+}
+
 fun ActMain.scheduledPostDelete(
     accessInfo: SavedAccount,
     item: TootScheduled,

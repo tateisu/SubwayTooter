@@ -54,6 +54,7 @@ class ActPost : AppCompatActivity(),
         const val KEY_ACCOUNT_DB_ID = "account_db_id"
         const val KEY_REPLY_STATUS = "reply_status"
         const val KEY_REDRAFT_STATUS = "redraft_status"
+        const val KEY_EDIT_STATUS = "edit_status"
         const val KEY_INITIAL_TEXT = "initial_text"
         const val KEY_SHARED_INTENT = "sent_intent"
         const val KEY_QUOTE = "quote"
@@ -69,6 +70,8 @@ class ActPost : AppCompatActivity(),
             multiWindowMode: Boolean,
             // 再編集する投稿。アカウントと同一のタンスであること
             redraftStatus: TootStatus? = null,
+            // 編集する投稿。アカウントと同一のタンスであること
+            editStatus:TootStatus? = null,
             // 返信対象の投稿。同一タンス上に同期済みであること
             replyStatus: TootStatus? = null,
             //初期テキスト
@@ -84,6 +87,7 @@ class ActPost : AppCompatActivity(),
             putExtra(KEY_ACCOUNT_DB_ID, accountDbId)
             initialText?.let { putExtra(KEY_INITIAL_TEXT, it) }
             redraftStatus?.let { putExtra(KEY_REDRAFT_STATUS, it.json.toString()) }
+            editStatus?.let { putExtra(KEY_EDIT_STATUS, it.json.toString()) }
             replyStatus?.let {
                 putExtra(KEY_REPLY_STATUS, it.json.toString())
                 putExtra(KEY_QUOTE, quote)

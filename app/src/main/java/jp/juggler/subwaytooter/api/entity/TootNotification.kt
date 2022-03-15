@@ -42,13 +42,20 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
         const val TYPE_POLL = "poll"
 
         const val TYPE_STATUS = "status"
+
+        // (Mastodon 3.5.0rc1)
+        const val TYPE_UPDATE = "update"
     }
 
     val json: JsonObject
     val id: EntityId
     val type: String    //	One of: "mention", "reblog", "favourite", "follow"
     val accountRef: TootAccountRef?    //	The Account sending the notification to the user
-    val status: TootStatus?    //	The Status associated with the notification, if applicable
+
+    //	The Status associated with the notification, if applicable
+    // 投稿の更新により変更可能になる
+    var status: TootStatus?
+
     var reaction: TootReaction? = null
 
     val reblog_visibility: TootVisibility

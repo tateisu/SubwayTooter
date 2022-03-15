@@ -58,6 +58,9 @@ fun ActMain.openActPostImpl(
     // 再編集する投稿。アカウントと同一のタンスであること
     redraftStatus: TootStatus? = null,
 
+    // 編集する投稿。アカウントと同一のタンスであること
+    editStatus: TootStatus? = null,
+
     // 返信対象の投稿。同一タンス上に同期済みであること
     replyStatus: TootStatus? = null,
 
@@ -81,6 +84,7 @@ fun ActMain.openActPostImpl(
         context = this,
         accountDbId = accountDbId,
         redraftStatus = redraftStatus,
+        editStatus = editStatus,
         replyStatus = replyStatus,
         initialText = initialText,
         sharedIntent = sharedIntent,

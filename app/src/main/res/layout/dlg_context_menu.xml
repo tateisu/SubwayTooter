@@ -358,6 +358,20 @@
                     tools:ignore="RtlSymmetry">
 
                     <Button
+                        android:id="@+id/btnStatusEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/btn_bg_transparent_round6dp"
+                        android:gravity="start|center_vertical"
+                        android:minHeight="32dp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="4dp"
+                        android:text="@string/status_edit"
+                        android:textAllCaps="false" />
+
+                    <Button
                         android:id="@+id/btnRedraft"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

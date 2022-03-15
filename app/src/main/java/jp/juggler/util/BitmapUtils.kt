@@ -1,11 +1,11 @@
 package jp.juggler.util
 
+//import it.sephiroth.android.library.exif2.ExifInterface
 import android.content.Context
 import android.graphics.*
-import    androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import androidx.annotation.StringRes
-//import it.sephiroth.android.library.exif2.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import java.io.FileNotFoundException
 import java.io.InputStream
 import kotlin.math.max
@@ -81,23 +81,39 @@ class ResizeConfig(
             ResizeType.None -> type.toString()
             else -> "$type,$size"
         }
+
+    override fun toString() = "ResizeConfig($spec)"
+}
+
+private fun PointF.limitBySqPixel(aspect: Float, maxSqPixels: Float): PointF {
+    val currentSqPixels = x * y
+    return when {
+        maxSqPixels <= 0 -> this
+        currentSqPixels <= maxSqPixels -> this
+        else -> {
+            val y = sqrt(maxSqPixels / aspect)
+            val x = aspect * y
+            PointF(x, y)
+        }
+    }
 }
 
 fun createResizedBitmap(
     context: Context,
     uri: Uri,
     sizeLongSide: Int,
-    skipIfNoNeedToResizeAndRotate: Boolean = false
-) =
-    createResizedBitmap(
-        context,
-        uri,
-        when {
-            sizeLongSide <= 0 -> ResizeConfig(ResizeType.None, 0)
-            else -> ResizeConfig(ResizeType.LongSide, sizeLongSide)
-        },
-        skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
-    )
+    serverMaxSqPixel: Int? = null,
+    skipIfNoNeedToResizeAndRotate: Boolean = false,
+) = createResizedBitmap(
+    context,
+    uri,
+    when {
+        sizeLongSide <= 0 -> ResizeConfig(ResizeType.None, 0)
+        else -> ResizeConfig(ResizeType.LongSide, sizeLongSide)
+    },
+    serverMaxSqPixel = serverMaxSqPixel,
+    skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
+)
 
 fun createResizedBitmap(
     context: Context,
@@ -108,10 +124,13 @@ fun createResizedBitmap(
     // リサイズ指定
     resizeConfig: ResizeConfig,
 
-    // 真の場合、リサイズも回転も必要ないならnullを返す
-    skipIfNoNeedToResizeAndRotate: Boolean = false
+    // サーバ側の最大平方ピクセル
+    serverMaxSqPixel: Int? = null,
 
-): Bitmap? {
+    // 真の場合、リサイズも回転も必要ないならnullを返す
+    skipIfNoNeedToResizeAndRotate: Boolean = false,
+
+    ): Bitmap? {
 
     try {
 
@@ -142,10 +161,9 @@ fun createResizedBitmap(
 
         /// 出力サイズの計算
         val sizeSpec = resizeConfig.size.toFloat()
-        val dstSize: PointF = when (resizeConfig.type) {
+        var dstSize: PointF = when (resizeConfig.type) {
 
-            ResizeType.None ->
-                srcSize
+            ResizeType.None -> srcSize
 
             ResizeType.LongSide ->
                 if (max(srcSize.x, srcSize.y) <= resizeConfig.size) {
@@ -164,17 +182,11 @@ fun createResizedBitmap(
                     }
                 }
 
-            ResizeType.SquarePixel -> {
-                val maxPixels = sizeSpec * sizeSpec
-                val currentPixels = srcSize.x * srcSize.y
-                if (currentPixels <= maxPixels) {
-                    srcSize
-                } else {
-                    val y = sqrt(maxPixels / aspect)
-                    val x = aspect * y
-                    PointF(x, y)
-                }
-            }
+            ResizeType.SquarePixel -> srcSize.limitBySqPixel(aspect, sizeSpec * sizeSpec)
+        }
+
+        if (serverMaxSqPixel != null && serverMaxSqPixel > 0) {
+            dstSize = dstSize.limitBySqPixel(aspect, serverMaxSqPixel.toFloat())
         }
 
         val dstSizeInt = Point(
@@ -184,12 +196,24 @@ fun createResizedBitmap(
 
         val resizeRequired = dstSizeInt.x != srcSize.x.toInt() || dstSizeInt.y != srcSize.y.toInt()
 
+        log.i("createResizedBitmap: rc=${
+            resizeConfig
+        }, src=${
+            srcSize
+        }, dst=${
+            dstSizeInt
+        }, ori=${
+            orientation
+        }, resizeRequired=${
+            resizeRequired
+        }")
+
         // リサイズも回転も必要がない場合
         if (skipIfNoNeedToResizeAndRotate &&
             (orientation == null || orientation == 1) &&
             !resizeRequired
         ) {
-            log.d("createResizedBitmap: no need to resize or rotate")
+            log.w("createResizedBitmap: no need to resize or rotate.")
             return null
         }
 

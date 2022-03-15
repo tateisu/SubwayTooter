@@ -30,6 +30,7 @@ import java.io.*
 import java.util.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.coroutineContext
+import kotlin.math.min
 
 class AttachmentRequest(
     val account: SavedAccount,
@@ -295,10 +296,8 @@ class AttachmentUploader(
                 }
             }
             val mediaConfig = ti.configuration?.jsonObject("media_attachments")
-            val imageResizeConfig = mediaConfig?.int("image_matrix_limit")
-                ?.takeIf { it > 0 }
-                ?.let { ResizeConfig(ResizeType.SquarePixel, it) }
-                ?: account.getResizeConfig()
+            val serverMaxSqPixel = mediaConfig?.int("image_matrix_limit")?.takeIf { it > 0 }
+            val imageResizeConfig = account.getResizeConfig()
 
             // 入力データの変換など
             val opener = createOpener(
@@ -308,17 +307,21 @@ class AttachmentUploader(
                 mediaConfig = mediaConfig,
                 imageResizeConfig = imageResizeConfig,
                 postAttachment = pa,
+                serverMaxSqPixel = serverMaxSqPixel,
             )
 
             val mediaSizeMax = when {
-                mimeType.startsWith("video") || mimeType.startsWith("audio") ->
+                mimeType.startsWith("video") || mimeType.startsWith("audio") -> min(
+                    account.getMovieMaxBytes(ti),
                     mediaConfig?.int("video_size_limit")
-                        ?.takeIf { it > 0 }
-                        ?: account.getMovieMaxBytes(ti)
+                        ?.takeIf { it > 0 } ?: Int.MAX_VALUE,
+                )
 
-                else -> mediaConfig?.int("image_size_limit")
-                    ?.takeIf { it > 0 }
-                    ?: account.getImageMaxBytes(ti)
+                else -> min(
+                    account.getImageMaxBytes(ti),
+                    mediaConfig?.int("image_size_limit")
+                        ?.takeIf { it > 0 } ?: Int.MAX_VALUE,
+                )
             }
 
             if (opener.contentLength > mediaSizeMax) {
@@ -561,8 +564,9 @@ class AttachmentUploader(
         account: SavedAccount,
         uri: Uri,
         mimeType: String,
-        mediaConfig: JsonObject? = null,
         imageResizeConfig: ResizeConfig,
+        serverMaxSqPixel: Int? = null,
+        mediaConfig: JsonObject? = null,
         postAttachment: PostAttachment? = null,
     ): InputStreamOpener {
         when {
@@ -572,7 +576,8 @@ class AttachmentUploader(
                     uri,
                     mimeType,
                     imageResizeConfig,
-                    postAttachment,
+                    postAttachment = postAttachment,
+                    serverMaxSqPixel = serverMaxSqPixel,
                 )
             } catch (ex: Throwable) {
                 log.w(ex, "createResizedImageOpener failed. fall back to original image.")
@@ -585,8 +590,9 @@ class AttachmentUploader(
                     uri,
                     mimeType,
                     imageResizeConfig,
-                    postAttachment,
-                    forcePng = true
+                    postAttachment = postAttachment,
+                    forcePng = true,
+                    serverMaxSqPixel = serverMaxSqPixel,
                 )
 
             // 動画のトランスコード(失敗したらオリジナルデータにフォールバックする)
@@ -610,6 +616,7 @@ class AttachmentUploader(
         uri: Uri,
         mimeType: String,
         imageResizeConfig: ResizeConfig,
+        serverMaxSqPixel: Int?,
         postAttachment: PostAttachment? = null,
         forcePng: Boolean = false,
     ): InputStreamOpener {
@@ -628,7 +635,8 @@ class AttachmentUploader(
             context,
             uri,
             imageResizeConfig,
-            skipIfNoNeedToResizeAndRotate = !forcePng
+            skipIfNoNeedToResizeAndRotate = !forcePng,
+            serverMaxSqPixel = serverMaxSqPixel
         ) ?: error("createResizedBitmap returns null.")
         postAttachment?.progress = context.getString(R.string.attachment_handling_compress)
         try {
@@ -832,7 +840,7 @@ class AttachmentUploader(
                 account,
                 src.uri,
                 mimeType,
-                imageResizeConfig = ResizeConfig(ResizeType.SquarePixel, 400)
+                imageResizeConfig = ResizeConfig(ResizeType.SquarePixel, 400),
             )
 
             val mediaSizeMax = 1000000

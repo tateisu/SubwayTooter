@@ -256,7 +256,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                         this,
                         fileUri,
                         size,
-                        skipIfNoNeedToResizeAndRotate = true
+                        skipIfNoNeedToResizeAndRotate = true,
                     )
                     if (bitmap != null) {
                         try {

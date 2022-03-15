@@ -63,11 +63,12 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
                 withContext(Dispatchers.IO) {
                     try {
                         createResizedBitmap(
-                            activity, url.toUri(),
+                            activity,
+                            url.toUri(),
                             when {
                                 screenW > screenH -> screenW
                                 else -> screenH
-                            }
+                            },
                         )
                     } catch (ex: Throwable) {
                         ColumnViewHolder.log.trace(ex)

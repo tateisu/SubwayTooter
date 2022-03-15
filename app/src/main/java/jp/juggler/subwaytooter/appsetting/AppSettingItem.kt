@@ -386,28 +386,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
     section(R.string.post) {
 
-//        spinner(PrefI.ipResizeImage, R.string.resize_image) { activity ->
-//            ActPost.resizeConfigList.map {
-//                when (it.type) {
-//					ResizeType.None -> activity.getString(R.string.dont_resize)
-//					ResizeType.LongSide -> activity.getString(R.string.long_side_pixel, it.size)
-//					ResizeType.SquarePixel -> activity.getString(
-//						R.string.resize_square_pixels,
-//						it.size * it.size,
-//						it.size
-//					)
-//                }
-//            }
-//        }
-//
-//        text(PrefS.spMediaSizeMax, R.string.media_attachment_max_byte_size, InputTypeEx.number)
-//        text(PrefS.spMovieSizeMax, R.string.media_attachment_max_byte_size_movie, InputTypeEx.number)
-//        text(
-//			PrefS.spMediaSizeMaxPixelfed,
-//			R.string.media_attachment_max_byte_size_pixelfed,
-//			InputTypeEx.number
-//		)
-
         spinner(
             PrefI.ipRefreshAfterToot,
             R.string.refresh_after_toot,

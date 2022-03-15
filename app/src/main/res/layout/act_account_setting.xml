@@ -658,10 +658,6 @@
             android:labelFor="@+id/etMediaSizeMax"
             android:text="@string/media_attachment_max_byte_size" />
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/option_deprecated_mastodon342" />
-
         <EditText
             android:id="@+id/etMediaSizeMax"
             style="@style/setting_edit_text"
@@ -676,10 +672,6 @@
         <TextView
             style="@style/setting_row_label"
             android:text="@string/resize_image" />
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/option_deprecated_mastodon342" />
 
         <Spinner
             android:id="@+id/spResizeImage"

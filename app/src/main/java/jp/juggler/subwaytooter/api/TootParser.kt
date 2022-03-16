@@ -3,11 +3,10 @@ package jp.juggler.subwaytooter.api
 import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.UserRelation
-
-import jp.juggler.util.WordTrieTree
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
+import jp.juggler.util.WordTrieTree
 
 class TootParser(
     val context: Context,
@@ -45,7 +44,9 @@ class TootParser(
     fun notification(src: JsonObject?) = parseItem(::TootNotification, this, src)
     fun notificationList(src: JsonArray?) = parseList(::TootNotification, this, src)
 
-    fun tagList(array: JsonArray?) = TootTag.parseList(this, array)
+    fun tagList(array: JsonArray?) =
+        TootTag.parseList(this, array)
+
     fun results(src: JsonObject?) = parseItem(::TootResults, this, src)
     fun instance(src: JsonObject?) = parseItem(::TootInstance, this, src)
 

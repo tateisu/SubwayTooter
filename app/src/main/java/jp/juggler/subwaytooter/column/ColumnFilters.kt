@@ -275,9 +275,9 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_POLL_VOTE_MISSKEY,
                 -> dontShowVote
 
-                TootNotification.TYPE_STATUS -> dontShowNormalToot
-
-                TootNotification.TYPE_UPDATE -> dontShowNormalToot && dontShowBoost
+                TootNotification.TYPE_STATUS,
+                TootNotification.TYPE_UPDATE,
+                -> dontShowNormalToot
 
                 else -> false
             }
@@ -310,9 +310,10 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_POLL_VOTE_MISSKEY,
                 -> quickFilter != Column.QUICK_FILTER_VOTE
 
-                TootNotification.TYPE_STATUS -> quickFilter != Column.QUICK_FILTER_POST
+                TootNotification.TYPE_STATUS,
+                TootNotification.TYPE_UPDATE,
+                -> quickFilter != Column.QUICK_FILTER_POST
 
-                TootNotification.TYPE_UPDATE -> quickFilter != Column.QUICK_FILTER_POST
                 else -> true
             }
         }

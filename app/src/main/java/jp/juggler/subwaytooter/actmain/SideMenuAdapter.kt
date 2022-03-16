@@ -264,10 +264,15 @@ class SideMenuAdapter(
             timeline(defaultInsertPosition, ColumnType.SEARCH, args = arrayOf("", false))
         },
 
-        Item(icon = R.drawable.ic_hashtag, title = R.string.trend_tag) {
+        Item(icon = R.drawable.ic_trend, title = R.string.trend_tag) {
             timeline(defaultInsertPosition, ColumnType.TREND_TAG)
         },
-
+        Item(icon = R.drawable.ic_trend, title = R.string.trend_link) {
+            timeline(defaultInsertPosition, ColumnType.TREND_LINK)
+        },
+        Item(icon = R.drawable.ic_trend, title = R.string.trend_post) {
+            timeline(defaultInsertPosition, ColumnType.TREND_POST)
+        },
         Item(icon = R.drawable.ic_star, title = R.string.favourites) {
             timeline(defaultInsertPosition, ColumnType.FAVOURITES)
         },

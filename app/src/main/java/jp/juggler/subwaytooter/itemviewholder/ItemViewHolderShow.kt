@@ -414,11 +414,17 @@ fun ItemViewHolder.showFilter(filter: TootFilter) {
 fun ItemViewHolder.showSearchTag(tag: TootTag) {
     if (tag.history?.isNotEmpty() == true) {
         llTrendTag.visibility = View.VISIBLE
-        tvTrendTagName.text = "#${tag.name}"
-        tvTrendTagDesc.text =
-            activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
+
         tvTrendTagCount.text = "${tag.countDaily}(${tag.countWeekly})"
         cvTagHistory.setHistory(tag.history)
+        if (tag.type == TootTag.TagType.TrendLink) {
+            tvTrendTagName.text = tag.url?.ellipsizeDot3(256)
+            tvTrendTagDesc.text = tag.name + "\n" + tag.description
+        } else {
+            tvTrendTagName.text = "#${tag.name}"
+            tvTrendTagDesc.text =
+                activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
+        }
     } else {
         llSearchTag.visibility = View.VISIBLE
         btnSearchTag.text = "#" + tag.name

@@ -162,7 +162,7 @@ private fun ItemViewHolder.showNotificationUpdate(
     nStatus: TootStatus?
 ) {
     val colorBg = PrefI.ipEventBgColorUpdate(activity.pref)
-    val iconId = R.drawable.ic_refresh
+    val iconId = R.drawable.ic_history
     nAccountRef?.let { showBoost(it, n.time_created_at, iconId, R.string.display_name_updates_post) }
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }

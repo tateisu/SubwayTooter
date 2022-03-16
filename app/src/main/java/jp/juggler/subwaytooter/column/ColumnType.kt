@@ -1636,7 +1636,7 @@ enum class ColumnType(
 
     TREND_TAG(
         24,
-        iconId = { R.drawable.ic_hashtag },
+        iconId = { R.drawable.ic_trend },
         name1 = { it.getString(R.string.trend_tag) },
         bAllowPseudo = true,
         bAllowMastodon = true,
@@ -1653,6 +1653,58 @@ enum class ColumnType(
                     gravity = Gravity.END
                 )
             )
+            result
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+    TREND_LINK(
+        44,
+        iconId = { R.drawable.ic_trend },
+        name1 = { it.getString(R.string.trend_link) },
+        bAllowPseudo = false,
+        bAllowMastodon = true,
+        bAllowMisskey = false,
+
+        loading = { client ->
+            val result = client.request("/api/v1/trends/links")
+            val src = parser.tagList(result?.jsonArray)
+
+            this.listTmp = addAll(this.listTmp, src)
+            this.listTmp = addOne(
+                this.listTmp, TootMessageHolder(
+                    context.getString(R.string.trend_tag_desc),
+                    gravity = Gravity.END
+                )
+            )
+            result
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+    TREND_POST(
+        45,
+        iconId = { R.drawable.ic_trend },
+        name1 = { it.getString(R.string.trend_post) },
+        bAllowPseudo = false,
+        bAllowMastodon = true,
+        bAllowMisskey = false,
+
+        loading = { client ->
+            val result = client.request("/api/v1/trends/statuses")
+            val src = parser.statusList(result?.jsonArray)
+
+            this.listTmp = addAll(this.listTmp, src)
+//            this.listTmp = addOne(
+//                this.listTmp, TootMessageHolder(
+//                    context.getString(R.string.trend_tag_desc),
+//                    gravity = Gravity.END
+//                )
+//            )
             result
         },
 

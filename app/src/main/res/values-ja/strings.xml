@@ -726,6 +726,9 @@
     <string name="toot_search_ts_of">トゥート検索(ts) \"%1$s\"</string>
     <string name="tootsearch">tootsearch</string>
     <string name="trend_tag">トレンドタグ</string>
+    <string name="trend_link">トレンドリンク</string>
+    <string name="trend_post">トレンド投稿</string>
+
     <string name="trend_tag_desc">数字は「日毎（週毎）」を示します。</string>
     <string name="ui_theme">UIテーマ(アプリ再起動が必要)</string>
     <string name="unblock">ブロック解除</string>

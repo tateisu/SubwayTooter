@@ -696,6 +696,8 @@
     <string name="yourself_can_see_your_network">Even if you choose to hide social graphs, yourself can see it.</string>
     <string name="follow_follower_list_may_restrict">If the remote user choose to hide the social graph, only the followings/followers on this server will be displayed.</string>
     <string name="trend_tag">Trending tags</string>
+    <string name="trend_link">Trending links</string>
+    <string name="trend_post">Trending posts</string>
     <string name="people_talking">%1$d(%2$d) people talking</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'.</string>
     <string name="redraft_and_delete">Redraft and delete</string>

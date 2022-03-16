@@ -263,7 +263,11 @@ private fun ItemViewHolder.clickAvatar(pos: Int, longClick: Boolean = false) {
 private fun ItemViewHolder.clickTag(pos: Int, item: TimelineItem?) {
     with(activity) {
         when (item) {
-            is TootTag -> tagTimeline(pos, accessInfo, item.name)
+            is TootTag -> if (item.type == TootTag.TagType.TrendLink) {
+                openCustomTab(item.url)
+            } else {
+                tagTimeline(pos, accessInfo, item.name)
+            }
             is TootSearchGap -> column.startGap(item, isHead = true)
             is TootConversationSummary -> clickConversation(
                 pos,

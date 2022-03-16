@@ -182,6 +182,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     var isPromoted = false
     var isFeatured = false
 
+    // Mastodon 3.5.0
+    var time_edited_at = 0L
+
     ///////////////////////////////////////////////////////////////////
     // 以下はentityから取得したデータではなく、アプリ内部で使う
 
@@ -601,6 +604,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.reblogs_count = src.long("reblogs_count")
                 this.favourites_count = src.long("favourites_count")
                 this.replies_count = src.long("replies_count")
+
+                this.time_edited_at = parseTime(src.string("edited_at"))
 
                 this.reactionSet = TootReactionSet.parseFedibird(
                     src.jsonArray("emoji_reactions")
@@ -1267,7 +1272,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         // 時刻を解釈してエポック秒(ミリ単位)を返す
         // 解釈に失敗すると0Lを返す
         fun parseTime(strTime: String?): Long {
-            if (strTime?.isNotBlank() != true) return 0L
+            if (strTime.isNullOrBlank()) return 0L
 
             // last_status_at などでは YYYY-MM-DD になることがある
             reDate.find(strTime)?.groupValues?.let { gv ->
@@ -1551,6 +1556,24 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             }
 
             return null
+        }
+
+        private val supplyEditHistoryKeys = arrayOf(
+            "id",
+            "uri",
+            "url",
+            "visibility",
+        )
+
+        // 編集履歴のデータはTootStatusとしては不足があるので、srcを元に補う
+        fun supplyEditHistory(array: JsonArray?, src: JsonObject?) {
+            src ?: return
+            array?.objectList()?.forEach {
+                for (key in supplyEditHistoryKeys) {
+                    if (it.containsKey(key)) continue
+                    it[key] = src[key]
+                }
+            }
         }
     }
 }

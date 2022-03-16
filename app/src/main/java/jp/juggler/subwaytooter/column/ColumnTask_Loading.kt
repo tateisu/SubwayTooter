@@ -104,6 +104,9 @@ class ColumnTask_Loading(
                     // 検索カラムはIDによる重複排除が不可能
                     ColumnType.SEARCH -> listTmp
 
+                    // 編集履歴は投稿日時で重複排除する
+                    ColumnType.STATUS_HISTORY -> column.duplicateMap.filterDuplicateByCreatedAt(listTmp)
+
                     // 他のカラムは重複排除してから追加
                     else -> column.duplicateMap.filterDuplicate(listTmp)
                 }
@@ -844,6 +847,19 @@ class ColumnTask_Loading(
 
         column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 
+        return result
+    }
+
+    suspend fun getEditHistory(client: TootApiClient): TootApiResult? {
+        // ページングなし
+        val result = client.request("/api/v1/statuses/${column.statusId}/history")
+
+        // TootStatusとしては不足している情報があるのを補う
+        TootStatus.supplyEditHistory(result?.jsonArray, column.originalStatus)
+
+        val src = parser.statusList(result?.jsonArray).reversed()
+        listTmp = addAll(listTmp, src)
+        column.saveRange(bBottom = true, bTop = true, result = result, list = src)
         return result
     }
 

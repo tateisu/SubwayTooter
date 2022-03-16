@@ -242,6 +242,7 @@ fun Column.onMuteUpdated() {
 }
 
 fun Column.replaceStatus(statusId: EntityId, statusJson: JsonObject) {
+    if (type == ColumnType.STATUS_HISTORY) return
 
     fun createStatus() =
         TootParser(context, accessInfo).status(statusJson)

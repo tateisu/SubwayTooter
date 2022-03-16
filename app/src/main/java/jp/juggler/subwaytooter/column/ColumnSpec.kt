@@ -4,6 +4,7 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 
 private val log = LogCategory("ColumnSpec")
@@ -34,6 +35,12 @@ object ColumnSpec {
             else -> error("getParamString [$idx] bad type. $o")
         }
 
+    private fun getParamJsonObject(params: Array<out Any>, idx: Int): JsonObject =
+        when (val o = params[idx]) {
+            is JsonObject -> o
+            else -> error("getParamJsonObject [$idx] bad type. $o")
+        }
+
     @Suppress("UNCHECKED_CAST")
     private inline fun <reified T> getParamAtNullable(params: Array<out Any>, idx: Int): T? {
         if (idx >= params.size) return null
@@ -52,6 +59,11 @@ object ColumnSpec {
                 ColumnType.ACCOUNT_AROUND,
                 ->
                     statusId = getParamEntityId(params, 0)
+
+                ColumnType.STATUS_HISTORY -> {
+                    statusId = getParamEntityId(params, 0)
+                    originalStatus = getParamJsonObject(params, 1)
+                }
 
                 ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
                 ColumnType.MISSKEY_ANTENNA_TL,
@@ -121,19 +133,20 @@ object ColumnSpec {
                 ColumnType.LOCAL_AROUND,
                 ColumnType.FEDERATED_AROUND,
                 ColumnType.ACCOUNT_AROUND,
+                ColumnType.STATUS_HISTORY,
                 ->
                     column.statusId == getParamEntityId(params, 0)
 
                 ColumnType.HASHTAG -> {
                     (getParamString(params, 0) == column.hashtag) &&
-                        ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtagAny) &&
-                        ((getParamAtNullable<String>(params, 2) ?: "") == column.hashtagAll) &&
-                        ((getParamAtNullable<String>(params, 3) ?: "") == column.hashtagNone)
+                            ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtagAny) &&
+                            ((getParamAtNullable<String>(params, 2) ?: "") == column.hashtagAll) &&
+                            ((getParamAtNullable<String>(params, 3) ?: "") == column.hashtagNone)
                 }
 
                 ColumnType.HASHTAG_FROM_ACCT -> {
                     (getParamString(params, 0) == column.hashtag) &&
-                        ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtagAcct)
+                            ((getParamAtNullable<String>(params, 1) ?: "") == column.hashtagAcct)
                 }
 
                 ColumnType.NOTIFICATION_FROM_ACCT -> {
@@ -142,7 +155,7 @@ object ColumnSpec {
 
                 ColumnType.SEARCH ->
                     getParamString(params, 0) == column.searchQuery &&
-                        getParamAtNullable<Boolean>(params, 1) == column.searchResolve
+                            getParamAtNullable<Boolean>(params, 1) == column.searchResolve
 
                 ColumnType.SEARCH_MSP,
                 ColumnType.SEARCH_TS,
@@ -155,8 +168,8 @@ object ColumnSpec {
 
                 ColumnType.PROFILE_DIRECTORY ->
                     getParamString(params, 0) == column.instanceUri &&
-                        getParamAtNullable<String>(params, 1) == column.searchQuery &&
-                        getParamAtNullable<Boolean>(params, 2) == column.searchResolve
+                            getParamAtNullable<String>(params, 1) == column.searchQuery &&
+                            getParamAtNullable<Boolean>(params, 2) == column.searchResolve
 
                 ColumnType.DOMAIN_TIMELINE ->
                     getParamString(params, 0) == column.instanceUri

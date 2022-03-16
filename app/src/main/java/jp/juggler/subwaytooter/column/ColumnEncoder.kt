@@ -56,6 +56,7 @@ object ColumnEncoder {
     private const val KEY_PROFILE_ID = "profile_id"
     private const val KEY_PROFILE_TAB = "tab"
     private const val KEY_STATUS_ID = "status_id"
+    private const val KEY_ORIGINAL_STATUS = "original_status"
 
     private const val KEY_HASHTAG = "hashtag"
     private const val KEY_HASHTAG_ANY = "hashtag_any"
@@ -169,6 +170,11 @@ object ColumnEncoder {
                 ColumnType.ACCOUNT_AROUND,
                 ->
                     dst[KEY_STATUS_ID] = statusId.toString()
+
+                ColumnType.STATUS_HISTORY -> {
+                    dst[KEY_STATUS_ID] = statusId.toString()
+                    dst[KEY_ORIGINAL_STATUS] = originalStatus
+                }
 
                 ColumnType.FEDERATED_AROUND -> {
                     dst[KEY_STATUS_ID] = statusId.toString()
@@ -298,6 +304,11 @@ object ColumnEncoder {
                 ColumnType.LOCAL_AROUND,
                 ColumnType.ACCOUNT_AROUND,
                 -> statusId = EntityId.mayNull(src.string(KEY_STATUS_ID))
+
+                ColumnType.STATUS_HISTORY -> {
+                    statusId = EntityId.mayNull(src.string(KEY_STATUS_ID))
+                    originalStatus = src.jsonObject(KEY_ORIGINAL_STATUS)
+                }
 
                 ColumnType.FEDERATED_AROUND,
                 -> {

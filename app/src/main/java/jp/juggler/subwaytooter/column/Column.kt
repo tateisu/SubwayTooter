@@ -160,6 +160,7 @@ class Column(
     internal var profileTab = ProfileTab.Status
 
     internal var statusId: EntityId? = null
+    internal var originalStatus: JsonObject? = null
 
     // プロフカラムではアカウントのID。リストカラムではリストのID
     internal var profileId: EntityId? = null

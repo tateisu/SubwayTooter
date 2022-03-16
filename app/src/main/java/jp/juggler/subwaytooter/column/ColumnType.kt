@@ -663,7 +663,11 @@ enum class ColumnType(
         },
 
         loading = { client -> getPublicTlAroundTime(client, column.makePublicFederateUrl()) },
-        refresh = { client -> getStatusList(client, column.makePublicFederateUrl(), useMinId = true) },
+        refresh = { client ->
+            getStatusList(client,
+                column.makePublicFederateUrl(),
+                useMinId = true)
+        },
 
         canStreamingMastodon = streamingTypeNo,
         canStreamingMisskey = streamingTypeNo,
@@ -1965,6 +1969,24 @@ enum class ColumnType(
         // Misskey10 にアンテナはない
     ),
 
+    STATUS_HISTORY(
+        43,
+        iconId = { R.drawable.ic_history },
+        name1 = { it.getString(R.string.edit_history) },
+        bAllowPseudo = true,
+        bAllowMisskey = false,
+
+        loading = { client ->
+            getEditHistory(client)
+        },
+        refresh = { client ->
+            getEditHistory(client)
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+    ),
+
     ;
 
     init {
@@ -1985,7 +2007,7 @@ enum class ColumnType(
                 min = min(min, id)
                 max = max(max, id)
             }
-            log.d("dump: ColumnType range=$min..$max")
+            log.i("dump: ColumnType range=$min..$max")
         }
 
         fun parse(id: Int) = Column.typeMap[id] ?: HOME
@@ -2015,7 +2037,11 @@ fun Column.streamKeyHashtagTl() =
     "hashtag"
         .appendIf(":local", instanceLocal)
 
-private fun unmatchMastodonStream(stream: JsonArray, name: String, expectArg: String? = null): Boolean {
+private fun unmatchMastodonStream(
+    stream: JsonArray,
+    name: String,
+    expectArg: String? = null,
+): Boolean {
 
     val key = stream.string(0)
 

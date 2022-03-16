@@ -44,20 +44,26 @@ fun Column.getFilterContext() = when (type) {
 
     ColumnType.PROFILE -> TootFilter.CONTEXT_PROFILE
 
+    ColumnType.STATUS_HISTORY -> TootFilter.CONTEXT_NONE
+
     else -> TootFilter.CONTEXT_PUBLIC
     // ColumnType.MISSKEY_HYBRID や ColumnType.MISSKEY_ANTENNA_TL はHOMEでもPUBLICでもある…
     // Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 }
 
 // カラム設定に正規表現フィルタを含めるなら真
-fun Column.canStatusFilter(): Boolean {
-    if (getFilterContext() != TootFilter.CONTEXT_NONE) return true
-
-    return when (type) {
-        ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> true
-        else -> false
+fun Column.canStatusFilter() =
+    when (type) {
+        ColumnType.SEARCH_MSP,
+        ColumnType.SEARCH_TS,
+        ColumnType.SEARCH_NOTESTOCK,
+        ColumnType.STATUS_HISTORY,
+        -> true
+        else -> when {
+            getFilterContext() == TootFilter.CONTEXT_NONE -> false
+            else -> true
+        }
     }
-}
 
 // カラム設定に「すべての画像を隠す」ボタンを含めるなら真
 fun Column.canNSFWDefault(): Boolean = canStatusFilter()

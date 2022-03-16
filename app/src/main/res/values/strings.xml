@@ -1138,4 +1138,6 @@
     <string name="always">Always</string>
     <string name="auto">Auto</string>
     <string name="status_edit">Edit (Mastodon 3.5.0+)</string>
+    <string name="edited">edited</string>
+    <string name="edit_history">Edit history</string>
 </resources>

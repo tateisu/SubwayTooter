@@ -1127,4 +1127,6 @@
     <string name="always">常に</string>
     <string name="auto">自動</string>
     <string name="status_edit">編集(Mastodon 3.5.0+)</string>
+    <string name="edited">編集済</string>
+    <string name="edit_history">編集履歴</string>
 </resources>

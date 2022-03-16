@@ -2,10 +2,12 @@ package jp.juggler.subwaytooter.itemviewholder
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.os.SystemClock
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -602,6 +604,14 @@ fun ItemViewHolder.showStatusTime(
             if (sb.isNotEmpty()) sb.append(' ')
             sb.append(activity.getString(R.string.featured))
         }
+
+        if (status.time_edited_at > 0L) {
+            if (sb.isNotEmpty()) sb.append(' ')
+            val start = sb.length
+            sb.append(activity.getString(R.string.edited))
+            val end = sb.length
+            sb.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
     } else {
         reblogVisibility?.takeIf { it != TootVisibility.Unknown }?.let { visibility ->
             val visIconId = Styler.getVisibilityIconId(accessInfo.isMisskey, visibility)
@@ -626,12 +636,18 @@ fun ItemViewHolder.showStatusTime(
             time != null -> TootStatus.formatTime(
                 activity,
                 time,
-                column.type != ColumnType.CONVERSATION
+                when (column.type) {
+                    ColumnType.CONVERSATION, ColumnType.STATUS_HISTORY -> false
+                    else -> true
+                }
             )
             status != null -> TootStatus.formatTime(
                 activity,
                 status.time_created_at,
-                column.type != ColumnType.CONVERSATION
+                when (column.type) {
+                    ColumnType.CONVERSATION, ColumnType.STATUS_HISTORY -> false
+                    else -> true
+                }
             )
             else -> "?"
         }

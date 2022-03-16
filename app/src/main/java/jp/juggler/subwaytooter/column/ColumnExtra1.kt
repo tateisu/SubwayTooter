@@ -36,6 +36,7 @@ fun Column.canReloadWhenRefreshTop(): Boolean = when (type) {
     ColumnType.TREND_TAG,
     ColumnType.FOLLOW_SUGGESTION,
     ColumnType.PROFILE_DIRECTORY,
+    ColumnType.STATUS_HISTORY,
     -> true
 
     ColumnType.LIST_MEMBER,
@@ -56,7 +57,7 @@ fun Column.canRefreshTopBySwipe(): Boolean =
                 else -> true
             }
 
-// カラム操作的にリフレッシュを許容するかどうか
+// カラム操作的に下端リフレッシュを許容するかどうか
 fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
     ColumnType.LIST_LIST,
     ColumnType.CONVERSATION,
@@ -65,6 +66,7 @@ fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
     ColumnType.SEARCH,
     ColumnType.TREND_TAG,
     ColumnType.FOLLOW_SUGGESTION,
+    ColumnType.STATUS_HISTORY,
     -> false
 
     ColumnType.FOLLOW_REQUESTS -> isMisskey

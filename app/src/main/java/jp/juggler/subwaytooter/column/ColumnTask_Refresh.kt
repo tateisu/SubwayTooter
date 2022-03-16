@@ -92,7 +92,12 @@ class ColumnTask_Refresh(
                 return
             }
 
-            val listNew = column.duplicateMap.filterDuplicate(listTmp)
+            val listNew = when (column.type) {
+                // 編集履歴は投稿日時で重複排除する
+                ColumnType.STATUS_HISTORY -> column.duplicateMap.filterDuplicateByCreatedAt(listTmp)
+
+                else -> column.duplicateMap.filterDuplicate(listTmp)
+            }
             if (listNew.isEmpty()) {
                 column.fireShowContent(
                     reason = "refresh list_new is empty",
@@ -1149,6 +1154,19 @@ class ColumnTask_Refresh(
     suspend fun getScheduledStatuses(client: TootApiClient): TootApiResult? {
         val result = client.request(column.addRange(bBottom, ApiPath.PATH_SCHEDULED_STATUSES))
         val src = parseList(::TootScheduled, parser, result?.jsonArray)
+        listTmp = addAll(listTmp, src)
+        column.saveRange(bBottom, !bBottom, result, src)
+        return result
+    }
+
+    suspend fun getEditHistory(client: TootApiClient): TootApiResult? {
+        // ページングなし
+        val result = client.request("/api/v1/statuses/${column.statusId}/history")
+
+        // TootStatusとしては不足している情報があるのを補う
+        TootStatus.supplyEditHistory(result?.jsonArray, column.originalStatus)
+
+        val src = parser.statusList(result?.jsonArray).reversed()
         listTmp = addAll(listTmp, src)
         column.saveRange(bBottom, !bBottom, result, src)
         return result

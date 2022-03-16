@@ -88,71 +88,11 @@ internal class DlgContextMenu(
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
 
-        arrayOf(
-            views.btnAccountWebPage,
-            views.btnAroundAccountTL,
-            views.btnAroundFTL,
-            views.btnAroundLTL,
-            views.btnAvatarImage,
-            views.btnBlock,
-            views.btnBookmarkAnotherAccount,
-            views.btnBoostAnotherAccount,
-            views.btnBoostedBy,
-            views.btnBoostWithVisibility,
-            views.btnConversationAnotherAccount,
-            views.btnConversationMute,
-            views.btnCopyAccountId,
-            views.btnDelete,
-            views.btnDeleteSuggestion,
-            views.btnDomainBlock,
-            views.btnDomainTimeline,
-            views.btnEndorse,
-            views.btnFavouriteAnotherAccount,
-            views.btnFavouritedBy,
-            views.btnFollow,
-            views.btnFollowFromAnotherAccount,
-            views.btnFollowRequestNG,
-            views.btnFollowRequestOK,
-            views.btnHideBoost,
-            views.btnHideFavourite,
-            views.btnInstanceInformation,
-            views.btnListMemberAddRemove,
-            views.btnMute,
-            views.btnMuteApp,
-            views.btnNotificationDelete,
-            views.btnNotificationFrom,
-            views.btnOpenAccountInAdminWebUi,
-            views.btnOpenInstanceInAdminWebUi,
-            views.btnOpenProfileFromAnotherAccount,
-            views.btnOpenTimeline,
-            views.btnProfile,
-            views.btnProfileDirectory,
-            views.btnProfilePin,
-            views.btnProfileUnpin,
-            views.btnQuoteAnotherAccount,
-            views.btnQuoteTootBT,
-            views.btnReactionAnotherAccount,
-            views.btnRedraft,
-            views.btnStatusEdit,
-            views.btnReplyAnotherAccount,
-            views.btnReportStatus,
-            views.btnReportUser,
-            views.btnSendMessage,
-            views.btnSendMessageFromAnotherAccount,
-            views.btnShowBoost,
-            views.btnShowFavourite,
-            views.btnStatusNotification,
-            views.btnStatusWebPage,
-            views.btnText,
-
-            views.btnQuoteUrlStatus,
-            views.btnTranslate,
-            views.btnQuoteUrlAccount,
-            views.btnShareUrlStatus,
-            views.btnShareUrlAccount,
-            views.btnQuoteName
-
-        ).forEach { it.setOnClickListener(this) }
+        views.root.scan { v ->
+            when (v) {
+                is Button -> v.setOnClickListener(this)
+            }
+        }
 
         arrayOf(
             views.btnBlock,
@@ -219,6 +159,11 @@ internal class DlgContextMenu(
                     }
                 }
             }
+
+            views.btnStatusHistory.vg(status.time_edited_at > 0L && columnType != ColumnType.STATUS_HISTORY)
+                ?.text = activity.getString(R.string.edit_history) + "\n" +
+                    TootStatus.formatTime(activity, status.time_edited_at, bAllowRelative = false)
+
             views.llLinks.vg(views.llLinks.childCount > 1)
 
             views.btnGroupStatusByMe.vg(statusByMe)
@@ -372,8 +317,6 @@ internal class DlgContextMenu(
             }
         }
 
-        views.btnAccountText.setOnClickListener(this)
-
         if (accessInfo.isPseudo) {
             views.btnProfile.visibility = View.GONE
             views.btnSendMessage.visibility = View.GONE
@@ -398,10 +341,6 @@ internal class DlgContextMenu(
             views.btnFollowFromAnotherAccount.visibility = View.GONE
             views.btnSendMessageFromAnotherAccount.visibility = View.GONE
         }
-
-        views.btnNickname.setOnClickListener(this)
-        views.btnCancel.setOnClickListener(this)
-        views.btnAccountQrCode.setOnClickListener(this)
 
         if (accessInfo.isPseudo ||
             who == null ||
@@ -641,6 +580,7 @@ internal class DlgContextMenu(
             R.id.btnConversationMute -> conversationMute(accessInfo, status)
             R.id.btnProfilePin -> statusPin(accessInfo, status, true)
             R.id.btnProfileUnpin -> statusPin(accessInfo, status, false)
+            R.id.btnStatusHistory -> openStatusHistory(pos, accessInfo, status)
             else -> return false
         }
         return true

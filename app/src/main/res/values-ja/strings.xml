@@ -1132,4 +1132,6 @@
     <string name="status_edit">編集(Mastodon 3.5.0+)</string>
     <string name="edited">編集済</string>
     <string name="edit_history">編集履歴</string>
+    <string name="post_language_code">投稿の言語コード(空欄にすると端末の言語設定を使います)</string>
+    <string name="device_language">(端末の言語)</string>
 </resources>

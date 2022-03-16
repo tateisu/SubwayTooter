@@ -1142,4 +1142,6 @@
     <string name="status_edit">Edit (Mastodon 3.5.0+)</string>
     <string name="edited">edited</string>
     <string name="edit_history">Edit history</string>
+    <string name="post_language_code">Language code of Post (leave empty to use device\'s language setting)</string>
+    <string name="device_language">(device\'s language)</string>
 </resources>

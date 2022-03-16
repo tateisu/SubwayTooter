@@ -385,6 +385,21 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/post_language_code"
+            android:labelFor="@+id/etLanguageCode"
+            />
+
+        <Spinner
+            android:id="@+id/spLanguageCode"
+            style="@style/setting_row_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp" />
+
+        <View style="@style/setting_divider" />
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/mark_sensitive_by_default" />
 
         <LinearLayout style="@style/setting_row_form">

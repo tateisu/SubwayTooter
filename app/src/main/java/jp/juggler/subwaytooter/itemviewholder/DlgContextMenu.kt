@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
@@ -91,6 +92,7 @@ internal class DlgContextMenu(
         views.root.scan { v ->
             when (v) {
                 is Button -> v.setOnClickListener(this)
+                is ImageButton -> v.setOnClickListener(this)
             }
         }
 

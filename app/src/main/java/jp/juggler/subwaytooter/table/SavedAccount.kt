@@ -106,6 +106,11 @@ class SavedAccount(
         "movieTranscodeSquarePixels",
         "2304000")
 
+    var lang: String by JsonProperty(
+        extraJson,
+        "lang",
+        "")
+
     init {
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
@@ -348,6 +353,7 @@ class SavedAccount(
         this.movieTranscodeBitrate = b.movieTranscodeBitrate
         this.movieTranscodeFramerate = b.movieTranscodeFramerate
         this.movieTranscodeSquarePixels = b.movieTranscodeSquarePixels
+        this.lang = b.lang
     }
 
     fun getFullAcct(who: TootAccount?) = getFullAcct(who?.acct)

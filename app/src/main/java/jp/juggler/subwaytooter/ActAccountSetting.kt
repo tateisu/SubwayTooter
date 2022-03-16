@@ -46,6 +46,8 @@ import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 import java.io.*
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
@@ -140,6 +142,23 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     private lateinit var pushPolicyItems: List<PushPolicyItem>
 
     internal var visibility = TootVisibility.Public
+
+    private val languages by lazy {
+        ArrayList<Pair<String, String>>().apply {
+            add(Pair("", getString(R.string.device_language)))
+            val nameMap = HashMap<String, String>()
+            addAll(
+                Locale.getAvailableLocales().mapNotNull { locale ->
+                    locale.language.takeIf { it.length == 2 || it.contains('-') }
+                        ?.also { code -> nameMap[code] = "$code ${locale.displayLanguage}" }
+                }
+                    .toSet()
+                    .toList()
+                    .sorted()
+                    .map { Pair(it, nameMap[it]!!) }
+            )
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////
 
@@ -291,6 +310,14 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 setDropDownViewResource(R.layout.lv_spinner_dropdown)
             }
 
+            spLanguageCode.adapter = ArrayAdapter(
+                this@ActAccountSetting,
+                android.R.layout.simple_spinner_item,
+                languages.map { it.second }.toTypedArray()
+            ).apply {
+                setDropDownViewResource(R.layout.lv_spinner_dropdown)
+            }
+
             spMovieTranscodeMode.adapter = ArrayAdapter(
                 this@ActAccountSetting,
                 android.R.layout.simple_spinner_item,
@@ -347,80 +374,32 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 NetworkEmojiInvalidator(handler, it)
             }
 
-            val watcher1 = simpleTextWatcher { saveUIToData() }
-            arrayOf(
-                etDefaultText,
-                etMediaSizeMax,
-                etMovieSizeMax,
-                etMovieBitrate,
-                etMovieFrameRate,
-                etMovieSquarePixels,
-            ).forEach {
-                it.addTextChangedListener(watcher1)
+            val watcher1 = simpleTextWatcher {
+                saveUIToData()
             }
 
-            etMaxTootChars.addTextChangedListener(
-                simpleTextWatcher {
-                    val num = etMaxTootChars.parseInt()
-                    if (num != null && num >= 0) {
-                        saveUIToData()
-                    }
+            viewBinding.root.scan {
+                when (it) {
+                    etMaxTootChars -> etMaxTootChars.addTextChangedListener(
+                        simpleTextWatcher {
+                            val num = etMaxTootChars.parseInt()
+                            if (num != null && num >= 0) {
+                                saveUIToData()
+                            }
+                        }
+                    )
+                    is EditText ->
+                        it.addTextChangedListener(watcher1)
+                    is Button ->
+                        it.setOnClickListener(this@ActAccountSetting)
+                    is ImageButton ->
+                        it.setOnClickListener(this@ActAccountSetting)
+                    is CompoundButton ->
+                        it.setOnCheckedChangeListener(this@ActAccountSetting)
+                    is Spinner ->
+                        it.onItemSelectedListener = this@ActAccountSetting
                 }
-            )
-
-            arrayOf(
-                btnOpenBrowser,
-                btnPushSubscription,
-                btnPushSubscriptionNotForce,
-                btnResetNotificationTracking,
-                btnAccessToken,
-                btnInputAccessToken,
-                btnAccountRemove,
-                btnLoadPreference,
-                btnVisibility,
-                btnUserCustom,
-                btnProfileAvatar,
-                btnProfileHeader,
-                btnDisplayName,
-                btnNote,
-                btnFields,
-                btnNotificationSoundEdit,
-                btnNotificationSoundReset,
-                btnNotificationStyleEdit,
-                btnNotificationStyleEditReply,
-            ).forEach { it.setOnClickListener(this@ActAccountSetting) }
-
-            arrayOf(
-                swNSFWOpen,
-                swDontShowTimeout,
-                swExpandCW,
-                swMarkSensitive,
-                cbNotificationMention,
-                cbNotificationBoost,
-                cbNotificationFavourite,
-                cbNotificationFollow,
-                cbNotificationFollowRequest,
-                cbNotificationReaction,
-                cbNotificationVote,
-                cbNotificationPost,
-                cbNotificationUpdate,
-                cbLocked,
-                cbConfirmFollow,
-                cbConfirmFollowLockedUser,
-                cbConfirmUnfollow,
-                cbConfirmBoost,
-                cbConfirmFavourite,
-                cbConfirmUnboost,
-                cbConfirmUnfavourite,
-                cbConfirmToot,
-                cbConfirmReaction,
-            ).forEach { it.setOnCheckedChangeListener(this@ActAccountSetting) }
-
-            arrayOf(
-                spResizeImage,
-                spPushPolicy,
-                spMovieTranscodeMode,
-            ).forEach { it.onItemSelectedListener = this@ActAccountSetting }
+            }
         }
     }
 
@@ -499,6 +478,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 etMovieFrameRate.setText(a.movieTranscodeFramerate)
                 etMovieBitrate.setText(a.movieTranscodeBitrate)
                 etMovieSquarePixels.setText(a.movieTranscodeSquarePixels)
+
+                spLanguageCode.setSelection(max(0, languages.indexOfFirst { it.first == a.lang }))
 
                 // アカウントからUIへのデータロードはここまで
                 loadingBusy = false
@@ -618,6 +599,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             account.movieTranscodeBitrate = etMovieBitrate.text.toString()
             account.movieTranscodeFramerate = etMovieFrameRate.text.toString()
             account.movieTranscodeSquarePixels = etMovieSquarePixels.text.toString()
+            account.lang =
+                languages.elementAtOrNull(spLanguageCode.selectedItemPosition)?.first ?: ""
         }
 
         account.saveSetting()
@@ -933,7 +916,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
         }
     }
 
-    internal fun showProfile(src: TootAccount) {
+    private fun showProfile(src: TootAccount) {
 
         if (isDestroyed) return
 

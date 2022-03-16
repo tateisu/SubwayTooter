@@ -419,6 +419,9 @@ class PostImpl(
     }
 
     private fun encodeParamsMastodon(json: JsonObject, instance: TootInstance) {
+
+        json["language"] = account.lang.notBlank() ?: Locale.getDefault().language
+
         visibilityChecked?.let { json["visibility"] = it.strMastodon }
 
         json["status"] = EmojiDecoder.decodeShortCode(content, emojiMapCustom = emojiMapCustom)

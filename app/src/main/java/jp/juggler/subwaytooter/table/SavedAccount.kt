@@ -111,6 +111,11 @@ class SavedAccount(
         "lang",
         "")
 
+    var notification_status_reference : Boolean by JsonProperty(
+        extraJson,
+        "notification_status_reference",
+        true)
+
     init {
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
@@ -336,6 +341,7 @@ class SavedAccount(
         this.notification_vote = b.notification_vote
         this.notification_post = b.notification_post
         this.notification_update = b.notification_update
+        this.notification_status_reference = b.notification_status_reference
 
         this.notification_tag = b.notification_tag
         this.default_text = b.default_text
@@ -894,6 +900,8 @@ class SavedAccount(
         TootNotification.TYPE_STATUS -> notification_post
 
         TootNotification.TYPE_UPDATE -> notification_update
+
+        TootNotification.TYPE_STATUS_REFERENCE -> notification_status_reference
 
         else -> false
     }

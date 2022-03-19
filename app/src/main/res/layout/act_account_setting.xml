@@ -574,6 +574,12 @@
             android:id="@+id/cbNotificationUpdate"
             style="@style/setting_row_form"
             android:text="@string/notification_type_update" />
+
+        <CheckBox
+            android:id="@+id/cbNotificationStatusReference"
+            style="@style/setting_row_form"
+            android:text="@string/notification_type_status_reference_fedibird" />
+
         <TextView
             style="@style/setting_row_form"
             android:layout_marginTop="12dp"

@@ -208,6 +208,7 @@
     <string name="display_name_quoted_by">%1$sが引用しました</string>
     <string name="display_name_posted_by">%1$sが投稿しました</string>
     <string name="display_name_updates_post">%1$sが投稿を更新しました</string>
+    <string name="display_name_references_post">%1$sがあなたの投稿を参照しました</string>
     <string name="display_name_reaction_by">%1$sがリアクション</string>
     <string name="display_name_replied_by">%1$sからの返信</string>
     <string name="display_name_mentioned_by">%1$sからのメンション</string>
@@ -504,6 +505,8 @@
     <string name="notification_type_vote">投票</string>
     <string name="notification_type_post">投稿</string>
     <string name="notification_type_update">投稿の更新</string>
+    <string name="notification_type_status_reference">投稿の参照</string>
+    <string name="notification_type_status_reference_fedibird">投稿の参照 (fedibird.com)</string>
     <string name="notifications">通知</string>
     <string name="nsfw">NSFW</string>
     <string name="ok">OK</string>

@@ -23,3 +23,10 @@ operator fun JsonProperty<Int>.getValue(thisRef: Any?, property: KProperty<*>): 
 operator fun JsonProperty<Int>.setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
     src[key] = value
 }
+operator fun JsonProperty<Boolean>.getValue(thisRef: Any?, property: KProperty<*>): Boolean {
+    return src.boolean(key) ?: defVal
+}
+
+operator fun JsonProperty<Boolean>.setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
+    src[key] = value
+}

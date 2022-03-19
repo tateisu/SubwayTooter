@@ -143,6 +143,9 @@ class TaskRunner(
             TootNotification.TYPE_UPDATE ->
                 context.getString(R.string.display_name_updates_post, name)
 
+            TootNotification.TYPE_STATUS_REFERENCE ->
+                context.getString(R.string.display_name_references_post, name)
+
             TootNotification.TYPE_FOLLOW ->
                 context.getString(R.string.display_name_followed_by, name)
 

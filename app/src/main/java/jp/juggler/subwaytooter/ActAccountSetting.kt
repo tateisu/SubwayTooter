@@ -429,6 +429,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 cbNotificationVote.isChecked = a.notification_vote
                 cbNotificationPost.isChecked = a.notification_post
                 cbNotificationUpdate.isChecked = a.notification_update
+                cbNotificationStatusReference.isChecked = a.notification_status_reference
 
                 cbConfirmFollow.isChecked = a.confirm_follow
                 cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
@@ -502,6 +503,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                     cbNotificationVote,
                     cbNotificationPost,
                     cbNotificationUpdate,
+                    cbNotificationStatusReference,
                     cbConfirmFollow,
                     cbConfirmFollowLockedUser,
                     cbConfirmUnfollow,
@@ -563,6 +565,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             account.notification_vote = cbNotificationVote.isChecked
             account.notification_post = cbNotificationPost.isChecked
             account.notification_update = cbNotificationUpdate.isChecked
+            account.notification_status_reference = cbNotificationStatusReference.isChecked
 
             account.confirm_follow = cbConfirmFollow.isChecked
             account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked

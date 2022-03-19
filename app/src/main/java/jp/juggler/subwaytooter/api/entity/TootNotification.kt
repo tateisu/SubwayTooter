@@ -45,6 +45,9 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         // (Mastodon 3.5.0rc1)
         const val TYPE_UPDATE = "update"
+
+        // (Fedibird beta)
+        const val TYPE_STATUS_REFERENCE = "status_reference"
     }
 
     val json: JsonObject

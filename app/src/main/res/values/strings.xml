@@ -92,6 +92,7 @@
     <string name="display_name_quoted_by">%1$s quoted</string>
     <string name="display_name_posted_by">%1$s posted</string>
     <string name="display_name_updates_post">%1$s updates the post</string>
+    <string name="display_name_references_post">%1$s references your post</string>
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
     <string name="display_name_unfollowed_by">%1$s unfollowed you</string>
@@ -639,7 +640,8 @@
     <string name="notification_type_vote">vote</string>
     <string name="notification_type_post">post</string>
     <string name="notification_type_update">post update</string>
-
+    <string name="notification_type_status_reference">post referenced</string>
+    <string name="notification_type_status_reference_fedibird">post referenced (fedibird.com)</string>
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="dont_show_non_public_toot">Don\'t show non-public toot</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3+)</string>

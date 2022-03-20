@@ -49,6 +49,9 @@ object TootPayload {
                 if (payload[0] == '{') {
                     val src = payload.decodeJsonObject()
                     return when (event) {
+                        // 2022/3/19 fedibird.com から来る？ 投稿の編集らしい？
+                        "status.update",
+
                         // 2017/8/24 18:37 mastodon.juggler.jpでここを通った
                         "update" -> parser.status(src)
 

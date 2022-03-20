@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.onStatusRemoved
 import jp.juggler.subwaytooter.column.reloadFilter
+import jp.juggler.subwaytooter.column.replaceStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.*
 import okhttp3.Response
@@ -24,7 +25,7 @@ class StreamConnection(
     private val manager: StreamManager,
     private val acctGroup: StreamGroupAcct,
     val spec: StreamSpec? = null, // null if merged connection
-    val name: String
+    val name: String,
 ) : WebSocketListener(), TootApiCallback {
 
     companion object {
@@ -68,7 +69,7 @@ class StreamConnection(
         channelId: String? = null,
         stream: JsonArray? = null,
         item: TimelineItem? = null,
-        block: (callback: StreamCallback) -> Unit
+        block: (callback: StreamCallback) -> Unit,
     ) {
         if (isDisposed.get()) return
         acctGroup.keyGroups[spec]?.eachCallback(channelId, stream, item, block)
@@ -76,7 +77,7 @@ class StreamConnection(
 
     private fun eachCallbackForAcct(
         item: TimelineItem? = null,
-        block: (callback: StreamCallback) -> Unit
+        block: (callback: StreamCallback) -> Unit,
     ) {
         if (isDisposed.get()) return
         acctGroup.keyGroups.values.forEach {
@@ -88,7 +89,7 @@ class StreamConnection(
         channelId: String? = null,
         stream: JsonArray? = null,
         item: TimelineItem? = null,
-        block: (callback: StreamCallback) -> Unit
+        block: (callback: StreamCallback) -> Unit,
     ) {
         if (StreamManager.traceDelivery) log.v("$name eachCallback spec=${spec?.name}")
         if (spec != null) {
@@ -114,7 +115,7 @@ class StreamConnection(
     private fun fireTimelineItem(
         item: TimelineItem?,
         channelId: String? = null,
-        stream: JsonArray? = null
+        stream: JsonArray? = null,
     ) {
         item ?: return
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
@@ -180,7 +181,8 @@ class StreamConnection(
             // 特にすることはない
             "readAllNotifications",
             "readAllUnreadMentions",
-            "readAllUnreadSpecifiedNotes" -> return
+            "readAllUnreadSpecifiedNotes",
+            -> return
         }
 
         when (type) {
@@ -260,6 +262,24 @@ class StreamConnection(
                         if (payload is TootReaction && payload.status_id != null) {
                             log.d("emoji_reaction ${payload.status_id} ${payload.name} ${payload.count}")
                             fireEmojiReactionEvent(payload)
+                        }
+                    }
+
+                    "status.update" -> {
+                        if (payload is TootStatus) {
+                            log.d("status.update ${payload.uri}")
+                            val account = acctGroup.account
+                            // homeストリームから来るが、該当アカウントの全カラムに反映させたい
+                            launchMain {
+                                try {
+                                    manager.appState.columnList.forEach { column ->
+                                        if (column.accessInfo.acct != account.acct) return@forEach
+                                        column.replaceStatus(payload.id, payload.json)
+                                    }
+                                } catch (ex: Throwable) {
+                                    log.e(ex)
+                                }
+                            }
                         }
                     }
 

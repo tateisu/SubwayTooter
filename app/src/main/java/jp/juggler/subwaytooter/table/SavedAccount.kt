@@ -111,7 +111,7 @@ class SavedAccount(
         "lang",
         "")
 
-    var notification_status_reference : Boolean by JsonProperty(
+    var notification_status_reference: Boolean by JsonProperty(
         extraJson,
         "notification_status_reference",
         true)
@@ -880,6 +880,7 @@ class SavedAccount(
 
         TootNotification.TYPE_FOLLOW,
         TootNotification.TYPE_UNFOLLOW,
+        TootNotification.TYPE_ADMIN_SIGNUP,
         -> notification_follow
 
         TootNotification.TYPE_FOLLOW_REQUEST,

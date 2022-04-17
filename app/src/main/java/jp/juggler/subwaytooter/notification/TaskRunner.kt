@@ -152,6 +152,9 @@ class TaskRunner(
             TootNotification.TYPE_UNFOLLOW ->
                 context.getString(R.string.display_name_unfollowed_by, name)
 
+            TootNotification.TYPE_ADMIN_SIGNUP ->
+                context.getString(R.string.display_name_signed_up, name)
+
             TootNotification.TYPE_FAVOURITE ->
                 context.getString(R.string.display_name_favourited_by, name)
 
@@ -600,6 +603,7 @@ class TaskRunner(
                     TootNotification.TYPE_FOLLOW,
                     TootNotification.TYPE_FOLLOW_REQUEST,
                     TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+                    TootNotification.TYPE_ADMIN_SIGNUP,
                     -> {
                         val who = notification.account
                         if (who != null && favMuteSet.contains(account.getFullAcct(who))) {
@@ -671,7 +675,7 @@ class TaskRunner(
             @TargetApi(23)
             private fun updateNotificationDivided(
                 notificationTag: String,
-                nt: NotificationTracking
+                nt: NotificationTracking,
             ) {
                 log.d("updateNotificationDivided[${account.acct.pretty}] creating notification(1)")
 
@@ -758,7 +762,7 @@ class TaskRunner(
             @TargetApi(25)
             private fun setNotificationSound25(
                 builder: NotificationCompat.Builder,
-                item: NotificationData
+                item: NotificationData,
             ) {
                 var iv = 0
                 if (PrefB.bpNotificationSound(pref)) {

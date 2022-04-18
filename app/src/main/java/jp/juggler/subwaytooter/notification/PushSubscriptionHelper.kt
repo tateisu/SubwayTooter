@@ -4,10 +4,7 @@ import android.content.Context
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.entity.InstanceCapability
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootPushSubscription
-import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.SubscriptionServerKey
 import jp.juggler.util.*
@@ -45,13 +42,13 @@ class PushSubscriptionHelper(
     }
 
     val flags = account.notification_boost.booleanToInt(1) +
-        account.notification_favourite.booleanToInt(2) +
-        account.notification_follow.booleanToInt(4) +
-        account.notification_mention.booleanToInt(8) +
-        account.notification_reaction.booleanToInt(16) +
-        account.notification_vote.booleanToInt(32) +
-        account.notification_follow_request.booleanToInt(64) +
-        account.notification_post.booleanToInt(128) +
+            account.notification_favourite.booleanToInt(2) +
+            account.notification_follow.booleanToInt(4) +
+            account.notification_mention.booleanToInt(8) +
+            account.notification_reaction.booleanToInt(16) +
+            account.notification_vote.booleanToInt(32) +
+            account.notification_follow_request.booleanToInt(64) +
+            account.notification_post.booleanToInt(128) +
             account.notification_update.booleanToInt(256)
 
     private val logBuffer = StringBuilder()
@@ -160,45 +157,46 @@ class PushSubscriptionHelper(
         }
     }
 
-    suspend fun updateSubscription(client: TootApiClient, force: Boolean = false): TootApiResult? = try {
-        when {
-            isRecentlyChecked() ->
-                TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
+    suspend fun updateSubscription(client: TootApiClient, force: Boolean = false): TootApiResult? =
+        try {
+            when {
+                isRecentlyChecked() ->
+                    TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
 
-            account.isPseudo ->
-                TootApiResult(context.getString(R.string.pseudo_account_not_supported))
+                account.isPseudo ->
+                    TootApiResult(context.getString(R.string.pseudo_account_not_supported))
 
-            account.isMisskey ->
-                updateSubscriptionMisskey(client)
+                account.isMisskey ->
+                    updateSubscriptionMisskey(client)
 
-            else ->
-                updateSubscriptionMastodon(client, force)
-        }
-    } catch (ex: Throwable) {
-        TootApiResult(ex.withCaption("error."))
-    }?.apply {
-
-        if (error != null) addLog("$error $requestInfo".trimEnd())
-
-        // update error text on account table
-        val log = logString
-        when {
-
-            log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
-                // don't update if check was skipped.
+                else ->
+                    updateSubscriptionMastodon(client, force)
             }
+        } catch (ex: Throwable) {
+            TootApiResult(ex.withCaption("error."))
+        }?.apply {
 
-            subscribed || log.isEmpty() ->
-                // clear error text if succeeded or no error log
-                if (account.last_subscription_error != null) {
-                    account.updateSubscriptionError(null)
+            if (error != null) addLog("$error $requestInfo".trimEnd())
+
+            // update error text on account table
+            val log = logString
+            when {
+
+                log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
+                    // don't update if check was skipped.
                 }
 
-            else ->
-                // record error text
-                account.updateSubscriptionError(log)
+                subscribed || log.isEmpty() ->
+                    // clear error text if succeeded or no error log
+                    if (account.last_subscription_error != null) {
+                        account.updateSubscriptionError(null)
+                    }
+
+                else ->
+                    // record error text
+                    account.updateSubscriptionError(log)
+            }
         }
-    }
 
     private suspend fun updateSubscriptionMisskey(client: TootApiClient): TootApiResult? {
 
@@ -272,7 +270,10 @@ class PushSubscriptionHelper(
         }
     }
 
-    private suspend fun updateSubscriptionMastodon(client: TootApiClient, force: Boolean): TootApiResult? {
+    private suspend fun updateSubscriptionMastodon(
+        client: TootApiClient,
+        force: Boolean,
+    ): TootApiResult? {
 
         // 現在の購読状態を取得
         // https://github.com/tootsuite/mastodon/pull/7471
@@ -316,6 +317,7 @@ class PushSubscriptionHelper(
 
         val newAlerts = JsonObject().apply {
             put("follow", account.notification_follow)
+            put(TootNotification.TYPE_ADMIN_SIGNUP, account.notification_follow)
             put("favourite", account.notification_favourite)
             put("reblog", account.notification_boost)
             put("mention", account.notification_mention)
@@ -398,7 +400,10 @@ class PushSubscriptionHelper(
     }
 
     // returns null if no error
-    private fun checkInstanceVersionMastodon(ti: TootInstance, subscription404: Boolean): TootApiResult? {
+    private fun checkInstanceVersionMastodon(
+        ti: TootInstance,
+        subscription404: Boolean,
+    ): TootApiResult? {
 
         // 2.4.0rc1 未満にはプッシュ購読APIはない
         if (!ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {
@@ -527,13 +532,23 @@ class PushSubscriptionHelper(
         // サーバが知らないアラート種別は比較対象から除去する
         fun Iterable<String>.knownOnly() = filter {
             when (it) {
-                "follow", "mention", "favourite", "reblog" -> true
-                "poll" -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
-                "follow_request" -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
-                "status" -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
-                "emoji_reaction" -> ti.versionGE(TootInstance.VERSION_3_4_0_rc1) &&
-                    InstanceCapability.emojiReaction(account, ti)
-                "update" ->  ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+                "follow",
+                "mention",
+                "favourite",
+                "reblog",
+                -> true
+                "poll",
+                -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
+                "follow_request",
+                -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
+                "status",
+                -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
+                "emoji_reaction" ->
+                    ti.versionGE(TootInstance.VERSION_3_4_0_rc1) &&
+                            InstanceCapability.emojiReaction(account, ti)
+                "update",
+                TootNotification.TYPE_ADMIN_SIGNUP,
+                -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
 
                 else -> {
                     log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")

@@ -20,9 +20,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.Player.TimelineChangeReason
-import com.google.android.exoplayer2.source.*
-import jp.juggler.subwaytooter.api.*
+import com.google.android.exoplayer2.source.LoadEventInfo
+import com.google.android.exoplayer2.source.MediaLoadData
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.MediaSourceEventListener
+import com.google.android.exoplayer2.util.RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE
+import jp.juggler.subwaytooter.api.ApiTask
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
@@ -95,7 +102,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private lateinit var serviceType: ServiceType
     private var showDescription = true
 
-    private lateinit var viewBinding: ActMediaViewerBinding
+    private val views by lazy {
+        ActMediaViewerBinding.inflate(layoutInflater)
+    }
+
     private lateinit var exoPlayer: ExoPlayer
 
     private var lastVolume = Float.NaN
@@ -116,20 +126,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             log.d("exoPlayer onTimelineChanged reason=$reason")
         }
 
-        override fun onSeekProcessed() {
-        }
-
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         }
 
-        override fun onLoadingChanged(isLoading: Boolean) {
-            // かなり頻繁に呼ばれる
-            // warning.d( "exoPlayer onLoadingChanged %s" ,isLoading );
-        }
-
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            // かなり頻繁に呼ばれる
-            // warning.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
+        private fun showBufferingToast() {
+            val playWhenReady = exoPlayer.playWhenReady
+            val playbackState = exoPlayer.playbackState
             if (playWhenReady && playbackState == Player.STATE_BUFFERING) {
                 val now = SystemClock.elapsedRealtime()
                 if (now - bufferingLastShown >= short_limit && exoPlayer.duration >= short_limit) {
@@ -142,6 +144,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }
         }
 
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            showBufferingToast()
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            log.d("onPlayWhenReadyChanged playWhenReady=$playWhenReady, reason=$reason")
+            showBufferingToast()
+        }
+
         override fun onRepeatModeChanged(repeatMode: Int) {
             log.d("exoPlayer onRepeatModeChanged $repeatMode")
         }
@@ -151,8 +162,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             showToast(error, "player error.")
         }
 
-        override fun onPositionDiscontinuity(reason: Int) {
-            log.d("exoPlayer onPositionDiscontinuity reason=$reason")
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int,
+        ) {
+            log.d("exoPlayer onPositionDiscontinuity reason=$reason, oldPosition=$oldPosition, newPosition=$newPosition")
         }
     }
 
@@ -231,11 +246,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true, forceDark = true)
 
-        val intent = intent
-
         this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
-
-        this.idx = savedInstanceState?.getInt(EXTRA_IDX) ?: intent.getIntExtra(EXTRA_IDX, idx)
 
         this.serviceType = ServiceType.values()[
                 savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
@@ -247,7 +258,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 ?: intent.getStringExtra(EXTRA_DATA)
         )
 
-        if (idx < 0 || idx >= mediaList.size) idx = 0
+        this.idx = (savedInstanceState?.getInt(EXTRA_IDX)
+            ?: intent.getIntExtra(EXTRA_IDX, 0))
+            .takeIf { it in mediaList.indices }
+            ?: 0
 
         initUI()
 
@@ -256,8 +270,18 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewBinding.pbvImage.setBitmap(null)
+        views.pbvImage.setBitmap(null)
         exoPlayer.release()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        views.exoView.onResume()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        views.exoView.onPause()
     }
 
     override fun finish() {
@@ -266,25 +290,24 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     internal fun initUI() {
-        viewBinding = ActMediaViewerBinding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
+        setContentView(views.root)
         App1.initEdgeToEdge(this)
 
-        viewBinding.pbvImage.background = MediaBackgroundDrawable(
+        views.pbvImage.background = MediaBackgroundDrawable(
             tileStep = tileStep,
             kind = MediaBackgroundDrawable.Kind.fromIndex(PrefI.ipMediaBackground(this))
         )
 
         val enablePaging = mediaList.size > 1
-        viewBinding.btnPrevious.isEnabledAlpha = enablePaging
-        viewBinding.btnNext.isEnabledAlpha = enablePaging
+        views.btnPrevious.isEnabledAlpha = enablePaging
+        views.btnNext.isEnabledAlpha = enablePaging
 
-        viewBinding.btnPrevious.setOnClickListener(this)
-        viewBinding.btnNext.setOnClickListener(this)
+        views.btnPrevious.setOnClickListener(this)
+        views.btnNext.setOnClickListener(this)
         findViewById<View>(R.id.btnDownload).setOnClickListener(this)
         findViewById<View>(R.id.btnMore).setOnClickListener(this)
 
-        viewBinding.cbMute.setOnCheckedChangeListener { _, isChecked ->
+        views.cbMute.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 // mute
                 lastVolume = exoPlayer.volume
@@ -300,7 +323,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }
         }
 
-        viewBinding.pbvImage.setCallback(object : PinchBitmapView.Callback {
+        views.pbvImage.setCallback(object : PinchBitmapView.Callback {
             override fun onSwipe(deltaX: Int, deltaY: Int) {
                 if (isDestroyed) return
                 if (deltaX != 0) {
@@ -320,8 +343,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             ) {
                 App1.getAppState(this@ActMediaViewer).handler.post(Runnable {
                     if (isDestroyed) return@Runnable
-                    if (viewBinding.tvStatus.visibility == View.VISIBLE) {
-                        viewBinding.tvStatus.text = getString(
+                    if (views.tvStatus.visibility == View.VISIBLE) {
+                        views.tvStatus.text = getString(
                             R.string.zooming_of,
                             bitmapW.toInt(),
                             bitmapH.toInt(),
@@ -334,7 +357,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         exoPlayer = ExoPlayer.Builder(this).build()
         exoPlayer.addListener(playerListener)
-        viewBinding.exoView.player = exoPlayer
+        views.exoView.run {
+            player = exoPlayer
+            controllerAutoShow = false
+            setShowRewindButton(false)
+            setShowFastForwardButton(false)
+            setShowPreviousButton(false)
+            setShowNextButton(false)
+            setRepeatToggleModes(REPEAT_TOGGLE_MODE_ONE)
+        }
     }
 
     internal fun loadDelta(delta: Int) {
@@ -349,7 +380,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         exoPlayer.stop()
 
         // いったんすべて隠す
-        viewBinding.run {
+        views.run {
             pbvImage.gone()
             exoView.gone()
             tvError.gone()
@@ -364,8 +395,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         val ta = mediaList[idx]
         val description = ta.description
         if (showDescription && description?.isNotEmpty() == true) {
-            viewBinding.svDescription.visible()
-            viewBinding.tvDescription.text = description
+            views.svDescription.visible()
+            views.tvDescription.text = description
         }
 
         when (ta.type) {
@@ -383,7 +414,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showError(message: String) {
-        viewBinding.run {
+        views.run {
             exoView.gone()
             pbvImage.gone()
             tvError.visible().text = message
@@ -393,7 +424,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     @SuppressLint("StaticFieldLeak")
     private fun loadVideo(ta: TootAttachment, state: Bundle? = null) {
 
-        viewBinding.cbMute.visible().run {
+        views.cbMute.visible().run {
             if (isChecked && lastVolume.isFinite()) {
                 exoPlayer.volume = 0f
             }
@@ -412,7 +443,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         // https://github.com/google/ExoPlayer/issues/1819
         HttpsURLConnection.setDefaultSSLSocketFactory(MySslSocketFactory)
-        viewBinding.exoView.visibility = View.VISIBLE
+        views.exoView.visibility = View.VISIBLE
         exoPlayer.setMediaItem(MediaItem.fromUri(uri))
         exoPlayer.prepare()
         exoPlayer.repeatMode = when (ta.type) {
@@ -565,7 +596,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     @SuppressLint("StaticFieldLeak")
     private fun loadBitmap(ta: TootAttachment) {
 
-        viewBinding.run {
+        views.run {
             cbMute.gone()
             tvStatus.visible().text = null
             pbvImage.visible().setBitmap(null)
@@ -603,7 +634,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }.let { result -> // may null
                 when (val bitmap = resultBitmap) {
                     null -> if (result != null) showToast(true, result.error)
-                    else -> viewBinding.pbvImage.setBitmap(bitmap)
+                    else -> views.pbvImage.setBitmap(bitmap)
                 }
             }
         }
@@ -612,10 +643,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View) {
         try {
             when (v) {
-                viewBinding.btnPrevious -> loadDelta(-1)
-                viewBinding.btnNext -> loadDelta(+1)
-                viewBinding.btnDownload -> download(mediaList[idx])
-                viewBinding.btnMore -> more(mediaList[idx])
+                views.btnPrevious -> loadDelta(-1)
+                views.btnNext -> loadDelta(+1)
+                views.btnDownload -> download(mediaList[idx])
+                views.btnMore -> more(mediaList[idx])
             }
         } catch (ex: Throwable) {
             showToast(ex, "action failed.")
@@ -825,7 +856,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 val idx = k.toIndex()
                 appPref.edit().put(PrefI.ipMediaBackground, idx).apply()
 
-                viewBinding.pbvImage.background = MediaBackgroundDrawable(
+                views.pbvImage.background = MediaBackgroundDrawable(
                     tileStep = tileStep,
                     kind = k
                 )

@@ -288,64 +288,67 @@ fun ActPost.performMore() {
 }
 
 fun ActPost.performPost() {
-    // アップロード中は投稿できない
-    if (attachmentList.any { it.status == PostAttachment.Status.Progress }) {
-        showToast(false, R.string.media_attachment_still_uploading)
-        return
-    }
-
-    val account = this.account ?: return
-    var pollType: TootPollsType? = null
-    var pollItems: ArrayList<String>? = null
-    var pollExpireSeconds = 0
-    var pollHideTotals = false
-    var pollMultipleChoice = false
-    when (views.spPollType.selectedItemPosition) {
-        1 -> {
-            pollType = TootPollsType.Mastodon
-            pollItems = pollChoiceList()
-            pollExpireSeconds = pollExpireSeconds()
-            pollHideTotals = views.cbHideTotals.isChecked
-            pollMultipleChoice = views.cbMultipleChoice.isChecked
+    val activity = this
+    launchAndShowError {
+        // アップロード中は投稿できない
+        if (attachmentList.any { it.status == PostAttachment.Status.Progress }) {
+            showToast(false, R.string.media_attachment_still_uploading)
+            return@launchAndShowError
         }
-        2 -> {
-            pollType = TootPollsType.FriendsNico
-            pollItems = pollChoiceList()
-        }
-    }
 
-    PostImpl(
-        activity = this,
-        account = account,
-        content = views.etContent.text.toString().trim { it <= ' ' },
-        spoilerText = when {
-            !views.cbContentWarning.isChecked -> null
-            else -> views.etContentWarning.text.toString().trim { it <= ' ' }
-        },
-        visibilityArg = states.visibility ?: TootVisibility.Public,
-        bNSFW = views.cbNSFW.isChecked,
-        inReplyToId = states.inReplyToId,
-        attachmentListArg = this.attachmentList,
-        enqueteItemsArg = pollItems,
-        pollType = pollType,
-        pollExpireSeconds = pollExpireSeconds,
-        pollHideTotals = pollHideTotals,
-        pollMultipleChoice = pollMultipleChoice,
-        scheduledAt = states.timeSchedule,
-        scheduledId = scheduledStatus?.id,
-        redraftStatusId = states.redraftStatusId,
-        editStatusId = states.editStatusId,
-        emojiMapCustom = App1.custom_emoji_lister.getMap(account),
-        useQuoteToot = views.cbQuote.isChecked,
-        callback = object : PostCompleteCallback {
-            override fun onPostComplete(targetAccount: SavedAccount, status: TootStatus) {
+        val account = activity.account ?: return@launchAndShowError
+        var pollType: TootPollsType? = null
+        var pollItems: ArrayList<String>? = null
+        var pollExpireSeconds = 0
+        var pollHideTotals = false
+        var pollMultipleChoice = false
+        when (views.spPollType.selectedItemPosition) {
+            1 -> {
+                pollType = TootPollsType.Mastodon
+                pollItems = pollChoiceList()
+                pollExpireSeconds = pollExpireSeconds()
+                pollHideTotals = views.cbHideTotals.isChecked
+                pollMultipleChoice = views.cbMultipleChoice.isChecked
+            }
+            2 -> {
+                pollType = TootPollsType.FriendsNico
+                pollItems = pollChoiceList()
+            }
+        }
+
+       val postResult = PostImpl(
+            activity = activity,
+            account = account,
+            content = views.etContent.text.toString().trim { it <= ' ' },
+            spoilerText = when {
+                !views.cbContentWarning.isChecked -> null
+                else -> views.etContentWarning.text.toString().trim { it <= ' ' }
+            },
+            visibilityArg = states.visibility ?: TootVisibility.Public,
+            bNSFW = views.cbNSFW.isChecked,
+            inReplyToId = states.inReplyToId,
+            attachmentListArg = activity.attachmentList,
+            enqueteItemsArg = pollItems,
+            pollType = pollType,
+            pollExpireSeconds = pollExpireSeconds,
+            pollHideTotals = pollHideTotals,
+            pollMultipleChoice = pollMultipleChoice,
+            scheduledAt = states.timeSchedule,
+            scheduledId = scheduledStatus?.id,
+            redraftStatusId = states.redraftStatusId,
+            editStatusId = states.editStatusId,
+            emojiMapCustom = App1.custom_emoji_lister.getMapNonBlocking(account),
+            useQuoteToot = views.cbQuote.isChecked,
+        ).runSuspend()
+        when(postResult){
+            is PostResult.Normal ->{
                 val data = Intent()
-                data.putExtra(ActPost.EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
-                status.id.putTo(data, ActPost.EXTRA_POSTED_STATUS_ID)
+                data.putExtra(ActPost.EXTRA_POSTED_ACCT, postResult.targetAccount.acct.ascii)
+                postResult.status.id.putTo(data, ActPost.EXTRA_POSTED_STATUS_ID)
                 states.redraftStatusId?.putTo(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
-                status.in_reply_to_id?.putTo(data, ActPost.EXTRA_POSTED_REPLY_ID)
+                postResult.status.in_reply_to_id?.putTo(data, ActPost.EXTRA_POSTED_REPLY_ID)
                 if (states.editStatusId != null) {
-                    data.putExtra(ActPost.KEY_EDIT_STATUS, status.json.toString())
+                    data.putExtra(ActPost.KEY_EDIT_STATUS, postResult.status.json.toString())
                 }
                 ActMain.refActMain?.get()?.onCompleteActPost(data)
 
@@ -360,11 +363,10 @@ fun ActPost.performPost() {
                     this@performPost.finish()
                 }
             }
-
-            override fun onScheduledPostComplete(targetAccount: SavedAccount) {
+            is PostResult.Scheduled ->{
                 showToast(false, getString(R.string.scheduled_status_sent))
                 val data = Intent()
-                data.putExtra(ActPost.EXTRA_POSTED_ACCT, targetAccount.acct.ascii)
+                data.putExtra(ActPost.EXTRA_POSTED_ACCT,postResult. targetAccount.acct.ascii)
 
                 if (isMultiWindowPost) {
                     resetText()
@@ -378,7 +380,7 @@ fun ActPost.performPost() {
                 }
             }
         }
-    ).run()
+    }
 }
 
 fun ActPost.showContentWarningEnabled() {

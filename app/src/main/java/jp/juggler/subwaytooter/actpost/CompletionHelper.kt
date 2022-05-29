@@ -8,11 +8,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.EmojiPicker
-import jp.juggler.subwaytooter.dialog.EmojiPickerResult
+import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiBase
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
@@ -26,7 +24,6 @@ import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.subwaytooter.util.PopupAutoCompleteAcct
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
-import java.util.*
 import kotlin.math.min
 
 // 入力補完機能
@@ -108,7 +105,7 @@ class CompletionHelper(
 
     private var accessInfo: SavedAccount? = null
 
-    private val onEmojiListLoad: (list: ArrayList<CustomEmoji>) -> Unit = {
+    private val onEmojiListLoad: (list: List<CustomEmoji>) -> Unit = {
         if (popup?.isShowing == true) procTextChanged.run()
     }
 
@@ -261,9 +258,12 @@ class CompletionHelper(
     ) = buildList<CharSequence> {
         accessInfo ?: return@buildList
 
-        val customList =
-            App1.custom_emoji_lister.getListWithAliases(accessInfo, onEmojiListLoad)
-                ?: return@buildList
+        val customList = App1.custom_emoji_lister.getListNonBlocking(
+            accessInfo,
+            withAliases = true,
+            callback = onEmojiListLoad
+        )
+            ?: return@buildList
 
         for (item in customList) {
             if (size >= limit) break
@@ -310,7 +310,12 @@ class CompletionHelper(
 
     fun setInstance(accessInfo: SavedAccount?) {
         this.accessInfo = accessInfo
-        accessInfo?.let { App1.custom_emoji_lister.getList(it, onEmojiListLoad) }
+        accessInfo?.let {
+            App1.custom_emoji_lister.getListNonBlocking(
+                it,
+                callback = onEmojiListLoad
+            )
+        }
         if (popup?.isShowing == true) procTextChanged.run()
     }
 
@@ -400,8 +405,10 @@ class CompletionHelper(
         // et.setCustomSelectionActionModeCallback( action_mode_callback );
     }
 
-    private fun SpannableStringBuilder.appendEmoji(result: EmojiPickerResult) =
-        appendEmoji(result.bInstanceHasCustomEmoji, result.emoji)
+    private fun SpannableStringBuilder.appendEmoji(
+        emoji: EmojiBase,
+        bInstanceHasCustomEmoji: Boolean,
+    ) = appendEmoji(bInstanceHasCustomEmoji, emoji)
 
     private fun SpannableStringBuilder.appendEmoji(
         bInstanceHasCustomEmoji: Boolean,
@@ -434,21 +441,22 @@ class CompletionHelper(
     }
 
     private val openPickerEmoji: Runnable = Runnable {
-        EmojiPicker(
-            activity, accessInfo,
+        launchEmojiPicker(
+            activity,
+            accessInfo,
             closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected(pref)
-        ) { result ->
-            val et = this.et ?: return@EmojiPicker
+        ) { emoji, bInstanceHasCustomEmoji ->
+            val et = this@CompletionHelper.et ?: return@launchEmojiPicker
 
             val src = et.text ?: ""
             val srcLength = src.length
             val end = min(srcLength, et.selectionEnd)
             val start = src.lastIndexOf(':', end - 1)
-            if (start == -1 || end - start < 1) return@EmojiPicker
+            if (start == -1 || end - start < 1) return@launchEmojiPicker
 
             val sb = SpannableStringBuilder()
                 .append(src.subSequence(0, start))
-                .appendEmoji(result)
+                .appendEmoji(emoji, bInstanceHasCustomEmoji)
 
             val newSelection = sb.length
             if (end < srcLength) sb.append(src.subSequence(end, srcLength))
@@ -463,15 +471,16 @@ class CompletionHelper(
                 activity,
                 "PostHelper/EmojiPicker/cb"
             ).handler.post { et.showKeyboard() }
-        }.show()
+        }
     }
 
     fun openEmojiPickerFromMore() {
-        EmojiPicker(
-            activity, accessInfo,
+        launchEmojiPicker(
+            activity,
+            accessInfo,
             closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected(pref)
-        ) { result ->
-            val et = this.et ?: return@EmojiPicker
+        ) { emoji, bInstanceHasCustomEmoji ->
+            val et = this@CompletionHelper.et ?: return@launchEmojiPicker
 
             val src = et.text ?: ""
             val srcLength = src.length
@@ -480,7 +489,7 @@ class CompletionHelper(
 
             val sb = SpannableStringBuilder()
                 .append(src.subSequence(0, start))
-                .appendEmoji(result)
+                .appendEmoji(emoji, bInstanceHasCustomEmoji)
 
             val newSelection = sb.length
             if (end < srcLength) sb.append(src.subSequence(end, srcLength))
@@ -489,7 +498,7 @@ class CompletionHelper(
             et.setSelection(newSelection)
 
             procTextChanged.run()
-        }.show()
+        }
     }
 
     private fun SpannableStringBuilder.appendHashTag(tagWithoutSharp: String): SpannableStringBuilder {

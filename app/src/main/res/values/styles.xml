@@ -258,4 +258,10 @@
 
     </style>
 
+    <style name="emoji_picker_skin_tone_button">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginStart">2dp</item>
+    </style>
+
 </resources>

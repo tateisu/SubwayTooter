@@ -45,6 +45,7 @@ class EmojiMapLoader(
     private fun addName(emoji: UnicodeEmoji, name: String) {
         dst.shortNameMap[name] = emoji
         dst.shortNameList.add(name)
+        emoji.namesLower.add(name.lowercase())
     }
 
     private fun readEmojiDataLine(lno: Int, rawLine: String) {

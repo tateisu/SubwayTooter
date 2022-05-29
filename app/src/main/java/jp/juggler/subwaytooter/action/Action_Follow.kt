@@ -1,7 +1,8 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.reloadAccountSetting
 import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
 import jp.juggler.subwaytooter.api.*
@@ -9,12 +10,16 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.fireRebindAdapterItems
 import jp.juggler.subwaytooter.column.removeUser
-import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 fun ActMain.clickFollowInfo(
     pos: Int,
@@ -45,7 +50,10 @@ fun ActMain.clickFollow(
         relation.blocking || relation.muting ->
             Unit // 何もしない
         accessInfo.isMisskey && relation.getRequested(who) && !relation.getFollowing(who) ->
-            followRequestDelete(pos, accessInfo, whoRef, callback = cancelFollowRequestCompleteCallback)
+            followRequestDelete(pos,
+                accessInfo,
+                whoRef,
+                callback = cancelFollowRequestCompleteCallback)
         relation.getFollowing(who) || relation.getRequested(who) ->
             follow(pos, accessInfo, whoRef, bFollow = false, callback = unfollowCompleteCallback)
         else ->
@@ -53,15 +61,20 @@ fun ActMain.clickFollow(
     }
 }
 
-fun ActMain.clickFollowRequestAccept(accessInfo: SavedAccount, whoRef: TootAccountRef?, accept: Boolean) {
+fun ActMain.clickFollowRequestAccept(
+    accessInfo: SavedAccount,
+    whoRef: TootAccountRef?,
+    accept: Boolean,
+) {
     val who = whoRef?.get() ?: return
-    DlgConfirm.openSimple(
-        this,
-        getString(
-            if (accept) R.string.follow_accept_confirm else R.string.follow_deny_confirm,
+    launchAndShowError {
+        confirm(
+            when {
+                accept -> R.string.follow_accept_confirm
+                else -> R.string.follow_deny_confirm
+            },
             AcctColor.getNickname(accessInfo, who)
         )
-    ) {
         followRequestAuthorize(accessInfo, whoRef, accept)
     }
 }
@@ -85,136 +98,90 @@ fun ActMain.follow(
         return
     }
 
-    if (!bConfirmMoved && bFollow && who.moved != null) {
-        AlertDialog.Builder(activity)
-            .setMessage(
-                getString(
-                    R.string.jump_moved_user,
-                    accessInfo.getFullAcct(who),
-                    accessInfo.getFullAcct(who.moved)
-                )
-            )
-            .setPositiveButton(R.string.ok) { _, _ ->
-                userProfileFromAnotherAccount(
-                    pos,
-                    accessInfo,
-                    who.moved
-                )
+    launchAndShowError {
+        if (!bConfirmMoved && bFollow && who.moved != null) {
+            val selected = suspendCancellableCoroutine<Int> { cont ->
+                try {
+                    val dialog = AlertDialog.Builder(activity)
+                        .setMessage(
+                            getString(
+                                R.string.jump_moved_user,
+                                accessInfo.getFullAcct(who),
+                                accessInfo.getFullAcct(who.moved)
+                            )
+                        )
+                        .setPositiveButton(R.string.ok) { _, _ ->
+                            cont.resume(R.string.ok)
+                        }
+                        .setNeutralButton(R.string.ignore_suggestion) { _, _ ->
+                            cont.resume(R.string.ignore_suggestion)
+
+                        }
+                        .setNegativeButton(R.string.cancel, null)
+                        .create()
+                    dialog.setOnDismissListener {
+                        if (cont.isActive) cont.resumeWithException(CancellationException())
+                    }
+                    cont.invokeOnCancellation { dialog.dismissSafe() }
+                    dialog.show()
+                } catch (ex: Throwable) {
+                    cont.resumeWithException(ex)
+                }
             }
-            .setNeutralButton(R.string.ignore_suggestion) { _, _ ->
-                follow(
-                    pos,
-                    accessInfo,
-                    whoRef,
-                    bFollow = bFollow,
-                    bConfirmMoved = true, // CHANGED
-                    bConfirmed = bConfirmed,
-                    callback = callback
-                )
+            when (selected) {
+                R.string.ok -> {
+                    userProfileFromAnotherAccount(
+                        pos,
+                        accessInfo,
+                        who.moved
+                    )
+                    return@launchAndShowError
+                }
+                R.string.ignore_suggestion -> Unit // fall thru
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-        return
-    }
-
-    if (!bConfirmed) {
-        if (bFollow && who.locked) {
-            DlgConfirm.open(
-                activity,
-                activity.getString(
-                    R.string.confirm_follow_request_who_from,
-                    whoRef.decoded_display_name,
-                    AcctColor.getNickname(accessInfo)
-                ),
-                object : DlgConfirm.Callback {
-
-                    override fun onOK() {
-                        follow(
-                            pos,
-                            accessInfo,
-                            whoRef,
-                            bFollow = bFollow,
-                            bConfirmMoved = bConfirmMoved,
-                            bConfirmed = true, // CHANGED
-                            callback = callback
-                        )
-                    }
-
-                    override var isConfirmEnabled: Boolean
-                        get() = accessInfo.confirm_follow_locked
-                        set(value) {
-                            accessInfo.confirm_follow_locked = value
-                            accessInfo.saveSetting()
-                            activity.reloadAccountSetting(accessInfo)
-                        }
-                })
-            return
-        } else if (bFollow) {
-            DlgConfirm.open(
-                activity,
-                getString(
-                    R.string.confirm_follow_who_from,
-                    whoRef.decoded_display_name,
-                    AcctColor.getNickname(accessInfo)
-                ),
-                object : DlgConfirm.Callback {
-
-                    override fun onOK() {
-                        follow(
-                            pos,
-                            accessInfo,
-                            whoRef,
-                            bFollow = bFollow,
-                            bConfirmMoved = bConfirmMoved,
-                            bConfirmed = true, //CHANGED
-                            callback = callback
-                        )
-                    }
-
-                    override var isConfirmEnabled: Boolean
-                        get() = accessInfo.confirm_follow
-                        set(value) {
-                            accessInfo.confirm_follow = value
-                            accessInfo.saveSetting()
-                            activity.reloadAccountSetting(accessInfo)
-                        }
-                })
-            return
-        } else {
-            DlgConfirm.open(
-                activity,
-                getString(
-                    R.string.confirm_unfollow_who_from,
-                    whoRef.decoded_display_name,
-                    AcctColor.getNickname(accessInfo)
-                ),
-                object : DlgConfirm.Callback {
-
-                    override fun onOK() {
-                        follow(
-                            pos,
-                            accessInfo,
-                            whoRef,
-                            bFollow = bFollow,
-                            bConfirmMoved = bConfirmMoved,
-                            bConfirmed = true, // CHANGED
-                            callback = callback
-                        )
-                    }
-
-                    override var isConfirmEnabled: Boolean
-                        get() = accessInfo.confirm_unfollow
-                        set(value) {
-                            accessInfo.confirm_unfollow = value
-                            accessInfo.saveSetting()
-                            activity.reloadAccountSetting(accessInfo)
-                        }
-                })
-            return
+        } else if (!bConfirmed) {
+            if (bFollow && who.locked) {
+                confirm(
+                    getString(
+                        R.string.confirm_follow_request_who_from,
+                        whoRef.decoded_display_name,
+                        AcctColor.getNickname(accessInfo)
+                    ),
+                    accessInfo.confirm_follow_locked,
+                ) { newConfirmEnabled ->
+                    accessInfo.confirm_follow_locked = newConfirmEnabled
+                    accessInfo.saveSetting()
+                    activity.reloadAccountSetting(accessInfo)
+                }
+            } else if (bFollow) {
+                confirm(
+                    getString(
+                        R.string.confirm_follow_who_from,
+                        whoRef.decoded_display_name,
+                        AcctColor.getNickname(accessInfo)
+                    ),
+                    accessInfo.confirm_follow
+                ) { newConfirmEnabled ->
+                    accessInfo.confirm_follow = newConfirmEnabled
+                    accessInfo.saveSetting()
+                    activity.reloadAccountSetting(accessInfo)
+                }
+            } else {
+                confirm(
+                    getString(
+                        R.string.confirm_unfollow_who_from,
+                        whoRef.decoded_display_name,
+                        AcctColor.getNickname(accessInfo)
+                    ),
+                    accessInfo.confirm_unfollow
+                ) { newConfirmEnabled ->
+                    accessInfo.confirm_unfollow = newConfirmEnabled
+                    accessInfo.saveSetting()
+                    activity.reloadAccountSetting(accessInfo)
+                }
+            }
         }
-    }
 
-    launchMain {
         var resultRelation: UserRelation? = null
         runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
             val parser = TootParser(activity, accessInfo)
@@ -327,77 +294,43 @@ private fun ActMain.followRemote(
     bConfirmed: Boolean = false,
     callback: () -> Unit = {},
 ) {
-    val activity = this@followRemote
-
     if (accessInfo.isMe(acct)) {
         showToast(false, R.string.it_is_you)
         return
     }
 
-    if (!bConfirmed) {
-        if (locked) {
-            DlgConfirm.open(
-                activity,
-                getString(
-                    R.string.confirm_follow_request_who_from,
-                    AcctColor.getNickname(acct),
-                    AcctColor.getNickname(accessInfo)
-                ),
-                object : DlgConfirm.Callback {
-                    override fun onOK() {
-                        followRemote(
+    launchAndShowError {
 
-                            accessInfo,
-                            acct,
-                            locked,
-                            bConfirmed = true, //CHANGE
-                            callback = callback
-                        )
-                    }
-
-                    override var isConfirmEnabled: Boolean
-                        get() = accessInfo.confirm_follow_locked
-                        set(value) {
-                            accessInfo.confirm_follow_locked = value
-                            accessInfo.saveSetting()
-                            reloadAccountSetting(accessInfo)
-                        }
-                })
-            return
-        } else {
-            DlgConfirm.open(
-                activity,
-                getString(
-                    R.string.confirm_follow_who_from,
-                    AcctColor.getNickname(acct),
-                    AcctColor.getNickname(accessInfo)
-                ),
-                object : DlgConfirm.Callback {
-
-                    override fun onOK() {
-                        followRemote(
-
-                            accessInfo,
-                            acct,
-                            locked,
-                            bConfirmed = true, //CHANGE
-                            callback = callback
-                        )
-                    }
-
-                    override var isConfirmEnabled: Boolean
-                        get() = accessInfo.confirm_follow
-                        set(value) {
-                            accessInfo.confirm_follow = value
-                            accessInfo.saveSetting()
-                            reloadAccountSetting(accessInfo)
-                        }
-                })
-            return
+        if (!bConfirmed) {
+            if (locked) {
+                confirm(
+                    getString(
+                        R.string.confirm_follow_request_who_from,
+                        AcctColor.getNickname(acct),
+                        AcctColor.getNickname(accessInfo)
+                    ),
+                    accessInfo.confirm_follow_locked,
+                ) { newConfirmEnabled ->
+                    accessInfo.confirm_follow_locked = newConfirmEnabled
+                    accessInfo.saveSetting()
+                    reloadAccountSetting(accessInfo)
+                }
+            } else {
+                confirm(
+                    getString(
+                        R.string.confirm_follow_who_from,
+                        AcctColor.getNickname(acct),
+                        AcctColor.getNickname(accessInfo)
+                    ),
+                    accessInfo.confirm_follow
+                ) { newConfirmEnabled ->
+                    accessInfo.confirm_follow = newConfirmEnabled
+                    accessInfo.saveSetting()
+                    reloadAccountSetting(accessInfo)
+                }
+            }
         }
-    }
 
-    launchMain {
         var resultRelation: UserRelation? = null
         runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
             val parser = TootParser(this, accessInfo)
@@ -598,27 +531,15 @@ fun ActMain.followRequestDelete(
         return
     }
 
-    if (!bConfirmed) {
-        DlgConfirm.openSimple(
-            this,
-            getString(
+    launchAndShowError {
+        if (!bConfirmed) {
+            confirm(
                 R.string.confirm_cancel_follow_request_who_from,
                 whoRef.decoded_display_name,
                 AcctColor.getNickname(accessInfo)
             )
-        ) {
-            followRequestDelete(
-                pos,
-                accessInfo,
-                whoRef,
-                bConfirmed = true, // CHANGED
-                callback = callback
-            )
         }
-        return
-    }
 
-    launchMain {
         var resultRelation: UserRelation? = null
         runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
             if (!accessInfo.isMisskey) {
@@ -649,7 +570,6 @@ fun ActMain.followRequestDelete(
                 }
             }
         }?.let { result ->
-
             when (resultRelation) {
                 null -> showToast(false, result.error)
                 else -> {

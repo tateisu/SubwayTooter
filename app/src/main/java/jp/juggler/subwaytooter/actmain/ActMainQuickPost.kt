@@ -5,16 +5,19 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.core.view.GravityCompat
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actpost.CompletionHelper
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.PostCompleteCallback
 import jp.juggler.subwaytooter.util.PostImpl
+import jp.juggler.subwaytooter.util.PostResult
 import jp.juggler.util.hideKeyboard
+import jp.juggler.util.launchAndShowError
 import jp.juggler.util.launchMain
 import org.jetbrains.anko.imageResource
 
@@ -104,39 +107,39 @@ fun ActMain.performQuickPost(account: SavedAccount?) {
 
     etQuickPost.hideKeyboard()
 
-    PostImpl(
-        activity = this,
-        account = account,
-        content = etQuickPost.text.toString().trim { it <= ' ' },
-        spoilerText = null,
-        visibilityArg = when (quickPostVisibility) {
-            TootVisibility.AccountSetting -> account.visibility
-            else -> quickPostVisibility
-        },
-        bNSFW = false,
-        inReplyToId = null,
-        attachmentListArg = null,
-        enqueteItemsArg = null,
-        pollType = null,
-        pollExpireSeconds = 0,
-        pollHideTotals = false,
-        pollMultipleChoice = false,
-        scheduledAt = 0L,
-        scheduledId = null,
-        redraftStatusId = null,
-        editStatusId = null,
-        emojiMapCustom = App1.custom_emoji_lister.getMap(account),
-        useQuoteToot = false,
-        callback = object : PostCompleteCallback {
-            override fun onScheduledPostComplete(targetAccount: SavedAccount) {}
-            override fun onPostComplete(targetAccount: SavedAccount, status: TootStatus) {
-                etQuickPost.setText("")
-                postedAcct = targetAccount.acct
-                postedStatusId = status.id
-                postedReplyId = status.in_reply_to_id
-                postedRedraftId = null
-                refreshAfterPost()
-            }
+    launchAndShowError {
+        val postResult = PostImpl(
+            activity = this@performQuickPost,
+            account = account,
+            content = etQuickPost.text.toString().trim { it <= ' ' },
+            spoilerText = null,
+            visibilityArg = when (quickPostVisibility) {
+                TootVisibility.AccountSetting -> account.visibility
+                else -> quickPostVisibility
+            },
+            bNSFW = false,
+            inReplyToId = null,
+            attachmentListArg = null,
+            enqueteItemsArg = null,
+            pollType = null,
+            pollExpireSeconds = 0,
+            pollHideTotals = false,
+            pollMultipleChoice = false,
+            scheduledAt = 0L,
+            scheduledId = null,
+            redraftStatusId = null,
+            editStatusId = null,
+            emojiMapCustom = App1.custom_emoji_lister.getMapNonBlocking(account),
+            useQuoteToot = false,
+        ).runSuspend()
+
+        if (postResult is PostResult.Normal) {
+            etQuickPost.setText("")
+            postedAcct = postResult.targetAccount.acct
+            postedStatusId = postResult.status.id
+            postedReplyId = postResult.status.in_reply_to_id
+            postedRedraftId = null
+            refreshAfterPost()
         }
-    ).run()
+    }
 }

@@ -1,6 +1,7 @@
 package jp.juggler.util
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
@@ -27,6 +28,17 @@ fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
             block()
         } catch (ex: CancellationException) {
             log.trace(ex, "launchMain: cancelled.")
+        }
+    }
+
+
+
+fun AppCompatActivity.launchAndShowError(block: suspend CoroutineScope.() -> Unit): Job =
+    lifecycleScope.launch() {
+        try {
+            block()
+        } catch (ex: Throwable) {
+            showError(ex)
         }
     }
 

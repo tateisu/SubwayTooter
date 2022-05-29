@@ -4,10 +4,13 @@ import android.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.api.syncAccountByAcct
 import jp.juggler.subwaytooter.column.onListMemberUpdated
-import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Request
@@ -23,7 +26,7 @@ fun ActMain.listMemberAdd(
     bFollow: Boolean = false,
     onListMemberUpdated: (willRegistered: Boolean, bSuccess: Boolean) -> Unit = { _, _ -> },
 ) {
-    launchMain {
+    launchAndShowError {
         runApiTask(accessInfo) { client ->
             val parser = TootParser(this, accessInfo)
 
@@ -31,7 +34,6 @@ fun ActMain.listMemberAdd(
 
             if (accessInfo.isMisskey) {
                 // misskeyのリストはフォロー無関係
-
                 client.request(
                     "/api/users/lists/push",
                     accessInfo.putMisskeyApiToken().apply {
@@ -128,21 +130,17 @@ fun ActMain.listMemberAdd(
 
                     isNotFollowed() -> {
                         if (!bFollow) {
-                            DlgConfirm.openSimple(
-                                this@listMemberAdd,
-                                getString(
-                                    R.string.list_retry_with_follow,
-                                    accessInfo.getFullAcct(localWho)
-                                )
-                            ) {
-                                listMemberAdd(
-                                    accessInfo,
-                                    listId,
-                                    localWho,
-                                    bFollow = true,
-                                    onListMemberUpdated = onListMemberUpdated
-                                )
-                            }
+                            confirm(
+                                R.string.list_retry_with_follow,
+                                accessInfo.getFullAcct(localWho)
+                            )
+                            listMemberAdd(
+                                accessInfo,
+                                listId,
+                                localWho,
+                                bFollow = true,
+                                onListMemberUpdated = onListMemberUpdated
+                            )
                         } else {
                             AlertDialog.Builder(this@listMemberAdd)
                                 .setCancelable(true)
@@ -165,7 +163,7 @@ fun ActMain.listMemberDelete(
     accessInfo: SavedAccount,
     listId: EntityId,
     localWho: TootAccount,
-    onListMemberDeleted:  (willRegistered: Boolean, bSuccess: Boolean) -> Unit = { _, _ -> },
+    onListMemberDeleted: (willRegistered: Boolean, bSuccess: Boolean) -> Unit = { _, _ -> },
 ) {
     launchMain {
         runApiTask(accessInfo) { client ->

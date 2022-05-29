@@ -14,13 +14,17 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.reactionAdd
 import jp.juggler.subwaytooter.action.reactionFromAnotherAccount
 import jp.juggler.subwaytooter.action.reactionRemove
-import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.util.*
-import jp.juggler.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.minWidthCompat
+import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.util.attrColor
+import jp.juggler.util.getAdaptiveRippleDrawableRound
+import jp.juggler.util.notZero
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.dip
 

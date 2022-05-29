@@ -22,10 +22,10 @@ fun ActPost.selectAccount(a: SavedAccount?) {
         views.btnAccount.setTextColor(attrColor(android.R.attr.textColorPrimary))
         views.btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
     } else {
-
-        // 先読みしてキャッシュに保持しておく
-        App1.custom_emoji_lister.getList(a) {
+        launchMain {
+            // 先読みしてキャッシュに保持しておく
             // 何もしない
+            App1.custom_emoji_lister.getList(a)
         }
 
         val ac = AcctColor.load(a)

@@ -1139,4 +1139,11 @@
     <string name="edit_history">編集履歴</string>
     <string name="post_language_code">投稿の言語コード(空欄にすると端末の言語設定を使います)</string>
     <string name="device_language">(端末の言語)</string>
+    <string name="skin_tones">肌色</string>
+    <string name="skin_tone_unspecified">指定なし</string>
+    <string name="search_emojis">絵文字を検索…</string>
+    <string name="categories">カテゴリ</string>
+    <string name="error">エラー</string>
+    <string name="emoji_picker_custom_of">カスタム: %1$s</string>
+    <string name="others" >その他</string>
 </resources>

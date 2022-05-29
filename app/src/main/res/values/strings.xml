@@ -1148,4 +1148,11 @@
     <string name="edit_history">Edit history</string>
     <string name="post_language_code">Language code of Post (leave empty to use device\'s language setting)</string>
     <string name="device_language">(device\'s language)</string>
+    <string name="skin_tones">Skin tones</string>
+    <string name="skin_tone_unspecified">Unspecified</string>
+    <string name="search_emojis">Search emojis…</string>
+    <string name="categories">Categories</string>
+    <string name="error">Error</string>
+    <string name="emoji_picker_custom_of">Custom: %1$s</string>
+    <string name="others" >Others</string>
 </resources>

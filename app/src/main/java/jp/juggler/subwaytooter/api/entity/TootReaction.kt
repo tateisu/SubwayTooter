@@ -215,7 +215,7 @@ class TootReaction(
                     // そのドメインの絵文字一覧を取得済みなら
                     // それを使う
                     App1.custom_emoji_lister
-                        .getMap(accessInfo)
+                        .getMapNonBlocking(accessInfo)
                         ?.get(key)
                         ?.chooseUrl()
                         ?.notEmpty()

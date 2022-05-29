@@ -39,9 +39,9 @@ android {
         jvmTarget = jvm_target
         useIR = true
         freeCompilerArgs += [
-                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-opt-in=kotlin.ExperimentalStdlibApi",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
                 //      "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
                 //      "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
@@ -148,9 +148,11 @@ dependencies {
 
     implementation "androidx.core:core-ktx:1.7.0"
 
-    def emojiVersion = "1.1.0"
-    implementation "androidx.emoji2:emoji2:$emojiVersion"
-    implementation "androidx.emoji2:emoji2-bundled:$emojiVersion"
+    def emoji2Version = "1.1.0"
+    implementation "androidx.emoji2:emoji2:$emoji2Version"
+    implementation "androidx.emoji2:emoji2-views:$emoji2Version"
+    implementation "androidx.emoji2:emoji2-views-helper:$emoji2Version"
+    implementation "androidx.emoji2:emoji2-bundled:$emoji2Version"
 
     // DrawerLayout
     implementation "androidx.drawerlayout:drawerlayout:1.1.1"
@@ -235,6 +237,8 @@ dependencies {
     */
 
     implementation 'com.caverock:androidsvg-aar:1.4'
+
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
 
     // ViewModel
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"

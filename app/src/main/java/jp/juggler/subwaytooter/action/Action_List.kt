@@ -14,7 +14,7 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onListListUpdated
 import jp.juggler.subwaytooter.column.onListNameUpdated
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -118,17 +118,10 @@ fun ActMain.listDelete(
     list: TootList,
     bConfirmed: Boolean = false,
 ) {
-    if (!bConfirmed) {
-        DlgConfirm.openSimple(
-            this,
-            getString(R.string.list_delete_confirm, list.title)
-        ) {
-            listDelete(accessInfo, list, bConfirmed = true)
+    launchAndShowError {
+        if (!bConfirmed) {
+            confirm(R.string.list_delete_confirm, list.title)
         }
-        return
-    }
-
-    launchMain {
         runApiTask(accessInfo) { client ->
             if (accessInfo.isMisskey) {
                 client.request(

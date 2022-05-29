@@ -2,22 +2,25 @@ package jp.juggler.subwaytooter.action
 
 import android.content.Intent
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.reloadAccountSetting
 import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootScheduled
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.emptyCallback
 import jp.juggler.util.*
+import kotlinx.coroutines.CancellationException
 import okhttp3.Request
-import java.util.*
 
 fun ActMain.clickStatusDelete(
     accessInfo: SavedAccount,
@@ -81,7 +84,8 @@ fun ActMain.clickScheduledToot(accessInfo: SavedAccount, item: TootScheduled, co
             scheduledPostEdit(accessInfo, item)
         }
         .addAction(getString(R.string.delete)) {
-            scheduledPostDelete(accessInfo, item) {
+            launchAndShowError {
+                scheduledPostDelete(accessInfo, item)
                 column.onScheduleDeleted(item)
                 showToast(false, R.string.scheduled_post_deleted)
             }
@@ -99,61 +103,44 @@ fun ActMain.favourite(
     crossAccountMode: CrossAccountMode,
     callback: () -> Unit,
     bSet: Boolean = true,
-    bConfirmed: Boolean = false,
 ) {
-    if (appState.isBusyFav(accessInfo, statusArg)) {
-        showToast(false, R.string.wait_previous_operation)
-        return
-    }
+    launchAndShowError {
 
-    // 必要なら確認を出す
-    if (!bConfirmed && accessInfo.isMastodon) {
-        DlgConfirm.open(
-            this,
-            getString(
+        if (appState.isBusyFav(accessInfo, statusArg)) {
+            showToast(false, R.string.wait_previous_operation)
+            return@launchAndShowError
+        }
+
+        // 必要なら確認を出す
+        if (accessInfo.isMastodon) {
+            confirm(
+                getString(
+                    when (bSet) {
+                        true -> R.string.confirm_favourite_from
+                        else -> R.string.confirm_unfavourite_from
+                    },
+                    AcctColor.getNickname(accessInfo)
+                ),
                 when (bSet) {
-                    true -> R.string.confirm_favourite_from
-                    else -> R.string.confirm_unfavourite_from
-                },
-                AcctColor.getNickname(accessInfo)
-            ),
-            object : DlgConfirm.Callback {
-
-                override fun onOK() {
-                    favourite(
-                        accessInfo,
-                        statusArg,
-                        crossAccountMode,
-                        callback,
-                        bSet = bSet,
-                        bConfirmed = true
-                    )
+                    true -> accessInfo.confirm_favourite
+                    else -> accessInfo.confirm_unfavourite
                 }
+            ) { newConfirmEnabled ->
+                when (bSet) {
+                    true -> accessInfo.confirm_favourite = newConfirmEnabled
+                    else -> accessInfo.confirm_unfavourite = newConfirmEnabled
+                }
+                accessInfo.saveSetting()
+                reloadAccountSetting(accessInfo)
+            }
+        }
 
-                override var isConfirmEnabled: Boolean
-                    get() = when (bSet) {
-                        true -> accessInfo.confirm_favourite
-                        else -> accessInfo.confirm_unfavourite
-                    }
-                    set(value) {
-                        when (bSet) {
-                            true -> accessInfo.confirm_favourite = value
-                            else -> accessInfo.confirm_unfavourite = value
-                        }
-                        accessInfo.saveSetting()
-                        reloadAccountSetting(accessInfo)
-                    }
-            })
-        return
-    }
+        //
+        appState.setBusyFav(accessInfo, statusArg)
 
-    //
-    appState.setBusyFav(accessInfo, statusArg)
+        // ファボ表示を更新中にする
+        showColumnMatchAccount(accessInfo)
 
-    // ファボ表示を更新中にする
-    showColumnMatchAccount(accessInfo)
-
-    launchMain {
         var resultStatus: TootStatus? = null
         val result = runApiTask(
             accessInfo,
@@ -284,7 +271,6 @@ fun ActMain.bookmark(
     crossAccountMode: CrossAccountMode,
     callback: () -> Unit,
     bSet: Boolean = true,
-    bConfirmed: Boolean = false,
 ) {
     if (appState.isBusyFav(accessInfo, statusArg)) {
         showToast(false, R.string.wait_previous_operation)
@@ -294,47 +280,30 @@ fun ActMain.bookmark(
         showToast(false, R.string.misskey_account_not_supported)
         return
     }
+    launchAndShowError {
 
-    // 必要なら確認を出す
-    // ブックマークは解除する時だけ確認する
-    if (!bConfirmed && !bSet) {
-        DlgConfirm.open(
-            this,
-            getString(
-                R.string.confirm_unbookmark_from,
-                AcctColor.getNickname(accessInfo)
-            ),
-            object : DlgConfirm.Callback {
-                override var isConfirmEnabled: Boolean
-                    get() = accessInfo.confirm_unbookmark
-                    set(value) {
-                        accessInfo.confirm_unbookmark = value
-                        accessInfo.saveSetting()
-                        reloadAccountSetting(accessInfo)
-                    }
+        // 必要なら確認を出す
+        // ブックマークは解除する時だけ確認する
+        if (!bSet) {
+            confirm(
+                getString(
+                    R.string.confirm_unbookmark_from,
+                    AcctColor.getNickname(accessInfo)
+                ),
+                accessInfo.confirm_unbookmark
+            ) { newConfirmEnabled ->
+                accessInfo.confirm_unbookmark = newConfirmEnabled
+                accessInfo.saveSetting()
+                reloadAccountSetting(accessInfo)
+            }
+        }
 
-                override fun onOK() {
-                    bookmark(
-                        accessInfo = accessInfo,
-                        statusArg = statusArg,
-                        crossAccountMode = crossAccountMode,
-                        callback = callback,
-                        bSet = bSet,
-                        bConfirmed = true,
-                    )
-                }
-            })
-        return
-    }
+        //
+        appState.setBusyBookmark(accessInfo, statusArg)
 
-    //
-    appState.setBusyBookmark(accessInfo, statusArg)
+        // ファボ表示を更新中にする
+        showColumnMatchAccount(accessInfo)
 
-    // ファボ表示を更新中にする
-    showColumnMatchAccount(accessInfo)
-
-    //
-    launchMain {
         var resultStatus: TootStatus? = null
         val result = runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
             val targetStatus = if (crossAccountMode.isRemote) {
@@ -580,40 +549,21 @@ fun ActMain.statusEdit(
     }
 }
 
-fun ActMain.scheduledPostDelete(
+suspend fun ActMain.scheduledPostDelete(
     accessInfo: SavedAccount,
     item: TootScheduled,
     bConfirmed: Boolean = false,
-    callback: () -> Unit,
 ) {
-    val act = this@scheduledPostDelete
     if (!bConfirmed) {
-        DlgConfirm.openSimple(
-            act,
-            getString(R.string.scheduled_status_delete_confirm)
-        ) {
-            scheduledPostDelete(
-                accessInfo,
-                item,
-                bConfirmed = true,
-                callback = callback
-            )
-        }
-        return
+        confirm(R.string.scheduled_status_delete_confirm)
     }
-    launchMain {
-        runApiTask(accessInfo) { client ->
-            client.request(
-                "/api/v1/scheduled_statuses/${item.id}",
-                Request.Builder().delete()
-            )
-        }?.let { result ->
-            when (val error = result.error) {
-                null -> callback()
-                else -> showToast(true, error)
-            }
-        }
-    }
+    val result = runApiTask(accessInfo) { client ->
+        client.request(
+            "/api/v1/scheduled_statuses/${item.id}",
+            Request.Builder().delete()
+        )
+    } ?: throw CancellationException("scheduledPostDelete cancelled.")
+    result.error?.notEmpty()?.let { error(it) }
 }
 
 fun ActMain.scheduledPostEdit(

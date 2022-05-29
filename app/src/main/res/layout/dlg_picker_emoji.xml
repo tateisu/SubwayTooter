@@ -1,73 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="320dp"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
-    <LinearLayout
+    <com.google.android.flexbox.FlexboxLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="6dp"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        >
+        android:layout_margin="6dp"
+        android:layout_marginBottom="0dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btnSkinTone0"
+            style="@style/emoji_picker_skin_tone_button"
+            android:background="#fde12c"
+            android:contentDescription="@string/skin_tone_unspecified"
+            android:src="@drawable/check_mark" />
 
         <ImageButton
             android:id="@+id/btnSkinTone1"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            style="@style/emoji_picker_skin_tone_button"
             android:background="#f7dece"
-            android:contentDescription="@string/skin_tone_light"
-            android:src="@drawable/check_mark"
-            />
+            android:contentDescription="@string/skin_tone_light" />
 
         <ImageButton
             android:id="@+id/btnSkinTone2"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            style="@style/emoji_picker_skin_tone_button"
             android:background="#f3d2a2"
-            android:contentDescription="@string/skin_tone_medium_light"
-            />
+            android:contentDescription="@string/skin_tone_medium_light" />
 
         <ImageButton
             android:id="@+id/btnSkinTone3"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            style="@style/emoji_picker_skin_tone_button"
             android:background="#d5ab88"
-            android:contentDescription="@string/skin_tone_medium"
-            />
+            android:contentDescription="@string/skin_tone_medium" />
 
         <ImageButton
             android:id="@+id/btnSkinTone4"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            style="@style/emoji_picker_skin_tone_button"
             android:background="#af7e57"
-            android:contentDescription="@string/skin_tone_medium_dark"
-            />
+            android:contentDescription="@string/skin_tone_medium_dark" />
 
         <ImageButton
             android:id="@+id/btnSkinTone5"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            style="@style/emoji_picker_skin_tone_button"
             android:background="#7c533e"
-            android:contentDescription="@string/skin_tone_dark"
-            />
-    </LinearLayout>
+            android:contentDescription="@string/skin_tone_dark" />
+    </com.google.android.flexbox.FlexboxLayout>
 
-    <com.astuetz.PagerSlidingTabStrip
-        android:id="@+id/pager_strip"
+    <EditText
+        android:id="@+id/etFilter"
         android:layout_width="match_parent"
-        android:layout_height="48dip"
-        android:layout_gravity="top"
-        />
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:layout_marginBottom="0dp"
+        android:hint="@string/search_emojis"
+        android:importantForAccessibility="no"
+        android:importantForAutofill="no"
+        android:inputType="text" />
 
-    <jp.juggler.subwaytooter.view.MyViewPager
-        android:id="@+id/pager"
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:fadeScrollbars="false"
+        android:padding="6dp"
+        android:paddingBottom="0dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="horizontal">
+
+        <LinearLayout
+            android:id="@+id/llCategories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvGrid"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        />
+        android:clipToPadding="false"
+        android:fadeScrollbars="false"
+        android:padding="6dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="vertical" />
 </LinearLayout>

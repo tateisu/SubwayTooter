@@ -1,14 +1,20 @@
 package jp.juggler.subwaytooter.action
 
-import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.ApiTask
+import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.TootReaction
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.fireShowContent
 import jp.juggler.subwaytooter.column.updateEmojiReactionByApiResponse
-import jp.juggler.subwaytooter.dialog.DlgConfirm
-import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
+import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
@@ -47,9 +53,13 @@ fun ActMain.reactionAdd(
     }
 
     if (codeArg == null) {
-        EmojiPicker(activity, accessInfo, closeOnSelected = true) { result ->
+        launchEmojiPicker(
+            activity,
+            accessInfo,
+            closeOnSelected = true
+        ) { emoji, _ ->
             var newUrl: String? = null
-            val newCode: String = when (val emoji = result.emoji) {
+            val newCode: String = when (emoji) {
                 is UnicodeEmoji -> emoji.unifiedCode
                 is CustomEmoji -> {
                     newUrl = emoji.staticUrl
@@ -61,7 +71,7 @@ fun ActMain.reactionAdd(
                 }
             }
             reactionAdd(column, status, newCode, newUrl)
-        }.show()
+        }
         return
     }
     var code = codeArg
@@ -96,40 +106,26 @@ fun ActMain.reactionAdd(
         return
     }
 
-    if (!isConfirmed) {
-        val options = DecodeOptions(
-            activity,
-            accessInfo,
-            decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f
-        )
-        val emojiSpan = TootReaction.toSpannableStringBuilder(options, code, urlArg)
-        DlgConfirm.open(
-            activity,
-            getString(R.string.confirm_reaction, emojiSpan, AcctColor.getNickname(accessInfo)),
-            object : DlgConfirm.Callback {
-                override var isConfirmEnabled: Boolean
-                    get() = accessInfo.confirm_reaction
-                    set(bv) {
-                        accessInfo.confirm_reaction = bv
-                        accessInfo.saveSetting()
-                    }
+    activity.launchAndShowError {
 
-                override fun onOK() {
-                    reactionAdd(
-                        column,
-                        status,
-                        codeArg = code,
-                        urlArg = urlArg,
-                        isConfirmed = true
-                    )
-                }
-            })
-        return
-    }
+        if (!isConfirmed) {
+            val options = DecodeOptions(
+                activity,
+                accessInfo,
+                decodeEmoji = true,
+                enlargeEmoji = 1.5f,
+                enlargeCustomEmoji = 1.5f
+            )
+            val emojiSpan = TootReaction.toSpannableStringBuilder(options, code, urlArg)
+            confirm(
+                getString(R.string.confirm_reaction, emojiSpan, AcctColor.getNickname(accessInfo)),
+                accessInfo.confirm_reaction,
+            ) { newConfirmEnabled ->
+                accessInfo.confirm_reaction = newConfirmEnabled
+                accessInfo.saveSetting()
+            }
+        }
 
-    launchMain {
         var resultStatus: TootStatus? = null
         runApiTask(accessInfo) { client ->
             when {
@@ -158,12 +154,7 @@ fun ActMain.reactionAdd(
                 }
             }
         }?.let { result ->
-
-            val error = result.error
-            if (error != null) {
-                activity.showToast(false, error)
-                return@launchMain
-            }
+            result.error?.let { error(it) }
 
             when (val resCode = result.response?.code) {
                 in 200 until 300 -> when (val newStatus = resultStatus) {
@@ -209,26 +200,19 @@ fun ActMain.reactionRemove(
         return
     }
 
-    if (!confirmed) {
-        val options = DecodeOptions(
-            activity,
-            accessInfo,
-            decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f
-        )
-        val emojiSpan = reaction.toSpannableStringBuilder(options, status)
-        AlertDialog.Builder(activity)
-            .setMessage(getString(R.string.reaction_remove_confirm, emojiSpan))
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                reactionRemove(column, status, reaction, confirmed = true)
-            }
-            .show()
-        return
-    }
+    launchAndShowError {
 
-    launchMain {
+        if (!confirmed) {
+            val options = DecodeOptions(
+                activity,
+                accessInfo,
+                decodeEmoji = true,
+                enlargeEmoji = 1.5f,
+                enlargeCustomEmoji = 1.5f
+            )
+            val emojiSpan = reaction.toSpannableStringBuilder(options, status)
+            confirm(R.string.reaction_remove_confirm, emojiSpan)
+        }
         var resultStatus: TootStatus? = null
         runApiTask(accessInfo) { client ->
             when {
@@ -265,9 +249,13 @@ fun ActMain.reactionRemove(
                 else -> {
                     when (val newStatus = resultStatus) {
                         null ->
-                            if (status.decreaseReactionMisskey(reaction.name, true, "removeReaction")) {
+                            if (status.decreaseReactionMisskey(reaction.name,
+                                    true,
+                                    "removeReaction")
+                            ) {
                                 // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-                                column.fireShowContent(reason = "removeReaction complete", reset = true)
+                                column.fireShowContent(reason = "removeReaction complete",
+                                    reset = true)
                             }
 
                         else ->
@@ -290,15 +278,14 @@ private fun ActMain.reactionWithoutUi(
     resolvedStatus: TootStatus,
     reactionCode: String? = null,
     reactionImage: String? = null,
-    isConfirmed: Boolean = false,
     callback: () -> Unit,
 ) {
     val activity = this
 
     if (reactionCode == null) {
-        EmojiPicker(activity, accessInfo, closeOnSelected = true) { result ->
+        launchEmojiPicker(activity, accessInfo, closeOnSelected = true) { emoji, _ ->
             var newUrl: String? = null
-            val newCode = when (val emoji = result.emoji) {
+            val newCode = when (emoji) {
                 is UnicodeEmoji -> emoji.unifiedCode
                 is CustomEmoji -> {
                     newUrl = emoji.staticUrl
@@ -314,78 +301,46 @@ private fun ActMain.reactionWithoutUi(
                 resolvedStatus = resolvedStatus,
                 reactionCode = newCode,
                 reactionImage = newUrl,
-                isConfirmed = isConfirmed,
                 callback = callback
             )
-        }.show()
+        }
         return
     }
 
     val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
 
-    if (!isConfirmed) {
-        val options = DecodeOptions(
-            activity,
-            accessInfo,
-            decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f
-        )
-        val emojiSpan = TootReaction.toSpannableStringBuilder(options, reactionCode, reactionImage)
+    val options = DecodeOptions(
+        activity,
+        accessInfo,
+        decodeEmoji = true,
+        enlargeEmoji = 1.5f,
+        enlargeCustomEmoji = 1.5f
+    )
+    val emojiSpan = TootReaction.toSpannableStringBuilder(options, reactionCode, reactionImage)
+    val isCustomEmoji = TootReaction.isCustomEmoji(reactionCode)
+    val url = resolvedStatus.url
 
-        val isCustomEmoji = TootReaction.isCustomEmoji(reactionCode)
-        val url = resolvedStatus.url
+    launchAndShowError {
         when {
-            isCustomEmoji && canMultipleReaction -> {
-                showToast(false, "can't reaction with custom emoji from this account")
-                return
-            }
-            isCustomEmoji && url?.likePleromaStatusUrl() == true -> DlgConfirm.openSimple(
-                activity,
-                getString(
-                    R.string.confirm_reaction_to_pleroma,
-                    emojiSpan,
-                    AcctColor.getNickname(accessInfo),
-                    resolvedStatus.account.acct.host?.pretty ?: "(null)"
-                ),
-            ) {
-                reactionWithoutUi(
-                    accessInfo = accessInfo,
-                    resolvedStatus = resolvedStatus,
-                    reactionCode = reactionCode,
-                    reactionImage = reactionImage,
-                    isConfirmed = true,
-                    callback = callback
-                )
-            }
+            isCustomEmoji && canMultipleReaction ->
+                error("can't reaction with custom emoji from this account")
 
-            else -> DlgConfirm.open(
-                activity,
+            isCustomEmoji && url?.likePleromaStatusUrl() == true -> confirm(
+                R.string.confirm_reaction_to_pleroma,
+                emojiSpan,
+                AcctColor.getNickname(accessInfo),
+                resolvedStatus.account.acct.host?.pretty ?: "(null)"
+            )
+
+            else -> confirm(
                 getString(R.string.confirm_reaction, emojiSpan, AcctColor.getNickname(accessInfo)),
-                object : DlgConfirm.Callback {
-                    override var isConfirmEnabled: Boolean
-                        get() = accessInfo.confirm_reaction
-                        set(bv) {
-                            accessInfo.confirm_reaction = bv
-                            accessInfo.saveSetting()
-                        }
-
-                    override fun onOK() {
-                        reactionWithoutUi(
-                            accessInfo = accessInfo,
-                            resolvedStatus = resolvedStatus,
-                            reactionCode = reactionCode,
-                            reactionImage = reactionImage,
-                            isConfirmed = true,
-                            callback = callback
-                        )
-                    }
-                })
+                accessInfo.confirm_reaction,
+            ) { newConfirmEnabled ->
+                accessInfo.confirm_reaction = newConfirmEnabled
+                accessInfo.saveSetting()
+            }
         }
-        return
-    }
 
-    launchMain {
         // var resultStatus: TootStatus? = null
         runApiTask(accessInfo) { client ->
             when {
@@ -398,7 +353,9 @@ private fun ActMain.reactionWithoutUi(
                 ) // 成功すると204 no content
 
                 canMultipleReaction -> client.request(
-                    "/api/v1/pleroma/statuses/${resolvedStatus.id}/reactions/${reactionCode.encodePercent("@")}",
+                    "/api/v1/pleroma/statuses/${resolvedStatus.id}/reactions/${
+                        reactionCode.encodePercent("@")
+                    }",
                     "".toFormRequestBody().toPut()
                 ) // 成功すると更新された投稿
 
@@ -475,26 +432,29 @@ fun ActMain.reactionFromAnotherAccount(
     statusArg ?: return
     val activity = this
 
-    fun afterResolveStatus(actionAccount: SavedAccount, resolvedStatus: TootStatus) {
-        val code = if (reaction == null) {
-            null // あとで選択する
-        } else {
-            reactionFixCode(
-                timelineAccount = timelineAccount,
-                actionAccount = actionAccount,
-                reaction = reaction,
-            ) ?: return // エラー終了の場合がある
-        }
-
-        reactionWithoutUi(
-            accessInfo = actionAccount,
-            resolvedStatus = resolvedStatus,
-            reactionCode = code,
-            callback = reactionCompleteCallback,
-        )
-    }
-
     launchMain {
+
+        fun afterResolveStatus(
+            actionAccount: SavedAccount,
+            resolvedStatus: TootStatus,
+        ) {
+            val code = if (reaction == null) {
+                null // あとで選択する
+            } else {
+                reactionFixCode(
+                    timelineAccount = timelineAccount,
+                    actionAccount = actionAccount,
+                    reaction = reaction,
+                ) ?: return // エラー終了の場合がある
+            }
+
+            reactionWithoutUi(
+                accessInfo = actionAccount,
+                resolvedStatus = resolvedStatus,
+                reactionCode = code,
+                callback = reactionCompleteCallback,
+            )
+        }
 
         val list = accountListCanReaction() ?: return@launchMain
         if (list.isEmpty()) {

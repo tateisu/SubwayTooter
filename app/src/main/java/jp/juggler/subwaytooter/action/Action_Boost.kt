@@ -2,7 +2,9 @@ package jp.juggler.subwaytooter.action
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.reloadAccountSetting
 import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
@@ -13,16 +15,12 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.findStatus
-import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.emptyCallback
-import jp.juggler.util.JsonObject
-import jp.juggler.util.launchMain
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
-import java.util.*
+import jp.juggler.util.*
 import kotlin.math.max
 
 private class BoostImpl(
@@ -60,42 +58,6 @@ private class BoostImpl(
         // DMとかのブーストはAPI側がエラーを出すだろう？
 
         return true
-    }
-
-    private fun confirm(): Boolean {
-        if (bConfirmed) return true
-        DlgConfirm.open(
-            activity,
-            activity.getString(
-                when {
-                    !bSet -> R.string.confirm_unboost_from
-                    isPrivateToot -> R.string.confirm_boost_private_from
-                    visibility == TootVisibility.PrivateFollowers -> R.string.confirm_private_boost_from
-                    else -> R.string.confirm_boost_from
-                },
-                AcctColor.getNickname(accessInfo)
-            ),
-            object : DlgConfirm.Callback {
-                override fun onOK() {
-                    bConfirmed = true
-                    run()
-                }
-
-                override var isConfirmEnabled: Boolean
-                    get() = when (bSet) {
-                        true -> accessInfo.confirm_boost
-                        else -> accessInfo.confirm_unboost
-                    }
-                    set(value) {
-                        when (bSet) {
-                            true -> accessInfo.confirm_boost = value
-                            else -> accessInfo.confirm_unboost = value
-                        }
-                        accessInfo.saveSetting()
-                        activity.reloadAccountSetting(accessInfo)
-                    }
-            })
-        return false
     }
 
     private suspend fun Context.syncStatus(client: TootApiClient) =
@@ -234,16 +196,41 @@ private class BoostImpl(
         }
 
     fun run() {
-        if (!preCheck()) return
-        if (!confirm()) return
+        activity.launchAndShowError {
+            if (!preCheck()) return@launchAndShowError
 
-        // ブースト表示を更新中にする
-        activity.appState.setBusyBoost(accessInfo, statusArg)
-        activity.showColumnMatchAccount(accessInfo)
+            if (!bConfirmed) {
+                activity.confirm(
+                    activity.getString(
+                        when {
+                            !bSet -> R.string.confirm_unboost_from
+                            isPrivateToot -> R.string.confirm_boost_private_from
+                            visibility == TootVisibility.PrivateFollowers -> R.string.confirm_private_boost_from
+                            else -> R.string.confirm_boost_from
+                        },
+                        AcctColor.getNickname(accessInfo)
+                    ),
+                    when (bSet) {
+                        true -> accessInfo.confirm_boost
+                        else -> accessInfo.confirm_unboost
+                    }
+                ) { newConfirmEnabled ->
+                    when (bSet) {
+                        true -> accessInfo.confirm_boost = newConfirmEnabled
+                        else -> accessInfo.confirm_unboost = newConfirmEnabled
+                    }
+                    accessInfo.saveSetting()
+                    activity.reloadAccountSetting(accessInfo)
+                }
+            }
 
-        launchMain {
+            // ブースト表示を更新中にする
+            activity.appState.setBusyBoost(accessInfo, statusArg)
+            activity.showColumnMatchAccount(accessInfo)
+
             val result =
-                activity.runApiTask(accessInfo, progressStyle = ApiTask.PROGRESS_NONE) { client ->
+                activity.runApiTask(accessInfo,
+                    progressStyle = ApiTask.PROGRESS_NONE) { client ->
                     try {
                         val targetStatus = syncStatus(client)
                         boostApi(client, targetStatus)

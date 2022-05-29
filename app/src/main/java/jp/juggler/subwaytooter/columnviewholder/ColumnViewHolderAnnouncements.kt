@@ -21,7 +21,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
-import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
@@ -129,7 +129,7 @@ private fun ColumnViewHolder.showAnnouncementsEmpty() {
 private fun ColumnViewHolder.showAnnouncementColors(
     expand: Boolean,
     enablePaging: Boolean,
-    contentColor: Int
+    contentColor: Int,
 ) {
     val alphaPrevNext = if (enablePaging) 1f else 0.3f
 
@@ -413,14 +413,14 @@ private fun ColumnViewHolder.showReactions(
 
 fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) {
     val column = column ?: return
+
     if (sample == null) {
-        EmojiPicker(activity, column.accessInfo, closeOnSelected = true) { result ->
-            val emoji = result.emoji
+        launchEmojiPicker(activity, column.accessInfo, closeOnSelected = true) { emoji, _ ->
             val code = when (emoji) {
                 is UnicodeEmoji -> emoji.unifiedCode
                 is CustomEmoji -> emoji.shortcode
             }
-            ColumnViewHolder.log.d("addReaction: $code ${result.emoji.javaClass.simpleName}")
+            ColumnViewHolder.log.d("addReaction: $code ${emoji.javaClass.simpleName}")
             reactionAdd(item, TootReaction.parseFedibird(jsonObject {
                 put("name", code)
                 put("count", 1)
@@ -431,11 +431,10 @@ fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) 
                     putNotNull("static_url", emoji.staticUrl)
                 }
             }))
-        }.show()
+        }
         return
     }
-
-    launchMain {
+    activity.launchAndShowError {
         activity.runApiTask(column.accessInfo) { client ->
             client.request(
                 "/api/v1/announcements/${item.id}/reactions/${sample.name.encodePercent()}",

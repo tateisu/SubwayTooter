@@ -18,6 +18,8 @@ class UnicodeEmoji(
     @DrawableRes val drawableId: Int = 0,
 ) : EmojiBase, Comparable<UnicodeEmoji> {
 
+    val namesLower = ArrayList<String>()
+
     // unified code used in picker.
     var unifiedCode = ""
 

@@ -1,13 +1,12 @@
 package jp.juggler.subwaytooter.util
 
 import android.os.SystemClock
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -15,16 +14,21 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.util.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.lang.ref.WeakReference
 import java.util.*
 
-interface PostCompleteCallback {
-    fun onPostComplete(targetAccount: SavedAccount, status: TootStatus)
-    fun onScheduledPostComplete(targetAccount: SavedAccount)
+sealed class PostResult {
+    class Normal(
+        val targetAccount: SavedAccount,
+        val status: TootStatus,
+    ) : PostResult()
+
+    class Scheduled(
+        val targetAccount: SavedAccount,
+    ) : PostResult()
 }
 
 @Suppress("LongParameterList")
@@ -51,8 +55,6 @@ class PostImpl(
     val editStatusId: EntityId?,
     val emojiMapCustom: HashMap<String, CustomEmoji>?,
     var useQuoteToot: Boolean,
-
-    val callback: PostCompleteCallback,
 ) {
     companion object {
         private val log = LogCategory("PostImpl")
@@ -69,11 +71,6 @@ class PostImpl(
     private val enqueteItems = enqueteItemsArg?.filter { it.isNotEmpty() }
 
     private var visibilityChecked: TootVisibility? = null
-
-    private var bConfirmTag: Boolean = false
-    var bConfirmAccount: Boolean = false
-    private var bConfirmRedraft: Boolean = false
-    private var bConfirmTagCharacter: Boolean = false
 
     private val choiceMaxChars = when {
         account.isMisskey -> 15
@@ -124,106 +121,6 @@ class PostImpl(
 
         if (scheduledAt != 0L && account.isMisskey) {
             activity.showToast(true, "misskey has no scheduled status API")
-            return false
-        }
-
-        return true
-    }
-
-    private fun confirm(): Boolean {
-        if (!bConfirmAccount) {
-            DlgConfirm.open(
-                activity,
-                activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account)),
-                object : DlgConfirm.Callback {
-                    override var isConfirmEnabled: Boolean
-                        get() = account.confirm_post
-                        set(bv) {
-                            account.confirm_post = bv
-                            account.saveSetting()
-                        }
-
-                    override fun onOK() {
-                        bConfirmAccount = true
-                        run()
-                    }
-                })
-            return false
-        }
-
-        if (!bConfirmTagCharacter && PrefB.bpWarnHashtagAsciiAndNonAscii()) {
-            val tags = TootTag.findHashtags(content, account.isMisskey)
-            val badTags = tags
-                ?.filter {
-                    val hasAscii = reAscii.matcher(it).find()
-                    val hasNotAscii = reNotAscii.matcher(it).find()
-                    hasAscii && hasNotAscii
-                }
-                ?.map { "#$it" }
-
-            if (badTags?.isNotEmpty() == true) {
-                AlertDialog.Builder(activity)
-                    .setCancelable(true)
-                    .setMessage(
-                        activity.getString(
-                            R.string.hashtag_contains_ascii_and_not_ascii,
-                            badTags.joinToString(", ")
-                        )
-                    )
-                    .setNegativeButton(R.string.cancel, null)
-                    .setPositiveButton(R.string.ok) { _, _ ->
-                        bConfirmTagCharacter = true
-                        run()
-                    }
-                    .show()
-                return false
-            }
-        }
-
-        if (!bConfirmTag) {
-            val isMisskey = account.isMisskey
-            if (!visibilityArg.isTagAllowed(isMisskey)) {
-                val tags = TootTag.findHashtags(content, isMisskey)
-                if (tags != null) {
-                    log.d("findHashtags ${tags.joinToString(",")}")
-
-                    AlertDialog.Builder(activity)
-                        .setCancelable(true)
-                        .setMessage(R.string.hashtag_and_visibility_not_match)
-                        .setNegativeButton(R.string.cancel, null)
-                        .setPositiveButton(R.string.ok) { _, _ ->
-                            bConfirmTag = true
-                            run()
-                        }
-                        .show()
-                    return false
-                }
-            }
-        }
-
-        if (!bConfirmRedraft && redraftStatusId != null) {
-            AlertDialog.Builder(activity)
-                .setCancelable(true)
-                .setMessage(R.string.delete_base_status_before_toot)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok) { _, _ ->
-                    bConfirmRedraft = true
-                    run()
-                }
-                .show()
-            return false
-        }
-
-        if (!bConfirmRedraft && scheduledId != null) {
-            AlertDialog.Builder(activity)
-                .setCancelable(true)
-                .setMessage(R.string.delete_scheduled_status_before_update)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok) { _, _ ->
-                    bConfirmRedraft = true
-                    run()
-                }
-                .show()
             return false
         }
 
@@ -503,14 +400,57 @@ class PostImpl(
         }
     }
 
-    fun run() {
-        if (!preCheck()) return
-        if (!confirm()) return
+    suspend fun runSuspend(): PostResult {
+        if (!preCheck()) throw CancellationException("preCheck failed.")
+
+        if (PrefB.bpWarnHashtagAsciiAndNonAscii()) {
+            TootTag.findHashtags(content, account.isMisskey)
+                ?.filter {
+                    val hasAscii = reAscii.matcher(it).find()
+                    val hasNotAscii = reNotAscii.matcher(it).find()
+                    hasAscii && hasNotAscii
+                }?.map { "#$it" }
+                ?.notEmpty()
+                ?.let { badTags ->
+                    activity.confirm(
+                        R.string.hashtag_contains_ascii_and_not_ascii,
+                        badTags.joinToString(", ")
+                    )
+                }
+        }
+
+        val isMisskey = account.isMisskey
+        if (!visibilityArg.isTagAllowed(isMisskey)) {
+            TootTag.findHashtags(content, isMisskey)
+                ?.notEmpty()
+                ?.let { tags ->
+                    log.d("findHashtags ${tags.joinToString(",")}")
+                    activity.confirm(
+                        R.string.hashtag_and_visibility_not_match
+                    )
+                }
+        }
+
+        if (redraftStatusId != null) {
+            activity.confirm(R.string.delete_base_status_before_toot)
+        }
+
+        if (scheduledId != null) {
+            activity.confirm(R.string.delete_scheduled_status_before_update)
+        }
+
+        activity.confirm(
+            activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account)),
+            account.confirm_post
+        ) { newConfirmEnabled ->
+            account.confirm_post = newConfirmEnabled
+            account.saveSetting()
+        }
 
         // 投稿中に再度投稿ボタンが押された
         if (postJob?.get()?.isActive == true) {
             activity.showToast(false, R.string.post_button_tapped_repeatly)
-            return
+            throw CancellationException("preCheck failed.")
         }
 
         // ボタン連打判定
@@ -519,10 +459,12 @@ class PostImpl(
         lastPostTapped = now
         if (delta < 1000L) {
             activity.showToast(false, R.string.post_button_tapped_repeatly)
-            return
+            throw CancellationException("post_button_tapped_repeatly")
         }
 
-        postJob = launchMain {
+        val job = Job().also { postJob = it.wrapWeakReference }
+        return withContext(Dispatchers.Main + job) {
+
             activity.runApiTask(
                 account,
                 progressSetup = { it.setCanceledOnTouchOutside(false) },
@@ -622,19 +564,21 @@ class PostImpl(
                         saveStatusTag(status)
                     }
                 }
-            }?.let { result ->
+            }.let { result ->
+                if (result == null) throw CancellationException()
+
                 val status = resultStatus
-                val scheduledStatusSucceeded = resultScheduledStatusSucceeded
                 when {
-                    scheduledStatusSucceeded ->
-                        callback.onScheduledPostComplete(account)
+                    resultScheduledStatusSucceeded ->
+                        PostResult.Scheduled(account)
 
                     // 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-                    status != null -> callback.onPostComplete(account, status)
+                    status != null ->
+                        PostResult.Normal(account, status)
 
-                    else -> activity.showToast(true, result.error)
+                    else -> error( result.error ?: "(result.error is null)")
                 }
             }
-        }.wrapWeakReference
+        }
     }
 }

@@ -8,15 +8,17 @@ import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class CustomEmojiLister(
     val context: Context,
     private val handler: Handler,
 ) {
-
     companion object {
 
         private val log = LogCategory("CustomEmojiLister")
@@ -31,8 +33,8 @@ class CustomEmojiLister(
 
     internal class CacheItem(
         val key: String,
-        var list: ArrayList<CustomEmoji>? = null,
-        var listWithAliases: ArrayList<CustomEmoji>? = null,
+        var list: List<CustomEmoji>,
+        var listWithAliases: List<CustomEmoji>,
         // ロードした時刻
         var timeUpdate: Long = elapsedTime,
         // 参照された時刻
@@ -40,10 +42,19 @@ class CustomEmojiLister(
     )
 
     internal class Request(
+        val cont: Continuation<List<CustomEmoji>>,
         val accessInfo: SavedAccount,
         val reportWithAliases: Boolean = false,
-        val onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit?,
-    )
+    ) {
+        fun resume(item: CacheItem) {
+            cont.resume(
+                when (reportWithAliases) {
+                    true -> item.listWithAliases
+                    else -> item.list
+                }
+            )
+        }
+    }
 
     // 成功キャッシュ
     internal val cache = ConcurrentHashMap<String, CacheItem>()
@@ -51,16 +62,12 @@ class CustomEmojiLister(
     // エラーキャッシュ
     internal val cacheError = ConcurrentHashMap<String, Long>()
 
-    private val cacheErrorItem = CacheItem("error")
+    private val cacheErrorItem = CacheItem("error", emptyList(), emptyList())
 
     // ロード要求
     internal val queue = ConcurrentLinkedQueue<Request>()
 
-    private val worker: Worker
-
-    init {
-        this.worker = Worker()
-    }
+    private val worker = Worker()
 
     // ネットワーク接続が変化したらエラーキャッシュをクリア
     fun onNetworkChanged() {
@@ -86,59 +93,50 @@ class CustomEmojiLister(
         return null
     }
 
-    fun getList(
+    // インスタンス用のカスタム絵文字のリストを取得する
+    // または例外を投げる
+    suspend fun getList(
         accessInfo: SavedAccount,
-        onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit,
-    ): ArrayList<CustomEmoji>? {
-        try {
-            synchronized(cache) {
-                val item = getCached(elapsedTime, accessInfo)
-                if (item != null) return item.list
+        withAliases: Boolean = false,
+    ): List<CustomEmoji> {
+        synchronized(cache) {
+            getCached(elapsedTime, accessInfo)
+        }?.let { return it.list }
+        return suspendCoroutine { cont ->
+            try {
+                queue.add(Request(cont, accessInfo, reportWithAliases = withAliases))
+                worker.notifyEx()
+            } catch (ex: Throwable) {
+                cont.resumeWithException(ex)
             }
+        }
+    }
 
-            queue.add(Request(accessInfo, onListLoaded = onListLoaded))
-            worker.notifyEx()
-        } catch (ex: Throwable) {
-            log.trace(ex)
+    fun getListNonBlocking(
+        accessInfo: SavedAccount,
+        withAliases: Boolean = false,
+        callback: ((List<CustomEmoji>) -> Unit)? = null,
+    ): List<CustomEmoji>? {
+        synchronized(cache) {
+            getCached(elapsedTime, accessInfo)
+        }?.let { return it.list }
+        launchMain {
+            getList(accessInfo, withAliases).let { callback?.invoke(it) }
         }
         return null
     }
 
-    fun getListWithAliases(
-        accessInfo: SavedAccount,
-        onListLoaded: (list: ArrayList<CustomEmoji>) -> Unit,
-    ): ArrayList<CustomEmoji>? {
-        try {
-            synchronized(cache) {
-                val item = getCached(elapsedTime, accessInfo)
-                if (item != null) return item.listWithAliases
+//    suspend fun getMap(accessInfo: SavedAccount) =
+//        HashMap<String, CustomEmoji>().apply {
+//            getList(accessInfo).forEach { put(it.shortcode, it) }
+//        }
+
+    fun getMapNonBlocking(accessInfo: SavedAccount) =
+        getListNonBlocking(accessInfo)?.let {
+            HashMap<String, CustomEmoji>().apply {
+                it.forEach { put(it.shortcode, it) }
             }
-
-            queue.add(
-                Request(
-                    accessInfo,
-                    reportWithAliases = true,
-                    onListLoaded = onListLoaded
-                )
-            )
-            worker.notifyEx()
-        } catch (ex: Throwable) {
-            log.trace(ex)
         }
-        return null
-    }
-
-    fun getMap(accessInfo: SavedAccount): HashMap<String, CustomEmoji>? {
-        val list = getList(accessInfo) {
-            // 遅延ロード非対応
-        } ?: return null
-        //
-        val dst = HashMap<String, CustomEmoji>()
-        for (e in list) {
-            dst[e.shortcode] = e
-        }
-        return dst
-    }
 
     private inner class Worker : WorkerBase() {
 
@@ -156,69 +154,10 @@ class CustomEmojiLister(
                         waitEx(86400000L)
                         continue
                     }
-
-                    val cached = synchronized(cache) {
-
-                        val item = getCached(elapsedTime, request.accessInfo)
-                        return@synchronized if (item != null) {
-                            val list = item.list
-                            val listWithAliases = item.listWithAliases
-                            if (list != null && listWithAliases != null) {
-                                fireCallback(request, list, listWithAliases)
-                            }
-                            true
-                        } else {
-                            // キャッシュにはなかった
-                            sweepCache()
-                            false
-                        }
-                    }
-                    if (cached) continue
-
-                    val accessInfo = request.accessInfo
-                    val cacheKey = accessInfo.apiHost.ascii
-                    var list: ArrayList<CustomEmoji>? = null
-                    var listWithAlias: ArrayList<CustomEmoji>? = null
                     try {
-                        val data = if (accessInfo.isMisskey) {
-                            App1.getHttpCachedString(
-                                "https://$cacheKey/api/meta",
-                                accessInfo = accessInfo
-                            ) { builder ->
-                                builder.post(JsonObject().toRequestBody())
-                            }
-                        } else {
-                            App1.getHttpCachedString(
-                                "https://$cacheKey/api/v1/custom_emojis",
-                                accessInfo = accessInfo
-                            )
-                        }
-
-                        if (data != null) {
-                            val a = decodeEmojiList(data, accessInfo)
-                            list = a
-                            listWithAlias = makeListWithAlias(a)
-                        }
+                        request.resume(handleRequest(request))
                     } catch (ex: Throwable) {
-                        log.trace(ex)
-                    }
-
-                    synchronized(cache) {
-                        val now = elapsedTime
-                        if (list == null || listWithAlias == null) {
-                            cacheError.put(cacheKey, now)
-                        } else {
-                            var item: CacheItem? = cache[cacheKey]
-                            if (item == null) {
-                                item = CacheItem(cacheKey, list, listWithAlias)
-                                cache[cacheKey] = item
-                            } else {
-                                item.list = list
-                                item.listWithAliases = listWithAlias
-                                item.timeUpdate = now
-                            }
-                            fireCallback(request, list, listWithAlias)
-                        }
+                        request.cont.resumeWithException(ex)
                     }
                 } catch (ex: Throwable) {
                     log.trace(ex)
@@ -227,19 +166,57 @@ class CustomEmojiLister(
             }
         }
 
-        private fun fireCallback(
-            request: Request,
-            list: ArrayList<CustomEmoji>,
-            listWithAliases: ArrayList<CustomEmoji>,
-        ) {
-            handler.post {
-                request.onListLoaded(
-                    if (request.reportWithAliases) {
-                        listWithAliases
-                    } else {
-                        list
+        private suspend fun handleRequest(request: Request): CacheItem {
+            synchronized(cache) {
+                (getCached(elapsedTime, request.accessInfo)
+                    ?.takeIf { it != cacheErrorItem })
+                    .also {
+                        if (it == null) {
+                            // エラーキャッシュは一定時間で除去される
+                            sweepCache()
+                        }
                     }
+            }?.let { return it }
+
+            val accessInfo = request.accessInfo
+            val cacheKey = accessInfo.apiHost.ascii
+            val data = if (accessInfo.isMisskey) {
+                App1.getHttpCachedString(
+                    "https://$cacheKey/api/meta",
+                    accessInfo = accessInfo
+                ) { builder ->
+                    builder.post(JsonObject().toRequestBody())
+                }
+            } else {
+                App1.getHttpCachedString(
+                    "https://$cacheKey/api/v1/custom_emojis",
+                    accessInfo = accessInfo
                 )
+            }
+            var list: List<CustomEmoji>? = null
+            var listWithAlias: List<CustomEmoji>? = null
+            if (data != null) {
+                val a = decodeEmojiList(data, accessInfo)
+                list = a
+                listWithAlias = makeListWithAlias(a)
+            }
+            return synchronized(cache) {
+                val now = elapsedTime
+                if (list == null || listWithAlias == null) {
+                    cacheError[cacheKey] = now
+                    error("can't load custom emoji for ${accessInfo.apiHost}")
+                } else {
+                    var item = cache[cacheKey]
+                    if (item == null) {
+                        item = CacheItem(cacheKey, list, listWithAlias)
+                        cache[cacheKey] = item
+                    } else {
+                        item.list = list
+                        item.listWithAliases = listWithAlias
+                        item.timeUpdate = now
+                    }
+                    item
+                }
             }
         }
 
@@ -270,43 +247,35 @@ class CustomEmojiLister(
         private fun decodeEmojiList(
             data: String,
             accessInfo: SavedAccount,
-        ): ArrayList<CustomEmoji>? {
-            return try {
-                val list = if (accessInfo.isMisskey) {
-                    parseList(
-                        CustomEmoji.decodeMisskey,
-                        accessInfo.apDomain,
-                        data.decodeJsonObject().jsonArray("emojis")
-                    )
-                } else {
-                    parseList(
-                        CustomEmoji.decode,
-                        accessInfo.apDomain,
-                        data.decodeJsonArray()
-                    )
-                }
-                list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
-                list
-            } catch (ex: Throwable) {
-                log.e(ex, "decodeEmojiList failed. instance=${accessInfo.apiHost.ascii}")
-                null
+        ): List<CustomEmoji> =
+            if (accessInfo.isMisskey) {
+                parseList(
+                    CustomEmoji.decodeMisskey,
+                    accessInfo.apDomain,
+                    data.decodeJsonObject().jsonArray("emojis")
+                )
+            } else {
+                parseList(
+                    CustomEmoji.decode,
+                    accessInfo.apDomain,
+                    data.decodeJsonArray()
+                )
+            }.apply {
+                sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
             }
-        }
 
-        private fun makeListWithAlias(list: ArrayList<CustomEmoji>?): ArrayList<CustomEmoji> {
-            val dst = ArrayList<CustomEmoji>()
-            if (list != null) {
-                dst.addAll(list)
-                for (item in list) {
-                    val aliases = item.aliases ?: continue
-                    for (alias in aliases) {
-                        if (alias.equals(item.shortcode, ignoreCase = true)) continue
-                        dst.add(item.makeAlias(alias))
-                    }
+        private fun makeListWithAlias(
+            list: List<CustomEmoji>,
+        ) = ArrayList<CustomEmoji>().apply {
+            addAll(list)
+            for (item in list) {
+                val aliases = item.aliases ?: continue
+                for (alias in aliases) {
+                    if (alias.equals(item.shortcode, ignoreCase = true)) continue
+                    add(item.makeAlias(alias))
                 }
-                dst.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.alias ?: it.shortcode })
             }
-            return dst
+            sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.alias ?: it.shortcode })
         }
     }
 }

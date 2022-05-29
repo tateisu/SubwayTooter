@@ -100,7 +100,8 @@ class CustomEmoji(
                 shortcode = src.string("name") ?: error("missing name"),
                 url = url,
                 staticUrl = url,
-                aliases = parseAliases(src.jsonArray("aliases"))
+                aliases = parseAliases(src.jsonArray("aliases")),
+                category = src.string("category"),
             )
         }
 

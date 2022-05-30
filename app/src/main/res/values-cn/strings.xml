@@ -736,8 +736,8 @@
     <string name="vote_count_text">%1$d投票</string>
     <string name="visibility_followers">关注者</string>
     <string name="visibility_home">主页</string>
-    <string name="misskey">Misskey</string>
-    <string name="mastodon">Mastodon</string>
+    <string name="misskey">实例</string>
+    <string name="mastodon">长毛象</string>
     <string name="visibility_style_by_account">适合账号栏目</string>
     <string name="visibility_style">可见的名称和图标</string>
     <string name="cant_get_misskey_app_secret">此Misskey 服务器在/API/app/create API 的响应中不提供 app secret，请考虑更新服务器管理员的 Misskey 服务版本.</string>
@@ -1094,4 +1094,69 @@
     <string name="note">笔记</string>
     <string name="remote_profile_warning">远程配置文件页面上的信息可能无法正确显示.按此处在Web浏览器中查看配置文件.</string>
     <string name="mention_full_acct">显示具有完整帐户的列表(需要重新加载列)</string>
+    <string name="trend_link">热门趋势链接</string>
+    <string name="trend_post">热门趋势嘟文</string>
+    <string name="cant_change_account_when_edit">在编辑嘟文时不能更改账户。</string>
+    <string name="discard_changes">忽略变动？</string>
+    <string name="no_one">没有找到</string>
+    <string name="notification_type_update">嘟文更新</string>
+    <string name="notification_type_status_reference">嘟文提及</string>
+    <string name="notification_type_status_reference_fedibird">嘟文提及（fedibird.com)</string>
+    <string name="notification_type_signup">(准许）用户注册</string>
+    <string name="reactioned_posts">嘟文动态</string>
+    <string name="reactions">动态</string>
+    <string name="cant_reaction_remote_custom_emoji">无法使用自定义表情符 %1$s</string>
+    <string name="keep_reaction_space">保持更新的间隔</string>
+    <string name="long_tap_to_delete">长按删除</string>
+    <string name="cant_leave_empty_keyword">不能留下空格键。</string>
+    <string name="cant_save_duplicated_keyword">不能保存重复的关键词。</string>
+    <string name="saved">保存。</string>
+    <string name="resend_confirm_mail_requested">已重请求发送验证邮件。</string>
+    <string name="confirm_reaction">动作%1$s 来自 %2$s\?</string>
+    <string name="multi_window_post">后期活动的多窗口（实验性）</string>
+    <string name="many_window_post">后期活动的多窗口（实验性）</string>
+    <string name="mfm_decoration_enabled">(Misskey)显示文本装饰</string>
+    <string name="mfm_show_unsupported_markup">(Misskey)显示文本装饰</string>
+    <string name="background_pattern">背景样式</string>
+    <string name="open_column_from_url">从网址打开栏目…</string>
+    <string name="unbookmark">取消收藏</string>
+    <string name="attachment_handling_start">正在初始化…</string>
+    <string name="attachment_handling_compress">压缩中…</string>
+    <string name="attachment_handling_compress_ratio">压缩中%1$d%%…</string>
+    <string name="attachment_handling_uploading">上传中 %1$d%%…</string>
+    <string name="attachment_handling_waiting">等待应答…</string>
+    <string name="attachment_handling_waiting_async">等待应答（异步）…</string>
+    <string name="movie_transcode">动作转码中</string>
+    <string name="movie_transcode_mode">模式</string>
+    <string name="movie_transcode_max_bitrate">最大比特率（单位：比特/秒。默认=2,000,000。也可以通过服务器配置减少。）</string>
+    <string name="movie_transcode_max_frame_rate">最大帧率（单位：每秒帧数。默认=30。也可以通过服务器配置来减少。）</string>
+    <string name="auto">自动</string>
+    <string name="status_edit">编辑 (Mastodon 3.5.0+)</string>
+    <string name="edited">已编辑</string>
+    <string name="edit_history">编辑历史</string>
+    <string name="post_language_code">邮件的语言代码（留空以使用设备的语言设置）</string>
+    <string name="device_language">(设备的语言)</string>
+    <string name="url_of_user_or_status">用户或身份的网址</string>
+    <string name="url_empty">请输入用户或状态的网址。</string>
+    <string name="url_parse_failed">解析错误。</string>
+    <string name="suggestion_source">来源支持</string>
+    <string name="update_mail_address">更新邮件地址</string>
+    <string name="display_name_signed_up">%1$s 在你的实例上注册。</string>
+    <string name="timeout_for_server_api">服务器API的超时（单位：秒，需要重新启动应用（从应用历史中删除））</string>
+    <string name="resend_confirm_mail">重新发送验证邮件…</string>
+    <string name="confirm_reaction_to_pleroma">自定义表情符号 %1$s 从 %2$s 反应到 %3$s 服务器，该服务器可能不支持自定义表情符号反应。继续吗？</string>
+    <string name="event_text_alpha">某些通知的文本阿尔法（0.0～1.0，默认=1，需要重新启动应用程序）</string>
+    <string name="option_deprecated_mastodon342">(这个选项在Mastodon 3.4.2以上版本中已经废弃。应用程序使用来自服务器的信息。）</string>
+    <string name="movie_transcode_max_square_pixels">最大方形像素(默认=2304000。也可以通过服务器配置减少。)</string>
+    <string name="always">总是</string>
+    <string name="push_notification_filter">推送通知过滤（Mastodon 3.4.0+，需更新推送订阅）</string>
+    <string name="not_available_for_current_accounts">不支持当前用户</string>
+    <string name="confirm_mail_description">重新请求发送验证邮件后，
+\n- 请在收件箱里检查邮件。
+\n- 打开邮件中的验证链接。
+\n- 关闭此对话框并刷新本栏目。</string>
+    <string name="use_twemoji_emoji">使用Twemoji表情符</string>
+    <string name="display_name_references_post">%1$s 引用了你的嘟文</string>
+    <string name="display_name_updates_post">%1$s 新的嘟文</string>
+    <string name="show_media_description">显示媒体说明</string>
 </resources>

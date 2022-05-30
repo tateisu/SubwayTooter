@@ -524,7 +524,7 @@
     <string name="not_blocked">Non bloqué.</string>
     <string name="not_muted">Pas mis en sourdine.</string>
     <string name="media_description">(pièce jointe %1$d) %2$s</string>
-    <string name="set_description">ajouter une description (Mastodon 2.0+)</string>
+    <string name="set_description">ajouter une description</string>
     <string name="attachment_description_cant_edit_while_uploading">La description de la pièce jointe ne peut être modifiée pendant le téléversement.</string>
     <string name="attachment_description">description de la pièce jointe</string>
     <string name="description_empty">aucune description.</string>

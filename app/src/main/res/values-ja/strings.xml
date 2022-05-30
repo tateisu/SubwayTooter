@@ -664,7 +664,7 @@
     <string name="sensitive_content_default_open">NSFWな添付データを隠さない</string>
     <string name="cw_default_open">CWされたコンテンツを隠さない</string>
     <string name="server_confirmed">サーバを確認しました</string>
-    <string name="set_description">説明文を設定(マストドン2.0以降)</string>
+    <string name="set_description">説明文を設定</string>
     <string name="set_focus_point">焦点を設定 (マストドン2.3以降)</string>
     <string name="setting">設定</string>
     <string name="share_url">URLを共有</string>
@@ -1146,4 +1146,5 @@
     <string name="error">エラー</string>
     <string name="emoji_picker_custom_of">カスタム: %1$s</string>
     <string name="others" >その他</string>
+    <string name="post_error_attachments_duplicated">Misskeyは添付データの重複を許可していません。</string>
 </resources>

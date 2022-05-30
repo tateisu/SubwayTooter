@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Subway Tooter</string>
     <string name="action_settings">Settings</string>
     <string name="account_add">Add an account</string>
@@ -553,7 +553,7 @@
     <string name="not_blocked">Not blocked.</string>
     <string name="not_muted">Not muted.</string>
     <string name="media_description">(attachment %1$d) %2$s</string>
-    <string name="set_description">set description (Mastodon 2.0+)</string>
+    <string name="set_description">set description</string>
     <string name="attachment_description_cant_edit_while_uploading">Attachment description can\'t be edit while uploading.</string>
     <string name="attachment_description">attachment description</string>
     <string name="description_empty">description is not specified.</string>
@@ -669,11 +669,11 @@
     <string name="unfavourite">Unfavourite</string>
     <string name="unboost">Unboost</string>
     <string name="dont_retrieve_preview_card">Don\'t retrieve preview card</string>
-    <string name="field_name1">label1</string>
+    <string name="field_name1" tools:ignore="Typos">label1</string>
     <string name="field_name2">label2</string>
     <string name="field_name3">label3</string>
     <string name="field_name4">label4</string>
-    <string name="field_value1">value1</string>
+    <string name="field_value1" tools:ignore="Typos">value1</string>
     <string name="field_value2">value2</string>
     <string name="field_value3">value3</string>
     <string name="field_value4">value4</string>
@@ -1154,5 +1154,6 @@
     <string name="categories">Categories</string>
     <string name="error">Error</string>
     <string name="emoji_picker_custom_of">Custom: %1$s</string>
-    <string name="others" >Others</string>
+    <string name="others">Others</string>
+    <string name="post_error_attachments_duplicated">Misskey does not allow duplicate in attachments.</string>
 </resources>

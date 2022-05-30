@@ -557,7 +557,7 @@
     <string name="not_blocked">No blocada.</string>
     <string name="not_muted">No silenciada.</string>
     <string name="media_description">(adjunció %1$d) %2$s</string>
-    <string name="set_description">crea una descripció (Mastodont 2.0+)</string>
+    <string name="set_description">crea una descripció</string>
     <string name="attachment_description_cant_edit_while_uploading">La descripció de l\'adjunció no es pot editar mentre es carrega.</string>
     <string name="attachment_description">descripció d\'adjunció</string>
     <string name="description_empty">no hi ha descripció.</string>

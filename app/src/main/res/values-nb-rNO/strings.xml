@@ -418,7 +418,7 @@
     <string name="not_blocked">Ikke blokkert.</string>
     <string name="not_muted">Ikke forstummet.</string>
     <string name="media_description">(vedlegg %1$d) %2$s</string>
-    <string name="set_description">sett beskrivelse (Mastodon 2.0 eller senere)</string>
+    <string name="set_description">sett beskrivelse</string>
     <string name="attachment_description">vedleggsbeskrivelse</string>
     <string name="description_empty">beskrivelsen er ikke angitt.</string>
     <string name="attachment_description_sending">sender vedleggsbeskrivelse…</string>

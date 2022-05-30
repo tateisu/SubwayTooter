@@ -4,8 +4,11 @@ import android.content.res.Resources
 import android.util.Log
 import androidx.annotation.StringRes
 
-fun Throwable.withCaption(caption: String) =
-    "$caption :${javaClass.simpleName} $message"
+fun Throwable.withCaption(caption: String?=null) =
+    when {
+        caption.isNullOrBlank() -> "${javaClass.simpleName} $message"
+        else -> "$caption :${javaClass.simpleName} $message"
+    }
 
 fun Throwable.withCaption(resources: Resources, stringId: Int, vararg args: Any) =
     "${resources.getString(stringId, *args)}: ${javaClass.simpleName} $message"
@@ -58,7 +61,7 @@ class LogCategory(category: String) {
     ///////////////////////////////
     // Throwable + string
 
-    private fun msg(priority: Int, ex: Throwable, caption: String = "exception.") =
+    private fun msg(priority: Int, ex: Throwable, caption: String? =null) =
         msg(priority, ex.withCaption(caption))
 
     fun e(ex: Throwable, caption: String = "exception") = msg(Log.ERROR, ex, caption)

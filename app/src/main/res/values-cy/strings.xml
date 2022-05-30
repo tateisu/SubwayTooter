@@ -332,7 +332,7 @@
     <string name="emoji">Emoji</string>
     <string name="not_blocked">Heb ei flocio.</string>
     <string name="not_muted">Heb ei dawelu.</string>
-    <string name="set_description">gosod disgrifiad(Mastodon 2.0 neu hwyrach)</string>
+    <string name="set_description">gosod disgrifiad</string>
     <string name="attachment_description_cant_edit_while_uploading">Ni ellir golygu disgrfiad yr atodiad tra\'n uwchlwytho.</string>
     <string name="attachment_description">disgrifiad atodiad</string>
     <string name="description_empty">disgrifiad heb ei bennu.</string>

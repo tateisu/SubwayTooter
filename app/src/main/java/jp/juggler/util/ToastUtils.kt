@@ -2,6 +2,7 @@ package jp.juggler.util
 
 import android.content.Context
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
@@ -49,7 +50,7 @@ internal fun showToastImpl(context: Context, bLong: Boolean, message: String): B
 fun Context.showToast(bLong: Boolean, caption: String?): Boolean =
     showToastImpl(this, bLong, caption ?: "(null)")
 
-fun Context.showToast(ex: Throwable, caption: String = "error."): Boolean =
+fun Context.showToast(ex: Throwable, caption: String? = null): Boolean =
     showToastImpl(this, true, ex.withCaption(caption))
 
 fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any): Boolean =
@@ -58,8 +59,9 @@ fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any): Boolean 
 fun Context.showToast(ex: Throwable, stringId: Int, vararg args: Any): Boolean =
     showToastImpl(this, true, ex.withCaption(resources, stringId, *args))
 
-fun AppCompatActivity.showError(ex: Throwable, caption: String = "error.") {
-    log.e(ex)
+fun AppCompatActivity.showError(ex: Throwable, caption: String? = null) {
+    log.e(ex, caption ?: "(showError)")
+
     // キャンセル例外はUIに表示しない
     if (ex is CancellationException) return
 
@@ -70,10 +72,8 @@ fun AppCompatActivity.showError(ex: Throwable, caption: String = "error.") {
                 listOf(
                     caption,
                     when (ex) {
-                        is IllegalStateException ->
-                            null
-                        else ->
-                            ex.javaClass.simpleName
+                        is IllegalStateException -> null
+                        else -> ex.javaClass.simpleName
                     },
                     ex.message,
                 )
@@ -81,8 +81,11 @@ fun AppCompatActivity.showError(ex: Throwable, caption: String = "error.") {
                     .joinToString("\n")
             )
             .setPositiveButton(R.string.ok, null)
-    } catch (ex: Throwable) {
-        log.e(ex)
+            .show()
+    } catch (ignored: Throwable) {
         showToast(ex, caption)
     }
 }
+
+fun Context.errorString(@StringRes stringId: Int, vararg args: Any?): Nothing =
+    error(getString(stringId, args))

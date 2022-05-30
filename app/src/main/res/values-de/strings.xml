@@ -845,7 +845,7 @@
     <string name="lists">Listen</string>
     <string name="operation_succeeded">Fertig.</string>
     <string name="attachment_description_sending">sende Beschreibung des Anhangs…</string>
-    <string name="set_description">Beschreibung festlegen (Mastodon 2.0 und später)</string>
+    <string name="set_description">Beschreibung festlegen</string>
     <string name="attachment_description">Beschreibung des Anhangs</string>
     <string name="attachment_description_cant_edit_while_uploading">Die Beschreibung des Anhangs kann beim Hochladen nicht mehr geändert werden.</string>
     <string name="media_description">(Anhang %1$d) %2$s</string>

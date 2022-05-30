@@ -909,15 +909,28 @@ class AttachmentUploader(
         var resultAttachment: TootAttachment? = null
         val result = try {
             context.runApiTask(account) { client ->
-                client.request(
-                    "/api/v1/media/$attachmentId",
-                    jsonObject {
-                        put("description", description)
+                if( account.isMisskey){
+                    client.request(
+                        "/api/drive/files/update",
+                        account.putMisskeyApiToken().apply {
+                            put("fileId", attachmentId.toString())
+                            put("comment",description)
+                        }.toPostRequestBuilder()
+                    )?.also { result ->
+                        resultAttachment =
+                            parseItem(::TootAttachment, ServiceType.MISSKEY, result.jsonObject)
                     }
-                        .toPutRequestBuilder()
-                )?.also { result ->
-                    resultAttachment =
-                        parseItem(::TootAttachment, ServiceType.MASTODON, result.jsonObject)
+                }else {
+                    client.request(
+                        "/api/v1/media/$attachmentId",
+                        jsonObject {
+                            put("description", description)
+                        }
+                            .toPutRequestBuilder()
+                    )?.also { result ->
+                        resultAttachment =
+                            parseItem(::TootAttachment, ServiceType.MASTODON, result.jsonObject)
+                    }
                 }
             }
         } catch (ex: Throwable) {

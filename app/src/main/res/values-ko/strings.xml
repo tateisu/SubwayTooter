@@ -535,7 +535,7 @@
     <string name="not_blocked">차단 안 됨.</string>
     <string name="not_muted">음소거 안 됨.</string>
     <string name="media_description">(첨부 %1$d) %2$s</string>
-    <string name="set_description">설명을 설정 (마스토돈 2.0 이상)</string>
+    <string name="set_description">설명을 설정</string>
     <string name="attachment_description_cant_edit_while_uploading">첨부파일 설명은 올리는 중에는 편집할 수 없습니다.</string>
     <string name="attachment_description">첨부파일 설명</string>
     <string name="description_empty">설명이 지정되지 않았습니다.</string>

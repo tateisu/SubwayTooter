@@ -939,7 +939,7 @@
     <string name="description_empty">未指定描述.</string>
     <string name="attachment_description">附件描述</string>
     <string name="attachment_description_cant_edit_while_uploading">正在上传时无法编辑附件描述.</string>
-    <string name="set_description">设置描述(Mastodon 2.0+)</string>
+    <string name="set_description">设置描述</string>
     <string name="media_description">(附件%1$d)%2$s</string>
     <string name="not_muted">未被静音.</string>
     <string name="not_blocked">未被阻止.</string>

@@ -78,53 +78,19 @@ class PostImpl(
         else -> 25 // TootPollsType.Mastodon
     }
 
-    private fun preCheckPollItemOne(list: List<String>, idx: Int, item: String): Boolean {
+    private fun preCheckPollItemOne(list: List<String>, idx: Int, item: String) {
 
         // 選択肢が長すぎる
         val cpCount = item.codePointCount(0, item.length)
         if (cpCount > choiceMaxChars) {
             val over = cpCount - choiceMaxChars
-            activity.showToast(true, R.string.enquete_item_too_long, idx + 1, over)
-            return false
+            activity.errorString(R.string.enquete_item_too_long, idx + 1, over)
         }
 
         // 他の項目と重複している
         if ((0 until idx).any { list[it] == item }) {
-            activity.showToast(true, R.string.enquete_item_duplicate, idx + 1)
-            return false
+            activity.errorString(R.string.enquete_item_duplicate, idx + 1)
         }
-
-        return true
-    }
-
-    private fun preCheck(): Boolean {
-        if (content.isEmpty() && attachmentList == null) {
-            activity.showToast(true, R.string.post_error_contents_empty)
-            return false
-        }
-
-        // nullはCWチェックなしを示す // nullじゃなくてカラならエラー
-        if (spoilerText != null && spoilerText.isEmpty()) {
-            activity.showToast(true, R.string.post_error_contents_warning_empty)
-            return false
-        }
-
-        if (enqueteItems != null) {
-            if (enqueteItems.size < 2) {
-                activity.showToast(true, R.string.enquete_item_is_empty, enqueteItems.size + 1)
-                return false
-            }
-            enqueteItems.forEachIndexed { i, v ->
-                if (!preCheckPollItemOne(enqueteItems, i, v)) return false
-            }
-        }
-
-        if (scheduledAt != 0L && account.isMisskey) {
-            activity.showToast(true, "misskey has no scheduled status API")
-            return false
-        }
-
-        return true
     }
 
     private var resultStatus: TootStatus? = null
@@ -401,7 +367,39 @@ class PostImpl(
     }
 
     suspend fun runSuspend(): PostResult {
-        if (!preCheck()) throw CancellationException("preCheck failed.")
+
+        if (account.isMisskey){
+            val duplicateCheck = buildMap {
+                attachmentList?.forEach {
+                    put( it.id.toString(), (get(it.id.toString())?:0)+1)
+                }
+            }
+            if( duplicateCheck.values.all { it >=2 }){
+                activity.errorString(R.string.post_error_attachments_duplicated)
+            }
+        }
+
+        if (content.isEmpty() && attachmentList == null) {
+            activity.errorString(R.string.post_error_contents_empty)
+        }
+
+        // nullはCWチェックなしを示す // nullじゃなくてカラならエラー
+        if (spoilerText != null && spoilerText.isEmpty()) {
+            activity.errorString(R.string.post_error_contents_warning_empty)
+        }
+
+        if (!enqueteItems.isNullOrEmpty()) {
+            if (enqueteItems.size < 2) {
+                activity.errorString(R.string.enquete_item_is_empty, enqueteItems.size + 1)
+            }
+            enqueteItems.forEachIndexed { i, v ->
+                preCheckPollItemOne(enqueteItems, i, v)
+            }
+        }
+
+        if (scheduledAt != 0L && account.isMisskey) {
+            error("misskey has no scheduled status API")
+        }
 
         if (PrefB.bpWarnHashtagAsciiAndNonAscii()) {
             TootTag.findHashtags(content, account.isMisskey)
@@ -449,6 +447,7 @@ class PostImpl(
 
         // 投稿中に再度投稿ボタンが押された
         if (postJob?.get()?.isActive == true) {
+            log.e("other postJob is active!")
             activity.showToast(false, R.string.post_button_tapped_repeatly)
             throw CancellationException("preCheck failed.")
         }
@@ -458,6 +457,7 @@ class PostImpl(
         val delta = now - lastPostTapped
         lastPostTapped = now
         if (delta < 1000L) {
+            log.e("lastPostTapped within 1 sec!")
             activity.showToast(false, R.string.post_button_tapped_repeatly)
             throw CancellationException("post_button_tapped_repeatly")
         }
@@ -576,7 +576,7 @@ class PostImpl(
                     status != null ->
                         PostResult.Normal(account, status)
 
-                    else -> error( result.error ?: "(result.error is null)")
+                    else -> error(result.error ?: "(result.error is null)")
                 }
             }
         }

@@ -31,17 +31,6 @@ fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
         }
     }
 
-
-
-fun AppCompatActivity.launchAndShowError(block: suspend CoroutineScope.() -> Unit): Job =
-    lifecycleScope.launch() {
-        try {
-            block()
-        } catch (ex: Throwable) {
-            showError(ex)
-        }
-    }
-
 // Default Dispatcherで動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
@@ -71,6 +60,17 @@ fun launchIO(block: suspend CoroutineScope.() -> Unit): Job =
 fun <T : Any?> asyncIO(block: suspend CoroutineScope.() -> T): Deferred<T> =
     EndlessScope.async(block = block, context = Dispatchers.IO)
 
+fun AppCompatActivity.launchAndShowError(
+    errorCaption: String? = null,
+    block: suspend CoroutineScope.() -> Unit,
+): Job = lifecycleScope.launch() {
+    try {
+        block()
+    } catch (ex: Throwable) {
+        showError(ex, errorCaption)
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////
 
 suspend fun <T : Any?> AppCompatActivity.runWithProgress(
@@ -79,7 +79,7 @@ suspend fun <T : Any?> AppCompatActivity.runWithProgress(
     afterProc: suspend CoroutineScope.(result: T) -> Unit = {},
     progressInitializer: suspend CoroutineScope.(ProgressDialogEx) -> Unit = {},
     preProc: suspend CoroutineScope.() -> Unit = {},
-    postProc: suspend CoroutineScope.() -> Unit = {}
+    postProc: suspend CoroutineScope.() -> Unit = {},
 ) {
     coroutineScope {
         if (!isMainThread) error("runWithProgress: not main thread.")

@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.content.SharedPreferences
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.*
 
 class TootAttachment : TootAttachmentLike {
@@ -120,12 +120,9 @@ class TootAttachment : TootAttachmentLike {
                 remote_url = url
                 text_url = url
 
-                description = arrayOf(
-                    src.string("name"),
-                    src.string("comment")
-                )
-                    .filterNotNull()
-                    .joinToString(" / ")
+
+                description = src.string("comment")?.notBlank()
+                    ?: src.string("name")?.notBlank()
 
                 focusX = 0f
                 focusY = 0f

@@ -4,12 +4,14 @@ import android.content.Context
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ReplacementSpan
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.HostAndDomain
+import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
+import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
+import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.WordTrieTree
 import org.jetbrains.anko.collections.forEachReversedByIndex
-import java.util.*
 
 class DecodeOptions(
     val context: Context? = null,
@@ -24,11 +26,13 @@ class DecodeOptions(
     var unwrapEmojiImageTag: Boolean = false,
     var enlargeCustomEmoji: Float = 1f,
     var enlargeEmoji: Float = 1f,
-    var forceHtml: Boolean = false, // force use HTML instead of Misskey Markdown
+    // force use HTML instead of Misskey Markdown
+    var forceHtml: Boolean = false,
     var mentionFullAcct: Boolean = false,
     var mentions: ArrayList<TootMention>? = null,
     // Account.note などmentionsがない状況でメンションリンクをfull acct化するにはアカウント等からapDomainを補う必要がある
-    var mentionDefaultHostDomain: HostAndDomain = linkHelper ?: unknownHostAndDomain,
+    // MFMはメンションのホスト名を補うのに閲覧者ではなく投稿作者のホスト名を必要とする
+    var authorDomain: HostAndDomain? = null,
 ) {
 
     internal fun isMediaAttachment(url: String?): Boolean =

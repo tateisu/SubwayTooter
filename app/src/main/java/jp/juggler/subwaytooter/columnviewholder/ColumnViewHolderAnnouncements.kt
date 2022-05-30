@@ -329,7 +329,7 @@ private fun ColumnViewHolder.showReactions(
         column.accessInfo,
         decodeEmoji = true,
         enlargeEmoji = 1.5f,
-        mentionDefaultHostDomain = column.accessInfo
+        authorDomain = column.accessInfo
     )
 
     val actMain = activity

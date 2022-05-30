@@ -61,7 +61,6 @@ class TootAnnouncement(parser: TootParser, src: JsonObject) {
             // attachmentList = media_attachments,
             highlightTrie = parser.highlightTrie,
             mentions = mentions,
-            mentionDefaultHostDomain = parser.linkHelper
         )
 
         this.content = src.string("content") ?: ""

@@ -315,7 +315,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     attachmentList = media_attachments,
                     highlightTrie = parser.highlightTrie,
                     mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
-                    mentionDefaultHostDomain = account
+                    authorDomain = account
                 )
 
                 this.decoded_content = options.decodeHTML(content)
@@ -348,7 +348,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     attachmentList = media_attachments,
                     highlightTrie = parser.highlightTrie,
                     mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
-                    mentionDefaultHostDomain = account
+                    authorDomain = account
                 )
                 this.decoded_spoiler_text = options.decodeHTML(spoiler_text)
 
@@ -522,7 +522,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     attachmentList = media_attachments,
                     highlightTrie = parser.highlightTrie,
                     mentions = mentions,
-                    mentionDefaultHostDomain = account,
+                    authorDomain = account,
                     unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
                 )
 
@@ -545,7 +545,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     emojiMapProfile = profile_emojis,
                     highlightTrie = parser.highlightTrie,
                     mentions = mentions,
-                    mentionDefaultHostDomain = account,
+                    authorDomain = account,
                     unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
                 )
 
@@ -750,7 +750,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     attachmentList = media_attachments,
                     highlightTrie = parser.highlightTrie,
                     mentions = mentions,
-                    mentionDefaultHostDomain = account
+                    authorDomain = account
                 )
 
                 this.decoded_content = options.decodeHTML(content)
@@ -772,7 +772,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     emojiMapProfile = profile_emojis,
                     highlightTrie = parser.highlightTrie,
                     mentions = mentions,
-                    mentionDefaultHostDomain = account
+                    authorDomain = account
                 )
 
                 this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)

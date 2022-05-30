@@ -141,7 +141,7 @@ internal class ViewHolderHeaderInstance(
                 activity,
                 accessInfo,
                 decodeEmoji = true,
-                mentionDefaultHostDomain = accessInfo
+                authorDomain = accessInfo
             )
 
             tvShortDescription.text = options

@@ -110,7 +110,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     mentions = status.mentions,
-                    mentionDefaultHostDomain = status.account
+                    authorDomain = status.account
                 ).decodeHTML(this.question ?: "?")
             }
 
@@ -128,7 +128,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     mentions = status.mentions,
-                    mentionDefaultHostDomain = status.account
+                    authorDomain = status.account
                 ).decodeHTML(this.question ?: "?")
 
                 this.items = parseChoiceListMastodon(
@@ -193,7 +193,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     mentions = status.mentions,
-                    mentionDefaultHostDomain = status.account
+                    authorDomain = status.account
                 ).decodeHTML(this.question ?: "?")
 
                 this.items = parseChoiceListFriendsNico(
@@ -222,7 +222,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     mentions = status.mentions,
-                    mentionDefaultHostDomain = status.account,
+                    authorDomain = status.account,
                     unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
                 ).decodeHTML(this.question ?: "?")
 
@@ -315,7 +315,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     decodeEmoji = true,
-                    mentionDefaultHostDomain = status.account
+                    authorDomain = status.account
                 )
                 for (o in objectArray) {
                     val text = reWhitespace
@@ -349,7 +349,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     decodeEmoji = true,
-                    mentionDefaultHostDomain = status.account
+                    authorDomain = status.account
                 )
                 for (o in objectArray) {
                     val text = reWhitespace
@@ -383,7 +383,7 @@ class TootPolls(
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     decodeEmoji = true,
-                    mentionDefaultHostDomain = status.account
+                    authorDomain = status.account
                 )
                 for (i in 0 until size) {
                     val text = reWhitespace

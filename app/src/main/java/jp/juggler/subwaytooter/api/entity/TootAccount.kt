@@ -441,7 +441,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             context,
             emojiMapProfile = profile_emojis,
             emojiMapCustom = custom_emojis,
-            mentionDefaultHostDomain = this
+            authorDomain = this
         ).decodeEmoji(sv)
     }
 
@@ -539,7 +539,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     emojiMapProfile = profile_emojis,
                     emojiMapCustom = custom_emojis,
                     unwrapEmojiImageTag = true,
-                    mentionDefaultHostDomain = this,
+                    authorDomain = this,
                 ).decodeHTML(note)
                     .replaceAllEx(reNoteLineFeed, " ")
                     .trimEx()

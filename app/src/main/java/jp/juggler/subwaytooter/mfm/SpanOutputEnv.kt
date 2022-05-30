@@ -157,8 +157,8 @@ class SpanOutputEnv(
                     )
                 ),
                 url = url,
+                options.authorDomain,
                 options.linkHelper,
-                options.mentionDefaultHostDomain,
             )
         }
 
@@ -196,20 +196,23 @@ class SpanOutputEnv(
         // ユーザが記述したacct
         val rawAcct = Acct.parse(username, strHost)
 
-        val linkHelper = linkHelper
-        if (linkHelper == null) {
+        // 長いacctを生成する
+        val fullAcct = getFullAcctOrNull(
+            rawAcct,
+            null,
+            options.authorDomain,
+            linkHelper
+        )
+
+        if( fullAcct==null){
             appendText("@${rawAcct.pretty}")
             return
         }
 
-        // 長いacct
-        // MFMでは投稿者のドメインを補うのはサーバ側の仕事の筈なので、options.mentionDefault…は見ない
-        val fullAcct = rawAcct.followHost(linkHelper.apDomain)
-
         // mentionsメタデータに含まれるacct
         // ユーザの記述に因らず、サーバのホスト名同じなら短い、そうでなければ長いメンション
-        val shortAcct = when {
-            linkHelper.matchHost(fullAcct.host) -> Acct.parse(username)
+        val shortAcct = when (fullAcct.host) {
+            linkHelper?.apDomain, linkHelper?.apiHost -> Acct.parse(username)
             else -> fullAcct
         }
 

@@ -34,7 +34,7 @@ internal class ViewHolderHeaderSearch(
         tvSearchDesc.textColor = column.getContentColor()
         tvSearchDesc.text = DecodeOptions(
             activity, accessInfo, decodeEmoji = true,
-            mentionDefaultHostDomain = accessInfo
+            authorDomain = accessInfo
         )
             .decodeHTML(column.getHeaderDesc())
     }

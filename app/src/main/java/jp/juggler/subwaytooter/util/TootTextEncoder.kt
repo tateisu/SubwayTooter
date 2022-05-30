@@ -72,7 +72,7 @@ object TootTextEncoder {
                 context,
                 accessInfo,
                 mentions = status.mentions,
-                mentionDefaultHostDomain = status.account
+                authorDomain = status.account,
             ).decodeHTML(status.content)
         )
 
@@ -103,7 +103,7 @@ object TootTextEncoder {
                 context,
                 accessInfo,
                 mentions = status.mentions,
-                mentionDefaultHostDomain = status.account
+                authorDomain = status.account,
             ).decodeHTML(status.content)
         )
 
@@ -274,7 +274,7 @@ object TootTextEncoder {
             DecodeOptions(
                 context,
                 accessInfo,
-                mentionDefaultHostDomain = who
+                authorDomain = who,
             ).decodeHTML(who.note)
         )
 

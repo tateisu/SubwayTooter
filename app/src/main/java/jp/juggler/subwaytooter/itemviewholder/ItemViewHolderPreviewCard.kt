@@ -68,7 +68,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             val text = DecodeOptions(
                 activity, accessInfo,
                 forceHtml = true,
-                mentionDefaultHostDomain = status.account
+                authorDomain = status.account
             ).decodeHTML(sb.toString())
 
             if (text.isNotEmpty()) {

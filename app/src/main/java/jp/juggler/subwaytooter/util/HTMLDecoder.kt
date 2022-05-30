@@ -1087,8 +1087,8 @@ object HTMLDecoder {
                     getFullAcctOrNull(
                         mention.acct,
                         href,
+                        options.authorDomain,
                         options.linkHelper,
-                        options.mentionDefaultHostDomain
                     )?.let { afterFullAcctResolved(it) }
                 } else {
 
@@ -1110,8 +1110,8 @@ object HTMLDecoder {
                     getFullAcctOrNull(
                         rawAcct,
                         href,
+                        options.authorDomain,
                         options.linkHelper,
-                        options.mentionDefaultHostDomain
                     )?.let { fullAcct ->
 
                         // mentionメタデータを捏造する

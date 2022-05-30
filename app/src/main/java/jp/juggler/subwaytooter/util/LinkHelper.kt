@@ -60,36 +60,36 @@ fun LinkHelper.matchHost(src: String?) = apiHost.match(src) || apDomain.match(sr
 fun LinkHelper.matchHost(src: Host?) = apiHost == src || apDomain == src
 fun LinkHelper.matchHost(src: LinkHelper) =
     apiHost == src.apiHost || apDomain == src.apDomain ||
-        apDomain == src.apiHost || apiHost == src.apDomain
+            apDomain == src.apiHost || apiHost == src.apDomain
 
 fun LinkHelper.matchHost(src: TootAccount) =
     apiHost == src.apiHost || apDomain == src.apDomain ||
-        apDomain == src.apiHost || apiHost == src.apDomain
+            apDomain == src.apiHost || apiHost == src.apDomain
 
 // user や user@host から user@host を返す
 fun getFullAcctOrNull(
     rawAcct: Acct,
-    url: String,
+    url: String?,
     hostDomain1: HostAndDomain? = null,
-    hostDomain2: HostAndDomain? = null
-) =
-    if (rawAcct.isValidFull) {
-        // 最初から有効なfull acctがあればそれを使う
-        rawAcct
-    } else {
-        // URL中のホスト名を使うが、引数でホストとドメインの対応が提供されていればドメインへの変換を試みる
-        val host = TootAccount.reHostInUrl.matcher(url)
-            .findOrNull()?.groupEx(1)?.let { Host.parse(it) }
-        if (host == null) {
-            null
-        } else {
-            Acct.parse(
-                rawAcct.username,
-                when (host) {
-                    hostDomain1?.apiHost -> hostDomain1.apDomain
-                    hostDomain2?.apiHost -> hostDomain2.apDomain
-                    else -> host
-                }
-            ).validFull() // apDomainが ? だった場合など
-        }
+    hostDomain2: HostAndDomain? = null,
+): Acct? {
+    // 最初から有効なfull acctがあればそれを使う
+    if (rawAcct.isValidFull) return rawAcct
+
+    // (MFMのみ)URLがなければ引数から適当に補う
+    if (url == null) {
+        return (hostDomain1?.apDomain?.valid()
+            ?: hostDomain2?.apDomain?.valid())
+            ?.let { Acct.parse(rawAcct.username, it) }
     }
+
+    var host = TootAccount.reHostInUrl.matcher(url).findOrNull()
+        ?.groupEx(1)?.let { Host.parse(it).valid() }
+    // URL中のホスト名が引数で指定されたドメインなら、APIホストとAPドメインの変換を行う
+    when (host) {
+        null -> return null
+        hostDomain1?.apiHost -> host = hostDomain1.apDomain
+        hostDomain2?.apiHost -> host = hostDomain2.apDomain
+    }
+    return Acct.parse(rawAcct.username, host).validFull()
+}

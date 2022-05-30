@@ -24,7 +24,7 @@ fun ActPost.appendContentText(
     val svEmoji = DecodeOptions(
         context = this,
         decodeEmoji = true,
-        mentionDefaultHostDomain = account ?: unknownHostAndDomain
+        authorDomain = account ?: unknownHostAndDomain,
     ).decodeEmoji(src)
     if (svEmoji.isEmpty()) return
 

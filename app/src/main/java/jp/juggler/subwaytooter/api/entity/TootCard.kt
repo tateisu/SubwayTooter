@@ -56,7 +56,7 @@ class TootCard(
                 DecodeOptions(
                     context = parser.context,
                     decodeEmoji = true,
-                    mentionDefaultHostDomain = src.account
+                    authorDomain = src.account,
                 ).decodeHTML(src.content ?: "").toString()
             },
         image = src.media_attachments

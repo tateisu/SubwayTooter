@@ -23,8 +23,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.accountRemove
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.notification.NotificationHelper
@@ -34,7 +37,10 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.EmojiDecoder
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -45,9 +51,11 @@ import okhttp3.RequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
@@ -942,7 +950,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                 linkHelper = account,
                 emojiMapProfile = src.profile_emojis,
                 emojiMapCustom = src.custom_emojis,
-                mentionDefaultHostDomain = account
+                authorDomain = account,
             )
 
             val displayName = src.display_name

@@ -35,7 +35,6 @@ fun ActPost.showReplyTo() {
             linkHelper = account,
             short = true,
             decodeEmoji = true,
-            mentionDefaultHostDomain = account ?: unknownHostAndDomain
         ).decodeHTML(states.inReplyToText)
         views.ivReply.setImageUrl(Styler.calcIconRound(views.ivReply.layoutParams),
             states.inReplyToImage)

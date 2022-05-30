@@ -358,7 +358,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             this,
             mentionFullAcct = true,
             mentions = baseStatus.mentions,
-            mentionDefaultHostDomain = account
+            linkHelper = account,
         )
 
         var text: CharSequence = if (account.isMisskey) {
@@ -459,7 +459,7 @@ fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
             this,
             mentionFullAcct = true,
             mentions = baseStatus.mentions,
-            mentionDefaultHostDomain = account
+            linkHelper = account,
         )
 
         var text: CharSequence = if (account.isMisskey) {

@@ -664,7 +664,7 @@ internal class ViewHolderHeaderProfile(
             short = true,
             emojiMapCustom = who.custom_emojis,
             emojiMapProfile = who.profile_emojis,
-            mentionDefaultHostDomain = who
+            authorDomain = who
         )
 
         val nameTypeface = ActMain.timeline_font_bold

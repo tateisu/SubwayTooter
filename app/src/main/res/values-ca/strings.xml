@@ -18,7 +18,7 @@
     <string name="request_access_token">Sol·licitant credencial d\'accés…</string>
     <string name="request_api">Adquirint: %1$s %2$s</string>
     <string name="reading_api">Llegint: %1$s %2$s</string>
-    <string name="column_empty">Fes servir el botó inferior esquerre del menú per afegir columna</string>
+    <string name="column_empty">Fes servir el botó inferior esquerre del menú per a afegir una columna</string>
     <string name="home">Inici</string>
     <string name="local_timeline">Pissarra local</string>
     <string name="federate_timeline">Pissarra federada</string>
@@ -107,7 +107,7 @@
     <string name="user">Usuària</string>
     <string name="confirm_account_remove">Aquest compte s\'eliminarà i es desfaran totes les pissarres.
 \nN\'estàs segura\?</string>
-    <string name="user_name_not_match">El nom d\'usuària no coincideix</string>
+    <string name="user_name_not_match">El nom d\'usuàri no coincideix</string>
     <string name="access_token_updated_for">la credencial d\'accés de %1$s s\'ha actualitzat.</string>
     <string name="back_to_column_list">Ves a la llista de pissarres en pitjar \"Enrera\"</string>
     <string name="account_empty">No s\'ha configurat cap compte. Sisplau afegeix-hi un compte.</string>
@@ -244,7 +244,7 @@
     <string name="image_capture">Fes una foto</string>
     <string name="video_capture">Filma un vídeo</string>
     <string name="voice_capture">Grava una veu</string>
-    <string name="missing_permission_to_access_media">Falta el permís d\'accés als mèdia.</string>
+    <string name="missing_permission_to_access_media">Falta el permís de l\'aplicació per accedir al contingut multimèdia. Concediu el permís a l\'aplicació a la configuració del dispositiu.</string>
     <string name="attachment_uploading">Carregant adjunció de mèdia…</string>
     <string name="attachment_uploaded">S\'ha adjuntat el mèdia.</string>
     <string name="actions_for_status">Accions en relació al bram</string>
@@ -315,7 +315,7 @@
     <string name="pick_image">Tria imatge</string>
     <string name="pick_images">Tria imatge(s)…</string>
     <string name="pick_videos">Tria vídeo(s)…</string>
-    <string name="pick_audios">Tria àudio(s)…</string>
+    <string name="pick_audios">Tria els fitxers d\'àudio…</string>
     <string name="image_alpha">Imatge alfa</string>
     <string name="image">Imatge</string>
     <string name="column_header">Capçalera de pissarra</string>
@@ -979,4 +979,12 @@
     <string name="release_notes_updated">Notes de la versió (v%1$s→v%2$s)</string>
     <string name="test">Prova</string>
     <string name="please_help_translation">Sisplau ajuda en la traducció!</string>
+    <string name="display_name_posted_by">%1$s publicats</string>
+    <string name="account_picker_mute">Compte per a silenciar l\'usuari %1$s\?</string>
+    <string name="account_picker_block">Compte per a bloquejar l\'usuari %1$s\?</string>
+    <string name="resize_square_pixels_2">Canvia la mida a %1$d píxels quadrats (equiv. %2$s)</string>
+    <string name="display_name_follow_request_accepted_by">%1$s ha acceptat la teva sol·licitud de seguiment</string>
+    <string name="display_name_references_post">%1$s fa referència a la teva publicació</string>
+    <string name="display_name_updates_post">%1$s actualitza el post</string>
+    <string name="display_name_signed_up">%1$s s\'ha registrat al teu servidor.</string>
 </resources>

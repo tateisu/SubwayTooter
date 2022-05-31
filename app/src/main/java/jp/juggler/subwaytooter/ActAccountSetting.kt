@@ -37,10 +37,7 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -152,20 +149,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     internal var visibility = TootVisibility.Public
 
     private val languages by lazy {
-        ArrayList<Pair<String, String>>().apply {
-            add(Pair("", getString(R.string.device_language)))
-            val nameMap = HashMap<String, String>()
-            addAll(
-                Locale.getAvailableLocales().mapNotNull { locale ->
-                    locale.language.takeIf { it.length == 2 || it.contains('-') }
-                        ?.also { code -> nameMap[code] = "$code ${locale.displayLanguage}" }
-                }
-                    .toSet()
-                    .toList()
-                    .sorted()
-                    .map { Pair(it, nameMap[it]!!) }
-            )
-        }
+        loadLanguageList()
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -610,8 +594,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             account.movieTranscodeBitrate = etMovieBitrate.text.toString()
             account.movieTranscodeFramerate = etMovieFrameRate.text.toString()
             account.movieTranscodeSquarePixels = etMovieSquarePixels.text.toString()
-            account.lang =
-                languages.elementAtOrNull(spLanguageCode.selectedItemPosition)?.first ?: ""
+            account.lang = languages.elementAtOrNull(spLanguageCode.selectedItemPosition)?.first
+                ?: SavedAccount.LANG_WEB
         }
 
         account.saveSetting()

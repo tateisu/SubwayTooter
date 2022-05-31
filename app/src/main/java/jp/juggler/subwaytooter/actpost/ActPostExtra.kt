@@ -4,14 +4,22 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.ActPost
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.onCompleteActPost
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootPollsType
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.PostAttachment
+import jp.juggler.subwaytooter.util.PostImpl
+import jp.juggler.subwaytooter.util.PostResult
 import jp.juggler.util.*
 
 private val log = LogCategory("ActPostExtra")
@@ -316,7 +324,7 @@ fun ActPost.performPost() {
             }
         }
 
-       val postResult = PostImpl(
+        val postResult = PostImpl(
             activity = activity,
             account = account,
             content = views.etContent.text.toString().trim { it <= ' ' },
@@ -339,9 +347,11 @@ fun ActPost.performPost() {
             editStatusId = states.editStatusId,
             emojiMapCustom = App1.custom_emoji_lister.getMapNonBlocking(account),
             useQuoteToot = views.cbQuote.isChecked,
+            lang = languages.elementAtOrNull(views.spLanguage.selectedItemPosition)?.first
+                ?: SavedAccount.LANG_WEB
         ).runSuspend()
-        when(postResult){
-            is PostResult.Normal ->{
+        when (postResult) {
+            is PostResult.Normal -> {
                 val data = Intent()
                 data.putExtra(ActPost.EXTRA_POSTED_ACCT, postResult.targetAccount.acct.ascii)
                 postResult.status.id.putTo(data, ActPost.EXTRA_POSTED_STATUS_ID)
@@ -363,10 +373,10 @@ fun ActPost.performPost() {
                     this@performPost.finish()
                 }
             }
-            is PostResult.Scheduled ->{
+            is PostResult.Scheduled -> {
                 showToast(false, getString(R.string.scheduled_status_sent))
                 val data = Intent()
-                data.putExtra(ActPost.EXTRA_POSTED_ACCT,postResult. targetAccount.acct.ascii)
+                data.putExtra(ActPost.EXTRA_POSTED_ACCT, postResult.targetAccount.acct.ascii)
 
                 if (isMultiWindowPost) {
                     resetText()

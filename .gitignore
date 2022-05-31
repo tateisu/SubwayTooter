@@ -128,3 +128,5 @@ _Emoji/*.log
 _Emoji/*.txt
 
 detektReport/
+
+.idea/deploymentTargetDropDown.xml

@@ -209,7 +209,7 @@
                     android:layout_gravity="bottom"
                     android:layout_marginTop="8dp"
                     android:layout_weight="1"
-                    android:text="@string/status" />
+                    android:text="@string/content" />
 
                 <ImageButton
                     android:id="@+id/btnFeaturedTag"
@@ -253,6 +253,27 @@
                     android:minLines="5" />
 
             </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:text="@string/language" />
+
+                <Spinner
+                    android:id="@+id/spLanguage"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"

@@ -55,6 +55,7 @@ class PostImpl(
     val editStatusId: EntityId?,
     val emojiMapCustom: HashMap<String, CustomEmoji>?,
     var useQuoteToot: Boolean,
+    var lang : String,
 ) {
     companion object {
         private val log = LogCategory("PostImpl")
@@ -283,7 +284,16 @@ class PostImpl(
 
     private fun encodeParamsMastodon(json: JsonObject, instance: TootInstance) {
 
-        json["language"] = account.lang.notBlank() ?: Locale.getDefault().language
+        when(val lang = lang.trim()){
+            // Web設定に従うなら指定しない
+            SavedAccount.LANG_WEB,"" -> Unit
+            // 端末の言語コード
+            SavedAccount.LANG_DEVICE->
+                json["language"] = Locale.getDefault().language
+            // その他
+            else->
+                json["language"] = lang
+        }
 
         visibilityChecked?.let { json["visibility"] = it.strMastodon }
 

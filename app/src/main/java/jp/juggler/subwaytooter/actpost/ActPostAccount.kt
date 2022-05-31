@@ -9,11 +9,13 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import org.jetbrains.anko.textColor
+import kotlin.math.max
 
 private val log = LogCategory("ActPostAccount")
 
 fun ActPost.selectAccount(a: SavedAccount?) {
     this.account = a
+
 
     completionHelper.setInstance(a)
 
@@ -27,6 +29,8 @@ fun ActPost.selectAccount(a: SavedAccount?) {
             // 何もしない
             App1.custom_emoji_lister.getList(a)
         }
+
+        views.spLanguage.setSelection(max(0,languages.indexOfFirst { it.first == a.lang}))
 
         val ac = AcctColor.load(a)
         views.btnAccount.text = ac.nickname

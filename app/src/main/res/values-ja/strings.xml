@@ -1147,4 +1147,6 @@
     <string name="emoji_picker_custom_of">カスタム: %1$s</string>
     <string name="others" >その他</string>
     <string name="post_error_attachments_duplicated">Misskeyは添付データの重複を許可していません。</string>
+    <string name="use_web_settings">Web設定を使う</string>
+    <string name="content">本文</string>
 </resources>

@@ -15,7 +15,6 @@ import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class SavedAccount(
@@ -88,33 +87,25 @@ class SavedAccount(
 
     private val extraJson = JsonObject()
 
-    var movieTranscodeMode: Int by JsonProperty(
-        extraJson,
-        "movieTranscodeMode",
-        0)
+    private val jsonDelegates = JsonDelegates(extraJson)
 
-    var movieTranscodeBitrate: String by JsonProperty(
-        extraJson,
-        "movieTranscodeBitrate",
-        "2000000")
-    var movieTranscodeFramerate: String by JsonProperty(
-        extraJson,
-        "movieTranscodeFramerate",
-        "30")
-    var movieTranscodeSquarePixels: String by JsonProperty(
-        extraJson,
-        "movieTranscodeSquarePixels",
-        "2304000")
+    @JsonPropInt("movieTranscodeMode", 0)
+    var movieTranscodeMode by jsonDelegates.int
 
-    var lang: String by JsonProperty(
-        extraJson,
-        "lang",
-        "")
+    @JsonPropString("movieTranscodeBitrate", "2000000")
+    var movieTranscodeBitrate by jsonDelegates.string
 
-    var notification_status_reference: Boolean by JsonProperty(
-        extraJson,
-        "notification_status_reference",
-        true)
+    @JsonPropString("movieTranscodeFramerate", "30")
+    var movieTranscodeFramerate by jsonDelegates.string
+
+    @JsonPropString("movieTranscodeSquarePixels", "2304000")
+    var movieTranscodeSquarePixels by jsonDelegates.string
+
+    @JsonPropString("lang2", LANG_WEB)
+    var lang by jsonDelegates.string
+
+    @JsonPropBoolean("notification_status_reference", true)
+    var notification_status_reference by jsonDelegates.boolean
 
     init {
         val tmpAcct = Acct.parse(acctArg)
@@ -600,6 +591,9 @@ class SavedAccount(
                 errorEx(ex, "SavedAccount.insert failed.")
             }
         }
+
+        const val LANG_WEB = "(web)"
+        const val LANG_DEVICE = "(device)"
 
         private const val REGISTER_KEY_UNREGISTERED = "unregistered"
 

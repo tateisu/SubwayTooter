@@ -12,6 +12,7 @@ class JsonException : RuntimeException {
 
 private const val CHAR0 = '\u0000'
 
+@Suppress("RegExpUnnecessaryNonCapturingGroup")
 private val reDecimal = """(?:\A-0\z)|[.eE]""".toRegex()
 
 // Tests if the value should be tried as a decimal.

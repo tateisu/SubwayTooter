@@ -1156,4 +1156,6 @@
     <string name="emoji_picker_custom_of">Custom: %1$s</string>
     <string name="others">Others</string>
     <string name="post_error_attachments_duplicated">Misskey does not allow duplicate in attachments.</string>
+    <string name="use_web_settings">(Use web setting)</string>
+    <string name="content">Content</string>
 </resources>

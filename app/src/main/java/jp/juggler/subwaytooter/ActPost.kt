@@ -110,6 +110,10 @@ class ActPost : AppCompatActivity(),
 
     var density: Float = 0f
 
+    val languages by lazy{
+        loadLanguageList()
+    }
+
     private lateinit var progressChannel: Channel<Unit>
 
     ///////////////////////////////////////////////////
@@ -434,5 +438,13 @@ class ActPost : AppCompatActivity(),
 
         views.etContent.contentMineTypeArray = AttachmentUploader.acceptableMimeTypes.toTypedArray()
         views.etContent.contentCallback = { addAttachment(it) }
+
+        views.spLanguage.adapter =ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            languages.map { it.second }.toTypedArray()
+        ).apply {
+            setDropDownViewResource(R.layout.lv_spinner_dropdown)
+        }
     }
 }

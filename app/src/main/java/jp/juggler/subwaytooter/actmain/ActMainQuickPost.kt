@@ -131,6 +131,7 @@ fun ActMain.performQuickPost(account: SavedAccount?) {
             editStatusId = null,
             emojiMapCustom = App1.custom_emoji_lister.getMapNonBlocking(account),
             useQuoteToot = false,
+            lang = account.lang,
         ).runSuspend()
 
         if (postResult is PostResult.Normal) {

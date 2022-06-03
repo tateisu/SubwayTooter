@@ -14,11 +14,14 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 sealed class PostResult {
     class Normal(
@@ -63,7 +66,8 @@ class PostImpl(
         private val reNotAscii = """[^\x00-\x7f]""".asciiPattern()
 
         private var lastPostTapped: Long = 0L
-        private var postJob: WeakReference<Job>? = null
+
+        private val isPosting = AtomicBoolean(false)
     }
 
     private val attachmentList = attachmentListArg?.mapNotNull { it.attachment }?.notEmpty()
@@ -455,13 +459,6 @@ class PostImpl(
             account.saveSetting()
         }
 
-        // 投稿中に再度投稿ボタンが押された
-        if (postJob?.get()?.isActive == true) {
-            log.e("other postJob is active!")
-            activity.showToast(false, R.string.post_button_tapped_repeatly)
-            throw CancellationException("preCheck failed.")
-        }
-
         // ボタン連打判定
         val now = SystemClock.elapsedRealtime()
         val delta = now - lastPostTapped
@@ -472,123 +469,131 @@ class PostImpl(
             throw CancellationException("post_button_tapped_repeatly")
         }
 
-        val job = Job().also { postJob = it.wrapWeakReference }
-        return withContext(Dispatchers.Main + job) {
+        // 投稿中に再度投稿ボタンが押された
+        if (isPosting.get()) {
+            log.e("other postJob is active!")
+            activity.showToast(false, R.string.post_button_tapped_repeatly)
+            throw CancellationException("preCheck failed.")
+        }
+        // 全ての確認を終えたらバックグラウンドでの処理を開始する
+        isPosting.set(true)
+        return try {
+            withContext(Dispatchers.Main) {
+                activity.runApiTask(
+                    account,
+                    progressSetup = { it.setCanceledOnTouchOutside(false) },
+                ) { client ->
+                    val (instance, ri) = TootInstance.get(client)
+                    instance ?: return@runApiTask ri
 
-            activity.runApiTask(
-                account,
-                progressSetup = { it.setCanceledOnTouchOutside(false) },
-            ) { client ->
-                // 全ての確認を終えたらバックグラウンドでの処理を開始する
+                    if (instance.instanceType == InstanceType.Pixelfed) {
+                        // Pixelfedは返信に画像を添付できない
+                        if (inReplyToId != null && attachmentList != null) {
+                            return@runApiTask TootApiResult(getString(R.string.pixelfed_does_not_allow_reply_with_media))
+                        }
 
-                val (instance, ri) = TootInstance.get(client)
-                instance ?: return@runApiTask ri
-
-                if (instance.instanceType == InstanceType.Pixelfed) {
-                    // Pixelfedは返信に画像を添付できない
-                    if (inReplyToId != null && attachmentList != null) {
-                        return@runApiTask TootApiResult(getString(R.string.pixelfed_does_not_allow_reply_with_media))
-                    }
-
-                    // Pixelfedの返信ではない投稿は画像添付が必須
-                    if (inReplyToId == null && attachmentList == null) {
-                        return@runApiTask TootApiResult(getString(R.string.pixelfed_does_not_allow_post_without_media))
-                    }
-                }
-
-                val parser = TootParser(this, account)
-
-                this@PostImpl.visibilityChecked = try {
-                    checkVisibility(client, parser, instance) // may null
-                } catch (ex: TootApiResultException) {
-                    return@runApiTask ex.result
-                }
-
-                if (redraftStatusId != null) {
-                    // 元の投稿を削除する
-                    deleteStatus(client)
-                } else if (scheduledId != null) {
-                    deleteScheduledStatus(client)
-                }
-
-                val json = JsonObject()
-                try {
-                    if (account.isMisskey) {
-                        encodeParamsMisskey(json, client)
-                    } else {
-                        encodeParamsMastodon(json, instance)
-                    }
-                } catch (ex: TootApiResultException) {
-                    return@runApiTask ex.result
-                } catch (ex: JsonException) {
-                    log.trace(ex)
-                    log.e(ex, "status encoding failed.")
-                }
-
-                val bodyString = json.toString()
-
-                fun createRequestBuilder(isPut: Boolean = false): Request.Builder {
-                    val requestBody = bodyString.toRequestBody(MEDIA_TYPE_JSON)
-                    return when {
-                        isPut -> Request.Builder().put(requestBody)
-                        else -> Request.Builder().post(requestBody)
-                    }.also {
-                        if (!PrefB.bpDontDuplicationCheck()) {
-                            val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
-                            it.header("Idempotency-Key", digest)
+                        // Pixelfedの返信ではない投稿は画像添付が必須
+                        if (inReplyToId == null && attachmentList == null) {
+                            return@runApiTask TootApiResult(getString(R.string.pixelfed_does_not_allow_post_without_media))
                         }
                     }
-                }
 
-                when {
-                    account.isMisskey -> client.request(
-                        "/api/notes/create",
-                        createRequestBuilder()
-                    )
+                    val parser = TootParser(this, account)
 
-                    editStatusId != null -> client.request(
-                        "/api/v1/statuses/$editStatusId",
-                        createRequestBuilder(isPut = true)
-                    )
+                    this@PostImpl.visibilityChecked = try {
+                        checkVisibility(client, parser, instance) // may null
+                    } catch (ex: TootApiResultException) {
+                        return@runApiTask ex.result
+                    }
 
-                    else -> client.request(
-                        "/api/v1/statuses",
-                        createRequestBuilder()
-                    )
-                }?.also { result ->
-                    val jsonObject = result.jsonObject
+                    if (redraftStatusId != null) {
+                        // 元の投稿を削除する
+                        deleteStatus(client)
+                    } else if (scheduledId != null) {
+                        deleteScheduledStatus(client)
+                    }
 
-                    if (scheduledAt != 0L && jsonObject != null) {
-                        // {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
-                        resultScheduledStatusSucceeded = true
-                        return@runApiTask result
-                    } else {
-                        val status = parser.status(
-                            when {
-                                account.isMisskey -> jsonObject?.jsonObject("createdNote")
-                                    ?: jsonObject
-                                else -> jsonObject
+                    val json = JsonObject()
+                    try {
+                        if (account.isMisskey) {
+                            encodeParamsMisskey(json, client)
+                        } else {
+                            encodeParamsMastodon(json, instance)
+                        }
+                    } catch (ex: TootApiResultException) {
+                        return@runApiTask ex.result
+                    } catch (ex: JsonException) {
+                        log.trace(ex)
+                        log.e(ex, "status encoding failed.")
+                    }
+
+                    val bodyString = json.toString()
+
+                    fun createRequestBuilder(isPut: Boolean = false): Request.Builder {
+                        val requestBody = bodyString.toRequestBody(MEDIA_TYPE_JSON)
+                        return when {
+                            isPut -> Request.Builder().put(requestBody)
+                            else -> Request.Builder().post(requestBody)
+                        }.also {
+                            if (!PrefB.bpDontDuplicationCheck()) {
+                                val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
+                                it.header("Idempotency-Key", digest)
                             }
+                        }
+                    }
+
+                    when {
+                        account.isMisskey -> client.request(
+                            "/api/notes/create",
+                            createRequestBuilder()
                         )
-                        resultStatus = status
-                        saveStatusTag(status)
+
+                        editStatusId != null -> client.request(
+                            "/api/v1/statuses/$editStatusId",
+                            createRequestBuilder(isPut = true)
+                        )
+
+                        else -> client.request(
+                            "/api/v1/statuses",
+                            createRequestBuilder()
+                        )
+                    }?.also { result ->
+                        val jsonObject = result.jsonObject
+
+                        if (scheduledAt != 0L && jsonObject != null) {
+                            // {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
+                            resultScheduledStatusSucceeded = true
+                            return@runApiTask result
+                        } else {
+                            val status = parser.status(
+                                when {
+                                    account.isMisskey -> jsonObject?.jsonObject("createdNote")
+                                        ?: jsonObject
+                                    else -> jsonObject
+                                }
+                            )
+                            resultStatus = status
+                            saveStatusTag(status)
+                        }
+                    }
+                }.let { result ->
+                    if (result == null) throw CancellationException()
+
+                    val status = resultStatus
+                    when {
+                        resultScheduledStatusSucceeded ->
+                            PostResult.Scheduled(account)
+
+                        // 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
+                        status != null ->
+                            PostResult.Normal(account, status)
+
+                        else -> error(result.error ?: "(result.error is null)")
                     }
                 }
-            }.let { result ->
-                if (result == null) throw CancellationException()
-
-                val status = resultStatus
-                when {
-                    resultScheduledStatusSucceeded ->
-                        PostResult.Scheduled(account)
-
-                    // 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-                    status != null ->
-                        PostResult.Normal(account, status)
-
-                    else -> error(result.error ?: "(result.error is null)")
-                }
             }
+        } finally {
+            isPosting.set(false)
         }
     }
 }

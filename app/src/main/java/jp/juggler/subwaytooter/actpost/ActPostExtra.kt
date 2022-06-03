@@ -311,16 +311,13 @@ fun ActPost.performPost() {
         var pollHideTotals = false
         var pollMultipleChoice = false
         when (views.spPollType.selectedItemPosition) {
-            1 -> {
+            0-> Unit // not poll
+            else -> {
                 pollType = TootPollsType.Mastodon
                 pollItems = pollChoiceList()
                 pollExpireSeconds = pollExpireSeconds()
                 pollHideTotals = views.cbHideTotals.isChecked
                 pollMultipleChoice = views.cbMultipleChoice.isChecked
-            }
-            2 -> {
-                pollType = TootPollsType.FriendsNico
-                pollItems = pollChoiceList()
             }
         }
 

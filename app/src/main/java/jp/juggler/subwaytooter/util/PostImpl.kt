@@ -55,7 +55,7 @@ class PostImpl(
     val editStatusId: EntityId?,
     val emojiMapCustom: HashMap<String, CustomEmoji>?,
     var useQuoteToot: Boolean,
-    var lang : String,
+    var lang: String,
 ) {
     companion object {
         private val log = LogCategory("PostImpl")
@@ -76,7 +76,7 @@ class PostImpl(
     private val choiceMaxChars = when {
         account.isMisskey -> 15
         pollType == TootPollsType.FriendsNico -> 15
-        else -> 25 // TootPollsType.Mastodon
+        else -> 40 // TootPollsType.Mastodon
     }
 
     private fun preCheckPollItemOne(list: List<String>, idx: Int, item: String) {
@@ -284,14 +284,14 @@ class PostImpl(
 
     private fun encodeParamsMastodon(json: JsonObject, instance: TootInstance) {
 
-        when(val lang = lang.trim()){
+        when (val lang = lang.trim()) {
             // Web設定に従うなら指定しない
-            SavedAccount.LANG_WEB,"" -> Unit
+            SavedAccount.LANG_WEB, "" -> Unit
             // 端末の言語コード
-            SavedAccount.LANG_DEVICE->
+            SavedAccount.LANG_DEVICE ->
                 json["language"] = Locale.getDefault().language
             // その他
-            else->
+            else ->
                 json["language"] = lang
         }
 
@@ -378,13 +378,13 @@ class PostImpl(
 
     suspend fun runSuspend(): PostResult {
 
-        if (account.isMisskey){
+        if (account.isMisskey) {
             val duplicateCheck = buildMap {
                 attachmentList?.forEach {
-                    put( it.id.toString(), (get(it.id.toString())?:0)+1)
+                    put(it.id.toString(), (get(it.id.toString()) ?: 0) + 1)
                 }
             }
-            if( duplicateCheck.values.all { it >=2 }){
+            if (duplicateCheck.values.all { it >= 2 }) {
                 activity.errorString(R.string.post_error_attachments_duplicated)
             }
         }

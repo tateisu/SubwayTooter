@@ -10,18 +10,22 @@ import android.os.Handler
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
-import android.view.*
+import android.view.KeyEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.inputmethod.EditorInfo
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.action.saveWindowSize
 import jp.juggler.subwaytooter.actpost.*
-import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootScheduled
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.databinding.ActPostBinding
-import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.span.*
+import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyEditText
@@ -71,7 +75,7 @@ class ActPost : AppCompatActivity(),
             // 再編集する投稿。アカウントと同一のタンスであること
             redraftStatus: TootStatus? = null,
             // 編集する投稿。アカウントと同一のタンスであること
-            editStatus:TootStatus? = null,
+            editStatus: TootStatus? = null,
             // 返信対象の投稿。同一タンス上に同期済みであること
             replyStatus: TootStatus? = null,
             //初期テキスト
@@ -110,7 +114,7 @@ class ActPost : AppCompatActivity(),
 
     var density: Float = 0f
 
-    val languages by lazy{
+    val languages by lazy {
         loadLanguageList()
     }
 
@@ -348,7 +352,6 @@ class ActPost : AppCompatActivity(),
                 arrayOf(
                     getString(R.string.poll_dont_make),
                     getString(R.string.poll_make),
-                    getString(R.string.poll_make_friends_nico)
                 )
             ).apply {
                 setDropDownViewResource(R.layout.lv_spinner_dropdown)
@@ -439,7 +442,7 @@ class ActPost : AppCompatActivity(),
         views.etContent.contentMineTypeArray = AttachmentUploader.acceptableMimeTypes.toTypedArray()
         views.etContent.contentCallback = { addAttachment(it) }
 
-        views.spLanguage.adapter =ArrayAdapter(
+        views.spLanguage.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
             languages.map { it.second }.toTypedArray()

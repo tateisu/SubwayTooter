@@ -17,6 +17,7 @@ import jp.juggler.util.*
 import kotlinx.coroutines.isActive
 import okhttp3.Request
 import ru.gildor.coroutines.okhttp.await
+import kotlin.math.min
 
 private val log = LogCategory("ActPostDrafts")
 
@@ -254,11 +255,11 @@ fun ActPost.restoreDraft(draft: JsonObject) {
 
                 val sv = draft.string(DRAFT_POLL_TYPE)
                 if (sv != null) {
-                    views.spPollType.setSelection(sv.toPollTypeIndex())
+                    views.spPollType.setSelection(min(1,sv.toPollTypeIndex()))
                 } else {
                     // old draft
                     val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
-                    views.spPollType.setSelection(if (bv) 2 else 0)
+                    views.spPollType.setSelection(if (bv) 1 else 0)
                 }
 
                 views.cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
@@ -387,13 +388,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
 
             else -> {
-                views.spPollType.setSelection(
-                    if (srcEnquete.pollType == TootPollsType.FriendsNico) {
-                        2
-                    } else {
-                        1
-                    }
-                )
+                views.spPollType.setSelection(1)
                 text = decodeOptions.decodeHTML(srcEnquete.question)
                 views.etContent.text = text
                 views.etContent.setSelection(text.length)
@@ -488,13 +483,7 @@ fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
             }
 
             else -> {
-                views.spPollType.setSelection(
-                    if (srcEnquete.pollType == TootPollsType.FriendsNico) {
-                        2
-                    } else {
-                        1
-                    }
-                )
+                views.spPollType.setSelection(1)
                 text = decodeOptions.decodeHTML(srcEnquete.question)
                 views.etContent.text = text
                 views.etContent.setSelection(text.length)

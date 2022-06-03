@@ -95,7 +95,7 @@ object DlgConfirm {
     }
 
     suspend fun AppCompatActivity.confirm(@StringRes messageId: Int, vararg args: Any?) =
-        confirm(getString(messageId, args))
+        confirm(getString(messageId, *args))
 
     suspend fun AppCompatActivity.confirm(message: String) {
         suspendCancellableCoroutine<Unit> { cont ->

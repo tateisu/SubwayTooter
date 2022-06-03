@@ -88,4 +88,4 @@ fun AppCompatActivity.showError(ex: Throwable, caption: String? = null) {
 }
 
 fun Context.errorString(@StringRes stringId: Int, vararg args: Any?): Nothing =
-    error(getString(stringId, args))
+    error(getString(stringId, *args))

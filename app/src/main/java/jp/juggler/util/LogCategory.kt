@@ -43,19 +43,19 @@ class LogCategory(category: String) {
     private fun msg(priority: Int, res: Resources, @StringRes stringId: Int, args: Array<out Any?>) =
         msg(priority, res.getString(stringId, *args))
 
-    fun e(res: Resources, @StringRes stringId: Int, vararg args: Any) =
+    fun e(res: Resources, @StringRes stringId: Int, vararg args: Any?) =
         msg(Log.ERROR, res, stringId, args)
 
-    fun w(res: Resources, @StringRes stringId: Int, vararg args: Any) =
+    fun w(res: Resources, @StringRes stringId: Int, vararg args: Any?) =
         msg(Log.WARN, res, stringId, args)
 
-    fun i(res: Resources, @StringRes stringId: Int, vararg args: Any) =
+    fun i(res: Resources, @StringRes stringId: Int, vararg args: Any?) =
         msg(Log.INFO, res, stringId, args)
 
-    fun d(res: Resources, @StringRes stringId: Int, vararg args: Any) =
+    fun d(res: Resources, @StringRes stringId: Int, vararg args: Any?) =
         msg(Log.DEBUG, res, stringId, args)
 
-    fun v(res: Resources, @StringRes stringId: Int, vararg args: Any) =
+    fun v(res: Resources, @StringRes stringId: Int, vararg args: Any?) =
         msg(Log.VERBOSE, res, stringId, args)
 
     ///////////////////////////////

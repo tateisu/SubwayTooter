@@ -2,23 +2,15 @@ package jp.juggler.subwaytooter.util
 
 import jp.juggler.util.LogCategory
 import kotlinx.coroutines.runBlocking
-import java.io.IOException
-import java.io.InputStream
-import java.nio.charset.Charset
-
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Response
 import okhttp3.ResponseBody
-import okio.Buffer
-import okio.BufferedSource
-import okio.ByteString
-import okio.Options
-import okio.Sink
-import okio.Source
-import okio.Timeout
+import okio.*
+import java.io.IOException
+import java.io.InputStream
 import java.nio.ByteBuffer
-import kotlin.jvm.Throws
+import java.nio.charset.Charset
 import kotlin.math.max
 
 class ProgressResponseBody private constructor(
@@ -41,7 +33,10 @@ class ProgressResponseBody private constructor(
         }
 
         @Throws(IOException::class)
-        fun bytes(response: Response, callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit): ByteArray {
+        fun bytes(
+            response: Response,
+            callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit,
+        ): ByteArray {
             val body = response.body ?: error("response.body() is null.")
             return bytes(body, callback)
         }
@@ -141,7 +136,6 @@ class ProgressResponseBody private constructor(
     override fun source(): BufferedSource = wrappedSource
 
     // To avoid double buffering, We have to make ForwardingBufferedSource.
-    @Suppress("TooManyFunctions")
     internal open class ForwardingBufferedSource(
         private val originalSource: BufferedSource,
     ) : BufferedSource {
@@ -149,8 +143,9 @@ class ProgressResponseBody private constructor(
         override val buffer: Buffer
             get() = originalSource.buffer
 
+        @Deprecated("use val buffer.", replaceWith = ReplaceWith("buffer"))
         @Suppress("DEPRECATION", "OverridingDeprecatedMember")
-        override fun buffer(): Buffer = originalSource.buffer()
+        override fun buffer() = buffer
 
         override fun peek(): BufferedSource = originalSource.peek()
 

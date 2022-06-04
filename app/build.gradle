@@ -146,7 +146,7 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
-    implementation "androidx.core:core-ktx:1.7.0"
+    implementation "androidx.core:core-ktx:1.8.0"
 
     def emoji2Version = "1.1.0"
     implementation "androidx.emoji2:emoji2:$emoji2Version"
@@ -158,7 +158,7 @@ dependencies {
     implementation "androidx.drawerlayout:drawerlayout:1.1.1"
 
     // NavigationView
-    implementation "com.google.android.material:material:1.6.0"
+    implementation "com.google.android.material:material:1.6.1"
 
     implementation "androidx.exifinterface:exifinterface:1.3.3"
 
@@ -183,7 +183,7 @@ dependencies {
 
     testImplementation "junit:junit:$junit_version" // しばらくはkotlin-testとjunitを併用
 
-    def okhttpVersion = "4.9.2"
+    def okhttpVersion = "4.9.3"
     implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
 

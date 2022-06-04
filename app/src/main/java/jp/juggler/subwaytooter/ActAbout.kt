@@ -126,7 +126,7 @@ class ActAbout : AppCompatActivity() {
         val padding = (0.5f + density * 8).toInt()
 
         for (who in translators) {
-            ll.addView(AppCompatButton(this).apply {
+            AppCompatButton(this).apply {
                 //
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -150,7 +150,7 @@ class ActAbout : AppCompatActivity() {
                     setResult(Activity.RESULT_OK, data)
                     finish()
                 }
-            })
+            }.let { ll.addView(it) }
         }
     }
 }

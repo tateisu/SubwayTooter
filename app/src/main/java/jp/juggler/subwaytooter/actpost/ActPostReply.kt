@@ -8,7 +8,6 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
-import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.table.SavedAccount

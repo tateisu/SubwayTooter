@@ -16,7 +16,6 @@ private val log = LogCategory("ActPostAccount")
 fun ActPost.selectAccount(a: SavedAccount?) {
     this.account = a
 
-
     completionHelper.setInstance(a)
 
     if (a == null) {
@@ -30,7 +29,7 @@ fun ActPost.selectAccount(a: SavedAccount?) {
             App1.custom_emoji_lister.getList(a)
         }
 
-        views.spLanguage.setSelection(max(0,languages.indexOfFirst { it.first == a.lang}))
+        views.spLanguage.setSelection(max(0, languages.indexOfFirst { it.first == a.lang }))
 
         val ac = AcctColor.load(a)
         views.btnAccount.text = ac.nickname

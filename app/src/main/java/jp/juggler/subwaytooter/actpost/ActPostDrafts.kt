@@ -255,7 +255,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
 
                 val sv = draft.string(DRAFT_POLL_TYPE)
                 if (sv != null) {
-                    views.spPollType.setSelection(min(1,sv.toPollTypeIndex()))
+                    views.spPollType.setSelection(min(1, sv.toPollTypeIndex()))
                 } else {
                     // old draft
                     val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)

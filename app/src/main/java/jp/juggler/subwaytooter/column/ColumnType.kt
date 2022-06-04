@@ -23,14 +23,13 @@ import kotlin.math.max
 import kotlin.math.min
 
 /*
-カラム種別ごとの処理
-- Loading : 初回ロード
-- Refresh : (始端/終端の)差分更新
-- Gap : ギャップ部分の読み込み
+    カラム種別ごとの処理
+    - Loading : 初回ロード
+    - Refresh : (始端/終端の)差分更新
+    - Gap : ギャップ部分の読み込み
 
-loading,refresh,gap はそれぞれ this の種類が異なるので注意
-同じ関数を呼び出してるように見えても実際には異なるクラスの異なる関数を呼び出している場合がある
- 
+    loading,refresh,gap はそれぞれ this の種類が異なるので注意
+    同じ関数を呼び出してるように見えても実際には異なるクラスの異なる関数を呼び出している場合がある
  */
 
 private val unsupportedRefresh: suspend ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? =

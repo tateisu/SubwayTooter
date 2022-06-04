@@ -52,11 +52,12 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.util.*
 import kotlin.math.max
 
-class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
-    CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener {
+class ActAccountSetting : AppCompatActivity(),
+    View.OnClickListener,
+    CompoundButton.OnCheckedChangeListener,
+    AdapterView.OnItemSelectedListener {
 
     companion object {
 
@@ -1186,7 +1187,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
                                                 }
                                             }
                                         }
-                                    })
+                                    }
+                                )
                             }
                         }
 

@@ -17,7 +17,7 @@ buildscript {
 
     ext.junit_version = '4.13.2'
 
-    ext.detekt_version = '1.20.0'
+    ext.detekt_version = '1.21.0-RC1'
 
     ext.compose_version = '1.0.5'
 

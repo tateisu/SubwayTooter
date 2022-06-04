@@ -49,7 +49,6 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         // (Fedibird beta)
         const val TYPE_STATUS_REFERENCE = "status_reference"
-
     }
 
     val json: JsonObject

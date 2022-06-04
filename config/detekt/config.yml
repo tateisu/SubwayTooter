@@ -247,6 +247,8 @@ formatting:
   active: true
   android: false
   autoCorrect: true
+  Wrapping:
+    active: false
   AnnotationOnSeparateLine:
     active: false
     autoCorrect: true

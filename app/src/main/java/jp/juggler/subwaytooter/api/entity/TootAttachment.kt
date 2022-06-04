@@ -120,7 +120,6 @@ class TootAttachment : TootAttachmentLike {
                 remote_url = url
                 text_url = url
 
-
                 description = src.string("comment")?.notBlank()
                     ?: src.string("name")?.notBlank()
 

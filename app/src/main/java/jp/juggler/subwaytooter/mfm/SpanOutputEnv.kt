@@ -14,8 +14,10 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.SvgEmojiSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.util.*
-import java.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.HTMLDecoder
+import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.getFullAcctOrNull
 
 // 装飾つきテキストの出力時に使うデータの集まり
 class SpanOutputEnv(
@@ -204,7 +206,7 @@ class SpanOutputEnv(
             linkHelper
         )
 
-        if( fullAcct==null){
+        if (fullAcct == null) {
             appendText("@${rawAcct.pretty}")
             return
         }

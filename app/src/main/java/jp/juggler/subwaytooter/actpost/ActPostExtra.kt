@@ -311,7 +311,7 @@ fun ActPost.performPost() {
         var pollHideTotals = false
         var pollMultipleChoice = false
         when (views.spPollType.selectedItemPosition) {
-            0-> Unit // not poll
+            0 -> Unit // not poll
             else -> {
                 pollType = TootPollsType.Mastodon
                 pollItems = pollChoiceList()

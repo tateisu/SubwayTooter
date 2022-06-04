@@ -115,7 +115,6 @@ fun ActMain.follow(
                         }
                         .setNeutralButton(R.string.ignore_suggestion) { _, _ ->
                             cont.resume(R.string.ignore_suggestion)
-
                         }
                         .setNegativeButton(R.string.cancel, null)
                         .create()

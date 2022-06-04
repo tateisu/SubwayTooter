@@ -27,7 +27,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okio.BufferedSink
 import java.io.*
-import java.util.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.coroutineContext
 import kotlin.math.min
@@ -909,18 +908,18 @@ class AttachmentUploader(
         var resultAttachment: TootAttachment? = null
         val result = try {
             context.runApiTask(account) { client ->
-                if( account.isMisskey){
+                if (account.isMisskey) {
                     client.request(
                         "/api/drive/files/update",
                         account.putMisskeyApiToken().apply {
                             put("fileId", attachmentId.toString())
-                            put("comment",description)
+                            put("comment", description)
                         }.toPostRequestBuilder()
                     )?.also { result ->
                         resultAttachment =
                             parseItem(::TootAttachment, ServiceType.MISSKEY, result.jsonObject)
                     }
-                }else {
+                } else {
                     client.request(
                         "/api/v1/media/$attachmentId",
                         jsonObject {

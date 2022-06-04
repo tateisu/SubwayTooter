@@ -26,7 +26,7 @@ interface ColorPickerDialogListener {
      *
      * @param dialogId
      * The dialog id used to create the dialog instance.
-     * @param color
+     * @param newColor
      * The selected color
      */
     fun onColorSelected(dialogId: Int, @ColorInt newColor: Int)

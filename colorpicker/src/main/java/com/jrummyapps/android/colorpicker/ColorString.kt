@@ -2,7 +2,6 @@ package com.jrummyapps.android.colorpicker
 
 import android.graphics.Color
 
-@Throws(NumberFormatException::class)
 fun parseColorString(src: String): Int {
     val start = if (src.startsWith("#")) 1 else 0
 

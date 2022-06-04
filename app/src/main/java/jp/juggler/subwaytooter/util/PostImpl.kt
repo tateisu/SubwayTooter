@@ -383,14 +383,13 @@ class PostImpl(
     suspend fun runSuspend(): PostResult {
 
         if (account.isMisskey) {
-            val duplicateCheck = buildMap {
-                attachmentList?.forEach {
-                    put(it.id.toString(), (get(it.id.toString()) ?: 0) + 1)
+            attachmentList
+                ?.notEmpty()
+                ?.map { it.id.toString() }
+                ?.takeIf { it != it.distinct() }
+                ?.let {
+                    activity.errorString(R.string.post_error_attachments_duplicated)
                 }
-            }
-            if (duplicateCheck.values.all { it >= 2 }) {
-                activity.errorString(R.string.post_error_attachments_duplicated)
-            }
         }
 
         if (content.isEmpty() && attachmentList == null) {

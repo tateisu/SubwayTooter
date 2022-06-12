@@ -46,6 +46,7 @@ class CustomEmojiLister(
         val accessInfo: SavedAccount,
         val reportWithAliases: Boolean = false,
     ) {
+        val caller = Throwable()
         fun resume(item: CacheItem) {
             cont.resume(
                 when (reportWithAliases) {
@@ -112,7 +113,7 @@ class CustomEmojiLister(
         }
     }
 
-    fun getListNonBlocking(
+    fun tryGetList(
         accessInfo: SavedAccount,
         withAliases: Boolean = false,
         callback: ((List<CustomEmoji>) -> Unit)? = null,
@@ -121,7 +122,11 @@ class CustomEmojiLister(
             getCached(elapsedTime, accessInfo)
         }?.let { return it.list }
         launchMain {
-            getList(accessInfo, withAliases).let { callback?.invoke(it) }
+            try {
+                getList(accessInfo, withAliases).let { callback?.invoke(it) }
+            }catch(ex:Throwable){
+                log.trace(ex,"getList failed.")
+            }
         }
         return null
     }
@@ -132,7 +137,7 @@ class CustomEmojiLister(
 //        }
 
     fun getMapNonBlocking(accessInfo: SavedAccount) =
-        getListNonBlocking(accessInfo)?.let {
+        tryGetList(accessInfo)?.let {
             HashMap<String, CustomEmoji>().apply {
                 it.forEach { put(it.shortcode, it) }
             }
@@ -157,6 +162,7 @@ class CustomEmojiLister(
                     try {
                         request.resume(handleRequest(request))
                     } catch (ex: Throwable) {
+                        log.trace(request.caller, "caller's call stack")
                         request.cont.resumeWithException(ex)
                     }
                 } catch (ex: Throwable) {

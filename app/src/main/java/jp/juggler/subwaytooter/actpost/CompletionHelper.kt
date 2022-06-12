@@ -258,7 +258,7 @@ class CompletionHelper(
     ) = buildList<CharSequence> {
         accessInfo ?: return@buildList
 
-        val customList = App1.custom_emoji_lister.getListNonBlocking(
+        val customList = App1.custom_emoji_lister.tryGetList(
             accessInfo,
             withAliases = true,
             callback = onEmojiListLoad
@@ -311,7 +311,7 @@ class CompletionHelper(
     fun setInstance(accessInfo: SavedAccount?) {
         this.accessInfo = accessInfo
         accessInfo?.let {
-            App1.custom_emoji_lister.getListNonBlocking(
+            App1.custom_emoji_lister.tryGetList(
                 it,
                 callback = onEmojiListLoad
             )

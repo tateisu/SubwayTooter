@@ -23,11 +23,8 @@ fun ActPost.selectAccount(a: SavedAccount?) {
         views.btnAccount.setTextColor(attrColor(android.R.attr.textColorPrimary))
         views.btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
     } else {
-        launchMain {
-            // 先読みしてキャッシュに保持しておく
-            // 何もしない
-            App1.custom_emoji_lister.getList(a)
-        }
+        // 先読みしてキャッシュを温める。この時点では取得結果を使わない
+        App1.custom_emoji_lister.tryGetList(a)
 
         views.spLanguage.setSelection(max(0, languages.indexOfFirst { it.first == a.lang }))
 

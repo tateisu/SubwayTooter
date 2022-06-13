@@ -84,6 +84,7 @@ class ForegroundPollingService : Service() {
                             .minByOrNull { it.lastRequired }
                     }
                     if (target != null) {
+                        target.lastHandled = target.lastRequired
                         check(target.accountDbId)
                         stopSelf(target.lastStartId)
                     }

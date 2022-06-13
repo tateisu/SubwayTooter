@@ -48,7 +48,7 @@ suspend fun loadFirebaseMessagingToken(context: Context): String =
         // implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
         val sv = FirebaseMessaging.getInstance().token.await()
         if (sv.isNullOrBlank()) {
-            error("getFirebaseMessagingToken: device token is null or empty.")
+            error("loadFirebaseMessagingToken: device token is null or empty.")
         }
         return sv.also {
             prefDevice.edit()
@@ -185,7 +185,7 @@ fun checkNotificationImmediate(
                 context = context,
                 accountDbId = accountDbId,
                 injectData = injectData,
-            ) { log.i(it) }.check()
+            ) { log.i("(Immediate) $it") }.check()
         } catch (ex: Throwable) {
             log.trace(ex, "checkNotificationImmediate failed.")
         }
@@ -204,7 +204,7 @@ fun checkNotificationImmediateAll(context: Context) {
                 PollingChecker(
                     context = context,
                     accountDbId = sa.db_id,
-                ) { log.i(it) }.check()
+                ) { log.i("(ImmediateAll) $it") }.check()
             }
         } catch (ex: Throwable) {
             log.trace(ex, "checkNotificationImmediateAll failed.")

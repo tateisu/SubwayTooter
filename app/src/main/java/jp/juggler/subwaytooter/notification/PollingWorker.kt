@@ -84,7 +84,7 @@ class PollingWorker(
             log.i("doWork start. accountDbId=$accountDbId")
 
             val context = applicationContext
-            showMessage(context.getString(R.string.push_notification_checking))
+            showMessage(context.getString(R.string.loading_notification_title))
 
             PollingChecker(
                 context = context,

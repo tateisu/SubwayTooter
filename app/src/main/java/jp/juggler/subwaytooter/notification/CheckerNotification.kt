@@ -27,7 +27,7 @@ object CheckerNotification {
         if (text.isEmpty() || text == lastMessage) return
 
         lastMessage = text
-        log.i("showMessage $text")
+        log.i(text)
 
 //        // This PendingIntent can be used to cancel the worker
 //        val cancel = context.getString(R.string.cancel)

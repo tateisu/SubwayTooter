@@ -202,13 +202,12 @@ class PollingChecker(
                 return@coroutineScope
             }
 
-            progress("[${account.acct.pretty}] check start.")
             client.account = account
 
-            progress("[${account.acct.pretty}] waiting network connection…")
+            progress("waiting network connection… [${account.acct.pretty}]")
             wakelocks.checkConnection()
 
-            progress("[${account.acct.pretty}] check push subscription…")
+            progress("check push subscription… [${account.acct.pretty}]")
             val wps = PushSubscriptionHelper(context, account)
             if (wps.flags != 0) {
                 bPollingRequired.set(true)
@@ -270,6 +269,7 @@ class PollingChecker(
                 }
             }
 
+            progress("check notifications… [${account.acct.pretty}]")
             cache = NotificationCache(account.db_id).apply {
                 load()
                 requestAsync(
@@ -317,8 +317,6 @@ class PollingChecker(
             if (isTimeout) {
                 wakelocks.notificationManager.createServerTimeoutNotification(context, account)
             }
-
-            progress("[${account.acct.pretty}] check end.")
         }
     }
 

@@ -1158,5 +1158,4 @@
     <string name="post_error_attachments_duplicated">Misskey does not allow duplicate in attachments.</string>
     <string name="use_web_settings">(Use web setting)</string>
     <string name="content">Content</string>
-    <string name="push_notification_checking">Processing push notifications…</string>
 </resources>

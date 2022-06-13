@@ -82,9 +82,9 @@ class ForegroundPollingService : Service() {
                         map.values
                             .filter { it.lastRequired > it.lastHandled }
                             .minByOrNull { it.lastRequired }
+                            ?.also { it.lastHandled = it.lastRequired }
                     }
                     if (target != null) {
-                        target.lastHandled = target.lastRequired
                         check(target.accountDbId)
                         stopSelf(target.lastStartId)
                     }

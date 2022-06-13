@@ -169,7 +169,6 @@ class TootApiClient(
             httpClient.onCallCreated = value
         }
 
-    @Suppress("unused")
     internal suspend fun isApiCancelled() = callback.isApiCancelled()
 
     suspend fun publishApiProgress(s: String) {

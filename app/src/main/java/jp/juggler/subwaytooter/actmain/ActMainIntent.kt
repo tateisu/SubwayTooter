@@ -6,8 +6,6 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.pref.PrefDevice
-import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationOtherInstance
 import jp.juggler.subwaytooter.action.openActPostImpl
@@ -20,8 +18,11 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
+import jp.juggler.subwaytooter.notification.checkNotificationImmediate
+import jp.juggler.subwaytooter.notification.recycleClickedNotification
+import jp.juggler.subwaytooter.pref.PrefDevice
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
@@ -172,7 +173,7 @@ private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
             return
         }
 
-        PollingWorker.queueNotificationClicked(this, uri)
+        recycleClickedNotification(this, uri)
 
         val columnList = appState.columnList
         val column = columnList.firstOrNull {
@@ -370,7 +371,7 @@ fun ActMain.afterAccountVerify(
 private fun ActMain.afterAccessTokenUpdate(
     ta: TootAccount,
     sa: SavedAccount,
-    tokenInfo: JsonObject?
+    tokenInfo: JsonObject?,
 ): Boolean {
     if (sa.username != ta.username) {
         showToast(true, R.string.user_name_not_match)
@@ -390,7 +391,7 @@ private fun ActMain.afterAccessTokenUpdate(
 
     // 通知の更新が必要かもしれない
     PushSubscriptionHelper.clearLastCheck(sa)
-    PollingWorker.queueUpdateNotification(applicationContext)
+    checkNotificationImmediate(applicationContext, sa.db_id)
 
     showToast(false, R.string.access_token_updated_for, sa.acct.pretty)
     return true
@@ -454,7 +455,7 @@ private fun ActMain.afterAccountAdd(
     }
 
     // 通知の更新が必要かもしれない
-    PollingWorker.queueUpdateNotification(applicationContext)
+    checkNotificationImmediate(applicationContext, account.db_id)
     showToast(false, R.string.account_confirmed)
     return true
 }

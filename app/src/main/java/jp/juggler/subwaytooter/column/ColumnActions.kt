@@ -3,16 +3,12 @@ package jp.juggler.subwaytooter.column
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.onListListUpdated
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.onNotificationCleared
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.AdapterChange
-import jp.juggler.util.AdapterChangeType
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import java.util.*
-import kotlin.collections.ArrayList
+import jp.juggler.util.*
+import kotlinx.coroutines.launch
 import kotlin.collections.set
 
 private val log = LogCategory("ColumnActions")
@@ -195,7 +191,13 @@ fun Column.removeNotifications() {
     duplicateMap.clear()
     fireShowContent(reason = "removeNotifications", reset = true)
 
-    PollingWorker.queueNotificationCleared(context, accessInfo.db_id)
+    EndlessScope.launch {
+        try {
+            onNotificationCleared(context, accessInfo.db_id)
+        } catch (ex: Throwable) {
+            log.trace(ex, "onNotificationCleared failed.")
+        }
+    }
 }
 
 // 通知を削除した後に呼ばれる

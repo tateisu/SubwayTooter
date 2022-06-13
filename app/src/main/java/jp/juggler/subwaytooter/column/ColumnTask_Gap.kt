@@ -1,13 +1,12 @@
 package jp.juggler.subwaytooter.column
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.columnviewholder.getListItemOffset
 import jp.juggler.subwaytooter.columnviewholder.setListItemTop
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.*
 import java.lang.StringBuilder
@@ -741,7 +740,7 @@ class ColumnTask_Gap(
             }
         }.also {
             listTmp?.mapNotNull { it as? TootNotification }.notEmpty()?.let {
-                PollingWorker.injectData(context, accessInfo, it)
+                injectData(context, accessInfo, it)
             }
         }
     }

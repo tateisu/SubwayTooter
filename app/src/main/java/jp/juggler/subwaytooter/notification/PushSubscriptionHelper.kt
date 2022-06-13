@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.SubscriptionServerKey
 import jp.juggler.util.*
+import kotlinx.coroutines.CancellationException
 import okhttp3.Request
 import okhttp3.Response
 
@@ -100,7 +101,7 @@ class PushSubscriptionHelper(
                     put("server_key", serverKey)
                 }
                     .toPostRequestBuilder()
-                    .url("${PollingWorker.APP_SERVER}/webpushserverkey")
+                    .url("$APP_SERVER/webpushserverkey")
                     .build()
 
             ).also { result ->
@@ -140,7 +141,7 @@ class PushSubscriptionHelper(
                 put("endpoint", endpoint)
             }
                 .toPostRequestBuilder()
-                .url("${PollingWorker.APP_SERVER}/webpushendpoint")
+                .url("$APP_SERVER/webpushendpoint")
                 .build()
         ).also { result ->
             result.response?.let { res ->
@@ -202,16 +203,30 @@ class PushSubscriptionHelper(
 
         // 現在の購読状態を取得できないので、毎回購読の更新を行う
         // FCMのデバイスIDを取得
-        val deviceId = PollingWorker.getFirebaseMessagingToken(context)
-            ?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+        val deviceId = try {
+            loadFirebaseMessagingToken(context)
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            return when (ex) {
+                is CancellationException -> null
+                else -> TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+            }
+        }
 
         // アクセストークン
         val accessToken = account.misskeyApiToken
             ?: return TootApiResult(error = "missing misskeyApiToken.")
 
         // インストールIDを取得
-        val installId = PollingWorker.prepareInstallId(context)
-            ?: return TootApiResult(error = context.getString(R.string.missing_install_id))
+        val installId = try {
+            loadInstallId(context, deviceId) { log.i(it) }
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            return when (ex) {
+                is CancellationException -> null
+                else -> TootApiResult(error = context.getString(R.string.missing_install_id))
+            }
+        }
 
         // クライアント識別子
         val clientIdentifier = "$accessToken$installId".digestSHA256Base64Url()
@@ -235,7 +250,7 @@ class PushSubscriptionHelper(
         // 2018/9/1 の上記コミット以降、Misskeyでもサーバ公開鍵を得られるようになった
 
         val endpoint =
-            "${PollingWorker.APP_SERVER}/webpushcallback/${deviceId.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier/misskey"
+            "$APP_SERVER/webpushcallback/${deviceId.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier/misskey"
 
         // アプリサーバが過去のendpoint urlに410を返せるよう、状態を通知する
         val r = registerEndpoint(client, deviceId, endpoint.toUri().encodedPath!!)
@@ -295,13 +310,26 @@ class PushSubscriptionHelper(
         }
 
         // FCMのデバイスIDを取得
-        val deviceId = PollingWorker.getFirebaseMessagingToken(context)
-            ?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+        val deviceId = try {
+            loadFirebaseMessagingToken(context)
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            return when (ex) {
+                is CancellationException -> null
+                else -> TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+            }
+        }
 
         // インストールIDを取得
-        val installId = PollingWorker.prepareInstallId(context)
-            ?: return TootApiResult(error = context.getString(R.string.missing_install_id))
-
+        val installId = try {
+            loadInstallId(context, deviceId) { log.i(it) }
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            return when (ex) {
+                is CancellationException -> null
+                else -> TootApiResult(error = context.getString(R.string.missing_install_id))
+            }
+        }
         // アクセストークン
         val accessToken = account.getAccessToken()
             ?: return TootApiResult(error = "missing access token.")
@@ -313,7 +341,7 @@ class PushSubscriptionHelper(
         val clientIdentifier = "$accessToken$installId".digestSHA256Base64Url()
 
         val endpoint =
-            "${PollingWorker.APP_SERVER}/webpushcallback/${deviceId.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier"
+            "$APP_SERVER/webpushcallback/${deviceId.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier"
 
         val newAlerts = JsonObject().apply {
             put("follow", account.notification_follow)
@@ -377,7 +405,7 @@ class PushSubscriptionHelper(
                 put("install_id", installId)
             }
                 .toPostRequestBuilder()
-                .url("${PollingWorker.APP_SERVER}/webpushtokencheck")
+                .url("$APP_SERVER/webpushtokencheck")
                 .build()
         )
 

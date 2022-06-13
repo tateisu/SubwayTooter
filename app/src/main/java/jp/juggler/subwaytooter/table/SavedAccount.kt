@@ -11,7 +11,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import java.util.*
@@ -928,7 +928,7 @@ class SavedAccount(
                                 arrayOf(db_id.toString())
                             )
                         }
-                        PollingWorker.queueUpdateNotification(context)
+                        checkNotificationImmediate(context, db_id)
                     }
                 }
             }

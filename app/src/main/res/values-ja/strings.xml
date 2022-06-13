@@ -1149,4 +1149,5 @@
     <string name="post_error_attachments_duplicated">Misskeyは添付データの重複を許可していません。</string>
     <string name="use_web_settings">Web設定を使う</string>
     <string name="content">本文</string>
+    <string name="push_notification_checking">プッシュ通知の処理中…</string>
 </resources>

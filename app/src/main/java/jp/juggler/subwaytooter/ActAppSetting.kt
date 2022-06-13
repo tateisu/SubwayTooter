@@ -28,12 +28,14 @@ import jp.juggler.subwaytooter.appsetting.AppSettingItem
 import jp.juggler.subwaytooter.appsetting.SettingType
 import jp.juggler.subwaytooter.appsetting.appSettingRoot
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
-import jp.juggler.subwaytooter.notification.PollingWorker
-import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.notification.restartAllWorker
 import jp.juggler.subwaytooter.pref.impl.BooleanPref
 import jp.juggler.subwaytooter.pref.impl.FloatPref
 import jp.juggler.subwaytooter.pref.impl.IntPref
 import jp.juggler.subwaytooter.pref.impl.StringPref
+import jp.juggler.subwaytooter.pref.pref
+import jp.juggler.subwaytooter.pref.put
+import jp.juggler.subwaytooter.pref.remove
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CustomShare
@@ -50,7 +52,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnClickListener {
@@ -203,7 +204,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         super.onStop()
 
         // Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
-        PollingWorker.onAppSettingStop(this)
+        restartAllWorker(context = this)
     }
 
     override fun onBackPressed() {

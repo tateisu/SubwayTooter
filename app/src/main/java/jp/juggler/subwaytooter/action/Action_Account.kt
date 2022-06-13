@@ -12,7 +12,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.*
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.APP_SERVER
 import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -242,7 +242,7 @@ private fun appServerUnregister(context: Context, account: SavedAccount) {
                 }&tag=$tag"
                     .toFormRequestBody()
                     .toPost()
-                    .url(PollingWorker.APP_SERVER + "/unregister")
+                    .url("$APP_SERVER/unregister")
                     .build()
             )
 

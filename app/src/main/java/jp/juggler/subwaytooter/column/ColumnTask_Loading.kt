@@ -1,17 +1,16 @@
 package jp.juggler.subwaytooter.column
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.injectData
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.OpenSticker
 import jp.juggler.util.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Suppress("ClassNaming")
 class ColumnTask_Loading(
@@ -105,7 +104,8 @@ class ColumnTask_Loading(
                     ColumnType.SEARCH -> listTmp
 
                     // 編集履歴は投稿日時で重複排除する
-                    ColumnType.STATUS_HISTORY -> column.duplicateMap.filterDuplicateByCreatedAt(listTmp)
+                    ColumnType.STATUS_HISTORY -> column.duplicateMap.filterDuplicateByCreatedAt(
+                        listTmp)
 
                     // 他のカラムは重複排除してから追加
                     else -> column.duplicateMap.filterDuplicate(listTmp)
@@ -648,7 +648,7 @@ class ColumnTask_Loading(
             }
         }.also {
             listTmp?.mapNotNull { it as? TootNotification }?.let {
-                PollingWorker.injectData(context, accessInfo, it)
+                injectData(context, accessInfo, it)
             }
         }
     }

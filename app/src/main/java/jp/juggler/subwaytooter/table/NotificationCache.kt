@@ -11,8 +11,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
-import java.util.*
-import kotlin.collections.ArrayList
+import kotlinx.coroutines.yield
 
 class NotificationCache(private val account_db_id: Long) {
 
@@ -254,7 +253,6 @@ class NotificationCache(private val account_db_id: Long) {
         account: SavedAccount,
         flags: Int,
         onError: (TootApiResult) -> Unit,
-        isCancelled: () -> Boolean,
     ) {
         val now = System.currentTimeMillis()
 
@@ -276,11 +274,7 @@ class NotificationCache(private val account_db_id: Long) {
 
         try {
             for (nTry in 0..3) {
-
-                if (isCancelled()) {
-                    log.d("cancelled.")
-                    return
-                }
+                yield()
 
                 val result = if (account.isMisskey) {
                     client.request(path, account.putMisskeyApiToken().toPostRequestBuilder())

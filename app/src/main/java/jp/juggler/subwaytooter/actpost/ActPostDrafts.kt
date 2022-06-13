@@ -140,7 +140,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
         var targetAccount: SavedAccount? = null
         runWithProgress("restore from draft", doInBackground = { progress ->
 
-            fun isTaskCancelled() = !this.coroutineContext.isActive
+            fun isTaskCancelled() = !coroutineContext.isActive
 
             var content = draft.string(DRAFT_CONTENT) ?: ""
             val tmpAttachmentList =

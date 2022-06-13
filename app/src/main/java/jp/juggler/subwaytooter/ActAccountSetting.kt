@@ -30,9 +30,10 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.notification.NotificationHelper
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.MessageNotification
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
+import jp.juggler.subwaytooter.notification.checkNotificationImmediate
+import jp.juggler.subwaytooter.notification.resetNotificationTracking
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
@@ -255,7 +256,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     override fun onStop() {
-        PollingWorker.queueUpdateNotification(this)
+        checkNotificationImmediate(this, account.db_id)
         super.onStop()
     }
 
@@ -383,14 +384,15 @@ class ActAccountSetting : AppCompatActivity(),
                     )
                     is EditText ->
                         it.addTextChangedListener(watcher1)
-                    is Button ->
-                        it.setOnClickListener(this@ActAccountSetting)
-                    is ImageButton ->
-                        it.setOnClickListener(this@ActAccountSetting)
-                    is CompoundButton ->
-                        it.setOnCheckedChangeListener(this@ActAccountSetting)
                     is Spinner ->
                         it.onItemSelectedListener = this@ActAccountSetting
+                    // CompoundButton はButtonでもあるので上に置く
+                    is CompoundButton ->
+                        it.setOnCheckedChangeListener(this@ActAccountSetting)
+                    is ImageButton ->
+                        it.setOnClickListener(this@ActAccountSetting)
+                    is Button ->
+                        it.setOnClickListener(this@ActAccountSetting)
                 }
             }
         }
@@ -630,12 +632,11 @@ class ActAccountSetting : AppCompatActivity(),
             R.id.btnPushSubscription -> updatePushSubscription(force = true)
             R.id.btnPushSubscriptionNotForce -> updatePushSubscription(force = false)
             R.id.btnResetNotificationTracking ->
-                PollingWorker.resetNotificationTracking(this, account)
+                resetNotificationTracking(account)
 
             R.id.btnUserCustom -> arShowAcctColor.launch(
                 ActNickname.createIntent(this, account.acct, false),
-
-                )
+            )
 
             R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
 
@@ -655,17 +656,17 @@ class ActAccountSetting : AppCompatActivity(),
             R.id.btnFields -> sendFields()
 
             R.id.btnNotificationStyleEdit ->
-                NotificationHelper.openNotificationChannelSetting(
+                MessageNotification.openNotificationChannelSetting(
                     this,
                     account,
-                    NotificationHelper.TRACKING_NAME_DEFAULT
+                    MessageNotification.TRACKING_NAME_DEFAULT
                 )
 
             R.id.btnNotificationStyleEditReply ->
-                NotificationHelper.openNotificationChannelSetting(
+                MessageNotification.openNotificationChannelSetting(
                     this,
                     account,
-                    NotificationHelper.TRACKING_NAME_REPLY
+                    MessageNotification.TRACKING_NAME_REPLY
                 )
         }
     }

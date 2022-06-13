@@ -1,11 +1,12 @@
 package jp.juggler.subwaytooter.column
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.DedupMode
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.*
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.StreamStatus
 import jp.juggler.subwaytooter.util.ScrollPosition
@@ -180,7 +181,7 @@ fun Column.mergeStreamingMessage() {
 private fun Column.injectToPollingWorker(listNew: ArrayList<TimelineItem>) {
     if (!isNotificationColumn) return
     listNew.mapNotNull { it as? TootNotification }.notEmpty()
-        ?.let { PollingWorker.injectData(context, accessInfo, it) }
+        ?.let { injectData(context, accessInfo, it) }
 }
 
 private fun Column.sendToSpeech(listNew: ArrayList<TimelineItem>) {
@@ -203,7 +204,12 @@ private fun Column.addGapAfterStreaming(listNew: ArrayList<TimelineItem>, newIdM
     }
 }
 
-private fun Column.scrollAfterStreaming(added: Int, holderSp: ScrollPosition?, restoreIdx: Int, restoreY: Int) {
+private fun Column.scrollAfterStreaming(
+    added: Int,
+    holderSp: ScrollPosition?,
+    restoreIdx: Int,
+    restoreY: Int,
+) {
     val holder = viewHolder
     if (holder == null) {
         val scrollSave = this.scrollSave

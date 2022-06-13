@@ -9,14 +9,13 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.column.Column
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.cancelAllWorkAndJoin
+import jp.juggler.subwaytooter.notification.restartAllWorker
 import jp.juggler.util.*
-import kotlinx.coroutines.delay
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStreamReader
-import java.util.*
 import java.util.zip.ZipInputStream
 
 private val log = LogCategory("ActMainImportAppData")
@@ -63,11 +62,7 @@ fun ActMain.importAppData(uri: Uri) {
 
                 // 通知サービスを止める
                 setProgressMessage("syncing notification poller…")
-                PollingWorker.queueAppDataImportBefore(this@importAppData)
-                while (PollingWorker.mBusyAppDataImportBefore.get()) {
-                    delay(1000L)
-                    log.d("syncing polling task...")
-                }
+                cancelAllWorkAndJoin(this@importAppData)
 
                 // データを読み込む
                 setProgressMessage("reading app data...")
@@ -138,7 +133,7 @@ fun ActMain.importAppData(uri: Uri) {
                     updateColumnStrip()
                 } finally {
                     // 通知サービスをリスタート
-                    PollingWorker.queueAppDataImportAfter(this@importAppData)
+                    restartAllWorker(this@importAppData)
                 }
 
                 showToast(true, R.string.import_completed_please_restart_app)

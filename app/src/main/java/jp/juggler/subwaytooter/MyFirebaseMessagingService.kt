@@ -1,54 +1,78 @@
 package jp.juggler.subwaytooter
 
-import android.content.Intent
-import android.os.Build
-
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import jp.juggler.subwaytooter.notification.PollingForegrounder
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.ForegroundPollingService
+import jp.juggler.subwaytooter.notification.restartAllWorker
 import jp.juggler.subwaytooter.pref.PrefDevice
-
+import jp.juggler.subwaytooter.table.NotificationCache
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
+import java.util.*
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {
         internal val log = LogCategory("MyFirebaseMessagingService")
+
+        private val pushMessageStatus = LinkedList<String>()
+
+        // Pushメッセージが処理済みか調べる
+        private fun isDuplicateMessage(messageId: String) =
+            synchronized(pushMessageStatus) {
+                when (pushMessageStatus.contains(messageId)) {
+                    true -> true
+                    else -> {
+                        pushMessageStatus.addFirst(messageId)
+                        while (pushMessageStatus.size > 100) {
+                            pushMessageStatus.removeLast()
+                        }
+                        false
+                    }
+                }
+            }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        val context = this
 
-        super.onMessageReceived(remoteMessage)
-
-        var tag: String? = null
-        val data = remoteMessage.data
-        for ((key, value) in data) {
-            log.d("onMessageReceived: $key=$value")
+        val accounts = ArrayList<SavedAccount>()
+        for ((key, value) in remoteMessage.data) {
+            log.w("onMessageReceived: $key=$value")
             when (key) {
-                "notification_tag" -> tag = value
-                "acct" -> tag = "acct<>$value"
+                "notification_tag" -> {
+                    SavedAccount.loadByTag(context, value).forEach { sa ->
+                        NotificationCache.resetLastLoad(sa.db_id)
+                        accounts.add(sa)
+                    }
+                }
+                "acct" -> {
+                    SavedAccount.loadAccountByAcct(context, value)?.let { sa ->
+                        NotificationCache.resetLastLoad(sa.db_id)
+                        accounts.add(sa)
+                    }
+                }
             }
         }
 
-        val context = applicationContext
-        val intent = Intent(context, PollingForegrounder::class.java)
-        if (tag != null) intent.putExtra(PollingWorker.EXTRA_TAG, tag)
-        if (Build.VERSION.SDK_INT >= 26) {
-            context.startForegroundService(intent)
-        } else {
-            context.startService(intent)
+        if (accounts.isEmpty()) {
+            // タグにマッチする情報がなかった場合、全部読み直す
+            NotificationCache.resetLastLoad()
+            accounts.addAll(SavedAccount.loadAccountList(context))
+        }
+        log.i("accounts.size=${accounts.size}")
+        accounts.forEach {
+            ForegroundPollingService.start(this, remoteMessage.messageId, it.db_id)
         }
     }
 
     override fun onNewToken(token: String) {
         try {
-            log.d("onTokenRefresh: token=$token")
+            log.w("onTokenRefresh: token=$token")
             PrefDevice.from(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
-
-            PollingWorker.queueFCMTokenUpdated(this)
+            restartAllWorker(this)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.trace(ex, "onNewToken failed")
         }
     }
 }

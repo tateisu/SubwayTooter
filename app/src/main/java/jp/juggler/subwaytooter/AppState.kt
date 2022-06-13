@@ -171,7 +171,6 @@ class AppState(
 
     // initからプロパティにアクセスする場合、そのプロパティはinitより上で定義されていないとダメっぽい
     // そしてその他のメソッドからval プロパティにアクセスする場合、そのプロパティはメソッドより上で初期化されていないとダメっぽい
-
     init {
 
         this.density = context.resources.displayMetrics.density

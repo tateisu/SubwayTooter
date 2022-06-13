@@ -124,8 +124,8 @@ class CustomEmojiLister(
         launchMain {
             try {
                 getList(accessInfo, withAliases).let { callback?.invoke(it) }
-            }catch(ex:Throwable){
-                log.trace(ex,"getList failed.")
+            } catch (ex: Throwable) {
+                log.trace(ex, "getList failed.")
             }
         }
         return null

@@ -29,7 +29,7 @@ import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
-import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
@@ -359,7 +359,9 @@ class ActMain : AppCompatActivity(),
         updateColumnStrip()
         scrollToLastColumn()
 
-        PollingWorker.queueUpdateNotification(this)
+        if (savedInstanceState == null) {
+            checkNotificationImmediateAll(this)
+        }
 
         if (savedInstanceState != null) {
             sharedIntent2?.let { handleSharedIntent(it) }

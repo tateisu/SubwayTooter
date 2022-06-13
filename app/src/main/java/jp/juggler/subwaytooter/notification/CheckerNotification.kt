@@ -10,8 +10,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
+import jp.juggler.util.LogCategory
 
 object CheckerNotification {
+
+    private val log = LogCategory("CheckerNotification")
 
     private var lastMessage: String? = null
 
@@ -24,6 +27,7 @@ object CheckerNotification {
         if (text.isEmpty() || text == lastMessage) return
 
         lastMessage = text
+        log.i("showMessage $text")
 
 //        // This PendingIntent can be used to cancel the worker
 //        val cancel = context.getString(R.string.cancel)

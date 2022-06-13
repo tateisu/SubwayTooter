@@ -10,8 +10,11 @@ import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWa
 import jp.juggler.util.EndlessScope
 import jp.juggler.util.LogCategory
 import jp.juggler.util.launchMain
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class ForegroundPollingService : Service() {
     companion object {
@@ -55,12 +58,13 @@ class ForegroundPollingService : Service() {
         log.i("onDestroy")
         super.onDestroy()
         checkerWakeLocks(this).releasePowerLocks()
+        channel.close()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val accountDbId = intent?.getLongExtra(EXTRA_ACCOUNT_DB_ID, -1L) ?: -1L
         val now = SystemClock.elapsedRealtime()
-        log.i("onStartCommand accountDbId=$accountDbId")
+        log.i("onStartCommand startId=$startId, accountDbId=$accountDbId")
         synchronized(map) {
             map.getOrPut(accountDbId) {
                 Item(accountDbId = accountDbId)
@@ -69,15 +73,21 @@ class ForegroundPollingService : Service() {
                 lastStartId = startId
             }
         }
-        launchMain { channel.send(now) }
+        launchMain {
+            try {
+                channel.send(now)
+            } catch (ex: Throwable) {
+                log.trace(ex)
+            }
+        }
         return START_NOT_STICKY
     }
 
     init {
-        EndlessScope.launch {
+        EndlessScope.launch(Dispatchers.Default) {
+            var lastStartId = 0
             while (true) {
                 try {
-                    channel.receive()
                     val target = synchronized(map) {
                         map.values
                             .filter { it.lastRequired > it.lastHandled }
@@ -85,9 +95,15 @@ class ForegroundPollingService : Service() {
                             ?.also { it.lastHandled = it.lastRequired }
                     }
                     if (target != null) {
+                        lastStartId = max(lastStartId, target.lastStartId)
                         check(target.accountDbId)
-                        stopSelf(target.lastStartId)
+                        continue
                     }
+                    log.i("stopSelf lastStartId=$lastStartId")
+                    stopSelf(lastStartId)
+                    channel.receive()
+                } catch (ex: ClosedReceiveChannelException) {
+                    break
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }

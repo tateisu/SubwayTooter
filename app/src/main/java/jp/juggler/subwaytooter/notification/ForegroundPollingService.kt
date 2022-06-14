@@ -102,7 +102,8 @@ class ForegroundPollingService : Service() {
                     log.i("stopSelf lastStartId=$lastStartId")
                     stopSelf(lastStartId)
                     channel.receive()
-                } catch (ex: ClosedReceiveChannelException) {
+                } catch (ignored: ClosedReceiveChannelException) {
+                    log.i("channel closed.")
                     break
                 } catch (ex: Throwable) {
                     log.trace(ex)

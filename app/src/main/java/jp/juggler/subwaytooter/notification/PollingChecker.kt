@@ -22,11 +22,9 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.notEmpty
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.yield
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -50,6 +48,40 @@ class PollingChecker(
 
         private val mutexMap = ConcurrentHashMap<Long, Mutex>()
         fun accountMutex(accountDbId: Long): Mutex = mutexMap.getOrPut(accountDbId) { Mutex() }
+
+        private val activeCheckers = LinkedList<PollingChecker>()
+
+        private fun addActiveChecker(c: PollingChecker) {
+            synchronized(activeCheckers) {
+                activeCheckers.add(c)
+            }
+        }
+
+        private fun removeActiveChecker(c: PollingChecker) {
+            synchronized(activeCheckers) {
+                activeCheckers.remove(c)
+            }
+        }
+
+        suspend fun cancelAllChecker() {
+            synchronized(activeCheckers) {
+                for (c in activeCheckers) {
+                    try {
+                        c.checkJob.cancel()
+                    } catch (ex: Throwable) {
+                        log.trace(ex)
+                    }
+                }
+            }
+            while (true) {
+                val activeCount = synchronized(activeCheckers) {
+                    activeCheckers.size
+                }
+                if (activeCount == 0) break
+                log.w("cancelAllChecker: waiting activeCheckers. $activeCount")
+                delay(333L)
+            }
+        }
     }
 
     class PollingCommonPart(
@@ -72,6 +104,8 @@ class PollingChecker(
             }
         }
     )
+
+    private val checkJob = Job()
 
     private fun NotificationData.getNotificationLine(): String {
 
@@ -176,147 +210,166 @@ class PollingChecker(
         else -> { _ -> true }
     }
 
-    suspend fun check() = coroutineScope {
-        val bPollingRequired = AtomicBoolean(false)
-
-        val deviceToken = loadFirebaseMessagingToken(context)
-        loadInstallId(context, deviceToken, progress)
-
-        val favMuteSet = commonMutex.withLock {
-            FavMute.acctSet
-        }
-
-        commonMutex.withLock {
-            // グローバル変数の暖気
-            TootStatus.muted_app = MutedApp.nameSet
-            TootStatus.muted_word = MutedWord.nameSet
-        }
-
-        accountMutex(accountDbId).withLock {
-            val account = SavedAccount.loadAccount(context, accountDbId)
-
-            // 疑似アカウントはチェック対象外
-            // 未確認アカウントはチェック対象外
-            if (account == null || account.isPseudo || !account.isConfirmed) {
-                PollingWorker.cancelPolling(context, accountDbId)
-                return@coroutineScope
+    suspend fun check() {
+        try {
+            // double check
+            if (importProtector.get()) {
+                log.w("check: abort by importProtector.")
+                return
             }
+            addActiveChecker(this@PollingChecker)
+            withContext(Dispatchers.Default + checkJob) {
 
-            client.account = account
+                if (importProtector.get()) {
+                    log.w("check aborted by importProtector.")
+                    return@withContext
+                }
 
-            progress("waiting network connection… [${account.acct.pretty}]")
-            wakelocks.checkConnection()
+                val bPollingRequired = AtomicBoolean(false)
 
-            progress("check push subscription… [${account.acct.pretty}]")
-            val wps = PushSubscriptionHelper(context, account)
-            if (wps.flags != 0) {
-                bPollingRequired.set(true)
+                val deviceToken = loadFirebaseMessagingToken(context)
+                loadInstallId(context, deviceToken, progress)
 
-                val (instance, instanceResult) = TootInstance.get(client)
-                if (instance == null) {
-                    if (instanceResult != null) {
-                        log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
-                        account.updateNotificationError("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+                val favMuteSet = commonMutex.withLock {
+                    FavMute.acctSet
+                }
+
+                commonMutex.withLock {
+                    // グローバル変数の暖気
+                    TootStatus.muted_app = MutedApp.nameSet
+                    TootStatus.muted_word = MutedWord.nameSet
+                }
+
+                accountMutex(accountDbId).withLock {
+                    val account = SavedAccount.loadAccount(context, accountDbId)
+
+                    // 疑似アカウントはチェック対象外
+                    // 未確認アカウントはチェック対象外
+                    if (account == null || account.isPseudo || !account.isConfirmed) {
+                        PollingWorker.cancelPolling(context, accountDbId)
+                        return@withContext
                     }
-                    return@coroutineScope
+
+                    client.account = account
+
+                    progress("waiting network connection… [${account.acct.pretty}]")
+                    wakelocks.checkConnection()
+
+                    progress("check push subscription… [${account.acct.pretty}]")
+                    val wps = PushSubscriptionHelper(context, account)
+                    if (wps.flags != 0) {
+                        bPollingRequired.set(true)
+
+                        val (instance, instanceResult) = TootInstance.get(client)
+                        if (instance == null) {
+                            if (instanceResult != null) {
+                                log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+                                account.updateNotificationError("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+                            }
+                            return@withContext
+                        }
+                    }
+                    yield()
+
+                    wps.updateSubscription(client)
+                        ?: return@withContext // cancelled.
+
+                    val wpsLog = wps.logString
+                    if (wpsLog.isNotEmpty()) {
+                        log.d("PushSubscriptionHelper: ${account.acct.pretty} $wpsLog")
+                    }
+
+                    yield()
+
+                    if (wps.flags == 0) {
+                        if (account.lastNotificationError != null) {
+                            account.updateNotificationError(null)
+                        }
+                        PollingWorker.cancelPolling(context, accountDbId)
+                        return@withContext
+                    }
+                    PollingWorker.enqueuePolling(
+                        context,
+                        accountDbId,
+                        // Worker以外から起動された場合、Workerが未登録の場合だけ更新する
+                        existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
+                    )
+
+                    yield()
+
+                    injectData.notEmpty()?.let { list ->
+                        log.d("processInjectedData ${account.acct} size=${list.size}")
+                        NotificationCache(accountDbId).apply {
+                            load()
+                            inject(account, list)
+                        }
+                    }
+
+                    yield()
+
+                    var isTimeout = false
+
+                    val onError: (TootApiResult) -> Unit = { result ->
+                        if (result.error?.contains("Timeout") == true &&
+                            !account.dont_show_timeout
+                        ) {
+                            isTimeout = true
+                        }
+                    }
+
+                    progress("check notifications… [${account.acct.pretty}]")
+                    cache = NotificationCache(account.db_id).apply {
+                        load()
+                        requestAsync(
+                            client,
+                            account,
+                            wps.flags,
+                            onError = onError,
+                        )
+                    }
+
+                    yield()
+
+                    if (PrefB.bpSeparateReplyNotificationGroup()) {
+                        var tr = TrackingRunner(
+                            account = account,
+                            favMuteSet = favMuteSet,
+                            trackingType = TrackingType.NotReply,
+                            trackingName = MessageNotification.TRACKING_NAME_DEFAULT
+                        )
+                        tr.checkAccount()
+                        yield()
+                        tr.updateNotification()
+                        //
+                        tr = TrackingRunner(
+                            account = account,
+                            favMuteSet = favMuteSet,
+                            trackingType = TrackingType.Reply,
+                            trackingName = MessageNotification.TRACKING_NAME_REPLY
+                        )
+                        tr.checkAccount()
+                        yield()
+                        tr.updateNotification()
+                    } else {
+                        val tr = TrackingRunner(
+                            account = account,
+                            favMuteSet = favMuteSet,
+                            trackingType = TrackingType.All,
+                            trackingName = MessageNotification.TRACKING_NAME_DEFAULT
+                        )
+                        tr.checkAccount()
+                        yield()
+                        tr.updateNotification()
+                    }
+
+                    if (isTimeout) {
+                        wakelocks.notificationManager.createServerTimeoutNotification(context,
+                            account)
+                    }
                 }
             }
-            yield()
-
-            wps.updateSubscription(client)
-                ?: return@coroutineScope // cancelled.
-
-            val wpsLog = wps.logString
-            if (wpsLog.isNotEmpty()) {
-                log.d("PushSubscriptionHelper: ${account.acct.pretty} $wpsLog")
-            }
-
-            yield()
-
-            if (wps.flags == 0) {
-                if (account.lastNotificationError != null) {
-                    account.updateNotificationError(null)
-                }
-                PollingWorker.cancelPolling(context, accountDbId)
-                return@coroutineScope
-            }
-            PollingWorker.enqueuePolling(
-                context,
-                accountDbId,
-                // Worker以外から起動された場合、Workerが未登録の場合だけ更新する
-                existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
-            )
-
-            yield()
-
-            injectData.notEmpty()?.let { list ->
-                log.d("processInjectedData ${account.acct} size=${list.size}")
-                NotificationCache(accountDbId).apply {
-                    load()
-                    inject(account, list)
-                }
-            }
-
-            yield()
-
-            var isTimeout = false
-
-            val onError: (TootApiResult) -> Unit = { result ->
-                if (result.error?.contains("Timeout") == true &&
-                    !account.dont_show_timeout
-                ) {
-                    isTimeout = true
-                }
-            }
-
-            progress("check notifications… [${account.acct.pretty}]")
-            cache = NotificationCache(account.db_id).apply {
-                load()
-                requestAsync(
-                    client,
-                    account,
-                    wps.flags,
-                    onError = onError,
-                )
-            }
-
-            yield()
-
-            if (PrefB.bpSeparateReplyNotificationGroup()) {
-                var tr = TrackingRunner(
-                    account = account,
-                    favMuteSet = favMuteSet,
-                    trackingType = TrackingType.NotReply,
-                    trackingName = MessageNotification.TRACKING_NAME_DEFAULT
-                )
-                tr.checkAccount()
-                yield()
-                tr.updateNotification()
-                //
-                tr = TrackingRunner(
-                    account = account,
-                    favMuteSet = favMuteSet,
-                    trackingType = TrackingType.Reply,
-                    trackingName = MessageNotification.TRACKING_NAME_REPLY
-                )
-                tr.checkAccount()
-                yield()
-                tr.updateNotification()
-            } else {
-                val tr = TrackingRunner(
-                    account = account,
-                    favMuteSet = favMuteSet,
-                    trackingType = TrackingType.All,
-                    trackingName = MessageNotification.TRACKING_NAME_DEFAULT
-                )
-                tr.checkAccount()
-                yield()
-                tr.updateNotification()
-            }
-
-            if (isTimeout) {
-                wakelocks.notificationManager.createServerTimeoutNotification(context, account)
-            }
+        } finally {
+            removeActiveChecker(this)
         }
     }
 

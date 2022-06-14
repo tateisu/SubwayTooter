@@ -25,6 +25,7 @@ import kotlinx.coroutines.tasks.await
 import okhttp3.Request
 import ru.gildor.coroutines.okhttp.await
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = LogCategory("PollingUtils")
 
@@ -32,6 +33,26 @@ const val APP_SERVER = "https://mastodon-msg.juggler.jp"
 
 class InstallIdException(ex: Throwable?, message: String) :
     RuntimeException(message, ex)
+
+/**
+ * アプリ設定インポート中に通知関連の動作を阻害する
+ */
+val importProtector = AtomicBoolean(false)
+
+/**
+ * アプリ設定インポートの最中にセットされる
+ * - 有効な間は通知関連のバックグラウンド動作を行わない
+ * -
+ */
+suspend fun setImportProtector(context: Context, newProtect: Boolean) {
+    importProtector.set(newProtect)
+    if (newProtect) {
+        cancelAllWorkAndJoin(context)
+        PollingChecker.cancelAllChecker()
+    } else {
+        restartAllWorker(context)
+    }
+}
 
 suspend fun loadFirebaseMessagingToken(context: Context): String =
     PollingChecker.commonMutex.withLock {
@@ -100,6 +121,10 @@ suspend fun loadInstallId(
 }
 
 fun resetNotificationTracking(account: SavedAccount) {
+    if (importProtector.get()) {
+        log.w("resetNotificationTracking: abort by importProtector.")
+        return
+    }
     launchDefault {
         PollingChecker.accountMutex(account.db_id).withLock {
             NotificationTracking.resetTrackingState(account.db_id)
@@ -109,6 +134,9 @@ fun resetNotificationTracking(account: SavedAccount) {
 
 /**
  * アプリ設定インポート時など、全てのWorkをキャンセル済みであることを確認する
+ */
+/**
+ * 全てのワーカーをキャンセルする
  */
 suspend fun cancelAllWorkAndJoin(context: Context) {
     val workManager = WorkManager.getInstance(context)
@@ -137,6 +165,10 @@ suspend fun cancelAllWorkAndJoin(context: Context) {
 }
 
 fun restartAllWorker(context: Context) {
+    if (importProtector.get()) {
+        log.w("restartAllWorker: abort by importProtector.")
+        return
+    }
     NotificationTracking.resetPostAll()
     App1.prepare(context, "restartAllWorker")
     EndlessScope.launch {
@@ -152,6 +184,10 @@ fun restartAllWorker(context: Context) {
 }
 
 suspend fun onNotificationCleared(context: Context, accountDbId: Long) {
+    if (importProtector.get()) {
+        log.w("onNotificationCleared: abort by importProtector.")
+        return
+    }
     PollingChecker.accountMutex(accountDbId).withLock {
         log.d("deleteCacheData: db_id=$accountDbId")
         SavedAccount.loadAccount(context, accountDbId) ?: return
@@ -160,6 +196,10 @@ suspend fun onNotificationCleared(context: Context, accountDbId: Long) {
 }
 
 suspend fun onNotificationDeleted(dbId: Long, typeName: String) {
+    if (importProtector.get()) {
+        log.w("onNotificationDeleted: abort by importProtector.")
+        return
+    }
     PollingChecker.accountMutex(dbId).withLock {
         NotificationTracking.updateRead(dbId, typeName)
     }
@@ -181,6 +221,10 @@ fun checkNotificationImmediate(
 ) {
     EndlessScope.launch {
         try {
+            if (importProtector.get()) {
+                log.w("checkNotificationImmediate: abort by importProtector.")
+                return@launch
+            }
             PollingChecker(
                 context = context,
                 accountDbId = accountDbId,
@@ -198,6 +242,10 @@ fun checkNotificationImmediate(
 fun checkNotificationImmediateAll(context: Context) {
     EndlessScope.launch {
         try {
+            if (importProtector.get()) {
+                log.w("checkNotificationImmediateAll: abort by importProtector.")
+                return@launch
+            }
             App1.prepare(context, "checkNotificationImmediateAll")
             for (sa in SavedAccount.loadAccountList(context)) {
                 if (sa.isPseudo || !sa.isConfirmed) continue
@@ -213,6 +261,11 @@ fun checkNotificationImmediateAll(context: Context) {
 }
 
 fun recycleClickedNotification(context: Context, uri: Uri) {
+    if (importProtector.get()) {
+        log.w("recycleClickedNotification: abort by importProtector.")
+        return
+    }
+
     val dbId = uri.getQueryParameter("db_id")?.toLongOrNull()
     val type = TrackingType.parseStr(uri.getQueryParameter("type"))
     val typeName = type.typeName
@@ -238,6 +291,10 @@ fun recycleClickedNotification(context: Context, uri: Uri) {
     // DB更新処理
     launchDefault {
         try {
+            if (importProtector.get()) {
+                log.w("recycleClickedNotification: abort by importProtector.")
+                return@launchDefault
+            }
             PollingChecker.accountMutex(dbId).withLock {
                 NotificationTracking.updateRead(dbId, typeName)
             }

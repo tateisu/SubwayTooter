@@ -9,8 +9,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.column.Column
-import jp.juggler.subwaytooter.notification.cancelAllWorkAndJoin
-import jp.juggler.subwaytooter.notification.restartAllWorker
+import jp.juggler.subwaytooter.notification.setImportProtector
 import jp.juggler.util.*
 import java.io.File
 import java.io.FileInputStream
@@ -62,7 +61,7 @@ fun ActMain.importAppData(uri: Uri) {
 
                 // 通知サービスを止める
                 setProgressMessage("syncing notification poller…")
-                cancelAllWorkAndJoin(this@importAppData)
+                setImportProtector(this@importAppData, true)
 
                 // データを読み込む
                 setProgressMessage("reading app data...")
@@ -133,7 +132,7 @@ fun ActMain.importAppData(uri: Uri) {
                     updateColumnStrip()
                 } finally {
                     // 通知サービスをリスタート
-                    restartAllWorker(this@importAppData)
+                    setImportProtector(this@importAppData, false)
                 }
 
                 showToast(true, R.string.import_completed_please_restart_app)

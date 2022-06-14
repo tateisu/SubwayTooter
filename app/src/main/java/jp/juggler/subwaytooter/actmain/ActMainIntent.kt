@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
+import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.notification.recycleClickedNotification
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
@@ -391,7 +392,8 @@ private fun ActMain.afterAccessTokenUpdate(
 
     // 通知の更新が必要かもしれない
     PushSubscriptionHelper.clearLastCheck(sa)
-    checkNotificationImmediate(applicationContext, sa.db_id)
+    checkNotificationImmediateAll(this, onlySubscription = true)
+    checkNotificationImmediate(this, sa.db_id)
 
     showToast(false, R.string.access_token_updated_for, sa.acct.pretty)
     return true
@@ -455,7 +457,8 @@ private fun ActMain.afterAccountAdd(
     }
 
     // 通知の更新が必要かもしれない
-    checkNotificationImmediate(applicationContext, account.db_id)
+    checkNotificationImmediateAll(this, onlySubscription = true)
+    checkNotificationImmediate(this, account.db_id)
     showToast(false, R.string.account_confirmed)
     return true
 }

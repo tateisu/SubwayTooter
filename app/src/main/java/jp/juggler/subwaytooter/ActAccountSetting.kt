@@ -30,10 +30,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.notification.MessageNotification
-import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
-import jp.juggler.subwaytooter.notification.checkNotificationImmediate
-import jp.juggler.subwaytooter.notification.resetNotificationTracking
+import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
@@ -255,9 +252,11 @@ class ActAccountSetting : AppCompatActivity(),
         outState.putString(ACTIVITY_STATE, encodedState)
     }
 
-    override fun onStop() {
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+        checkNotificationImmediateAll(this, onlySubscription = true)
         checkNotificationImmediate(this, account.db_id)
-        super.onStop()
     }
 
     var density: Float = 1f

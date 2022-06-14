@@ -100,7 +100,7 @@ class ForegroundPollingService : Service() {
                         continue
                     }
                     log.i("stopSelf lastStartId=$lastStartId")
-                    stopSelf(lastStartId)
+                    if (lastStartId != 0) stopSelf(lastStartId)
                     channel.receive()
                 } catch (ignored: ClosedReceiveChannelException) {
                     log.i("channel closed.")
@@ -117,15 +117,14 @@ class ForegroundPollingService : Service() {
             PollingChecker(
                 context = this@ForegroundPollingService,
                 accountDbId = accountDbId
-            ) { showMessage(it) }.check()
+            ).check { a, s ->
+                val text = "[${a.acct.pretty}]${s.desc}"
+                CheckerNotification.showMessage(this, text) {
+                    startForeground(NOTIFICATION_ID_FOREGROUND_POLLING, it)
+                }
+            }
         } catch (ex: Throwable) {
             log.trace(ex)
-        }
-    }
-
-    private suspend fun showMessage(text: String) {
-        CheckerNotification.showMessage(this, text) {
-            startForeground(NOTIFICATION_ID_FOREGROUND_POLLING, it)
         }
     }
 }

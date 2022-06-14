@@ -109,7 +109,7 @@ class NetworkStateTracker(
         get() = if (Build.VERSION.SDK_INT >= 29) {
             val activeNetwork = cm.activeNetwork
             if (activeNetwork == null) {
-                "connectionState: activeNetwork is null"
+                "activeNetwork is null"
             } else {
                 val capabilities = cm.getNetworkCapabilities(activeNetwork)
 
@@ -120,7 +120,7 @@ class NetworkStateTracker(
                 // インターネット接続ありかどうかを確認する
                 when {
                     capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true -> null
-                    else -> "connectionState: hasCapability(internet) is false. $activeNetwork $capabilities"
+                    else -> "activeNetwork.capabilities?.hasCapability(internet) is not true. $activeNetwork $capabilities"
                 }
             }
         } else {

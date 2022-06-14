@@ -252,7 +252,7 @@ class NotificationCache(private val account_db_id: Long) {
         client: TootApiClient,
         account: SavedAccount,
         flags: Int,
-        onError: (TootApiResult) -> Unit,
+        onError: suspend (TootApiResult) -> Unit,
     ) {
         val now = System.currentTimeMillis()
 
@@ -304,8 +304,6 @@ class NotificationCache(private val account_db_id: Long) {
 
                 log.d("request error. ${result.error} ${result.requestInfo}")
 
-                account.updateNotificationError("${result.error} ${result.requestInfo}".trim())
-
                 onError(result)
 
                 // サーバからエラー応答が届いているならリトライしない
@@ -314,8 +312,6 @@ class NotificationCache(private val account_db_id: Long) {
                     break
                 }
             }
-        } catch (ex: Throwable) {
-            log.trace(ex, "request failed.")
         } finally {
             save()
         }

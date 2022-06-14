@@ -219,7 +219,11 @@ class PushSubscriptionHelper(
 
         // インストールIDを取得
         val installId = try {
-            loadInstallId(context, deviceId) { log.i(it) }
+            loadInstallId(
+                context,
+                account,
+                deviceId
+            ) { a, s -> log.i("[${a.acct.pretty}]${s.desc}") }
         } catch (ex: Throwable) {
             log.trace(ex)
             return when (ex) {
@@ -322,7 +326,11 @@ class PushSubscriptionHelper(
 
         // インストールIDを取得
         val installId = try {
-            loadInstallId(context, deviceId) { log.i(it) }
+            loadInstallId(
+                context,
+                account,
+                deviceId
+            ) { a, s -> log.i("[${a.acct.pretty}]${s.desc}") }
         } catch (ex: Throwable) {
             log.trace(ex)
             return when (ex) {

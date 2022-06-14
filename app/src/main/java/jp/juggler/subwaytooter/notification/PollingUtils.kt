@@ -3,23 +3,20 @@ package jp.juggler.subwaytooter.notification
 import android.app.NotificationManager
 import android.content.Context
 import android.net.Uri
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import androidx.work.WorkQuery
-import androidx.work.await
+import androidx.work.*
 import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
+import jp.juggler.subwaytooter.notification.ServerTimeoutNotification.createServerTimeoutNotification
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.table.NotificationCache
 import jp.juggler.subwaytooter.table.NotificationTracking
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PrivacyPolicyChecker
 import jp.juggler.util.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import okhttp3.Request
@@ -83,8 +80,9 @@ suspend fun loadFirebaseMessagingToken(context: Context): String =
 @Suppress("BlockingMethodInNonBlockingContext")
 suspend fun loadInstallId(
     context: Context,
+    account: SavedAccount,
     deviceToken: String,
-    progress: suspend (String) -> Unit,
+    progress: suspend (SavedAccount, PollingState) -> Unit,
 ): String = PollingChecker.commonMutex.withLock {
     // インストールIDを生成する
     // インストールID生成時にSavedAccountテーブルを操作することがあるので
@@ -100,7 +98,7 @@ suspend fun loadInstallId(
     prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
         ?.notEmpty()?.let { return it }
 
-    progress("preparing install id…")
+    progress(account, PollingState.PrepareInstallId)
 
     SavedAccount.clearRegistrationCache()
 
@@ -134,8 +132,6 @@ fun resetNotificationTracking(account: SavedAccount) {
 
 /**
  * アプリ設定インポート時など、全てのWorkをキャンセル済みであることを確認する
- */
-/**
  * 全てのワーカーをキャンセルする
  */
 suspend fun cancelAllWorkAndJoin(context: Context) {
@@ -165,20 +161,17 @@ suspend fun cancelAllWorkAndJoin(context: Context) {
 }
 
 fun restartAllWorker(context: Context) {
-    if (importProtector.get()) {
-        log.w("restartAllWorker: abort by importProtector.")
-        return
-    }
-    NotificationTracking.resetPostAll()
-    App1.prepare(context, "restartAllWorker")
     EndlessScope.launch {
-        for (it in SavedAccount.loadAccountList(context)) {
-            try {
-                if (it.isPseudo || !it.isConfirmed) continue
-                PollingWorker.enqueuePolling(context, it.db_id)
-            } catch (ex: Throwable) {
-                log.trace(ex, "restartAllWorker failed.")
+        try {
+            if (importProtector.get()) {
+                log.w("restartAllWorker: abort by importProtector.")
+                return@launch
             }
+            NotificationTracking.resetPostAll()
+            App1.prepare(context, "restartAllWorker")
+            PollingWorker2.enqueuePolling(context)
+        } catch (ex: Throwable) {
+            log.trace(ex, "restartAllWorker failed.")
         }
     }
 }
@@ -229,7 +222,9 @@ fun checkNotificationImmediate(
                 context = context,
                 accountDbId = accountDbId,
                 injectData = injectData,
-            ) { log.i("(Immediate) $it") }.check()
+            ).check { account, state ->
+                log.i("(Immediate)[${account.acct.pretty}]${state.desc}")
+            }
         } catch (ex: Throwable) {
             log.trace(ex, "checkNotificationImmediate failed.")
         }
@@ -237,9 +232,107 @@ fun checkNotificationImmediate(
 }
 
 /**
+ * 全アカウントの通知チェックを行う
+ * -
+ */
+suspend fun checkNoticifationAll(
+    context: Context,
+    logPrefix: String,
+    onlySubscription: Boolean = false,
+    progress: suspend (Map<PollingState, MutableList<String>>) -> Unit = {},
+) {
+    CheckerWakeLocks.checkerWakeLocks(context).checkConnection()
+
+    var nextPollingRequired = false
+    var hasError = false
+    val timeoutAccounts = HashSet<String>()
+    val statusMap = HashMap<String, PollingState>()
+
+    // 進捗表示
+    // 複数アカウントの状態をマップにまとめる
+    suspend fun updateStatus(a: SavedAccount, s: PollingState) {
+        log.i("$logPrefix[${a.acct.pretty}]${s.desc}")
+        when (s) {
+            PollingState.CheckNotifications,
+            -> nextPollingRequired = true
+
+            PollingState.Cancelled,
+            PollingState.Error,
+            -> hasError = true
+
+            PollingState.Timeout,
+            -> {
+                hasError = true
+                timeoutAccounts.add(a.acct.pretty)
+            }
+
+            else -> Unit
+        }
+        try {
+            val tmpMap = synchronized(statusMap) {
+                statusMap[a.acct.pretty] = s
+                buildMap<PollingState, MutableList<String>> {
+                    statusMap.entries.forEach { (k, v) ->
+                        getOrPut(v) { mutableListOf() }.add(k)
+                    }
+                }
+            }
+            progress(tmpMap)
+        } catch (ex: Throwable) {
+            log.trace(ex)
+        }
+    }
+    SavedAccount.loadAccountList(context).mapNotNull { sa ->
+        when {
+            sa.isPseudo || !sa.isConfirmed -> null
+            else -> EndlessScope.launch(Dispatchers.Default) {
+                try {
+                    PollingChecker(
+                        context = context,
+                        accountDbId = sa.db_id,
+                    ).check(
+                        checkNetwork = false,
+                        onlySubscription = onlySubscription,
+                    ) { a, s -> updateStatus(a, s) }
+                    updateStatus(sa, PollingState.Complete)
+                } catch (ex: Throwable) {
+                    log.trace(ex)
+                    val s = when (ex) {
+                        is CancellationException -> PollingState.Cancelled
+                        else -> PollingState.Error
+                    }
+                    updateStatus(sa, s)
+                }
+            }
+        }
+    }.toTypedArray().let { joinAll(*it) }
+
+    try {
+        val tmpMap = buildMap<PollingState, MutableList<String>> {
+            statusMap.entries.forEach { (k, v) ->
+                getOrPut(v) { mutableListOf() }.add(k)
+            }
+        }
+        progress(tmpMap)
+    } catch (ex: Throwable) {
+        log.trace(ex)
+    }
+
+    if (timeoutAccounts.isNotEmpty()) {
+        createServerTimeoutNotification(context,
+            timeoutAccounts.sorted().joinToString(", ").ellipsizeDot3(256))
+    }
+    if (!hasError) {
+        if (!nextPollingRequired) {
+            PollingWorker2.cancelPolling(context)
+        }
+    }
+}
+
+/**
  * メイン画面のonCreate時に全ての通知をチェックする
  */
-fun checkNotificationImmediateAll(context: Context) {
+fun checkNotificationImmediateAll(context: Context, onlySubscription: Boolean = false) {
     EndlessScope.launch {
         try {
             if (importProtector.get()) {
@@ -247,13 +340,11 @@ fun checkNotificationImmediateAll(context: Context) {
                 return@launch
             }
             App1.prepare(context, "checkNotificationImmediateAll")
-            for (sa in SavedAccount.loadAccountList(context)) {
-                if (sa.isPseudo || !sa.isConfirmed) continue
-                PollingChecker(
-                    context = context,
-                    accountDbId = sa.db_id,
-                ) { log.i("(ImmediateAll) $it") }.check()
-            }
+            checkNoticifationAll(
+                context,
+                "(ImmediateAll)",
+                onlySubscription = onlySubscription
+            )
         } catch (ex: Throwable) {
             log.trace(ex, "checkNotificationImmediateAll failed.")
         }

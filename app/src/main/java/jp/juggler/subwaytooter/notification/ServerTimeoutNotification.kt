@@ -9,18 +9,20 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
+import jp.juggler.util.systemService
 
 object ServerTimeoutNotification {
+
     private val log = LogCategory("ServerTimeoutNotification")
-    private const val NOTIFICATION_ID_ERROR = 3
-    fun NotificationManager.createServerTimeoutNotification(
+
+    private const val NOTIFICATION_ID_TIMEOUT = 3
+
+    fun createServerTimeoutNotification(
         context: Context,
-        account: SavedAccount,
+        accounts: String,
     ) {
-        val instance = account.apiHost.pretty
-        val accountDbId = account.db_id
+        val notificationManager: NotificationManager = systemService(context)!!
 
         // 通知タップ時のPendingIntent
         val clickIntent = Intent(context, ActCallback::class.java)
@@ -48,6 +50,9 @@ object ServerTimeoutNotification {
             NotificationCompat.Builder(context, "not_used")
         }
 
+        val header = context.getString(R.string.error_notification_title)
+        val summary = context.getString(R.string.error_notification_summary)
+
         builder
             .setContentIntent(clickPi)
             .setAutoCancel(true)
@@ -60,22 +65,9 @@ object ServerTimeoutNotification {
             ) // ここは常に白テーマの色を使う
             .setWhen(System.currentTimeMillis())
             .setGroup(context.packageName + ":" + "Error")
-
-        val header = context.getString(R.string.error_notification_title)
-        val summary = context.getString(R.string.error_notification_summary)
-
-        builder
             .setContentTitle(header)
-            .setContentText("$summary: $instance")
+            .setContentText("$summary: $accounts")
 
-        val style = NotificationCompat.InboxStyle()
-            .setBigContentTitle(header)
-            .setSummaryText(summary)
-        style.addLine(instance)
-        builder.setStyle(style)
-
-        val tag = accountDbId.toString()
-
-        notify(tag, NOTIFICATION_ID_ERROR, builder.build())
+        notificationManager.notify(NOTIFICATION_ID_TIMEOUT, builder.build())
     }
 }

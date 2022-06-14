@@ -8,6 +8,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.PowerManager
 import jp.juggler.subwaytooter.App1
+import jp.juggler.util.LogCategory
 import jp.juggler.util.systemService
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
@@ -15,6 +16,8 @@ import kotlinx.coroutines.withTimeout
 
 class CheckerWakeLocks(contextArg: Context) {
     companion object {
+        private val log = LogCategory("CheckerWakeLocks")
+
         private var checkerWakeLocksNullable: CheckerWakeLocks? = null
 
         fun checkerWakeLocks(context: Context): CheckerWakeLocks {

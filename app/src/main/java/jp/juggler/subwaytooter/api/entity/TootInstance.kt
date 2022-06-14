@@ -11,9 +11,7 @@ import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.util.*
 import kotlinx.coroutines.channels.Channel
 import okhttp3.Request
-import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 // インスタンスの種別
@@ -347,16 +345,17 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 }
             ) {
                 parseJson(result) ?: return null
+                if (result.response?.isSuccessful == true) {
+                    result.jsonObject?.apply {
+                        val m = reDigits.matcher(string("version") ?: "")
+                        if (m.find()) {
+                            put(TootApiClient.KEY_MISSKEY_VERSION, max(1, m.groupEx(1)!!.toInt()))
+                        }
 
-                result.jsonObject?.apply {
-                    val m = reDigits.matcher(string("version") ?: "")
-                    if (m.find()) {
-                        put(TootApiClient.KEY_MISSKEY_VERSION, max(1, m.groupEx(1)!!.toInt()))
+                        // add endpoints
+                        val r2 = getMisskeyEndpoints(forceAccessToken)
+                        r2?.jsonArray?.let { result.jsonObject?.put("_endpoints", it) }
                     }
-
-                    // add endpoints
-                    val r2 = getMisskeyEndpoints(forceAccessToken)
-                    r2?.jsonArray?.let { result.jsonObject?.put("_endpoints", it) }
                 }
             }
             return result
@@ -370,6 +369,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             // misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
             val r2 = getInstanceInformationMisskey(forceAccessToken) ?: return null
             if (r2.jsonObject != null) return r2
+            if (r2.response?.code == 403 && r2.error?.contains(""""code":"AUTHENTICATION_FAILED"""") == true) return r2
 
             // マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
             val r1 = getInstanceInformationMastodon(forceAccessToken) ?: return null

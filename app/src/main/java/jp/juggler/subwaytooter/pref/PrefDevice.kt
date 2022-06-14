@@ -13,6 +13,8 @@ object PrefDevice {
     private const val KEY_POST_WINDOW_W = "postWindowW"
     private const val KEY_POST_WINDOW_H = "postWindowH"
 
+    const val KEY_POLLING_WORKER2_INTERVAL = "pollingworker2Interval"
+
     const val LAST_AUTH_INSTANCE = "lastAuthInstance"
     const val LAST_AUTH_SECRET = "lastAuthSecret"
     const val LAST_AUTH_DB_ID = "lastAuthDbId"

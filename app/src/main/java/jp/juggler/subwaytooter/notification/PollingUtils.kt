@@ -3,7 +3,10 @@ package jp.juggler.subwaytooter.notification
 import android.app.NotificationManager
 import android.content.Context
 import android.net.Uri
-import androidx.work.*
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.WorkQuery
+import androidx.work.await
 import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -138,7 +141,7 @@ suspend fun cancelAllWorkAndJoin(context: Context) {
     val workManager = WorkManager.getInstance(context)
     repeat(3) {
         while (true) {
-            workManager.pruneWork()
+            workManager.pruneWork().await()
             val workQuery = WorkQuery.Builder.fromStates(
                 listOf(
                     WorkInfo.State.ENQUEUED,
@@ -152,7 +155,7 @@ suspend fun cancelAllWorkAndJoin(context: Context) {
             val list = workManager.getWorkInfos(workQuery).await()
             if (list.isEmpty()) break
             list.forEach {
-                workManager.cancelWorkById(it.id)
+                workManager.cancelWorkById(it.id).await()
             }
             delay(333L)
         }

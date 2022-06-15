@@ -322,10 +322,8 @@ suspend fun checkNoticifationAll(
         createServerTimeoutNotification(context,
             timeoutAccounts.sorted().joinToString(", ").ellipsizeDot3(256))
     }
-    if (!hasError) {
-        if (!nextPollingRequired) {
-            PollingWorker2.cancelPolling(context)
-        }
+    if (!hasError && !nextPollingRequired) {
+        PollingWorker2.cancelPolling(context)
     }
 }
 

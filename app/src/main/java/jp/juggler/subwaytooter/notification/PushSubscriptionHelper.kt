@@ -586,9 +586,17 @@ class PushSubscriptionHelper(
                 "emoji_reaction" ->
                     ti.versionGE(TootInstance.VERSION_3_4_0_rc1) &&
                             InstanceCapability.emojiReaction(account, ti)
+
                 "update",
                 TootNotification.TYPE_ADMIN_SIGNUP,
-                -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+                -> false // ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+                /*
+                2022年6月15日現在、admin.sign_up と update をalertsに指定しても意味がない
+                https://github.com/mastodon/mastodon/blob/main/app/controllers/api/v1/push/subscriptions_controller.rb#L55
+                This line does not have admin.sign_up and update.
+                Will these notifications not be pushed?
+                Or is there no way to control the subscription to these notifications?
+                 */
 
                 else -> {
                     log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")

@@ -78,11 +78,6 @@ class PollingChecker(
         }
     }
 
-    class PollingCommonPart(
-        val installId: String,
-        val favMuteSet: HashSet<Acct>,
-    )
-
     private val wakelocks = checkerWakeLocks(context)
 
     private lateinit var cache: NotificationCache
@@ -214,13 +209,13 @@ class PollingChecker(
 
             // double check
             if (importProtector.get()) {
-                log.w("check: abort by importProtector.")
+                log.w("aborted by importProtector.")
                 return
             }
 
             withContext(Dispatchers.Default + checkJob) {
                 if (importProtector.get()) {
-                    log.w("check aborted by importProtector.")
+                    log.w("aborted by importProtector.")
                     return@withContext
                 }
 
@@ -262,18 +257,17 @@ class PollingChecker(
                         progress(account, PollingState.CheckServerInformation)
                         val (instance, instanceResult) = TootInstance.get(client)
                         if (instance == null) {
-                            log.e("missing instance. ${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
                             account.updateNotificationError("${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
-                            return@withLock
+                            error("can't get server information. ${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
                         }
                     }
 
                     wps.updateSubscription(client, progress = progress)
-                        ?: return@withLock // cancelled.
+                        ?: throw CancellationException()
 
                     val wpsLog = wps.logString
                     if (wpsLog.isNotEmpty()) {
-                        log.d("PushSubscriptionHelper: ${account.acct.pretty} $wpsLog")
+                        log.w("subsctiption warning: ${account.acct.pretty} $wpsLog")
                     }
 
                     if (wps.flags == 0) {

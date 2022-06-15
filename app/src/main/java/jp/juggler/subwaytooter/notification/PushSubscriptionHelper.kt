@@ -158,46 +158,50 @@ class PushSubscriptionHelper(
         }
     }
 
-    suspend fun updateSubscription(client: TootApiClient, force: Boolean = false): TootApiResult? =
-        try {
-            when {
-                isRecentlyChecked() ->
-                    TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
+    suspend fun updateSubscription(
+        client: TootApiClient,
+        force: Boolean = false,
+        progress: suspend (SavedAccount, PollingState) -> Unit = { _, _ -> },
+    ): TootApiResult? = try {
+        when {
+            isRecentlyChecked() ->
+                TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
 
-                account.isPseudo ->
-                    TootApiResult(context.getString(R.string.pseudo_account_not_supported))
+            account.isPseudo ->
+                TootApiResult(context.getString(R.string.pseudo_account_not_supported))
 
-                account.isMisskey ->
-                    updateSubscriptionMisskey(client)
-
-                else ->
-                    updateSubscriptionMastodon(client, force)
-            }
-        } catch (ex: Throwable) {
-            TootApiResult(ex.withCaption("error."))
-        }?.apply {
-
-            if (error != null) addLog("$error $requestInfo".trimEnd())
-
-            // update error text on account table
-            val log = logString
-            when {
-
-                log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
-                    // don't update if check was skipped.
+            else -> {
+                progress(account, PollingState.CheckPushSubscription)
+                when {
+                    account.isMisskey -> updateSubscriptionMisskey(client)
+                    else -> updateSubscriptionMastodon(client, force)
                 }
-
-                subscribed || log.isEmpty() ->
-                    // clear error text if succeeded or no error log
-                    if (account.last_subscription_error != null) {
-                        account.updateSubscriptionError(null)
-                    }
-
-                else ->
-                    // record error text
-                    account.updateSubscriptionError(log)
             }
         }
+    } catch (ex: Throwable) {
+        TootApiResult(ex.withCaption("error."))
+    }?.apply {
+
+        if (error != null) addLog("$error $requestInfo".trimEnd())
+
+        // update error text on account table
+        val log = logString
+        when {
+            log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
+                // don't update if check was skipped.
+            }
+
+            subscribed || log.isEmpty() ->
+                // clear error text if succeeded or no error log
+                if (account.last_subscription_error != null) {
+                    account.updateSubscriptionError(null)
+                }
+
+            else ->
+                // record error text
+                account.updateSubscriptionError(log)
+        }
+    }
 
     private suspend fun updateSubscriptionMisskey(client: TootApiClient): TootApiResult? {
 

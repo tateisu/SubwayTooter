@@ -96,11 +96,26 @@ class PollingWorker2(
             setForeground(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
         }
 
+    private fun stateMapToString(map: Map<PollingState, List<String>>) =
+        StringBuilder().apply {
+            for (state in PollingState.valuesCache) {
+                val list = map[state] ?: continue
+                if (isNotEmpty()) append(" |")
+                append(state.desc)
+                append(": ")
+                if (list.size <= 2) {
+                    append(list.sorted().joinToString(", "))
+                } else {
+                    append("${list.size}")
+                }
+            }
+        }.toString()
+
     private suspend fun workImpl() {
         val context = applicationContext
         coroutineScope {
             if (importProtector.get()) {
-                log.w("doWork: abort by importProtector.")
+                log.w("abort by importProtector.")
                 return@coroutineScope
             }
 
@@ -108,19 +123,7 @@ class PollingWorker2(
             showMessage(context.getString(R.string.loading_notification_title))
 
             checkNoticifationAll(context, "") { map ->
-                val sb = StringBuilder()
-                for (state in PollingState.valuesCache) {
-                    val list = map[state] ?: continue
-                    if (sb.isNotEmpty()) sb.append("\n")
-                    sb.append(state.desc)
-                    sb.append(": ")
-                    if (list.size <= 2) {
-                        sb.append(list.joinToString(", "))
-                    } else {
-                        sb.append("${list.size}")
-                    }
-                }
-                showMessage(sb.toString())
+                showMessage(stateMapToString(map))
             }
         }
     }

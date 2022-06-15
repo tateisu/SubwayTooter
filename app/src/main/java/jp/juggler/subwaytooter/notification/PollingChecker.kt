@@ -257,9 +257,9 @@ class PollingChecker(
                 }
 
                 accountMutex(accountDbId).withLock {
-                    progress(account, PollingState.CheckPushSubscription)
                     val wps = PushSubscriptionHelper(context, account)
                     if (wps.flags != 0) {
+                        progress(account, PollingState.CheckServerInformation)
                         val (instance, instanceResult) = TootInstance.get(client)
                         if (instance == null) {
                             log.e("missing instance. ${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
@@ -268,7 +268,7 @@ class PollingChecker(
                         }
                     }
 
-                    wps.updateSubscription(client)
+                    wps.updateSubscription(client, progress = progress)
                         ?: return@withLock // cancelled.
 
                     val wpsLog = wps.logString

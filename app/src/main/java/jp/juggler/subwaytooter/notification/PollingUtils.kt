@@ -234,6 +234,14 @@ fun checkNotificationImmediate(
     }
 }
 
+// K,Vのマップを V,List<K>のマップにする
+private fun <K, V> Map<K, V>.trans() = HashMap<V, ArrayList<K>>()
+    .also { dst ->
+        entries.forEach { (k, v) ->
+            dst.getOrPut(v) { ArrayList() }.add(k)
+        }
+    }
+
 /**
  * 全アカウントの通知チェックを行う
  * -
@@ -242,7 +250,7 @@ suspend fun checkNoticifationAll(
     context: Context,
     logPrefix: String,
     onlySubscription: Boolean = false,
-    progress: suspend (Map<PollingState, MutableList<String>>) -> Unit = {},
+    progress: suspend (Map<PollingState, List<String>>) -> Unit = {},
 ) {
     CheckerWakeLocks.checkerWakeLocks(context).checkConnection()
 
@@ -274,17 +282,14 @@ suspend fun checkNoticifationAll(
         try {
             val tmpMap = synchronized(statusMap) {
                 statusMap[a.acct.pretty] = s
-                buildMap<PollingState, MutableList<String>> {
-                    statusMap.entries.forEach { (k, v) ->
-                        getOrPut(v) { mutableListOf() }.add(k)
-                    }
-                }
+                statusMap.trans()
             }
             progress(tmpMap)
         } catch (ex: Throwable) {
             log.trace(ex)
         }
     }
+
     SavedAccount.loadAccountList(context).mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
@@ -311,11 +316,7 @@ suspend fun checkNoticifationAll(
     }.toTypedArray().let { joinAll(*it) }
 
     try {
-        val tmpMap = buildMap<PollingState, MutableList<String>> {
-            statusMap.entries.forEach { (k, v) ->
-                getOrPut(v) { mutableListOf() }.add(k)
-            }
-        }
+        val tmpMap = statusMap.trans()
         progress(tmpMap)
     } catch (ex: Throwable) {
         log.trace(ex)

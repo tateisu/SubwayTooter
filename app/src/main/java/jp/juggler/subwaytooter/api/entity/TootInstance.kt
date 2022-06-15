@@ -369,7 +369,10 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             // misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
             val r2 = getInstanceInformationMisskey(forceAccessToken) ?: return null
             if (r2.jsonObject != null) return r2
-            if (r2.response?.code == 403 && r2.error?.contains(""""code":"AUTHENTICATION_FAILED"""") == true) return r2
+            when (r2.response?.code) {
+                null, 404 -> Unit // fall
+                else -> return r2
+            }
 
             // マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
             val r1 = getInstanceInformationMastodon(forceAccessToken) ?: return null

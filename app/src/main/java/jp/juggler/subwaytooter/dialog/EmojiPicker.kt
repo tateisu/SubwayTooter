@@ -24,7 +24,7 @@ import com.bumptech.glide.Glide
 import com.google.android.flexbox.FlexboxLayout
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.databinding.DlgPickerEmojiBinding
+import jp.juggler.subwaytooter.databinding.EmojiPickerDialogBinding
 import jp.juggler.subwaytooter.emoji.*
 import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefB
@@ -62,19 +62,17 @@ private class EmojiPicker(
     }
 
     private sealed interface PickerItem
-
+    private object PickerItemSpace : PickerItem
     private class PickerItemUnicode(val unicodeEmoji: UnicodeEmoji) : PickerItem
     private class PickerItemCustom(val customEmoji: CustomEmoji) : PickerItem
 
-    private object PickerItemSpace : PickerItem
-
-    private class PickerItemCategory(
+    private open class PickerItemCategory(
         var name: String,
         val category: EmojiCategory? = null,
     ) : PickerItem {
         val items = ArrayList<PickerItem>()
 
-        fun createFiltered(keywordLower: String?) =
+        open fun createFiltered(keywordLower: String?) =
             PickerItemCategory(name = name, category = category).also { dst ->
                 dst.items.addAll(
                     if (keywordLower.isNullOrEmpty()) {
@@ -94,117 +92,98 @@ private class EmojiPicker(
             }
     }
 
-    private val views = DlgPickerEmojiBinding.inflate(activity.layoutInflater)
+    private class PickerItemCategoryRecent(
+        name: String,
+        category: EmojiCategory = EmojiCategory.Recent,
+        val accessInfo: SavedAccount?,
+    ) : PickerItemCategory(name, category) {
 
-    private lateinit var pickerCategries: List<PickerItemCategory>
+        private val recentsJsonList: List<JsonObject>?
+            get() = try {
+                PrefS.spEmojiPickerRecent().decodeJsonArray().objectList()
+            } catch (ex: Throwable) {
+                log.w(ex, "can't load spEmojiPickerRecent")
+                null
+            }
 
-    private val adapter = GridAdapter()
+        private fun JsonObject.parseRecent1(
+            customEmojiMap: HashMap<String, CustomEmoji>?,
+        ): PickerItem? {
+            val name = string("name")
+            val instance = string("instance")
+            try {
+                name ?: error("missing emoji name")
+                when (instance) {
+                    null -> EmojiMap.shortNameMap[name]?.let {
+                        return PickerItemUnicode(unicodeEmoji = it)
+                    }
+                    accessInfo?.apiHost?.ascii ->
+                        customEmojiMap?.get(name)?.let {
+                            return PickerItemCustom(customEmoji = it)
+                        }
+                }
+            } catch (ex: Throwable) {
+                log.w(ex, "can't add emoji. $name, $instance")
+            }
+            return null
+        }
 
-    private val ibSkinTone = listOf(
-        Pair(R.id.btnSkinTone0, 0),
-        Pair(R.id.btnSkinTone1, 0x1F3FB),
-        Pair(R.id.btnSkinTone2, 0x1F3FC),
-        Pair(R.id.btnSkinTone3, 0x1F3FD),
-        Pair(R.id.btnSkinTone4, 0x1F3FE),
-        Pair(R.id.btnSkinTone5, 0x1F3FF),
-    ).map { (btnId, skinToneCode) ->
-        views.root.findViewById<ImageButton>(btnId).apply {
-            tag = SkinTone(skinToneCode)
-            setOnClickListener {
-                selectedTone = (it.tag as SkinTone)
-                showSkinTone()
-                @Suppress("NotifyDataSetChanged")
-                adapter.notifyDataSetChanged()
+        private fun List<JsonObject>.loadRecents() {
+            try {
+                val customEmojiMap =
+                    accessInfo?.let { App1.custom_emoji_lister.getMapNonBlocking(it) }
+                val newItems = mapNotNull { it.parseRecent1(customEmojiMap) }
+                items.clear()
+                items.addAll(newItems)
+            } catch (ex: Throwable) {
+                log.w(ex)
             }
         }
-    }
 
-    private val gridSize = (0.5f + 48f * activity.resources.displayMetrics.density).toInt()
-    private val matchParent = RecyclerView.LayoutParams.MATCH_PARENT
+        // 最近使用した絵文字のPickerCategoryを作る
+        fun load() = recentsJsonList?.loadRecents()
 
-    private val useTwemoji = PrefB.bpUseTwemoji()
-    private val disableAnimation = PrefB.bpDisableEmojiAnimation()
+        fun update(
+            targetName: String,
+            targetInstance: String?,
+        ) {
+            // Recentをロード(他インスタンスの絵文字を含む)
+            val list = recentsJsonList?.toMutableList() ?: ArrayList()
 
-    private var selectedTone: SkinTone = (ibSkinTone[0].tag as SkinTone)
-
-    private lateinit var dialog: Dialog
-
-    private var bInstanceHasCustomEmoji = false
-
-    private val textWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
-        override fun afterTextChanged(s: Editable?) {
-            showFiltered(null, s?.toString())
-        }
-    }
-
-    private fun updateRecent(
-        targetName: String,
-        targetInstance: String?,
-    ) {
-        // Recentをロード(他インスタンスの絵文字を含む)
-        val list = try {
-            PrefS.spEmojiPickerRecent().decodeJsonArray().objectList()
-        } catch (_: Throwable) {
-            emptyList()
-        }.toMutableList()
-
-        // 選択された絵文字と同じ項目を除去
-        // 項目が増えすぎたら減らす
-        // ユニコード絵文字256個、カスタム絵文字はインスタンス別256個まで
-        var nCount = 0
-        val it = list.iterator()
-        while (it.hasNext()) {
-            val item = it.next()
-            val itemInstance = item.string("instance")
-            val itemName = item.string("name")
-            if (itemInstance == targetInstance) {
+            // 選択された絵文字と同じ項目を除去
+            // 項目が増えすぎたら減らす
+            // ユニコード絵文字256個、カスタム絵文字はインスタンス別256個まで
+            var nCount = 0
+            val it = list.iterator()
+            while (it.hasNext()) {
+                val item = it.next()
+                val itemName = item.string("name")
+                val itemInstance = item.string("instance")
+                if (itemInstance != targetInstance) continue
                 if (itemName == targetName || ++nCount >= 256) {
                     it.remove()
                 }
             }
-        }
 
-        // 先頭に項目を追加
-        list.add(0, JsonObject().apply {
-            put("name", targetName)
-            targetInstance?.let { put("instance", it) }
-        })
+            // 先頭に項目を追加
+            list.add(0, JsonObject().apply {
+                put("name", targetName)
+                targetInstance?.let { put("instance", it) }
+            })
 
-        // 保存する
-        try {
-            val sv = list.toJsonArray().toString()
-            appPref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
-        } catch (ex: Throwable) {
-            log.e(ex)
-        }
-    }
-
-    private fun setItemClick(view: View) {
-        view.setOnClickListener {
-            val targetEmoji: EmojiBase
-            val targetName: String
-            val targetInstance: String?
-            when (val item = it.getTag(R.id.btnAbout)) {
-                is PickerItemUnicode -> {
-                    targetEmoji = applySkinTone(item.unicodeEmoji)
-                    targetName = targetEmoji.unifiedName
-                    targetInstance = null
-                }
-                is PickerItemCustom -> {
-                    targetEmoji = item.customEmoji
-                    targetName = accessInfo!!.apiHost.ascii
-                    targetInstance = null
-                }
-                else -> return@setOnClickListener
+            // 保存する
+            try {
+                val sv = list.toJsonArray().toString()
+                appPref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
+            } catch (ex: Throwable) {
+                log.e(ex)
             }
-
-            if (closeOnSelected) dialog.dismissSafe()
-
-            updateRecent(targetName, targetInstance)
-
-            onPicked(targetEmoji, bInstanceHasCustomEmoji)
+            // カテゴリ内のPickerItemの更新
+            try {
+                list.loadRecents()
+            } catch (ex: Throwable) {
+                log.e(ex)
+            }
         }
     }
 
@@ -244,7 +223,7 @@ private class EmojiPicker(
     ) : ViewHolderBase(view) {
 
         init {
-            setItemClick(view)
+            view.setOnClickListener(pickerItemClickListener)
             view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
         }
 
@@ -267,7 +246,7 @@ private class EmojiPicker(
         val view: AppCompatImageView = AppCompatImageView(activity),
     ) : ViewHolderBase(view) {
         init {
-            setItemClick(view)
+            view.setOnClickListener(pickerItemClickListener)
             view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
             view.scaleType = ImageView.ScaleType.FIT_CENTER
         }
@@ -295,7 +274,7 @@ private class EmojiPicker(
         val view: AppCompatTextView = AppCompatTextView(activity),
     ) : ViewHolderBase(view) {
         init {
-            setItemClick(view)
+            view.setOnClickListener(pickerItemClickListener)
             view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
             view.gravity = Gravity.CENTER
             view.setLineSpacing(0f, 0f)
@@ -377,33 +356,81 @@ private class EmojiPicker(
         }
     }
 
-    // 最近使用した絵文字のPickerCategoryを作る
-    private fun createRecentsCategory() =
-        PickerItemCategory(
-            name = activity.getString(R.string.emoji_category_recent),
-            category = EmojiCategory.Recent,
-        ).apply {
-            val customEmojiMap = accessInfo?.let { App1.custom_emoji_lister.getMapNonBlocking(it) }
+    private val views = EmojiPickerDialogBinding.inflate(activity.layoutInflater)
 
-            for (item in PrefS.spEmojiPickerRecent().decodeJsonArray().objectList()) {
-                val name = item.string("name")
-                val instance = item.string("instance")
-                try {
-                    name ?: error("missing emoji name")
-                    if (instance == null) {
-                        EmojiMap.shortNameMap[name]?.let {
-                            items.add(PickerItemUnicode(unicodeEmoji = it))
-                        }
-                    } else if (instance == accessInfo?.apiHost?.ascii) {
-                        customEmojiMap?.get(name)?.let {
-                            items.add(PickerItemCustom(customEmoji = it))
-                        }
-                    }
-                } catch (ex: Throwable) {
-                    log.w(ex, "can't add emoji. $name, $instance")
-                }
+    private lateinit var pickerCategries: List<PickerItemCategory>
+
+    private val adapter = GridAdapter()
+
+    private val ibSkinTone = listOf(
+        Pair(R.id.btnSkinTone0, 0),
+        Pair(R.id.btnSkinTone1, 0x1F3FB),
+        Pair(R.id.btnSkinTone2, 0x1F3FC),
+        Pair(R.id.btnSkinTone3, 0x1F3FD),
+        Pair(R.id.btnSkinTone4, 0x1F3FE),
+        Pair(R.id.btnSkinTone5, 0x1F3FF),
+    ).map { (btnId, skinToneCode) ->
+        views.root.findViewById<ImageButton>(btnId).apply {
+            tag = SkinTone(skinToneCode)
+            setOnClickListener {
+                selectedTone = (it.tag as SkinTone)
+                showSkinTone()
+                @Suppress("NotifyDataSetChanged")
+                adapter.notifyDataSetChanged()
             }
-        }.takeIf { it.items.isNotEmpty() }
+        }
+    }
+
+    private val gridSize = (0.5f + 48f * activity.resources.displayMetrics.density).toInt()
+    private val matchParent = RecyclerView.LayoutParams.MATCH_PARENT
+
+    private val useTwemoji = PrefB.bpUseTwemoji()
+    private val disableAnimation = PrefB.bpDisableEmojiAnimation()
+
+    private var selectedTone: SkinTone = (ibSkinTone[0].tag as SkinTone)
+
+    private lateinit var dialog: Dialog
+
+    private var bInstanceHasCustomEmoji = false
+
+    private val textWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+        override fun afterTextChanged(s: Editable?) {
+            showFiltered(null, s?.toString())
+        }
+    }
+
+    private var lastSelectedCategory: EmojiCategory? = null
+    private var lastSelectedKeyword: String? = null
+
+    private var recentCategory: PickerItemCategoryRecent? = null
+
+    private val pickerItemClickListener = View.OnClickListener {
+        val targetEmoji: EmojiBase
+        val targetName: String
+        val targetInstance: String?
+        when (val item = it.getTag(R.id.btnAbout)) {
+            is PickerItemUnicode -> {
+                targetEmoji = applySkinTone(item.unicodeEmoji)
+                targetName = targetEmoji.unifiedName
+                targetInstance = null
+            }
+            is PickerItemCustom -> {
+                targetEmoji = item.customEmoji
+                targetName = item.customEmoji.shortcode
+                targetInstance = accessInfo!!.apiHost.ascii
+            }
+            else -> return@OnClickListener
+        }
+
+        if (closeOnSelected) dialog.dismissSafe()
+
+        recentCategory?.update(targetName, targetInstance)
+        @Suppress("NotifyDataSetChanged")
+        showFiltered(lastSelectedCategory, lastSelectedKeyword)
+        onPicked(targetEmoji, bInstanceHasCustomEmoji)
+    }
 
     private suspend fun createCustomEmojiCategories(): List<PickerItemCategory> {
         accessInfo ?: error("missing accessInfo")
@@ -444,10 +471,13 @@ private class EmojiPicker(
 
     private suspend fun buildCategoryList() = buildList {
         // 最近使った絵文字
-        try {
-            createRecentsCategory()?.let { add(it) }
-        } catch (ex: Throwable) {
-            log.w(ex)
+        PickerItemCategoryRecent(
+            name = activity.getString(R.string.emoji_category_recent),
+            accessInfo = accessInfo,
+        ).also {
+            recentCategory = it
+            it.load()
+            add(it)
         }
 
         // カスタム絵文字
@@ -457,7 +487,7 @@ private class EmojiPicker(
             log.w(ex)
         }
 
-        arrayOf(
+        val categories = mutableListOf(
             EmojiCategory.People,
             EmojiCategory.ComplexTones,
             EmojiCategory.Nature,
@@ -467,16 +497,11 @@ private class EmojiPicker(
             EmojiCategory.Objects,
             EmojiCategory.Symbols,
             EmojiCategory.Flags,
-        ).forEach { category ->
-            val pc = PickerItemCategory(
-                category = category,
-                name = activity.getString(category.titleId),
-            )
-            pc.items.addAll(category.getUnicodeEmojis())
-            add(pc)
-        }
+        )
         if (PrefB.bpEmojiPickerCategoryOther(activity)) {
-            val category = EmojiCategory.Others
+            categories.add(EmojiCategory.Others)
+        }
+        for (category in categories) {
             val pc = PickerItemCategory(
                 category = category,
                 name = activity.getString(category.titleId),
@@ -505,12 +530,10 @@ private class EmojiPicker(
     }
 
     private fun showSkinTone() {
-        val selectedTone = selectedTone
         ibSkinTone.forEach {
-            if (selectedTone == it.tag) {
-                it.setImageResource(R.drawable.check_mark)
-            } else {
-                it.setImageDrawable(null)
+            when (selectedTone) {
+                it.tag -> it.setImageResource(R.drawable.check_mark)
+                else -> it.setImageDrawable(null)
             }
         }
     }
@@ -519,14 +542,12 @@ private class EmojiPicker(
         selectedCategory: EmojiCategory?,
         selectedKeyword: String?,
     ) {
+        lastSelectedCategory = selectedCategory
+        lastSelectedKeyword = selectedKeyword
         adapter.list = buildList {
             val keywordLower = selectedKeyword?.lowercase()?.trim()
             pickerCategries.filter {
-                if (selectedCategory == null) {
-                    true
-                } else {
-                    it.category == selectedCategory
-                }
+                selectedCategory == null || it.category == selectedCategory
             }.mapNotNull { category ->
                 category.createFiltered(keywordLower)
                     .takeIf { it.items.isNotEmpty() }

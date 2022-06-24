@@ -136,7 +136,7 @@ class CustomEmojiLister(
 //            getList(accessInfo).forEach { put(it.shortcode, it) }
 //        }
 
-    fun getMapNonBlocking(accessInfo: SavedAccount) =
+    fun getMapNonBlocking(accessInfo: SavedAccount): HashMap<String, CustomEmoji>? =
         tryGetList(accessInfo)?.let {
             HashMap<String, CustomEmoji>().apply {
                 it.forEach { put(it.shortcode, it) }

@@ -6,10 +6,7 @@ import android.graphics.drawable.PictureDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.TypedValue
-import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +14,7 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
@@ -35,6 +33,8 @@ import jp.juggler.subwaytooter.util.minHeightCompat
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 import jp.juggler.util.*
+import kotlin.math.abs
+import kotlin.math.sign
 
 private class EmojiPicker(
     private val activity: AppCompatActivity,
@@ -68,7 +68,7 @@ private class EmojiPicker(
 
     private open class PickerItemCategory(
         var name: String,
-        val category: EmojiCategory? = null,
+        val category: EmojiCategory,
     ) : PickerItem {
         val items = ArrayList<PickerItem>()
 
@@ -94,9 +94,8 @@ private class EmojiPicker(
 
     private class PickerItemCategoryRecent(
         name: String,
-        category: EmojiCategory = EmojiCategory.Recent,
         val accessInfo: SavedAccount?,
-    ) : PickerItemCategory(name, category) {
+    ) : PickerItemCategory(name, EmojiCategory.Recent) {
 
         private val recentsJsonList: List<JsonObject>?
             get() = try {
@@ -356,11 +355,11 @@ private class EmojiPicker(
         }
     }
 
-    private val views = EmojiPickerDialogBinding.inflate(activity.layoutInflater)
-
     private lateinit var pickerCategries: List<PickerItemCategory>
 
     private val adapter = GridAdapter()
+
+    private val views = EmojiPickerDialogBinding.inflate(activity.layoutInflater)
 
     private val ibSkinTone = listOf(
         Pair(R.id.btnSkinTone0, 0),
@@ -393,6 +392,19 @@ private class EmojiPicker(
 
     private var bInstanceHasCustomEmoji = false
 
+    private var lastSelectedCategory: EmojiCategory? = null
+    private var lastSelectedKeyword: String? = null
+
+    private var recentCategory: PickerItemCategoryRecent? = null
+
+    private val density = activity.resources.displayMetrics.density
+    private val cancelY = density * 16f
+    private val interceptX = density * 8f
+    private var tracker: VelocityTracker? = null
+    private var dragging = false
+    private var startX = 0f
+    private var startY = 0f
+
     private val textWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -400,11 +412,6 @@ private class EmojiPicker(
             showFiltered(null, s?.toString())
         }
     }
-
-    private var lastSelectedCategory: EmojiCategory? = null
-    private var lastSelectedKeyword: String? = null
-
-    private var recentCategory: PickerItemCategoryRecent? = null
 
     private val pickerItemClickListener = View.OnClickListener {
         val targetEmoji: EmojiBase
@@ -552,7 +559,7 @@ private class EmojiPicker(
                 category.createFiltered(keywordLower)
                     .takeIf { it.items.isNotEmpty() }
             }.forEach {
-                add(it)
+                if (selectedCategory == null) add(it)
                 addAll(it.items)
                 val mod = it.items.size % gridCols
                 if (mod > 0) {
@@ -562,6 +569,141 @@ private class EmojiPicker(
                 }
             }
         }
+        for (it in views.llCategories.children) {
+            val backgroundId = when (it.tag) {
+                selectedCategory -> R.drawable.bg_button_cw
+                else -> R.drawable.btn_bg_transparent_round6dp
+            }
+            it.background = ContextCompat.getDrawable(it.context, backgroundId)
+
+            if (it.tag == selectedCategory) {
+                val oldScrollX = views.svCategories.scrollX
+                val visibleWidth = views.svCategories.width
+                log.i("left=${it.left},r=${it.right},s=$oldScrollX")
+                when {
+                    oldScrollX > it.left ->
+                        views.svCategories.smoothScrollTo(it.left, 0)
+                    oldScrollX + visibleWidth < it.right ->
+                        views.svCategories.smoothScrollTo(it.right - visibleWidth, 0)
+                }
+            }
+        }
+    }
+
+    private fun addCategoryButton(category: EmojiCategory) {
+        val density = activity.resources.displayMetrics.density
+        val wrapContent = FlexboxLayout.LayoutParams.WRAP_CONTENT
+        val minWidth = (density * 48f + 0.5f).toInt()
+        val padTb = (density * 4f + 0.5f).toInt()
+        val padLr = (density * 6f + 0.5f).toInt()
+        AppCompatButton(activity).apply {
+            tag = category
+            layoutParams = FlexboxLayout.LayoutParams(wrapContent, wrapContent)
+            background =
+                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            minWidthCompat = minWidth
+            minHeightCompat = minWidth
+            setPadding(padLr, padTb, padLr, padTb)
+            text = activity?.getString(category.titleId)
+            setOnClickListener {
+                views.etFilter.removeTextChangedListener(textWatcher)
+                views.etFilter.setText("")
+                views.etFilter.addTextChangedListener(textWatcher)
+                showFiltered(category, null)
+            }
+        }.let { views.llCategories.addView(it) }
+    }
+
+    private fun movePage(delta: Int) {
+        val categories = buildList {
+            addAll(pickerCategries.map { it.category }.distinct().sorted())
+        }
+        val newIndex = when (
+            val oldIndex = categories.indexOfFirst { it == lastSelectedCategory }
+        ) {
+            -1 -> if (delta > 0) 0 else categories.size - 1
+            else -> (oldIndex + categories.size + delta) % categories.size
+        }
+        val newCategory = categories[newIndex]
+        showFiltered(newCategory, null)
+    }
+
+    fun handleTouch(ev: MotionEvent, wasIntercept: Boolean) = when (ev.actionMasked) {
+        MotionEvent.ACTION_CANCEL -> {
+            log.i("ACTION_CANCEL wasIntercept=$wasIntercept")
+            dragging = false
+            wasIntercept
+        }
+        MotionEvent.ACTION_UP -> {
+            log.i("ACTION_UP wasIntercept=$wasIntercept")
+            try {
+                if (dragging) {
+                    tracker?.let {
+                        it.addMovement(ev)
+                        it.computeCurrentVelocity(1000)
+                        val vx = it.xVelocity
+                        val vy = it.yVelocity
+                        val vxDp = vx / density
+                        val aspect = abs(vx) / abs(vy)
+                        log.i("vx=$vx vy=$vy")
+                        if (aspect < 2f) {
+                            log.i("not gesture: aspect=$aspect")
+                        } else if (abs(vxDp) < 40f) {
+                            log.i("not gesture: vxDp=$vxDp")
+                        } else {
+                            movePage((vxDp.sign * -1f).toInt())
+                        }
+                    }
+                }
+            } catch (ex: Throwable) {
+                log.e(ex)
+            }
+            dragging = false
+            wasIntercept
+        }
+        MotionEvent.ACTION_DOWN -> {
+            log.i("ACTION_DOWN wasIntercept=$wasIntercept")
+            // ドラッグ開始
+            if (!dragging) {
+                dragging = true
+                if (tracker == null) {
+                    tracker = VelocityTracker.obtain()
+                }
+                tracker?.clear()
+                startX = ev.x
+                startY = ev.y
+            }
+            wasIntercept
+        }
+        MotionEvent.ACTION_MOVE -> {
+            if (!dragging) {
+                wasIntercept
+            } else {
+                // 移動量追跡
+                tracker?.addMovement(ev)
+                val deltaX = ev.x - startX
+                val deltaY = ev.y - startY
+                when {
+                    // すでにインターセプトしている
+                    wasIntercept -> true
+                    // 上下方向に大きく動かしたらそれ以上追跡しない
+                    abs(deltaY) > cancelY -> {
+                        log.i("not intercept!")
+                        dragging = false
+                        false
+                    }
+                    // 横方向に大きく動かしたらインターセプトする
+                    abs(deltaX) > interceptX -> {
+                        log.i("intercept!")
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }
+        else -> {
+            log.w("handleTouch $ev")
+        }
     }
 
     suspend fun start() {
@@ -569,46 +711,16 @@ private class EmojiPicker(
 
         bInstanceHasCustomEmoji = pickerCategries.any { it.category == EmojiCategory.Custom }
 
-        val wrapContent = FlexboxLayout.LayoutParams.WRAP_CONTENT
-        val density = activity.resources.displayMetrics.density
-        val minWidth = (density * 48f + 0.5f).toInt()
-        val padTb = (density * 4f + 0.5f).toInt()
-        val padLr = (density * 6f + 0.5f).toInt()
-        arrayOf(
-            null,
-            EmojiCategory.Recent,
-            EmojiCategory.Custom,
-            EmojiCategory.People,
-            EmojiCategory.ComplexTones,
-            EmojiCategory.Nature,
-            EmojiCategory.Foods,
-            EmojiCategory.Activities,
-            EmojiCategory.Places,
-            EmojiCategory.Objects,
-            EmojiCategory.Symbols,
-            EmojiCategory.Flags,
-            EmojiCategory.Others,
-        ).forEach {
-            AppCompatButton(activity).apply {
-                layoutParams = FlexboxLayout.LayoutParams(wrapContent, wrapContent)
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                minWidthCompat = minWidth
-                minHeightCompat = minWidth
-                setPadding(padLr, padTb, padLr, padTb)
-                text = activity?.getString(it?.titleId ?: R.string.all)
-                setOnClickListener { _ ->
-                    views.etFilter.removeTextChangedListener(textWatcher)
-                    views.etFilter.setText("")
-                    views.etFilter.addTextChangedListener(textWatcher)
-                    showFiltered(it, null)
-                }
-            }.let { views.llCategories.addView(it) }
+        pickerCategries.map { it.category }.distinct().sorted().forEach {
+            addCategoryButton(it)
         }
 
         views.etFilter.addTextChangedListener(textWatcher)
 
         showFiltered(null, null)
+
+        views.giGrid.intercept = { handleTouch(it, wasIntercept = false) }
+        views.giGrid.touch = { handleTouch(it, wasIntercept = true) }
 
         views.rvGrid.adapter = adapter
         views.rvGrid.layoutManager = GridLayoutManager(
@@ -628,13 +740,16 @@ private class EmojiPicker(
         dialog.setContentView(views.root)
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
-        val w = dialog.window
-        // XXX Android 11 で SOFT_INPUT_ADJUST_RESIZE はdeprecatedになった
-        @Suppress("DEPRECATION")
-        w?.setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
-                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-        )
+        dialog.setOnDismissListener {
+            tracker?.recycle()
+        }
+        dialog.window?.let { w ->
+            @Suppress("DEPRECATION")
+            w.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+            )
+        }
         dialog.show()
     }
 }

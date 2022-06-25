@@ -61,14 +61,17 @@
         android:inputType="text" />
 
     <HorizontalScrollView
+        android:id="@+id/svCategories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
-        android:fadeScrollbars="false"
         android:padding="6dp"
         android:paddingBottom="0dp"
-        android:scrollbarStyle="outsideOverlay"
-        android:scrollbars="horizontal">
+        android:scrollbars="none"
+        android:fadingEdge="horizontal"
+        android:fadingEdgeLength="32dp"
+        android:cacheColorHint="#00000000"
+        >
 
         <LinearLayout
             android:id="@+id/llCategories"
@@ -77,14 +80,21 @@
             android:orientation="horizontal" />
     </HorizontalScrollView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvGrid"
+    <jp.juggler.subwaytooter.view.GestureInterceptor
+        android:id="@+id/giGrid"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:fadeScrollbars="false"
-        android:padding="6dp"
-        android:scrollbarStyle="outsideOverlay"
-        android:scrollbars="vertical" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvGrid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fadeScrollbars="false"
+            android:padding="6dp"
+
+            android:scrollbarStyle="outsideOverlay"
+            android:scrollbars="vertical" />
+    </jp.juggler.subwaytooter.view.GestureInterceptor>
 </LinearLayout>

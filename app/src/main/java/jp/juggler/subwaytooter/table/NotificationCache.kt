@@ -11,14 +11,13 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
-import kotlinx.coroutines.yield
 
 class NotificationCache(private val account_db_id: Long) {
 
     private var id = -1L
 
     // サーバから通知を取得した時刻
-    private var last_load: Long = 0
+    private var last_load = 0L
 
     // 通知のリスト
     var data = ArrayList<JsonObject>()
@@ -158,7 +157,7 @@ class NotificationCache(private val account_db_id: Long) {
     // load into this object
     fun load() {
         try {
-            appDatabase.query(
+            (appDatabase.query(
                 table,
                 null,
                 WHERE_AID,
@@ -166,21 +165,24 @@ class NotificationCache(private val account_db_id: Long) {
                 null,
                 null,
                 null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    this.id = cursor.getLong(COL_ID)
-                    this.last_load = cursor.getLong(COL_LAST_LOAD)
-
-                    cursor.getStringOrNull(COL_DATA)?.decodeJsonArray()?.objectList()?.let {
-                        data.addAll(it)
-                    }
-                } else {
-                    this.id = -1
-                    this.last_load = 0L
-                }
+            ) ?: error("null cursor")).use { cursor ->
+                if (!cursor.moveToFirst()) error("load: empty cursor.")
+                // 先にIDとlast_loadを読む
+                this.id = cursor.getLong(COL_ID)
+                this.last_load = cursor.getLong(COL_LAST_LOAD)
+                // データを読む箇所は失敗するかもしれない
+                cursor.getStringOrNull(COL_DATA)
+                    ?.decodeJsonArray()
+                    ?.objectList()
+                    ?.let { data.addAll(it) }
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "load failed.")
+            if (ex.message?.contains("empty cursor") == true) {
+                // アカウント追加直後に起きるはず
+                log.w(ex, "load failed.")
+            } else {
+                log.trace(ex, "load failed.")
+            }
         }
     }
 
@@ -254,64 +256,52 @@ class NotificationCache(private val account_db_id: Long) {
         flags: Int,
         onError: suspend (TootApiResult) -> Unit,
     ) {
-        val now = System.currentTimeMillis()
-
-        // 前回の更新から一定時刻が経過するまでは処理しない
-        val remain = last_load + 120000L - now
-        if (remain > 0) {
-            log.d("${account.acct} skip request. wait ${remain}ms.")
-            return
-        }
-
-        this.last_load = now
-
-        // キャッシュ更新時は全データの最新データより新しいものを読みたい
-        val newestId = data
-            .mapNotNull { getEntityOrderId(account, it).takeIf { id -> !id.isDefault } }
-            .reduceOrNull { a, b -> maxComparable(a, b) }
-
-        val path = makeNotificationUrl(account, flags, newestId)
-
         try {
-            for (nTry in 0..3) {
-                yield()
+            val now = System.currentTimeMillis()
 
-                val result = if (account.isMisskey) {
-                    client.request(path, account.putMisskeyApiToken().toPostRequestBuilder())
-                } else {
-                    client.request(path)
-                }
-
-                if (result == null) {
-                    log.d("cancelled.")
-                    return
-                }
-
-                val array = result.jsonArray
-                if (array != null) {
-                    account.updateNotificationError(null)
-
-                    // データをマージする
-                    array.objectList().forEach { item ->
-                        item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
-                        data.add(item)
-                    }
-
-                    normalize(account)
-
-                    return
-                }
-
-                log.d("request error. ${result.error} ${result.requestInfo}")
-
-                onError(result)
-
-                // サーバからエラー応答が届いているならリトライしない
-                val code = result.response?.code
-                if (code != null && code in 200 until 600) {
-                    break
-                }
+            // 前回の更新から一定時刻が経過するまでは処理しない
+            val remain = last_load + 120000L - now
+            if (remain > 0) {
+                log.w("${account.acct} skip request. wait ${remain}ms.")
+                return
             }
+
+            this.last_load = now
+
+            // キャッシュ更新時は全データの最新データより新しいものを読みたい
+            val newestId = filterLatestId(account) { true }
+
+            val path = makeNotificationUrl(account, flags, newestId)
+
+            val result = if (account.isMisskey) {
+                client.request(path, account.putMisskeyApiToken().toPostRequestBuilder())
+            } else {
+                client.request(path)
+            }
+
+            if (result == null) {
+                log.d("${account.acct} cancelled.")
+                return
+            }
+
+            val array = result.jsonArray
+            if (array != null) {
+                account.updateNotificationError(null)
+
+                // データをマージする
+                array.objectList().forEach { item ->
+                    item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
+                    data.add(item)
+                }
+
+                normalize(account)
+                return
+            } else {
+                log.w("${account.acct} error. ${result.response?.code} ${result.error} ${result.requestInfo}")
+                onError(result)
+            }
+        } catch (ex: Throwable) {
+            log.trace(ex, "${account.acct} failed.")
         } finally {
             save()
         }

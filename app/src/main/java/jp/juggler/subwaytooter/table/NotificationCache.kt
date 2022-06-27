@@ -262,7 +262,7 @@ class NotificationCache(private val account_db_id: Long) {
             // 前回の更新から一定時刻が経過するまでは処理しない
             val remain = last_load + 120000L - now
             if (remain > 0) {
-                log.w("${account.acct} skip request. wait ${remain}ms.")
+                log.w("${account.acct} requestAsync: skipped. remain=${remain}ms.")
                 return
             }
 
@@ -290,8 +290,12 @@ class NotificationCache(private val account_db_id: Long) {
 
                 // データをマージする
                 array.objectList().forEach { item ->
-                    item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
-                    data.add(item)
+                    try {
+                        item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
+                        data.add(item)
+                    } catch (ex: Throwable) {
+                        log.trace(ex, "${account.acct} parseNotificationTime failed.")
+                    }
                 }
 
                 normalize(account)
@@ -301,7 +305,7 @@ class NotificationCache(private val account_db_id: Long) {
                 onError(result)
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "${account.acct} failed.")
+            log.trace(ex, "${account.acct} requestAsync failed.")
         } finally {
             save()
         }

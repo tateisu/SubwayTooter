@@ -286,7 +286,7 @@ suspend fun checkNoticifationAll(
             }
             progress(tmpMap)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.trace(ex, "updateStatus")
         }
     }
 
@@ -304,7 +304,7 @@ suspend fun checkNoticifationAll(
                     ) { a, s -> updateStatus(a, s) }
                     updateStatus(sa, PollingState.Complete)
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.trace(ex, "updateStatus failed.")
                     val s = when (ex) {
                         is CancellationException -> PollingState.Cancelled
                         else -> PollingState.Error
@@ -319,7 +319,7 @@ suspend fun checkNoticifationAll(
         val tmpMap = statusMap.trans()
         progress(tmpMap)
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.trace(ex, "checkNoticifationAll failed.")
     }
 
     if (timeoutAccounts.isNotEmpty()) {
@@ -392,7 +392,7 @@ fun recycleClickedNotification(context: Context, uri: Uri) {
                 NotificationTracking.updateRead(dbId, typeName)
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.trace(ex, "recycleClickedNotification failed.")
         }
     }
 }

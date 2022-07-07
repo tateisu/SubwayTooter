@@ -7,7 +7,7 @@ buildscript {
     ext.compile_sdk_version = 31
 
     ext.appcompat_version = "1.4.2"
-    ext.lifecycle_version = "2.4.1"
+    ext.lifecycle_version = "2.5.0"
     ext.arch_version = "2.1.0"
 
     ext.kotlin_version = '1.6.21'
@@ -30,6 +30,9 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.1'
+
+        // room のバージョンの影響で google-services を上げられない場合がある
+        //noinspection GradleDependency
         classpath 'com.google.gms:google-services:4.3.10'
 
         //noinspection DifferentKotlinGradleVersion

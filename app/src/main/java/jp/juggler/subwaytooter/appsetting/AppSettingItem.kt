@@ -239,6 +239,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         sw(PrefB.bpDivideNotification, R.string.divide_notification)
+
+        sw(PrefB.bpMisskeyNotificationCheck, R.string.enable_misskey_notification_check)
     }
 
     section(R.string.behavior) {

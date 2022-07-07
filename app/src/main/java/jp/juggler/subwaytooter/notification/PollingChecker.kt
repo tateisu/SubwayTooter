@@ -294,16 +294,20 @@ class PollingChecker(
 
                     cache = NotificationCache(account.db_id).apply {
                         load()
-                        requestAsync(
-                            client,
-                            account,
-                            wps.flags,
-                        ) { result ->
-                            account.updateNotificationError("${result.error} ${result.requestInfo}".trim())
-                            if (result.error?.contains("Timeout") == true &&
-                                !account.dont_show_timeout
-                            ) {
-                                progress(account, PollingState.Timeout)
+                        if( account.isMisskey && ! PrefB.bpMisskeyNotificationCheck() ){
+                            log.d("skip misskey server. ${account.acct}")
+                        }else{
+                            requestAsync(
+                                client,
+                                account,
+                                wps.flags,
+                            ) { result ->
+                                account.updateNotificationError("${result.error} ${result.requestInfo}".trim())
+                                if (result.error?.contains("Timeout") == true &&
+                                    !account.dont_show_timeout
+                                ) {
+                                    progress(account, PollingState.Timeout)
+                                }
                             }
                         }
                     }

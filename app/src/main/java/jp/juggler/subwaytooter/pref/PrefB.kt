@@ -347,4 +347,8 @@ object PrefB {
         "MfmDecorationShowUnsupportedMarkup",
         true
     )
+    val bpMisskeyNotificationCheck = BooleanPref(
+        "MisskeyNotificationCheck",
+        false
+    )
 }

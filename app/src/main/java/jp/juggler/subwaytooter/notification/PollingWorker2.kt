@@ -93,7 +93,11 @@ class PollingWorker2(
 
     private suspend fun showMessage(text: String) =
         CheckerNotification.showMessage(applicationContext, text) {
-            setForeground(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
+            try {
+                setForeground(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
+            }catch(ex:Throwable){
+                log.e(ex,"showMessage failed.")
+            }
         }
 
     private fun stateMapToString(map: Map<PollingState, List<String>>) =

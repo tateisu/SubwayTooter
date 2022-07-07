@@ -103,31 +103,23 @@ class NotificationCache(private val account_db_id: Long) {
                 EntityId.mayDefault(src.string("id"))
             }
 
-        private fun makeNotificationUrl(
-            accessInfo: SavedAccount,
+        private fun makeNotificationUrlMastodon(
             flags: Int,
             sinceId: EntityId?,
-        ) = when {
-            // MisskeyはsinceIdを指定すると未読範囲の古い方から読んでしまう？
-            accessInfo.isMisskey -> "/api/i/notifications"
+        ) = StringBuilder(ApiPath.PATH_NOTIFICATIONS).apply {
+            // already contain "?limit=XX"
+            if (sinceId != null) append("&since_id=$sinceId")
 
-            else -> {
-                val sb = StringBuilder(ApiPath.PATH_NOTIFICATIONS) // always contain "?limit=XX"
+            fun noBit(v: Int, mask: Int) = (v and mask) != mask
 
-                if (sinceId != null) sb.append("&since_id=$sinceId")
+            if (noBit(flags, 1)) append("&exclude_types[]=reblog")
+            if (noBit(flags, 2)) append("&exclude_types[]=favourite")
+            if (noBit(flags, 4)) append("&exclude_types[]=follow")
+            if (noBit(flags, 8)) append("&exclude_types[]=mention")
+            // if(noBit(flags,16)) /* mastodon has no reaction */
+            if (noBit(flags, 32)) append("&exclude_types[]=poll")
 
-                fun noBit(v: Int, mask: Int) = (v and mask) != mask
-
-                if (noBit(flags, 1)) sb.append("&exclude_types[]=reblog")
-                if (noBit(flags, 2)) sb.append("&exclude_types[]=favourite")
-                if (noBit(flags, 4)) sb.append("&exclude_types[]=follow")
-                if (noBit(flags, 8)) sb.append("&exclude_types[]=mention")
-                // if(noBit(flags,16)) /* mastodon has no reaction */
-                if (noBit(flags, 32)) sb.append("&exclude_types[]=poll")
-
-                sb.toString()
-            }
-        }
+        }.toString()
 
         fun parseNotificationTime(accessInfo: SavedAccount, src: JsonObject): Long =
             when {
@@ -271,11 +263,20 @@ class NotificationCache(private val account_db_id: Long) {
             // キャッシュ更新時は全データの最新データより新しいものを読みたい
             val newestId = filterLatestId(account) { true }
 
-            val path = makeNotificationUrl(account, flags, newestId)
-
             val result = if (account.isMisskey) {
-                client.request(path, account.putMisskeyApiToken().toPostRequestBuilder())
+                client.request(
+                    "/api/i/notifications",
+                    account.putMisskeyApiToken().apply {
+                        // MisskeyはsinceIdを指定すると未読範囲の古い方から読んでしまう
+                        // sinceIdを指定しない
+
+                        // 未読クリアフラグがデフォルトtrueなのをfalseにする
+                        // https://github.com/misskey-dev/misskey/issues/8906
+                        put("markAsRead", false)
+                    }.toPostRequestBuilder()
+                )
             } else {
+                val path = makeNotificationUrlMastodon(flags, newestId)
                 client.request(path)
             }
 

@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
 }
 
 group 'jp.juggler'
@@ -12,22 +12,22 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'src/lib')
-    implementation "com.google.guava:guava:28.1-jre"
+    implementation "com.google.guava:guava:31.1-jre"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
-    def ktorVersion="1.5.0"
+    def ktorVersion="2.0.3"
     implementation "io.ktor:ktor-client-core:$ktorVersion"
     implementation "io.ktor:ktor-client-cio:$ktorVersion"
-    implementation "io.ktor:ktor-client-features:$ktorVersion"
+//    implementation "io.ktor:ktor-client-features:$ktorVersion"
     implementation "io.ktor:ktor-client-encoding:$ktorVersion"
 
     // StringEscapeUtils.unescapeHtml4
     implementation "org.apache.commons:commons-text:1.9"
 
     // HTML5パーサ
-    implementation "org.jsoup:jsoup:1.13.1"
+    implementation "org.jsoup:jsoup:1.14.3"
 }
 
 test {

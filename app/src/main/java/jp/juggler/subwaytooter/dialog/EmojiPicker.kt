@@ -222,6 +222,7 @@ private class EmojiPicker(
     ) : ViewHolderBase(view) {
 
         init {
+            view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
             view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
         }
@@ -245,6 +246,7 @@ private class EmojiPicker(
         val view: AppCompatImageView = AppCompatImageView(activity),
     ) : ViewHolderBase(view) {
         init {
+            view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
             view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
             view.scaleType = ImageView.ScaleType.FIT_CENTER
@@ -273,6 +275,7 @@ private class EmojiPicker(
         val view: AppCompatTextView = AppCompatTextView(activity),
     ) : ViewHolderBase(view) {
         init {
+            view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
             view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
             view.gravity = Gravity.CENTER
@@ -355,6 +358,12 @@ private class EmojiPicker(
         }
     }
 
+    private enum class FlickStatus {
+        None,
+        Start,
+        Intercepted,
+    }
+
     private lateinit var pickerCategries: List<PickerItemCategory>
 
     private val adapter = GridAdapter()
@@ -398,10 +407,10 @@ private class EmojiPicker(
     private var recentCategory: PickerItemCategoryRecent? = null
 
     private val density = activity.resources.displayMetrics.density
-    private val cancelY = density * 16f
-    private val interceptX = density * 8f
+    private val cancelY = 16f
+    private val interceptX = 40f
     private var tracker: VelocityTracker? = null
-    private var dragging = false
+    private var dragging = FlickStatus.None
     private var startX = 0f
     private var startY = 0f
 
@@ -413,11 +422,11 @@ private class EmojiPicker(
         }
     }
 
-    private val pickerItemClickListener = View.OnClickListener {
+    private val pickerItemClickListener = View.OnClickListener { v ->
         val targetEmoji: EmojiBase
         val targetName: String
         val targetInstance: String?
-        when (val item = it.getTag(R.id.btnAbout)) {
+        when (val item = v.getTag(R.id.btnAbout)) {
             is PickerItemUnicode -> {
                 targetEmoji = applySkinTone(item.unicodeEmoji)
                 targetName = targetEmoji.unifiedName
@@ -431,11 +440,17 @@ private class EmojiPicker(
             else -> return@OnClickListener
         }
 
-        if (closeOnSelected) dialog.dismissSafe()
-
         recentCategory?.update(targetName, targetInstance)
-        @Suppress("NotifyDataSetChanged")
-        showFiltered(lastSelectedCategory, lastSelectedKeyword)
+
+        if (closeOnSelected) {
+            dialog.dismissSafe()
+        } else if (lastSelectedCategory == null || lastSelectedCategory == EmojiCategory.Recent) {
+            // 全カテゴリ表示や最近の表示は最近の絵文字の順序を変えるため更新してしまう
+            showFiltered(lastSelectedCategory, lastSelectedKeyword)
+            // XXX: タップ状態の表示が行えない…
+        } else {
+            // この場合はビューの更新は不要で、タップ状態の表示を行える
+        }
         onPicked(targetEmoji, bInstanceHasCustomEmoji)
     }
 
@@ -628,83 +643,94 @@ private class EmojiPicker(
         showFiltered(newCategory, null)
     }
 
-    fun handleTouch(ev: MotionEvent, wasIntercept: Boolean) = when (ev.actionMasked) {
-        MotionEvent.ACTION_CANCEL -> {
-            log.i("ACTION_CANCEL wasIntercept=$wasIntercept")
-            dragging = false
-            wasIntercept
-        }
-        MotionEvent.ACTION_UP -> {
-            log.i("ACTION_UP wasIntercept=$wasIntercept")
-            try {
-                if (dragging) {
-                    tracker?.let {
-                        it.addMovement(ev)
-                        it.computeCurrentVelocity(1000)
-                        val vx = it.xVelocity
-                        val vy = it.yVelocity
-                        val vxDp = vx / density
-                        val aspect = abs(vx) / abs(vy)
-                        log.i("vx=$vx vy=$vy")
-                        if (aspect < 2f) {
-                            log.i("not gesture: aspect=$aspect")
-                        } else if (abs(vxDp) < 40f) {
-                            log.i("not gesture: vxDp=$vxDp")
-                        } else {
-                            movePage((vxDp.sign * -1f).toInt())
+    private fun View.setButtonBackground() {
+        background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+    }
+
+    private fun handleTouch(ev: MotionEvent, wasIntercept: Boolean) =
+        try {
+            when (ev.actionMasked) {
+                MotionEvent.ACTION_CANCEL -> {
+                    log.i("ACTION_CANCEL wasIntercept=$wasIntercept")
+                    dragging = FlickStatus.None
+                    wasIntercept
+                }
+                MotionEvent.ACTION_UP -> {
+                    try {
+                        log.i("ACTION_UP wasIntercept=$wasIntercept")
+                        if (dragging == FlickStatus.Intercepted) {
+                            tracker?.let {
+                                it.addMovement(ev)
+                                it.computeCurrentVelocity(1000)
+                                val vx = it.xVelocity
+                                val vy = it.yVelocity
+                                val vxDp = vx / density
+                                val aspect = abs(vx) / abs(vy)
+                                log.i("vx=$vx vy=$vy")
+                                if (aspect < 2f) {
+                                    log.i("not gesture: aspect=$aspect")
+                                } else if (abs(vxDp) < 40f) {
+                                    log.i("not gesture: vxDp=$vxDp")
+                                } else {
+                                    movePage((vxDp.sign * -1f).toInt())
+                                }
+                            }
+                        }
+                    } finally {
+                        dragging = FlickStatus.None
+                    }
+                    wasIntercept
+                }
+                MotionEvent.ACTION_DOWN -> {
+                    log.i("ACTION_DOWN wasIntercept=$wasIntercept")
+                    // ドラッグ開始
+                    dragging = FlickStatus.Start
+                    if (tracker == null) {
+                        tracker = VelocityTracker.obtain()
+                    }
+                    tracker?.clear()
+                    startX = ev.x
+                    startY = ev.y
+                    wasIntercept
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (dragging == FlickStatus.None) {
+                        wasIntercept
+                    } else {
+                        // 移動量追跡
+                        tracker?.addMovement(ev)
+                        val deltaX = abs(ev.x - startX) / density
+                        val deltaY = abs(ev.y - startY) / density
+                        when {
+                            // すでにインターセプトしている
+                            wasIntercept -> true
+
+                            // 上下方向に大きく動かしたらそれ以上追跡しない
+                            deltaY >= cancelY -> {
+                                log.i("not flick! $deltaY")
+                                dragging = FlickStatus.None
+                                false
+                            }
+
+                            // 横方向に大きく動かしたらインターセプトする
+                            deltaX >= interceptX && deltaX > deltaY -> {
+                                log.i("intercept! $deltaX")
+                                dragging = FlickStatus.Intercepted
+                                true
+                            }
+                            else -> {
+                                log.d("not yet intercept. $deltaX, $deltaY")
+                                false
+                            }
                         }
                     }
                 }
-            } catch (ex: Throwable) {
-                log.e(ex)
+                else -> log.w("handleTouch else $ev")
             }
-            dragging = false
+        } catch (ex: Throwable) {
+            log.w("handleTouch failed. ev=$ev, wasIntercept=$wasIntercept")
             wasIntercept
         }
-        MotionEvent.ACTION_DOWN -> {
-            log.i("ACTION_DOWN wasIntercept=$wasIntercept")
-            // ドラッグ開始
-            if (!dragging) {
-                dragging = true
-                if (tracker == null) {
-                    tracker = VelocityTracker.obtain()
-                }
-                tracker?.clear()
-                startX = ev.x
-                startY = ev.y
-            }
-            wasIntercept
-        }
-        MotionEvent.ACTION_MOVE -> {
-            if (!dragging) {
-                wasIntercept
-            } else {
-                // 移動量追跡
-                tracker?.addMovement(ev)
-                val deltaX = ev.x - startX
-                val deltaY = ev.y - startY
-                when {
-                    // すでにインターセプトしている
-                    wasIntercept -> true
-                    // 上下方向に大きく動かしたらそれ以上追跡しない
-                    abs(deltaY) > cancelY -> {
-                        log.i("not intercept!")
-                        dragging = false
-                        false
-                    }
-                    // 横方向に大きく動かしたらインターセプトする
-                    abs(deltaX) > interceptX -> {
-                        log.i("intercept!")
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }
-        else -> {
-            log.w("handleTouch $ev")
-        }
-    }
 
     suspend fun start() {
         pickerCategries = buildCategoryList()

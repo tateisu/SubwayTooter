@@ -54,7 +54,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="6dp"
-        android:layout_marginBottom="0dp"
+        android:layout_marginBottom="2dp"
         android:hint="@string/search_emojis"
         android:importantForAccessibility="no"
         android:importantForAutofill="no"
@@ -64,20 +64,22 @@
         android:id="@+id/svCategories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:cacheColorHint="#00000000"
         android:clipToPadding="false"
-        android:padding="6dp"
-        android:paddingBottom="0dp"
-        android:scrollbars="none"
+        android:fadeScrollbars="false"
         android:fadingEdge="horizontal"
         android:fadingEdgeLength="32dp"
-        android:cacheColorHint="#00000000"
-        >
+        android:requiresFadingEdge="horizontal"
+        android:scrollbars="horizontal">
 
         <LinearLayout
             android:id="@+id/llCategories"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" />
+            android:orientation="horizontal"
+            android:paddingBottom="4dp"
+            android:paddingEnd="6dp"
+            android:paddingStart="6dp" />
     </HorizontalScrollView>
 
     <jp.juggler.subwaytooter.view.GestureInterceptor
@@ -93,7 +95,6 @@
             android:clipToPadding="false"
             android:fadeScrollbars="false"
             android:padding="6dp"
-
             android:scrollbarStyle="outsideOverlay"
             android:scrollbars="vertical" />
     </jp.juggler.subwaytooter.view.GestureInterceptor>

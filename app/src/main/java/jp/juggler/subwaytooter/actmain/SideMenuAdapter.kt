@@ -116,10 +116,13 @@ class SideMenuAdapter(
             // 使用中のアプリバージョンより新しいリリースがある？
             val newVersion =
                 (newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
-                    ?.replace("""(v|version)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
+                    ?.replace("""(v(ersion)?)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
                     ?.trim()
                     ?.notEmpty()
-                    ?.takeIf { VersionString(it) > VersionString(currentVersion) }
+                    ?.takeIf {
+                        log.i("newVersion=$it, currentVersion=$currentVersion")
+                        VersionString(it) > VersionString(currentVersion)
+                    }
 
             val releaseMinSdkVersion = newRelease?.int("minSdkVersion")
                 ?: Build.VERSION.SDK_INT

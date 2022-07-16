@@ -667,7 +667,7 @@ internal class ViewHolderHeaderProfile(
             authorDomain = who
         )
 
-        val nameTypeface = ActMain.timeline_font_bold
+        val nameTypeface = ActMain.timelineFontBold
         val valueTypeface = ActMain.timelineFont
 
         for (item in fields) {

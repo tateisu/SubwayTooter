@@ -74,7 +74,7 @@ class ActMain : AppCompatActivity(),
         var stripIconSize = 1
         var screenBottomPadding = 0
         var timelineFont: Typeface = Typeface.DEFAULT
-        var timeline_font_bold: Typeface = Typeface.DEFAULT_BOLD
+        var timelineFontBold: Typeface = Typeface.DEFAULT_BOLD
         var eventFadeAlpha = 1f
     }
 

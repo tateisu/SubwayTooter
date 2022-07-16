@@ -49,7 +49,7 @@ fun ItemViewHolder.bind(
 
     this.accessInfo = column.accessInfo
 
-    val fontBold = ActMain.timeline_font_bold
+    val fontBold = ActMain.timelineFontBold
     val fontNormal = ActMain.timelineFont
     viewRoot.scan { v ->
         try {

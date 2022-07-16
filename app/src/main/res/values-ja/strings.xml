@@ -1150,4 +1150,5 @@
     <string name="use_web_settings">Web設定を使う</string>
     <string name="content">本文</string>
     <string name="enable_misskey_notification_check">Misskeyサーバで通知チェックを行う(不安定)</string>
+    <string name="old_devices_warning">古い端末のサポート終了</string>
 </resources>

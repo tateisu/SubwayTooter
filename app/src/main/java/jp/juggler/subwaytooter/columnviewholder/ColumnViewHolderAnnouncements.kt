@@ -174,7 +174,7 @@ private fun ColumnViewHolder.showAnnouncementFonts() {
         tvAnnouncementPeriod.setLineSpacing(0f, spacing)
         tvAnnouncementContent.setLineSpacing(0f, spacing)
     }
-    tvAnnouncementsCaption.typeface = ActMain.timeline_font_bold
+    tvAnnouncementsCaption.typeface = ActMain.timelineFontBold
     val fontNormal = ActMain.timelineFont
     tvAnnouncementsIndex.typeface = fontNormal
     tvAnnouncementPeriod.typeface = fontNormal

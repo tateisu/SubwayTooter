@@ -29,7 +29,7 @@ class SpanOutputEnv(
     val decorationEnabled = PrefB.bpMfmDecorationEnabled(context)
     val showUnsupportedMarkup = PrefB.bpMfmDecorationShowUnsupportedMarkup(context)
 
-    val fontBold = ActMain.timeline_font_bold
+    val fontBold = ActMain.timelineFontBold
     val linkHelper: LinkHelper? = options.linkHelper
     var spanList = SpanList()
 

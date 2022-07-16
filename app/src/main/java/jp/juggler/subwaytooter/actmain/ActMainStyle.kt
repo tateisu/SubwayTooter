@@ -39,13 +39,13 @@ fun ActMain.reloadFonts() {
     sv = PrefS.spTimelineFontBold(pref)
     if (sv.isNotEmpty()) {
         try {
-            ActMain.timeline_font_bold = Typeface.createFromFile(sv)
+            ActMain.timelineFontBold = Typeface.createFromFile(sv)
         } catch (ex: Throwable) {
             log.trace(ex)
         }
     } else {
         try {
-            ActMain.timeline_font_bold = Typeface.create(ActMain.timelineFont, Typeface.BOLD)
+            ActMain.timelineFontBold = Typeface.create(ActMain.timelineFont, Typeface.BOLD)
         } catch (ex: Throwable) {
             log.trace(ex)
         }

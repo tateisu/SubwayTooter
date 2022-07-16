@@ -1159,4 +1159,5 @@
     <string name="use_web_settings">(Use web setting)</string>
     <string name="content">Content</string>
     <string name="enable_misskey_notification_check">Enable notification check for Misskey server (unstable)</string>
+    <string name="old_devices_warning">End of support for older devices</string>
 </resources>

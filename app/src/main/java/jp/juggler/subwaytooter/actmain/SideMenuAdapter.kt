@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.StateListDrawable
+import android.os.Build
 import android.os.Handler
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -11,6 +12,7 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.UnderlineSpan
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -30,7 +32,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference
 import java.util.*
@@ -47,120 +50,146 @@ class SideMenuAdapter(
     companion object {
         private val log = LogCategory("SideMenuAdapter")
 
+        private const val urlAppVersion =
+            "https://mastodon-msg.juggler.jp/appVersion/appVersion.json"
+        private const val urlGithubReleases =
+            "https://github.com/tateisu/SubwayTooter/releases"
+        private const val urlOlderDevices =
+            "https://github.com/tateisu/SubwayTooter/discussions/192"
+
         private val itemTypeCount = ItemType.values().size
 
         private var lastVersionView: WeakReference<TextView>? = null
 
-        private var versionRow = SpannableStringBuilder("")
+        private var versionText = SpannableStringBuilder("")
 
         private var releaseInfo: JsonObject? = null
 
-        private fun clickableSpan(url: String) =
-            object : ClickableSpan() {
-                override fun onClick(widget: View) {
-                    widget.activity?.openBrowser(url)
-                }
-
-                override fun updateDrawState(ds: TextPaint) {
-                    super.updateDrawState(ds)
-                    ds.isUnderlineText = false
-                }
+        private fun clickableSpan(
+            url: String,
+            showUnderline: Boolean = false,
+        ) = object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                widget.activity?.openBrowser(url)
             }
 
-        // 文字列を組み立ててhandler経由でViewに設定する
-        // メインスレッドでもそれ以外でも動作する
-        fun afterGet(appContext: Context, handler: Handler, currentVersion: String) {
-
-            versionRow = SpannableStringBuilder().apply {
-                append(
-                    appContext.getString(
-                        R.string.app_name_with_version,
-                        appContext.getString(R.string.app_name),
-                        currentVersion
-                    )
-                )
-                val newRelease = releaseInfo?.jsonObject(
-                    if (PrefB.bpCheckBetaVersion()) "beta" else "stable"
-                )
-
-                val newVersion =
-                    (newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
-                        ?.replace("""(v|version)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
-                        ?.trim()
-
-                if (newVersion == null || newVersion.isEmpty() || VersionString(currentVersion) >= VersionString(
-                        newVersion
-                    )
-                ) {
-                    val url = "https://github.com/tateisu/SubwayTooter/releases"
-                    append("\n")
-                    val start = length
-                    append(appContext.getString(R.string.release_note))
-                    setSpan(
-                        clickableSpan(url),
-                        start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                } else {
-                    append("\n")
-                    var start = length
-                    append(
-                        appContext.getString(
-                            R.string.new_version_available,
-                            newVersion
-                        )
-                    )
-                    setSpan(
-                        ForegroundColorSpan(
-                            appContext.attrColor(R.attr.colorRegexFilterError)
-                        ),
-                        start, length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-
-                    newRelease?.string("html_url")?.let { url ->
-                        append("\n")
-                        start = length
-                        append(appContext.getString(R.string.release_note_with_assets))
-                        setSpan(
-                            clickableSpan(url),
-                            start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-                }
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                ds.isUnderlineText = showUnderline
             }
-            handler.post { lastVersionView?.get()?.text = versionRow }
         }
 
-        // メインスレッドから呼ばれる
-        private fun checkVersion(appContext: Context, handler: Handler) {
+        private fun SpannableStringBuilder.appendSpanLine(
+            text: String,
+            vararg spans: Any,
+        ) = this.apply {
+            if (isNotEmpty()) {
+                append("\n")
+            }
+            val start = length
+            append(text)
+            for (span in spans) {
+                setSpan(span, start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+
+        // バージョン情報と更新履歴と新リリース告知の文字列を組み立てる
+        // メインスレッドでもそれ以外でも動作すること
+        private fun Context.createVersionRow() = SpannableStringBuilder().apply {
             val currentVersion = try {
-                appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName
+                packageManager.getPackageInfo(packageName, 0).versionName
             } catch (ignored: PackageManager.NameNotFoundException) {
                 "??"
             }
 
-            versionRow = SpannableStringBuilder().apply {
-                append(
-                    appContext.getString(
-                        R.string.app_name_with_version,
-                        appContext.getString(R.string.app_name),
-                        currentVersion
+            append(
+                getString(
+                    R.string.app_name_with_version,
+                    getString(R.string.app_name),
+                    currentVersion
+                )
+            )
+            val newRelease = releaseInfo?.jsonObject(
+                if (PrefB.bpCheckBetaVersion()) "beta" else "stable"
+            )
+
+            // 使用中のアプリバージョンより新しいリリースがある？
+            val newVersion =
+                (newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
+                    ?.replace("""(v|version)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
+                    ?.trim()
+                    ?.notEmpty()
+                    ?.takeIf { VersionString(it) > VersionString(currentVersion) }
+
+            val releaseMinSdkVersion = newRelease?.int("minSdkVersion")
+                ?: Build.VERSION.SDK_INT
+            val releaseMinSdkVersionScheduled = newRelease?.int("minSdkVersionScheduled")
+                ?: Build.VERSION.SDK_INT
+
+            when {
+                // 新しいバージョンがある
+                // それはこの端末にインストール可能である
+                newVersion != null && Build.VERSION.SDK_INT >= releaseMinSdkVersion -> {
+                    appendSpanLine(
+                        getString(
+                            R.string.new_version_available,
+                            newVersion
+                        ),
+                        ForegroundColorSpan(
+                            attrColor(R.attr.colorRegexFilterError)
+                        ),
                     )
+                    newRelease?.string("html_url")?.let {
+                        appendSpanLine(
+                            getString(R.string.release_note_with_assets),
+                            clickableSpan(it)
+                        )
+                    }
+                }
+
+                // 通常時は更新履歴へのリンク
+                else -> appendSpanLine(
+                    getString(R.string.release_note),
+                    UnderlineSpan(),
+                    clickableSpan(urlGithubReleases),
                 )
             }
 
-            val lastUpdated = releaseInfo?.string("updated_at")?.let { TootStatus.parseTime(it) }
-            if (lastUpdated != null && System.currentTimeMillis() - lastUpdated < 86400000L) {
-                afterGet(appContext, handler, currentVersion)
-            } else {
-                launchIO {
-                    val json =
-                        App1.getHttpCached("https://mastodon-msg.juggler.jp/appVersion/appVersion.json")
-                            ?.decodeUTF8()?.decodeJsonObject()
-                    if (json != null) {
-                        releaseInfo = json
-                        afterGet(appContext, handler, currentVersion)
+            // 端末のOSバージョンがサポートから外れる予定なら、サイドメニューにリンクを追加する
+            if (Build.VERSION.SDK_INT < releaseMinSdkVersionScheduled) {
+                appendSpanLine(
+                    getString(R.string.old_devices_warning),
+                    clickableSpan(urlOlderDevices, showUnderline = true),
+                )
+            }
+        }
+
+        // メインスレッドから呼ばれる
+        private fun Context.checkVersion() {
+            // サイドメニューから参照されるバージョン文字列を初期化する
+            // この時点ではreleaseInfoはnullかもしれない
+            versionText = createVersionRow()
+
+            // releaseInfoが既にあり、更新時刻が十分に新しいなら情報を取得し直す必要はない
+            releaseInfo?.string("updated_at")
+                ?.let { TootStatus.parseTime(it) }
+                ?.takeIf { it >= System.currentTimeMillis() - 86400000L }
+                ?.let { return }
+
+            // リリース情報を取得し直す
+            launchIO {
+                try {
+                    val json = App1.getHttpCached(urlAppVersion)
+                        ?.decodeUTF8()
+                        ?.decodeJsonObject()
+                        ?: error("missing appVersion json")
+                    releaseInfo = json
+                    versionText = createVersionRow()
+                    withContext(Dispatchers.Main) {
+                        lastVersionView?.get()?.text = versionText
                     }
+                } catch (ex: Throwable) {
+                    log.e(ex, "checkVersion failed")
                 }
             }
         }
@@ -451,8 +480,12 @@ class SideMenuAdapter(
                         movementMethod = LinkMovementMethod.getInstance()
                         textSize = 18f
                         isAllCaps = false
+                        setLineSpacing(
+                            1f,
+                            1.1f
+                        )
                         background = null
-                        text = versionRow
+                        text = versionText
                     }
                 ItemType.IT_TIMEZONE ->
                     viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
@@ -502,7 +535,7 @@ class SideMenuAdapter(
     }
 
     init {
-        checkVersion(actMain.applicationContext, handler)
+        actMain.applicationContext.checkVersion()
 
         ListView(actMain).apply {
             adapter = this@SideMenuAdapter

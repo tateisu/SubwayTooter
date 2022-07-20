@@ -95,8 +95,8 @@ class PollingWorker2(
         CheckerNotification.showMessage(applicationContext, text) {
             try {
                 setForeground(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
-            }catch(ex:Throwable){
-                log.e(ex,"showMessage failed.")
+            } catch (ex: Throwable) {
+                log.e(ex, "showMessage failed.")
             }
         }
 

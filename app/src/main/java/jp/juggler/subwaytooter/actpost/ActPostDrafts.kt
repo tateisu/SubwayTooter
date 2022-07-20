@@ -135,11 +135,11 @@ fun ActPost.openDraftPicker() {
 }
 
 fun ActPost.restoreDraft(draft: JsonObject) {
-    launchMain {
-        val listWarning = ArrayList<String>()
-        var targetAccount: SavedAccount? = null
-        runWithProgress("restore from draft", doInBackground = { progress ->
-
+    val listWarning = ArrayList<String>()
+    var targetAccount: SavedAccount? = null
+    launchProgress(
+        "restore from draft",
+        doInBackground = { progress ->
             fun isTaskCancelled() = !coroutineContext.isActive
 
             var content = draft.string(DRAFT_CONTENT) ?: ""
@@ -170,7 +170,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                 } catch (ignored: JsonException) {
                 }
 
-                return@runWithProgress "OK"
+                return@launchProgress "OK"
             }
 
             targetAccount = account
@@ -188,7 +188,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
             // 返信ステータスが存在するかどうか
             EntityId.from(draft, DRAFT_REPLY_ID)?.let { inReplyToId ->
                 val result = apiClient.request("/api/v1/statuses/$inReplyToId")
-                if (isTaskCancelled()) return@runWithProgress null
+                if (isTaskCancelled()) return@launchProgress null
                 if (result?.jsonObject == null) {
                     listWarning.add(getString(R.string.reply_to_in_draft_is_lost))
                     draft.remove(DRAFT_REPLY_ID)
@@ -203,7 +203,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                     var isSomeAttachmentRemoved = false
                     val it = tmpAttachmentList.iterator()
                     while (it.hasNext()) {
-                        if (isTaskCancelled()) return@runWithProgress null
+                        if (isTaskCancelled()) return@launchProgress null
                         val ta = TootAttachment.decodeJson(it.next())
                         if (checkExist(ta.url)) continue
                         it.remove()
@@ -226,101 +226,100 @@ fun ActPost.restoreDraft(draft: JsonObject) {
 
             "OK"
         },
-            afterProc = { result ->
-                // cancelled.
-                if (result == null) return@runWithProgress
+        afterProc = { result ->
+            // cancelled.
+            if (result == null) return@launchProgress
 
-                val content = draft.string(DRAFT_CONTENT) ?: ""
-                val contentWarning = draft.string(DRAFT_CONTENT_WARNING) ?: ""
-                val contentWarningChecked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
-                val nsfwChecked = draft.optBoolean(DRAFT_NSFW_CHECK)
-                val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
-                val replyId = EntityId.from(draft, DRAFT_REPLY_ID)
+            val content = draft.string(DRAFT_CONTENT) ?: ""
+            val contentWarning = draft.string(DRAFT_CONTENT_WARNING) ?: ""
+            val contentWarningChecked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
+            val nsfwChecked = draft.optBoolean(DRAFT_NSFW_CHECK)
+            val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
+            val replyId = EntityId.from(draft, DRAFT_REPLY_ID)
 
-                val draftVisibility =
-                    TootVisibility.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
+            val draftVisibility =
+                TootVisibility.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
 
-                val evEmoji = DecodeOptions(this@restoreDraft, decodeEmoji = true)
-                    .decodeEmoji(content)
+            val evEmoji = DecodeOptions(this@restoreDraft, decodeEmoji = true)
+                .decodeEmoji(content)
 
-                views.etContent.setText(evEmoji)
-                views.etContent.setSelection(evEmoji.length)
-                views.etContentWarning.setText(contentWarning)
-                views.etContentWarning.setSelection(contentWarning.length)
-                views.cbContentWarning.isChecked = contentWarningChecked
-                views.cbNSFW.isChecked = nsfwChecked
-                if (draftVisibility != null) states.visibility = draftVisibility
+            views.etContent.setText(evEmoji)
+            views.etContent.setSelection(evEmoji.length)
+            views.etContentWarning.setText(contentWarning)
+            views.etContentWarning.setSelection(contentWarning.length)
+            views.cbContentWarning.isChecked = contentWarningChecked
+            views.cbNSFW.isChecked = nsfwChecked
+            if (draftVisibility != null) states.visibility = draftVisibility
 
-                views.cbQuote.isChecked = draft.optBoolean(DRAFT_QUOTE)
+            views.cbQuote.isChecked = draft.optBoolean(DRAFT_QUOTE)
 
-                val sv = draft.string(DRAFT_POLL_TYPE)
-                if (sv != null) {
-                    views.spPollType.setSelection(min(1, sv.toPollTypeIndex()))
-                } else {
-                    // old draft
-                    val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
-                    views.spPollType.setSelection(if (bv) 1 else 0)
-                }
+            val sv = draft.string(DRAFT_POLL_TYPE)
+            if (sv != null) {
+                views.spPollType.setSelection(min(1, sv.toPollTypeIndex()))
+            } else {
+                // old draft
+                val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
+                views.spPollType.setSelection(if (bv) 1 else 0)
+            }
 
-                views.cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
-                views.cbHideTotals.isChecked = draft.optBoolean(DRAFT_POLL_HIDE_TOTALS)
-                views.etExpireDays.setText(draft.optString(DRAFT_POLL_EXPIRE_DAY, "1"))
-                views.etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
-                views.etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
+            views.cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
+            views.cbHideTotals.isChecked = draft.optBoolean(DRAFT_POLL_HIDE_TOTALS)
+            views.etExpireDays.setText(draft.optString(DRAFT_POLL_EXPIRE_DAY, "1"))
+            views.etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
+            views.etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
 
-                val array = draft.jsonArray(DRAFT_ENQUETE_ITEMS)
-                if (array != null) {
-                    var srcIndex = 0
-                    for (et in etChoices) {
-                        if (srcIndex < array.size) {
-                            et.setText(array.optString(srcIndex))
-                            ++srcIndex
-                        } else {
-                            et.setText("")
-                        }
+            val array = draft.jsonArray(DRAFT_ENQUETE_ITEMS)
+            if (array != null) {
+                var srcIndex = 0
+                for (et in etChoices) {
+                    if (srcIndex < array.size) {
+                        et.setText(array.optString(srcIndex))
+                        ++srcIndex
+                    } else {
+                        et.setText("")
                     }
-                }
-
-                if (targetAccount != null) selectAccount(targetAccount)
-
-                if (tmpAttachmentList?.isNotEmpty() == true) {
-                    attachmentList.clear()
-                    tmpAttachmentList.forEach {
-                        if (it !is JsonObject) return@forEach
-                        val pa = PostAttachment(TootAttachment.decodeJson(it))
-                        attachmentList.add(pa)
-                    }
-                }
-
-                if (replyId != null) {
-                    states.inReplyToId = replyId
-                    states.inReplyToText = draft.string(DRAFT_REPLY_TEXT)
-                    states.inReplyToImage = draft.string(DRAFT_REPLY_IMAGE)
-                    states.inReplyToUrl = draft.string(DRAFT_REPLY_URL)
-                }
-
-                showContentWarningEnabled()
-                showMediaAttachment()
-                showVisibility()
-                updateTextCount()
-                showReplyTo()
-                showPoll()
-                showQuotedRenote()
-
-                if (listWarning.isNotEmpty()) {
-                    val sb = StringBuilder()
-                    for (s in listWarning) {
-                        if (sb.isNotEmpty()) sb.append("\n")
-                        sb.append(s)
-                    }
-                    AlertDialog.Builder(this@restoreDraft)
-                        .setMessage(sb)
-                        .setNeutralButton(R.string.close, null)
-                        .show()
                 }
             }
-        )
-    }
+
+            if (targetAccount != null) selectAccount(targetAccount)
+
+            if (tmpAttachmentList?.isNotEmpty() == true) {
+                attachmentList.clear()
+                tmpAttachmentList.forEach {
+                    if (it !is JsonObject) return@forEach
+                    val pa = PostAttachment(TootAttachment.decodeJson(it))
+                    attachmentList.add(pa)
+                }
+            }
+
+            if (replyId != null) {
+                states.inReplyToId = replyId
+                states.inReplyToText = draft.string(DRAFT_REPLY_TEXT)
+                states.inReplyToImage = draft.string(DRAFT_REPLY_IMAGE)
+                states.inReplyToUrl = draft.string(DRAFT_REPLY_URL)
+            }
+
+            showContentWarningEnabled()
+            showMediaAttachment()
+            showVisibility()
+            updateTextCount()
+            showReplyTo()
+            showPoll()
+            showQuotedRenote()
+
+            if (listWarning.isNotEmpty()) {
+                val sb = StringBuilder()
+                for (s in listWarning) {
+                    if (sb.isNotEmpty()) sb.append("\n")
+                    sb.append(s)
+                }
+                AlertDialog.Builder(this@restoreDraft)
+                    .setMessage(sb)
+                    .setNeutralButton(R.string.close, null)
+                    .show()
+            }
+        }
+    )
 }
 
 fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String) {

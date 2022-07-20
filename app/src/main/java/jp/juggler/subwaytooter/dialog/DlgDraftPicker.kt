@@ -15,9 +15,12 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actpost.DRAFT_CONTENT
 import jp.juggler.subwaytooter.actpost.DRAFT_CONTENT_WARNING
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 
 class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
     DialogInterface.OnDismissListener {
@@ -119,7 +122,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 
         task = launchMain {
             val cursor = try {
-                withContext(Dispatchers.IO) {
+                withContext(appDispatchers.io) {
                     PostDraft.createCursor()
                 } ?: error("cursor is null")
             } catch (ignored: CancellationException) {

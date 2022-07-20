@@ -10,7 +10,6 @@ import android.webkit.MimeTypeMap
 import androidx.annotation.RawRes
 import okhttp3.internal.closeQuietly
 import java.io.InputStream
-import java.util.*
 
 // internal object StorageUtils{
 //
@@ -294,7 +293,7 @@ fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<G
     // 複数選択
     this.clipData?.let { clipData ->
         (0 until clipData.itemCount).mapNotNull { clipData.getItemAt(it)?.uri }.forEach { uri ->
-            if (null == urlList.find { it.uri == uri }) {
+            if (urlList.none { it.uri == uri }) {
                 urlList.add(GetContentResultEntry(uri))
             }
         }

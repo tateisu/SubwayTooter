@@ -11,7 +11,7 @@ open class TootTag constructor(
     // The hashtag, not including the preceding #
     val name: String,
 
-    val type: TagType = TagType.Tag,
+    var type: TagType = TagType.Tag,
 
     // The URL of the hashtag. may null if generated from TootContext
     val url: String? = null,
@@ -22,11 +22,12 @@ open class TootTag constructor(
 
     // Mastodon /api/v2/search provides history.
     val history: ArrayList<History>? = null,
+) : TimelineItem() {
 
-    ) : TimelineItem() {
     enum class TagType {
         Tag,
-        TrendLink
+        TrendLink,
+        FollowedTags,
     }
 
     val countDaily: Int

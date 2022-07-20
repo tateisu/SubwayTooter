@@ -1,7 +1,9 @@
 package jp.juggler.subwaytooter.column
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.DedupMode
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
@@ -1169,6 +1171,16 @@ class ColumnTask_Refresh(
         val src = parser.statusList(result?.jsonArray).reversed()
         listTmp = addAll(listTmp, src)
         column.saveRange(bBottom, !bBottom, result, src)
+        return result
+    }
+
+    suspend fun getFollowedHashtags(client: TootApiClient): TootApiResult? {
+        val path = column.addRange(bBottom = bBottom, "/api/v1/followed_tags")
+        val result = client.request(path)
+        val src = parser.tagList(result?.jsonArray)
+            .onEach { it.type = TootTag.TagType.FollowedTags }
+        listTmp = addAll(listTmp, src)
+        column.saveRange(bBottom = bBottom, bTop = !bBottom, result = result, list = src)
         return result
     }
 }

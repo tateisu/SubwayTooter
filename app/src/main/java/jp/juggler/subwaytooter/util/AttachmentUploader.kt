@@ -13,10 +13,10 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import jp.juggler.util.VideoInfo.Companion.videoInfo
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
@@ -212,7 +212,7 @@ class AttachmentUploader(
                             }
                             val result = try {
                                 if (request.pa.isCancelled) continue
-                                withContext(request.pa.job + Dispatchers.IO) {
+                                withContext(request.pa.job + appDispatchers.io) {
                                     request.upload()
                                 }
                             } catch (ex: Throwable) {
@@ -220,7 +220,7 @@ class AttachmentUploader(
                             }
                             try {
                                 request.pa.progress = ""
-                                withContext(Dispatchers.Main) {
+                                withContext(appDispatchers.main) {
                                     handleResult(request, result)
                                 }
                             } catch (ex: Throwable) {

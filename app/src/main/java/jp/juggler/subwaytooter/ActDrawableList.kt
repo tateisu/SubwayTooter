@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.util.AsyncActivity
 import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
@@ -44,7 +45,7 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
             val reSkipName =
                 """^(abc_|avd_|btn_checkbox_|btn_radio_|googleg_|ic_keyboard_arrow_|ic_menu_arrow_|notification_|common_|emj_|cpv_|design_|exo_|mtrl_|ic_mtrl_)"""
                     .asciiPattern()
-            val list = withContext(Dispatchers.IO) {
+            val list = withContext(appDispatchers.io) {
                 R.drawable::class.java.fields
                     .mapNotNull {
                         val id = it.get(null) as? Int ?: return@mapNotNull null

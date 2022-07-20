@@ -863,6 +863,15 @@ class ColumnTask_Loading(
         return result
     }
 
+    suspend fun getFollowedHashtags(client: TootApiClient): TootApiResult? {
+        val result = client.request("/api/v1/followed_tags")
+        val src = parser.tagList(result?.jsonArray)
+            .onEach { it.type = TootTag.TagType.FollowedTags }
+        listTmp = addAll(listTmp, src)
+        column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+        return result
+    }
+
     suspend fun getListList(
         client: TootApiClient,
         pathBase: String,

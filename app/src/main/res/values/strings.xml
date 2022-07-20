@@ -1160,4 +1160,7 @@
     <string name="content">Content</string>
     <string name="enable_misskey_notification_check">Enable notification check for Misskey server (unstable)</string>
     <string name="old_devices_warning">End of support for older devices</string>
+    <string name="followed_tags">Followed hashtags</string>
+    <string name="follow_hashtag_of">Follow %1$s</string>
+    <string name="unfollow_hashtag_of">Unfollow %1$s</string>
 </resources>

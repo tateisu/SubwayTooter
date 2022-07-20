@@ -185,7 +185,7 @@ class DlgListMember(
                             if (whoLocal != null) {
                                 forEach { list ->
                                     list.isRegistered =
-                                        null != list.userIds?.find { it == whoLocal.id }
+                                        list.userIds?.any { it == whoLocal.id } ?: false
                                 }
                             }
                         }

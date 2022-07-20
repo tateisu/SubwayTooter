@@ -1151,4 +1151,7 @@
     <string name="content">本文</string>
     <string name="enable_misskey_notification_check">Misskeyサーバで通知チェックを行う(不安定)</string>
     <string name="old_devices_warning">古い端末のサポート終了</string>
+    <string name="followed_tags">フォロー中のハッシュタグ</string>
+    <string name="follow_hashtag_of">\"%1$s\"のフォロー</string>
+    <string name="unfollow_hashtag_of">\"%1$s\"のフォロー解除</string>
 </resources>

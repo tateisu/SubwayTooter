@@ -5,6 +5,7 @@ import com.otaliastudios.transcoder.TranscoderListener
 import com.otaliastudios.transcoder.common.Size
 import com.otaliastudios.transcoder.strategy.DefaultAudioStrategy
 import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy
+import jp.juggler.subwaytooter.global.appDispatchers
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -74,7 +75,7 @@ suspend fun transcodeVideo(
     resizeConfig: MovieResizeConfig,
     onProgress: (Float) -> Unit,
 ): File = try {
-    withContext(Dispatchers.IO) {
+    withContext(appDispatchers.io) {
         if (!resizeConfig.isTranscodeRequired(info)) {
             log.i("transcodeVideo: isTranscodeRequired returns false.")
             return@withContext inFile

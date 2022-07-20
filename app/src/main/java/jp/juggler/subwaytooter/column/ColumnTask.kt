@@ -11,9 +11,12 @@ import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ColumnTaskType(val marker: Char) {
@@ -25,7 +28,7 @@ enum class ColumnTaskType(val marker: Char) {
 
 abstract class ColumnTask(
     val column: Column,
-    val ctType: ColumnTaskType
+    val ctType: ColumnTaskType,
 ) {
 
     val ctStarted = AtomicBoolean(false)
@@ -79,7 +82,7 @@ abstract class ColumnTask(
 
     internal suspend fun getAnnouncements(
         client: TootApiClient,
-        force: Boolean = false
+        force: Boolean = false,
     ): TootApiResult? {
         // announcements is shown only mastodon home timeline, not pseudo.
         if (isMastodon && !isPseudo) {
@@ -126,7 +129,7 @@ abstract class ColumnTask(
     fun start() {
         job = launchMain {
             val result = try {
-                withContext(Dispatchers.IO) { background() }
+                withContext(appDispatchers.io) { background() }
             } catch (ignored: CancellationException) {
                 null // キャンセルされたらresult==nullとする
             } catch (ex: Throwable) {

@@ -11,6 +11,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
 import jp.juggler.subwaytooter.notification.ServerTimeoutNotification.createServerTimeoutNotification
 import jp.juggler.subwaytooter.pref.PrefDevice
@@ -19,7 +20,10 @@ import jp.juggler.subwaytooter.table.NotificationTracking
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PrivacyPolicyChecker
 import jp.juggler.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import okhttp3.Request
@@ -164,7 +168,7 @@ suspend fun cancelAllWorkAndJoin(context: Context) {
 }
 
 fun restartAllWorker(context: Context) {
-    EndlessScope.launch {
+    EmptyScope.launch {
         try {
             if (importProtector.get()) {
                 log.w("restartAllWorker: abort by importProtector.")
@@ -215,7 +219,7 @@ fun checkNotificationImmediate(
     accountDbId: Long,
     injectData: List<TootNotification> = emptyList(),
 ) {
-    EndlessScope.launch {
+    EmptyScope.launch {
         try {
             if (importProtector.get()) {
                 log.w("checkNotificationImmediate: abort by importProtector.")
@@ -293,7 +297,7 @@ suspend fun checkNoticifationAll(
     SavedAccount.loadAccountList(context).mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
-            else -> EndlessScope.launch(Dispatchers.Default) {
+            else -> EmptyScope.launch(appDispatchers.default) {
                 try {
                     PollingChecker(
                         context = context,
@@ -335,7 +339,7 @@ suspend fun checkNoticifationAll(
  * メイン画面のonCreate時に全ての通知をチェックする
  */
 fun checkNotificationImmediateAll(context: Context, onlySubscription: Boolean = false) {
-    EndlessScope.launch {
+    EmptyScope.launch {
         try {
             if (importProtector.get()) {
                 log.w("checkNotificationImmediateAll: abort by importProtector.")

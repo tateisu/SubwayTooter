@@ -9,13 +9,11 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatformTools
 
-val appDatabase by lazy {
-    getKoin().get<AppDatabaseHolder>().database
-}
+val appDatabase by lazy { getKoin().get<AppDatabaseHolder>().database }
 
-val appPref by lazy {
-    getKoin().get<AppPrefHolder>().pref
-}
+val appPref by lazy { getKoin().get<AppPrefHolder>().pref }
+
+val appDispatchers by lazy { getKoin().get<AppDispatchers>() }
 
 fun getKoin(): Koin = KoinPlatformTools.defaultContext().get()
 
@@ -43,6 +41,9 @@ object Global {
                                 val context: Context = get()
                                 log.i("AppDatabaseHolderImpl: context=$context")
                                 AppDatabaseHolderImpl(context)
+                            }
+                            single<AppDispatchers> {
+                                AppDispatchersImpl()
                             }
                         })
                     }

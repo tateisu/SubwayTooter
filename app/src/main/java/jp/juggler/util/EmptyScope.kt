@@ -3,6 +3,7 @@ package jp.juggler.util
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
+import jp.juggler.subwaytooter.global.appDispatchers
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
@@ -15,7 +16,7 @@ val <T : Any> T.wrapWeakReference: WeakReference<T>
 
 // kotlinx.coroutines 1.5.0 で GlobalScopeがdeprecated になったが、
 // プロセスが生きてる間ずっと動いててほしいものや特にキャンセルのタイミングがないコルーチンでは使い続けたい
-object EndlessScope : CoroutineScope {
+object EmptyScope : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = EmptyCoroutineContext
 }
@@ -23,18 +24,22 @@ object EndlessScope : CoroutineScope {
 // メインスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
-    EndlessScope.launch(context = Dispatchers.Main.immediate) {
+    EmptyScope.launch(context = appDispatchers.main.immediate) {
         try {
             block()
-        } catch (ex: CancellationException) {
-            log.trace(ex, "launchMain: cancelled.")
+        } catch (ex: Throwable) {
+            if (ex is CancellationException) {
+                log.w("lainchMain cancelled.")
+            } else {
+                log.trace(ex, "launchMain failed.")
+            }
         }
     }
 
 // Default Dispatcherで動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
-    EndlessScope.launch(context = Dispatchers.Default) {
+    EmptyScope.launch(context = appDispatchers.default) {
         try {
             block()
         } catch (ex: CancellationException) {
@@ -45,7 +50,7 @@ fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
 // IOスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchIO(block: suspend CoroutineScope.() -> Unit): Job =
-    EndlessScope.launch(context = Dispatchers.IO) {
+    EmptyScope.launch(context = appDispatchers.io) {
         try {
             block()
         } catch (ex: CancellationException) {
@@ -53,17 +58,10 @@ fun launchIO(block: suspend CoroutineScope.() -> Unit): Job =
         }
     }
 
-// IOスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
-// 起動されたアクティビティのライフサイクルに関わらず中断しない。
-// asyncの場合キャンセル例外のキャッチは呼び出し側で行う必要がある
-@Suppress("DeferredIsResult")
-fun <T : Any?> asyncIO(block: suspend CoroutineScope.() -> T): Deferred<T> =
-    EndlessScope.async(block = block, context = Dispatchers.IO)
-
 fun AppCompatActivity.launchAndShowError(
     errorCaption: String? = null,
     block: suspend CoroutineScope.() -> Unit,
-): Job = lifecycleScope.launch() {
+): Job = lifecycleScope.launch {
     try {
         block()
     } catch (ex: Throwable) {
@@ -73,7 +71,7 @@ fun AppCompatActivity.launchAndShowError(
 
 /////////////////////////////////////////////////////////////////////////
 
-suspend fun <T : Any?> AppCompatActivity.runWithProgress(
+fun <T : Any?> AppCompatActivity.launchProgress(
     caption: String,
     doInBackground: suspend CoroutineScope.(ProgressDialogEx) -> T,
     afterProc: suspend CoroutineScope.(result: T) -> Unit = {},
@@ -81,46 +79,37 @@ suspend fun <T : Any?> AppCompatActivity.runWithProgress(
     preProc: suspend CoroutineScope.() -> Unit = {},
     postProc: suspend CoroutineScope.() -> Unit = {},
 ) {
-    coroutineScope {
-        if (!isMainThread) error("runWithProgress: not main thread.")
-
-        val progress = ProgressDialogEx(this@runWithProgress)
-
-        val task = async(Dispatchers.IO) {
-            doInBackground(progress)
-        }
-
-        launch(Dispatchers.Main) {
-
+    val activity = this
+    EmptyScope.launch(Dispatchers.Main.immediate) {
+        val progress = ProgressDialogEx(activity)
+        try {
+            progress.setCancelable(true)
+            progress.isIndeterminateEx = true
+            progress.setMessageEx("$caption…")
+            progressInitializer(progress)
             try {
                 preProc()
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
-            progress.setCancelable(true)
-            progress.setOnCancelListener { task.cancel() }
-            progress.isIndeterminateEx = true
-            progress.setMessageEx("$caption…")
-            progressInitializer(progress)
-            progress.show()
-
+            val result = supervisorScope {
+                val task = async(appDispatchers.io) {
+                    doInBackground(progress)
+                }
+                progress.setOnCancelListener { task.cancel() }
+                progress.show()
+                task.await()
+            }
+            if (result != null) afterProc(result)
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            showToast(ex, "$caption failed.")
+        } finally {
+            progress.dismissSafe()
             try {
-                val result = try {
-                    task.await()
-                } catch (ignored: CancellationException) {
-                    null
-                }
-                if (result != null) afterProc(result)
+                postProc()
             } catch (ex: Throwable) {
-                showToast(ex, "$caption failed.")
-            } finally {
-                progress.dismissSafe()
-                try {
-                    postProc()
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
+                log.trace(ex)
             }
         }
     }

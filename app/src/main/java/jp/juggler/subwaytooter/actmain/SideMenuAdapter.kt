@@ -292,6 +292,10 @@ class SideMenuAdapter(
             timeline(defaultInsertPosition, ColumnType.MISSKEY_ANTENNA_LIST)
         },
 
+        Item(icon = R.drawable.ic_hashtag, title = R.string.followed_tags) {
+            timeline(defaultInsertPosition, ColumnType.FOLLOWED_HASHTAGS)
+        },
+
         Item(icon = R.drawable.ic_search, title = R.string.search) {
             timeline(defaultInsertPosition, ColumnType.SEARCH, args = arrayOf("", false))
         },

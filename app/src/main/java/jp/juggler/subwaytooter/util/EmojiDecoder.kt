@@ -298,7 +298,7 @@ object EmojiDecoder {
             var start = i
             loop@ while (i < end) {
                 val c = s.codePointAt(i)
-                if (c == codepointColon && null == urlList.find { i in it }) break@loop
+                if (c == codepointColon && urlList.none { i in it }) break@loop
                 i += Character.charCount(c)
             }
             if (i > start) callback.onString(s.substring(start, i))

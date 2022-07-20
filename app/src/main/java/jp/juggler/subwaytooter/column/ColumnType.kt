@@ -2038,7 +2038,29 @@ enum class ColumnType(
         canStreamingMisskey = streamingTypeNo,
     ),
 
+    FOLLOWED_HASHTAGS(
+        46,
+        iconId = { R.drawable.ic_hashtag },
+        name1 = { it.getString(R.string.followed_tags) },
+        bAllowPseudo = false,
+        bAllowMisskey = false,
+
+        loading = { client ->
+            getFollowedHashtags(client)
+        },
+
+        refresh = { client ->
+            getFollowedHashtags(client)
+        },
+        canAutoRefresh = false,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+    ),
+
     ;
+
+    private fun getFollowedHashtags(client: TootApiClient) {
+    }
 
     init {
         val old = Column.typeMap[id]

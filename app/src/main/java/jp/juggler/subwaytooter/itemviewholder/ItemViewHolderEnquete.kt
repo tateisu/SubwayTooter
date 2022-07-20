@@ -8,11 +8,13 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootPolls
 import jp.juggler.subwaytooter.api.entity.TootPollsChoice
 import jp.juggler.subwaytooter.api.entity.TootPollsType
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.isSearchColumn
 import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -66,7 +68,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
     enquete: TootPolls,
     canVote: Boolean,
     i: Int,
-    item: TootPollsChoice
+    item: TootPollsChoice,
 ) {
 
     val text = when (enquete.pollType) {
@@ -213,7 +215,7 @@ fun ItemViewHolder.makeEnqueteFooterFriendsNico(enquete: TootPolls) {
 fun ItemViewHolder.makeEnqueteFooterMastodon(
     status: TootStatus,
     enquete: TootPolls,
-    canVote: Boolean
+    canVote: Boolean,
 ) {
 
     val density = activity.density
@@ -281,7 +283,7 @@ fun ItemViewHolder.onClickEnqueteChoice(
     enquete: TootPolls,
     context: Context,
     accessInfo: SavedAccount,
-    idx: Int
+    idx: Int,
 ) {
     if (enquete.ownVoted) {
         context.showToast(false, R.string.already_voted)
@@ -387,7 +389,7 @@ fun ItemViewHolder.sendMultiple(
     status: TootStatus,
     enquete: TootPolls,
     context: Context,
-    accessInfo: SavedAccount
+    accessInfo: SavedAccount,
 ) {
     val now = System.currentTimeMillis()
     if (now >= enquete.expired_at) {
@@ -395,7 +397,7 @@ fun ItemViewHolder.sendMultiple(
         return
     }
 
-    if (enquete.items?.find { it.checked } == null) {
+    if (enquete.items?.any { it.checked } != true) {
         context.showToast(false, R.string.polls_choice_not_selected)
         return
     }

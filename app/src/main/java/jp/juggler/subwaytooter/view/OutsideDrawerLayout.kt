@@ -16,17 +16,17 @@ import java.util.*
 class OutsideDrawerLayout : LinearLayout {
 
     constructor(context: Context) :
-        super(context) {
+            super(context) {
         init()
     }
 
     constructor(context: Context, attrs: AttributeSet) :
-        super(context, attrs) {
+            super(context, attrs) {
         init()
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
-        super(context, attrs, defStyleAttr) {
+            super(context, attrs, defStyleAttr) {
         init()
     }
 
@@ -41,8 +41,8 @@ class OutsideDrawerLayout : LinearLayout {
             parent: ViewGroup,
             descendant: View,
             left: Int,
-            top: Int
-        ) -> Unit
+            top: Int,
+        ) -> Unit,
     )
 
     private val callbackList = LinkedList<Callback>()
@@ -54,12 +54,12 @@ class OutsideDrawerLayout : LinearLayout {
             parent: ViewGroup,
             descendant: View,
             left: Int,
-            top: Int
-        ) -> Unit
+            top: Int,
+        ) -> Unit,
     ) {
-        if (null == callbackList.find { it.view == view && it.draw == draw }) callbackList.add(
-            Callback(view, draw)
-        )
+        if (callbackList.none { it.view == view && it.draw == draw }) {
+            callbackList.add(Callback(view, draw))
+        }
     }
 
     @Suppress("unused")

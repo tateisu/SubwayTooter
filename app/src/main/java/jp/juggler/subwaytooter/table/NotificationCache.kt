@@ -118,7 +118,6 @@ class NotificationCache(private val account_db_id: Long) {
             if (noBit(flags, 8)) append("&exclude_types[]=mention")
             // if(noBit(flags,16)) /* mastodon has no reaction */
             if (noBit(flags, 32)) append("&exclude_types[]=poll")
-
         }.toString()
 
         fun parseNotificationTime(accessInfo: SavedAccount, src: JsonObject): Long =

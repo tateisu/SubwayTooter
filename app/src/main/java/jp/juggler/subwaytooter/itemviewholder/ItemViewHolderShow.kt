@@ -12,10 +12,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.StringRes
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.appendColorShadeIcon
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.getAcctColor
@@ -417,13 +420,16 @@ fun ItemViewHolder.showSearchTag(tag: TootTag) {
 
         tvTrendTagCount.text = "${tag.countDaily}(${tag.countWeekly})"
         cvTagHistory.setHistory(tag.history)
-        if (tag.type == TootTag.TagType.TrendLink) {
-            tvTrendTagName.text = tag.url?.ellipsizeDot3(256)
-            tvTrendTagDesc.text = tag.name + "\n" + tag.description
-        } else {
-            tvTrendTagName.text = "#${tag.name}"
-            tvTrendTagDesc.text =
-                activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
+        when (tag.type) {
+            TootTag.TagType.TrendLink -> {
+                tvTrendTagName.text = tag.url?.ellipsizeDot3(256)
+                tvTrendTagDesc.text = tag.name + "\n" + tag.description
+            }
+            else -> {
+                tvTrendTagName.text = "#${tag.name.ellipsizeDot3(256)}"
+                tvTrendTagDesc.text =
+                    activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
+            }
         }
     } else {
         llSearchTag.visibility = View.VISIBLE

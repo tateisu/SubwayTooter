@@ -728,7 +728,7 @@ private class EmojiPicker(
                 else -> log.w("handleTouch else $ev")
             }
         } catch (ex: Throwable) {
-            log.w("handleTouch failed. ev=$ev, wasIntercept=$wasIntercept")
+            log.trace(ex, "handleTouch failed. ev=$ev, wasIntercept=$wasIntercept")
             wasIntercept
         }
 

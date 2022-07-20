@@ -42,7 +42,7 @@ class TootAttachment : TootAttachmentLike {
         private fun guessMediaTypeByUrl(src: String?): TootAttachmentType? {
             val uri = src.mayUri() ?: return null
 
-            if (ext_audio.find { uri.path?.endsWith(it) == true } != null) {
+            if (ext_audio.any { uri.path?.endsWith(it) == true }) {
                 return TootAttachmentType.Audio
             }
 

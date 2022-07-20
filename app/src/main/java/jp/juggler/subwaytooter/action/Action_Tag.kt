@@ -5,16 +5,18 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootTag
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.encodePercent
-import jp.juggler.util.launchMain
-import java.util.*
+import jp.juggler.util.*
+
+private val log = LogCategory("Action_Tag")
 
 fun ActMain.longClickTootTag(pos: Int, accessInfo: SavedAccount, item: TootTag) {
     tagTimelineFromAccount(
@@ -27,6 +29,7 @@ fun ActMain.longClickTootTag(pos: Int, accessInfo: SavedAccount, item: TootTag) 
 
 // ハッシュタグへの操作を選択する
 fun ActMain.tagDialog(
+    accessInfo: SavedAccount?,
     pos: Int,
     url: String,
     host: Host,
@@ -36,55 +39,84 @@ fun ActMain.tagDialog(
 ) {
     val tagWithSharp = "#$tagWithoutSharp"
 
-    val d = ActionsDialog()
-        .addAction(getString(R.string.open_hashtag_column)) {
-            tagTimelineFromAccount(
-                pos,
-                url,
-                host,
-                tagWithoutSharp
-            )
-        }
+    launchMain {
+        try {
 
-    // https://mastodon.juggler.jp/@tateisu/101865456016473337
-    // 一時的に使えなくする
-    if (whoAcct != null) {
-        d.addAction(
-            AcctColor.getStringWithNickname(
-                this,
-                R.string.open_hashtag_from_account,
-                whoAcct
-            )
-        ) {
-            tagTimelineFromAccount(
-                pos,
-                "https://${whoAcct.host?.ascii}/@${whoAcct.username}/tagged/${tagWithoutSharp.encodePercent()}",
-                host,
-                tagWithoutSharp,
-                whoAcct
-            )
+            val d = ActionsDialog()
+                .addAction(getString(R.string.open_hashtag_column)) {
+                    tagTimelineFromAccount(
+                        pos,
+                        url,
+                        host,
+                        tagWithoutSharp
+                    )
+                }
+
+            // https://mastodon.juggler.jp/@tateisu/101865456016473337
+            // 一時的に使えなくする
+            if (whoAcct != null) {
+                d.addAction(
+                    AcctColor.getStringWithNickname(
+                        this@tagDialog,
+                        R.string.open_hashtag_from_account,
+                        whoAcct
+                    )
+                ) {
+                    tagTimelineFromAccount(
+                        pos,
+                        "https://${whoAcct.host?.ascii}/@${whoAcct.username}/tagged/${tagWithoutSharp.encodePercent()}",
+                        host,
+                        tagWithoutSharp,
+                        whoAcct
+                    )
+                }
+            }
+
+            d.addAction(getString(R.string.open_in_browser)) { openCustomTab(url) }
+                .addAction(getString(R.string.quote_hashtag_of,
+                    tagWithSharp)) { openPost("$tagWithSharp ") }
+
+            if (tagList != null && tagList.size > 1) {
+                val sb = StringBuilder()
+                for (s in tagList) {
+                    if (sb.isNotEmpty()) sb.append(' ')
+                    sb.append(s)
+                }
+                val tagAll = sb.toString()
+                d.addAction(
+                    getString(
+                        R.string.quote_all_hashtag_of,
+                        tagAll
+                    )
+                ) { openPost("$tagAll ") }
+            }
+
+            val ti = TootInstance.getCached(accessInfo)
+            if (ti != null && accessInfo?.isMisskey == false) {
+                val result = runApiTask(accessInfo) { client ->
+                    client.request("/api/v1/tags/${tagWithoutSharp.encodePercent()}")
+                }
+                val following = when {
+                    result == null || result.error != null -> null
+                    else -> result.jsonObject?.boolean("following")
+                }
+                val toggle = following?.let { !it }
+                if (toggle != null) {
+                    val toggleCaption = when (toggle) {
+                        true -> R.string.follow_hashtag_of
+                        else -> R.string.unfollow_hashtag_of
+                    }
+                    d.addAction(getString(toggleCaption, tagWithSharp)) {
+                        followHashTag(accessInfo, tagWithoutSharp, toggle)
+                    }
+                }
+            }
+
+            d.show(this@tagDialog, tagWithSharp)
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
     }
-
-    d.addAction(getString(R.string.open_in_browser)) { openCustomTab(url) }
-        .addAction(getString(R.string.quote_hashtag_of, tagWithSharp)) { openPost("$tagWithSharp ") }
-
-    if (tagList != null && tagList.size > 1) {
-        val sb = StringBuilder()
-        for (s in tagList) {
-            if (sb.isNotEmpty()) sb.append(' ')
-            sb.append(s)
-        }
-        val tagAll = sb.toString()
-        d.addAction(
-            getString(
-                R.string.quote_all_hashtag_of,
-                tagAll
-            )
-        ) { openPost("$tagAll ") }
-    }
-
-    d.show(this, tagWithSharp)
 }
 
 // 検索カラムからハッシュタグを選んだ場合、カラムのアカウントでハッシュタグを開く
@@ -188,4 +220,31 @@ fun ActMain.tagTimelineFromAccount(
     }
 
     dialog.show(this, "#$tagWithoutSharp")
+}
+
+fun ActMain.followHashTag(
+    accessInfo: SavedAccount,
+    tagWithoutSharp: String,
+    isSet: Boolean,
+) {
+    launchMain {
+        runApiTask(accessInfo) { client ->
+            client.request(
+                "/api/v1/tags/${tagWithoutSharp.encodePercent()}/${if (isSet) "follow" else "unfollow"}",
+                "".toFormRequestBody().toPost()
+            )
+        }?.let { result ->
+            when (val error = result.error) {
+                // 成功時はTagオブジェクトが返るが、使っていない
+                null -> showToast(
+                    false,
+                    when {
+                        isSet -> R.string.follow_succeeded
+                        else -> R.string.unfollow_succeeded
+                    }
+                )
+                else -> showToast(true, error)
+            }
+        }
+    }
 }

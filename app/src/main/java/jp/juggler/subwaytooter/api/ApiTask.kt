@@ -6,10 +6,16 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
-import kotlinx.coroutines.*
-import java.lang.Runnable
+import jp.juggler.util.clip
+import jp.juggler.util.dismissSafe
+import jp.juggler.util.isMainThread
+import jp.juggler.util.withCaption
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.supervisorScope
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
 
@@ -52,7 +58,7 @@ private class TootTaskRunner(
             progressSetup: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
             backgroundBlock: suspend A.(client: TootApiClient) -> TootApiResult?,
         ): TootApiResult? {
-            if (!isMainThread) error("runApiTask: not main thread")
+            if (!isMainThread) error("runApiTask: must main thread")
             val runner = TootTaskRunner(
                 context = context,
                 progressStyle = progressStyle,
@@ -62,21 +68,21 @@ private class TootTaskRunner(
             return runner.run {
                 accessInfo?.let { client.account = it }
                 apiHost?.let { client.apiHost = it }
-                withContext(SupervisorJob() + Dispatchers.Main) {
-                    try {
-                        openProgress()
-                        asyncIO {
+                try {
+                    openProgress()
+                    supervisorScope {
+                        async(appDispatchers.io) {
                             backgroundBlock(context, client)
                         }.also {
                             task = it
                         }.await()
-                    } catch (ignored: CancellationException) {
-                        null
-                    } catch (ex: Throwable) {
-                        TootApiResult(ex.withCaption("error"))
-                    } finally {
-                        dismissProgress()
                     }
+                } catch (ignored: CancellationException) {
+                    null
+                } catch (ex: Throwable) {
+                    TootApiResult(ex.withCaption("error"))
+                } finally {
+                    dismissProgress()
                 }
             }
         }
@@ -218,7 +224,13 @@ suspend fun <A : Context> A.runApiTask(
     progressPrefix: String? = null,
     progressSetup: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
     backgroundBlock: suspend A.(client: TootApiClient) -> TootApiResult?,
-) = TootTaskRunner.runApiTask(this, accessInfo, null, progressStyle, progressPrefix, progressSetup, backgroundBlock)
+) = TootTaskRunner.runApiTask(this,
+    accessInfo,
+    null,
+    progressStyle,
+    progressPrefix,
+    progressSetup,
+    backgroundBlock)
 
 suspend fun <A : Context> A.runApiTask(
     apiHost: Host,
@@ -226,11 +238,23 @@ suspend fun <A : Context> A.runApiTask(
     progressPrefix: String? = null,
     progressSetup: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
     backgroundBlock: suspend A.(client: TootApiClient) -> TootApiResult?,
-) = TootTaskRunner.runApiTask(this, null, apiHost, progressStyle, progressPrefix, progressSetup, backgroundBlock)
+) = TootTaskRunner.runApiTask(this,
+    null,
+    apiHost,
+    progressStyle,
+    progressPrefix,
+    progressSetup,
+    backgroundBlock)
 
 suspend fun <A : Context> A.runApiTask(
     progressStyle: Int = ApiTask.PROGRESS_SPINNER,
     progressPrefix: String? = null,
     progressSetup: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
     backgroundBlock: suspend A.(client: TootApiClient) -> TootApiResult?,
-) = TootTaskRunner.runApiTask(this, null, null, progressStyle, progressPrefix, progressSetup, backgroundBlock)
+) = TootTaskRunner.runApiTask(this,
+    null,
+    null,
+    progressStyle,
+    progressPrefix,
+    progressSetup,
+    backgroundBlock)

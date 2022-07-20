@@ -6,13 +6,13 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.endPadding
 import jp.juggler.subwaytooter.util.startPadding
 import jp.juggler.subwaytooter.view.ListDivider
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
@@ -60,7 +60,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
         // 非同期処理を開始
         lastImageTask = launchMain {
             val bitmap = try {
-                withContext(Dispatchers.IO) {
+                withContext(appDispatchers.io) {
                     try {
                         createResizedBitmap(
                             activity,

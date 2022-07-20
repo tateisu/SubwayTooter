@@ -1513,13 +1513,11 @@ class ActAccountSetting : AppCompatActivity(),
             return
         }
 
-        launchMain {
-            runWithProgress(
-                "preparing image",
-                { createOpener(uri, mimeType) },
-                { updateCredential(propName, it) }
-            )
-        }
+        launchProgress(
+            "preparing image",
+            doInBackground = { createOpener(uri, mimeType) },
+            afterProc = { updateCredential(propName, it) }
+        )
     }
 
     private fun updatePushSubscription(force: Boolean) {

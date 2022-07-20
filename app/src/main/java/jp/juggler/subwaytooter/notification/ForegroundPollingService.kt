@@ -6,11 +6,11 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
-import jp.juggler.util.EndlessScope
+import jp.juggler.util.EmptyScope
 import jp.juggler.util.LogCategory
 import jp.juggler.util.launchMain
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
@@ -84,7 +84,7 @@ class ForegroundPollingService : Service() {
     }
 
     init {
-        EndlessScope.launch(Dispatchers.Default) {
+        EmptyScope.launch(appDispatchers.default) {
             var lastStartId = 0
             while (true) {
                 try {

@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
 import jp.juggler.subwaytooter.notification.MessageNotification.getMessageNotifications
 import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
@@ -213,7 +214,7 @@ class PollingChecker(
                 return
             }
 
-            withContext(Dispatchers.Default + checkJob) {
+            withContext(appDispatchers.default + checkJob) {
                 if (importProtector.get()) {
                     log.w("aborted by importProtector.")
                     return@withContext
@@ -294,9 +295,9 @@ class PollingChecker(
 
                     cache = NotificationCache(account.db_id).apply {
                         load()
-                        if( account.isMisskey && ! PrefB.bpMisskeyNotificationCheck() ){
+                        if (account.isMisskey && !PrefB.bpMisskeyNotificationCheck()) {
                             log.d("skip misskey server. ${account.acct}")
-                        }else{
+                        } else {
                             requestAsync(
                                 client,
                                 account,

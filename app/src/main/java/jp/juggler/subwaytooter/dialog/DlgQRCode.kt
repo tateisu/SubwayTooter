@@ -8,8 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.launchMain
-import jp.juggler.util.runWithProgress
+import jp.juggler.util.launchProgress
 import net.glxn.qrgen.android.QRCode
 
 @SuppressLint("StaticFieldLeak")
@@ -23,22 +22,20 @@ object DlgQRCode {
         activity: ActMain,
         size: Int,
         url: String,
-        callback: QrCodeCallback
+        callback: QrCodeCallback,
     ) {
-        launchMain {
-            activity.runWithProgress(
-                "making QR code",
-                progressInitializer = {
-                    it.setMessageEx(activity.getString(R.string.generating_qr_code))
-                },
-                doInBackground = {
-                    QRCode.from(url).withSize(size, size).bitmap()
-                },
-                afterProc = {
-                    if (it != null) callback.onQrCode(it)
-                },
-            )
-        }
+        activity.launchProgress(
+            "making QR code",
+            progressInitializer = {
+                it.setMessageEx(activity.getString(R.string.generating_qr_code))
+            },
+            doInBackground = {
+                QRCode.from(url).withSize(size, size).bitmap()
+            },
+            afterProc = {
+                if (it != null) callback.onQrCode(it)
+            },
+        )
     }
 
     fun open(activity: ActMain, message: CharSequence, url: String) {

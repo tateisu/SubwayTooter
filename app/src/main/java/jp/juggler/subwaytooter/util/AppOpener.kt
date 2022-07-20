@@ -206,6 +206,7 @@ fun openCustomTab(
             val tagInfo = url.findHashtagFromUrl()
             if (tagInfo != null) {
                 activity.tagDialog(
+                    accessInfo,
                     pos,
                     url,
                     Host.parse(tagInfo.second),

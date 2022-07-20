@@ -191,7 +191,7 @@ fun Column.removeNotifications() {
     duplicateMap.clear()
     fireShowContent(reason = "removeNotifications", reset = true)
 
-    EndlessScope.launch {
+    EmptyScope.launch {
         try {
             onNotificationCleared(context, accessInfo.db_id)
         } catch (ex: Throwable) {

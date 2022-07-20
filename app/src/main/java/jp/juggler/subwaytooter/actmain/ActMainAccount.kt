@@ -4,7 +4,6 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.fireShowColumnHeader
 import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.table.SavedAccount
-import java.util.*
 
 // デフォルトの投稿先アカウントを探す。アカウント選択が必要な状況ならnull
 val ActMain.currentPostTarget: SavedAccount?
@@ -34,7 +33,7 @@ val ActMain.currentPostTarget: SavedAccount?
                         break
                     }
                     // 既出でなければ追加する
-                    if (null == accounts.find { it == a }) accounts.add(a)
+                    if (accounts.none { it == a }) accounts.add(a)
                 } catch (ignored: Throwable) {
                 }
             }
@@ -50,7 +49,7 @@ val ActMain.currentPostTarget: SavedAccount?
 fun ActMain.reloadAccountSetting(
     newAccounts: ArrayList<SavedAccount> = SavedAccount.loadAccountList(
         this
-    )
+    ),
 ) {
     for (column in appState.columnList) {
         val a = column.accessInfo

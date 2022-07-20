@@ -333,7 +333,7 @@ suspend fun Context.accountListWithFilter(
 ): MutableList<SavedAccount>? {
     var resultList: MutableList<SavedAccount>? = null
     runApiTask { client ->
-        coroutineScope {
+        supervisorScope {
             resultList = SavedAccount.loadAccountList(this@accountListWithFilter)
                 .map {
                     async {

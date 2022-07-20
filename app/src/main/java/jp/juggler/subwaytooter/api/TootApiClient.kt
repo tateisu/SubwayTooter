@@ -1417,7 +1417,6 @@ suspend fun TootApiClient.syncStatus(
                 TootParser(
                     context,
                     linkHelper = LinkHelper.create(host, misskeyVersion = 10),
-                    serviceType = ServiceType.MISSKEY
                 )
                     .status(result.jsonObject)
                     ?.apply {

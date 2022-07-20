@@ -3,18 +3,22 @@ package jp.juggler.subwaytooter.action
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.onTagFollowChanged
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
+import kotlinx.coroutines.withContext
 
 private val log = LogCategory("Action_Tag")
 
@@ -31,14 +35,23 @@ fun ActMain.longClickTootTag(pos: Int, accessInfo: SavedAccount, item: TootTag) 
 fun ActMain.tagDialog(
     accessInfo: SavedAccount?,
     pos: Int,
+    // タグのURL
+    // URLのホスト部分は普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
     url: String,
+    // タグのHost。
+    // 普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
     host: Host,
+    // タグの名前
     tagWithoutSharp: String,
-    tagList: ArrayList<String>?,
-    whoAcct: Acct?,
+    // 複数のタグをまとめて引用したい場合がある
+    tagList: ArrayList<String>? = null,
+    // nullでなければ投稿者別タグTLを開く選択肢を表示する
+    whoAcct: Acct? = null,
+    // TootTagの情報があれば
+    tagInfo: TootTag? = null,
 ) {
+    val activity = this
     val tagWithSharp = "#$tagWithoutSharp"
-
     launchMain {
         try {
 
@@ -52,12 +65,11 @@ fun ActMain.tagDialog(
                     )
                 }
 
-            // https://mastodon.juggler.jp/@tateisu/101865456016473337
-            // 一時的に使えなくする
+            // 投稿者別タグTL
             if (whoAcct != null) {
                 d.addAction(
                     AcctColor.getStringWithNickname(
-                        this@tagDialog,
+                        activity,
                         R.string.open_hashtag_from_account,
                         whoAcct
                     )
@@ -93,22 +105,23 @@ fun ActMain.tagDialog(
 
             val ti = TootInstance.getCached(accessInfo)
             if (ti != null && accessInfo?.isMisskey == false) {
-                val result = runApiTask(accessInfo) { client ->
-                    client.request("/api/v1/tags/${tagWithoutSharp.encodePercent()}")
+                var tag = tagInfo
+                if (tag == null) {
+                    val result = runApiTask(accessInfo) { client ->
+                        client.request("/api/v1/tags/${tagWithoutSharp.encodePercent()}")
+                    } ?: return@launchMain //cancelled.
+                    TootParser(activity, accessInfo)
+                        .tag(result.jsonObject)
+                        ?.let { tag = it }
                 }
-                val following = when {
-                    result == null || result.error != null -> null
-                    else -> result.jsonObject?.boolean("following")
+
+                val toggle = !(tag?.following ?: false)
+                val toggleCaption = when (toggle) {
+                    true -> R.string.follow_hashtag_of
+                    else -> R.string.unfollow_hashtag_of
                 }
-                val toggle = following?.let { !it }
-                if (toggle != null) {
-                    val toggleCaption = when (toggle) {
-                        true -> R.string.follow_hashtag_of
-                        else -> R.string.unfollow_hashtag_of
-                    }
-                    d.addAction(getString(toggleCaption, tagWithSharp)) {
-                        followHashTag(accessInfo, tagWithoutSharp, toggle)
-                    }
+                d.addAction(getString(toggleCaption, tagWithSharp)) {
+                    followHashTag(accessInfo, tagWithoutSharp, toggle)
                 }
             }
 
@@ -142,9 +155,15 @@ fun ActMain.tagTimeline(
 // アカウントを選んでハッシュタグカラムを開く
 fun ActMain.tagTimelineFromAccount(
     pos: Int,
+    // タグのURL
+    // URLのホスト部分は普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
     url: String,
+    // タグのHost。
+    // 普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
     host: Host,
+    // タグの名前。#を含まない
     tagWithoutSharp: String,
+    // 「投稿者別タグTL」を開くなら、投稿者のacctを指定する
     acct: Acct? = null,
 ) {
 
@@ -166,14 +185,13 @@ fun ActMain.tagTimelineFromAccount(
             }
         } else {
             when {
+                // 疑似アカウントはacctからaccount idを取得できないので
+                // アカウント別タグTLを開けない
+                a.isPseudo -> Unit
 
-                // acctからidを取得できない
-                a.isPseudo -> {
-                }
-
-                // ミスキーのアカウント別タグTLは未対応
-                a.isMisskey -> {
-                }
+                // ミスキーはアカウント別タグTLがないので
+                // アカウント別タグTLを開けない
+                a.isMisskey -> Unit
 
                 !a.matchHost(host) -> listOther.add(a)
                 else -> listOriginal.add(a)
@@ -227,6 +245,7 @@ fun ActMain.followHashTag(
     tagWithoutSharp: String,
     isSet: Boolean,
 ) {
+    val activity = this
     launchMain {
         runApiTask(accessInfo) { client ->
             client.request(
@@ -235,14 +254,24 @@ fun ActMain.followHashTag(
             )
         }?.let { result ->
             when (val error = result.error) {
-                // 成功時はTagオブジェクトが返るが、使っていない
-                null -> showToast(
-                    false,
-                    when {
-                        isSet -> R.string.follow_succeeded
-                        else -> R.string.unfollow_succeeded
+                null -> {
+                    showToast(
+                        false,
+                        when {
+                            isSet -> R.string.follow_succeeded
+                            else -> R.string.unfollow_succeeded
+                        }
+                    )
+                    // 成功時はTagオブジェクトが返る
+                    // フォロー中のタグ一覧を更新する
+                    TootParser(activity, accessInfo).tag(result.jsonObject)?.let { tag ->
+                        withContext(appDispatchers.main.immediate) {
+                            for (column in appState.columnList) {
+                                column.onTagFollowChanged(accessInfo, tag)
+                            }
+                        }
                     }
-                )
+                }
                 else -> showToast(true, error)
             }
         }

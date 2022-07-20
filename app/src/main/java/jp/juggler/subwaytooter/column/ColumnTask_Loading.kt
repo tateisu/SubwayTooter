@@ -866,7 +866,6 @@ class ColumnTask_Loading(
     suspend fun getFollowedHashtags(client: TootApiClient): TootApiResult? {
         val result = client.request("/api/v1/followed_tags")
         val src = parser.tagList(result?.jsonArray)
-            .onEach { it.type = TootTag.TagType.FollowedTags }
         listTmp = addAll(listTmp, src)
         column.saveRange(bBottom = true, bTop = true, result = result, list = src)
         return result
@@ -1217,7 +1216,7 @@ class ColumnTask_Loading(
 
             val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
             if (searchResult != null) {
-                listTmp = java.util.ArrayList()
+                listTmp = ArrayList()
                 addAll(listTmp, searchResult.hashtags)
                 if (searchResult.searchApiVersion >= 2 && searchResult.hashtags.isNotEmpty()) {
                     addOne(listTmp, TootSearchGap(TootSearchGap.SearchType.Hashtag))

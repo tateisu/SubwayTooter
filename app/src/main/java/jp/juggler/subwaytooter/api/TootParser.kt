@@ -13,7 +13,10 @@ class TootParser(
     val linkHelper: LinkHelper,
     var pinned: Boolean = false, // プロフィールカラムからpinned TL を読んだ時だけ真
     var highlightTrie: WordTrieTree? = null,
-    var serviceType: ServiceType = ServiceType.MASTODON,
+    var serviceType: ServiceType = when {
+        linkHelper.isMisskey -> ServiceType.MISSKEY
+        else -> ServiceType.MASTODON
+    },
     var misskeyDecodeProfilePin: Boolean = false,
     var fromStream: Boolean = false,
     var decodeQuote: Boolean = true,
@@ -28,10 +31,6 @@ class TootParser(
     val apDomain: Host
         get() = linkHelper.apDomain
 
-    init {
-        if (linkHelper.isMisskey) serviceType = ServiceType.MISSKEY
-    }
-
     fun getFullAcct(acct: Acct?) = linkHelper.getFullAcct(acct)
 
     fun account(src: JsonObject?) = parseItem(::TootAccount, this, src)
@@ -43,6 +42,9 @@ class TootParser(
 
     fun notification(src: JsonObject?) = parseItem(::TootNotification, this, src)
     fun notificationList(src: JsonArray?) = parseList(::TootNotification, this, src)
+
+    fun tag(src: JsonObject?) =
+        src?.let { TootTag.parse(this, it) }
 
     fun tagList(array: JsonArray?) =
         TootTag.parseList(this, array)

@@ -233,7 +233,7 @@ suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
 fun Column.makeMisskeyBaseParameter(parser: TootParser?) =
     accessInfo.putMisskeyApiToken().apply {
         if (accessInfo.isMisskey) {
-            if (parser != null) parser.serviceType = ServiceType.MISSKEY
+            parser?.serviceType = ServiceType.MISSKEY
             put("limit", 40)
         }
     }

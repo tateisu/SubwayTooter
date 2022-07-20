@@ -265,18 +265,15 @@ private fun ItemViewHolder.clickTag(pos: Int, item: TimelineItem?) {
         when (item) {
             is TootTag -> when (item.type) {
                 TootTag.TagType.Tag ->
-                    tagTimeline(pos, accessInfo, item.name)
-                TootTag.TagType.FollowedTags -> {
-                    val host = accessInfo.apiHost
-                    tagDialog(accessInfo,
+                    tagDialog(
+                        accessInfo,
                         pos,
                         item.url!!,
-                        host,
+                        accessInfo.apiHost,
                         item.name,
-                        tagList = null,
-                        whoAcct = null)
-                }
-                TootTag.TagType.TrendLink ->
+                        tagInfo = item,
+                    )
+                TootTag.TagType.Link ->
                     openCustomTab(item.url)
             }
             is TootSearchGap -> column.startGap(item, isHead = true)

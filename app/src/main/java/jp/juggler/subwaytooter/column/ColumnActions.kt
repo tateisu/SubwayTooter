@@ -434,3 +434,39 @@ fun replaceConversationSummary(
         if (removeSet.contains(o.id)) it.remove()
     }
 }
+
+// タグのフォロー状態が変わったら呼ばれる
+fun Column.onTagFollowChanged(account: SavedAccount, newTag: TootTag) {
+
+    if (isDispose.get() || bInitialLoading || bRefreshLoading) return
+    if (accessInfo != account) return
+
+    when (type) {
+        ColumnType.FOLLOWED_HASHTAGS, ColumnType.TREND_TAG, ColumnType.SEARCH -> {
+            val tmpList = ArrayList<TimelineItem>(listData.size)
+            for (o in listData) {
+                if (o is TootTag && o.name == newTag.name) {
+                    tmpList.add(newTag)
+                } else {
+                    tmpList.add(o)
+                }
+            }
+            if (type == ColumnType.FOLLOWED_HASHTAGS) {
+                val tagFinder:(TimelineItem)->Boolean = {it is TootTag && it.name == newTag.name}
+                when (newTag.following) {
+                    true ->
+                        if (tmpList.none(tagFinder)) {
+                            tmpList.add(0, newTag)
+                        }
+                    else -> tmpList.indexOfFirst(tagFinder)
+                        .takeIf { it>=0 }?.let{ tmpList.removeAt(it)}
+                }
+            }
+            listData.clear()
+            listData.addAll(tmpList)
+            fireShowContent(reason = "onTagFollowChanged")
+        }
+
+        else -> Unit
+    }
+}

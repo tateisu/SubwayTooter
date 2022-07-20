@@ -1178,7 +1178,6 @@ class ColumnTask_Refresh(
         val path = column.addRange(bBottom = bBottom, "/api/v1/followed_tags")
         val result = client.request(path)
         val src = parser.tagList(result?.jsonArray)
-            .onEach { it.type = TootTag.TagType.FollowedTags }
         listTmp = addAll(listTmp, src)
         column.saveRange(bBottom = bBottom, bTop = !bBottom, result = result, list = src)
         return result

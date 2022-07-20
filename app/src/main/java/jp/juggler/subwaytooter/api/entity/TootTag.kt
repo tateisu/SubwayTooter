@@ -13,6 +13,9 @@ open class TootTag constructor(
 
     var type: TagType = TagType.Tag,
 
+    // (Mastodon 3.6) タグをフォロー中なら真
+    val following: Boolean? = null,
+
     // The URL of the hashtag. may null if generated from TootContext
     val url: String? = null,
 
@@ -22,12 +25,12 @@ open class TootTag constructor(
 
     // Mastodon /api/v2/search provides history.
     val history: ArrayList<History>? = null,
-) : TimelineItem() {
+
+    ) : TimelineItem() {
 
     enum class TagType {
         Tag,
-        TrendLink,
-        FollowedTags,
+        Link,
     }
 
     val countDaily: Int
@@ -71,12 +74,12 @@ open class TootTag constructor(
                     val name = src.stringOrThrow("tag").replaceFirst(reHeadSharp, "")
                     TootTag(
                         name = name,
-                        url = "https://${parser.apiHost}/tags/${Uri.encode(name)}"
+                        url = "https://${parser.apiHost}/tags/${Uri.encode(name)}",
                     )
                 }
                 src.string("type") == "link" -> {
                     TootTag(
-                        type = TagType.TrendLink,
+                        type = TagType.Link,
                         name = src.string("title") ?: "",
                         url = src.string("url") ?: "",
                         description = src.string("description") ?: "",
@@ -95,7 +98,8 @@ open class TootTag constructor(
                         url = (src.string("url") ?: src.string("href"))
                             ?.replaceFirst(reUserTagUrl, "/tags/")
                             ?.replaceFirst(reNotestockTagUrl, "/tags/"),
-                        history = parseHistories(src.jsonArray("history"))
+                        history = parseHistories(src.jsonArray("history")),
+                        following = src.boolean("following"),
                     )
                 }
             }

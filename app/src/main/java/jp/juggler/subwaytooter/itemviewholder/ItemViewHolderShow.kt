@@ -421,14 +421,19 @@ fun ItemViewHolder.showSearchTag(tag: TootTag) {
         tvTrendTagCount.text = "${tag.countDaily}(${tag.countWeekly})"
         cvTagHistory.setHistory(tag.history)
         when (tag.type) {
-            TootTag.TagType.TrendLink -> {
+            TootTag.TagType.Link -> {
                 tvTrendTagName.text = tag.url?.ellipsizeDot3(256)
                 tvTrendTagDesc.text = tag.name + "\n" + tag.description
             }
-            else -> {
+            TootTag.TagType.Tag -> {
                 tvTrendTagName.text = "#${tag.name.ellipsizeDot3(256)}"
-                tvTrendTagDesc.text =
+                tvTrendTagDesc.text = listOf(
+                    when (tag.following) {
+                        true -> activity.getString(R.string.following)
+                        else -> ""
+                    },
                     activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
+                ).filter { it.isNotEmpty() }.joinToString(" ")
             }
         }
     } else {

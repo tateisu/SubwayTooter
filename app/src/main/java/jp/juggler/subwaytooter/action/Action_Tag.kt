@@ -125,7 +125,7 @@ fun ActMain.tagDialog(
                 }
             }
 
-            d.show(this@tagDialog, tagWithSharp)
+            d.show(activity, tagWithSharp)
         } catch (ex: Throwable) {
             log.trace(ex)
         }

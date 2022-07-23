@@ -22,6 +22,7 @@ import android.view.WindowManager
 import android.view.WindowManager.BadTokenException
 import android.widget.Toast
 import androidx.annotation.StringRes
+import jp.juggler.util.LogCategory
 
 fun interface BadTokenListener {
 
@@ -58,6 +59,7 @@ internal class SafeToastContext(base: Context, private val toast: Toast) : Conte
     private inner class WindowManagerWrapper(private val base: WindowManager) : WindowManager {
 
         @Suppress("DEPRECATION")
+        @Deprecated("Use Context.getDisplay() instead.")
         override fun getDefaultDisplay(): Display? =
             base.defaultDisplay
 
@@ -87,10 +89,11 @@ internal class SafeToastContext(base: Context, private val toast: Toast) : Conte
 @Suppress("TooManyFunctions")
 class ToastCompat private constructor(
     context: Context,
-    private val base: Toast
+    private val base: Toast,
 ) : Toast(context) {
 
     companion object {
+        private val log = LogCategory("ToastCompat")
 
         @SuppressLint("DiscouragedPrivateApi")
         private fun setContextCompat(view: View?, contextCreator: () -> Context) {
@@ -99,9 +102,8 @@ class ToastCompat private constructor(
                     val field = View::class.java.getDeclaredField("mContext")
                     field.isAccessible = true
                     field[view] = contextCreator()
-                } catch (throwable: Throwable) {
-                    @Suppress("PrintStackTrace")
-                    throwable.printStackTrace()
+                } catch (ex: Throwable) {
+                    log.trace(ex)
                 }
             }
         }
@@ -129,8 +131,7 @@ class ToastCompat private constructor(
          * @param duration How long to display the message.  Either [.LENGTH_SHORT] or
          * [.LENGTH_LONG]
          */
-        @SuppressLint("ShowToast")
-        @Suppress("DEPRECATION")
+        @Suppress("ShowToast", "DEPRECATION")
         fun makeText(context: Context, text: CharSequence?, duration: Int): ToastCompat {
             // We cannot pass the SafeToastContext to Toast.makeText() because
             // the View will unwrap the base context and we are in vain.
@@ -148,12 +149,14 @@ class ToastCompat private constructor(
     }
 
     @Suppress("DEPRECATION")
+    @Deprecated(message = "Custom toast views are deprecated in API level 30.")
     override fun setView(view: View) {
         base.view = view
         setContextCompat(base.view) { SafeToastContext(view.context, base) }
     }
 
     @Suppress("DEPRECATION")
+    @Deprecated(message = "Custom toast views are deprecated in API level 30.")
     override fun getView(): View? = base.view
 
     override fun show() = base.show()

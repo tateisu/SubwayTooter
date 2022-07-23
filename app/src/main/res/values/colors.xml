@@ -34,7 +34,7 @@
 
     <color name="Light_colorReplyBackground">#cccccc</color>
 
-    <color name="Light_colorRefreshErrorBg">#8333</color>
+    <color name="Light_colorRefreshErrorBg">#D222</color>
 
 
     <color name="Light_colorPostFormBackground">#eee</color>
@@ -62,7 +62,7 @@
     <color name="Dark_colorColumnListItemText">#66FFFFFF</color>
     <color name="Dark_colorTimeSmall">#BBBBBB</color>
     <color name="Dark_colorContentText">#dddddd</color>
-    <color name="Dark_colorRefreshErrorBg">#8333</color>
+    <color name="Dark_colorRefreshErrorBg">#D222</color>
 
     <color name="Dark_colorColumnHeaderAcct">#e4e4e4</color>
     <color name="Dark_colorColumnHeaderPageNumber">#e4e4e4</color>

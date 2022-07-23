@@ -51,6 +51,7 @@ class App1 : Application() {
     override fun onCreate() {
         log.d("onCreate")
         super.onCreate()
+        initializeToastUtils(this)
         prepare(applicationContext, "App1.onCreate")
     }
 

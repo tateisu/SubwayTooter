@@ -452,14 +452,15 @@ fun Column.onTagFollowChanged(account: SavedAccount, newTag: TootTag) {
                 }
             }
             if (type == ColumnType.FOLLOWED_HASHTAGS) {
-                val tagFinder:(TimelineItem)->Boolean = {it is TootTag && it.name == newTag.name}
+                val tagFinder: (TimelineItem) -> Boolean =
+                    { it is TootTag && it.name == newTag.name }
                 when (newTag.following) {
                     true ->
                         if (tmpList.none(tagFinder)) {
                             tmpList.add(0, newTag)
                         }
                     else -> tmpList.indexOfFirst(tagFinder)
-                        .takeIf { it>=0 }?.let{ tmpList.removeAt(it)}
+                        .takeIf { it >= 0 }?.let { tmpList.removeAt(it) }
                 }
             }
             listData.clear()

@@ -39,6 +39,7 @@ import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import jp.juggler.util.*
+import kotlinx.coroutines.yield
 import okhttp3.Request
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -112,6 +113,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     internal var bufferingLastShown: Long = 0
 
+    private var lastVideoUrl: String? = null
+
     private val tileStep by lazy {
         val density = resources.displayMetrics.density
         (density * 12f + 0.5f).toInt()
@@ -158,8 +161,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            log.d("exoPlayer onPlayerError")
-            showToast(error, "player error.")
+            log.w(error, "exoPlayer onPlayerError")
+            if (recoverLocalVideo()) return
+            showToast(error, "exoPlayer onPlayerError")
         }
 
         override fun onPositionDiscontinuity(
@@ -421,8 +425,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private fun loadVideo(ta: TootAttachment, state: Bundle? = null) {
+    private fun loadVideo(
+        ta: TootAttachment,
+        state: Bundle? = null,
+        forceLocalUrl: Boolean = false,
+    ) {
 
         views.cbMute.visible().run {
             if (isChecked && lastVolume.isFinite()) {
@@ -430,7 +437,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }
         }
 
-        val url = ta.getLargeUrl(appPref)
+        val url = when {
+            forceLocalUrl -> ta.url
+            else -> ta.getLargeUrl(appPref)
+        }
         if (url == null) {
             showError("missing media attachment url.")
             return
@@ -440,6 +450,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             showError("can't parse URI: $url")
             return
         }
+        lastVideoUrl = url
 
         // https://github.com/google/ExoPlayer/issues/1819
         HttpsURLConnection.setDefaultSSLSocketFactory(MySslSocketFactory)
@@ -863,5 +874,24 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             }
         }
         ad.show(this, getString(R.string.background_pattern))
+    }
+
+    /**
+     * remote_urlを再生できなかった場合、自サーバで再生し直す
+     */
+    private fun recoverLocalVideo(): Boolean {
+        val ta = mediaList.elementAtOrNull(idx)
+        if (ta != null &&
+            lastVideoUrl == ta.remote_url &&
+            !ta.url.isNullOrEmpty() &&
+            ta.url != ta.remote_url
+        ) {
+            launchMain {
+                yield()
+                loadVideo(ta, forceLocalUrl = true)
+            }
+            return true
+        }
+        return false
     }
 }

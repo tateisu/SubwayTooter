@@ -268,6 +268,8 @@ fun ActMain.conversationOtherInstance(
         // 疑似アカウントは後でまとめて処理する
         if (a.isPseudo) continue
 
+        if( isReference && TootInstance.getCached(a)?.canUseReference != true) continue
+
         if (statusIdOriginal != null && a.matchHost(hostOriginal)) {
             // アクセス情報＋ステータスID でアクセスできるなら
             // 同タンスのアカウントならステータスIDの変換なしに表示できる

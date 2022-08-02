@@ -232,12 +232,18 @@ private fun ActMain.conversationRemote(
 // アプリ外部からURLを渡された場合に呼ばれる
 fun ActMain.conversationOtherInstance(
     pos: Int,
-    url: String,
+    urlArg: String,
     statusIdOriginal: EntityId? = null,
     hostAccess: Host? = null,
     statusIdAccess: EntityId? = null,
     isReference: Boolean = false,
 ) {
+    // 参照の場合、status URLから/references を除去しないとURLでの検索ができない
+    val url = when {
+        isReference -> """/references\z""".toRegex().replace(urlArg, "")
+        else -> urlArg
+    }
+
     val activity = this
 
     val dialog = ActionsDialog()

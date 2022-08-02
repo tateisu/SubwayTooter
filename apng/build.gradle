@@ -19,7 +19,6 @@ compileKotlin {
 
     kotlinOptions {
         jvmTarget = jvm_target
-        useIR = true
         freeCompilerArgs += [
                 "-Xopt-in=kotlin.ExperimentalStdlibApi",
                 "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",

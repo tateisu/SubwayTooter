@@ -182,7 +182,7 @@ dependencies {
 
     testImplementation "junit:junit:$junit_version" // しばらくはkotlin-testとjunitを併用
 
-    def okhttpVersion = "4.9.3"
+    def okhttpVersion = "4.10.0"
     implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
 
@@ -202,7 +202,7 @@ dependencies {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
     }
 
-    def glideVersion = '4.13.1'
+    def glideVersion = '4.13.2'
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation "com.github.bumptech.glide:annotations:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion") {
@@ -210,7 +210,7 @@ dependencies {
     }
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
-    implementation "org.conscrypt:conscrypt-android:2.5.1"
+    implementation "org.conscrypt:conscrypt-android:2.5.2"
 
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
     implementation 'io.github.inflationx:viewpump:2.0.3'
@@ -220,8 +220,6 @@ dependencies {
     implementation 'com.github.omadahealth:swipy:1.2.3@aar'
 
     implementation 'com.github.kenglxn.QRGen:android:2.5.0'
-
-    implementation 'org.hjson:hjson:3.0.0'
 
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 

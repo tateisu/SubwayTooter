@@ -238,21 +238,16 @@ fun ActMain.conversationOtherInstance(
     statusIdAccess: EntityId? = null,
     isReference: Boolean = false,
 ) {
-    // 参照の場合、status URLから/references を除去しないとURLでの検索ができない
-    val url = when {
-        isReference -> """/references\z""".toRegex().replace(urlArg, "")
-        else -> urlArg
-    }
 
     val activity = this
 
     val dialog = ActionsDialog()
 
-    val hostOriginal = Host.parse(url.toUri().authority ?: "")
+    val hostOriginal = Host.parse(urlArg.toUri().authority ?: "")
 
     // 選択肢：ブラウザで表示する
     dialog.addAction(getString(R.string.open_web_on_host,
-        hostOriginal.pretty)) { openCustomTab(url) }
+        hostOriginal.pretty)) { openCustomTab(urlArg) }
 
     // トゥートの投稿元タンスにあるアカウント
     val localAccountList = ArrayList<SavedAccount>()
@@ -268,7 +263,7 @@ fun ActMain.conversationOtherInstance(
         // 疑似アカウントは後でまとめて処理する
         if (a.isPseudo) continue
 
-        if( isReference && TootInstance.getCached(a)?.canUseReference != true) continue
+        if (isReference && TootInstance.getCached(a)?.canUseReference != true) continue
 
         if (statusIdOriginal != null && a.matchHost(hostOriginal)) {
             // アクセス情報＋ステータスID でアクセスできるなら
@@ -281,6 +276,12 @@ fun ActMain.conversationOtherInstance(
             // 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
             otherAccountList.add(a)
         }
+    }
+
+    // 参照の場合、status URLから/references を除去しないとURLでの検索ができない
+    val url = when {
+        isReference -> """/references\z""".toRegex().replace(urlArg, "")
+        else -> urlArg
     }
 
     // 同タンスのアカウントがないなら、疑似アカウントで開く選択肢

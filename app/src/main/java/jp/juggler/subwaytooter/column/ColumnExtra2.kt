@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.column
 import android.content.Context
 import android.os.Environment
 import androidx.annotation.RawRes
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -11,7 +11,6 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.saveScrollPosition
 import jp.juggler.util.*
 import java.io.File
-import java.util.*
 
 private val log = LogCategory("ColumnExtra2")
 
@@ -60,6 +59,14 @@ val Column.isPublicStream: Boolean
 
 fun Column.canAutoRefresh() =
     !accessInfo.isNA && type.canAutoRefresh
+
+val Column.isConversation
+    get() = when (type) {
+        ColumnType.CONVERSATION,
+        ColumnType.CONVERSATION_WITH_REFERENCE,
+        -> true
+        else -> false
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 // 読み込み処理の内部で使うメソッド
@@ -116,7 +123,11 @@ fun Column.getNotificationTypeString(): String {
     return sb.toString()
 }
 
-suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser, bForceReload: Boolean): TootApiResult? =
+suspend fun Column.loadProfileAccount(
+    client: TootApiClient,
+    parser: TootParser,
+    bForceReload: Boolean,
+): TootApiResult? =
     when {
         // リロード不要なら何もしない
         this.whoAccount != null && !bForceReload -> null

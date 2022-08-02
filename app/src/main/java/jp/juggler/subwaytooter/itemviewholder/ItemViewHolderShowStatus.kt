@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.actmain.checkAutoCW
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.isConversation
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.ContentWarning
@@ -222,14 +223,14 @@ private fun ItemViewHolder.showApplicationAndLanguage(status: TootStatus) {
 
     val application = status.application
     if (application != null &&
-        (column.type == ColumnType.CONVERSATION || PrefB.bpShowAppName(activity.pref))
+        (column.isConversation || PrefB.bpShowAppName(activity.pref))
     ) {
         prepareSb().append(activity.getString(R.string.application_is, application.name ?: ""))
     }
 
     val language = status.language
     if (language != null &&
-        (column.type == ColumnType.CONVERSATION || PrefB.bpShowLanguage(activity.pref))
+        (column.isConversation || PrefB.bpShowLanguage(activity.pref))
     ) {
         prepareSb().append(activity.getString(R.string.language_is, language))
     }

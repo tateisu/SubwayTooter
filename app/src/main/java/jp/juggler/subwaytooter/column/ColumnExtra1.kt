@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.column
 
 import android.annotation.SuppressLint
 import android.view.View
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -32,6 +32,7 @@ fun Column.canReloadWhenRefreshTop(): Boolean = when (type) {
     ColumnType.SEARCH_TS,
     ColumnType.SEARCH_NOTESTOCK,
     ColumnType.CONVERSATION,
+    ColumnType.CONVERSATION_WITH_REFERENCE,
     ColumnType.LIST_LIST,
     ColumnType.TREND_TAG,
     ColumnType.FOLLOW_SUGGESTION,
@@ -52,6 +53,7 @@ fun Column.canRefreshTopBySwipe(): Boolean =
     canReloadWhenRefreshTop() ||
             when (type) {
                 ColumnType.CONVERSATION,
+                ColumnType.CONVERSATION_WITH_REFERENCE,
                 ColumnType.INSTANCE_INFORMATION,
                 -> false
                 else -> true
@@ -61,6 +63,7 @@ fun Column.canRefreshTopBySwipe(): Boolean =
 fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
     ColumnType.LIST_LIST,
     ColumnType.CONVERSATION,
+    ColumnType.CONVERSATION_WITH_REFERENCE,
     ColumnType.INSTANCE_INFORMATION,
     ColumnType.KEYWORD_FILTER,
     ColumnType.SEARCH,
@@ -335,7 +338,9 @@ fun Column.startRefreshForPost(
             }
         }
 
-        ColumnType.CONVERSATION -> {
+        ColumnType.CONVERSATION,
+        ColumnType.CONVERSATION_WITH_REFERENCE,
+        -> {
             // 会話への返信が行われたなら会話を更新する
             try {
                 if (postedReplyId != null) {

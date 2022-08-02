@@ -40,8 +40,6 @@ object ApiPath {
 
     // リストではなくオブジェクトを返すAPI
     const val PATH_STATUSES = "/api/v1/statuses/%s" // 1:status_id
-    const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%s/context" // 1:status_id
-    // search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 
     const val PATH_FILTERS = "/api/v1/filters"
 

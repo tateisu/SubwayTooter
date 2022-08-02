@@ -55,7 +55,8 @@ fun ActMain.handleOtherUri(uri: Uri): Boolean {
             statusInfo.url,
             statusInfo.statusId,
             statusInfo.host,
-            statusInfo.statusId
+            statusInfo.statusId,
+            isReference = statusInfo.isReference,
         )
         return true
     }

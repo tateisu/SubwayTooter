@@ -52,13 +52,13 @@ object ColumnSpec {
             when (type) {
 
                 ColumnType.CONVERSATION,
+                ColumnType.CONVERSATION_WITH_REFERENCE,
                 ColumnType.BOOSTED_BY,
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
                 ColumnType.FEDERATED_AROUND,
                 ColumnType.ACCOUNT_AROUND,
-                ->
-                    statusId = getParamEntityId(params, 0)
+                -> statusId = getParamEntityId(params, 0)
 
                 ColumnType.STATUS_HISTORY -> {
                     statusId = getParamEntityId(params, 0)
@@ -67,8 +67,7 @@ object ColumnSpec {
 
                 ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
                 ColumnType.MISSKEY_ANTENNA_TL,
-                ->
-                    profileId = getParamEntityId(params, 0)
+                -> profileId = getParamEntityId(params, 0)
 
                 ColumnType.HASHTAG ->
                     hashtag = getParamString(params, 0)
@@ -124,18 +123,17 @@ object ColumnSpec {
                 ColumnType.LIST_TL,
                 ColumnType.LIST_MEMBER,
                 ColumnType.MISSKEY_ANTENNA_TL,
-                ->
-                    column.profileId == getParamEntityId(params, 0)
+                -> column.profileId == getParamEntityId(params, 0)
 
                 ColumnType.CONVERSATION,
+                ColumnType.CONVERSATION_WITH_REFERENCE,
                 ColumnType.BOOSTED_BY,
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
                 ColumnType.FEDERATED_AROUND,
                 ColumnType.ACCOUNT_AROUND,
                 ColumnType.STATUS_HISTORY,
-                ->
-                    column.statusId == getParamEntityId(params, 0)
+                -> column.statusId == getParamEntityId(params, 0)
 
                 ColumnType.HASHTAG -> {
                     (getParamString(params, 0) == column.hashtag) &&

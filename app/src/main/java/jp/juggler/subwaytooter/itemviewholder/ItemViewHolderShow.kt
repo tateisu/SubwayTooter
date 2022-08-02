@@ -648,26 +648,11 @@ fun ItemViewHolder.showStatusTime(
     }
 
     if (sb.isNotEmpty()) sb.append(' ')
+
     sb.append(
-        when {
-            time != null -> TootStatus.formatTime(
-                activity,
-                time,
-                when (column.type) {
-                    ColumnType.CONVERSATION, ColumnType.STATUS_HISTORY -> false
-                    else -> true
-                }
-            )
-            status != null -> TootStatus.formatTime(
-                activity,
-                status.time_created_at,
-                when (column.type) {
-                    ColumnType.CONVERSATION, ColumnType.STATUS_HISTORY -> false
-                    else -> true
-                }
-            )
-            else -> "?"
-        }
+        (time ?: status?.time_created_at)?.let {
+            TootStatus.formatTime(activity, it, column.canRelativeTime)
+        } ?: "?"
     )
 
     tv.text = sb
@@ -703,16 +688,20 @@ fun ItemViewHolder.showStatusTimeScheduled(
     }
 
     if (sb.isNotEmpty()) sb.append(' ')
-    sb.append(
-        TootStatus.formatTime(
-            activity,
-            item.timeScheduledAt,
-            column.type != ColumnType.CONVERSATION
-        )
-    )
+    sb.append(TootStatus.formatTime(activity, item.timeScheduledAt, column.canRelativeTime))
 
     tv.text = sb
 }
+
+val Column.canRelativeTime
+    get() = when (type) {
+        ColumnType.CONVERSATION,
+        ColumnType.CONVERSATION_WITH_REFERENCE,
+        ColumnType.STATUS_HISTORY,
+        -> false
+        else -> true
+    }
+
 //	fun updateRelativeTime() {
 //		val boost_time = this.boost_time
 //		if(boost_time != 0L) {

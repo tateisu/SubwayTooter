@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.itemviewholder
 import android.view.View
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.isConversation
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.MediaShown
@@ -53,7 +53,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
     val card = status.card ?: return
 
     // 会話カラムで返信ステータスなら捏造したカードを表示しない
-    if (column.type == ColumnType.CONVERSATION &&
+    if (column.isConversation &&
         card.originalStatus != null &&
         status.reply != null
     ) {

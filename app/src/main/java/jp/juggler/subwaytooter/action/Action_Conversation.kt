@@ -1,7 +1,8 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -14,7 +15,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
-import java.util.*
 
 private val log = LogCategory("Action_Conversation")
 
@@ -45,7 +45,12 @@ fun ActMain.clickConversation(
 }
 
 // プレビューカードのイメージは返信かもしれない
-fun ActMain.clickCardImage(pos: Int, accessInfo: SavedAccount, card: TootCard?, longClick: Boolean = false) {
+fun ActMain.clickCardImage(
+    pos: Int,
+    accessInfo: SavedAccount,
+    card: TootCard?,
+    longClick: Boolean = false,
+) {
     card ?: return
     card.originalStatus?.let {
         if (longClick) {
@@ -80,7 +85,7 @@ fun ActMain.clickReplyInfo(
 
         // tootsearchは返信元のIDを取得するのにひと手間必要
         columnType == ColumnType.SEARCH_TS ||
-            columnType == ColumnType.SEARCH_NOTESTOCK ->
+                columnType == ColumnType.SEARCH_NOTESTOCK ->
             conversationFromTootsearch(pos, statusShowing)
 
         else ->
@@ -140,14 +145,26 @@ fun ActMain.conversationLocal(
     pos: Int,
     accessInfo: SavedAccount,
     statusId: EntityId,
-) = addColumn(pos, accessInfo, ColumnType.CONVERSATION, statusId)
+    isReference: Boolean = false,
+) = addColumn(
+    pos,
+    accessInfo,
+    when {
+        isReference && TootInstance.getCached(accessInfo)?.canUseReference == true ->
+            ColumnType.CONVERSATION_WITH_REFERENCE
+        else ->
+            ColumnType.CONVERSATION
+    },
+    statusId,
+)
 
 private val reDetailedStatusTime =
     """<a\b[^>]*?\bdetailed-status__datetime\b[^>]*href="https://[^/]+/@[^/]+/([^\s?#/"]+)"""
         .toRegex()
 
-private val reHeaderOgUrl = """<meta\s+content="https://[^/"]+/notice/([^/"]+)"\s+property="og:url"/?>"""
-    .toRegex()
+private val reHeaderOgUrl =
+    """<meta\s+content="https://[^/"]+/notice/([^/"]+)"\s+property="og:url"/?>"""
+        .toRegex()
 
 // 疑似アカウントではURLからIDを取得するのにHTMLと正規表現を使う
 suspend fun guessStatusIdFromPseudoAccount(
@@ -190,7 +207,8 @@ private fun ActMain.conversationRemote(
         ) { client ->
             if (accessInfo.isPseudo) {
                 // 疑似アカウントではURLからIDを取得するのにHTMLと正規表現を使う
-                val pair = guessStatusIdFromPseudoAccount(applicationContext, client, remoteStatusUrl)
+                val pair =
+                    guessStatusIdFromPseudoAccount(applicationContext, client, remoteStatusUrl)
                 localStatusId = pair.second
                 pair.first
             } else {
@@ -218,6 +236,7 @@ fun ActMain.conversationOtherInstance(
     statusIdOriginal: EntityId? = null,
     hostAccess: Host? = null,
     statusIdAccess: EntityId? = null,
+    isReference: Boolean = false,
 ) {
     val activity = this
 
@@ -226,7 +245,8 @@ fun ActMain.conversationOtherInstance(
     val hostOriginal = Host.parse(url.toUri().authority ?: "")
 
     // 選択肢：ブラウザで表示する
-    dialog.addAction(getString(R.string.open_web_on_host, hostOriginal.pretty)) { openCustomTab(url) }
+    dialog.addAction(getString(R.string.open_web_on_host,
+        hostOriginal.pretty)) { openCustomTab(url) }
 
     // トゥートの投稿元タンスにあるアカウント
     val localAccountList = ArrayList<SavedAccount>()
@@ -263,7 +283,7 @@ fun ActMain.conversationOtherInstance(
             ) {
                 launchMain {
                     addPseudoAccount(hostOriginal)?.let { sa ->
-                        conversationLocal(pos, sa, statusIdOriginal)
+                        conversationLocal(pos, sa, statusIdOriginal, isReference = isReference)
                     }
                 }
             }
@@ -290,7 +310,7 @@ fun ActMain.conversationOtherInstance(
                     R.string.open_in_account,
                     a.acct
                 )
-            ) { conversationLocal(pos, a, statusIdOriginal) }
+            ) { conversationLocal(pos, a, statusIdOriginal, isReference = isReference) }
         }
     }
 
@@ -304,7 +324,7 @@ fun ActMain.conversationOtherInstance(
                     R.string.open_in_account,
                     a.acct
                 )
-            ) { conversationLocal(pos, a, statusIdAccess) }
+            ) { conversationLocal(pos, a, statusIdAccess, isReference = isReference) }
         }
     }
 

@@ -118,8 +118,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
 
         ColumnViewHolder.log.d("onPageCreate [$pageIdx] ${column.getColumnName(true)}")
 
-        val bSimpleList =
-            column.type != ColumnType.CONVERSATION && PrefB.bpSimpleList(activity.pref)
+        val bSimpleList = !column.isConversation && PrefB.bpSimpleList(activity.pref)
 
         tvColumnIndex.text = activity.getString(R.string.column_index, pageIdx + 1, pageCount)
         tvColumnStatus.text = "?"

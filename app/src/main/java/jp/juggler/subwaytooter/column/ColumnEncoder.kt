@@ -7,7 +7,6 @@ import jp.juggler.util.JsonObject
 import jp.juggler.util.encodeBase64Url
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
-import java.util.*
 
 // カラムデータのJSONエンコーダ、デコーダ
 
@@ -164,6 +163,7 @@ object ColumnEncoder {
             when (type) {
 
                 ColumnType.CONVERSATION,
+                ColumnType.CONVERSATION_WITH_REFERENCE,
                 ColumnType.BOOSTED_BY,
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
@@ -299,6 +299,7 @@ object ColumnEncoder {
             when (type) {
 
                 ColumnType.CONVERSATION,
+                ColumnType.CONVERSATION_WITH_REFERENCE,
                 ColumnType.BOOSTED_BY,
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,

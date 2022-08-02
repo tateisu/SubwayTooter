@@ -34,11 +34,18 @@ val Column.isFilterEnabled: Boolean
 // マストドン2.4.3rcのキーワードフィルタのコンテキスト
 fun Column.getFilterContext() = when (type) {
 
-    ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
+    ColumnType.HOME,
+    ColumnType.LIST_TL,
+    ColumnType.MISSKEY_HYBRID,
+    -> TootFilter.CONTEXT_HOME
 
-    ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
+    ColumnType.NOTIFICATIONS,
+    ColumnType.NOTIFICATION_FROM_ACCT,
+    -> TootFilter.CONTEXT_NOTIFICATIONS
 
-    ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
+    ColumnType.CONVERSATION,
+    ColumnType.CONVERSATION_WITH_REFERENCE,
+    -> TootFilter.CONTEXT_THREAD
 
     ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_THREAD
 
@@ -76,7 +83,10 @@ fun Column.canFilterBoost(): Boolean = when (type) {
     -> true
     ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
     ColumnType.HASHTAG_FROM_ACCT -> false
-    ColumnType.CONVERSATION, ColumnType.DIRECT_MESSAGES -> isMisskey
+    ColumnType.CONVERSATION,
+    ColumnType.CONVERSATION_WITH_REFERENCE,
+    ColumnType.DIRECT_MESSAGES,
+    -> isMisskey
     else -> false
 }
 

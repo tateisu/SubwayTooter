@@ -926,8 +926,18 @@ enum class ColumnType(
 
         canStreamingMastodon = streamingTypeNo,
         canStreamingMisskey = streamingTypeNo,
+    ),
 
-        ),
+    CONVERSATION_WITH_REFERENCE(
+        47,
+        iconId = { R.drawable.ic_link },
+        name1 = { it.getString(R.string.conversation_with_reference) },
+        name2 = { context.getString(R.string.conversation_with_reference) },
+        loading = { client -> getConversation(client, withReference = true) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+    ),
 
     HASHTAG(
         9,
@@ -2058,9 +2068,6 @@ enum class ColumnType(
     ),
 
     ;
-
-    private fun getFollowedHashtags(client: TootApiClient) {
-    }
 
     init {
         val old = Column.typeMap[id]

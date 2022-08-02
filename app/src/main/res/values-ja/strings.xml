@@ -1154,4 +1154,5 @@
     <string name="followed_tags">フォロー中のハッシュタグ</string>
     <string name="follow_hashtag_of">\"%1$s\"のフォロー</string>
     <string name="unfollow_hashtag_of">\"%1$s\"のフォロー解除</string>
+    <string name="conversation_with_reference">会話と参照</string>
 </resources>

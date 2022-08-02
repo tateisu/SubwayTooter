@@ -2,26 +2,25 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.annotation.StringRes
 import android.text.Spannable
 import android.text.SpannableString
+import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootAccountMap
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.mfm.SpannableStringBuilderEx
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.HTMLDecoder
 import jp.juggler.util.*
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.jvm.Throws
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -1079,8 +1078,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         val statusId: EntityId?, // may null
         hostArg: String,
         val url: String,
+        val isReference: Boolean = false,
     ) {
-
         val host = Host.parse(hostArg)
     }
 
@@ -1117,6 +1116,11 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         private val reStatusPage = """\Ahttps://([^/]+)/@(\w+)/([^?#/\s]+)(?:\z|[?#])"""
             .asciiPattern()
 
+        // fedibird ステータスの参照のURL
+        private val reStatusWithReference =
+            """\Ahttps://([^/]+)/@(\w+)/([^?#/\s]+)/references(?:\z|[?#])"""
+                .asciiPattern()
+
         // 公開ステータスページのURL Misskey
         internal val reStatusPageMisskey =
             """\Ahttps://([^/]+)/notes/([0-9a-f]{24}|[0-9a-z]{10})\b"""
@@ -1138,8 +1142,20 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         // returns null or pair( status_id, host ,url )
         fun String.findStatusIdFromUrl(): FindStatusIdFromUrlResult? {
+
+            // https://fedibird.com/@noellabo/108730353756004469/references
+            var m = reStatusWithReference.matcher(this)
+            if (m.find()) {
+                return FindStatusIdFromUrlResult(
+                    EntityId(m.groupEx(3)!!),
+                    m.groupEx(1)!!,
+                    this,
+                    isReference = true,
+                )
+            }
+
             // https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-            var m = reStatusPage.matcher(this)
+            m = reStatusPage.matcher(this)
             if (m.find()) {
                 return FindStatusIdFromUrlResult(EntityId(m.groupEx(3)!!), m.groupEx(1)!!, this)
             }

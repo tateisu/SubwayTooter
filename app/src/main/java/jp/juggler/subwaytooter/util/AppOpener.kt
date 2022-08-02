@@ -7,7 +7,9 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActCallback
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationLocal
 import jp.juggler.subwaytooter.action.conversationOtherInstance
 import jp.juggler.subwaytooter.action.tagDialog
@@ -20,7 +22,6 @@ import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
-import java.util.*
 
 // Subway Tooterの「アプリ設定/挙動/リンクを開く際にCustom Tabsを使わない」をONにして
 // 投稿のコンテキストメニューの「トゥートへのアクション/Webページを開く」「ユーザへのアクション/Webページを開く」を使うと
@@ -189,7 +190,7 @@ fun openCustomTab(
     tagList: ArrayList<String>? = null,
     allowIntercept: Boolean = true,
     whoRef: TootAccountRef? = null,
-    linkInfo: LinkInfo? = null
+    linkInfo: LinkInfo? = null,
 ) {
     try {
         log.d("openCustomTab: $url")
@@ -219,23 +220,41 @@ fun openCustomTab(
 
             val statusInfo = url.findStatusIdFromUrl()
             if (statusInfo != null) {
-                if (accessInfo.isNA ||
-                    statusInfo.statusId == null ||
-                    !accessInfo.matchHost(statusInfo.host)
-                ) {
-                    activity.conversationOtherInstance(
-                        pos,
-                        statusInfo.url,
-                        statusInfo.statusId,
-                        statusInfo.host,
-                        statusInfo.statusId
-                    )
-                } else {
-                    activity.conversationLocal(
-                        pos,
-                        accessInfo,
-                        statusInfo.statusId
-                    )
+                when {
+                    // fedibirdの参照のURLだった && 閲覧アカウントが参照を扱える
+                    // 参照カラムを開く
+                    statusInfo.statusId != null &&
+                            statusInfo.isReference &&
+                            TootInstance.getCached(accessInfo)?.canUseReference == true ->
+                        activity.conversationLocal(
+                            pos,
+                            accessInfo,
+                            statusInfo.statusId,
+                            isReference = statusInfo.isReference,
+                        )
+
+                    // 疑似アカウント?
+                    // 別サーバ？
+                    // ステータスIDがない?(Pleroma)
+                    accessInfo.isNA ||
+                            !accessInfo.matchHost(statusInfo.host) ||
+                            statusInfo.statusId == null ->
+                        activity.conversationOtherInstance(
+                            pos,
+                            statusInfo.url,
+                            statusInfo.statusId,
+                            statusInfo.host,
+                            statusInfo.statusId,
+                            isReference = statusInfo.isReference,
+                        )
+
+                    else ->
+                        activity.conversationLocal(
+                            pos,
+                            accessInfo,
+                            statusInfo.statusId,
+                            isReference = statusInfo.isReference,
+                        )
                 }
                 return
             }
@@ -248,7 +267,8 @@ fun openCustomTab(
                     if (fullAcct.host != null) {
                         when (fullAcct.host.ascii) {
                             "github.com",
-                            "twitter.com" ->
+                            "twitter.com",
+                            ->
                                 activity.openCustomTab(mention.url)
                             "gmail.com" ->
                                 activity.openBrowser("mailto:${fullAcct.pretty}")

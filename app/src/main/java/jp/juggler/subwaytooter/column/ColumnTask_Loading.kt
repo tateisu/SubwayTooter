@@ -1009,7 +1009,10 @@ class ColumnTask_Loading(
         return result
     }
 
-    suspend fun getConversation(client: TootApiClient): TootApiResult? {
+    suspend fun getConversation(
+        client: TootApiClient,
+        withReference: Boolean = false,
+    ): TootApiResult? {
         return if (isMisskey) {
             // 指定された発言そのもの
             val queryParams = column.makeMisskeyBaseParameter(parser).apply {
@@ -1097,10 +1100,12 @@ class ColumnTask_Loading(
 
             // 前後の会話
             result = client.request(
-                String.format(
-                    Locale.JAPAN,
-                    ApiPath.PATH_STATUSES_CONTEXT, column.statusId
-                )
+                "/api/v1/statuses/${column.statusId}/context${
+                    when (withReference) {
+                        true -> "?with_reference=true"
+                        else -> ""
+                    }
+                }"
             )
             jsonObject = result?.jsonObject ?: return result
             val conversationContext =
@@ -1115,6 +1120,10 @@ class ColumnTask_Loading(
                             (conversationContext.descendants?.size ?: 0) +
                             1
                 )
+
+                if (conversationContext.references != null) {
+                    addWithFilterStatus(this.listTmp, conversationContext.references)
+                }
 
                 if (conversationContext.ancestors != null) {
                     addWithFilterStatus(this.listTmp, conversationContext.ancestors)

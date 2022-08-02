@@ -10,8 +10,12 @@ import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.util.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import okhttp3.Request
 import java.util.regex.Pattern
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.max
 
 // インスタンスの種別
@@ -220,16 +224,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     }
 
     class Stats(src: JsonObject) {
-
-        val user_count: Long
-        val status_count: Long
-        val domain_count: Long
-
-        init {
-            this.user_count = src.long("user_count") ?: -1L
-            this.status_count = src.long("status_count") ?: -1L
-            this.domain_count = src.long("domain_count") ?: -1L
-        }
+        val user_count = src.long("user_count") ?: -1L
+        val status_count = src.long("status_count") ?: -1L
+        val domain_count = src.long("domain_count") ?: -1L
     }
 
     val misskeyVersion: Int
@@ -239,6 +236,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             else -> 10
         }
 
+    val canUseReference: Boolean?
+        get() = fedibird_capabilities?.contains("status_reference")
+
     fun versionGE(check: VersionString): Boolean {
         if (decoded_version.isEmpty || check.isEmpty) return false
         val i = VersionString.compare(decoded_version, check)
@@ -246,6 +246,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     }
 
     companion object {
+        private val log = LogCategory("TootInstance")
 
         private val rePleroma = """\bpleroma\b""".asciiPattern(Pattern.CASE_INSENSITIVE)
         private val rePixelfed = """\bpixelfed\b""".asciiPattern(Pattern.CASE_INSENSITIVE)
@@ -375,26 +376,33 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             }
 
             // マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
-            val r1 = getInstanceInformationMastodon(forceAccessToken) ?: return null
-            if (r1.jsonObject != null) return r1
-
-            return r1 // ホワイトリストモードの問題があるのでマストドン側のエラーを返す
+            // インスタンス情報を読めない場合もホワイトリストモードの問題があるので
+            // マストドン側のエラーを返す
+            return getInstanceInformationMastodon(forceAccessToken)
         }
 
+        /**
+         * TootInstance.get() のエラー戻り値を作る
+         */
+        private fun tiError(errMsg: String) =
+            Pair<TootInstance?, TootApiResult?>(null, TootApiResult(errMsg))
+
+        /**
+         * サーバ情報リクエスト
+         * - ホスト別のキューで実行する
+         */
         class QueuedRequest(
+            var cont: Continuation<Pair<TootInstance?, TootApiResult?>>,
             val allowPixelfed: Boolean,
             val get: suspend (cached: TootInstance?) -> Pair<TootInstance?, TootApiResult?>,
+        )
+
+        /**
+         * ホスト別のインスタンス情報キャッシュと処理キュー
+         */
+        class CacheEntry(
+            val hostLower: String,
         ) {
-            val result = Channel<Pair<TootInstance?, TootApiResult?>>()
-        }
-
-        private fun queuedRequest(
-            allowPixelfed: Boolean,
-            get: suspend (cached: TootInstance?) -> Pair<TootInstance?, TootApiResult?>,
-        ) = QueuedRequest(allowPixelfed, get)
-
-        // インスタンス情報のキャッシュ。同期オブジェクトを兼ねる
-        class CacheEntry {
             // インスタンス情報のキャッシュ
             var cacheData: TootInstance? = null
 
@@ -402,32 +410,38 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             val requestQueue = Channel<QueuedRequest>(capacity = Channel.UNLIMITED)
 
             private suspend fun handleRequest(req: QueuedRequest) = try {
-                val pair = req.get(cacheData)
-
-                pair.first?.let { cacheData = it }
+                val qrr = req.get(cacheData)
+                qrr.first?.let { cacheData = it }
 
                 when {
-                    pair.first?.instanceType == InstanceType.Pixelfed &&
+                    qrr.first?.instanceType == InstanceType.Pixelfed &&
                             !PrefB.bpEnablePixelfed() &&
                             !req.allowPixelfed ->
-                        Pair(
-                            null, TootApiResult("currently Pixelfed instance is not supported.")
-                        )
-
-                    else -> pair
+                        tiError("currently Pixelfed instance is not supported.")
+                    else -> qrr
                 }
             } catch (ex: Throwable) {
-                Pair(
-                    null,
-                    TootApiResult(ex.withCaption("can't get server information."))
-                )
+                log.e(ex, "handleRequest failed.")
+                tiError(ex.withCaption("can't get server information."))
             }
 
             init {
                 launchDefault {
                     while (true) {
-                        for (req in requestQueue) {
-                            req.result.send(handleRequest(req))
+                        try {
+                            val req = requestQueue.receive()
+                            val r = try {
+                                withTimeout(30000L) {
+                                    handleRequest(req)
+                                }
+                            } catch (ex: Throwable) {
+                                log.trace(ex, "handleRequest failed.")
+                                tiError(ex.withCaption("handleRequest failed."))
+                            }
+                            runCatching { req.cont.resumeWith(Result.success(r)) }
+                        } catch (ex: Throwable) {
+                            log.trace(ex, "requestQueue.take failed.")
+                            delay(3000L)
                         }
                     }
                 }
@@ -441,7 +455,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 val hostLower = ascii.lowercase()
                 var item = _hostCache[hostLower]
                 if (item == null) {
-                    item = CacheEntry()
+                    item = CacheEntry(hostLower)
                     _hostCache[hostLower] = item
                 }
                 item
@@ -463,86 +477,99 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             forceUpdate: Boolean = false,
             forceAccessToken: String? = null, // マストドンのwhitelist modeでアカウント追加時に必要
         ): Pair<TootInstance?, TootApiResult?> {
+            try {
+                val cacheEntry = (hostArg ?: account?.apiHost ?: client.apiHost)?.getCacheEntry()
+                    ?: return tiError("missing host.")
 
-            val cacheEntry = (hostArg ?: account?.apiHost ?: client.apiHost)?.getCacheEntry()
-                ?: return Pair(null, TootApiResult("missing host."))
+                return withTimeout(30000L) {
+                    suspendCoroutine { cont ->
+                        QueuedRequest(cont, allowPixelfed) { cached ->
 
-            // ホスト名ごとに用意したオブジェクトで同期する
-            return queuedRequest(allowPixelfed) { cached ->
+                            // may use cached item.
+                            if (!forceUpdate && forceAccessToken == null && cached != null) {
+                                val now = SystemClock.elapsedRealtime()
+                                if (now - cached.time_parse <= EXPIRE) {
+                                    return@QueuedRequest Pair(cached, TootApiResult())
+                                }
+                            }
 
-                // may use cached item.
-                if (!forceUpdate && forceAccessToken == null && cached != null) {
-                    val now = SystemClock.elapsedRealtime()
-                    if (now - cached.time_parse <= EXPIRE) {
-                        return@queuedRequest Pair(cached, TootApiResult())
-                    }
-                }
+                            val tmpInstance = client.apiHost
+                            val tmpAccount = client.account
 
-                val tmpInstance = client.apiHost
-                val tmpAccount = client.account
+                            val linkHelper: LinkHelper?
 
-                val linkHelper: LinkHelper?
+                            // get new information
+                            val result = when {
 
-                // get new information
-                val result = when {
+                                // ストリームマネジャから呼ばれる
+                                account != null -> try {
+                                    linkHelper = account
+                                    client.account = account // this may change client.apiHost
+                                    if (account.isMisskey) {
+                                        client.getInstanceInformationMisskey()
+                                    } else {
+                                        client.getInstanceInformationMastodon()
+                                    }
+                                } finally {
+                                    client.account = tmpAccount
+                                    client.apiHost = tmpInstance // must be last.
+                                }
 
-                    // ストリームマネジャから呼ばれる
-                    account != null -> try {
-                        linkHelper = account
-                        client.account = account // this may change client.apiHost
-                        if (account.isMisskey) {
-                            client.getInstanceInformationMisskey()
-                        } else {
-                            client.getInstanceInformationMastodon()
+                                // サーバ情報カラムやProfileDirectoryを開く場合
+                                hostArg != null && hostArg != tmpInstance -> try {
+                                    linkHelper = null
+                                    client.account = null // don't use access token.
+                                    client.apiHost = hostArg
+                                    client.getInstanceInformation()
+                                } finally {
+                                    client.account = tmpAccount
+                                    client.apiHost = tmpInstance // must be last.
+                                }
+
+                                // client にすでにあるアクセス情報でサーバ情報を取得する
+                                // マストドンのホワイトリストモード用にアクセストークンを指定できる
+                                else -> {
+                                    linkHelper = client.account // may null
+                                    client.getInstanceInformation(
+                                        forceAccessToken = forceAccessToken
+                                    )
+                                }
+                            }
+
+                            val json = result?.jsonObject
+                                ?: return@QueuedRequest Pair(null, result)
+
+                            val item = parseItem(
+                                ::TootInstance,
+                                TootParser(
+                                    client.context,
+                                    linkHelper = linkHelper ?: LinkHelper.create(
+                                        (hostArg ?: client.apiHost)!!,
+                                        misskeyVersion = parseMisskeyVersion(json)
+                                    )
+                                ),
+                                json
+                            ) ?: return@QueuedRequest Pair(
+                                null,
+                                result.setError("instance information parse error.")
+                            )
+
+                            Pair(item, result)
+                        }.let {
+                            val result = cacheEntry.requestQueue.trySend(it)
+                            when {
+                                // 誰も閉じないので発生しない
+                                result.isClosed -> error("cacheEntry.requestQueue closed")
+                                // capacity=UNLIMITEDなので発生しない
+                                result.isFailure -> error("cacheEntry.requestQueue failed")
+                            }
                         }
-                    } finally {
-                        client.account = tmpAccount
-                        client.apiHost = tmpInstance // must be last.
-                    }
-
-                    // サーバ情報カラムやProfileDirectoryを開く場合
-                    hostArg != null && hostArg != tmpInstance -> try {
-                        linkHelper = null
-                        client.account = null // don't use access token.
-                        client.apiHost = hostArg
-                        client.getInstanceInformation()
-                    } finally {
-                        client.account = tmpAccount
-                        client.apiHost = tmpInstance // must be last.
-                    }
-
-                    // client にすでにあるアクセス情報でサーバ情報を取得する
-                    // マストドンのホワイトリストモード用にアクセストークンを指定できる
-                    else -> {
-                        linkHelper = client.account // may null
-                        client.getInstanceInformation(
-                            forceAccessToken = forceAccessToken
-                        )
                     }
                 }
-
-                val json = result?.jsonObject
-                    ?: return@queuedRequest Pair(null, result)
-
-                val item = parseItem(
-                    ::TootInstance,
-                    TootParser(
-                        client.context,
-                        linkHelper = linkHelper ?: LinkHelper.create(
-                            (hostArg ?: client.apiHost)!!,
-                            misskeyVersion = parseMisskeyVersion(json)
-                        )
-                    ),
-                    json
-                ) ?: return@queuedRequest Pair(
-                    null,
-                    result.setError("instance information parse error.")
-                )
-
-                Pair(item, result)
+            } catch (ex: Throwable) {
+                log.w(ex, "getEx failed.")
+                return tiError(ex.withCaption("can't get instance information"))
             }
-                .also { cacheEntry.requestQueue.send(it) }
-                .result.receive()
         }
     }
 }

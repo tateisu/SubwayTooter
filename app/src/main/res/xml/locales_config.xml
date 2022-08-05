@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="ar" />
+    <locale android:name="bg" />
+    <locale android:name="ca" />
+    <locale android:name="cn" />
+    <locale android:name="cy" />
+    <locale android:name="de" />
+    <locale android:name="fr" />
+    <locale android:name="iw" />
+    <locale android:name="ja" />
+    <locale android:name="kab" />
+    <locale android:name="kn" />
+    <locale android:name="ko" />
+    <locale android:name="nb-rNO" />
+    <locale android:name="nl" />
+    <locale android:name="zh-rTW" />
+</locale-config>

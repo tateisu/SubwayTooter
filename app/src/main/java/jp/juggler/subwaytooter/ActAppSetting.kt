@@ -83,41 +83,38 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private lateinit var adapter: MyAdapter
     private lateinit var etSearch: EditText
 
-    private val arNoop = activityResultHandler { }
+    private val arNoop = ActivityResultHandler(log) { }
 
-    private val arImportAppData = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK) {
-            ar.data?.handleGetContentResult(contentResolver)
-                ?.firstOrNull()
-                ?.uri?.let { importAppData2(false, it) }
-        }
+    private val arImportAppData = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.handleGetContentResult(contentResolver)
+            ?.firstOrNull()
+            ?.uri?.let { importAppData2(false, it) }
     }
 
-    val arTimelineFont = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK) {
-            ar.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT, it, "TimelineFont") }
-        }
+    val arTimelineFont = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT, it, "TimelineFont") }
     }
 
-    val arTimelineFontBold = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK) {
-            ar.data?.let {
-                handleFontResult(
-                    AppSettingItem.TIMELINE_FONT_BOLD,
-                    it,
-                    "TimelineFontBold"
-                )
-            }
+    val arTimelineFontBold = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.let {
+            handleFontResult(
+                AppSettingItem.TIMELINE_FONT_BOLD,
+                it,
+                "TimelineFontBold"
+            )
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arNoop.register(this, log)
-        arImportAppData.register(this, log)
-        arTimelineFont.register(this, log)
-        arTimelineFontBold.register(this, log)
+        arNoop.register(this)
+        arImportAppData.register(this)
+        arTimelineFont.register(this)
+        arTimelineFontBold.register(this)
 
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true)
@@ -1008,7 +1005,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     inner class AccountAdapter internal constructor() : BaseAdapter() {
 
-        internal val list = java.util.ArrayList<SavedAccount>()
+        internal val list = ArrayList<SavedAccount>()
 
         init {
             for (a in SavedAccount.loadAccountList(this@ActAppSetting)) {

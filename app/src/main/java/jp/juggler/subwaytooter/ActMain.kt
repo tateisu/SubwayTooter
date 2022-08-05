@@ -220,105 +220,94 @@ class ActMain : AppCompatActivity(),
 
     val viewPool = RecyclerView.RecycledViewPool()
 
-    val arColumnColor = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            appState.saveColumnList()
-            val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-            appState.column(idx)?.let {
+    val arColumnColor = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        appState.saveColumnList()
+        r.data?.intOrNull(ActColumnCustomize.EXTRA_COLUMN_INDEX)
+            ?.let { appState.column(it) }
+            ?.let {
                 it.fireColumnColor()
                 it.fireShowContent(
                     reason = "ActMain column color changed",
                     reset = true
                 )
             }
-            updateColumnStrip()
-        }
+        updateColumnStrip()
     }
 
-    val arLanguageFilter = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            appState.saveColumnList()
-            val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
-            appState.column(idx)?.onLanguageFilterChanged()
-        }
+    val arLanguageFilter = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        appState.saveColumnList()
+        r.data?.intOrNull(ActLanguageFilter.EXTRA_COLUMN_INDEX)
+            ?.let { appState.column(it) }
+            ?.onLanguageFilterChanged()
     }
 
-    val arNickname = activityResultHandler { ar ->
-        if (ar?.resultCode == Activity.RESULT_OK) {
-            updateColumnStrip()
-            appState.columnList.forEach { it.fireShowColumnHeader() }
-        }
+    val arNickname = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        updateColumnStrip()
+        appState.columnList.forEach { it.fireShowColumnHeader() }
     }
 
-    val arAppSetting = activityResultHandler { ar ->
+    val arAppSetting = ActivityResultHandler(log) { r ->
         Column.reloadDefaultColor(this, pref)
         showFooterColor()
         updateColumnStrip()
-        if (ar?.resultCode == RESULT_APP_DATA_IMPORT) {
-            ar.data?.data?.let { importAppData(it) }
+        if (r.resultCode == RESULT_APP_DATA_IMPORT) {
+            r.data?.data?.let { importAppData(it) }
         }
     }
 
-    val arAbout = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            data.getStringExtra(ActAbout.EXTRA_SEARCH)?.notEmpty()?.let { search ->
-                timeline(
-                    defaultInsertPosition,
-                    ColumnType.SEARCH,
-                    args = arrayOf(search, true)
-                )
-            }
+    val arAbout = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.getStringExtra(ActAbout.EXTRA_SEARCH)?.notEmpty()?.let { search ->
+            timeline(
+                defaultInsertPosition,
+                ColumnType.SEARCH,
+                args = arrayOf(search, true)
+            )
         }
     }
 
-    val arAccountSetting = activityResultHandler { ar ->
+    val arAccountSetting = ActivityResultHandler(log) { r ->
         updateColumnStrip()
         appState.columnList.forEach { it.fireShowColumnHeader() }
-        when (ar?.resultCode) {
-            RESULT_OK -> ar.data?.data?.let { openBrowser(it) }
+        when (r.resultCode) {
+            RESULT_OK -> r.data?.data?.let { openBrowser(it) }
 
             ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
-                ar.data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
+                r.data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
                     ?.takeIf { it != -1L }
                     ?.let { checkAccessToken2(it) }
         }
     }
 
-    val arColumnList = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            val order = data.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
-            if (order != null && isOrderChanged(order)) {
-                setColumnsOrder(order)
-            }
-
-            val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, -1)
-            if (select in 0 until appState.columnCount) {
-                scrollToColumn(select)
-            }
-        }
+    val arColumnList = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
+            ?.takeIf { isOrderChanged(it) }
+            ?.let { setColumnsOrder(it) }
+        r.data?.intOrNull(ActColumnList.EXTRA_SELECTION)
+            ?.takeIf { it in 0 until appState.columnCount }
+            ?.let { scrollToColumn(it) }
     }
 
-    val arActText = activityResultHandler { ar ->
-        when (ar?.resultCode) {
-            ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(ar.data, ColumnType.SEARCH_MSP)
-            ActText.RESULT_SEARCH_TS -> searchFromActivityResult(ar.data, ColumnType.SEARCH_TS)
+    val arActText = ActivityResultHandler(log) { r ->
+        when (r.resultCode) {
+            ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(r.data, ColumnType.SEARCH_MSP)
+            ActText.RESULT_SEARCH_TS -> searchFromActivityResult(r.data, ColumnType.SEARCH_TS)
             ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(
-                ar.data,
+                r.data,
                 ColumnType.SEARCH_NOTESTOCK
             )
         }
     }
 
-    val arActPost = activityResultHandler { ar ->
-        ar?.data?.let { data ->
-            if (ar.resultCode == Activity.RESULT_OK) {
-                etQuickPost.setText("")
-                onCompleteActPost(data)
-            }
+    val arActPost = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.let { data ->
+            etQuickPost.setText("")
+            onCompleteActPost(data)
         }
     }
 
@@ -330,15 +319,15 @@ class ActMain : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         refActMain = WeakReference(this)
 
-        arColumnColor.register(this, log)
-        arLanguageFilter.register(this, log)
-        arNickname.register(this, log)
-        arAppSetting.register(this, log)
-        arAbout.register(this, log)
-        arAccountSetting.register(this, log)
-        arColumnList.register(this, log)
-        arActPost.register(this, log)
-        arActText.register(this, log)
+        arColumnColor.register(this)
+        arLanguageFilter.register(this)
+        arNickname.register(this)
+        arAppSetting.register(this)
+        arAbout.register(this)
+        arAccountSetting.register(this)
+        arColumnList.register(this)
+        arActPost.register(this)
+        arActText.register(this)
 
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true)

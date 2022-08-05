@@ -7,7 +7,6 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.*
 import android.os.Build
 import android.os.Bundle
@@ -16,8 +15,6 @@ import android.os.SystemClock
 import android.view.View
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.Player.TimelineChangeReason
 import com.google.android.exoplayer2.source.LoadEventInfo
@@ -56,8 +53,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         internal val download_history_list = LinkedList<DownloadHistory>()
         internal const val DOWNLOAD_REPEAT_EXPIRE = 3000L
         internal const val short_limit = 5000L
-
-        private const val PERMISSION_REQUEST_CODE = 1
 
         internal const val EXTRA_IDX = "idx"
         internal const val EXTRA_DATA = "data"
@@ -231,6 +226,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    private val prDownload = PermissionRequester(
+        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        deniedId = R.string.missing_permission_to_access_media,
+    ) { download(mediaList[idx]) }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
@@ -247,6 +247,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        prDownload.register(this)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true, forceDark = true)
 
@@ -665,7 +666,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun download(ta: TootAttachmentLike) {
-        if (!checkPermission()) return
+        if (!prDownload.checkOrLaunch()) return
 
         val downLoadManager: DownloadManager = systemService(this)
             ?: error("missing DownloadManager system service")
@@ -825,39 +826,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 showToast(ex, "can't open app.")
             }
         }
-    }
-
-    private fun checkPermission(): Boolean {
-        val permissionCheck = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) return true
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                PERMISSION_REQUEST_CODE
-            )
-        } else {
-            showToast(true, R.string.missing_permission_to_access_media)
-        }
-        return false
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            when (permissions.indices.all { grantResults[it] == PackageManager.PERMISSION_GRANTED }) {
-                false -> showToast(true, R.string.missing_permission_to_access_media)
-                else -> download(mediaList[idx])
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun mediaBackgroundDialog() {

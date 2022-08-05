@@ -19,7 +19,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.util.*
 import org.jetbrains.anko.textColor
@@ -70,12 +71,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     private var lastImageUri: String? = null
     private var lastImageBitmap: Bitmap? = null
 
-    private val arColumnBackgroundImage = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == RESULT_OK) {
-            data.handleGetContentResult(contentResolver)
-                .firstOrNull()?.uri?.let { updateBackground(it) }
-        }
+    private val arColumnBackgroundImage = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.handleGetContentResult(contentResolver)
+            ?.firstOrNull()?.uri?.let { updateBackground(it) }
     }
 
     override fun onBackPressed() {
@@ -91,7 +90,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arColumnBackgroundImage.register(this, log)
+        arColumnBackgroundImage.register(this)
         App1.setActivityTheme(this)
         initUI()
 

@@ -19,7 +19,6 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
 import java.lang.ref.WeakReference
-import java.util.*
 
 class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 
@@ -33,9 +32,10 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 
     private var lastRingtone: WeakReference<Ringtone>? = null
 
-    private val arEdit = activityResultHandler { ar ->
+    private val arEdit = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
         try {
-            if (ar?.resultCode == RESULT_OK) loadData()
+            loadData()
         } catch (ex: Throwable) {
             errorEx(ex, "can't load data")
         }
@@ -48,7 +48,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arEdit.register(this, log)
+        arEdit.register(this)
         App1.setActivityTheme(this)
         initUI()
         loadData()

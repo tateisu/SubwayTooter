@@ -139,28 +139,23 @@ class ActPost : AppCompatActivity(),
     var isPostComplete: Boolean = false
     var scheduledStatus: TootScheduled? = null
 
-    // カスタムサムネイルを指定する添付メディア
-    var paThumbnailTarget: PostAttachment? = null
-
     /////////////////////////////////////////////////////////////////////
 
     val isMultiWindowPost: Boolean
         get() = intent.getBooleanExtra(EXTRA_MULTI_WINDOW, false)
 
-    val arMushroom = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK) {
-            ar.data?.getStringExtra("replace_key")
-                ?.let { text ->
-                    when (states.mushroomInput) {
-                        0 -> applyMushroomText(views.etContent, text)
-                        1 -> applyMushroomText(views.etContentWarning, text)
-                        else -> for (i in 0..3) {
-                            if (states.mushroomInput == i + 2) {
-                                applyMushroomText(etChoices[i], text)
-                            }
-                        }
+    val arMushroom = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.getStringExtra("replace_key")?.let { text ->
+            when (states.mushroomInput) {
+                0 -> applyMushroomText(views.etContent, text)
+                1 -> applyMushroomText(views.etContentWarning, text)
+                else -> for (i in 0..3) {
+                    if (states.mushroomInput == i + 2) {
+                        applyMushroomText(etChoices[i], text)
                     }
                 }
+            }
         }
     }
 
@@ -176,7 +171,7 @@ class ActPost : AppCompatActivity(),
         attachmentUploader = AttachmentUploader(this, handler)
         attachmentPicker = AttachmentPicker(this, this)
         density = resources.displayMetrics.density
-        arMushroom.register(this, log)
+        arMushroom.register(this)
 
         progressChannel = Channel(capacity = Channel.CONFLATED)
         launchMain {
@@ -288,15 +283,6 @@ class ActPost : AppCompatActivity(),
         openBrowser(span.linkInfo.url)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        attachmentPicker.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
     override fun onPickAttachment(uri: Uri, mimeType: String?) {
         addAttachment(uri, mimeType)
     }
@@ -315,8 +301,13 @@ class ActPost : AppCompatActivity(),
         onPostAttachmentCompleteImpl(pa)
     }
 
-    override fun onPickCustomThumbnail(src: GetContentResultEntry) {
-        onPickCustomThumbnailImpl(src)
+    override fun resumeCustomThumbnailTarget(id: String?): PostAttachment? {
+        id?: return null
+        return attachmentList.find{ it.attachment?.id?.toString() == id }
+    }
+
+    override fun onPickCustomThumbnail(pa: PostAttachment,src: GetContentResultEntry) {
+        onPickCustomThumbnailImpl(pa,src)
     }
 
     fun initUI() {

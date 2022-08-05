@@ -202,13 +202,14 @@ fun ActPost.performAttachmentClick(idx: Int) {
     }
     if (account?.isMastodon == true) {
         when (pa.attachment?.type) {
-            TootAttachmentType.Audio, TootAttachmentType.GIFV, TootAttachmentType.Video ->
-                a.addAction(getString(R.string.custom_thumbnail)) {
-                    openCustomThumbnail(pa)
-                }
-
-            else -> {
+            TootAttachmentType.Audio,
+            TootAttachmentType.GIFV,
+            TootAttachmentType.Video,
+            -> a.addAction(getString(R.string.custom_thumbnail)) {
+                attachmentPicker.openCustomThumbnail(pa)
             }
+
+            else -> Unit
         }
     }
 
@@ -309,19 +310,9 @@ fun ActPost.editAttachmentDescription(pa: PostAttachment) {
         })
 }
 
-fun ActPost.openCustomThumbnail(pa: PostAttachment) {
-    paThumbnailTarget = pa
-    attachmentPicker.openCustomThumbnail()
-}
-
-fun ActPost.onPickCustomThumbnailImpl(src: GetContentResultEntry) {
-    val account = this.account
-    val pa = paThumbnailTarget
-    when {
-        account == null ->
-            showToast(false, R.string.account_select_please)
-        pa == null || !attachmentList.contains(pa) ->
-            showToast(true, "lost attachment information")
+fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: GetContentResultEntry) {
+    when (val account = this.account) {
+        null -> showToast(false, R.string.account_select_please)
         else -> launchMain {
             val result = attachmentUploader.uploadCustomThumbnail(account, src, pa)
             result?.error?.let { showToast(true, it) }

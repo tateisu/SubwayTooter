@@ -586,7 +586,7 @@ class GifDecoder(val callback : GifDecoderCallback) {
 		
 		// GIFは最後まで読まないとフレーム数が分からない
 		
-		if(frames.isEmpty()) throw error("there is no frame.")
+		if(frames.isEmpty()) error("there is no frame.")
 		callback.onGifHeader(header)
 		callback.onGifAnimationInfo(header, animationControl)
 		for(frame in frames) {

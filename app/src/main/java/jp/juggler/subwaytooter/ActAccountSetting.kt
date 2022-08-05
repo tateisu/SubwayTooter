@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.RingtoneManager
 import android.net.Uri
@@ -20,7 +19,6 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -69,9 +67,6 @@ class ActAccountSetting : AppCompatActivity(),
         internal const val max_length_display_name = 30
         internal const val max_length_note = 160
         internal const val max_length_fields = 255
-
-        private const val PERMISSION_REQUEST_AVATAR = 1
-        private const val PERMISSION_REQUEST_HEADER = 2
 
         internal const val MIME_TYPE_JPEG = "image/jpeg"
         internal const val MIME_TYPE_PNG = "image/png"
@@ -153,71 +148,79 @@ class ActAccountSetting : AppCompatActivity(),
 
     ///////////////////////////////////////////////////////////////////
 
-    private val arShowAcctColor = activityResultHandler { ar ->
-        if (ar?.resultCode == Activity.RESULT_OK) {
-            showAcctColor()
+    private val arShowAcctColor = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        showAcctColor()
+    }
+
+    private val arNotificationSound = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.decodeRingtonePickerResult()?.let { uri ->
+            notificationSoundUri = uri.toString()
+            saveUIToData()
+            //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+            //			TextView ringView = (TextView) findViewById(R.id.ringtone);
+            //			ringView.setText(ringtone.getTitle(getApplicationContext()));
+            //			ringtone.setStreamType(AudioManager.STREAM_ALARM);
+            //			ringtone.play();
+            //			SystemClock.sleep(1000);
+            //			ringtone.stop();
         }
     }
 
-    private val arNotificationSound = activityResultHandler { ar ->
-        if (ar?.resultCode == Activity.RESULT_OK) {
-            // RINGTONE_PICKERからの選択されたデータを取得する
-            val uri = ar.data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            if (uri is Uri) {
-                notificationSoundUri = uri.toString()
-                saveUIToData()
-                //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
-                //			TextView ringView = (TextView) findViewById(R.id.ringtone);
-                //			ringView.setText(ringtone.getTitle(getApplicationContext()));
-                //			ringtone.setStreamType(AudioManager.STREAM_ALARM);
-                //			ringtone.play();
-                //			SystemClock.sleep(1000);
-                //			ringtone.stop();
+    private val arAddAttachment = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data
+            ?.handleGetContentResult(contentResolver)
+            ?.firstOrNull()
+            ?.let {
+                uploadImage(
+                    state.propName,
+                    it.uri,
+                    it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
+                )
             }
-        }
     }
 
-    private val arAddAttachment = activityResultHandler { ar ->
-        if (ar?.resultCode == Activity.RESULT_OK) {
-            ar.data
-                ?.handleGetContentResult(contentResolver)
-                ?.firstOrNull()
-                ?.let {
-                    uploadImage(
-                        state.propName,
-                        it.uri,
-                        it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
-                    )
-                }
-        }
-    }
-
-    private val arCameraImage = activityResultHandler { ar ->
-        if (ar?.resultCode == Activity.RESULT_OK) {
-            // 画像のURL
-            val uri = ar.data?.data ?: state.uriCameraImage
-            if (uri != null) {
-                val type = contentResolver.getType(uri)
-                uploadImage(state.propName, uri, type)
-            }
-        } else {
+    private val arCameraImage = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) {
             // 失敗したら DBからデータを削除
             state.uriCameraImage?.let {
                 contentResolver.delete(it, null, null)
             }
             state.uriCameraImage = null
+        } else {
+            // 画像のURL
+            val uri = r.data?.data ?: state.uriCameraImage
+            if (uri != null) {
+                val type = contentResolver.getType(uri)
+                uploadImage(state.propName, uri, type)
+            }
         }
     }
+
+    private val prPickAvater = PermissionRequester(
+        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        deniedId = R.string.missing_permission_to_access_media,
+    ) { openPicker(it) }
+
+    private val prPickHeader = PermissionRequester(
+        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        deniedId = R.string.missing_permission_to_access_media,
+    ) { openPicker(it) }
 
     ///////////////////////////////////////////////////
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arShowAcctColor.register(this, log)
-        arNotificationSound.register(this, log)
-        arAddAttachment.register(this, log)
-        arCameraImage.register(this, log)
+        prPickAvater.register(this)
+        prPickHeader.register(this)
+
+        arShowAcctColor.register(this)
+        arNotificationSound.register(this)
+        arAddAttachment.register(this)
+        arCameraImage.register(this)
 
         if (savedInstanceState != null) {
             savedInstanceState.getString(ACTIVITY_STATE)
@@ -1320,25 +1323,18 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun pickAvatarImage() {
-        openPicker(PERMISSION_REQUEST_AVATAR)
+        openPicker(prPickAvater)
     }
 
     private fun pickHeaderImage() {
-        openPicker(PERMISSION_REQUEST_HEADER)
+        openPicker(prPickHeader)
     }
 
-    private fun openPicker(requestCode: Int) {
-        val permissionCheck = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            preparePermission(requestCode)
-            return
-        }
+    private fun openPicker(permissionRequester: PermissionRequester) {
+        if (!permissionRequester.checkOrLaunch()) return
 
-        val propName = when (requestCode) {
-            PERMISSION_REQUEST_HEADER -> "header"
+        val propName = when (permissionRequester) {
+            prPickHeader -> "header"
             else -> "avatar"
         }
 
@@ -1362,23 +1358,6 @@ class ActAccountSetting : AppCompatActivity(),
             return
         }
         showToast(true, R.string.missing_permission_to_access_media)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        when (requestCode) {
-            PERMISSION_REQUEST_AVATAR, PERMISSION_REQUEST_HEADER ->
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openPicker(requestCode)
-                } else {
-                    showToast(true, R.string.missing_permission_to_access_media)
-                }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun performAttachment(propName: String) {

@@ -54,16 +54,12 @@ class ActHighlightWordEdit
 
     private var bBusy = false
 
-    private val arNotificationSound = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            // RINGTONE_PICKERからの選択されたデータを取得する
-            val uri = data.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            if (uri is Uri) {
-                item.sound_uri = uri.toString()
-                item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
-                showSound()
-            }
+    private val arNotificationSound = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.decodeRingtonePickerResult()?.let { uri ->
+            item.sound_uri = uri.toString()
+            item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
+            showSound()
         }
     }
 
@@ -78,7 +74,7 @@ class ActHighlightWordEdit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arNotificationSound.register(this, log)
+        arNotificationSound.register(this)
         App1.setActivityTheme(this)
         initUI()
 

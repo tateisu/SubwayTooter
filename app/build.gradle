@@ -283,6 +283,9 @@ dependencies {
 
     // video transcoder https://github.com/natario1/Transcoder
     implementation "com.otaliastudios:transcoder:0.10.4"
+
+    // LiveEvent
+    implementation "com.github.hadilq:live-event:1.3.0"
 }
 
 repositories {

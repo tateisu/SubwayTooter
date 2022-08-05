@@ -3,21 +3,16 @@ package jp.juggler.subwaytooter.util
 import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.kJson
 import jp.juggler.util.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import java.util.*
-import kotlinx.serialization.Serializable
 
 class AttachmentPicker(
     val activity: AppCompatActivity,
@@ -25,14 +20,15 @@ class AttachmentPicker(
 ) {
     companion object {
         private val log = LogCategory("AttachmentPicker")
-        private val permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
         private const val PERMISSION_REQUEST_CODE = 1
     }
 
     // callback after media selected
     interface Callback {
         fun onPickAttachment(uri: Uri, mimeType: String? = null)
-        fun onPickCustomThumbnail(src: GetContentResultEntry)
+        fun onPickCustomThumbnail(pa:PostAttachment,src: GetContentResultEntry)
+        fun resumeCustomThumbnailTarget(id:String?): PostAttachment?
     }
 
     // actions after permission granted
@@ -44,7 +40,7 @@ class AttachmentPicker(
         @Serializable(with = UriSerializer::class)
         var uriCameraImage: Uri? = null,
 
-        var afterPermission: AfterPermission = AfterPermission.Attachment,
+        var customThumbnailTargetId: String? = null,
     )
 
     private var states = States()
@@ -52,49 +48,66 @@ class AttachmentPicker(
     ////////////////////////////////////////////////////////////////////////
     // activity result handlers
 
-    private val arAttachmentChooser = activity.activityResultHandler { ar ->
-        if (ar?.resultCode == AppCompatActivity.RESULT_OK) {
-            ar.data?.handleGetContentResult(contentResolver)?.pickAll()
-        }
+    private val arAttachmentChooser = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.handleGetContentResult(activity.contentResolver)?.pickAll()
     }
 
-    private val arCamera = activity.activityResultHandler { ar ->
-        if (ar?.resultCode == AppCompatActivity.RESULT_OK) {
-            // 画像のURL
-            when (val uri = ar.data?.data ?: states.uriCameraImage) {
-                null -> showToast(false, "missing image uri")
-                else -> callback.onPickAttachment(uri)
-            }
-        } else {
+    private val arCamera = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) {
             // 失敗したら DBからデータを削除
             states.uriCameraImage?.let { uri ->
-                contentResolver.delete(uri, null, null)
+                activity.contentResolver.delete(uri, null, null)
                 states.uriCameraImage = null
+            }
+        } else {
+            // 画像のURL
+            when (val uri = r.data?.data ?: states.uriCameraImage) {
+                null -> activity.showToast(false, "missing image uri")
+                else -> callback.onPickAttachment(uri)
             }
         }
     }
 
-    private val arCapture = activity.activityResultHandler { ar ->
-        if (ar?.resultCode == AppCompatActivity.RESULT_OK) {
-            ar.data?.data?.let { callback.onPickAttachment(it) }
-        }
+    private val arCapture = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.data?.let { callback.onPickAttachment(it) }
     }
 
-    private val arCustomThumbnail = activity.activityResultHandler { ar ->
-        if (ar?.resultCode == AppCompatActivity.RESULT_OK) {
-            ar.data
-                ?.handleGetContentResult(contentResolver)
-                ?.firstOrNull()
-                ?.let { callback.onPickCustomThumbnail(it) }
-        }
+    private val arCustomThumbnail = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data
+            ?.handleGetContentResult(activity.contentResolver)
+            ?.firstOrNull()
+            ?.let {
+                callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)?.let { pa->
+                    callback.onPickCustomThumbnail(pa,it)
+                }
+            }
+
+    }
+
+    private val prPickAttachment = PermissionRequester(
+        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        deniedId = R.string.missing_permission_to_access_media,
+    ) { openPicker() }
+
+    private val prPickCustomThumbnail = PermissionRequester(
+        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        deniedId = R.string.missing_permission_to_access_media,
+    ) {
+        callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)
+            ?.let{ openCustomThumbnail(it) }
     }
 
     init {
         // must register all ARHs before onStart
-        arAttachmentChooser.register(activity, log)
-        arCamera.register(activity, log)
-        arCapture.register(activity, log)
-        arCustomThumbnail.register(activity, log)
+        prPickAttachment.register(activity)
+        prPickCustomThumbnail.register(activity)
+        arAttachmentChooser.register(activity)
+        arCamera.register(activity)
+        arCapture.register(activity)
+        arCustomThumbnail.register(activity)
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -107,53 +120,19 @@ class AttachmentPicker(
     fun encodeState(): String {
         val encoded = kJson.encodeToString(states)
         val decoded = kJson.decodeFromString<States>(encoded)
-        log.d("encodeState: ${decoded.uriCameraImage},${decoded.afterPermission},$encoded")
+        log.d("encodeState: ${decoded.uriCameraImage},$encoded")
         return encoded
     }
 
     fun restoreState(encoded: String) {
         states = kJson.decodeFromString(encoded)
-        log.d("restoreState: ${states.uriCameraImage},${states.afterPermission},$encoded")
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // permission check
-    // (current implementation does not auto restart actions after got permission
-
-    // returns true if permission granted, false if not granted, (may request permissions)
-    private fun checkPermission(afterPermission: AfterPermission): Boolean {
-        states.afterPermission = afterPermission
-        if (permissions.all {
-                ContextCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED
-            }) return true
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            ActivityCompat.requestPermissions(activity, permissions, PERMISSION_REQUEST_CODE)
-        } else {
-            activity.showToast(true, R.string.missing_permission_to_access_media)
-        }
-        return false
-    }
-
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-
-        if (requestCode != PERMISSION_REQUEST_CODE) return
-
-        if ((permissions.indices).any { grantResults.elementAtOrNull(it) != PackageManager.PERMISSION_GRANTED }) {
-            activity.showToast(true, R.string.missing_permission_to_access_media)
-            return
-        }
-
-        when (states.afterPermission) {
-            AfterPermission.Attachment -> openPicker()
-            AfterPermission.CustomThumbnail -> openCustomThumbnail()
-        }
+        log.d("restoreState: ${states.uriCameraImage},$encoded")
     }
 
     ////////////////////////////////////////////////////////////////////////
 
     fun openPicker() {
-        if (!checkPermission(AfterPermission.Attachment)) return
+        if (!prPickAttachment.checkOrLaunch()) return
 
         //		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
         //		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
@@ -209,8 +188,10 @@ class AttachmentPicker(
                 put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             }
 
-            val newUri = activity.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                .also { states.uriCameraImage = it }
+            val newUri =
+                activity.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    values)
+                    .also { states.uriCameraImage = it }
 
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
                 putExtra(MediaStore.EXTRA_OUTPUT, newUri)
@@ -238,13 +219,16 @@ class AttachmentPicker(
     ///////////////////////////////////////////////////////////////////////////////
     // Mastodon's custom thumbnail
 
-    fun openCustomThumbnail() {
-        if (!checkPermission(AfterPermission.CustomThumbnail)) return
+    fun openCustomThumbnail(pa: PostAttachment) {
+        states.customThumbnailTargetId = pa.attachment?.id?.toString()
+        if (!prPickCustomThumbnail.checkOrLaunch()) return
 
         // SAFのIntentで開く
         try {
             arCustomThumbnail.launch(
-                intentGetContent(false, activity.getString(R.string.pick_images), arrayOf("image/*"))
+                intentGetContent(false,
+                    activity.getString(R.string.pick_images),
+                    arrayOf("image/*"))
             )
         } catch (ex: Throwable) {
             log.trace(ex)

@@ -117,21 +117,18 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     private val languageList = ArrayList<MyItem>()
     private var loadingBusy: Boolean = false
 
-    private val arExport = activityResultHandler { }
+    private val arExport = ActivityResultHandler(log) { }
 
-    private val arImport = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == RESULT_OK) {
-            data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
-                import2(it)
-            }
-        }
+    private val arImport = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.handleGetContentResult(contentResolver)
+            ?.firstOrNull()?.uri?.let { import2(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arExport.register(this, log)
-        arImport.register(this, log)
+        arExport.register(this)
+        arImport.register(this)
 
         App1.setActivityTheme(this)
         initUI()

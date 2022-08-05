@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Intent
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -62,13 +61,10 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     private var notificationSoundUri: String? = null
     private var loadingBusy = false
 
-    private val arNotificationSound = activityResultHandler { ar ->
-        if (ar?.resultCode == RESULT_OK) {
-            // RINGTONE_PICKERからの選択されたデータを取得する
-            val uri = ar.data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            if (uri is Uri) {
-                notificationSoundUri = uri.toString()
-            }
+    private val arNotificationSound = ActivityResultHandler(log) { r ->
+        if (r.isNotOk) return@ActivityResultHandler
+        r.data?.decodeRingtonePickerResult()?.let { uri ->
+            notificationSoundUri = uri.toString()
         }
     }
 
@@ -79,7 +75,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arNotificationSound.register(this, log)
+        arNotificationSound.register(this)
         App1.setActivityTheme(this)
 
         val intent = intent

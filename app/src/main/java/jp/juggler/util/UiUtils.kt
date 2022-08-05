@@ -1,5 +1,6 @@
 package jp.juggler.util
 
+import android.app.Activity
 import android.content.*
 import android.content.res.ColorStateList
 import android.content.res.TypedArray
@@ -19,15 +20,14 @@ import android.util.SparseArray
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
-import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import jp.juggler.subwaytooter.R
-import java.util.*
 
 object UiUtils {
 
@@ -95,7 +95,7 @@ fun createRoundDrawable(
     radius: Float,
     fillColor: Int? = null,
     strokeColor: Int? = null,
-    strokeWidth: Int = 4
+    strokeWidth: Int = 4,
 ) =
     GradientDrawable().apply {
         cornerRadius = radius
@@ -113,7 +113,7 @@ fun getAdaptiveRippleDrawableRound(
     context: Context,
     normalColor: Int,
     pressedColor: Int,
-    roundNormal: Boolean = false
+    roundNormal: Boolean = false,
 ): Drawable {
     val dp6 = context.resources.displayMetrics.density * 6f
     return if (roundNormal) {
@@ -137,7 +137,7 @@ fun getAdaptiveRippleDrawableRound(
 
 private class ColorFilterCacheValue(
     val filter: ColorFilter,
-    var lastUsed: Long
+    var lastUsed: Long,
 )
 
 private val colorFilterCache = SparseArray<ColorFilterCacheValue>()
@@ -174,16 +174,16 @@ private fun createColorFilter(rgb: Int): ColorFilter {
 private class ColoredDrawableCacheKey(
     val drawableId: Int,
     val rgb: Int,
-    val alpha: Int
+    val alpha: Int,
 ) {
 
     override fun equals(other: Any?): Boolean {
         return this === other || (
-            other is ColoredDrawableCacheKey &&
-                drawableId == other.drawableId &&
-                rgb == other.rgb &&
-                alpha == other.alpha
-            )
+                other is ColoredDrawableCacheKey &&
+                        drawableId == other.drawableId &&
+                        rgb == other.rgb &&
+                        alpha == other.alpha
+                )
     }
 
     override fun hashCode(): Int {
@@ -193,7 +193,7 @@ private class ColoredDrawableCacheKey(
 
 private class ColoredDrawableCacheValue(
     val drawable: Drawable,
-    var lastUsed: Long
+    var lastUsed: Long,
 )
 
 private val coloredDrawableCache = HashMap<ColoredDrawableCacheKey, ColoredDrawableCacheValue>()
@@ -203,7 +203,7 @@ fun createColoredDrawable(
     context: Context,
     drawableId: Int,
     color: Int,
-    alphaMultiplier: Float
+    alphaMultiplier: Float,
 ): Drawable {
     val rgb = (color and 0xffffff) or Color.BLACK
     val alpha = if (alphaMultiplier >= 1f) {
@@ -248,7 +248,7 @@ fun setIconDrawableId(
     imageView: ImageView,
     drawableId: Int,
     color: Int? = null,
-    alphaMultiplier: Float
+    alphaMultiplier: Float,
 ) {
     if (color == null) {
         // ImageViewにアイコンを設定する。デフォルトの色
@@ -310,14 +310,14 @@ fun DialogInterface.dismissSafe() {
 }
 
 class CustomTextWatcher(
-    val callback: () -> Unit
+    val callback: () -> Unit,
 ) : TextWatcher {
 
     override fun beforeTextChanged(
         s: CharSequence,
         start: Int,
         count: Int,
-        after: Int
+        after: Int,
     ) {
     }
 
@@ -356,34 +356,36 @@ var View.isEnabledAlpha: Boolean
 
 /////////////////////////////////////////////////
 
-class ActivityResultHandler<A : ComponentActivity>(
-    val callback: A.(ActivityResult?) -> Unit
+class ActivityResultHandler(
+    private val log: LogCategory,
+    private val callback: (ActivityResult) -> Unit,
 ) {
-    private lateinit var log: LogCategory
-    private lateinit var context: Context
-    private lateinit var launcher: ActivityResultLauncher<Intent>
+    private var launcher: ActivityResultLauncher<Intent>? = null
+    private var getContext: (() -> Context?)? = null
+
+    private val context
+        get() = getContext?.invoke()
 
     // startForActivityResultの代わりに呼び出す
     fun launch(intent: Intent, options: ActivityOptionsCompat? = null) = try {
-        launcher.launch(intent, options)
+        (launcher ?: error("ActivityResultHandler not registered."))
+            .launch(intent, options)
     } catch (ex: Throwable) {
         log.e(ex, "launch failed")
-        context.showToast(ex, "activity launch failed.")
+        context?.showToast(ex, "activity launch failed.")
     }
 
     // onCreate時に呼び出す
-    fun register(a: A, log: LogCategory) {
-        this.log = log
-        this.context = a.applicationContext
+    fun register(a: FragmentActivity) {
+        getContext = { a.applicationContext }
         this.launcher = a.registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
-        ) { callback(a, it) }
+        ) { callback(it) }
     }
 }
 
-@Suppress("unused")
-fun <A : ComponentActivity> A.activityResultHandler(callback: A.(ActivityResult?) -> Unit) =
-    ActivityResultHandler(callback)
-
 val AppCompatActivity.isLiveActivity: Boolean
     get() = !(isFinishing || isDestroyed)
+
+val ActivityResult.isNotOk
+    get() = Activity.RESULT_OK != resultCode

@@ -55,8 +55,7 @@ class ActHighlightWordEdit
     private var bBusy = false
 
     private val arNotificationSound = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data?.decodeRingtonePickerResult()?.let { uri ->
+        r.decodeRingtonePickerResult()?.let { uri ->
             item.sound_uri = uri.toString()
             item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
             showSound()

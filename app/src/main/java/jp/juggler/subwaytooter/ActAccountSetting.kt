@@ -154,8 +154,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private val arNotificationSound = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data?.decodeRingtonePickerResult()?.let { uri ->
+        r.decodeRingtonePickerResult()?.let { uri ->
             notificationSoundUri = uri.toString()
             saveUIToData()
             //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);

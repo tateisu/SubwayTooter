@@ -223,7 +223,7 @@ class ActMain : AppCompatActivity(),
     val arColumnColor = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
         appState.saveColumnList()
-        r.data?.intOrNull(ActColumnCustomize.EXTRA_COLUMN_INDEX)
+        r.data?.int(ActColumnCustomize.EXTRA_COLUMN_INDEX)
             ?.let { appState.column(it) }
             ?.let {
                 it.fireColumnColor()
@@ -238,7 +238,7 @@ class ActMain : AppCompatActivity(),
     val arLanguageFilter = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
         appState.saveColumnList()
-        r.data?.intOrNull(ActLanguageFilter.EXTRA_COLUMN_INDEX)
+        r.data?.int(ActLanguageFilter.EXTRA_COLUMN_INDEX)
             ?.let { appState.column(it) }
             ?.onLanguageFilterChanged()
     }
@@ -287,7 +287,7 @@ class ActMain : AppCompatActivity(),
         r.data?.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
             ?.takeIf { isOrderChanged(it) }
             ?.let { setColumnsOrder(it) }
-        r.data?.intOrNull(ActColumnList.EXTRA_SELECTION)
+        r.data?.int(ActColumnList.EXTRA_SELECTION)
             ?.takeIf { it in 0 until appState.columnCount }
             ?.let { scrollToColumn(it) }
     }

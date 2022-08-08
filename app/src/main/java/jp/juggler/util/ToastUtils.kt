@@ -86,7 +86,7 @@ fun initializeToastUtils(app: Application) {
 suspend fun Animation.startAndAwait(duration: Long, v: View) =
     try {
         withTimeout(duration + 333L) {
-            suspendCancellableCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine { cont ->
                 v.clearAnimation()
                 this@startAndAwait.duration = duration
                 this@startAndAwait.fillAfter = true
@@ -102,6 +102,7 @@ suspend fun Animation.startAndAwait(duration: Long, v: View) =
         }
     } catch (ex: TimeoutCancellationException) {
         log.w(ex, "startAndAwait timeout.")
+        Unit
     }
 
 private fun showPopup(activity: Activity, bLong: Boolean, message: String) {
@@ -128,9 +129,10 @@ private fun showPopup(activity: Activity, bLong: Boolean, message: String) {
     } catch (ex: Throwable) {
         log.trace(ex, "dismiss failed.")
     }
-    lastPopup = WeakReference(popupWindow)
 
+    lastPopup = null
     popupWindow.showAtLocation(rootView, Gravity.CENTER, 0, 0)
+    lastPopup = WeakReference(popupWindow)
 
     launchMain {
 

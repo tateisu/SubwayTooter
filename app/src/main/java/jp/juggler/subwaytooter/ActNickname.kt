@@ -62,8 +62,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     private var loadingBusy = false
 
     private val arNotificationSound = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data?.decodeRingtonePickerResult()?.let { uri ->
+        r.decodeRingtonePickerResult()?.let { uri ->
             notificationSoundUri = uri.toString()
         }
     }

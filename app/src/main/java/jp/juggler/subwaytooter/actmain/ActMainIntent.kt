@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.actmain
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
@@ -106,15 +105,10 @@ fun ActMain.handleOtherUri(uri: Uri): Boolean {
     val errorMessage = getString(R.string.cant_handle_uri_of, url)
 
     try {
-        val queryFlag = if (Build.VERSION.SDK_INT >= 23) {
-            // Android 6.0以降
-            // MATCH_DEFAULT_ONLY だと標準の設定に指定されたアプリがあるとソレしか出てこない
-            // MATCH_ALL を指定すると 以前と同じ挙動になる
-            PackageManager.MATCH_ALL
-        } else {
-            // Android 5.xまでは MATCH_DEFAULT_ONLY でマッチするすべてのアプリを取得できる
-            PackageManager.MATCH_DEFAULT_ONLY
-        }
+        // Android 6.0以降
+        // MATCH_DEFAULT_ONLY だと標準の設定に指定されたアプリがあるとソレしか出てこない
+        // MATCH_ALL を指定すると 以前と同じ挙動になる
+        val queryFlag = PackageManager.MATCH_ALL
 
         // queryIntentActivities に渡すURLは実在しないホストのものにする
         val intent = Intent(Intent.ACTION_VIEW, "https://dummy.subwaytooter.club/".toUri())

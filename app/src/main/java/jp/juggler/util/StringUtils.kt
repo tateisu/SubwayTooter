@@ -2,7 +2,6 @@ package jp.juggler.util
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -312,12 +311,7 @@ fun <T> Array<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 //fun <T> Sequence<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 
 fun defaultLocale(context: Context): Locale =
-    if (Build.VERSION.SDK_INT >= 24) {
-        context.resources.configuration.locales[0]
-    } else {
-        @Suppress("DEPRECATION")
-        context.resources.configuration.locale
-    }
+    context.resources.configuration.locales[0]
 
 fun Matcher.findOrNull() = if (find()) this else null
 

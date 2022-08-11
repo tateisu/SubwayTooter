@@ -9,11 +9,9 @@
 
 package me.drakeet.support.toast
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
-import android.os.Build
 import android.util.Log
 import android.view.Display
 import android.view.View
@@ -95,19 +93,6 @@ class ToastCompat private constructor(
     companion object {
         private val log = LogCategory("ToastCompat")
 
-        @SuppressLint("DiscouragedPrivateApi")
-        private fun setContextCompat(view: View?, contextCreator: () -> Context) {
-            if (view != null && Build.VERSION.SDK_INT == 25) {
-                try {
-                    val field = View::class.java.getDeclaredField("mContext")
-                    field.isAccessible = true
-                    field[view] = contextCreator()
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                }
-            }
-        }
-
         /**
          * Make a standard toast that just contains a text view with the text from a resource.
          *
@@ -136,7 +121,6 @@ class ToastCompat private constructor(
             // We cannot pass the SafeToastContext to Toast.makeText() because
             // the View will unwrap the base context and we are in vain.
             val base = Toast.makeText(context, text, duration)
-            setContextCompat(base.view) { SafeToastContext(context, base) }
             return ToastCompat(context, base)
         }
     }
@@ -152,7 +136,6 @@ class ToastCompat private constructor(
     @Deprecated(message = "Custom toast views are deprecated in API level 30.")
     override fun setView(view: View) {
         base.view = view
-        setContextCompat(base.view) { SafeToastContext(view.context, base) }
     }
 
     @Suppress("DEPRECATION")

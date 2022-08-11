@@ -486,10 +486,8 @@
     <string name="relative_time_phrase_past">Hi ha %1$d %2$s</string>
     <string name="relative_time_phrase_future">Després de %1$d %2$s</string>
     <string name="notification_channel_description">Aquest paràmetre serveix per ajustar les notificacions de %1$s</string>
-    <string name="notification_sound_before_oreo">So de notificació (pre Android 8.0)</string>
     <string name="notification_style_after_oreo">Estil de notificacions (Android 8.0+)</string>
     <string name="notification_for">Notificacions per %1$s</string>
-    <string name="notification_style_before_oreo">Estil de notificacions (pre Android 8. Si el teu dispositiu és Android 8.0+, cal que activis el paràmetre a la configuració)</string>
     <string name="enquete_was_end">Enquesta finalitzada.</string>
     <string name="enquete_voted">S\'ha votat.</string>
     <string name="enquete_vote_failed">No s\'ha pogut votar. %1$s</string>

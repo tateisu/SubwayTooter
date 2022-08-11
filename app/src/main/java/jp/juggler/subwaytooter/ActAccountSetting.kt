@@ -5,9 +5,7 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
-import android.media.RingtoneManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
@@ -18,7 +16,6 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -117,8 +114,6 @@ class ActAccountSetting : AppCompatActivity(),
 
     private lateinit var viewBinding: ActAccountSettingBinding
 
-    private var notificationSoundUri: String? = null
-
     private lateinit var nameInvalidator: NetworkEmojiInvalidator
     private lateinit var noteInvalidator: NetworkEmojiInvalidator
     private lateinit var defaultTextInvalidator: NetworkEmojiInvalidator
@@ -151,21 +146,6 @@ class ActAccountSetting : AppCompatActivity(),
     private val arShowAcctColor = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
         showAcctColor()
-    }
-
-    private val arNotificationSound = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data?.decodeRingtonePickerResult()?.let { uri ->
-            notificationSoundUri = uri.toString()
-            saveUIToData()
-            //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
-            //			TextView ringView = (TextView) findViewById(R.id.ringtone);
-            //			ringView.setText(ringtone.getTitle(getApplicationContext()));
-            //			ringtone.setStreamType(AudioManager.STREAM_ALARM);
-            //			ringtone.play();
-            //			SystemClock.sleep(1000);
-            //			ringtone.stop();
-        }
     }
 
     private val arAddAttachment = ActivityResultHandler(log) { r ->
@@ -218,7 +198,6 @@ class ActAccountSetting : AppCompatActivity(),
         prPickHeader.register(this)
 
         arShowAcctColor.register(this)
-        arNotificationSound.register(this)
         arAddAttachment.register(this)
         arCameraImage.register(this)
 
@@ -439,8 +418,6 @@ class ActAccountSetting : AppCompatActivity(),
                 cbConfirmReaction.isChecked = a.confirm_reaction
                 cbConfirmUnbookmark.isChecked = a.confirm_unbookmark
 
-                notificationSoundUri = a.sound_uri
-
                 etDefaultText.setText(a.default_text)
                 etMaxTootChars.setText(a.max_toot_chars.toString())
 
@@ -512,17 +489,10 @@ class ActAccountSetting : AppCompatActivity(),
                     cbConfirmReaction,
                 ).forEach { it.isEnabledAlpha = enabled }
 
-                val enabledOldNotification = enabled && Build.VERSION.SDK_INT < 26
-                arrayOf(
-                    btnNotificationSoundEdit,
-                    btnNotificationSoundReset,
-                ).forEach { it.isEnabledAlpha = enabledOldNotification }
-
-                val enabledNewNotification = enabled && Build.VERSION.SDK_INT >= 26
                 arrayOf(
                     btnNotificationStyleEdit,
                     btnNotificationStyleEditReply,
-                ).forEach { it.isEnabledAlpha = enabledNewNotification }
+                ).forEach { it.isEnabledAlpha = enabled }
             }
 
             showVisibility()
@@ -575,15 +545,10 @@ class ActAccountSetting : AppCompatActivity(),
             account.confirm_reaction = cbConfirmReaction.isChecked
             account.confirm_unbookmark = cbConfirmUnbookmark.isChecked
 
-            account.sound_uri = notificationSoundUri ?: ""
+            account.sound_uri = ""
             account.default_text = etDefaultText.text.toString()
 
-            val num = etMaxTootChars.parseInt()
-            account.max_toot_chars = if (num != null && num >= 0) {
-                num
-            } else {
-                0
-            }
+            account.max_toot_chars = etMaxTootChars.parseInt()?.takeIf { it > 0 } ?: 0
 
             account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
             account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
@@ -639,13 +604,6 @@ class ActAccountSetting : AppCompatActivity(),
             R.id.btnUserCustom -> arShowAcctColor.launch(
                 ActNickname.createIntent(this, account.acct, false),
             )
-
-            R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
-
-            R.id.btnNotificationSoundReset -> {
-                notificationSoundUri = ""
-                saveUIToData()
-            }
 
             R.id.btnProfileAvatar -> pickAvatarImage()
 
@@ -815,22 +773,6 @@ class ActAccountSetting : AppCompatActivity(),
         data.putExtra(EXTRA_DB_ID, account.db_id)
         setResult(RESULT_INPUT_ACCESS_TOKEN, data)
         finish()
-    }
-
-    private fun openNotificationSoundPicker() {
-        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
-        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
-        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-
-        notificationSoundUri.mayUri()?.let { uri ->
-            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
-        }
-
-        val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
-
-        arNotificationSound.launch(chooser)
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1346,18 +1288,6 @@ class ActAccountSetting : AppCompatActivity(),
             performCamera(propName)
         }
         a.show(this, null)
-    }
-
-    private fun preparePermission(requestCode: Int) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            // No explanation needed, we can request the permission.
-
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), requestCode
-            )
-            return
-        }
-        showToast(true, R.string.missing_permission_to_access_media)
     }
 
     private fun performAttachment(propName: String) {

@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.os.Build
 import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
@@ -50,15 +49,8 @@ class DlgDateTime(
             this
         )
 
-        if (Build.VERSION.SDK_INT >= 23) {
-            timePicker.hour = c.get(Calendar.HOUR_OF_DAY)
-            timePicker.minute = c.get(Calendar.MINUTE)
-        } else {
-            @Suppress("DEPRECATION")
-            timePicker.currentHour = c.get(Calendar.HOUR_OF_DAY)
-            @Suppress("DEPRECATION")
-            timePicker.currentMinute = c.get(Calendar.MINUTE)
-        }
+        timePicker.hour = c.get(Calendar.HOUR_OF_DAY)
+        timePicker.minute = c.get(Calendar.MINUTE)
 
         timePicker.setIs24HourView(
             when (Settings.System.getString(activity.contentResolver, Settings.System.TIME_12_24)) {
@@ -100,25 +92,15 @@ class DlgDateTime(
     }
 
     private fun getTime(): Long {
-        val y = datePicker.year
-        val m = datePicker.month
-        val d = datePicker.dayOfMonth
-
-        val h: Int
-        val j: Int
-        if (Build.VERSION.SDK_INT >= 23) {
-            h = timePicker.hour
-            j = timePicker.minute
-        } else {
-            @Suppress("DEPRECATION")
-            h = timePicker.currentHour
-            @Suppress("DEPRECATION")
-            j = timePicker.currentMinute
-        }
-
         val c = GregorianCalendar.getInstance(TimeZone.getDefault())
-        c.set(y, m, d, h, j)
-        c.set(Calendar.SECOND, 0)
+        c.set(
+            datePicker.year,
+            datePicker.month,
+            datePicker.dayOfMonth,
+            timePicker.hour,
+            timePicker.minute,
+            0,
+        )
         c.set(Calendar.MILLISECOND, 0)
         return c.timeInMillis
     }

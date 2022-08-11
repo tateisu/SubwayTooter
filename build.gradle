@@ -2,7 +2,7 @@ buildscript {
 
     ext.jvm_target = "1.8"
 
-    ext.min_sdk_version = 21
+    ext.min_sdk_version = 26
     ext.target_sdk_version = 31
     ext.compile_sdk_version = 31
 
@@ -29,7 +29,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:7.2.2'
 
         // room のバージョンの影響で google-services を上げられない場合がある
         //noinspection GradleDependency

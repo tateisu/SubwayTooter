@@ -201,10 +201,6 @@ private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
 
 fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
     window?.apply {
-        // 古い端末ではナビゲーションバーのアイコン色を設定できないため
-        // メディアビューア画面ではステータスバーやナビゲーションバーの色を設定しない…
-        if (forceDark && Build.VERSION.SDK_INT < 26) return
-
         if (Build.VERSION.SDK_INT < 30) {
             @Suppress("DEPRECATION")
             clearFlags(
@@ -238,17 +234,20 @@ private fun AppCompatActivity.setStatusBarColorCompat(@ColorInt c: Int) {
                 val bit = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
                 setSystemBarsAppearance(if (rgbToLab(c).first >= 50f) bit else 0, bit)
             }
-        } else if (Build.VERSION.SDK_INT >= 23) {
+        } else {
             @Suppress("DEPRECATION")
             val bit = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             @Suppress("DEPRECATION")
             decorView.systemUiVisibility =
-                if (rgbToLab(c).first >= 50f) {
-                    //Dark Text to show up on your light status bar
-                    decorView.systemUiVisibility or bit
-                } else {
-                    //Light Text to show up on your dark status bar
-                    decorView.systemUiVisibility and bit.inv()
+                when {
+                    rgbToLab(c).first >= 50f -> {
+                        //Dark Text to show up on your light status bar
+                        decorView.systemUiVisibility or bit
+                    }
+                    else -> {
+                        //Light Text to show up on your dark status bar
+                        decorView.systemUiVisibility and bit.inv()
+                    }
                 }
         }
     }
@@ -268,19 +267,17 @@ private fun AppCompatActivity.setNavigationBarColorCompat(@ColorInt c: Int) {
                 val bit = WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
                 setSystemBarsAppearance(if (rgbToLab(c).first >= 50f) bit else 0, bit)
             }
-        } else if (Build.VERSION.SDK_INT >= 26) {
+        } else {
             @Suppress("DEPRECATION")
             val bit = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
             @Suppress("DEPRECATION")
             decorView.systemUiVisibility = when {
-                rgbToLab(c).first >= 50f -> {
-                    //Dark Text to show up on your light status bar
+                //Dark Text to show up on your light status bar
+                rgbToLab(c).first >= 50f ->
                     decorView.systemUiVisibility or bit
-                }
-                else -> {
-                    //Light Text to show up on your dark status bar
+                //Light Text to show up on your dark status bar
+                else ->
                     decorView.systemUiVisibility and bit.inv()
-                }
             }
         }
     }

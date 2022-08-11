@@ -11,8 +11,7 @@ import jp.juggler.util.LogCategory
 class NetworkStateTracker(
     val context: Context,
     val onConnectionStateChanged: () -> Unit,
-
-    ) : ConnectivityManager.NetworkCallback() {
+) : ConnectivityManager.NetworkCallback() {
 
     companion object {
         private val log = LogCategory("NetworkStateTracker")
@@ -27,7 +26,7 @@ class NetworkStateTracker(
     }
 
     private val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE)
-        as ConnectivityManager
+            as ConnectivityManager
 
     init {
         if (Build.VERSION.SDK_INT >= 28) {

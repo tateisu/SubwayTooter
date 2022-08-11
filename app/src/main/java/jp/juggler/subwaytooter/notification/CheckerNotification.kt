@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -34,21 +33,17 @@ object CheckerNotification {
 //        val cancelIntent = WorkManager.getInstance(context)
 //            .createCancelPendingIntent(id)
 
-        val builder = if (Build.VERSION.SDK_INT >= 26) {
-            // Android 8 から、通知のスタイルはユーザが管理することになった
-            // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
-            // The user-visible description of the channel.
-            val channel = NotificationHelper.createNotificationChannel(
-                context,
-                "PollingForegrounder",
-                "real-time message notifier",
-                null,
-                NotificationManagerCompat.IMPORTANCE_LOW
-            )
-            NotificationCompat.Builder(context, channel.id)
-        } else {
-            NotificationCompat.Builder(context, "not_used")
-        }
+        // Android 8 から、通知のスタイルはユーザが管理することになった
+        // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
+        // The user-visible description of the channel.
+        val channel = NotificationHelper.createNotificationChannel(
+            context,
+            "PollingForegrounder",
+            "real-time message notifier",
+            null,
+            NotificationManagerCompat.IMPORTANCE_LOW
+        )
+        val builder = NotificationCompat.Builder(context, channel.id)
 
         // 通知タップ時のPendingIntent
         val clickIntent = Intent(context, ActMain::class.java).apply {
@@ -58,10 +53,7 @@ object CheckerNotification {
             context,
             2,
             clickIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or when {
-                Build.VERSION.SDK_INT >= 23 -> PendingIntent.FLAG_IMMUTABLE
-                else -> 0
-            }
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         // ここは常に白テーマのアイコンと色を使う

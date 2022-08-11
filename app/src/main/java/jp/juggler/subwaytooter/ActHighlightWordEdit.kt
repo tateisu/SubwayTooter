@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
@@ -55,8 +54,7 @@ class ActHighlightWordEdit
     private var bBusy = false
 
     private val arNotificationSound = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data?.decodeRingtonePickerResult()?.let { uri ->
+        r.decodeRingtonePickerResult()?.let { uri ->
             item.sound_uri = uri.toString()
             item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
             showSound()

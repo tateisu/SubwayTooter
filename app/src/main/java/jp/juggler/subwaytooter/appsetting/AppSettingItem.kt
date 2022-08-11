@@ -209,23 +209,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
     section(R.string.notifications) {
 
-        group(R.string.notification_style_before_oreo) {
-
-            checkbox(PrefB.bpNotificationSound, R.string.sound) {
-                enabled = Build.VERSION.SDK_INT < 26
-            }
-
-            checkbox(PrefB.bpNotificationVibration, R.string.vibration) {
-                enabled = Build.VERSION.SDK_INT < 26
-            }
-
-            checkbox(PrefB.bpNotificationLED, R.string.led) {
-                enabled = Build.VERSION.SDK_INT < 26
-            }
-
-            sample(R.layout.setting_sample_notification_desc)
-        }
-
         text(
             PrefS.spPullNotificationCheckInterval,
             R.string.pull_notification_check_interval,
@@ -234,13 +217,13 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         sw(PrefB.bpShowAcctInSystemNotification, R.string.show_acct_in_system_notification)
 
-        sw(PrefB.bpSeparateReplyNotificationGroup, R.string.separate_notification_group_for_reply) {
-            enabled = Build.VERSION.SDK_INT >= 26
-        }
+        sw(PrefB.bpSeparateReplyNotificationGroup, R.string.separate_notification_group_for_reply)
 
         sw(PrefB.bpDivideNotification, R.string.divide_notification)
 
         sw(PrefB.bpMisskeyNotificationCheck, R.string.enable_misskey_notification_check)
+
+        sample(R.layout.setting_sample_notification_desc)
     }
 
     section(R.string.behavior) {
@@ -803,7 +786,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             colorAlpha(PrefI.ipEventBgColorVote, R.string.vote_polls)
             colorAlpha(PrefI.ipEventBgColorStatus, R.string.status)
             colorAlpha(PrefI.ipEventBgColorUpdate, R.string.notification_type_update)
-            colorAlpha(PrefI.ipEventBgColorStatusReference, R.string.notification_type_status_reference)
+            colorAlpha(PrefI.ipEventBgColorStatusReference,
+                R.string.notification_type_status_reference)
             colorAlpha(PrefI.ipEventBgColorSignUp, R.string.notification_type_signup)
 
             colorAlpha(

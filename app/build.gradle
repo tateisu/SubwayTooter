@@ -170,7 +170,7 @@ dependencies {
     kapt 'androidx.annotation:annotation:1.4.0'
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-messaging:23.0.6"
+    implementation "com.google.firebase:firebase-messaging:23.0.7"
 
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

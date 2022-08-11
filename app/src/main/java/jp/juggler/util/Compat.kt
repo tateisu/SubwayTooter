@@ -4,16 +4,27 @@ import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
+import androidx.activity.result.ActivityResult
 
 /**
- * API 33 でget() が deprecatedになる？
+ * API 33 で Bundle.get() が deprecatedになる。
+ * type safeにするべきだが、過去の使い方にもよるかな…
  */
 fun Bundle.getRaw(key: String) = get(key)
 
-fun Intent.decodeRingtonePickerResult() =
-    extras?.getRaw(RingtoneManager.EXTRA_RINGTONE_PICKED_URI) as? Uri
+/**
+ * Ringtone pickerの処理結果のUriまたはnull
+ */
+fun ActivityResult.decodeRingtonePickerResult() =
+    when {
+        isNotOk -> null
+        else -> data?.extras?.getRaw(RingtoneManager.EXTRA_RINGTONE_PICKED_URI) as? Uri
+    }
 
-fun Bundle.intOrNull(key: String) =
+/**
+ * Bundleからキーを指定してint値またはnullを得る
+ */
+fun Bundle.int(key: String) =
     when (val v = getRaw(key)) {
         null -> null
         is Number -> v.toInt()
@@ -21,7 +32,10 @@ fun Bundle.intOrNull(key: String) =
         else -> null
     }
 
-fun Bundle.longOrNull(key: String) =
+/**
+ * Bundleからキーを指定してlong値またはnullを得る
+ */
+fun Bundle.long(key: String) =
     when (val v = getRaw(key)) {
         null -> null
         is Number -> v.toLong()
@@ -29,5 +43,12 @@ fun Bundle.longOrNull(key: String) =
         else -> null
     }
 
-fun Intent.intOrNull(key: String) = extras?.intOrNull(key)
-fun Intent.longOrNull(key: String) = extras?.longOrNull(key)
+/**
+ * IntentのExtrasからキーを指定してint値またはnullを得る
+ */
+fun Intent.int(key: String) = extras?.int(key)
+
+/**
+ * IntentのExtrasからキーを指定してlong値またはnullを得る
+ */
+fun Intent.long(key: String) = extras?.long(key)

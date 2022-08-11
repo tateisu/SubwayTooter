@@ -27,8 +27,8 @@ class AttachmentPicker(
     // callback after media selected
     interface Callback {
         fun onPickAttachment(uri: Uri, mimeType: String? = null)
-        fun onPickCustomThumbnail(pa:PostAttachment,src: GetContentResultEntry)
-        fun resumeCustomThumbnailTarget(id:String?): PostAttachment?
+        fun onPickCustomThumbnail(pa: PostAttachment, src: GetContentResultEntry)
+        fun resumeCustomThumbnailTarget(id: String?): PostAttachment?
     }
 
     // actions after permission granted
@@ -80,11 +80,10 @@ class AttachmentPicker(
             ?.handleGetContentResult(activity.contentResolver)
             ?.firstOrNull()
             ?.let {
-                callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)?.let { pa->
-                    callback.onPickCustomThumbnail(pa,it)
+                callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)?.let { pa ->
+                    callback.onPickCustomThumbnail(pa, it)
                 }
             }
-
     }
 
     private val prPickAttachment = PermissionRequester(
@@ -97,7 +96,7 @@ class AttachmentPicker(
         deniedId = R.string.missing_permission_to_access_media,
     ) {
         callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)
-            ?.let{ openCustomThumbnail(it) }
+            ?.let { openCustomThumbnail(it) }
     }
 
     init {

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -88,14 +87,10 @@ class PermissionRequester(
 
         launchMain {
             try {
-                if (Build.VERSION.SDK_INT < 23) {
-                    activity.showToast(true, deniedId)
-                    return@launchMain
-                }
-
                 val shouldShowRational = listNotGranted.any {
                     shouldShowRequestPermissionRationale(activity, it)
                 }
+
                 if (shouldShowRational && rationalId != 0) {
                     suspendCancellableCoroutine { cont ->
                         AlertDialog.Builder(activity)
@@ -112,7 +107,10 @@ class PermissionRequester(
                             .show()
                     }
                 }
-                launcher!!.launch(listNotGranted.toTypedArray())
+                when (val launcher = launcher) {
+                    null -> error("launcher not registered.")
+                    else -> launcher.launch(listNotGranted.toTypedArray())
+                }
             } catch (ex: Throwable) {
                 if (ex !is CancellationException) {
                     activity.showToast(ex, "can't request permissions.")
@@ -154,7 +152,9 @@ class PermissionRequester(
             Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 "package:${activity.packageName}".toUri()
-            ).let { activity.startActivity(it) }
+            ).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }.let { activity.startActivity(it) }
         } catch (ex: Throwable) {
             activity.showToast(ex, "openAppSetting failed.")
         }

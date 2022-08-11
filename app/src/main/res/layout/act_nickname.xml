@@ -13,8 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:paddingStart="12dp"
         android:paddingEnd="12dp"
+        android:paddingStart="12dp"
         android:text="@string/preview" />
 
     <TextView
@@ -22,10 +22,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:paddingBottom="6dp"
+        android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="6dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="6dp"
         android:textSize="20sp"
         tools:text="preview..." />
 
@@ -132,7 +132,7 @@
 
                 <TextView
                     style="@style/setting_row_label"
-                    android:text="@string/notification_sound_before_oreo" />
+                    android:text="@string/notification_sound" />
 
                 <LinearLayout style="@style/setting_row_form">
 
@@ -169,7 +169,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:measureWithLargestChild="true">
-
 
 
         <Button

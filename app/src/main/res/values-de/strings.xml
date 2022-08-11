@@ -934,10 +934,8 @@
     <string name="enquete_was_end">Abstimmung beendet.</string>
     <string name="enquete_vote_failed">Konnte nicht abstimmen. %1$s</string>
     <string name="enquete_voted">Abgestimmt.</string>
-    <string name="notification_style_before_oreo">Benachrichtigungsstil (vor Android 8. Falls auf deinem Gerät Android 8.0 oder später läuft, sieh bitte in den Konteneinstellungen nach)</string>
     <string name="notification_for">Benachrichtigung für %1$s</string>
     <string name="notification_style_after_oreo">Benachrichtigungsstil (Android 8.0 und später)</string>
-    <string name="notification_sound_before_oreo">Benachrichtigungston (vor Android 8.0)</string>
     <string name="notification_channel_description">Diese Einstellung legt die Benachrichtigung für %1$s fest</string>
     <string name="relative_time_phrase_future">%1$d %2$s später</string>
     <string name="relative_time_phrase_past">%1$d %2$s</string>

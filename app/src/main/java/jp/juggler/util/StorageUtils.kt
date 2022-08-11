@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RawRes
@@ -264,14 +263,12 @@ fun intentGetContent(
     // EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
     intent.putExtra("android.intent.extra.MIME_TYPES", mimeTypes)
 
-    intent.type = when {
-        mimeTypes.size == 1 -> mimeTypes[0]
+    intent.type = when (mimeTypes.size) {
+        1 -> mimeTypes[0]
 
         // On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
         // it only recognizes the first filter you specify.
-        Build.VERSION.SDK_INT >= 23 -> "*/*"
-
-        else -> mimeTypes.joinToString(" ")
+        else -> "*/*"
     }
 
     return Intent.createChooser(intent, caption)

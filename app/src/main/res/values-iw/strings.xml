@@ -272,10 +272,8 @@
     <string name="relative_time_unit_days">ימים</string>
     <string name="relative_time_phrase_future">%1$d  %2$s אחר כך</string>
     <string name="notification_channel_description">הגדרה זו משמשת להתאמת התראות עבור %1$s</string>
-    <string name="notification_sound_before_oreo">צליל התראה (לפני אנדרואיד 8.0)</string>
     <string name="notification_style_after_oreo">סגנון התראה  (אנדרויד 8.0+)</string>
     <string name="notification_for">התראה עבור %1$s</string>
-    <string name="notification_style_before_oreo">סגנון התראה  (לפני אנדרויד 8. אם המכשיר שלך הוא  אנדרויד 8.0+ , נא לבדוק את הגדרות החשבון)</string>
     <string name="enquete_was_end">הסקירה הסתיימה.</string>
     <string name="enquete_voted">הצביע.</string>
     <string name="enquete_vote_failed">לא ניתן להצביע. %1$s</string>

@@ -1005,9 +1005,7 @@
     <string name="enquete_vote_failed">不能投票. %1$s</string>
     <string name="enquete_voted">已投票.</string>
     <string name="enquete_was_end">投票结束.</string>
-    <string name="notification_style_before_oreo">通知方式( Android 8之前. 如果你的设备是 Android 8.0+, 请检查账号设置)</string>
     <string name="notification_for">%1$s的通知</string>
-    <string name="notification_sound_before_oreo">通知声音( Android 8.0之前)</string>
     <string name="notification_style_after_oreo">通知方式(Android 8.0+)</string>
     <string name="notification_channel_description">此设置用于调整%1$s</string>
     <string name="relative_time_phrase_future">%1$d %2$s 之后</string>

@@ -451,11 +451,9 @@
     <string name="relative_time_unit_days">jours</string>
     <string name="relative_time_phrase_past">Il y a %1$d %2$s</string>
     <string name="relative_time_phrase_future">Dans %1$d %2$s</string>
-    <string name="notification_sound_before_oreo">Notification sonore (avant Android 8.0)</string>
     <string name="notification_style_after_oreo">Style de notifications (Android 8.0+)</string>
     <string name="notification_for">Notification for %1$s</string>
     <string name="notification_channel_description">Ce paramètre est utilisé pour ajuster les  notifications pour %1$s</string>
-    <string name="notification_style_before_oreo">Style de notification (avant Android 8. Si votre appareil est sous Android 8.0+, veuillez vérifier les paramètres du compte)</string>
     <string name="enquete_was_end">Sondage terminé.</string>
     <string name="enquete_voted">a voté.</string>
     <string name="enquete_vote_failed">Le vote a échoué. %1$s</string>

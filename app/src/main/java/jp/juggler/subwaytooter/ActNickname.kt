@@ -3,19 +3,16 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Intent
 import android.media.RingtoneManager
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.databinding.ActNicknameBinding
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundColor
@@ -41,17 +38,9 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         }
     }
 
-    private lateinit var tvPreview: TextView
-    private lateinit var tvAcct: TextView
-    private lateinit var etNickname: EditText
-    private lateinit var btnTextColorEdit: View
-    private lateinit var btnTextColorReset: View
-    private lateinit var btnBackgroundColorEdit: View
-    private lateinit var btnBackgroundColorReset: View
-    private lateinit var btnSave: View
-    private lateinit var btnDiscard: View
-    private lateinit var btnNotificationSoundEdit: Button
-    private lateinit var btnNotificationSoundReset: Button
+    private val views by lazy {
+        ActNicknameBinding.inflate(layoutInflater)
+    }
 
     private var showNotificationSound = false
     private lateinit var acctAscii: String
@@ -95,40 +84,25 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
                 else -> R.string.nickname_and_color
             }
         )
-        setContentView(R.layout.act_nickname)
+        setContentView(views.root)
         App1.initEdgeToEdge(this)
 
         Styler.fixHorizontalPadding(findViewById(R.id.llContent))
 
-        tvPreview = findViewById(R.id.tvPreview)
-        tvAcct = findViewById(R.id.tvAcct)
+        views.btnTextColorEdit.setOnClickListener(this)
+        views.btnTextColorReset.setOnClickListener(this)
+        views.btnBackgroundColorEdit.setOnClickListener(this)
+        views.btnBackgroundColorReset.setOnClickListener(this)
+        views.btnSave.setOnClickListener(this)
+        views.btnDiscard.setOnClickListener(this)
 
-        etNickname = findViewById(R.id.etNickname)
-        btnTextColorEdit = findViewById(R.id.btnTextColorEdit)
-        btnTextColorReset = findViewById(R.id.btnTextColorReset)
-        btnBackgroundColorEdit = findViewById(R.id.btnBackgroundColorEdit)
-        btnBackgroundColorReset = findViewById(R.id.btnBackgroundColorReset)
-        btnSave = findViewById(R.id.btnSave)
-        btnDiscard = findViewById(R.id.btnDiscard)
+        views.btnNotificationSoundEdit.setOnClickListener(this)
+        views.btnNotificationSoundReset.setOnClickListener(this)
 
-        etNickname = findViewById(R.id.etNickname)
-        btnTextColorEdit.setOnClickListener(this)
-        btnTextColorReset.setOnClickListener(this)
-        btnBackgroundColorEdit.setOnClickListener(this)
-        btnBackgroundColorReset.setOnClickListener(this)
-        btnSave.setOnClickListener(this)
-        btnDiscard.setOnClickListener(this)
+        views.btnNotificationSoundEdit.isEnabledAlpha = false
+        views.btnNotificationSoundReset.isEnabledAlpha = false
 
-        btnNotificationSoundEdit = findViewById(R.id.btnNotificationSoundEdit)
-        btnNotificationSoundReset = findViewById(R.id.btnNotificationSoundReset)
-        btnNotificationSoundEdit.setOnClickListener(this)
-        btnNotificationSoundReset.setOnClickListener(this)
-
-        val bBefore8 = Build.VERSION.SDK_INT < 26
-        btnNotificationSoundEdit.isEnabledAlpha = bBefore8
-        btnNotificationSoundReset.isEnabledAlpha = bBefore8
-
-        etNickname.addTextChangedListener(object : TextWatcher {
+        views.etNickname.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(
                 s: CharSequence,
                 start: Int,
@@ -152,12 +126,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         findViewById<View>(R.id.llNotificationSound).visibility =
             if (showNotificationSound) View.VISIBLE else View.GONE
 
-        tvAcct.text = acctPretty
+        views.tvAcct.text = acctPretty
 
         val ac = AcctColor.load(acctAscii, acctPretty)
         colorBg = ac.color_bg
         colorFg = ac.color_fg
-        etNickname.setText(ac.nickname)
+        views.etNickname.setText(ac.nickname)
         notificationSoundUri = ac.notification_sound
 
         loadingBusy = false
@@ -169,7 +143,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         AcctColor(
             acctAscii,
             acctPretty,
-            etNickname.text.toString().trim { it <= ' ' },
+            views.etNickname.text.toString().trim { it <= ' ' },
             colorFg,
             colorBg,
             notificationSoundUri
@@ -177,17 +151,17 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     }
 
     private fun show() {
-        val s = etNickname.text.toString().trim { it <= ' ' }
-        tvPreview.text = s.notEmpty() ?: acctPretty
-        tvPreview.textColor = colorFg.notZero() ?: attrColor(R.attr.colorTimeSmall)
-        tvPreview.backgroundColor = colorBg
+        val s = views.etNickname.text.toString().trim { it <= ' ' }
+        views.tvPreview.text = s.notEmpty() ?: acctPretty
+        views.tvPreview.textColor = colorFg.notZero() ?: attrColor(R.attr.colorTimeSmall)
+        views.tvPreview.backgroundColor = colorBg
     }
 
     override fun onClick(v: View) {
         val builder: ColorPickerDialog.Builder
         when (v.id) {
             R.id.btnTextColorEdit -> {
-                etNickname.hideKeyboard()
+                views.etNickname.hideKeyboard()
                 builder = ColorPickerDialog.newBuilder()
                     .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
                     .setAllowPresets(true)
@@ -203,7 +177,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
             }
 
             R.id.btnBackgroundColorEdit -> {
-                etNickname.hideKeyboard()
+                views.etNickname.hideKeyboard()
                 builder = ColorPickerDialog.newBuilder()
                     .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
                     .setAllowPresets(true)

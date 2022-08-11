@@ -1,17 +1,16 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
-import android.app.Activity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.cn
@@ -33,7 +32,7 @@ class DlgAppPicker(
     class ListItem(
         val icon: Drawable?,
         val text: String,
-        val componentName: String
+        val componentName: String,
     )
 
     val list = ArrayList<ListItem>().apply {
@@ -41,11 +40,7 @@ class DlgAppPicker(
         val pm = activity.packageManager
         val listResolveInfo = pm.queryIntentActivities(
             intent,
-            if (Build.VERSION.SDK_INT >= 23) {
-                PackageManager.MATCH_ALL
-            } else {
-                0
-            }
+            PackageManager.MATCH_ALL,
         )
 
         for (it in listResolveInfo) {

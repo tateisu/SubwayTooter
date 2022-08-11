@@ -72,20 +72,20 @@ object PrefB {
         false
     )
 
-    val bpNotificationLED = BooleanPref(
-        "notification_led",
-        true
-    )
+//    val bpNotificationLED = BooleanPref(
+//        "notification_led",
+//        true
+//    )
 
-    val bpNotificationSound = BooleanPref(
-        "notification_sound",
-        true
-    )
+//    val bpNotificationSound = BooleanPref(
+//        "notification_sound",
+//        true
+//    )
 
-    val bpNotificationVibration = BooleanPref(
-        "notification_vibration",
-        true
-    )
+//    val bpNotificationVibration = BooleanPref(
+//        "notification_vibration",
+//        true
+//    )
 
     val bpPostButtonBarTop = BooleanPref(
         "post_button_bar_at_top",

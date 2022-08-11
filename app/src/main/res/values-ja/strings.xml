@@ -493,9 +493,7 @@
     <string name="notification_on_off_desc">通知のON/OFFはアカウント設定にあります</string>
     <string name="notification_option">通知オプション</string>
     <string name="notification_sound">通知音</string>
-    <string name="notification_sound_before_oreo">通知音 (Android 7.x 以下)</string>
     <string name="notification_style_after_oreo">通知スタイル(Android 8.x 以降)</string>
-    <string name="notification_style_before_oreo">通知スタイル(Android 7.x以下。もしお使いのデバイスが8.x以降の場合、アカウント設定から通知スタイルを変更できます)</string>
     <string name="notification_tl_font_size">通知TLのフォントの大きさ\n(単位:sp。空欄でデフォルト。アプリ再起動が必要)\n…\n…</string>
     <string name="notification_tl_icon_size">通知TLのアイコンの大きさ (単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="notification_type_boost">ブースト</string>

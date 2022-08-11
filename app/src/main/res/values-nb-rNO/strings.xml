@@ -372,7 +372,6 @@
     <string name="relative_time_phrase_past">%1$d %2$s siden</string>
     <string name="relative_time_phrase_future">%1$d %2$s senere</string>
     <string name="notification_channel_description">Disse innstillingen brukes for merknad for %1$s</string>
-    <string name="notification_sound_before_oreo">Merknadslyd (før Android 8.0)</string>
     <string name="notification_style_after_oreo">Merknadsstil (Android 8.0 eller senere)</string>
     <string name="notification_for">Merknad for %1$s</string>
     <string name="enquete_voted">Innsendt.</string>
@@ -642,7 +641,6 @@
     <string name="format_of_quote_name">Format for \"sitatnavn\" (sett tekst som inneholder %1$s)</string>
     <string name="content_sample">(eksempel) Høvdingens kjære squaw får litt pizza i Mexico by.</string>
     <string name="remote_profile_warning">Informasjon på andre profilsider kan ikke vises rett. Trykk her for å vise profilen i din nettleser.</string>
-    <string name="notification_style_before_oreo">Merknadsstil (før Android 8. Hvis din enhet har Android 8.0 eller senere, sjekk kontoinnstilling).</string>
     <string name="auto_cw">Skjul lang tekst automatisk (sett linjeopptelling større enn 0 for å skru på dette valget. Programomstart kreves)</string>
     <string name="auto_cw_prefix">(Automatisk CW)</string>
     <string name="profile_pin">Fest på profil</string>

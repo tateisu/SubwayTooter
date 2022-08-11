@@ -1,12 +1,9 @@
 package jp.juggler.subwaytooter.notification
 
-import android.annotation.TargetApi
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -14,9 +11,11 @@ import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.EventReceiver
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
+import jp.juggler.util.LogCategory
+import jp.juggler.util.encodePercent
+import jp.juggler.util.toMutableMap
+import jp.juggler.util.toUri
 
 object MessageNotification {
     private val log = LogCategory("MessageNotification")
@@ -40,7 +39,7 @@ object MessageNotification {
      *
      */
     fun NotificationManager.removeMessageNotification(account: SavedAccount, tag: String) {
-        if (Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification()) {
+        if (PrefB.bpDivideNotification()) {
             activeNotifications?.filterNotNull()?.filter {
                 it.id == NOTIFICATION_ID_MESSAGE && it.tag.startsWith("$tag/")
             }?.forEach {
@@ -55,7 +54,6 @@ object MessageNotification {
     /**
      * 表示中のメッセージ通知の一覧
      */
-    @TargetApi(23)
     fun NotificationManager.getMessageNotifications(tag: String) =
         activeNotifications?.filterNotNull()?.filter {
             it.id == NOTIFICATION_ID_MESSAGE && it.tag.startsWith("$tag/")
@@ -72,18 +70,14 @@ object MessageNotification {
     ) {
         log.d("showNotification[${account.acct.pretty}] creating notification(1)")
 
-        val builder = if (Build.VERSION.SDK_INT >= 26) {
-            // Android 8 から、通知のスタイルはユーザが管理することになった
-            // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
-            val channel = createMessageNotificationChannel(
-                context,
-                account,
-                trackingName
-            )
-            NotificationCompat.Builder(context, channel.id)
-        } else {
-            NotificationCompat.Builder(context, "not_used")
-        }
+        // Android 8 から、通知のスタイルはユーザが管理することになった
+        // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
+        val channel = createMessageNotificationChannel(
+            context,
+            account,
+            trackingName
+        )
+        val builder = NotificationCompat.Builder(context, channel.id)
 
         builder.apply {
 
@@ -98,8 +92,7 @@ object MessageNotification {
                 }
             }.joinToString("&")
 
-            val flag = PendingIntent.FLAG_UPDATE_CURRENT or
-                    (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
+            val flag = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
             PendingIntent.getActivity(
                 context,
@@ -147,54 +140,7 @@ object MessageNotification {
         )
     }
 
-    // Android 8 未満ではチャネルではなく通知に個別にスタイルを設定する
-    @TargetApi(25)
-    fun setNotificationSound25(
-        account: SavedAccount,
-        builder: NotificationCompat.Builder,
-        item: NotificationData,
-    ) {
-        var iv = 0
-        if (PrefB.bpNotificationSound()) {
-            var soundUri: Uri? = null
-
-            try {
-                val whoAcct = account.getFullAcct(item.notification.account)
-                soundUri = AcctColor.getNotificationSound(whoAcct).mayUri()
-            } catch (ex: Throwable) {
-                PollingChecker.log.trace(ex)
-            }
-            if (soundUri == null) {
-                soundUri = account.sound_uri.mayUri()
-            }
-
-            var bSoundSet = false
-            if (soundUri != null) {
-                try {
-                    builder.setSound(soundUri)
-                    bSoundSet = true
-                } catch (ex: Throwable) {
-                    PollingChecker.log.trace(ex)
-                }
-            }
-            if (!bSoundSet) {
-                iv = iv or NotificationCompat.DEFAULT_SOUND
-            }
-        }
-
-        if (PrefB.bpNotificationVibration()) {
-            iv = iv or NotificationCompat.DEFAULT_VIBRATE
-        }
-
-        if (PrefB.bpNotificationLED()) {
-            iv = iv or NotificationCompat.DEFAULT_LIGHTS
-        }
-
-        builder.setDefaults(iv)
-    }
-
-    @TargetApi(26)
-    fun createMessageNotificationChannel(
+    private fun createMessageNotificationChannel(
         context: Context,
         account: SavedAccount,
         trackingName: String,
@@ -221,12 +167,10 @@ object MessageNotification {
         account: SavedAccount,
         trackingName: String,
     ) {
-        if (Build.VERSION.SDK_INT >= 26) {
-            val channel = createMessageNotificationChannel(context, account, trackingName)
-            val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
-            intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
-            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-            context.startActivity(intent)
-        }
+        val channel = createMessageNotificationChannel(context, account, trackingName)
+        val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
+        intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
+        intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        context.startActivity(intent)
     }
 }

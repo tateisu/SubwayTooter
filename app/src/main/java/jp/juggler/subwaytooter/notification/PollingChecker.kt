@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter.notification
 
-import android.annotation.TargetApi
 import android.content.Context
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
@@ -13,7 +11,6 @@ import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
 import jp.juggler.subwaytooter.notification.MessageNotification.getMessageNotifications
 import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
-import jp.juggler.subwaytooter.notification.MessageNotification.setNotificationSound25
 import jp.juggler.subwaytooter.notification.MessageNotification.showMessageNotification
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.*
@@ -467,7 +464,7 @@ class PollingChecker(
                         first.notification.time_created_at == nt.post_time && first.notification.id == nt.post_id ->
                             log.d("showNotification[${account.acct.pretty}] id=${first.notification.id} is already shown.")
 
-                        Build.VERSION.SDK_INT >= 23 && PrefB.bpDivideNotification() -> {
+                        PrefB.bpDivideNotification() -> {
                             updateNotificationDivided(notificationTag, nt)
                             nt.updatePost(
                                 first.notification.id,
@@ -487,7 +484,6 @@ class PollingChecker(
             }
         }
 
-        @TargetApi(23)
         private fun updateNotificationDivided(
             notificationTag: String,
             nt: NotificationTracking,
@@ -538,7 +534,6 @@ class PollingChecker(
                             builder.setStyle(style)
                         }
                     }
-                    if (Build.VERSION.SDK_INT < 26) setNotificationSound25(account, builder, item)
                 }
             }
             // リストにない通知は消さない。ある通知をユーザが指で削除した際に他の通知が残ってほしい場合がある
@@ -576,7 +571,6 @@ class PollingChecker(
 
                     builder.setStyle(style)
                 }
-                if (Build.VERSION.SDK_INT < 26) setNotificationSound25(account, builder, first)
             }
         }
     }

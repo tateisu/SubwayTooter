@@ -120,7 +120,7 @@ class ActText : AppCompatActivity() {
             etText.setText(sv)
 
             // Android 9 以降ではフォーカスがないとsetSelectionできない
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= 28) {
                 etText.requestFocus()
                 etText.hideKeyboard()
             }

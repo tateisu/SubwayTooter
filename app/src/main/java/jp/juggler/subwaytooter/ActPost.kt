@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -302,12 +301,12 @@ class ActPost : AppCompatActivity(),
     }
 
     override fun resumeCustomThumbnailTarget(id: String?): PostAttachment? {
-        id?: return null
-        return attachmentList.find{ it.attachment?.id?.toString() == id }
+        id ?: return null
+        return attachmentList.find { it.attachment?.id?.toString() == id }
     }
 
-    override fun onPickCustomThumbnail(pa: PostAttachment,src: GetContentResultEntry) {
-        onPickCustomThumbnailImpl(pa,src)
+    override fun onPickCustomThumbnail(pa: PostAttachment, src: GetContentResultEntry) {
+        onPickCustomThumbnailImpl(pa, src)
     }
 
     fun initUI() {
@@ -327,7 +326,7 @@ class ActPost : AppCompatActivity(),
         }
 
         views.root.callbackOnSizeChanged = { _, _, _, _ ->
-            if (Build.VERSION.SDK_INT >= 24 && isMultiWindowPost) saveWindowSize()
+            if (isMultiWindowPost) saveWindowSize()
             // ビューのw,hはシステムバーその他を含まないので使わない
         }
 

@@ -30,6 +30,9 @@ abstract class ColumnTask(
     val column: Column,
     val ctType: ColumnTaskType,
 ) {
+    companion object {
+        private val log = LogCategory("ColumnTask")
+    }
 
     val ctStarted = AtomicBoolean(false)
     val ctClosed = AtomicBoolean(false)
@@ -90,9 +93,9 @@ abstract class ColumnTask(
             // other (refresh,gap) may reload announcements if last load is too old
             if (force || SystemClock.elapsedRealtime() - column.announcementUpdated >= 15 * 60000L) {
                 if (force) {
+                    log.d("announcements reset")
                     column.announcements = null
                     column.announcementUpdated = SystemClock.elapsedRealtime()
-                    client.publishApiProgress("announcements reset")
                 }
                 val (instance, _) = TootInstance.get(client)
                 if (instance?.versionGE(TootInstance.VERSION_3_1_0_rc1) == true) {
@@ -100,8 +103,7 @@ abstract class ColumnTask(
                         ?: return null // cancelled.
                     when (result.response?.code ?: 0) {
                         // just skip load announcements for 4xx error if server does not support announcements.
-                        in 400 until 500 -> {
-                        }
+                        in 400 until 500 -> Unit
 
                         else -> {
                             column.announcements =

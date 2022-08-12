@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion compile_sdk_version
+    buildToolsVersion build_tools_version
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

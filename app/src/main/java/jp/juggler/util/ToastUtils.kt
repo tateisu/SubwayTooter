@@ -163,16 +163,18 @@ private fun showPopup(activity: Activity, bLong: Boolean, message: String) {
 internal fun showToastImpl(context: Context, bLong: Boolean, message: String): Boolean {
     runOnMainLooper {
 
-        // Android 12以降はトーストを全文表示しないので、何か画面が表示中ならポップアップウィンドウを使う
-        lastActivity?.get()?.let {
-            try {
-                showPopup(it, bLong, message)
-                return@runOnMainLooper
-            } catch (ex: Throwable) {
-                log.trace(ex, "showPopup failed.")
+        if (message.count { it == '\n' } > 1) {
+            // Android 12以降はトーストを全文表示しないので、何か画面が表示中ならポップアップウィンドウを使う
+            lastActivity?.get()?.let {
+                try {
+                    showPopup(it, bLong, message)
+                    return@runOnMainLooper
+                } catch (ex: Throwable) {
+                    log.trace(ex, "showPopup failed.")
+                }
             }
+            // 画面がない、または失敗したら普通のトーストにフォールバック
         }
-        // 画面がない、または失敗したら普通のトーストにフォールバック
 
         // 前回のトーストの表示を終了する
         try {

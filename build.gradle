@@ -7,7 +7,7 @@ buildscript {
     ext.compile_sdk_version = 32
     ext.build_tools_version = "33.0.0"
 
-    ext.appcompat_version = "1.4.2"
+    ext.appcompat_version = "1.5.0"
     ext.lifecycle_version = "2.5.1"
     ext.arch_version = "2.1.0"
 

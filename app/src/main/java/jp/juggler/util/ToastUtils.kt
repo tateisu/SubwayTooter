@@ -5,10 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.View
-import android.view.WindowManager
-import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.PopupWindow
 import android.widget.Toast
@@ -16,8 +13,10 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.databinding.PopupToastBinding
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import me.drakeet.support.toast.ToastCompat
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
@@ -105,69 +104,17 @@ suspend fun Animation.startAndAwait(duration: Long, v: View) =
         Unit
     }
 
-private fun showPopup(activity: Activity, bLong: Boolean, message: String) {
-    val rootView = activity.findViewById<View?>(android.R.id.content)?.rootView
-        ?: error("missing rootView")
-
-    val views = PopupToastBinding.inflate(activity.layoutInflater)
-    views.tvMessage.text = message
-
-    val popupWindow = PopupWindow(
-        views.root,
-        WindowManager.LayoutParams.MATCH_PARENT,
-        WindowManager.LayoutParams.MATCH_PARENT,
-        false
-    )
-
-    // タップ時に他のViewでキャッチされないための設定
-    popupWindow.isFocusable = false
-    popupWindow.isTouchable = false
-    popupWindow.isOutsideTouchable = false
-
-    try {
-        lastPopup?.get()?.dismiss()
-    } catch (ex: Throwable) {
-        log.trace(ex, "dismiss failed.")
-    }
-
-    lastPopup = null
-    popupWindow.showAtLocation(rootView, Gravity.CENTER, 0, 0)
-    lastPopup = WeakReference(popupWindow)
-
-    launchMain {
-
-        // fade in
-        AlphaAnimation(0.1f, 1f)
-            .startAndAwait(333L, views.tvMessage)
-
-        // keep
-        val keepDuration = when {
-            bLong -> 4000L
-            else -> 2000L
-        }
-        delay(keepDuration)
-
-        // fade out
-        AlphaAnimation(1f, 0f)
-            .startAndAwait(333L, views.tvMessage)
-
-        // dismiss
-        try {
-            popupWindow.dismiss()
-        } catch (ex: Throwable) {
-            log.e(ex, "dismiss failed.")
-        }
-    }
-}
-
 internal fun showToastImpl(context: Context, bLong: Boolean, message: String): Boolean {
     runOnMainLooper {
-
-        if (message.count { it == '\n' } > 1) {
-            // Android 12以降はトーストを全文表示しないので、何か画面が表示中ならポップアップウィンドウを使う
+        if (message.length >= 32 || message.count { it == '\n' } > 1) {
+            // Android 12以降はトーストを全文表示しない
+            // 長いメッセージの場合は可能ならダイアログを使う
             lastActivity?.get()?.let {
                 try {
-                    showPopup(it, bLong, message)
+                    AlertDialog.Builder(it)
+                        .setMessage(message)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
                     return@runOnMainLooper
                 } catch (ex: Throwable) {
                     log.trace(ex, "showPopup failed.")
@@ -195,14 +142,6 @@ internal fun showToastImpl(context: Context, bLong: Boolean, message: String): B
         } catch (ex: Throwable) {
             log.trace(ex)
         }
-
-        // コールスタックの外側でエラーになる…
-        // android.view.WindowManager$BadTokenException:
-        // at android.view.ViewRootImpl.setView (ViewRootImpl.java:679)
-        // at android.view.WindowManagerGlobal.addView (WindowManagerGlobal.java:342)
-        // at android.view.WindowManagerImpl.addView (WindowManagerImpl.java:94)
-        // at android.widget.Toast$TN.handleShow (Toast.java:435)
-        // at android.widget.Toast$TN$2.handleMessage (Toast.java:345)
     }
     return false
 }

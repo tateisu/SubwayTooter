@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.JustifyContent
@@ -39,6 +40,7 @@ class ItemViewHolder(
 ) : View.OnClickListener, View.OnLongClickListener {
 
     companion object {
+        const val MEDIA_VIEW_COUNT = 4
 
         val log = LogCategory("ItemViewHolder")
         var toot_color_unlisted: Int = 0
@@ -89,11 +91,9 @@ class ItemViewHolder(
     lateinit var flMedia: View
     lateinit var llMedia: View
     lateinit var btnShowMedia: BlurhashView
-    lateinit var ivMedia1: MyNetworkImageView
-    lateinit var ivMedia2: MyNetworkImageView
-    lateinit var ivMedia3: MyNetworkImageView
-    lateinit var ivMedia4: MyNetworkImageView
     lateinit var btnHideMedia: ImageButton
+    val tvMediaDescriptions = ArrayList<TextView>()
+    val ivMediaThumbnails = ArrayList<MyNetworkImageView>()
 
     lateinit var statusButtonsViewHolder: StatusButtonsViewHolder
     lateinit var llButtonBar: View
@@ -119,8 +119,6 @@ class ItemViewHolder(
     lateinit var llFilter: View
     lateinit var tvFilterPhrase: MyTextView
     lateinit var tvFilterDetail: MyTextView
-
-    lateinit var tvMediaDescription: MyTextView
 
     lateinit var llCardOuter: View
     lateinit var tvCardText: MyTextView
@@ -190,10 +188,6 @@ class ItemViewHolder(
             btnGapTail,
             btnContentWarning,
             btnShowMedia,
-            ivMedia1,
-            ivMedia2,
-            ivMedia3,
-            ivMedia4,
             btnFollow,
             ivCardImage,
             btnCardImageHide,
@@ -210,6 +204,11 @@ class ItemViewHolder(
             llFilter
         )) {
             v.setOnClickListener(this)
+        }
+        ivMediaThumbnails.forEach { it.setOnClickListener(this) }
+        tvMediaDescriptions.forEach {
+            it.isClickable = true
+            it.setOnClickListener(this)
         }
 
         for (v in arrayOf(
@@ -230,7 +229,6 @@ class ItemViewHolder(
         tvContent.movementMethod = MyLinkMovementMethod
         tvMentions.movementMethod = MyLinkMovementMethod
         tvContentWarning.movementMethod = MyLinkMovementMethod
-        tvMediaDescription.movementMethod = MyLinkMovementMethod
         tvCardText.movementMethod = MyLinkMovementMethod
 
         var f: Float
@@ -250,10 +248,11 @@ class ItemViewHolder(
             tvTrendTagName.textSize = f
             tvTrendTagCount.textSize = f
             tvFilterPhrase.textSize = f
-            tvMediaDescription.textSize = f
             tvCardText.textSize = f
             tvConversationIconsMore.textSize = f
             tvConversationParticipants.textSize = f
+
+            tvMediaDescriptions.forEach { it.textSize = f }
         }
 
         f = activity.notificationTlFontSizeSp
@@ -289,7 +288,7 @@ class ItemViewHolder(
             tvTrendTagName.setLineSpacing(0f, spacing)
             tvTrendTagCount.setLineSpacing(0f, spacing)
             tvFilterPhrase.setLineSpacing(0f, spacing)
-            tvMediaDescription.setLineSpacing(0f, spacing)
+            tvMediaDescriptions.forEach { it.setLineSpacing(0f, spacing) }
             tvCardText.setLineSpacing(0f, spacing)
             tvConversationIconsMore.setLineSpacing(0f, spacing)
             tvConversationParticipants.setLineSpacing(0f, spacing)
@@ -464,15 +463,6 @@ class ItemViewHolder(
         }
     }
 
-    private fun _LinearLayout.inflateVerticalMediaOne(thumbnailHeight: Int) =
-        myNetworkImageView {
-            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-            contentDescription = context.getString(R.string.thumbnail)
-            scaleType = ImageView.ScaleType.CENTER_CROP
-        }.lparams(matchParent, thumbnailHeight) {
-            topMargin = dip(3)
-        }
-
     private fun _LinearLayout.inflateVerticalMedia(thumbnailHeight: Int) =
         frameLayout {
             lparams(matchParent, wrapContent) {
@@ -489,10 +479,16 @@ class ItemViewHolder(
                 }.lparams(dip(32), dip(32)) {
                     gravity = Gravity.END
                 }
-                ivMedia1 = inflateVerticalMediaOne(thumbnailHeight)
-                ivMedia2 = inflateVerticalMediaOne(thumbnailHeight)
-                ivMedia3 = inflateVerticalMediaOne(thumbnailHeight)
-                ivMedia4 = inflateVerticalMediaOne(thumbnailHeight)
+                ivMediaThumbnails.clear()
+                repeat(MEDIA_VIEW_COUNT) {
+                    myNetworkImageView {
+                        background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                        contentDescription = context.getString(R.string.thumbnail)
+                        scaleType = ImageView.ScaleType.CENTER_CROP
+                    }.lparams(matchParent, thumbnailHeight) {
+                        topMargin = dip(3)
+                    }.let { ivMediaThumbnails.add(it) }
+                }
             }
 
             btnShowMedia = blurhashView {
@@ -503,25 +499,23 @@ class ItemViewHolder(
             }.lparams(matchParent, thumbnailHeight)
         }
 
-    private fun _LinearLayout.inflateHorizontalMediaOne(trail: Boolean) =
-        myNetworkImageView {
-            background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
-            contentDescription = context.getString(R.string.thumbnail)
-            scaleType = ImageView.ScaleType.CENTER_CROP
-        }.lparams(0, matchParent) {
-            weight = 1f
-            if (trail) startMargin = dip(8)
-        }
-
     private fun _LinearLayout.inflateHorizontalMedia(thumbnailHeight: Int): View {
         return frameLayout {
             lparams(matchParent, thumbnailHeight) { topMargin = dip(3) }
             llMedia = linearLayout {
                 lparams(matchParent, matchParent)
-                ivMedia1 = inflateHorizontalMediaOne(trail = false)
-                ivMedia2 = inflateHorizontalMediaOne(trail = true)
-                ivMedia3 = inflateHorizontalMediaOne(trail = true)
-                ivMedia4 = inflateHorizontalMediaOne(trail = true)
+                ivMediaThumbnails.clear()
+                repeat(MEDIA_VIEW_COUNT) { idx ->
+                    myNetworkImageView {
+                        background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                        contentDescription = context.getString(R.string.thumbnail)
+                        scaleType = ImageView.ScaleType.CENTER_CROP
+                    }.lparams(0, matchParent) {
+                        weight = 1f
+                        if (idx > 0) startMargin = dip(8)
+                    }.let { ivMediaThumbnails.add(it) }
+
+                }
                 btnHideMedia = imageButton {
                     background =
                         ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
@@ -670,7 +664,18 @@ class ItemViewHolder(
                 else -> inflateHorizontalMedia(thumbnailHeight)
             }
 
-            tvMediaDescription = myTextView {}.lparams(matchParent, wrapContent)
+            tvMediaDescriptions.clear()
+            repeat(MEDIA_VIEW_COUNT) {
+                tvMediaDescriptions.add(
+                    button {
+                        gravity=Gravity.START
+                        allCaps= false
+                        background =
+                            ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                        padding=dip(4)
+                    }.lparams(matchParent, wrapContent)
+                )
+            }
 
             inflateCard(actMain)
 

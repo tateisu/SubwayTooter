@@ -17,7 +17,6 @@ import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.OpenSticker
-import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
@@ -304,20 +303,13 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
 
         btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
         llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
-        val sb = StringBuilder()
-        setMedia(mediaAttachments, sb, ivMedia1, 0)
-        setMedia(mediaAttachments, sb, ivMedia2, 1)
-        setMedia(mediaAttachments, sb, ivMedia3, 2)
-        setMedia(mediaAttachments, sb, ivMedia4, 3)
-
-        val m0 =
-            if (mediaAttachments.isEmpty()) null else mediaAttachments[0] as? TootAttachment
-        btnShowMedia.blurhash = m0?.blurhash
-
-        if (sb.isNotEmpty() && column.showMediaDescription) {
-            tvMediaDescription.visibility = View.VISIBLE
-            tvMediaDescription.text = sb
+        repeat(ItemViewHolder.MEDIA_VIEW_COUNT) { idx ->
+            setMedia(mediaAttachments, idx)
         }
+
+        btnShowMedia.blurhash = mediaAttachments.firstOrNull()
+            ?.cast<TootAttachment>()
+            ?.blurhash
 
         setIconDrawableId(
             activity,
@@ -331,10 +323,9 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
 
 fun ItemViewHolder.setMedia(
     mediaAttachments: ArrayList<TootAttachmentLike>,
-    sbDesc: StringBuilder,
-    iv: MyNetworkImageView,
     idx: Int,
 ) {
+    val iv = ivMediaThumbnails[idx]
     val ta = if (idx < mediaAttachments.size) mediaAttachments[idx] else null
     if (ta == null) {
         iv.visibility = View.GONE
@@ -395,7 +386,12 @@ fun ItemViewHolder.setMedia(
         }
     }
 
-    fun appendDescription(s: String) {
+    val desc = ta.description.notEmpty()
+        ?: if (!showUrl) null else ta.urlForDescription.notEmpty()
+
+    tvMediaDescriptions[idx].vg(
+        !desc.isNullOrBlank() && column.showMediaDescription
+    )?.let {
         //			val lp = LinearLayout.LayoutParams(
         //				LinearLayout.LayoutParams.MATCH_PARENT,
         //				LinearLayout.LayoutParams.WRAP_CONTENT
@@ -410,14 +406,11 @@ fun ItemViewHolder.setMedia(
         //				tv.textSize = activity.timeline_font_size_sp
         //			}
         //			tv.setTextColor(content_color)
-
-        if (sbDesc.isNotEmpty()) sbDesc.append("\n")
-        val desc = activity.getString(R.string.media_description, idx + 1, s)
-        sbDesc.append(desc)
-    }
-
-    when (val description = ta.description.notEmpty()) {
-        null -> if (showUrl) ta.urlForDescription.notEmpty()?.let { appendDescription(it) }
-        else -> appendDescription(description)
+        it.setTag(R.id.text,desc)
+        it.text = activity.getString(
+            R.string.media_description,
+            idx + 1,
+            desc?.ellipsizeDot3(140)
+        )
     }
 }

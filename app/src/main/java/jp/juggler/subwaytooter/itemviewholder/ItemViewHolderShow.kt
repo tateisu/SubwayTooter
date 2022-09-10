@@ -147,7 +147,7 @@ fun ItemViewHolder.bind(
     tvMessageHolder.visibility = View.GONE
     llTrendTag.visibility = View.GONE
     llFilter.visibility = View.GONE
-    tvMediaDescription.visibility = View.GONE
+    tvMediaDescriptions.forEach { it.visibility = View.GONE }
     llCardOuter.visibility = View.GONE
     tvCardText.visibility = View.GONE
     flCardImage.visibility = View.GONE
@@ -174,7 +174,7 @@ fun ItemViewHolder.bind(
     tvTrendTagCount.setTextColor(c)
     cvTagHistory.setColor(c)
     tvFilterPhrase.setTextColor(c)
-    tvMediaDescription.setTextColor(c)
+    tvMediaDescriptions.forEach { it.setTextColor(c) }
     tvCardText.setTextColor(c)
     tvConversationIconsMore.setTextColor(c)
     tvConversationParticipants.setTextColor(c)
@@ -781,14 +781,8 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
 
             btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
             llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
-            val sb = StringBuilder()
-            setMedia(mediaAttachments, sb, ivMedia1, 0)
-            setMedia(mediaAttachments, sb, ivMedia2, 1)
-            setMedia(mediaAttachments, sb, ivMedia3, 2)
-            setMedia(mediaAttachments, sb, ivMedia4, 3)
-            if (sb.isNotEmpty()) {
-                tvMediaDescription.visibility = View.VISIBLE
-                tvMediaDescription.text = sb
+            repeat(ItemViewHolder.MEDIA_VIEW_COUNT){idx->
+                setMedia(mediaAttachments, idx)
             }
 
             setIconDrawableId(

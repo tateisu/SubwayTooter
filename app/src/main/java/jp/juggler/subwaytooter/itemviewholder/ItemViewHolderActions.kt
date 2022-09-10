@@ -1,8 +1,13 @@
 package jp.juggler.subwaytooter.itemviewholder
 
+import android.app.AlertDialog
+import android.text.method.ScrollingMovementMethod
 import android.view.View
+import android.widget.EditText
+import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMediaViewer
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
@@ -12,10 +17,8 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.cast
-import jp.juggler.util.notEmpty
-import jp.juggler.util.showToast
-import jp.juggler.util.vg
+import jp.juggler.subwaytooter.view.MyTextView
+import jp.juggler.util.*
 
 val defaultBoostedAction: ItemViewHolder.() -> Unit = {
     val pos = activity.nextPosition(column)
@@ -35,10 +38,6 @@ fun ItemViewHolder.onClickImpl(v: View?) {
     val item = this.item
     with(activity) {
         when (v) {
-            ivMedia1 -> clickMedia(0)
-            ivMedia2 -> clickMedia(1)
-            ivMedia3 -> clickMedia(2)
-            ivMedia4 -> clickMedia(3)
             btnHideMedia, btnCardImageHide -> showHideMediaViews(false)
             btnShowMedia, btnCardImageShow -> showHideMediaViews(true)
             btnContentWarning -> toggleContentWarning()
@@ -95,6 +94,18 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                 listAdapter,
                 summary = item.cast()
             )
+
+            else -> {
+                ivMediaThumbnails.indexOfFirst { it == v }
+                    .takeIf { it >= 0 }?.let {
+                        clickMedia(it)
+                        return
+                    }
+                tvMediaDescriptions.find { it == v }?.let {
+                    clickMediaDescription(it)
+                    return
+                }
+            }
         }
     }
 }
@@ -225,6 +236,19 @@ private fun ItemViewHolder.clickMedia(i: Int) {
     } catch (ex: Throwable) {
         ItemViewHolder.log.trace(ex)
     }
+}
+
+private fun ItemViewHolder.clickMediaDescription(tv: View) {
+    val desc = tv.getTag(R.id.text)
+        ?.cast<CharSequence>()
+        ?: return
+    AlertDialog.Builder(activity)
+        .setMessage(desc.toString().ellipsizeDot3(2000))
+        .setPositiveButton(R.string.ok, null)
+        .setNeutralButton(android.R.string.copy) { _, _ ->
+            desc.copyToClipboard(activity)
+        }
+        .show()
 }
 
 private fun ItemViewHolder.showHideMediaViews(show: Boolean) {

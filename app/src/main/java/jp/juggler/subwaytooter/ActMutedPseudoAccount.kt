@@ -13,8 +13,8 @@ import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.LogCategory
+import jp.juggler.util.backPressed
 import jp.juggler.util.attrColor
-import java.util.*
 
 class ActMutedPseudoAccount : AppCompatActivity() {
 
@@ -27,14 +27,13 @@ class ActMutedPseudoAccount : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            setResult(RESULT_OK)
+            finish()
+        }
         App1.setActivityTheme(this)
         initUI()
         loadData()
-    }
-
-    override fun onBackPressed() {
-        setResult(RESULT_OK)
-        super.onBackPressed()
     }
 
     private fun initUI() {

@@ -56,13 +56,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         }
     }
 
-    override fun onBackPressed() {
-        setResult(RESULT_OK)
-        super.onBackPressed()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            setResult(RESULT_OK)
+            finish()
+        }
         arNotificationSound.register(this)
         App1.setActivityTheme(this)
 

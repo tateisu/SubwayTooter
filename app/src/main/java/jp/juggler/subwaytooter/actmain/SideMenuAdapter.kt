@@ -97,8 +97,8 @@ class SideMenuAdapter(
         // メインスレッドでもそれ以外でも動作すること
         private fun Context.createVersionRow() = SpannableStringBuilder().apply {
             val currentVersion = try {
-                packageManager.getPackageInfo(packageName, 0).versionName
-            } catch (ignored: PackageManager.NameNotFoundException) {
+                packageManager.getPackageInfoCompat(packageName)!!.versionName
+            } catch (ignored: Throwable) {
                 "??"
             }
 

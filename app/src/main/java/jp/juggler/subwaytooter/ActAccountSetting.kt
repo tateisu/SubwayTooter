@@ -193,6 +193,11 @@ class ActAccountSetting : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            checkNotificationImmediateAll(this, onlySubscription = true)
+            checkNotificationImmediate(this, account.db_id)
+            finish()
+        }
 
         prPickAvater.register(this)
         prPickHeader.register(this)
@@ -234,12 +239,7 @@ class ActAccountSetting : AppCompatActivity(),
         outState.putString(ACTIVITY_STATE, encodedState)
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
 
-        checkNotificationImmediateAll(this, onlySubscription = true)
-        checkNotificationImmediate(this, account.db_id)
-    }
 
     var density: Float = 1f
 

@@ -38,10 +38,7 @@ class DlgAppPicker(
     val list = ArrayList<ListItem>().apply {
 
         val pm = activity.packageManager
-        val listResolveInfo = pm.queryIntentActivities(
-            intent,
-            PackageManager.MATCH_ALL,
-        )
+        val listResolveInfo = pm.queryIntentActivitiesCompat(intent, PackageManager.MATCH_ALL)
 
         for (it in listResolveInfo) {
             if (!filter(it)) continue

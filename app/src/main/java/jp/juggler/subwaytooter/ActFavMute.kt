@@ -2,27 +2,24 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
+import androidx.appcompat.app.AppCompatActivity
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
-
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.table.FavMute
-import jp.juggler.util.*
+import jp.juggler.util.LogCategory
+import jp.juggler.util.backPressed
+import jp.juggler.util.attrColor
 
 class ActFavMute : AppCompatActivity() {
 
     companion object {
-
         private val log = LogCategory("ActFavMute")
     }
 
@@ -32,13 +29,12 @@ class ActFavMute : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
+        backPressed {
+            setResult(RESULT_OK)
+            finish()
+        }
         initUI()
         loadData()
-    }
-
-    override fun onBackPressed() {
-        setResult(RESULT_OK)
-        super.onBackPressed()
     }
 
     private fun initUI() {

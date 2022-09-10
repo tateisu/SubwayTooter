@@ -162,6 +162,12 @@ class ActPost : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            finish()
+            // 戻るボタンを押したときとonPauseで2回保存することになるが、
+            // 同じ内容はDB上は重複しないはず…
+            saveDraft()
+        }
         if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
         App1.setActivityTheme(this, noActionBar = true)
         appState = App1.getAppState(this)
@@ -237,12 +243,6 @@ class ActPost : AppCompatActivity(),
         if (!isPostComplete) saveDraft()
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        // 戻るボタンを押したときとonPauseで2回保存することになるが、
-        // 同じ内容はDB上は重複しないはず…
-        saveDraft()
-    }
 
     override fun onClick(v: View) {
         refActPost = WeakReference(this)

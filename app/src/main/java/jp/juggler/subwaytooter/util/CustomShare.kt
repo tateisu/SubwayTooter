@@ -8,10 +8,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.attrColor
-import jp.juggler.util.showToast
-import jp.juggler.util.systemService
+import jp.juggler.util.*
 
 enum class CustomShareTarget {
     Translate,
@@ -74,7 +71,7 @@ object CustomShare {
                     }
                 } else {
                     val pm = context.packageManager
-                    val ri = pm.resolveActivity(Intent().apply { component = cn }, 0)
+                    val ri = pm.resolveActivityCompat(Intent().apply { component = cn })
                     if (ri != null) {
                         try {
                             label = ri.loadLabel(pm)
@@ -192,7 +189,8 @@ fun String.cn(): ComponentName? {
 
 fun ComponentName.exists(context: Context): Boolean {
     return try {
-        context.packageManager.resolveActivity(Intent().apply { component = this@exists }, 0)
+        @Suppress("DEPRECATION")
+        context.packageManager.resolveActivityCompat(Intent().apply { component = this@exists })
             ?.activityInfo?.exported ?: false
     } catch (_: Throwable) {
         false

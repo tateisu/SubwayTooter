@@ -115,7 +115,7 @@ fun ActMain.handleOtherUri(uri: Uri): Boolean {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
         val myName = packageName
-        val resolveInfoList = packageManager.queryIntentActivities(intent, queryFlag)
+        val resolveInfoList = packageManager.queryIntentActivitiesCompat(intent, queryFlag)
             .filter { myName != it.activityInfo.packageName }
 
         if (resolveInfoList.isEmpty()) error("resolveInfoList is empty.")

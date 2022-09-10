@@ -77,11 +77,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             ?.firstOrNull()?.uri?.let { updateBackground(it) }
     }
 
-    override fun onBackPressed() {
-        makeResult()
-        super.onBackPressed()
-    }
-
     private fun makeResult() {
         val data = Intent()
         data.putExtra(EXTRA_COLUMN_INDEX, columnIndex)
@@ -90,6 +85,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            makeResult()
+            finish()
+        }
         arColumnBackgroundImage.register(this)
         App1.setActivityTheme(this)
         initUI()

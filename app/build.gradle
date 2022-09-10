@@ -146,7 +146,7 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
-    implementation "androidx.core:core-ktx:1.8.0"
+    implementation "androidx.core:core-ktx:1.9.0"
 
     def emoji2Version = "1.2.0"
     implementation "androidx.emoji2:emoji2:$emoji2Version"
@@ -171,7 +171,7 @@ dependencies {
     kapt 'androidx.annotation:annotation:1.4.0'
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-messaging:23.0.7"
+    implementation "com.google.firebase:firebase-messaging:23.0.8"
 
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

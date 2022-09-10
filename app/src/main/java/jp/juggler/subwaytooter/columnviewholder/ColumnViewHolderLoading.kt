@@ -23,36 +23,24 @@ private class ErrorFlickListener(
     val density = cvh.activity.resources.displayMetrics.density
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        return gd.onTouchEvent(event)
-    }
+    override fun onTouch(v: View?, event: MotionEvent?) =
+        event?.let { gd.onTouchEvent(it) } ?: false
 
-    override fun onShowPress(e: MotionEvent?) {
-    }
-
-    override fun onLongPress(e: MotionEvent?) {
-    }
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        return true
-    }
-
-    override fun onDown(e: MotionEvent?): Boolean {
-        return true
-    }
+    override fun onShowPress(e: MotionEvent) = Unit
+    override fun onLongPress(e: MotionEvent) = Unit
+    override fun onSingleTapUp(e: MotionEvent) = true
+    override fun onDown(e: MotionEvent) = true
 
     override fun onScroll(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
+        e1: MotionEvent,
+        e2: MotionEvent,
         distanceX: Float,
         distanceY: Float,
-    ): Boolean {
-        return true
-    }
+    ) = true
 
     override fun onFling(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
+        e1: MotionEvent,
+        e2: MotionEvent,
         velocityX: Float,
         velocityY: Float,
     ): Boolean {
@@ -83,15 +71,10 @@ private class AdapterItemHeightWorkarea(
     val adapter: ItemListAdapter,
 ) : Closeable {
 
-    private val itemWidth: Int
-    private val widthSpec: Int
+    private val itemWidth = listView.width - listView.paddingLeft - listView.paddingRight
+    private val widthSpec = View.MeasureSpec.makeMeasureSpec(itemWidth, View.MeasureSpec.EXACTLY)
     var lastViewType: Int = -1
     var lastViewHolder: RecyclerView.ViewHolder? = null
-
-    init {
-        this.itemWidth = listView.width - listView.paddingLeft - listView.paddingRight
-        this.widthSpec = View.MeasureSpec.makeMeasureSpec(itemWidth, View.MeasureSpec.EXACTLY)
-    }
 
     override fun close() {
         val childViewHolder = lastViewHolder

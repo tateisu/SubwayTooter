@@ -127,6 +127,17 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            if (equalsLanguageList(column.languageFilter, encodeLanguageList())) {
+                finish()
+            } else {
+                AlertDialog.Builder(this)
+                    .setMessage(R.string.language_filter_quit_waring)
+                    .setPositiveButton(R.string.ok) { _, _ -> finish() }
+                    .setNegativeButton(R.string.cancel, null)
+                    .show()
+            }
+        }
         arExport.register(this)
         arImport.register(this)
 
@@ -156,19 +167,6 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
         outState.putString(STATE_LANGUAGE_LIST, encodeLanguageList().toString())
-    }
-
-    override fun onBackPressed() {
-        if (!equalsLanguageList(column.languageFilter, encodeLanguageList())) {
-            AlertDialog.Builder(this)
-                .setMessage(R.string.language_filter_quit_waring)
-                .setPositiveButton(R.string.ok) { _, _ -> finish() }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
-            return
-        }
-
-        super.onBackPressed()
     }
 
     private fun initUI() {

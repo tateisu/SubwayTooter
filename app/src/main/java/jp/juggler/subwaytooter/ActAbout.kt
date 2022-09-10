@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
@@ -12,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.LogCategory
+import jp.juggler.util.getPackageInfoCompat
 
 class ActAbout : AppCompatActivity() {
 
@@ -79,11 +79,12 @@ class ActAbout : AppCompatActivity() {
         Styler.fixHorizontalPadding(findViewById(R.id.svContent))
 
         try {
-            val pInfo = packageManager.getPackageInfo(packageName, 0)
-            val tv = findViewById<TextView>(R.id.tvVersion)
-            tv.text = getString(R.string.version_is, pInfo.versionName)
-        } catch (ex: PackageManager.NameNotFoundException) {
-            log.trace(ex, "getPackageInfo failed.")
+            packageManager.getPackageInfoCompat(packageName)?.let { pInfo ->
+                findViewById<TextView>(R.id.tvVersion)
+                    ?.text = getString(R.string.version_is, pInfo.versionName)
+            }
+        } catch (ex: Throwable) {
+            log.trace(ex, "can't get app version.")
         }
 
         fun setButton(btnId: Int, caption: String, onClick: () -> Unit) {

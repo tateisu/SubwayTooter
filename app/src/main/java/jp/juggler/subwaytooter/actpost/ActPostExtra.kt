@@ -181,7 +181,8 @@ fun ActPost.updateText(
         accountList.find { it.db_id == accountDbId }?.let { selectAccount(it) }
     }
 
-    val sharedIntent = intent.getParcelableExtra<Intent>(ActPost.KEY_SHARED_INTENT)
+    val sharedIntent = intent.getIntentExtra(ActPost.KEY_SHARED_INTENT)
+
     if (sharedIntent != null) {
         initializeFromSharedIntent(sharedIntent)
     }
@@ -230,7 +231,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
             }
 
             Intent.ACTION_SEND -> {
-                val uri = sharedIntent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                val uri = sharedIntent.getStreamUriExtra()
                 val type = sharedIntent.type
                 if (uri != null) {
                     addAttachment(uri, type)
@@ -241,8 +242,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
             }
 
             Intent.ACTION_SEND_MULTIPLE -> {
-                val listUri =
-                    sharedIntent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                val listUri = sharedIntent.getStreamUriListExtra()
                         ?.filterNotNull()
                 if (listUri?.isNotEmpty() == true) {
                     for (uri in listUri) {

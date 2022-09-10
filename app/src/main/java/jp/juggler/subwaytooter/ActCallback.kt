@@ -5,9 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import jp.juggler.util.LogCategory
-import jp.juggler.util.digestSHA256Hex
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 import okhttp3.internal.toHexString
 import java.io.File
 import java.io.FileOutputStream
@@ -135,26 +133,22 @@ class ActCallback : AppCompatActivity() {
                         }
                     }
                 } else if (Intent.ACTION_SEND == action) {
-                    var uri: Uri? = src.getParcelableExtra(Intent.EXTRA_STREAM)
-                    if (uri == null) {
-                        // text/plain
-                        return src
-                    } else {
-                        try {
-                            uri = saveToCache(uri)
+                    var uri = src.getStreamUriExtra()
+                        ?: return src // text/plainの場合
+                    try {
+                        uri = saveToCache(uri)
 
-                            val dst = Intent(action)
-                            dst.type = type
-                            dst.putExtra(Intent.EXTRA_STREAM, uri)
-                            copyExtraTexts(dst, src)
-                            return dst
-                        } catch (ex: Throwable) {
-                            log.trace(ex)
-                        }
+                        val dst = Intent(action)
+                        dst.type = type
+                        dst.putExtra(Intent.EXTRA_STREAM, uri)
+                        copyExtraTexts(dst, src)
+                        return dst
+                    } catch (ex: Throwable) {
+                        log.trace(ex)
                     }
                 } else if (Intent.ACTION_SEND_MULTIPLE == action) {
-                    val listUri =
-                        src.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM) ?: return null
+                    val listUri = src.getStreamUriListExtra()
+                        ?: return null
                     val listDst = ArrayList<Uri>()
                     for (uriOriginal in listUri) {
                         if (uriOriginal != null) {

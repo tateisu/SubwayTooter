@@ -18,7 +18,6 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.util.*
-import java.util.*
 
 class ActColumnList : AppCompatActivity() {
 
@@ -44,6 +43,10 @@ class ActColumnList : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            makeResult(-1)
+            finish()
+        }
         App1.setActivityTheme(this)
         initUI()
 
@@ -62,11 +65,6 @@ class ActColumnList : AppCompatActivity() {
 
         val array = listAdapter.itemList.map { it.json }.toJsonArray()
         AppState.saveColumnList(this, TMP_FILE_COLUMN_LIST, array)
-    }
-
-    override fun onBackPressed() {
-        makeResult(-1)
-        super.onBackPressed()
     }
 
     private fun initUI() {

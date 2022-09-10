@@ -110,6 +110,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        backPressed {
+            when {
+                lastQuery != null -> load(lastSection, null)
+                lastSection != null -> load(null, null)
+                else -> finish()
+            }
+        }
 
         arNoop.register(this)
         arImportAppData.register(this)
@@ -202,14 +209,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
         // Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
         restartAllWorker(context = this)
-    }
-
-    override fun onBackPressed() {
-        when {
-            lastQuery != null -> load(lastSection, null)
-            lastSection != null -> load(null, null)
-            else -> super.onBackPressed()
-        }
     }
 
     override fun onClick(v: View) {

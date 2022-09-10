@@ -793,7 +793,7 @@ class TootApiClient(
                 val clientSecret = clientInfo.string("client_secret")
                     ?: return result.setError("missing client_secret")
 
-                "grant_type=client_credentials&scope=read+write&client_id=${clientId.encodePercent()}&client_secret=${clientSecret.encodePercent()}"
+                "grant_type=client_credentials&scope=read+write&client_id=${clientId.encodePercent()}&client_secret=${clientSecret.encodePercent()}&redirect_uri=${REDIRECT_URL.encodePercent()}"
                     .toFormRequestBody().toPost()
                     .url("https://${apiHost?.ascii}/oauth/token")
                     .build()

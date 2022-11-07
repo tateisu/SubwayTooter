@@ -817,7 +817,7 @@
     <string name="participants">Participants:</string>
     <string name="participants_and_more">… i més</string>
     <string name="conversation_to">A:</string>
-    <string name="use_quote_toot">Fer ús de \"Nota citada\"</string>
+    <string name="use_quote_toot">Fer ús de «Nota citada». (Misskey o algun servidor Mastodon personalitzat)</string>
     <string name="mute_application_confirm">Vols silenciar l\'aplicació \"%1$s\"\?</string>
     <string name="boost_button_alpha" formatted="false">Augmenta l\'opacitat del botó de difusió (Unitat:%. cal reiniciar aplicació. també afecta al text de contingut alfa.)</string>
     <string name="toot_background_color">Color de fons dels brams</string>
@@ -985,4 +985,17 @@
     <string name="display_name_references_post">%1$s fa referència a la teva publicació</string>
     <string name="display_name_updates_post">%1$s actualitza el post</string>
     <string name="display_name_signed_up">%1$s s\'ha registrat al teu servidor.</string>
+    <string name="domain_timeline_of">Cronologia del domini %1$s</string>
+    <string name="app_name_with_version">%1$s %2$s</string>
+    <string name="duration_minutes_5">5 minuts</string>
+    <string name="duration_days_7">7 dies</string>
+    <string name="duration_minutes_30">30 minuts</string>
+    <string name="duration_days_3">3 dies</string>
+    <string name="duration_hours_6">6 hores</string>
+    <string name="size_1920_1080">1920x1080</string>
+    <string name="announcements_index">%1$d/%2$d</string>
+    <string name="duration_days_1">1 dia</string>
+    <string name="duration_hours_1">1 hora</string>
+    <string name="account_picker_quote_toot">Compte per «nota citada»\?</string>
+    <string name="quote_toot">Nota citada (Misskey o algun servidor personalitzat de Mastodon)</string>
 </resources>

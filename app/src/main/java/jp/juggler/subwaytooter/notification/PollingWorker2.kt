@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.notification
 
+import android.app.ActivityManager
 import android.content.Context
 import androidx.work.*
 import jp.juggler.subwaytooter.App1
@@ -91,10 +92,18 @@ class PollingWorker2(
         }
     }
 
+    private fun isAppForehround(): Boolean {
+        val processInfo = ActivityManager.RunningAppProcessInfo()
+        ActivityManager.getMyMemoryState(processInfo)
+        return processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+    }
+
     private suspend fun showMessage(text: String) =
         CheckerNotification.showMessage(applicationContext, text) {
             try {
-                setForeground(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
+                if(!isAppForehround()) error("app is not foreground.")
+                setForegroundAsync(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER,it))
+                    .await()
             } catch (ex: Throwable) {
                 log.e(ex, "showMessage failed.")
             }

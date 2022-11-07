@@ -354,9 +354,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service
-            android:name="jp.juggler.subwaytooter.notification.ForegroundPollingService"
-            android:exported="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

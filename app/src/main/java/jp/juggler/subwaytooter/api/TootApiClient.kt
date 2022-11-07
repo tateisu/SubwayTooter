@@ -1034,7 +1034,7 @@ class TootApiClient(
         if (result.error != null) return result
 
         val instance = result.caption // same to instance
-        val clientName = if (clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
+        val clientName = clientNameArg.ifEmpty { DEFAULT_CLIENT_NAME }
         val clientInfo =
             ClientInfo.load(instance, clientName) ?: return result.setError("missing client id")
 
@@ -1271,11 +1271,23 @@ class TootApiClient(
     }
 }
 
-// query: query_string after ? ( ? itself is excluded )
 suspend fun TootApiClient.requestMastodonSearch(
     parser: TootParser,
-    query: String,
+    // 検索文字列
+    q: String,
+    // リモートサーバの情報を解決するなら真
+    resolve: Boolean,
+    // ギャップ読み込み時の追加パラメータ
+    extra: String = "",
 ): Pair<TootApiResult?, TootResults?> {
+
+    if (q.all { CharacterGroup.isWhitespace(it.code) }) {
+        return Pair(null, null)
+    }
+
+    val query = "q=${q.encodePercent()}&resolve=$resolve${
+        if (extra.isEmpty()) "" else "&$extra"
+    }"
 
     var searchApiVersion = 2
     var apiResult = request("/api/v2/search?$query")
@@ -1338,7 +1350,8 @@ suspend fun TootApiClient.syncAccountByUrl(
     } else {
         val (apiResult, searchResult) = requestMastodonSearch(
             parser,
-            "q=${whoUrl.encodePercent()}&resolve=true"
+            q = whoUrl,
+            resolve = true,
         )
         val ar = searchResult?.accounts?.firstOrNull()
         if (apiResult != null && apiResult.error == null && ar == null) {
@@ -1380,7 +1393,8 @@ suspend fun TootApiClient.syncAccountByAcct(
     } else {
         val (apiResult, searchResult) = requestMastodonSearch(
             parser,
-            "q=${acct.ascii.encodePercent()}&resolve=true"
+            q = acct.ascii,
+            resolve = true,
         )
         val ar = searchResult?.accounts?.firstOrNull()
         if (apiResult != null && apiResult.error == null && ar == null) {
@@ -1450,7 +1464,8 @@ suspend fun TootApiClient.syncStatus(
     } else {
         val (apiResult, searchResult) = requestMastodonSearch(
             parser,
-            "q=${url.encodePercent()}&resolve=true"
+            q = url,
+            resolve = true,
         )
         val targetStatus = searchResult?.statuses?.firstOrNull()
         if (apiResult != null && apiResult.error == null && targetStatus == null) {

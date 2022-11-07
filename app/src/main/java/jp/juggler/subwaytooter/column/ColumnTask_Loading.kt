@@ -1220,10 +1220,11 @@ class ColumnTask_Loading(
             val (instance, instanceResult) = TootInstance.get(client)
             instance ?: return instanceResult
 
-            var query = "q=${column.searchQuery.encodePercent()}"
-            if (column.searchResolve) query += "&resolve=1"
-
-            val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
+            val (apiResult, searchResult) = client.requestMastodonSearch(
+                parser,
+                q=column.searchQuery,
+                resolve = column.searchResolve,
+            )
             if (searchResult != null) {
                 listTmp = ArrayList()
                 addAll(listTmp, searchResult.hashtags)

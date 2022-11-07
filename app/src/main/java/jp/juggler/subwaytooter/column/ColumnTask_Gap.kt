@@ -921,10 +921,13 @@ class ColumnTask_Gap(
             column.listData.forEach { counter(it) }
 
             // https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
-            var query = "q=${column.searchQuery.encodePercent()}&type=$type&offset=$offset"
-            if (column.searchResolve) query += "&resolve=1"
 
-            val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
+            val (apiResult, searchResult) = client.requestMastodonSearch(
+                parser,
+                q= column.searchQuery,
+                resolve = column.searchResolve,
+                extra = "type=$type&offset=$offset",
+            )
             if (searchResult != null) {
                 listTmp = ArrayList()
                 addAll(listTmp, searchResult.hashtags)

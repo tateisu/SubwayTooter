@@ -2,12 +2,13 @@ package jp.juggler.subwaytooter
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import jp.juggler.subwaytooter.notification.ForegroundPollingService
+import jp.juggler.subwaytooter.notification.PollingChecker
 import jp.juggler.subwaytooter.notification.restartAllWorker
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.table.NotificationCache
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -33,8 +34,21 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             }
     }
 
+    override fun onNewToken(token: String) {
+        try {
+            log.w("onTokenRefresh: token=$token")
+            PrefDevice.from(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
+            restartAllWorker(this)
+        } catch (ex: Throwable) {
+            log.trace(ex, "onNewToken failed")
+        }
+    }
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         val context = this
+
+        val messageId = remoteMessage.messageId ?: return
+        if (isDuplicateMessage(messageId)) return
 
         val accounts = ArrayList<SavedAccount>()
         for ((key, value) in remoteMessage.data) {
@@ -60,19 +74,26 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             NotificationCache.resetLastLoad()
             accounts.addAll(SavedAccount.loadAccountList(context))
         }
-        log.i("accounts.size=${accounts.size}")
-        accounts.forEach {
-            ForegroundPollingService.start(this, remoteMessage.messageId, it.db_id)
+
+        log.i("accounts.size=${accounts.size} thred=${Thread.currentThread().name}")
+        runBlocking {
+            accounts.forEach {
+                check(it.db_id)
+            }
         }
     }
 
-    override fun onNewToken(token: String) {
+    private suspend fun check(accountDbId: Long) {
         try {
-            log.w("onTokenRefresh: token=$token")
-            PrefDevice.from(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
-            restartAllWorker(this)
+            PollingChecker(
+                context = this,
+                accountDbId = accountDbId
+            ).check { a, s ->
+                val text = "[${a.acct.pretty}]${s.desc}"
+                log.i(text)
+            }
         } catch (ex: Throwable) {
-            log.trace(ex, "onNewToken failed")
+            log.trace(ex)
         }
     }
 }

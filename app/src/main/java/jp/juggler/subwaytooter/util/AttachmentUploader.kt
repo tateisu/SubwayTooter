@@ -48,6 +48,7 @@ class AttachmentUploader(
 
         internal const val MIME_TYPE_JPEG = "image/jpeg"
         internal const val MIME_TYPE_PNG = "image/png"
+        internal const val MIME_TYPE_GIF = "image/gif"
 
         val acceptableMimeTypes = HashSet<String>().apply {
             //
@@ -569,6 +570,11 @@ class AttachmentUploader(
         postAttachment: PostAttachment? = null,
     ): InputStreamOpener {
         when {
+            // GIFはそのまま投げる
+            mimeType == MIME_TYPE_GIF -> {
+                return contentUriOpener(context.contentResolver, uri, mimeType)
+            }
+
             // 静止画(失敗したらオリジナルデータにフォールバックする)
             mimeType == MIME_TYPE_JPEG || mimeType == MIME_TYPE_PNG -> try {
                 return createResizedImageOpener(

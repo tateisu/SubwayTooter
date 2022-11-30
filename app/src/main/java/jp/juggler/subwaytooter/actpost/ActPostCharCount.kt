@@ -39,6 +39,12 @@ private fun ActPost.getMaxCharCount(): Int {
             // fall thru
         }
 
+        info?.configuration
+            ?.jsonObject("statuses")
+            ?.int("max_characters")
+            ?.takeIf { it > 0 }
+            ?.let { return it }
+
         info?.max_toot_chars
             ?.takeIf { it > 0 }
             ?.let { return it }

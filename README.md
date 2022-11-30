@@ -3,7 +3,7 @@
 Mastodon client app for Android phone/tablet.
 
 ## Requirements
-- Android 5.0 or later
+- Android 8.0 or later
 
 ## Supported SNS service 
 - Mastodon https://joinmastodon.org/

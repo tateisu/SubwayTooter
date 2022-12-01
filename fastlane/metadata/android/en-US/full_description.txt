@@ -1,0 +1,19 @@
+Mastodon client for Android 8.0 or later.
+
+Also this app has partially support for Misskey. But it does not include function to use message, drive, reversi, widget.
+
+(multiple account, multiple column)
+- You can swipe horizontally to switch columns and accounts.
+- You can add and rearrange columns.
+- Column types: home, notification, local-TL, federate-TL, search, hash tags, conversation, profile, muted, blocked, follow requests, etc.
+
+(cross account operation)
+- You can favorite/follow operation as a user different from bind to column.
+
+(other)
+- Good emoji support.
+
+source code is here.
+https://github.com/tateisu/SubwayTooter
+
+Some of the icons used in this app is based on the Icons8 https://icons8.com/license/

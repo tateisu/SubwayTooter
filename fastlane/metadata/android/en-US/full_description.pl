@@ -20,6 +20,8 @@ open(my $fh,">:utf8",$file) or die "$file $!";
 say $fh $text;
 close($fh) or die "$file $!";
 
+# apt-cyg install tidy  libtidy5
+system qq(tidy -q -e $file);
 
 __DATA__
 
@@ -27,19 +29,19 @@ __DATA__
 
 <p>Also this app has partially support for Misskey. But it does not include function to use message, drive, reversi, widget.</p>
 
-<p># Multiple accounts, Multiple columns:</p>
+<p><b>Multiple accounts, Multiple columns</b></p>
 <ul>
 <li>You can swipe horizontally to switch columns and accounts.</li>
 <li>You can add, remove, rearrange columns.</li>
 <li>Column types: home, notification, local-TL, federate-TL, search, hash tags, conversation, profile, muted, blocked, follow requests, etc.</li>
 </ul>
 
-<p># Cross account action:</p>
+<p><b>Cross account action</b></p>
 <ul>
 <li>You can favorite/follow operation as a user different from bind to column.</li>
 </ul>
 
-<p># Other information:</p>
+<p><b>Other information</b></p>
 <ul>
 <li>source code is here. <a href="https://github.com/tateisu/SubwayTooter">https://github.com/tateisu/SubwayTooter</a></li>
 <li>Some of the icons used in this app is based on the Icons8. <a href="https://icons8.com/license/">https://icons8.com/license/</a></li>

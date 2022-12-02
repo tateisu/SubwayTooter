@@ -39,7 +39,7 @@ __DATA__
 <li>You can favorite/follow operation as a user different from bind to column.</li>
 </ul>
 
-<p># Other informations:</p>
+<p># Other information:</p>
 <ul>
 <li>source code is here. <a href="https://github.com/tateisu/SubwayTooter">https://github.com/tateisu/SubwayTooter</a></li>
 <li>Some of the icons used in this app is based on the Icons8. <a href="https://icons8.com/license/">https://icons8.com/license/</a></li>

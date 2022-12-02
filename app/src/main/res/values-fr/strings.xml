@@ -1105,4 +1105,17 @@
     <string name="others">Autres</string>
     <string name="content">Contenu</string>
     <string name="followed_tags">Les hashtags suivis</string>
+    <string name="display_name_signed_up">%1$s s’est inscrit sur votre serveur.</string>
+    <string name="notification_type_signup">(admin) inscription d’un·e utilisateur·rice</string>
+    <string name="option_deprecated_mastodon342">(Cette option est obsolète pour Mastodon 3.4.2+. L’application utilise les informations du serveur).</string>
+    <string name="emojione_shortcode_support">Support du code court EmojiOne</string>
+    <string name="post_error_attachments_duplicated">Misskey n’autorise pas les doublons dans les pièces jointes.</string>
+    <string name="unbookmark">Retirer des signets</string>
+    <string name="notification_type_update">mise à jour du message</string>
+    <string name="notification_type_status_reference">message référencé</string>
+    <string name="cant_change_account_when_edit">Impossible de changer de compte tout en éditant le message.</string>
+    <string name="muted_quote">Citation en sourdine</string>
+    <string name="search_emojis">Recherche d’émojis …</string>
+    <string name="attachment_handling_compress_ratio">Compression %1$d%% …</string>
+    <string name="attachment_handling_waiting_async">Attente de la réponse (asynchrone) …</string>
 </resources>

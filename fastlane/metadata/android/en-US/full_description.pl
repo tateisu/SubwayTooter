@@ -13,14 +13,16 @@ my $text = <DATA>;
 $text =~ s/[\x00-\x20]+/ /g;
 $text =~ s/\A //;
 $text =~ s/ \z//;
-$text =~ s/> />/g;
-$text =~ s/ </</g;
+
+$text =~ s/\/(p|div)> /\/$1>/g;
+$text =~ s/br> /br>/g;
+$text =~ s/ <(p|br|div)/<$1/g;
 
 open(my $fh,">:utf8",$file) or die "$file $!";
 say $fh $text;
 close($fh) or die "$file $!";
 
-# apt-cyg install tidy  libtidy5
+# apt-cyg install tidy libtidy5
 system qq(tidy -q -e $file);
 
 __DATA__

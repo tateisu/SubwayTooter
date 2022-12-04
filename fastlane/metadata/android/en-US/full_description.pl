@@ -29,6 +29,7 @@ my $blockElements = join "|", qw(
 
 # Attributes part inside HTML tag.
 my $attrsRe = qr!(?:[^>/"]+|"[^"]*")*!;
+
 my $blockElementsRe = qr!(?:$blockElements)!i;
 my $trimElementsRe = qr!\s*(</?$blockElementsRe\b$attrsRe/?>)\s*!;
 

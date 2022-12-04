@@ -27,16 +27,15 @@ my $blockElements = join "|", qw(
     br
 );
 
-# Attributes part inside HTML tag.
-my $attrsRe = qr!(?:[^>/"]+|"[^"]*")*!;
+# block tag it may have attributes, and spaces before/after tag.
+my $trimElementsRe = qr!\s*(</?(?:$blockElements)\b(?:[^>/"]+|"[^"]*")*/?>)\s*!i;
 
-my $blockElementsRe = qr!(?:$blockElements)!i;
-my $trimElementsRe = qr!\s*(</?$blockElementsRe\b$attrsRe/?>)\s*!;
-
-# say $trimElementsRe;
-# while( $text =~ /$trimElementsRe/g){
-#     say "match: [$&]";
-# }
+## verbose debugging.
+#say $trimElementsRe;
+#while( $text =~ /$trimElementsRe/g){
+#    next if $& eq $1;
+#    say "[$&] => [$1]";
+#}
 
 # trim spaces before/after block tags. also <br>,<br/>,</br>
 $text =~ s/$trimElementsRe/$1/g;

@@ -10,13 +10,35 @@ $file =~ s/\.pl$/\.txt/;
 local $/=undef;
 my $text = <DATA>;
 
+# change multiple spaces and line feeds to single space
+# it required for F-droid android client.
 $text =~ s/[\x00-\x20]+/ /g;
+
+# remove head/tail space
 $text =~ s/\A //;
 $text =~ s/ \z//;
 
-$text =~ s/\/(p|div)> /\/$1>/g;
-$text =~ s/br> /br>/g;
-$text =~ s/ <(p|br|div)/<$1/g;
+# HTML block elements and "br".
+my $blockElements = join "|", qw(
+    address article aside blockquote canvas dd div dl dt 
+    fieldset figcaption figure footer form 
+    h1 h2 h3 h4 h5 h6 header hr li 
+    main nav noscript ol p pre section table tfoot ul video 
+    br
+);
+
+# Attributes part inside HTML tag.
+my $attrsRe = qr!(?:[^>/"]+|"[^"]*")*!;
+my $blockElementsRe = qr!(?:$blockElements)!i;
+my $trimElementsRe = qr!\s*(</?$blockElementsRe\b$attrsRe/?>)\s*!;
+
+# say $trimElementsRe;
+# while( $text =~ /$trimElementsRe/g){
+#     say "match: [$&]";
+# }
+
+# trim spaces before/after block tags. also <br>,<br/>,</br>
+$text =~ s/$trimElementsRe/$1/g;
 
 open(my $fh,">:utf8",$file) or die "$file $!";
 say $fh $text;

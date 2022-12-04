@@ -999,4 +999,6 @@
     <string name="account_picker_quote_toot">Compte per «nota citada»\?</string>
     <string name="quote_toot">Nota citada (Misskey o algun servidor personalitzat de Mastodon)</string>
     <string name="emoji_category_others">Altres</string>
+    <string name="toot_search_notestock">cerca notestock</string>
+    <string name="notification_type_post">publicació</string>
 </resources>

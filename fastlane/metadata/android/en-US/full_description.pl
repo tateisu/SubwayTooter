@@ -4,21 +4,23 @@ use warnings;
 use utf8;
 use feature qw(say);
 
-my $file = $0;
-$file =~ s/\.pl$/\.txt/;
-
-local $/=undef;
+# read from __DATA__ section in this file.
+local $/ = undef;
 my $text = <DATA>;
 
-# change multiple spaces and line feeds to single space
-# it required for F-droid android client.
-$text =~ s/[\x00-\x20]+/ /g;
+############################################
+# change spaces and line feeds to single space,
+# it's required for F-droid android client.
+# also remove head/tail spaces in whole text.
 
-# remove head/tail space
+$text =~ s/[\x00-\x20]+/ /g;
 $text =~ s/\A //;
 $text =~ s/ \z//;
 
-# HTML block elements and "br".
+############################################
+# trim spaces before/after open/close block tags. also <br>,<br/>,</br>
+
+# HTML block elements and "br". joined with '|'
 my $blockElements = join "|", qw(
     address article aside blockquote canvas dd div dl dt 
     fieldset figcaption figure footer form 
@@ -27,19 +29,23 @@ my $blockElements = join "|", qw(
     br
 );
 
-# block tag it may have attributes, and spaces before/after tag.
-my $trimElementsRe = qr!\s*(</?(?:$blockElements)\b(?:[^>/"]+|"[^"]*")*/?>)\s*!i;
+# RegEx for block tag that may have attributes, and spaces before/after tag.
+my $trimElementRe = qr!\s*(</?(?:$blockElements)\b(?:[^>/"]+|"[^"]*")*/?>)\s*!i;
 
 ## verbose debugging.
 #say $trimElementsRe;
-#while( $text =~ /$trimElementsRe/g){
+#while( $text =~ /$trimElementRe/g){
 #    next if $& eq $1;
 #    say "[$&] => [$1]";
 #}
 
-# trim spaces before/after block tags. also <br>,<br/>,</br>
-$text =~ s/$trimElementsRe/$1/g;
+$text =~ s/$trimElementRe/$1/g;
 
+############################################
+
+# write to .txt file. $0 means path of the this script file.
+my $file = $0;
+$file =~ s/\.pl$/\.txt/ or die "can't make output filename. $0";
 open(my $fh,">:utf8",$file) or die "$file $!";
 say $fh $text;
 close($fh) or die "$file $!";

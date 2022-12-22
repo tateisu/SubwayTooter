@@ -925,7 +925,7 @@
     <string name="order_new">Nouveaux arrivés</string>
     <string name="local_only">Local uniquement</string>
     <string name="last_active">Dernière activité</string>
-    <string name="custom_emoji_separator_zwsp">Utiliser ZWSP au lieu d’un espace en tant que séparateur d’émoji personnalisé</string>
+    <string name="custom_emoji_separator_zwsp">Utiliser ZWS au lieu d’un espace en tant que séparateur d’émoji personnalisé</string>
     <string name="visibility_account_setting">Tracer la configuration du compte</string>
     <string name="muted_users_from_pseudo_account">Utilisateur·rice·s en sourdine à partir du pseudo compte</string>
     <string name="profile_directory_of">Annuaire de « %1$s »</string>
@@ -1118,4 +1118,16 @@
     <string name="search_emojis">Recherche d’émojis …</string>
     <string name="attachment_handling_compress_ratio">Compression %1$d%% …</string>
     <string name="attachment_handling_waiting_async">Attente de la réponse (asynchrone) …</string>
+    <string name="duration_indefinite">Indéfini</string>
+    <string name="suggestion_source">Source de suggestion</string>
+    <string name="input_sharp_itself">Entrer \'#\' lui-même</string>
+    <string name="verified_link_foreground_color">Couleur de premier plan du lien vérifié (redémarrage de l’application requis)</string>
+    <string name="quote_toot">Citation de pouet (Misskey ou un serveur Mastodon personnalisé)</string>
+    <string name="not_available_for_current_accounts">Non disponible pour les comptes actuels</string>
+    <string name="confirm_mail_description">Après avoir demandé le renvoi de l’e-mail de confirmation,
+\n- Veuillez vérifier le courrier sur votre messagerie.
+\n- Ouvrez le lien de confirmation contenu dans le courrier.
+\n- Fermez cette boîte de dialogue et rechargez la colonne.</string>
+    <string name="url_of_user_or_status">URL de l’utilisateur·rice ou du statut</string>
+    <string name="url_empty">veuillez entrer l’URL de l’utilisateur·rice ou du statut.</string>
 </resources>

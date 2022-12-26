@@ -1,2 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="action_settings">Настройки</string>
+    <string name="account_add">Добавить учетную запись</string>
+    <string name="instance">Сервер</string>
+    <string name="user_mail_address">Электронная почта</string>
+    <string name="user_password">Пароль</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+    <string name="instance_not_specified">Сервер не указан</string>
+    <string name="mail_not_specified">Электронная почта не указана</string>
+    <string name="password_not_specified">Пароль не указан</string>
+    <string name="network_error">Ошибка сети</string>
+    <string name="request_access_token">Запрос ключа доступа…</string>
+    <string name="request_api">Получение: %1$s %2$s</string>
+    <string name="column_empty">Используйте левую нижнюю кнопку меню для добавления колонки</string>
+    <string name="home">Главная</string>
+    <string name="local_timeline">Локальная лента</string>
+    <string name="federate_timeline">Глобальная лента</string>
+    <string name="account_confirmed">Учётная запись подтверждена</string>
+    <string name="reply">Ответить</string>
+    <string name="default_">По умолчанию</string>
+    <string name="more">Подробнее</string>
+    <string name="thumbnail">Эскиз</string>
+    <string name="reload">Перезагрузить</string>
+    <string name="notifications">Уведомления</string>
+    <string name="reports">Отчеты</string>
+    <string name="your_statuses">Ваш профиль</string>
+    <string name="statuses_of">Профиль %1$s</string>
+    <string name="follow">Подписаться</string>
+    <string name="following">Подписан</string>
+    <string name="followers">Подписчики</string>
+    <string name="statuses">Статусы</string>
+    <string name="hide">Скрыть</string>
+    <string name="nsfw">NSFW</string>
+    <string name="tap_to_show">Нажмите, чтобы показать</string>
+    <string name="show">Показать</string>
+    <string name="content_warning">Предупреждение о содержимом</string>
+    <string name="favourites">Избранное</string>
+    <string name="account_pick">Выберите учетную запись</string>
+    <string name="api_error">Ошибка API. %1$s</string>
+    <string name="register_app_to_server">Регистрация этого приложения на %1$s…</string>
+    <string name="reading_api">Чтение: %1$s %2$s</string>
+    <string name="login_required">Пожалуйста, установите свой ключ доступа в настройках учетной записи.</string>
+    <string name="cancelled">Отменено</string>
+    <string name="close_column">Закрыть колонку</string>
+</resources>

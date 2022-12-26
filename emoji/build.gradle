@@ -16,7 +16,6 @@ android {
 
         versionCode 1
         versionName "1.0"
-        // testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -29,15 +28,5 @@ android {
 
     kotlinOptions {
         jvmTarget = jvm_target
-        freeCompilerArgs += [
-                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
-        ]
     }
-}
-
-dependencies {
 }

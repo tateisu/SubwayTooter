@@ -132,7 +132,7 @@ class ColorPanelView @JvmOverloads constructor(
     public override fun onRestoreInstanceState(state: Parcelable) {
         if (state is Bundle) {
             color = state.getInt("color")
-            super.onRestoreInstanceState(state.getParcelable("instanceState"))
+            super.onRestoreInstanceState(state.getParcelableCompat("instanceState"))
         } else {
             super.onRestoreInstanceState(state)
         }

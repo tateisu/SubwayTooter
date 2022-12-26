@@ -17,10 +17,10 @@
         android:title="@string/search_web"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/btnSearchTS"
-        android:title="@string/toot_search_ts"
-        app:showAsAction="never" />
+<!--    <item-->
+<!--        android:id="@+id/btnSearchTS"-->
+<!--        android:title="@string/toot_search_ts"-->
+<!--        app:showAsAction="never" />-->
 
     <item
         android:id="@+id/btnSearchNotestock"

@@ -26,11 +26,11 @@ android {
     kotlinOptions {
         jvmTarget = jvm_target
         freeCompilerArgs += [
-                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
+                "-opt-in=kotlin.ExperimentalStdlibApi",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                //"-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                //"-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+                //"-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
 }
@@ -42,7 +42,7 @@ dependencies {
 
     testImplementation "junit:junit:$junit_version"
 
-    androidTestImplementation "androidx.test:core:1.4.0"
+    androidTestImplementation "androidx.test:core:$androidx_test_version"
 
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'

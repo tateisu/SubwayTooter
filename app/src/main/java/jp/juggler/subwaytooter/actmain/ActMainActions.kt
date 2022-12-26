@@ -5,8 +5,6 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.openColumnList
 import jp.juggler.subwaytooter.action.openPost
@@ -19,10 +17,11 @@ import jp.juggler.subwaytooter.columnviewholder.ViewHolderHeaderBase
 import jp.juggler.subwaytooter.columnviewholder.ViewHolderItem
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
-import java.util.*
 
 private val log = LogCategory("ActMainActions")
 
@@ -61,22 +60,24 @@ fun ActMain.onBackPressedImpl() {
     }
 
     // カラムが1個以上ある場合は設定に合わせて挙動を変える
-    when (PrefI.ipBackButtonAction(pref)) {
+    when (PrefI.ipBackButtonAction.invoke(pref)) {
         PrefI.BACK_EXIT_APP -> finish()
         PrefI.BACK_OPEN_COLUMN_LIST -> openColumnList()
         PrefI.BACK_CLOSE_COLUMN -> {
             val closeableColumnList = getClosableColumnList()
             when (closeableColumnList.size) {
                 0 -> when {
-                    PrefB.bpExitAppWhenCloseProtectedColumn(pref) && PrefB.bpDontConfirmBeforeCloseColumn(pref) -> finish()
+                    PrefB.bpExitAppWhenCloseProtectedColumn(pref) &&
+                            PrefB.bpDontConfirmBeforeCloseColumn.invoke(pref) ->
+                        finish()
                     else -> showToast(false, R.string.missing_closeable_column)
                 }
                 1 -> closeColumn(closeableColumnList.first())
-                else -> showToast(false, R.string.cant_close_column_by_back_button_when_multiple_column_shown)
+                else -> showToast(false,
+                    R.string.cant_close_column_by_back_button_when_multiple_column_shown)
             }
         }
-        // ActAppSetting.BACK_ASK_ALWAYS
-        else -> {
+        else /* PrefI.BACK_ASK_ALWAYS */ -> {
             val closeableColumnList = getClosableColumnList()
             val dialog = ActionsDialog()
             if (closeableColumnList.size == 1) {

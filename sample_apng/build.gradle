@@ -37,8 +37,8 @@ android {
     kotlinOptions {
         jvmTarget = jvm_target
         freeCompilerArgs += [
-                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlin.ExperimentalStdlibApi",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
 //                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
 //                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
 //                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
@@ -56,8 +56,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
 
     testImplementation "junit:junit:$junit_version"
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test:runner:1.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"

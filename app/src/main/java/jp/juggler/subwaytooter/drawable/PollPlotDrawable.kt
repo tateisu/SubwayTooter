@@ -13,6 +13,8 @@ class PollPlotDrawable(
     override fun setAlpha(alpha: Int) {
     }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("deprecated in API level 29.")
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
     override fun setColorFilter(colorFilter: ColorFilter?) {

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.actmain
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.drawable.StateListDrawable
 import android.os.Build
 import android.os.Handler
@@ -382,9 +381,9 @@ class SideMenuAdapter(
         Item(icon = R.drawable.ic_search, title = R.string.mastodon_search_portal) {
             addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_MSP, "")
         },
-        Item(icon = R.drawable.ic_search, title = R.string.tootsearch) {
-            addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_TS, "")
-        },
+//        Item(icon = R.drawable.ic_search, title = R.string.tootsearch) {
+//            addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_TS, "")
+//        },
         Item(icon = R.drawable.ic_search, title = R.string.notestock) {
             addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_NOTESTOCK, "")
         },

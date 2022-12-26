@@ -29,6 +29,8 @@ class PreviewCardBorder : Drawable() {
         canvas.drawRoundRect(left, top, right, bottom, round, round, paint)
     }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("deprecated in API level 29.")
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
     override fun setAlpha(alpha: Int) = Unit

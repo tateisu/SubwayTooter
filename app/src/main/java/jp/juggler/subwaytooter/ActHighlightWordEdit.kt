@@ -61,16 +61,15 @@ class ActHighlightWordEdit
         }
     }
 
-    override fun onBackPressed() {
-        AlertDialog.Builder(this)
-            .setCancelable(true)
-            .setMessage(R.string.discard_changes)
-            .setPositiveButton(R.string.no, null)
-            .setNegativeButton(R.string.yes) { _, _ -> finish() }
-            .show()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        backPressed{
+            AlertDialog.Builder(this)
+                .setCancelable(true)
+                .setMessage(R.string.discard_changes)
+                .setPositiveButton(R.string.no, null)
+                .setNegativeButton(R.string.yes) { _, _ -> finish() }
+                .show()
+        }
         super.onCreate(savedInstanceState)
         arNotificationSound.register(this)
         App1.setActivityTheme(this)

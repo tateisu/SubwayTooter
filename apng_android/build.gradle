@@ -31,11 +31,11 @@ android {
     kotlinOptions {
         jvmTarget = jvm_target
         freeCompilerArgs += [
-                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
+                // "-opt-in=kotlin.ExperimentalStdlibApi",
+                // "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                // "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                // "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+                // "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
 }
@@ -46,13 +46,12 @@ repositories {
 
 dependencies {
     testImplementation "junit:junit:$junit_version"
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test:runner:1.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
     api project(':apng')
     // 'api' に指定した依存関係はこのライブラリの利用者に公開されます
     // 'implementation' に指定した依存関係はこのライブラリの利用者に公開されません
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }

@@ -1,16 +1,15 @@
 package com.bumptech.glide.load.resource.gif
 
 import android.annotation.SuppressLint
-import com.bumptech.glide.gifdecoder.GifDecoder.TOTAL_ITERATION_COUNT_FOREVER
-
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
-import androidx.annotation.VisibleForTesting
 import android.view.Gravity
+import androidx.annotation.VisibleForTesting
 import com.bumptech.glide.Glide
 import com.bumptech.glide.gifdecoder.GifDecoder
+import com.bumptech.glide.gifdecoder.GifDecoder.TOTAL_ITERATION_COUNT_FOREVER
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.util.Preconditions
@@ -349,10 +348,10 @@ class MyGifDrawable internal constructor(
         return p
     }
 
-    override fun getOpacity(): Int {
-        // We can't tell, so default to transparent to be safe.
-        return PixelFormat.TRANSPARENT
-    }
+    // We can't tell, so default to transparent to be safe.
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("deprecated in API level 29.")
+    override fun getOpacity() = PixelFormat.TRANSPARENT
 
     // See #1087.
     private fun findCallback(): Callback? {

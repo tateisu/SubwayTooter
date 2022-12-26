@@ -37,7 +37,7 @@ import kotlin.math.min
 class ColorPickerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : View(context, attrs, defStyle) {
 
     companion object {
@@ -215,7 +215,6 @@ class ColorPickerView @JvmOverloads constructor(
      */
     var onColorChangedListener: OnColorChangedListener? = null
 
-
     public override fun onSaveInstanceState(): Parcelable {
         val state = Bundle()
         state.putParcelable("instanceState", super.onSaveInstanceState())
@@ -228,19 +227,18 @@ class ColorPickerView @JvmOverloads constructor(
         return state
     }
 
-    public override fun onRestoreInstanceState(stateArg: Parcelable) {
-        var state: Parcelable? = stateArg
+    public override fun onRestoreInstanceState(state: Parcelable) {
         if (state is Bundle) {
-            val bundle = state
-            alpha = bundle.getInt("alpha")
-            hue = bundle.getFloat("hue")
-            sat = bundle.getFloat("sat")
-            bri = bundle.getFloat("val")
-            showAlphaPanel = bundle.getBoolean("show_alpha")
-            alphaSliderText = bundle.getString("alpha_text")
-            state = bundle.getParcelable("instanceState")
+            alpha = state.getInt("alpha")
+            hue = state.getFloat("hue")
+            sat = state.getFloat("sat")
+            bri = state.getFloat("val")
+            showAlphaPanel = state.getBoolean("show_alpha")
+            alphaSliderText = state.getString("alpha_text")
+            super.onRestoreInstanceState(state.getParcelableCompat("instanceState"))
+        } else {
+            super.onRestoreInstanceState(state)
         }
-        super.onRestoreInstanceState(state)
     }
 
     init {

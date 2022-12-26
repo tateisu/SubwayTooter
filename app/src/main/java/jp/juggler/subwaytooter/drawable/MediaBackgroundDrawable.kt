@@ -41,6 +41,8 @@ class MediaBackgroundDrawable(
         paint.colorFilter = colorFilter
     }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("deprecated in API level 29.")
     override fun getOpacity() = when (paint.alpha) {
         255 -> PixelFormat.OPAQUE
         0 -> PixelFormat.TRANSPARENT

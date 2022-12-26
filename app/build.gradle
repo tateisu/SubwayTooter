@@ -135,7 +135,7 @@ dependencies {
 
     // targetSdkVersion 31 で androidTest 時に android:exported 云々で怒られる問題の対策
     // https://github.com/android/android-test/issues/1022
-    androidTestImplementation "androidx.test:core:1.4.0"
+    androidTestImplementation "androidx.test:core:$androidx_test_version"
 
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -176,7 +176,7 @@ dependencies {
     kapt 'androidx.annotation:annotation:1.5.0'
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-messaging:23.1.0"
+    implementation "com.google.firebase:firebase-messaging:23.1.1"
 
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
@@ -231,7 +231,7 @@ dependencies {
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.18.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.2'
     /*
     WARNING: [Processor] Library '…\exoplayer-ui-2.12.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
     Example of androidX reference: 'androidx/core/app/NotificationCompat$Builder'
@@ -267,7 +267,7 @@ dependencies {
     // optional - Test helpers for LiveData
     testImplementation "androidx.arch.core:core-testing:$arch_version"
 
-    implementation 'androidx.work:work-runtime-ktx:2.8.0-beta01'
+    implementation 'androidx.work:work-runtime-ktx:2.8.0-rc01'
 
     def roomVersion = "2.4.3"
     implementation "androidx.room:room-runtime:$roomVersion"

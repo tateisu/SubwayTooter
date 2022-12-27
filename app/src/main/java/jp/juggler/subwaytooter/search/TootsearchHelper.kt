@@ -40,7 +40,7 @@ object TootsearchHelper {
         query: String,
         from: Int?,
     ): TootApiResult? {
-        return TootApiResult("Tootsearch discontinued service on 2022/12/25.")
+        return TootApiResult(context.getString(R.string.tootsearch_discontinued))
 
 //        val result = TootApiResult.makeWithCaption("Tootsearch")
 //        if (result.error != null) return result

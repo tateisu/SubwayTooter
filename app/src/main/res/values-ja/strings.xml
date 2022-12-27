@@ -1143,7 +1143,7 @@
     <string name="categories">カテゴリ</string>
     <string name="error">エラー</string>
     <string name="emoji_picker_custom_of">カスタム: %1$s</string>
-    <string name="others" >その他</string>
+    <string name="others">その他</string>
     <string name="post_error_attachments_duplicated">Misskeyは添付データの重複を許可していません。</string>
     <string name="use_web_settings">Web設定を使う</string>
     <string name="content">本文</string>
@@ -1153,4 +1153,5 @@
     <string name="follow_hashtag_of">\"%1$s\"のフォロー</string>
     <string name="unfollow_hashtag_of">\"%1$s\"のフォロー解除</string>
     <string name="conversation_with_reference">会話と参照</string>
+    <string name="tootsearch_discontinued">Tootsearchは2022/12/25にサービス終了しました。</string>
 </resources>

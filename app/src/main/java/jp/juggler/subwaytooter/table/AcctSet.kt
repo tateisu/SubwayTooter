@@ -72,7 +72,6 @@ object AcctSet : TableCompanion {
                 }
                 bOK = true
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "saveList failed.")
             }
 
@@ -82,7 +81,6 @@ object AcctSet : TableCompanion {
                 db.execSQL("ROLLBACK TRANSACTION")
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
             log.e(ex, "saveList failed.")
         }
     }
@@ -125,7 +123,6 @@ object AcctSet : TableCompanion {
                 return dst
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
             log.e(ex, "searchPrefix failed.")
         }
 

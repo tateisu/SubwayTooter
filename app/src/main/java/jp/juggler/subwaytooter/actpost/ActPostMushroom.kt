@@ -100,7 +100,7 @@ fun ActPost.openMushroom() {
 
         arMushroom.launch(chooser)
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "openMushroom failed.")
         showRecommendedPlugin(getString(R.string.plugin_not_installed))
     }
 }

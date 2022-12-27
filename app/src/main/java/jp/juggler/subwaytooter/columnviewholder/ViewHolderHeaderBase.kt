@@ -13,7 +13,7 @@ import jp.juggler.util.scan
 
 abstract class ViewHolderHeaderBase(
     val activity: ActMain,
-    val viewRoot: View
+    val viewRoot: View,
 ) : RecyclerView.ViewHolder(viewRoot) {
 
     companion object {
@@ -29,16 +29,18 @@ abstract class ViewHolderHeaderBase(
                 if (v is Button) {
                     // ボタンは太字なので触らない
                 } else if (v is TextView) {
-                    v.typeface = ActMain.timelineFont
-                    if (!activity.timelineFontSizeSp.isNaN()) {
-                        v.textSize = activity.timelineFontSizeSp
-                    }
 
-                    val fv = activity.timelineSpacing
-                    if (fv != null) v.setLineSpacing(0f, fv)
+                    v.typeface = ActMain.timelineFont
+
+                    activity.timelineFontSizeSp
+                        .takeIf { it.isFinite() }
+                        ?.let { v.textSize = it }
+
+                    activity.timelineSpacing
+                        ?.let { v.setLineSpacing(0f, it) }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't initialize text styles.")
             }
         }
     }

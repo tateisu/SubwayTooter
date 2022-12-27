@@ -133,10 +133,10 @@ object CustomShare {
             intent.component = cn
             context.startActivity(intent)
         } catch (ex: ActivityNotFoundException) {
-            log.trace(ex)
+            log.e(ex, "missing custom share app. $cn")
             context.showToast(true, R.string.custom_share_app_not_found)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "invokeText() failed.")
             context.showToast(ex, "invokeText() failed.")
         }
     }
@@ -158,7 +158,7 @@ object CustomShare {
             val sv = TootTextEncoder.encodeStatusForTranslate(context, accessInfo, status)
             invokeText(target, context, sv)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "invokeStatusText() failed.")
             context.showToast(ex, "invokeStatusText() failed.")
         }
     }

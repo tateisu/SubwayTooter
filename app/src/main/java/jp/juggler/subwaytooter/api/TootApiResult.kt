@@ -66,7 +66,7 @@ open class TootApiResult(
     }
 
     constructor(response: Response, error: String)
-        : this(0, error, response)
+            : this(0, error, response)
 
     constructor(response: Response, bodyString: String, data: Any?) : this(
         0,
@@ -167,7 +167,7 @@ open class TootApiResult(
                 sb.append(' ').append(caption)
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "parseErrorResponse failed.")
         }
 
         this.error = sb.toString().replace("\n+".toRegex(), "\n")

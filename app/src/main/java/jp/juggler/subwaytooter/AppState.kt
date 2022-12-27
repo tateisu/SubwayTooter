@@ -87,7 +87,7 @@ class AppState(
                         tmpFile.delete() // ignore return value
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "saveColumnList failed.")
                     context.showToast(ex, "saveColumnList failed.")
                 }
             }
@@ -101,7 +101,7 @@ class AppState(
                     }
                 } catch (ignored: FileNotFoundException) {
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "loadColumnList failed.")
                     context.showToast(ex, "loadColumnList failed.")
                 }
                 return null
@@ -252,7 +252,6 @@ class AppState(
                     (++utteranceIdSeed).toString() // String utteranceId
                 )
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "proc_flushSpeechQueue catch exception.")
                 restartTTS()
             }
@@ -274,7 +273,7 @@ class AppState(
                 ColumnEncoder.encode(column, dst, index)
                 dst
             } catch (ex: JsonException) {
-                log.trace(ex)
+                log.e(ex, "encodeColumnList: encode failed at $index.")
                 null
             }
         }.toJsonArray()
@@ -288,11 +287,11 @@ class AppState(
     fun loadColumnList() {
         val list = loadColumnList(context, FILE_COLUMN_LIST)
             ?.objectList()
-            ?.mapNotNull { src ->
+            ?.mapIndexedNotNull { index, src ->
                 try {
                     Column(this, src)
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "loadColumnList: decode column failed at $index")
                     null
                 }
             }
@@ -317,7 +316,7 @@ class AppState(
         } catch (ex: Throwable) {
             // クラッシュレポートによると状態が悪いとダメらしい
             // java.lang.IllegalStateException
-            log.trace(ex)
+            log.e(ex, "loadColumnList failed.")
         }
     }
 
@@ -423,7 +422,6 @@ class AppState(
                                         }
                                     }
                                 } catch (ex: Throwable) {
-                                    log.trace(ex)
                                     log.e(ex, "TextToSpeech.getVoices raises exception.")
                                 }
 
@@ -552,12 +550,11 @@ class AppState(
     }
 
     private fun stopLastRingtone() {
-        val r = lastRingtone?.get()
-        if (r != null) {
+        lastRingtone?.get()?.let { r ->
             try {
                 r.stop()
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "stopLastRingtone failed.")
             } finally {
                 lastRingtone = null
             }
@@ -584,7 +581,7 @@ class AppState(
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "tryRingtone failed.")
             }
             return false
         }

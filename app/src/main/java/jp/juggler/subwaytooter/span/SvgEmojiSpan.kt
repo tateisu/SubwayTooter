@@ -40,7 +40,7 @@ class SvgEmojiSpan internal constructor(
                 else -> try {
                     SVG.getFromAsset(assetsManager, assetsName)
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "SVG.getFromAsset failed.")
                     null
                 }
             }
@@ -173,7 +173,7 @@ class SvgEmojiSpan internal constructor(
                         Bitmap.createBitmap(dstSizeInt, dstSizeInt, Bitmap.Config.ARGB_8888)
                             ?.also { renderBitmap(it, svg, dstSize) }
                     } catch (ex: Throwable) {
-                        log.trace(ex, "bitmap allocation failed!")
+                        log.e(ex, "bitmap allocation failed.")
                         null
                     }
                 }

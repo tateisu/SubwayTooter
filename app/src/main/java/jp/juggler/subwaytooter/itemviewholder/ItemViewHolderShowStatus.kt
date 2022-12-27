@@ -21,6 +21,8 @@ import jp.juggler.util.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 
+private val log = LogCategory("ItemViewHolderShowStatus")
+
 fun ItemViewHolder.showStatusOrReply(
     item: TootStatus,
     colorBgArg: Int = 0,
@@ -280,7 +282,7 @@ private fun ItemViewHolder.showOpenSticker(who: TootAccount) {
         llOpenSticker.visibility = View.VISIBLE
         llOpenSticker.requestLayout()
     } catch (ex: Throwable) {
-        ItemViewHolder.log.trace(ex)
+        log.e(ex, "showOpenSticker failed.")
     }
 }
 
@@ -406,7 +408,7 @@ fun ItemViewHolder.setMedia(
         //				tv.textSize = activity.timeline_font_size_sp
         //			}
         //			tv.setTextColor(content_color)
-        it.setTag(R.id.text,desc)
+        it.setTag(R.id.text, desc)
         it.text = activity.getString(
             R.string.media_description,
             idx + 1,

@@ -210,7 +210,7 @@ class PushSubscriptionHelper(
         val deviceId = try {
             loadFirebaseMessagingToken(context)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadFirebaseMessagingToken failed.")
             return when (ex) {
                 is CancellationException -> null
                 else -> TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
@@ -229,7 +229,7 @@ class PushSubscriptionHelper(
                 deviceId
             ) { a, s -> log.i("[${a.acct.pretty}]${s.desc}") }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadInstallId failed.")
             return when (ex) {
                 is CancellationException -> null
                 else -> TootApiResult(error = context.getString(R.string.missing_install_id))
@@ -321,7 +321,7 @@ class PushSubscriptionHelper(
         val deviceId = try {
             loadFirebaseMessagingToken(context)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadFirebaseMessagingToken failed.")
             return when (ex) {
                 is CancellationException -> null
                 else -> TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
@@ -336,7 +336,7 @@ class PushSubscriptionHelper(
                 deviceId
             ) { a, s -> log.i("[${a.acct.pretty}]${s.desc}") }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadInstallId failed.")
             return when (ex) {
                 is CancellationException -> null
                 else -> TootApiResult(error = context.getString(R.string.missing_install_id))

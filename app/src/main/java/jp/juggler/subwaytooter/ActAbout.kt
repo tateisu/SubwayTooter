@@ -84,7 +84,7 @@ class ActAbout : AppCompatActivity() {
                     ?.text = getString(R.string.version_is, pInfo.versionName)
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "can't get app version.")
+            log.e(ex, "can't get app version.")
         }
 
         fun setButton(btnId: Int, caption: String, onClick: () -> Unit) {

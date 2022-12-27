@@ -328,7 +328,7 @@ class App1 : Application() {
             try {
                 appStateX?.sound(item)
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "sound failed.")
                 // java.lang.NoSuchFieldError:
                 // at jp.juggler.subwaytooter.App1$Companion.sound (App1.kt:544)
                 // at jp.juggler.subwaytooter.column.Column$startRefresh$task$1.onPostExecute (Column.kt:2432)
@@ -352,7 +352,7 @@ class App1 : Application() {
 
             // エラー処理
             val catcher = GlideExecutor.UncaughtThrowableStrategy { ex ->
-                log.trace(ex)
+                log.e(ex, "glide uncaught error.")
             }
             builder.setDiskCacheExecutor(
                 GlideExecutor.newDiskCacheBuilder()

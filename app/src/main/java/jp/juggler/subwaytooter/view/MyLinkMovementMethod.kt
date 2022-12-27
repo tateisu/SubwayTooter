@@ -43,7 +43,7 @@ object MyLinkMovementMethod : LinkMovementMethod() {
                     layout.getOffsetForHorizontal(line, x.toFloat())
                 } catch (ex: Throwable) {
                     // getOffsetForHorizontal raises error on Xiaomi Mi A1（tissot_sprout）, Android 8.1
-                    log.trace(ex, "getOffsetForHorizontal failed.")
+                    log.e(ex, "getOffsetForHorizontal failed.")
                     null
                 }
 

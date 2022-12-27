@@ -18,7 +18,9 @@ class MyListView : ListView {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context,
+        attrs,
+        defStyleAttr)
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {
@@ -44,7 +46,7 @@ class MyListView : ListView {
         try {
             super.layoutChildren()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "layoutChildren failed.")
         }
     }
 }

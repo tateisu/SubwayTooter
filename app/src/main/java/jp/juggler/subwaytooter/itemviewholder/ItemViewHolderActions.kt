@@ -1,10 +1,7 @@
 package jp.juggler.subwaytooter.itemviewholder
 
 import android.app.AlertDialog
-import android.text.method.ScrollingMovementMethod
 import android.view.View
-import android.widget.EditText
-import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMediaViewer
 import jp.juggler.subwaytooter.R
@@ -17,8 +14,9 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.*
+
+private val log = LogCategory("ItemViewHolderActions")
 
 val defaultBoostedAction: ItemViewHolder.() -> Unit = {
     val pos = activity.nextPosition(column)
@@ -234,7 +232,7 @@ private fun ItemViewHolder.clickMedia(i: Int) {
             }
         }
     } catch (ex: Throwable) {
-        ItemViewHolder.log.trace(ex)
+        log.e(ex, "clickMedia failed.")
     }
 }
 

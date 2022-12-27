@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.notification
 
-import android.annotation.TargetApi
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -10,7 +9,6 @@ object NotificationHelper {
 
     private val log = LogCategory("NotificationHelper")
 
-    @TargetApi(26)
     fun createNotificationChannel(
         context: Context,
         channelId: String, // id
@@ -18,24 +16,21 @@ object NotificationHelper {
         description: String?, // The user-visible description of the channel.
         importance: Int,
     ): NotificationChannel {
-        val notification_manager =
+        val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
                 ?: throw NotImplementedError("missing NotificationManager system service")
 
-        var channel: NotificationChannel? = null
-        try {
-            channel = notification_manager.getNotificationChannel(channelId)
+        val channel = try {
+            notificationManager.getNotificationChannel(channelId)!!
         } catch (ex: Throwable) {
-            log.trace(ex)
-        }
+            log.e(ex, "getNotificationChannel failed.")
+            null
+        } ?: NotificationChannel(channelId, name, importance)
 
-        if (channel == null) {
-            channel = NotificationChannel(channelId, name, importance)
-        }
         channel.name = name
         channel.importance = importance
-        if (description != null) channel.description = description
-        notification_manager.createNotificationChannel(channel)
+        description?.let { channel.description = it }
+        notificationManager.createNotificationChannel(channel)
         return channel
     }
 }

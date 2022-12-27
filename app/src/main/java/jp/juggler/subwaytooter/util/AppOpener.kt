@@ -113,8 +113,8 @@ fun Activity.openBrowser(uri: Uri?) {
             Intent(Intent.ACTION_VIEW, uri).apply { addCategory(Intent.CATEGORY_BROWSABLE) }
         )
     } catch (ex: Throwable) {
-        log.trace(ex)
-        showToast(ex, "can't open. ${intent.data}")
+        log.e(ex, "openBrowser failed. uri=$uri")
+        showToast(ex, "openBrowser failed. uri=$uri")
     }
 }
 
@@ -173,9 +173,9 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
         // Chromeがないようなのでcomponent指定なしでリトライ
         startCustomTabIntent(null)
     } catch (ex: Throwable) {
-        log.trace(ex)
-        val scheme = url.mayUri()?.scheme ?: url
-        showToast(true, "can't open browser app for $scheme")
+        val errMsg = "can't open browser app for ${url.mayUri()?.scheme?.notBlank() ?: url}"
+        log.e(ex, errMsg)
+        showToast(true, errMsg)
     }
 }
 
@@ -345,7 +345,6 @@ fun openCustomTab(
 
         activity.openCustomTab(url)
     } catch (ex: Throwable) {
-        log.trace(ex)
         log.e(ex, "openCustomTab failed. $url")
     }
 }

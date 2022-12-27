@@ -7,11 +7,10 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.util.AdapterChange
-import jp.juggler.util.isEnabledAlpha
-import jp.juggler.util.notZero
-import jp.juggler.util.vg
+import jp.juggler.util.*
 import org.jetbrains.anko.textColor
+
+private val log = LogCategory("ColumnViewHolderShow")
 
 // カラムヘッダなど、負荷が低い部分の表示更新
 fun ColumnViewHolder.showColumnHeader() {
@@ -85,14 +84,14 @@ fun ColumnViewHolder.showColumnCloseButton() {
 internal fun ColumnViewHolder.showContent(
     reason: String,
     changeList: List<AdapterChange>? = null,
-    reset: Boolean = false
+    reset: Boolean = false,
 ) {
     // クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
     // とりあえずリストデータ変更の通知だけは最優先で行っておく
     try {
         statusAdapter?.notifyChange(reason, changeList, reset)
     } catch (ex: Throwable) {
-        ColumnViewHolder.log.trace(ex)
+        log.e(ex, "notifyChange failed.")
     }
 
     showColumnHeader()

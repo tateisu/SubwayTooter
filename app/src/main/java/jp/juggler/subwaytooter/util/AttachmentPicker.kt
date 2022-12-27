@@ -175,8 +175,8 @@ class AttachmentPicker(
             val intent = intentGetContent(true, activity.getString(titleId), mimeTypes)
             arAttachmentChooser.launch(intent)
         } catch (ex: Throwable) {
-            log.trace(ex)
-            activity.showToast(ex, "ACTION_GET_CONTENT failed.")
+            log.e(ex, "openAttachmentChooser failed.")
+            activity.showToast(ex, "openAttachmentChooser failed.")
         }
     }
 
@@ -198,8 +198,8 @@ class AttachmentPicker(
 
             arCamera.launch(intent)
         } catch (ex: Throwable) {
-            log.trace(ex)
-            activity.showToast(ex, "opening camera app failed.")
+            log.e(ex, "performCamera failed.")
+            activity.showToast(ex, "performCamera failed.")
         }
     }
 
@@ -207,7 +207,7 @@ class AttachmentPicker(
         try {
             arCapture.launch(Intent(action))
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, errorCaption)
             activity.showToast(ex, errorCaption)
         }
     }
@@ -230,8 +230,8 @@ class AttachmentPicker(
                     arrayOf("image/*"))
             )
         } catch (ex: Throwable) {
-            log.trace(ex)
-            activity.showToast(ex, "ACTION_GET_CONTENT failed.")
+            log.e(ex, "openCustomThumbnail failed.")
+            activity.showToast(ex, "openCustomThumbnail failed.")
         }
     }
 }

@@ -188,7 +188,7 @@ class MyNetworkImageView : AppCompatImageView {
                     ?.into(MyTarget(url))
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadImageIfNecessary failed.")
         }
     }
 
@@ -198,17 +198,16 @@ class MyNetworkImageView : AppCompatImageView {
         try {
             return MyGifDrawable(resource, mCornerRadius)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "replaceGifDrawable failed.")
         }
         return resource
     }
 
     private fun replaceBitmapDrawable(resource: BitmapDrawable): Drawable {
         try {
-            val bitmap = resource.bitmap
-            if (bitmap != null) return replaceBitmapDrawable(bitmap)
+            resource.bitmap?.let { return replaceBitmapDrawable(it) }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "replaceBitmapDrawable failed.")
         }
         return resource
     }
@@ -226,14 +225,13 @@ class MyNetworkImageView : AppCompatImageView {
 
             // エラー表示用の画像リソースが指定されていたら使う
             when (val drawable = mErrorImage) {
-                null -> {
-                    // このタイミングでImageViewのDrawableを変更するとチラつきの元になるので何もしない
-                }
+                // このタイミングでImageViewのDrawableを変更するとチラつきの元になるので何もしない
+                null -> Unit
 
                 else -> setImageDrawable(drawable)
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "onLoadFailed/setImageDrawable failed.")
         }
     }
 
@@ -271,7 +269,7 @@ class MyNetworkImageView : AppCompatImageView {
                 setImageDrawable(resource)
                 return
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "setResource failed.")
             }
         }
     }
@@ -313,7 +311,7 @@ class MyNetworkImageView : AppCompatImageView {
                     }
                 )
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "onResourceReady failed.")
             }
         }
 
@@ -422,7 +420,7 @@ class MyNetworkImageView : AppCompatImageView {
         try {
             super.onDraw(canvas)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "onDraw failed.")
         }
 
         // media type の描画

@@ -116,7 +116,7 @@ class ColumnMeta(
                 try {
                     db.execSQL(it)
                 } catch (ex: Throwable) {
-                    log.trace(ex, "execSQL failed. $it")
+                    log.e(ex, "execSQL failed. $it")
                 }
             }
         }

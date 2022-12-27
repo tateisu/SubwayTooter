@@ -5,16 +5,21 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.style.*
+import android.text.style.BackgroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StrikethroughSpan
+import android.text.style.StyleSpan
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootMention
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
-import java.util.*
 import java.util.regex.Pattern
 import kotlin.math.min
 
@@ -165,7 +170,7 @@ object HTMLDecoder {
                         }
                         continue
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "decodeEntity failed.")
                     }
                 }
                 sb.append(src.substring(start, end))
@@ -473,7 +478,7 @@ object HTMLDecoder {
             curr: Node,
             parent: Node,
             prev: Node?,
-            next: Node?
+            next: Node?,
         ) = when {
             !isBlockParent -> false
             curr.tag != TAG_TEXT -> false
@@ -854,7 +859,7 @@ object HTMLDecoder {
 
                 "th", "td" -> sb.append("|")
 
-                else -> if (isBlock && tag != "script" && tag != "style") {
+                else -> if (isBlock) {
                     val lastLine = reLastLine.find(sb)?.groupValues?.firstOrNull() ?: ""
                     if (CharacterGroup.reNotWhitespace.matcher(lastLine).find()) {
                         sb.append("\n")
@@ -956,7 +961,7 @@ object HTMLDecoder {
                 sb.removeEndWhitespaces()
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "decodeHTML failed.")
         }
 
         return sb
@@ -1047,7 +1052,7 @@ object HTMLDecoder {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "shortenUrl failed.")
         }
 
         return originalUrl

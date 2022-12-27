@@ -24,7 +24,7 @@ class APAttachment(jsonArray: JsonArray?) {
                         }
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "APAttachment ctor failed.")
                 }
             }
     }

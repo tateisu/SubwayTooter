@@ -44,7 +44,7 @@ class StreamGroup(val spec: StreamSpec) {
                 }
                 dst.refCallback.get()?.let { block(it) }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "eachCallback failed.")
             }
         }
     }

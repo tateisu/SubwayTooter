@@ -247,10 +247,11 @@ private fun appServerUnregister(context: Context, account: SavedAccount) {
             )
 
             val response = call.await()
-
-            log.e("appServerUnregister: $response")
+            if(!response.isSuccessful){
+                log.e("appServerUnregister: $response")
+            }
         } catch (ex: Throwable) {
-            log.trace(ex, "appServerUnregister failed.")
+            log.e(ex, "appServerUnregister failed.")
         }
     }
 }
@@ -340,7 +341,7 @@ suspend fun Context.accountListWithFilter(
                         try {
                             if (check(client, it)) it else null
                         } catch (ex: Throwable) {
-                            log.trace(ex, "accountListWithFilter failed.")
+                            log.e(ex, "accountListWithFilter failed.")
                             null
                         }
                     }

@@ -20,10 +20,10 @@ class ActOSSLicense : AppCompatActivity() {
         App1.initEdgeToEdge(this)
 
         try {
-            val tv = findViewById<TextView>(R.id.tvText)
-            tv.text = loadRawResource(R.raw.oss_license).decodeUTF8()
+            findViewById<TextView>(R.id.tvText)
+                ?.text = loadRawResource(R.raw.oss_license).decodeUTF8()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "can't show license text.")
         }
     }
 }

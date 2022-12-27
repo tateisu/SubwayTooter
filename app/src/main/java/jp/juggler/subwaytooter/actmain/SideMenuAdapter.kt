@@ -531,7 +531,7 @@ class SideMenuAdapter(
                 }
             }
         } catch (ex: Throwable) {
-            log.w(ex)
+            log.w(ex,"getTimeZoneString failed.")
             return "(incorrect TimeZone)"
         }
     }

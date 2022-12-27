@@ -98,7 +98,7 @@ internal fun ActPost.setAccountWithVisibilityConversion(a: SavedAccount) {
             states.visibility = a.visibility
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "setAccountWithVisibilityConversion failed.")
     }
     showVisibility()
     showQuotedRenote()

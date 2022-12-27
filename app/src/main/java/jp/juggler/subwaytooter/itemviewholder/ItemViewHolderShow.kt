@@ -37,6 +37,8 @@ import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 import kotlin.math.max
 
+private val log = LogCategory("ItemViewHolderShow")
+
 @SuppressLint("ClickableViewAccessibility")
 fun ItemViewHolder.bind(
     listAdapter: ItemListAdapter,
@@ -58,11 +60,7 @@ fun ItemViewHolder.bind(
         try {
             when (v) {
                 // ボタンは太字なので触らない
-                is CountImageButton -> {
-                }
-                // ボタンは太字なので触らない
-                is Button -> {
-                }
+                is Button, is CountImageButton -> Unit
 
                 is TextView -> v.typeface = when {
                     v === tvName ||
@@ -78,7 +76,7 @@ fun ItemViewHolder.bind(
                 }
             }
         } catch (ex: Throwable) {
-            ItemViewHolder.log.trace(ex)
+            log.e(ex, "can't change font.")
         }
     }
 
@@ -101,7 +99,7 @@ fun ItemViewHolder.bind(
             activity.closePopup()
             statusShowing?.let { status ->
                 val popup =
-                    StatusButtonsPopup(activity, column, bSimpleList, this@bind)
+                    StatusButtonsPopup(activity, column, true, this@bind)
                 activity.popupStatusButtons = popup
                 popup.show(
                     listAdapter.columnVh.listView,
@@ -781,7 +779,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
 
             btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
             llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
-            repeat(ItemViewHolder.MEDIA_VIEW_COUNT){idx->
+            repeat(ItemViewHolder.MEDIA_VIEW_COUNT) { idx ->
                 setMedia(mediaAttachments, idx)
             }
 

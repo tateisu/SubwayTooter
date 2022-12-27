@@ -100,7 +100,7 @@ object MutedWord : TableCompanion {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "nameSet failed.")
             }
 
             return dst

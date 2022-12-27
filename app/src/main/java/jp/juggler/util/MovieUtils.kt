@@ -108,13 +108,13 @@ suspend fun transcodeVideo(
                     when (ex) {
                         is ClosedReceiveChannelException -> log.i("progress closed.")
                         is CancellationException -> log.i("progress cancelled.")
-                        else -> log.w(ex)
+                        else -> log.w(ex, "progress error")
                     }
                 }
             }
 
             try {
-                suspendCancellableCoroutine<File> { cont ->
+                suspendCancellableCoroutine { cont ->
                     // https://github.com/natario1/Transcoder/pull/160
                     // ワークアラウンドとしてファイルではなくfdを渡す
                     val future = Transcoder.into(outFile.canonicalPath)

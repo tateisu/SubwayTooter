@@ -122,7 +122,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadData failed.")
         }
 
         listAdapter.itemList = tmpList
@@ -268,7 +268,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
             try {
                 r.stop()
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "stopLastRingtone failed.")
             } finally {
                 lastRingtone = null
             }
@@ -292,7 +292,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "tryRingTone failed.")
             }
 
             return false

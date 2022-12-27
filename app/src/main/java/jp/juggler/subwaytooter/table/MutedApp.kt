@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
-import java.util.*
 
 object MutedApp : TableCompanion {
 
@@ -102,7 +101,7 @@ object MutedApp : TableCompanion {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "nameSet failed.")
             }
 
             return dst

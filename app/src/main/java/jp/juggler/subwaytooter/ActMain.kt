@@ -447,7 +447,7 @@ class ActMain : AppCompatActivity(),
                 try {
                     SavedAccount.sweepBuggieData()
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex,"sweepBuggieData failed.")
                 }
             }
 

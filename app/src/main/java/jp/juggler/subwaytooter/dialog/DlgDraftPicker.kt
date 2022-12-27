@@ -128,7 +128,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
             } catch (ignored: CancellationException) {
                 return@launchMain
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "failed to loading drafts.")
                 activity.showToast(ex, "failed to loading drafts.")
                 return@launchMain
             }

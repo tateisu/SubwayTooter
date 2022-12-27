@@ -270,7 +270,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                     resultUri = fileUri.toString()
                     TootApiResult()
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "can't update background image.")
                     TootApiResult(ex.withCaption("can't update background image."))
                 }
             }?.let { result ->
@@ -426,7 +426,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             lastImageBitmap?.recycle()
             lastImageBitmap = null
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "closeBitmaps failed.")
         }
     }
 
@@ -453,7 +453,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 lastImageUri = url
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadImage failed.")
         }
     }
 }

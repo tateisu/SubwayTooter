@@ -289,7 +289,7 @@ fun createResizedBitmap(
     } catch (ex: SecurityException) {
         log.w(ex, "maybe we need pick up image again.")
     } catch (ex: Throwable) {
-        log.trace(ex, "createResizedBitmap")
+        log.e(ex, "createResizedBitmap failed.")
     }
     return null
 }

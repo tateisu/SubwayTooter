@@ -75,13 +75,13 @@ class CheckerWakeLocks(contextArg: Context) {
 
     @SuppressLint("WakelockTimeout")
     fun acquireWakeLocks() {
-        PollingChecker.log.d("acquire power lock...")
+        log.d("acquire power lock...")
         try {
             if (!powerLock.isHeld) {
                 powerLock.acquire()
             }
         } catch (ex: Throwable) {
-            PollingChecker.log.trace(ex)
+            log.e(ex, "can't update powerLock.")
         }
 
         try {
@@ -89,18 +89,18 @@ class CheckerWakeLocks(contextArg: Context) {
                 wifiLock.acquire()
             }
         } catch (ex: Throwable) {
-            PollingChecker.log.trace(ex)
+            log.e(ex, "can't update wifiLock.")
         }
     }
 
     fun releasePowerLocks() {
-        PollingChecker.log.d("release power lock...")
+        log.d("release power lock...")
         try {
             if (powerLock.isHeld) {
                 powerLock.release()
             }
         } catch (ex: Throwable) {
-            PollingChecker.log.trace(ex)
+            log.e(ex, "can't release powerLock.")
         }
 
         try {
@@ -108,7 +108,7 @@ class CheckerWakeLocks(contextArg: Context) {
                 wifiLock.release()
             }
         } catch (ex: Throwable) {
-            PollingChecker.log.trace(ex)
+            log.e(ex, "can't release wifiLock.")
         }
     }
 

@@ -135,7 +135,7 @@ private class EmojiPicker(
                 items.clear()
                 items.addAll(newItems)
             } catch (ex: Throwable) {
-                log.w(ex)
+                log.w(ex, "loadRecents failed.")
             }
         }
 
@@ -175,13 +175,13 @@ private class EmojiPicker(
                 val sv = list.toJsonArray().toString()
                 appPref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
             } catch (ex: Throwable) {
-                log.e(ex)
+                log.e(ex, "can't save spEmojiPickerRecent")
             }
             // カテゴリ内のPickerItemの更新
             try {
                 list.loadRecents()
             } catch (ex: Throwable) {
-                log.e(ex)
+                log.e(ex, "loadRecents failed.")
             }
         }
     }
@@ -506,7 +506,7 @@ private class EmojiPicker(
         try {
             addAll(createCustomEmojiCategories())
         } catch (ex: Throwable) {
-            log.w(ex)
+            log.w(ex, "createCustomEmojiCategories failed.")
         }
 
         val categories = mutableListOf(
@@ -728,7 +728,7 @@ private class EmojiPicker(
                 else -> log.w("handleTouch else $ev")
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "handleTouch failed. ev=$ev, wasIntercept=$wasIntercept")
+            log.e(ex, "handleTouch failed. ev=$ev, wasIntercept=$wasIntercept")
             wasIntercept
         }
 

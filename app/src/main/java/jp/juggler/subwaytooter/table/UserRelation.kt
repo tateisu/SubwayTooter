@@ -174,7 +174,6 @@ class UserRelation {
                 }
                 true
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "saveList failed.")
                 false
             }
@@ -228,7 +227,6 @@ class UserRelation {
                 }
                 true
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "saveList failed.")
                 false
             }
@@ -262,7 +260,6 @@ class UserRelation {
                 }
                 true
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "saveListMisskeyRelationApi failed.")
                 false
             }
@@ -321,7 +318,6 @@ class UserRelation {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "load failed.")
             }
             return UserRelation()
@@ -369,7 +365,7 @@ class UserRelation {
             try {
                 appDatabase.delete(table, "$COL_ID=$rowId", null)
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex,"deletePseudo failed. rowId=$rowId")
             }
         }
     }

@@ -76,8 +76,7 @@ object MisskeyMarkdownDecoder {
                 // 末尾の空白を取り除く
                 this.removeEndWhitespaces()
             } catch (ex: Throwable) {
-                log.trace(ex)
-                log.e(ex, "decodeMarkdown failed")
+                log.e(ex, "decodeMarkdown failed.")
             } finally {
                 options.enlargeCustomEmoji = save
             }

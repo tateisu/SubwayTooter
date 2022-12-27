@@ -50,7 +50,7 @@ fun ActMain.onBackPressedImpl() {
             try {
                 appState.column(env.pager.currentItem)?.addTo(visibleColumnList)
             } catch (ex: Throwable) {
-                log.w(ex)
+                log.e(ex, "getClosableColumnList failed.")
             }
         }, { env ->
             visibleColumnList.addAll(env.visibleColumns)
@@ -153,7 +153,7 @@ fun ActMain.onMyClickableSpanClickedImpl(viewClicked: View, span: MyClickableSpa
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "can't create hashtagList")
         }
     }
 

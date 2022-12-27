@@ -140,7 +140,7 @@ object LoginForm {
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't load server list.")
             }
         }.toList().sorted()
 

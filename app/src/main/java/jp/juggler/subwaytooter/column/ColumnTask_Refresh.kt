@@ -63,7 +63,7 @@ class ColumnTask_Refresh(
             try {
                 column.updateRelation(client, listTmp, column.whoAccount, parser)
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "updateRelation failed.")
             }
             ctClosed.set(true)
             runOnMainLooperDelayed(333L) {

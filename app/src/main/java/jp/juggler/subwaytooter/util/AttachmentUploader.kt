@@ -246,7 +246,7 @@ class AttachmentUploader(
                 channel = null
             }
         } catch (ex: Throwable) {
-            log.e(ex)
+            log.e(ex, "can't close channel.")
         }
     }
 
@@ -939,7 +939,7 @@ class AttachmentUploader(
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "setAttachmentDescription failed.")
+            log.e(ex, "setAttachmentDescription failed.")
             TootApiResult(ex.withCaption("setAttachmentDescription failed."))
         }
         return Pair(result, resultAttachment)

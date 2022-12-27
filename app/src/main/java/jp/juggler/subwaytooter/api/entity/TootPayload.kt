@@ -52,8 +52,9 @@ object TootPayload {
                         // 2022/3/19 fedibird.com から来る？ 投稿の編集らしい？
                         "status.update",
 
-                        // 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-                        "update" -> parser.status(src)
+                            // 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+                        "update",
+                        -> parser.status(src)
 
                         // 2017/8/24 18:37 mastodon.juggler.jpでここを通った
                         "notification" -> parser.notification(src)
@@ -86,7 +87,7 @@ object TootPayload {
             // ここを通るケースはまだ確認できていない
             log.e("unknown payload(3). message=$parentText")
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "parsePayload failed.")
         }
 
         return null

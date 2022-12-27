@@ -5,7 +5,6 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.LogCategory
 import jp.juggler.util.TableCompanion
-import java.util.*
 
 object TagSet : TableCompanion {
 
@@ -77,13 +76,12 @@ object TagSet : TableCompanion {
             db.execSQL("BEGIN TRANSACTION")
             try {
                 for (i in 0 until length) {
-                    val acct = srcList[i + offset] ?: continue
+                    val acct = srcList.elementAtOrNull(i + offset) ?: continue
                     cv.put(COL_TAG, acct)
                     db.replace(table, null, cv)
                 }
                 bOK = true
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "saveList failed.")
             }
 
@@ -93,7 +91,6 @@ object TagSet : TableCompanion {
                 db.execSQL("ROLLBACK TRANSACTION")
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
             log.e(ex, "saveList failed.")
         }
     }
@@ -137,7 +134,6 @@ object TagSet : TableCompanion {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
             log.e(ex, "searchPrefix failed.")
         }
 

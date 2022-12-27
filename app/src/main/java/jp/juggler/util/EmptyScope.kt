@@ -31,7 +31,7 @@ fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
             if (ex is CancellationException) {
                 log.w("lainchMain cancelled.")
             } else {
-                log.trace(ex, "launchMain failed.")
+                log.e(ex, "launchMain failed.")
             }
         }
     }
@@ -42,8 +42,8 @@ fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
     EmptyScope.launch(context = appDispatchers.default) {
         try {
             block()
-        } catch (ex: CancellationException) {
-            log.trace(ex, "launchDefault: cancelled.")
+        } catch (ex: Throwable) {
+            log.e(ex, "launchDefault failed.")
         }
     }
 
@@ -53,8 +53,8 @@ fun launchIO(block: suspend CoroutineScope.() -> Unit): Job =
     EmptyScope.launch(context = appDispatchers.io) {
         try {
             block()
-        } catch (ex: CancellationException) {
-            log.trace(ex, "launchIO: cancelled.")
+        } catch (ex: Throwable) {
+            log.e(ex, "launchIO failed.")
         }
     }
 
@@ -90,7 +90,7 @@ fun <T : Any?> AppCompatActivity.launchProgress(
             try {
                 preProc()
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "launchProgress: preProc failed.")
             }
             val result = supervisorScope {
                 val task = async(appDispatchers.io) {
@@ -102,14 +102,14 @@ fun <T : Any?> AppCompatActivity.launchProgress(
             }
             if (result != null) afterProc(result)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "launchProgress: $caption failed.")
             showToast(ex, "$caption failed.")
         } finally {
             progress.dismissSafe()
             try {
                 postProc()
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "launchProgress: postProc failed.")
             }
         }
     }

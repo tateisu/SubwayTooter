@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
+import jp.juggler.util.LogCategory
+
 enum class TootVisibility(
     val id: Int,
     val order: Int, // 公開範囲の広い方とWeb設定に合わせる方が大きい
@@ -105,6 +107,7 @@ enum class TootVisibility(
         }
 
     companion object {
+        private val log = LogCategory("TootVisivbility")
 
         fun parseMastodon(a: String?): TootVisibility? {
             for (v in values()) {
@@ -162,7 +165,7 @@ enum class TootVisibility(
                     currentVisibility.order > maxVisibility.order
                 }
             } catch (ex: Throwable) {
-                TootStatus.log.trace(ex)
+                log.e(ex, "isVisibilitySpoilRequired failed.")
                 false
             }
         }

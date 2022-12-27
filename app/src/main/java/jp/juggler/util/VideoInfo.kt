@@ -46,7 +46,7 @@ class VideoInfo(
                     val caps = try {
                         info.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC) ?: continue
                     } catch (ex: Throwable) {
-                        log.w(ex)
+                        log.w(ex, "getCapabilitiesForType failed.")
                         continue
                     }
 
@@ -69,7 +69,7 @@ class VideoInfo(
                         }
                     }
                 } catch (ex: Throwable) {
-                    log.w(ex)
+                    log.w(ex, "dumpCodec failed.")
                     // type is not supported
                 }
             }

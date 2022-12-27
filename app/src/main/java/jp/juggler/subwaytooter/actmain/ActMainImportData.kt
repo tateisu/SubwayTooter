@@ -11,8 +11,8 @@ import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.notification.setImportProtector
 import jp.juggler.util.LogCategory
-import jp.juggler.util.runOnMainLooper
 import jp.juggler.util.launchProgress
+import jp.juggler.util.runOnMainLooper
 import jp.juggler.util.showToast
 import java.io.File
 import java.io.FileInputStream
@@ -100,8 +100,8 @@ fun ActMain.importAppData(uri: Uri) {
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 if (zipEntryCount != 0) {
+                    log.e(ex, "importAppData failed.")
                     showToast(ex, "importAppData failed.")
                 }
             }

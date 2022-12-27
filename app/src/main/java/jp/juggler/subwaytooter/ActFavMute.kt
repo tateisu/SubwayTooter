@@ -14,8 +14,8 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.util.LogCategory
-import jp.juggler.util.backPressed
 import jp.juggler.util.attrColor
+import jp.juggler.util.backPressed
 
 class ActFavMute : AppCompatActivity() {
 
@@ -116,7 +116,7 @@ class ActFavMute : AppCompatActivity() {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadData failed.")
         }
 
         listAdapter.itemList = tmpList

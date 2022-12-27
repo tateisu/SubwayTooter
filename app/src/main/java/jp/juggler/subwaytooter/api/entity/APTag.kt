@@ -6,7 +6,6 @@ import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.cast
-import java.util.*
 
 class APTag(parser: TootParser, jsonArray: JsonArray?) {
 
@@ -61,7 +60,7 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                                 }
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "APTag ctor failed.")
                 }
             }
     }

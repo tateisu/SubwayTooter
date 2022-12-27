@@ -675,7 +675,6 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             return try {
                 Source(src)
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e("parseSource failed.")
                 null
             }

@@ -62,7 +62,6 @@ object SubscriptionServerKey : TableCompanion {
             }
         } catch (ex: Throwable) {
             log.e(ex, "query failed.")
-            log.trace(ex)
         }
         return null
     }
@@ -75,7 +74,6 @@ object SubscriptionServerKey : TableCompanion {
             appDatabase.replace(table, null, cv)
         } catch (ex: Throwable) {
             log.e(ex, "save failed.")
-            log.trace(ex)
         }
     }
 }

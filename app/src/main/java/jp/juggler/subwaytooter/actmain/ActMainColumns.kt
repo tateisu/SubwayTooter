@@ -388,7 +388,7 @@ fun ActMain.resizeColumnWidth(views: ActMainTabletViews) {
                 columnWMinDp = iv
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "can't parse spColumnWidth. $sv")
         }
     }
 

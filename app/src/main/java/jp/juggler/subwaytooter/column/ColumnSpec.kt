@@ -175,7 +175,7 @@ object ColumnSpec {
                 else -> true
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "isSameSpec failed.")
             false
         }
     }

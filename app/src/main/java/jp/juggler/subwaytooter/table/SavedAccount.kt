@@ -203,7 +203,7 @@ class SavedAccount(
                 ?.entries
                 ?.forEach { extraJson[it.key] = it.value }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "ctor failed.")
         }
     }
 
@@ -217,7 +217,7 @@ class SavedAccount(
         try {
             appDatabase.delete(table, "$COL_ID=?", arrayOf(db_id.toString()))
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "SavedAccount.delete failed.")
             errorEx(ex, "SavedAccount.delete failed.")
         }
     }
@@ -513,7 +513,7 @@ class SavedAccount(
             try {
                 db.execSQL("drop table if exists $table")
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't delete table $table.")
             }
         }
 
@@ -564,7 +564,6 @@ class SavedAccount(
             return try {
                 SavedAccount(context, cursor)
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "parse failed.")
                 null
             }
@@ -588,7 +587,7 @@ class SavedAccount(
                     put(COL_MISSKEY_VERSION, misskeyVersion)
                 }.let { appDatabase.insert(table, null, it) }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "SavedAccount.insert failed.")
                 errorEx(ex, "SavedAccount.insert failed.")
             }
         }
@@ -623,7 +622,6 @@ class SavedAccount(
                         log.e("moveToFirst failed. db_id=$dbId")
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "loadAccount failed.")
             }
 
@@ -647,7 +645,6 @@ class SavedAccount(
                         }
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
                     log.e(ex, "loadAccountList failed.")
                     context.showToast(
                         true,
@@ -675,7 +672,6 @@ class SavedAccount(
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "loadByTag failed.")
                 errorEx(ex, "SavedAccount.loadByTag failed.")
             }
@@ -700,7 +696,6 @@ class SavedAccount(
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "loadAccountByAcct failed.")
             }
 
@@ -725,7 +720,6 @@ class SavedAccount(
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "hasNonPseudoAccount failed.")
             }
 
@@ -742,7 +736,6 @@ class SavedAccount(
                             }
                         }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
                     log.e(ex, "getCount failed.")
                     errorEx(ex, "SavedAccount.getCount failed.")
                 }
@@ -832,7 +825,6 @@ class SavedAccount(
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "sweepBuggieData failed.")
             }
 
@@ -840,7 +832,6 @@ class SavedAccount(
                 try {
                     appDatabase.delete(table, "$COL_ID=?", arrayOf(it.toString()))
                 } catch (ex: Throwable) {
-                    log.trace(ex)
                     log.e(ex, "sweepBuggieData failed.")
                 }
             }
@@ -936,7 +927,7 @@ class SavedAccount(
             }
             return TootApiResult()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "account confirmation failed.")
             return TootApiResult(ex.withCaption("account confirmation failed."))
         }
     }

@@ -117,7 +117,7 @@ internal fun showToastImpl(context: Context, bLong: Boolean, message: String): B
                         .show()
                     return@runOnMainLooper
                 } catch (ex: Throwable) {
-                    log.trace(ex, "showPopup failed.")
+                    log.e(ex, "showPopup failed.")
                 }
             }
             // 画面がない、または失敗したら普通のトーストにフォールバック
@@ -127,7 +127,7 @@ internal fun showToastImpl(context: Context, bLong: Boolean, message: String): B
         try {
             refToast?.get()?.cancel()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex,"toast cancel failed.")
         } finally {
             refToast = null
         }
@@ -140,7 +140,7 @@ internal fun showToastImpl(context: Context, bLong: Boolean, message: String): B
             t.show()
             refToast = WeakReference(t)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex,"showToastImpl failed.")
         }
     }
     return false

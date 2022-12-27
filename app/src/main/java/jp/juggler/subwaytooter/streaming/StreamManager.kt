@@ -163,7 +163,7 @@ class StreamManager(val appState: AppState) {
                 } catch (_: ClosedReceiveChannelException) {
                     // 発生しない
                 } catch (ex: Throwable) {
-                    log.trace(ex, "error.")
+                    log.e(ex, "queue item handling failed.")
                 }
             }
         }

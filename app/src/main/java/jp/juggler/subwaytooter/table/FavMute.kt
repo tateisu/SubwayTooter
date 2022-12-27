@@ -68,23 +68,16 @@ object FavMute : TableCompanion {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "acctSet load failed.")
             }
         }
 
-    fun contains(acct: Acct): Boolean {
-        var found = false
+    fun contains(acct: Acct): Boolean =
         try {
             appDatabase.query(table, null, "$COL_ACCT=?", arrayOf(acct.ascii), null, null, null)
-                .use { cursor ->
-                    while (cursor.moveToNext()) {
-                        found = true
-                    }
-                }
+                ?.use { it.moveToNext() }
         } catch (ex: Throwable) {
-            log.trace(ex)
-        }
-
-        return found
-    }
+            log.e(ex, "contains failed.")
+            null
+        } ?: false
 }

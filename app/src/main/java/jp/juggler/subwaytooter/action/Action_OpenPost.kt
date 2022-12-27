@@ -261,7 +261,7 @@ fun ActMain.quoteName(who: TootAccount) {
             sv = String.format(Locale.getDefault(), fmt, sv)
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "quoteName failed.")
     }
     openPost(sv)
 }

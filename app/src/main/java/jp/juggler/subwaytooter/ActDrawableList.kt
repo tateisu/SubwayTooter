@@ -3,12 +3,17 @@ package jp.juggler.subwaytooter
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.BaseAdapter
+import android.widget.ImageView
+import android.widget.ListView
+import android.widget.TextView
 import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.util.AsyncActivity
 import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ActDrawableList : AsyncActivity(), CoroutineScope {
 
@@ -60,7 +65,7 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
             drawableList.addAll(list)
             adapter.notifyDataSetChanged()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "load failed.")
         }
     }
 

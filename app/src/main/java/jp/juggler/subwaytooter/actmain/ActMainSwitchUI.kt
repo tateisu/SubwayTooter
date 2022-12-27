@@ -21,7 +21,7 @@ inline fun <R : Any?> ActMain.phoneTab(codePhone: (ActMainPhoneViews) -> R, code
 }
 
 fun ActMain.initPhoneTablet() {
-    val columnWMin = loadColumnMin(density)
+    val columnWMin = loadColumnMin()
     val sw = resources.displayMetrics.widthPixels
     val tmpPhonePager: MyViewPager = findViewById(R.id.viewPager)
     val tmpTabletPager: RecyclerView = findViewById(R.id.rvPager)

@@ -25,46 +25,46 @@ import kotlin.math.max
 
 private val log = LogCategory("ActMainStyle")
 
+private fun ActMain.dpToPx(dp: Float) =
+    (dp * density + 0.5f).toInt()
+
 // initUIから呼ばれる
 fun ActMain.reloadFonts() {
-    var sv = PrefS.spTimelineFont(pref)
-    if (sv.isNotEmpty()) {
+    ActMain.timelineFont = PrefS.spTimelineFont(pref).notEmpty()?.let {
         try {
-            ActMain.timelineFont = Typeface.createFromFile(sv)
+            Typeface.createFromFile(it)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "timelineFont load failed")
+            null
         }
-    }
+    } ?: Typeface.DEFAULT
 
-    sv = PrefS.spTimelineFontBold(pref)
-    if (sv.isNotEmpty()) {
+    ActMain.timelineFontBold = PrefS.spTimelineFontBold(pref).notEmpty()?.let {
         try {
-            ActMain.timelineFontBold = Typeface.createFromFile(sv)
+            Typeface.createFromFile(it)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "timelineFontBold load failed")
+            null
         }
-    } else {
-        try {
-            ActMain.timelineFontBold = Typeface.create(ActMain.timelineFont, Typeface.BOLD)
-        } catch (ex: Throwable) {
-            log.trace(ex)
-        }
-    }
-}
-
-private fun ActMain.parseIconSize(stringPref: StringPref, minDp: Float = 1f): Int {
-    var iconSizeDp = stringPref.defVal.toFloat()
-    try {
-        val sv = stringPref(pref)
-        val fv = if (sv.isEmpty()) Float.NaN else sv.toFloat()
-        if (fv.isFinite() && fv >= minDp) {
-            iconSizeDp = fv
-        }
+    } ?: try {
+        Typeface.create(ActMain.timelineFont, Typeface.BOLD)
     } catch (ex: Throwable) {
-        log.trace(ex)
-    }
-    return (0.5f + iconSizeDp * density).toInt()
+        log.e(ex, "timelineFontBold create from timelineFont failed")
+        null
+    } ?: Typeface.DEFAULT_BOLD
 }
+
+private fun ActMain.parseIconSize(stringPref: StringPref, minDp: Float = 1f) =
+    dpToPx(
+        try {
+            stringPref(pref)
+                .toFloatOrNull()
+                ?.takeIf { it.isFinite() && it >= minDp }
+        } catch (ex: Throwable) {
+            log.e(ex, "parseIconSize failed.")
+            null
+        } ?: stringPref.defVal.toFloat()
+    )
 
 // initUIから呼ばれる
 fun ActMain.reloadIconSize() {
@@ -85,53 +85,38 @@ fun ActMain.reloadIconSize() {
 
 // initUIから呼ばれる
 fun ActMain.reloadRoundRatio() {
-    var roundRatio = 33f
-    try {
-        if (PrefB.bpDontRound(pref)) {
-            roundRatio = 0f
-        } else {
-            val sv = PrefS.spRoundRatio(pref)
-            if (sv.isNotEmpty()) {
-                val fv = sv.toFloat()
-                if (fv.isFinite()) {
-                    roundRatio = fv
-                }
-            }
-        }
-    } catch (ex: Throwable) {
-        log.trace(ex)
+    val sizeDp = when {
+        PrefB.bpDontRound(pref) -> 0f
+        else -> PrefS.spRoundRatio(pref)
+            .toFloatOrNull()
+            ?.takeIf { it.isFinite() }
+            ?: 33f
     }
-    Styler.round_ratio = clipRange(0f, 1f, roundRatio / 100f) * 0.5f
+    Styler.round_ratio = clipRange(0f, 1f, sizeDp / 100f) * 0.5f
 }
 
 // initUI から呼ばれる
 fun ActMain.reloadBoostAlpha() {
-    var boostAlpha = 0.8f
-    try {
-        val f = (PrefS.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
-        boostAlpha = when {
-            f >= 1f -> 1f
-            f < 0f -> 0.66f
-            else -> f
-        }
-    } catch (ex: Throwable) {
-        log.trace(ex)
-    }
-    Styler.boostAlpha = boostAlpha
+    Styler.boostAlpha = PrefS.spBoostAlpha(pref)
+        .toIntOrNull()
+        ?.toFloat()
+        ?.let { (it + 0.5f) / 100f }
+        ?.let {
+            when {
+                it >= 1f -> 1f
+                it < 0f -> 0.66f
+                else -> it
+            }
+        } ?: 0.8f
 }
 
 fun ActMain.reloadMediaHeight() {
-    var mediaThumbHeightDp = 64
-    val sv = PrefS.spMediaThumbHeight(pref)
-    if (sv.isNotEmpty()) {
-        try {
-            val iv = Integer.parseInt(sv)
-            if (iv >= 32) mediaThumbHeightDp = iv
-        } catch (ex: Throwable) {
-            log.trace(ex)
-        }
-    }
-    appState.mediaThumbHeight = (0.5f + mediaThumbHeightDp * density).toInt()
+    appState.mediaThumbHeight = dpToPx(
+        PrefS.spMediaThumbHeight(pref)
+            .toFloatOrNull()
+            ?.takeIf { it >= 32f }
+            ?: 64f
+    )
 }
 
 private fun Float.clipFontSize(): Float =
@@ -146,21 +131,13 @@ fun ActMain.reloadTextSize() {
     timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
 }
 
-fun ActMain.loadColumnMin(density: Float): Int {
-    var x = ActMain.COLUMN_WIDTH_MIN_DP.toFloat()
-    val sv = PrefS.spColumnWidth(pref)
-    if (sv.isNotEmpty()) {
-        try {
-            val fv = sv.toFloat()
-            if (fv.isFinite() && fv >= 100f) {
-                x = fv
-            }
-        } catch (ex: Throwable) {
-            log.trace(ex)
-        }
-    }
-    return (0.5f + x * density).toInt()
-}
+fun ActMain.loadColumnMin() =
+    dpToPx(
+        PrefS.spColumnWidth(pref)
+            .toFloatOrNull()
+            ?.takeIf { it.isFinite() && it >= 100f }
+            ?: ActMain.COLUMN_WIDTH_MIN_DP.toFloat()
+    )
 
 fun ActMain.justifyWindowContentPortrait() {
     when (PrefI.ipJustifyWindowContentPortrait(pref)) {
@@ -183,7 +160,7 @@ fun ActMain.justifyWindowContentPortrait() {
 
         PrefI.JWCP_END -> {
             val iconW = (ActMain.stripIconSize * 1.5f + 0.5f).toInt()
-            val borderWidth = (1f * density + 0.5f).toInt()
+            val borderWidth = dpToPx(1f)
             val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
 
             fun ViewGroup.addViewAfterFirst(v: View) = addView(v, 1)

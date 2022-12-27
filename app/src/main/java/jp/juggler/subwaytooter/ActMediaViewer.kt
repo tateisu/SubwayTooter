@@ -537,7 +537,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
                 ?: return Pair(bitmap1, "createBitmap returns null")
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "createBitmap failed.")
             return Pair(bitmap1, ex.withCaption("createBitmap failed."))
         }
 
@@ -548,8 +548,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 Paint().apply { isFilterBitmap = true }
             )
         } catch (ex: Throwable) {
-            log.trace(ex)
             bitmap2.recycle()
+            log.e(ex, "drawBitmap failed.")
             return Pair(bitmap1, ex.withCaption("drawBitmap failed."))
         }
 
@@ -698,30 +698,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             download_history_list.addLast(DownloadHistory(now, url))
         }
 
-        var fileName: String? = null
-
-        try {
-            val pathSegments = url.toUri().pathSegments
-            if (pathSegments != null) {
-                val size = pathSegments.size
-                for (i in size - 1 downTo 0) {
-                    val s = pathSegments[i]
-                    if (s?.isNotEmpty() == true) {
-                        fileName = s
-                        break
-                    }
-                }
-            }
-        } catch (ex: Throwable) {
-            log.trace(ex)
-        }
-
-        if (fileName == null) {
-            fileName = url
-                .replaceFirst("https?://".asciiPattern(), "")
-                .replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
-        }
-        if (fileName.length >= 20) fileName = fileName.substring(fileName.length - 20)
+        val fileName = (
+                url.mayUri()?.pathSegments?.findLast { !it.isNullOrBlank() }
+                    ?: url
+                        .replaceFirst("https?://".asciiPattern(), "")
+                        .replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
+                )
+            .take(20)
 
         val request = DownloadManager.Request(url.toUri())
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)

@@ -40,7 +40,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PrefDevice.from(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
             restartAllWorker(this)
         } catch (ex: Throwable) {
-            log.trace(ex, "onNewToken failed")
+            log.e(ex, "onNewToken failed")
         }
     }
 
@@ -93,7 +93,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 log.i(text)
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "check failed. accountDbId=$accountDbId")
         }
     }
 }

@@ -565,7 +565,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                             it
                         )
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "TootStatus ctor failed. enquete (NoteStock)")
                         null
                     }
                 }
@@ -799,7 +799,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                         )
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "TootStatus ctor failed. enquete")
                     null
                 }
             }

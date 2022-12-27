@@ -66,7 +66,6 @@ class AcctColor {
             appDatabase.replace(table, null, cv)
             mMemoryCache.remove(key)
         } catch (ex: Throwable) {
-            log.trace(ex)
             log.e(ex, "save failed.")
         }
     }
@@ -153,7 +152,6 @@ class AcctColor {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "load failed.")
             }
 

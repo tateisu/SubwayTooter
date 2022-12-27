@@ -24,7 +24,7 @@ internal class PopupAutoCompleteAcct(
     val activity: Activity,
     private val etContent: EditText,
     private val formRoot: View,
-    private val bMainScreen: Boolean
+    private val bMainScreen: Boolean,
 ) {
     companion object {
         internal val log = LogCategory("PopupAutoCompleteAcct")
@@ -48,7 +48,7 @@ internal class PopupAutoCompleteAcct(
         try {
             acctPopup.dismiss()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "acctPopup.dismiss failed.")
         }
     }
 
@@ -78,7 +78,7 @@ internal class PopupAutoCompleteAcct(
         selEnd: Int,
         acctList: ArrayList<CharSequence>?,
         pickerCaption: String?,
-        pickerCallback: Runnable?
+        pickerCallback: Runnable?,
     ) {
 
         llItems.removeAllViews()

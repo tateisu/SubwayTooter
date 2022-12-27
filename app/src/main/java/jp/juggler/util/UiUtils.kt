@@ -296,7 +296,7 @@ fun CharSequence.copyToClipboard(context: Context) {
 
         context.showToast(false, R.string.copy_complete)
     } catch (ex: Throwable) {
-        UiUtils.log.trace(ex)
+        UiUtils.log.e(ex, "copy failed.")
         context.showToast(ex, "copy failed.")
     }
 }

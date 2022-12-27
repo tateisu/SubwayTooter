@@ -170,9 +170,9 @@ class NotificationCache(private val account_db_id: Long) {
         } catch (ex: Throwable) {
             if (ex.message?.contains("empty cursor") == true) {
                 // アカウント追加直後に起きるはず
-                log.w(ex, "load failed.")
+                log.w(ex, "empty cursor. (maybe first loading)")
             } else {
-                log.trace(ex, "load failed.")
+                log.e(ex, "load failed.")
             }
         }
     }
@@ -294,7 +294,7 @@ class NotificationCache(private val account_db_id: Long) {
                         item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
                         data.add(item)
                     } catch (ex: Throwable) {
-                        log.trace(ex, "${account.acct} parseNotificationTime failed.")
+                        log.e(ex, "${account.acct} parseNotificationTime failed.")
                     }
                 }
 
@@ -305,7 +305,7 @@ class NotificationCache(private val account_db_id: Long) {
                 onError(result)
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "${account.acct} requestAsync failed.")
+            log.e(ex, "${account.acct} requestAsync failed.")
         } finally {
             save()
         }
@@ -326,7 +326,7 @@ class NotificationCache(private val account_db_id: Long) {
             data.addAll(jsonList)
             normalize(account)
         } catch (ex: Throwable) {
-            log.trace(ex, "inject failed.")
+            log.e(ex, "inject failed.")
         } finally {
             save()
         }

@@ -158,7 +158,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                     return
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "restore failed.")
             }
         }
         load(column.languageFilter)

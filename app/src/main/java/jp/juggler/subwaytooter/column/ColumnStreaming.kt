@@ -108,7 +108,7 @@ fun Column.mergeStreamingMessage() {
         } catch (ex: Throwable) {
             // IDを取得できないタイプのオブジェクトだった
             // ストリームに来るのは通知かステータスだから、多分ここは通らない
-            log.trace(ex)
+            log.e(ex, "mergeStreamingMessage failed.")
         }
     }
 

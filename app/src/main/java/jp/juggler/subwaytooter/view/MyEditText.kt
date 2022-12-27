@@ -76,7 +76,7 @@ class MyEditText @JvmOverloads constructor(
         return try {
             super.onTouchEvent(event)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex,"onTouchEvent failed.")
             false
             //		java.lang.NullPointerException:
             //		at android.widget.Editor$SelectionModifierCursorController.onTouchEvent (Editor.java:4889)

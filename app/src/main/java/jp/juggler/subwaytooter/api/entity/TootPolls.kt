@@ -297,7 +297,7 @@ class TootPolls(
                     src
                 )
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex,"parse failed.")
                 null
             }
         }

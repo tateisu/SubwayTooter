@@ -189,7 +189,7 @@ class ActPost : AppCompatActivity(),
             } catch (ex: Throwable) {
                 when (ex) {
                     is CancellationException, is ClosedReceiveChannelException -> Unit
-                    else -> log.trace(ex)
+                    else -> log.e(ex, "can't show media progress.")
                 }
             }
         }
@@ -206,7 +206,7 @@ class ActPost : AppCompatActivity(),
         try {
             progressChannel.close()
         } catch (ex: Throwable) {
-            log.e(ex)
+            log.e(ex, "progressChannel close failed.")
         }
         completionHelper.onDestroy()
         attachmentUploader.onActivityDestroy()
@@ -242,7 +242,6 @@ class ActPost : AppCompatActivity(),
         // このタイミングで保存するしかない
         if (!isPostComplete) saveDraft()
     }
-
 
     override fun onClick(v: View) {
         refActPost = WeakReference(this)
@@ -291,7 +290,7 @@ class ActPost : AppCompatActivity(),
             try {
                 progressChannel.send(Unit)
             } catch (ex: Throwable) {
-                log.w(ex)
+                log.w(ex, "progressChannel send failed.")
             }
         }
     }

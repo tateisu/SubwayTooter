@@ -39,7 +39,7 @@ fun ActMain.handleIntentUri(uri: Uri) {
             else -> handleOtherUri(uri)
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "handleIntentUri failed.")
         showToast(ex, "handleIntentUri failed.")
     }
 }
@@ -138,7 +138,7 @@ fun ActMain.handleOtherUri(uri: Uri): Boolean {
         startActivity(chooser)
         return true
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "can't open app to handle intent.")
     }
 
     AlertDialog.Builder(this)
@@ -188,7 +188,7 @@ private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
         // 通知を読み直す
         if (!column.bInitialLoading) column.startLoading()
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "handleNotificationClick failed.")
     }
 }
 
@@ -227,7 +227,7 @@ private fun ActMain.handleOAuth2Callback(uri: Uri) {
                         resultSavedAccount = sa
                         client.account = sa
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "handleOAuth2Callback failed.")
                         return@runApiTask TootApiResult(ex.withCaption("invalid state"))
                     }
                 }
@@ -279,7 +279,7 @@ private fun ActMain.handleOAuth2Callback(uri: Uri) {
                             resultSavedAccount = sa
                             client.account = sa
                         } catch (ex: Throwable) {
-                            log.trace(ex)
+                            log.e(ex, "handleOAuth2Callback failed.")
                             return@runApiTask TootApiResult(ex.withCaption("invalid state"))
                         }
 

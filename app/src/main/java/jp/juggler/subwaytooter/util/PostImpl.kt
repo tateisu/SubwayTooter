@@ -522,7 +522,6 @@ class PostImpl(
                     } catch (ex: TootApiResultException) {
                         return@runApiTask ex.result
                     } catch (ex: JsonException) {
-                        log.trace(ex)
                         log.e(ex, "status encoding failed.")
                     }
 

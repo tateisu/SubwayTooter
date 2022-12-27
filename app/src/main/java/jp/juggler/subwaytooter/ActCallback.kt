@@ -129,7 +129,7 @@ class ActCallback : AppCompatActivity() {
                             copyExtraTexts(dst, src)
                             return dst
                         } catch (ex: Throwable) {
-                            log.trace(ex)
+                            log.e(ex, "remake failed. src=$src")
                         }
                     }
                 } else if (Intent.ACTION_SEND == action) {
@@ -144,7 +144,7 @@ class ActCallback : AppCompatActivity() {
                         copyExtraTexts(dst, src)
                         return dst
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "remake failed. src=$src")
                     }
                 } else if (Intent.ACTION_SEND_MULTIPLE == action) {
                     val listUri = src.getStreamUriListExtra()
@@ -156,7 +156,7 @@ class ActCallback : AppCompatActivity() {
                                 val uri = saveToCache(uriOriginal)
                                 listDst.add(uri)
                             } catch (ex: Throwable) {
-                                log.trace(ex)
+                                log.e(ex, "remake failed. src=$src")
                             }
                         }
                     }
@@ -182,7 +182,7 @@ class ActCallback : AppCompatActivity() {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "remake failed. src=$src")
         }
 
         return null
@@ -230,11 +230,11 @@ class ActCallback : AppCompatActivity() {
                         f.delete()
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "sweepOldCache: delete item failed.")
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "sweepOldCache failed.")
         }
     }
 

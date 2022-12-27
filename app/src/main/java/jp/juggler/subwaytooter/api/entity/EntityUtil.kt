@@ -23,7 +23,6 @@ inline fun <reified T> parseItem(
     return try {
         factory(src)
     } catch (ex: Throwable) {
-        log.trace(ex)
         log.e(ex, "${T::class.simpleName} parse failed.")
         null
     }
@@ -156,7 +155,6 @@ inline fun <reified V> parseProfileEmoji2(
                 val item = try {
                     factory(v, key)
                 } catch (ex: Throwable) {
-                    log.trace(ex)
                     log.e(ex, "parseProfileEmoji2 failed.")
                     null
                 }
@@ -180,7 +178,6 @@ inline fun <P, reified T> parseItem(
     return try {
         factory(parser, src)
     } catch (ex: Throwable) {
-        log.trace(ex)
         log.e(ex, "${T::class.simpleName} parse failed.")
         null
     }
@@ -196,7 +193,6 @@ inline fun <reified T> parseItem(
     return try {
         factory(serviceType, src)
     } catch (ex: Throwable) {
-        log.trace(ex)
         log.e(ex, "${T::class.simpleName} parse failed.")
         null
     }

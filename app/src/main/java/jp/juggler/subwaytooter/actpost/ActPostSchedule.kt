@@ -72,6 +72,6 @@ fun ActPost.initializeFromScheduledStatus(account: SavedAccount, jsonText: Strin
                 this.attachmentList.addAll(it)
             }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "initializeFromScheduledStatus failed.")
     }
 }

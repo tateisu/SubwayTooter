@@ -13,8 +13,8 @@ import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.util.LogCategory
-import jp.juggler.util.backPressed
 import jp.juggler.util.attrColor
+import jp.juggler.util.backPressed
 
 class ActMutedWord : AppCompatActivity() {
 
@@ -115,7 +115,7 @@ class ActMutedWord : AppCompatActivity() {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "loadData failed.")
         }
 
         listAdapter.itemList = tmpList

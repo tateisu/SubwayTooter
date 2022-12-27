@@ -167,7 +167,7 @@ fun Column.initFilter() {
                     }
                 }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex,"initFilter failed.")
         }
     }
 

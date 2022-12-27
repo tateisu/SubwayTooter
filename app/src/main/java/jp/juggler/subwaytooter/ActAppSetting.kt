@@ -908,7 +908,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "parseFontSize failed.")
         }
 
         return Float.NaN
@@ -945,7 +945,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 return
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "showTimelineFont failed.")
         }
 
         // fallback
@@ -994,7 +994,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
             return file
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "saveTimelineFont failed.")
             showToast(ex, "saveTimelineFont failed.")
             return null
         }
@@ -1170,7 +1170,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 .show()
             if (!rv) showToast(true, "share target app is not installed.")
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "openCustomShareChooser failed.")
             showToast(ex, "openCustomShareChooser failed.")
         }
     }
@@ -1206,7 +1206,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 .show()
             if (!rv) showToast(true, "share target app is not installed.")
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "openCustomShareChooser failed.")
             showToast(ex, "openCustomShareChooser failed.")
         }
     }

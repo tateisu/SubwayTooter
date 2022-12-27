@@ -125,7 +125,7 @@ class CustomEmojiLister(
             try {
                 getList(accessInfo, withAliases).let { callback?.invoke(it) }
             } catch (ex: Throwable) {
-                log.trace(ex, "getList failed.")
+                log.e(ex, "getList failed.")
             }
         }
         return null
@@ -162,11 +162,11 @@ class CustomEmojiLister(
                     try {
                         request.resume(handleRequest(request))
                     } catch (ex: Throwable) {
-                        log.trace(request.caller, "caller's call stack")
+                        log.e(request.caller, "caller's call stack")
                         request.cont.resumeWithException(ex)
                     }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "can't load custom emoji list.")
                     waitEx(3000L)
                 }
             }

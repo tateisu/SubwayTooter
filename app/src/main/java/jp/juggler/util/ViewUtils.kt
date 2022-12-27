@@ -45,27 +45,27 @@ val View?.activity: Activity?
 
 fun View.hideKeyboard() {
     try {
-        val imm = this.context?.getSystemService(Context.INPUT_METHOD_SERVICE)
-        if (imm is InputMethodManager) {
-            imm.hideSoftInputFromWindow(this.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-        } else {
-            log.e("hideKeyboard: can't get InputMethodManager")
+        when (val imm = this.context?.getSystemService(Context.INPUT_METHOD_SERVICE)) {
+            is InputMethodManager ->
+                imm.hideSoftInputFromWindow(this.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            else -> log.e("hideKeyboard: can't get InputMethodManager")
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex,"hideKeyboard failed.")
     }
 }
 
 fun View.showKeyboard() {
     try {
         val imm = this.context?.getSystemService(Context.INPUT_METHOD_SERVICE)
-        if (imm is InputMethodManager) {
-            imm.showSoftInput(this, InputMethodManager.HIDE_NOT_ALWAYS)
-        } else {
-            log.e("showKeyboard: can't get InputMethodManager")
+        when (imm) {
+            is InputMethodManager ->
+                imm.showSoftInput(this, InputMethodManager.HIDE_NOT_ALWAYS)
+
+            else -> log.e("showKeyboard: can't get InputMethodManager")
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex,"showKeyboard failed.")
     }
 }
 
@@ -213,7 +213,7 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
 
         var c = when {
             forceDark -> Color.BLACK
-            else -> PrefI.ipStatusBarColor().notZero() ?: attrColor(R.attr.colorPrimaryDark)
+            else -> PrefI.ipStatusBarColor.invoke().notZero() ?: attrColor(R.attr.colorPrimaryDark)
         }
         setStatusBarColorCompat(c)
 

@@ -63,7 +63,7 @@ class HighlightWord {
                 try {
                     db.execSQL("alter table $table add column $COL_SPEECH integer default 0")
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "can't add $COL_SPEECH")
                 }
             }
         }
@@ -77,9 +77,8 @@ class HighlightWord {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "load failed.")
             }
-
             return null
         }
 
@@ -93,14 +92,13 @@ class HighlightWord {
                     null,
                     null,
                     null
-                )
-                    .use { cursor ->
-                        if (cursor.moveToNext()) {
-                            return HighlightWord(cursor)
-                        }
+                ).use { cursor ->
+                    if (cursor.moveToNext()) {
+                        return HighlightWord(cursor)
                     }
+                }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "load failed. id=$id")
             }
 
             return null
@@ -123,7 +121,7 @@ class HighlightWord {
                             }
                         }
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "nameSet failed.")
                 }
 
                 return if (dst.isEmpty) null else dst
@@ -152,7 +150,7 @@ class HighlightWord {
                                 }
                             }
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "hasTextToSpeechHighlightWord failed.")
                     }
                     hasTextToSpeechHighlightWordCache.set(cached)
                 }

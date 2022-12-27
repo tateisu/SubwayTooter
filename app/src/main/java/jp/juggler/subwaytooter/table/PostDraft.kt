@@ -105,7 +105,7 @@ class PostDraft {
                         }
                     }
             } catch (ex: Throwable) {
-                log.trace(ex, "hasDraft failed.")
+                log.e(ex, "hasDraft failed.")
             }
             return false
         }
@@ -124,7 +124,7 @@ class PostDraft {
                     "$COL_TIME_SAVE desc"
                 )
             } catch (ex: Throwable) {
-                log.trace(ex, "createCursor failed.")
+                log.e(ex, "createCursor failed.")
                 null
             }
 
@@ -141,7 +141,7 @@ class PostDraft {
                     dst.json = try {
                         cursor.getString(colIdx.idx_json).decodeJsonObject()
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "loadFromCursor failed.")
                         JsonObject()
                     }
                 }

@@ -12,8 +12,11 @@ import jp.juggler.subwaytooter.column.toAdapterIndex
 import jp.juggler.subwaytooter.column.toListIndex
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.view.ListDivider
+import jp.juggler.util.LogCategory
 import jp.juggler.util.abs
 import java.io.Closeable
+
+private val log = LogCategory("ColumnViewHolderLoading")
 
 private class ErrorFlickListener(
     private val cvh: ColumnViewHolder,
@@ -232,8 +235,7 @@ fun ColumnViewHolder.setScrollPosition(sp: ScrollPosition, deltaDp: Float = 0f) 
             val state = ColumnViewHolder.fieldState.get(listView) as RecyclerView.State
             listLayoutManager.scrollVerticallyBy(dy, recycler, state)
         } catch (ex: Throwable) {
-            ColumnViewHolder.log.trace(ex)
-            ColumnViewHolder.log.e("can't access field in class ${RecyclerView::class.java.simpleName}")
+            log.e("can't access field in class ${RecyclerView::class.java.simpleName}")
         }
     }, 20L)
 }

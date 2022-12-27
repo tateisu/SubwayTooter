@@ -1296,7 +1296,7 @@ class ActAccountSetting : AppCompatActivity(),
             val intent = intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
             arAddAttachment.launch(intent)
         } catch (ex: Throwable) {
-            log.trace(ex, "performAttachment failed.")
+            log.e(ex, "performAttachment failed.")
             showToast(ex, "performAttachment failed.")
         }
     }
@@ -1318,7 +1318,7 @@ class ActAccountSetting : AppCompatActivity(),
             state.propName = propName
             arCameraImage.launch(intent)
         } catch (ex: Throwable) {
-            log.trace(ex, "opening camera app failed.")
+            log.e(ex, "opening camera app failed.")
             showToast(ex, "opening camera app failed.")
         }
     }
@@ -1386,7 +1386,7 @@ class ActAccountSetting : AppCompatActivity(),
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex, "Resizing image failed.")
+                log.e(ex, "Resizing image failed.")
                 showToast(ex, "Resizing image failed.")
             }
 

@@ -45,7 +45,6 @@ class TootFilter(src: JsonObject) : TimelineItem() {
                     try {
                         result.add(TootFilter(it))
                     } catch (ex: Throwable) {
-                        log.trace(ex)
                         log.e(ex, "TootFilter parse failed.")
                     }
                 }

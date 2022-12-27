@@ -348,7 +348,7 @@ class ColumnViewHolder(
                     v.typeface = ActMain.timelineFont
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't change typeface.")
             }
         }
 

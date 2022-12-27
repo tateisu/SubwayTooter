@@ -61,7 +61,7 @@ class PollingChecker(
                     try {
                         c.checkJob.cancel()
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "checkJob.cancel failed.")
                     }
                 }
             }

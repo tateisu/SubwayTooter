@@ -68,7 +68,7 @@ object TootsearchHelper {
                         val source = src.cast<JsonObject>()?.jsonObject("_source") ?: continue
                         add(TootStatus(parser, source))
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex,"parse item failed.")
                     }
                 }
             }

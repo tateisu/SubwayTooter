@@ -261,7 +261,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
             appendContentText(sharedIntent)
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex,"initializeFromSharedIntent failed.")
     }
 }
 

@@ -58,7 +58,7 @@ object NotestockHelper {
                         if (src !is JsonObject) continue
                         add(TootStatus(parser, src))
                     } catch (ex: Throwable) {
-                        TootStatus.log.trace(ex)
+                        log.e(ex,"parse item failed.")
                     }
                 }
             }

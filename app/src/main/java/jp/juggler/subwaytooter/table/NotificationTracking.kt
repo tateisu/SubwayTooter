@@ -150,7 +150,7 @@ class NotificationTracking {
                 try {
                     db.execSQL("drop table if exists $table")
                 } catch (ex: Throwable) {
-                    log.trace(ex, "delete DB failed.")
+                    log.e(ex, "delete DB failed.")
                 }
                 onDBCreate(db)
                 return
@@ -165,19 +165,19 @@ class NotificationTracking {
                 try {
                     db.execSQL("drop index if exists ${table}_a")
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "drop index failed.")
                 }
                 try {
                     db.execSQL("alter table $table add column $COL_NOTIFICATION_TYPE text default ''")
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "can't add $COL_NOTIFICATION_TYPE")
                 }
                 try {
                     db.execSQL(
                         "create unique index if not exists ${table}_b on $table ($COL_ACCOUNT_DB_ID,$COL_NOTIFICATION_TYPE)"
                     )
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "can't add index.")
                 }
             }
         }
@@ -189,7 +189,7 @@ class NotificationTracking {
 
         private fun <K : Any, V : Any> ConcurrentHashMap<K, V>.getOrCreate(
             key: K,
-            creator: () -> V
+            creator: () -> V,
         ): V {
             var v = this[key]
             if (v == null) v = creator().also { this[key] = it }
@@ -205,7 +205,7 @@ class NotificationTracking {
         private fun saveCache(
             accountDbId: Long,
             notificationType: String,
-            nt: NotificationTracking
+            nt: NotificationTracking,
         ) {
             cache.getOrCreate(accountDbId) {
                 ConcurrentHashMap<String, NotificationTracking>()
@@ -275,7 +275,7 @@ class NotificationTracking {
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex, "load failed.")
+                log.e(ex, "load failed.")
             } finally {
                 dst.dirty = false
             }

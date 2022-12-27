@@ -130,3 +130,6 @@ _Emoji/*.txt
 detektReport/
 
 .idea/deploymentTargetDropDown.xml
+
+
+app/detekt-*.xml

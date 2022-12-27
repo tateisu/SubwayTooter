@@ -151,18 +151,17 @@ class CustomEmojiCache(
             try {
                 close()
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "deleteDatabase: close() failed.")
             }
             try {
                 SQLiteDatabase.deleteDatabase(context.getDatabasePath(databaseName))
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "deleteDatabase failed.")
             }
         }
     }
 
     private class CacheItem(val url: String, var frames: ApngFrames?) {
-
         var timeUsed: Long = elapsedTime
     }
 
@@ -195,15 +194,19 @@ class CustomEmojiCache(
 
     // DB処理を行い、SQLiteDatabaseCorruptExceptionを検出したらDBを削除してリトライする
     private fun <T : Any> useDbCache(block: (SQLiteDatabase) -> T?): T? {
-        for (ignored in (1..3)) {
+        for (nTry in 0 until 3) {
             try {
-                val db = dbOpenHelper.writableDatabase ?: break
+                val db = dbOpenHelper.writableDatabase
+                if (db == null) {
+                    log.e("useDbCache[$nTry]: writableDatabase returns null.")
+                    break
+                }
                 return block(db)
             } catch (ex: SQLiteDatabaseCorruptException) {
-                log.trace(ex)
+                log.e(ex, "useDbCache[$nTry]: db corrupt!")
                 dbOpenHelper.deleteDatabase()
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "useDbCache[$nTry]: failed.")
                 break
             }
         }
@@ -278,7 +281,7 @@ class CustomEmojiCache(
 
             workers.first().notifyEx()
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "getFrames failed.")
             // たまにcache変数がなぜかnullになる端末があるらしい
         }
         return null
@@ -372,7 +375,7 @@ class CustomEmojiCache(
                         data = try {
                             App1.getHttpCached(request.url)
                         } catch (ex: Throwable) {
-                            log.trace(ex, "get failed. url=${request.url}")
+                            log.w(ex, "get failed. url=${request.url}")
                             null
                         }
                         te = elapsedTime
@@ -416,7 +419,7 @@ class CustomEmojiCache(
                     te = elapsedTime
                     if (te - ts >= 200L) log.d("update_cache ${te - ts}ms")
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "can't load custom emojis.")
 
                     // Fujitsu F-01H（F01H）, 2048MB RAM, Android 6.0
                     // java.lang.NullPointerException:
@@ -468,7 +471,7 @@ class CustomEmojiCache(
                 if (x != null) return x
                 error("ApngFrames.parse returns null.")
             } catch (ex: Throwable) {
-                if (DEBUG) log.trace(ex)
+                if (DEBUG) log.e(ex, "decodeAPNG failed.")
                 errors.add(ex)
             }
 
@@ -478,7 +481,7 @@ class CustomEmojiCache(
                 if (b != null) return ApngFrames(b)
                 error("decodeBitmap returns null.")
             } catch (ex: Throwable) {
-                if (DEBUG) log.trace(ex)
+                if (DEBUG) log.e(ex, "decodeBitmap failed.")
                 errors.add(ex)
             }
 
@@ -488,7 +491,7 @@ class CustomEmojiCache(
                 if (b != null) return ApngFrames(b)
                 error("decodeSVG returns null.")
             } catch (ex: Throwable) {
-                if (DEBUG) log.trace(ex)
+                if (DEBUG) log.e(ex, "decodeSVG failed.")
                 errors.add(ex)
             }
 

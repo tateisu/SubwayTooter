@@ -34,11 +34,11 @@ fun ActPost.decodeAttachments(sv: String) {
             try {
                 attachmentList.add(PostAttachment(TootAttachment.decodeJson(it)))
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't parse TootAttachment.")
             }
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "decodeAttachments failed.")
     }
 }
 

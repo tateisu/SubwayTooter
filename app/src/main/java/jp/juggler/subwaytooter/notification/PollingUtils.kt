@@ -178,7 +178,7 @@ fun restartAllWorker(context: Context) {
             App1.prepare(context, "restartAllWorker")
             PollingWorker2.enqueuePolling(context)
         } catch (ex: Throwable) {
-            log.trace(ex, "restartAllWorker failed.")
+            log.e(ex, "restartAllWorker failed.")
         }
     }
 }
@@ -233,7 +233,7 @@ fun checkNotificationImmediate(
                 log.i("(Immediate)[${account.acct.pretty}]${state.desc}")
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "checkNotificationImmediate failed.")
+            log.e(ex, "checkNotificationImmediate failed.")
         }
     }
 }
@@ -290,7 +290,7 @@ suspend fun checkNoticifationAll(
             }
             progress(tmpMap)
         } catch (ex: Throwable) {
-            log.trace(ex, "updateStatus")
+            log.e(ex, "updateStatus")
         }
     }
 
@@ -308,7 +308,7 @@ suspend fun checkNoticifationAll(
                     ) { a, s -> updateStatus(a, s) }
                     updateStatus(sa, PollingState.Complete)
                 } catch (ex: Throwable) {
-                    log.trace(ex, "updateStatus failed.")
+                    log.e(ex, "updateStatus failed.")
                     val s = when (ex) {
                         is CancellationException -> PollingState.Cancelled
                         else -> PollingState.Error
@@ -323,7 +323,7 @@ suspend fun checkNoticifationAll(
         val tmpMap = statusMap.trans()
         progress(tmpMap)
     } catch (ex: Throwable) {
-        log.trace(ex, "checkNoticifationAll failed.")
+        log.e(ex, "checkNoticifationAll failed.")
     }
 
     if (timeoutAccounts.isNotEmpty()) {
@@ -352,7 +352,7 @@ fun checkNotificationImmediateAll(context: Context, onlySubscription: Boolean = 
                 onlySubscription = onlySubscription
             )
         } catch (ex: Throwable) {
-            log.trace(ex, "checkNotificationImmediateAll failed.")
+            log.e(ex, "checkNotificationImmediateAll failed.")
         }
     }
 }
@@ -396,7 +396,7 @@ fun recycleClickedNotification(context: Context, uri: Uri) {
                 NotificationTracking.updateRead(dbId, typeName)
             }
         } catch (ex: Throwable) {
-            log.trace(ex, "recycleClickedNotification failed.")
+            log.e(ex, "recycleClickedNotification failed.")
         }
     }
 }

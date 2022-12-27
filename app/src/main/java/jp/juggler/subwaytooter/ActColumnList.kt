@@ -145,11 +145,11 @@ class ActColumnList : AppCompatActivity() {
                             item.setOldSelection(true)
                         }
                     } catch (ex: Throwable) {
-                        log.trace(ex)
+                        log.e(ex, "restoreData: item decode failed.")
                     }
                 }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "restoreData failed.")
         }
 
         listAdapter.itemList = tmpList

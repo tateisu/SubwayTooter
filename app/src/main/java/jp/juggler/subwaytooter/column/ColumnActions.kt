@@ -195,7 +195,7 @@ fun Column.removeNotifications() {
         try {
             onNotificationCleared(context, accessInfo.db_id)
         } catch (ex: Throwable) {
-            log.trace(ex, "onNotificationCleared failed.")
+            log.e(ex, "onNotificationCleared failed.")
         }
     }
 }

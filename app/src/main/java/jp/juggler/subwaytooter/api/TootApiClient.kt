@@ -358,7 +358,7 @@ class TootApiClient(
             readBodyBytes(result, progressPath, jsonErrorParser)
                 ?: return if (isApiCancelled()) null else result
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "parseBytes failed.")
             result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
@@ -375,7 +375,7 @@ class TootApiClient(
 
             result.data = bodyString
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "parseString failed.")
             result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
@@ -388,55 +388,64 @@ class TootApiClient(
         progressPath: String? = null,
         jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
     ): TootApiResult? {
-        val response = result.response!! // nullにならないはず
-
         try {
             var bodyString = readBodyString(result, progressPath, jsonErrorParser)
-                ?: return if (isApiCancelled()) null else result
 
-            if (bodyString.isEmpty()) {
+            when {
+                bodyString == null ->
+                    return if (isApiCancelled()) null else result
 
                 // 204 no content は 空オブジェクトと解釈する
-                result.data = JsonObject()
-            } else if (reStartJsonArray.matcher(bodyString).find()) {
-                result.data = bodyString.decodeJsonArray()
-            } else if (reStartJsonObject.matcher(bodyString).find()) {
-                val json = bodyString.decodeJsonObject()
-                val errorMessage = jsonErrorParser(json)
-                if (errorMessage != null) {
-                    result.error = errorMessage
-                } else {
-                    result.data = json
-                }
-            } else {
-                // HTMLならタグを除去する
-                val ct = response.body?.contentType()
-                if (ct?.subtype == "html") {
-                    val decoded = DecodeOptions().decodeHTML(bodyString).toString()
-                        .replace("""[\s　]+""".toRegex(), " ")
-                    bodyString = decoded
+                bodyString.isEmpty() -> {
+                    result.data = JsonObject()
                 }
 
-                val sb = StringBuilder()
-                    .append(context.getString(R.string.response_not_json))
-                    .append(' ')
-                    .append(bodyString)
+                reStartJsonArray.matcher(bodyString).find() -> {
+                    result.data = bodyString.decodeJsonArray()
+                }
 
-                if (sb.isNotEmpty()) sb.append(' ')
-                sb.append("(HTTP ").append(response.code.toString())
+                reStartJsonObject.matcher(bodyString).find() -> {
+                    val json = bodyString.decodeJsonObject()
+                    val errorMessage = jsonErrorParser(json)
+                    if (errorMessage != null) {
+                        result.error = errorMessage
+                    } else {
+                        result.data = json
+                    }
+                }
 
-                val message = response.message
-                if (message.isNotEmpty()) sb.append(' ').append(message)
+                else -> {
+                    val response = result.response!! // nullにならないはず
 
-                sb.append(")")
+                    // HTMLならタグを除去する
+                    val ct = response.body?.contentType()
+                    if (ct?.subtype == "html") {
+                        val decoded = DecodeOptions().decodeHTML(bodyString).toString()
+                            .replace("""[\s　]+""".toRegex(), " ")
+                        bodyString = decoded
+                    }
 
-                val url = response.request.url.toString()
-                if (url.isNotEmpty()) sb.append(' ').append(url)
+                    val sb = StringBuilder()
+                        .append(context.getString(R.string.response_not_json))
+                        .append(' ')
+                        .append(bodyString)
 
-                result.error = sb.toString()
+                    if (sb.isNotEmpty()) sb.append(' ')
+                    sb.append("(HTTP ").append(response.code.toString())
+
+                    val message = response.message
+                    if (message.isNotEmpty()) sb.append(' ').append(message)
+
+                    sb.append(")")
+
+                    val url = response.request.url.toString()
+                    if (url.isNotEmpty()) sb.append(' ').append(url)
+
+                    result.error = sb.toString()
+                }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "parseJson failed.")
             result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
@@ -1254,7 +1263,7 @@ class TootApiClient(
                 return Pair(null, null)
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "webSocket failed.")
             result.error =
                 "${result.caption}: ${ex.withCaption(context.resources, R.string.network_error)}"
         }

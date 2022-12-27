@@ -138,10 +138,10 @@ fun ActPost.initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
                 states.visibility = sample
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "initializeFromReplyStatus: can't initialize visibility.")
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "initializeFromReplyStatus failed.")
     }
 }
 

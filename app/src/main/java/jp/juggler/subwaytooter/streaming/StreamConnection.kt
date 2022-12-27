@@ -15,7 +15,6 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.net.ProtocolException
 import java.net.SocketException
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -145,7 +144,7 @@ class StreamConnection(
                 try {
                     if (!it.isDispose.get()) it.onStatusRemoved(timelineHost, id)
                 } catch (ex: Throwable) {
-                    log.trace(ex)
+                    log.e(ex, "onStatusRemoved failed.")
                 }
             }
         }
@@ -277,7 +276,7 @@ class StreamConnection(
                                         column.replaceStatus(payload.id, payload.json)
                                     }
                                 } catch (ex: Throwable) {
-                                    log.e(ex)
+                                    log.e(ex, "replaceStatus failed.")
                                 }
                             }
                         }
@@ -325,8 +324,7 @@ class StreamConnection(
                     else -> handleMastodonMessage(obj, text)
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
-                log.e("$name onMessage error. data=$text")
+                log.e(ex, "$name onMessage error. data=$text")
             }
         }
     }

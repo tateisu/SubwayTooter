@@ -127,7 +127,7 @@ fun ActMain.tagDialog(
 
             d.show(activity, tagWithSharp)
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "tagDialog failed.")
         }
     }
 }

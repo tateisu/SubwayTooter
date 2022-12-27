@@ -435,12 +435,12 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                                     handleRequest(req)
                                 }
                             } catch (ex: Throwable) {
-                                log.trace(ex, "handleRequest failed.")
+                                log.e(ex, "handleRequest failed.")
                                 tiError(ex.withCaption("handleRequest failed."))
                             }
                             runCatching { req.cont.resumeWith(Result.success(r)) }
                         } catch (ex: Throwable) {
-                            log.trace(ex, "requestQueue.take failed.")
+                            log.e(ex, "requestQueue.take failed.")
                             delay(3000L)
                         }
                     }

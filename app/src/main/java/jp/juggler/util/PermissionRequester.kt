@@ -143,7 +143,7 @@ class PermissionRequester(
                 }
                 .show()
         } catch (ex: Throwable) {
-            log.trace(ex, "can't handle result.")
+            log.e(ex, "onActivityResult: can't handle result.")
         }
     }
 

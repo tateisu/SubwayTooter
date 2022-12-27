@@ -235,7 +235,6 @@ object AppDataExporter {
             reader.endArray()
             db.execSQL("COMMIT TRANSACTION")
         } catch (ex: Throwable) {
-            log.trace(ex)
             log.e(ex, "importTable failed.")
             try {
                 db.execSQL("ROLLBACK TRANSACTION")
@@ -343,7 +342,6 @@ object AppDataExporter {
             try {
                 result.add(Column(appState, item))
             } catch (ex: Throwable) {
-                log.trace(ex)
                 log.e(ex, "column load failed.")
                 throw ex
             }
@@ -436,7 +434,7 @@ object AppDataExporter {
                 }
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "saveBackgroundImage failed.")
         }
     }
 
@@ -470,7 +468,7 @@ object AppDataExporter {
                 column.columnBgImage = Uri.fromFile(file).toString()
             }
         } catch (ex: Throwable) {
-            log.trace(ex)
+            log.e(ex, "restoreBackgroundImage failed.")
         }
 
         return true

@@ -9,7 +9,6 @@ import jp.juggler.subwaytooter.columnviewholder.setListItemTop
 import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.*
-import java.lang.StringBuilder
 
 @Suppress("ClassNaming")
 class ColumnTask_Gap(
@@ -56,7 +55,7 @@ class ColumnTask_Gap(
             try {
                 column.updateRelation(client, listTmp, column.whoAccount, parser)
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "updateRelation failed.")
             }
 
             ctClosed.set(true)
@@ -924,7 +923,7 @@ class ColumnTask_Gap(
 
             val (apiResult, searchResult) = client.requestMastodonSearch(
                 parser,
-                q= column.searchQuery,
+                q = column.searchQuery,
                 resolve = column.searchResolve,
                 extra = "type=$type&offset=$offset",
             )

@@ -66,7 +66,7 @@ class ColumnTask_Loading(
             try {
                 column.updateRelation(client, listTmp, column.whoAccount, parser)
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "updateRelation failed.")
             }
             ctClosed.set(true)
             runOnMainLooperDelayed(333L) {
@@ -1222,7 +1222,7 @@ class ColumnTask_Loading(
 
             val (apiResult, searchResult) = client.requestMastodonSearch(
                 parser,
-                q=column.searchQuery,
+                q = column.searchQuery,
                 resolve = column.searchResolve,
             )
             if (searchResult != null) {

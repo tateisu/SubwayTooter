@@ -66,7 +66,7 @@ private suspend fun checkExist(url: String?): Boolean {
             log.e(TootApiClient.formatResponse(response, "check_exist failed."))
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "checkExist failed.")
     }
     return false
 }
@@ -126,7 +126,7 @@ fun ActPost.saveDraft() {
 
         PostDraft.save(System.currentTimeMillis(), json)
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "saveDraft failed.")
     }
 }
 
@@ -221,7 +221,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                     }
                 }
             } catch (ex: JsonException) {
-                log.trace(ex)
+                log.e(ex, "can't parse tmpAttachmentList.")
             }
 
             "OK"
@@ -346,7 +346,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't initialize attachments from redraft.")
             }
         }
 
@@ -413,7 +413,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             }
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "initializeFromRedraftStatus failed.")
     }
 }
 
@@ -441,7 +441,7 @@ fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
                     }
                 }
             } catch (ex: Throwable) {
-                log.trace(ex)
+                log.e(ex, "can't initialize attachments from edit status")
             }
         }
 
@@ -508,6 +508,6 @@ fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
             }
         }
     } catch (ex: Throwable) {
-        log.trace(ex)
+        log.e(ex, "initializeFromEditStatus failed.")
     }
 }

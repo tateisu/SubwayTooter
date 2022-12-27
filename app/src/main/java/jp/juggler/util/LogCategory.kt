@@ -13,21 +13,21 @@ fun Throwable.withCaption(caption: String? = null) =
 fun Throwable.withCaption(resources: Resources, stringId: Int, vararg args: Any) =
     "${resources.getString(stringId, *args)}: ${javaClass.simpleName} $message"
 
-fun errorEx(ex: Throwable, caption: String): Nothing = throw IllegalStateException(caption, ex)
+// cause 付きの IllegalStateException を投げる
+fun errorEx(cause: Throwable, caption: String): Nothing =
+    throw IllegalStateException(caption, cause)
 
-class LogCategory(category: String) {
+class LogCategory(val category: String) {
 
     companion object {
         private const val TAG = "SubwayTooter"
     }
 
-    private val tag = "$TAG:$category"
-
     ///////////////////////////////
     // string
 
     private fun msg(priority: Int, msg: String): Boolean {
-        Log.println(priority, tag, msg)
+        Log.println(priority, TAG, "$category/$msg")
         return false
     }
 
@@ -63,22 +63,11 @@ class LogCategory(category: String) {
         msg(Log.VERBOSE, res, stringId, args)
 
     ///////////////////////////////
-    // Throwable + string
-
-    private fun msg(priority: Int, ex: Throwable, caption: String? = null) =
-        msg(priority, ex.withCaption(caption))
-
-    fun e(ex: Throwable, caption: String = "exception") = msg(Log.ERROR, ex, caption)
-    fun w(ex: Throwable, caption: String = "exception") = msg(Log.WARN, ex, caption)
-    fun i(ex: Throwable, caption: String = "exception") = msg(Log.INFO, ex, caption)
-    fun d(ex: Throwable, caption: String = "exception") = msg(Log.DEBUG, ex, caption)
-    fun v(ex: Throwable, caption: String = "exception") = msg(Log.VERBOSE, ex, caption)
-
-    ////////////////////////
     // stack trace
 
-    fun trace(ex: Throwable, caption: String = "exception."): Boolean {
-        Log.e(tag, caption, ex)
-        return false
-    }
+    fun e(ex: Throwable, caption: String?) =
+        false.also { Log.e(TAG, "$category/${ex.withCaption(caption)}", ex) }
+
+    fun w(ex: Throwable, caption: String?) =
+        false.also { Log.w(TAG, "$category/${ex.withCaption(caption)}", ex) }
 }

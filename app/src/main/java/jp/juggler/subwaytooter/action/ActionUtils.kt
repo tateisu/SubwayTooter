@@ -12,6 +12,8 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.jsonObject
 import jp.juggler.util.showToast
 
+private val log = LogCategory("ActionUtils")
+
 // 疑似アカウントを作成する
 // 既に存在する場合は再利用する
 // 実アカウントを返すことはない
@@ -20,18 +22,18 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
     instanceInfoArg: TootInstance? = null,
 ): SavedAccount? {
 
-    suspend fun AppCompatActivity.getInstanceInfo(): TootInstance? {
-        var resultTi: TootInstance? = null
-        val result = runApiTask(host) { client ->
-            val (instance, instanceResult) = TootInstance.get(client)
-            resultTi = instance
-            instanceResult
-        }
-        result?.error?.let { showToast(true, it) }
-        return resultTi
-    }
-
     try {
+        suspend fun AppCompatActivity.getInstanceInfo(): TootInstance? {
+            var resultTi: TootInstance? = null
+            val result = runApiTask(host) { client ->
+                val (instance, instanceResult) = TootInstance.get(client)
+                resultTi = instance
+                instanceResult
+            }
+            result?.error?.let { showToast(true, it) }
+            return resultTi
+        }
+
         val acct = Acct.parse("?", host)
 
         var account = SavedAccount.loadAccountByAcct(this, acct.ascii)
@@ -70,12 +72,10 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
         account.saveSetting()
         return account
     } catch (ex: Throwable) {
-        val log = LogCategory("addPseudoAccount")
-        log.trace(ex)
-        log.e(ex, "failed.")
+        log.e(ex, "addPseudoAccount failed.")
         showToast(ex, "addPseudoAccount failed.")
+        return null
     }
-    return null
 }
 
 internal fun SavedAccount.saveUserRelation(src: TootRelationShip?): UserRelation? {

@@ -19,6 +19,8 @@ import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.bottomPadding
 import org.jetbrains.anko.topPadding
 
+private val log = LogCategory("ColumnViewHolderLifeCycle")
+
 fun ColumnViewHolder.closeBitmaps() {
     try {
         ivColumnBackgroundImage.visibility = View.GONE
@@ -32,7 +34,7 @@ fun ColumnViewHolder.closeBitmaps() {
 
         lastImageUri = null
     } catch (ex: Throwable) {
-        ColumnViewHolder.log.trace(ex)
+        log.e(ex, "closeBitmaps failed.")
     }
 }
 
@@ -71,12 +73,12 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
                             },
                         )
                     } catch (ex: Throwable) {
-                        ColumnViewHolder.log.trace(ex)
+                        log.e(ex, "createResizedBitmap failed.")
                         null
                     }
                 }
             } catch (ex: Throwable) {
-                ColumnViewHolder.log.w(ex, "loadBackgroundImage failed.")
+                log.w(ex, "loadBackgroundImage failed.")
                 null
             }
             if (bitmap != null) {
@@ -90,7 +92,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
             }
         }
     } catch (ex: Throwable) {
-        ColumnViewHolder.log.trace(ex)
+        log.e(ex, "loadBackgroundImage failed.")
     }
 }
 

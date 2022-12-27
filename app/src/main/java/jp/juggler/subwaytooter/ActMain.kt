@@ -294,7 +294,7 @@ class ActMain : AppCompatActivity(),
 
     val arActText = ActivityResultHandler(log) { r ->
         when (r.resultCode) {
-            ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(r.data, ColumnType.SEARCH_MSP)
+            // ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(r.data, ColumnType.SEARCH_MSP)
             // ActText.RESULT_SEARCH_TS -> searchFromActivityResult(r.data, ColumnType.SEARCH_TS)
             ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(
                 r.data,

@@ -1163,4 +1163,5 @@
     <string name="unfollow_hashtag_of">Unfollow %1$s</string>
     <string name="conversation_with_reference">conversation + reference</string>
     <string name="tootsearch_discontinued">Tootsearch service discontinued on 2022/12/25.</string>
+    <string name="msp_discontinued">Mastodon Search Portal service was discontinued.</string>
 </resources>

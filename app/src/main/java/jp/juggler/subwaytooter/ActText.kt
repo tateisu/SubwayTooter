@@ -24,8 +24,7 @@ class ActText : AppCompatActivity() {
 
         internal val log = LogCategory("ActText")
 
-        internal const val RESULT_SEARCH_MSP = RESULT_FIRST_USER + 1
-
+        // internal const val RESULT_SEARCH_MSP = RESULT_FIRST_USER + 1
         // internal const val RESULT_SEARCH_TS = RESULT_FIRST_USER + 2
         internal const val RESULT_SEARCH_NOTESTOCK = RESULT_FIRST_USER + 3
 

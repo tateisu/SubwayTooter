@@ -676,7 +676,7 @@
     <string name="show_follow_button_in_button_bar">フォローボタンをボタンバーに表示する(アプリ再起動が必要)</string>
     <string name="show_post_button_bar_top">投稿画面のボタンバーを上端に表示</string>
     <string name="show_quick_toot_bar">簡易投稿バーを表示(アプリ再起動が必要)</string>
-    <string name="simple_list">簡略表示(アプリ再起動が必要)</string>
+    <string name="simple_list">タイムライン中のボタンを減らす(アプリ再起動が必要)</string>
     <string name="skin_tone_dark">暗い肌色</string>
     <string name="skin_tone_light">明るい肌色</string>
     <string name="skin_tone_medium">中間の肌色</string>

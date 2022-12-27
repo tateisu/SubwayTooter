@@ -207,7 +207,7 @@
     <string name="spoil_visibility_for_account">Visibility is spoiled for account.</string>
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s.</string>
-    <string name="simple_list">Simple list(app restart required)</string>
+    <string name="simple_list">Reduce buttons in timeline (app restart required)</string>
     <string name="mute_app_desc">&gt;Swipe leftwards to delete. Reload columns to show statuses published by unmuted apps.</string>
     <string name="muted_app">Muted apps</string>
     <string name="application_is">app: %1$s</string>

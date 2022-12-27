@@ -83,6 +83,7 @@ class ActText : AppCompatActivity() {
                 selection,
             )
 
+            // MSP検索ボタン -> searchToot(RESULT_SEARCH_MSP)
             // R.id.btnSearchTS -> searchToot(RESULT_SEARCH_TS)
 
             R.id.btnSearchNotestock -> searchToot(RESULT_SEARCH_NOTESTOCK)

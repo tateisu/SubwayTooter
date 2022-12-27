@@ -29,10 +29,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import jp.juggler.subwaytooter.R
 
-object UiUtils {
-
-    val log = LogCategory("UiUtils")
-}
+private val log = LogCategory("UiUtils")
 
 // colorARGB.applyAlphaMultiplier(0.5f) でalpha値が半分になったARGB値を得る
 fun Int.applyAlphaMultiplier(alphaMultiplier: Float? = null): Int {
@@ -96,12 +93,11 @@ fun createRoundDrawable(
     fillColor: Int? = null,
     strokeColor: Int? = null,
     strokeWidth: Int = 4,
-) =
-    GradientDrawable().apply {
-        cornerRadius = radius
-        if (fillColor != null) setColor(fillColor)
-        if (strokeColor != null) setStroke(strokeWidth, strokeColor)
-    }
+) = GradientDrawable().apply {
+    cornerRadius = radius
+    if (fillColor != null) setColor(fillColor)
+    if (strokeColor != null) setStroke(strokeWidth, strokeColor)
+}
 
 // 色を指定してRippleDrawableを生成する
 fun getAdaptiveRippleDrawable(normalColor: Int, pressedColor: Int): Drawable {
@@ -296,7 +292,7 @@ fun CharSequence.copyToClipboard(context: Context) {
 
         context.showToast(false, R.string.copy_complete)
     } catch (ex: Throwable) {
-        UiUtils.log.e(ex, "copy failed.")
+        log.e(ex, "copy failed.")
         context.showToast(ex, "copy failed.")
     }
 }

@@ -50,7 +50,8 @@ class TestTootInstance {
             .build()
 
         private val dummyClientCallback = object : TootApiCallback {
-            override val isApiCancelled: Boolean = false
+            override suspend fun isApiCancelled() = false
+
             override suspend fun publishApiProgress(s: String) {
                 log.d("apiProgress: $s")
             }
@@ -83,7 +84,6 @@ class TestTootInstance {
                     assertNotNull(ti)
                     assertNull(ri?.error)
                     ti!!.run { log.d("$instanceType $uri $version") }
-
                 }
                 a(Host.parse("mastodon.juggler.jp"))
                 a(Host.parse("misskey.io"))

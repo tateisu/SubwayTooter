@@ -9,9 +9,9 @@ import javax.net.ssl.*
 
 object MySslSocketFactory : SSLSocketFactory() {
 
-    private var debugCipherSuites = false
-
     private val log = LogCategory("MySslSocketFactory")
+
+    private var debugCipherSuites = false
 
     private val originalFactory: SSLSocketFactory =
         SSLContext.getInstance("TLS").apply {
@@ -19,7 +19,6 @@ object MySslSocketFactory : SSLSocketFactory() {
         }.socketFactory
 
     private fun check(socket: Socket?): Socket? {
-
         // 端末のデフォルトでは1.3が含まれないので追加する
         (socket as? SSLSocket)?.enabledProtocols = arrayOf("TLSv1.1", "TLSv1.2", "TLSv1.3")
 
@@ -34,85 +33,93 @@ object MySslSocketFactory : SSLSocketFactory() {
         return socket
     }
 
-    override fun getDefaultCipherSuites(): Array<String> {
-        return originalFactory.defaultCipherSuites
-    }
+    override fun getDefaultCipherSuites(): Array<String> =
+        originalFactory.defaultCipherSuites
 
-    override fun getSupportedCipherSuites(): Array<String> {
-        return originalFactory.supportedCipherSuites
-    }
+    override fun getSupportedCipherSuites(): Array<String> =
+        originalFactory.supportedCipherSuites
 
     @Throws(IOException::class)
-    override fun createSocket(): Socket? {
-        return check(originalFactory.createSocket())
-    }
+    override fun createSocket(
+    ): Socket? = check(
+        originalFactory.createSocket()
+    )
 
     @Throws(IOException::class)
-    override fun createSocket(s: Socket, host: String, port: Int, autoClose: Boolean): Socket? {
-        return check(
-            originalFactory.createSocket(
-                s,
-                host,
-                port,
-                autoClose
-            )
+    override fun createSocket(
+        s: Socket,
+        host: String,
+        port: Int,
+        autoClose: Boolean,
+    ): Socket? = check(
+        originalFactory.createSocket(
+            s,
+            host,
+            port,
+            autoClose
         )
-    }
+    )
 
     @Throws(IOException::class, UnknownHostException::class)
-    override fun createSocket(host: String, port: Int): Socket? {
-        return check(
-            originalFactory.createSocket(
-                host,
-                port
-            )
+    override fun createSocket(
+        host: String,
+        port: Int,
+    ): Socket? = check(
+        originalFactory.createSocket(
+            host,
+            port
         )
-    }
+    )
 
     @Throws(IOException::class, UnknownHostException::class)
-    override fun createSocket(host: String, port: Int, localHost: InetAddress, localPort: Int): Socket? {
-        return check(
-            originalFactory.createSocket(
-                host,
-                port,
-                localHost,
-                localPort
-            )
+    override fun createSocket(
+        host: String,
+        port: Int,
+        localHost: InetAddress,
+        localPort: Int,
+    ): Socket? = check(
+        originalFactory.createSocket(
+            host,
+            port,
+            localHost,
+            localPort
         )
-    }
+    )
 
     @Throws(IOException::class)
-    override fun createSocket(host: InetAddress, port: Int): Socket? {
-        return check(
-            originalFactory.createSocket(
-                host,
-                port
-            )
+    override fun createSocket(
+        host: InetAddress,
+        port: Int,
+    ): Socket? = check(
+        originalFactory.createSocket(
+            host,
+            port
         )
-    }
+    )
 
     @Throws(IOException::class)
-    override fun createSocket(address: InetAddress, port: Int, localAddress: InetAddress, localPort: Int): Socket? {
-        return check(
-            originalFactory.createSocket(
-                address,
-                port,
-                localAddress,
-                localPort
-            )
+    override fun createSocket(
+        address: InetAddress,
+        port: Int,
+        localAddress: InetAddress,
+        localPort: Int,
+    ): Socket? = check(
+        originalFactory.createSocket(
+            address,
+            port,
+            localAddress,
+            localPort
         )
-    }
+    )
 
-    //
+    // App1, TestTootInstance 等で使われる
     val trustManager: X509TrustManager by lazy {
-        val trustManagers = TrustManagerFactory
+        val list = TrustManagerFactory
             .getInstance(TrustManagerFactory.getDefaultAlgorithm())
             .apply { init(null as KeyStore?) }
             .trustManagers
 
-        trustManagers
-            .find { it is X509TrustManager }
-            as? X509TrustManager
-            ?: error("missing X509TrustManager in $trustManagers")
+        list?.firstNotNullOfOrNull { it as? X509TrustManager }
+            ?: error("missing X509TrustManager in $list")
     }
 }

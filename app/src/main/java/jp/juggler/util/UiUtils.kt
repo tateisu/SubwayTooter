@@ -13,6 +13,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
+import android.os.Build
 import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
@@ -290,7 +291,11 @@ fun CharSequence.copyToClipboard(context: Context) {
 
         clipboard.setPrimaryClip(clip)
 
-        context.showToast(false, R.string.copy_complete)
+        if(Build.VERSION.SDK_INT < 33){
+            context.showToast(false, R.string.copy_complete)
+            // API 33以上はOSがクリップボード使用メッセージをだすので、アプリはトーストを出さない
+        }
+
     } catch (ex: Throwable) {
         log.e(ex, "copy failed.")
         context.showToast(ex, "copy failed.")

@@ -18,6 +18,9 @@ class EventReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
+
+        log.i("onReceive action=${intent?.action}")
+
         when (val action = intent?.action) {
 
             Intent.ACTION_BOOT_COMPLETED,

@@ -78,6 +78,9 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Android 13以上で BOOT_COMPLETED を受け取るために必要 -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <!--suppress AndroidUnknownAttribute -->
     <application
         android:name=".App1"

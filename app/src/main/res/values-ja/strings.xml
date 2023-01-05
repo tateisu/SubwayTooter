@@ -450,7 +450,6 @@
     <string name="missing_fcm_device_id">FCMのデバイスIDを準備できません。しばらく後に試してください。</string>
     <string name="missing_install_id">インストールIDを準備できません。しばらく後に試してください。</string>
     <string name="missing_mail_app">メールアドレスを共有できるアプリがありません</string>
-    <string name="missing_permission_to_access_media">メディアアクセスに必要なアプリ権限がありません。端末の設定でアプリに権限を許可してください。</string>
     <string name="missing_push_api">このサーバーにはプッシュ購読APIがありません。</string>
     <string name="missing_push_scope">このアクセストークンは古いのでプッシュ購読の権限がありません。アクセストークンの更新をおすすめします。</string>
     <string name="misskey">Misskey</string>
@@ -1155,4 +1154,14 @@
     <string name="conversation_with_reference">会話と参照</string>
     <string name="tootsearch_discontinued">Tootsearchは2022/12/25にサービス終了しました。</string>
     <string name="msp_discontinued">マストドン検索ポータルはサービス終了しました。</string>
+
+    <string name="permission_rational_notifications">通知を表示するには権限が必要です。</string>
+    <string name="permission_denied_notifications">通知を表示する権限がありません。</string>
+
+    <string name="permission_rational_download_manager">DownloadManagerを使用するには権限が必要です。</string>
+    <string name="permission_denied_download_manager">DownloadManagerを使用する権限がありません。</string>
+
+    <string name="permission_rational_media_access">端末上のデータにアクセスするには権限が必要です。</string>
+    <string name="permission_denied_media_access">端末上のデータにアクセスする権限がありません。</string>
+
 </resources>

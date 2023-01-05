@@ -248,7 +248,6 @@
     <string name="image_capture">Take a picture</string>
     <string name="video_capture">Capture a video</string>
     <string name="voice_capture">Capture a voice</string>
-    <string name="missing_permission_to_access_media">Missing app permission to access media. Please grant the permission to the app in the device settings.</string>
     <string name="attachment_uploading">Uploading media attachment…</string>
     <string name="attachment_uploaded">Media attachment was uploaded.</string>
     <string name="actions_for_status">Actions for this toot</string>
@@ -1164,4 +1163,13 @@
     <string name="conversation_with_reference">conversation + reference</string>
     <string name="tootsearch_discontinued">Tootsearch service discontinued on 2022/12/25.</string>
     <string name="msp_discontinued">Mastodon Search Portal service was discontinued.</string>
+
+    <string name="permission_rational_notifications">to check/show notifications, the app need runtime permission.</string>
+    <string name="permission_denied_notifications">Missing app permission to show notifications.</string>
+
+    <string name="permission_rational_download_manager">Permission required to use DownloadManager.</string>
+    <string name="permission_denied_download_manager">Missing app permission to use DownloadManager.</string>
+
+    <string name="permission_rational_media_access">Permission required to access the device\'s media data.</string>
+    <string name="permission_denied_media_access">Missing app permission to access the device\'s media data.</string>
 </resources>

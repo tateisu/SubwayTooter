@@ -226,10 +226,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private val prDownload = PermissionRequester(
-        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        deniedId = R.string.missing_permission_to_access_media,
-    ) { download(mediaList[idx]) }
+    private val prDownload = permissionSpecMediaDownload.requester { download(mediaList[idx]) }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

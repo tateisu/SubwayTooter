@@ -233,7 +233,7 @@
     <string name="image_capture">Maak een foto</string>
     <string name="video_capture">Neem een video op</string>
     <string name="voice_capture">Neem geluid op</string>
-    <string name="missing_permission_to_access_media">Toegang tot media is niet verleend.</string>
+    <string name="permission_denied_media_access">Toegang tot media is niet verleend.</string>
     <string name="attachment_uploading">Mediabijlage wordt geüpload…</string>
     <string name="attachment_uploaded">Mediabijlage is geüpload.</string>
     <string name="actions_for_status">Handelingen voor deze status</string>

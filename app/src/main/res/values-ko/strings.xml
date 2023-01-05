@@ -231,7 +231,7 @@
     <string name="dont_resize">크기 변경 하지 않기</string>
     <string name="long_side_pixel">%1$d 화소로 변경</string>
     <string name="image_capture">사진 찍기</string>
-    <string name="missing_permission_to_access_media">미디어 파일 접근에 필요한 앱 권한 없습니다.</string>
+    <string name="permission_denied_media_access">미디어 파일 접근에 필요한 앱 권한 없습니다.</string>
     <string name="attachment_uploading">첨부 미디어 올리는 중…</string>
     <string name="attachment_uploaded">첨부 미디어가 올려졌습니다.</string>
     <string name="actions_for_status">이 툿에 대한 동작</string>

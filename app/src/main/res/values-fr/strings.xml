@@ -189,7 +189,7 @@
     <string name="mention2">Mentionner</string>
     <string name="menu">Menu</string>
     <string name="minimum_column_width">Largeur minimale des colonnes (défaut=300dp, redémarrage nécessaire)</string>
-    <string name="missing_permission_to_access_media">Autorisation de l’application manquante pour accéder aux médias. Veuillez accorder l\'autorisation à l\'application dans les paramètres de l\'appareil.</string>
+    <string name="permission_denied_media_access">Autorisation de l’application manquante pour accéder aux médias. Veuillez accorder l\'autorisation à l\'application dans les paramètres de l\'appareil.</string>
     <string name="more">Plus</string>
     <string name="mute">Désactiver le son</string>
     <string name="mute_app_desc">&gt; Faîtes glisser à gauche pour supprimer. Vous devez rafraîchir les colonnes pour voir les statuts publiés par les applications non masquées.</string>

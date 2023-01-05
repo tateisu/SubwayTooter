@@ -241,7 +241,7 @@
     <string name="actions_for_status">针对此嘟文的行动</string>
     <string name="attachment_uploaded">媒体附件已上传.</string>
     <string name="attachment_uploading">上传媒体附件中……</string>
-    <string name="missing_permission_to_access_media">缺少访问媒体的应用权限.请在设备设置中授予该应用权限.</string>
+    <string name="permission_denied_media_access">缺少访问媒体的应用权限.请在设备设置中授予该应用权限.</string>
     <string name="voice_capture">录制音频</string>
     <string name="video_capture">拍摄视频</string>
     <string name="resize_square_pixels">调整尺寸至 %1$d 平方像素 (相当于 %2$dx%2$d)</string>

@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
@@ -179,15 +178,8 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
-    private val prPickAvater = PermissionRequester(
-        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        deniedId = R.string.missing_permission_to_access_media,
-    ) { openPicker(it) }
-
-    private val prPickHeader = PermissionRequester(
-        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        deniedId = R.string.missing_permission_to_access_media,
-    ) { openPicker(it) }
+    private val prPickAvater = permissionSpecImagePicker.requester { openPicker(it) }
+    private val prPickHeader = permissionSpecImagePicker.requester { openPicker(it) }
 
     ///////////////////////////////////////////////////
 
@@ -238,8 +230,6 @@ class ActAccountSetting : AppCompatActivity(),
         log.d("encodedState.uriCameraImage=${decodedState.uriCameraImage}")
         outState.putString(ACTIVITY_STATE, encodedState)
     }
-
-
 
     var density: Float = 1f
 

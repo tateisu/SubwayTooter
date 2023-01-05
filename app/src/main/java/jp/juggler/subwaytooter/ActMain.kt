@@ -311,6 +311,10 @@ class ActMain : AppCompatActivity(),
         }
     }
 
+    var prNotification = permissionSpecNotification.requester {
+        // 特に何もしない
+    }
+
     //////////////////////////////////////////////////////////////////
     // ライフサイクルイベント
 
@@ -320,6 +324,7 @@ class ActMain : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         refActMain = WeakReference(this)
 
+        prNotification.register(this)
         arColumnColor.register(this)
         arLanguageFilter.register(this)
         arNickname.register(this)
@@ -358,6 +363,7 @@ class ActMain : AppCompatActivity(),
         }
 
         checkPrivacyPolicy()
+
     }
 
     override fun onDestroy() {
@@ -436,6 +442,8 @@ class ActMain : AppCompatActivity(),
 
             // 残りの処理はActivityResultの処理より後回しにしたい
             handler.postDelayed(onStartAfter, 1L)
+
+            prNotification.checkOrLaunch()
         }
     }
 

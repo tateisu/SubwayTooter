@@ -266,7 +266,7 @@
     <string name="actions_for_status">Aktionen für diesen Beitrag</string>
     <string name="attachment_uploaded">Medienanhang wurde hochgeladen.</string>
     <string name="attachment_uploading">Lade Medienanhang hoch…</string>
-    <string name="missing_permission_to_access_media">Fehlende App-Berechtigung, um Medien vom Gerät abzurufen. Bitte räume der App die entsprechende Berechtigung in den Systemeinstellungen ein.</string>
+    <string name="permission_denied_media_access">Fehlende App-Berechtigung, um Medien vom Gerät abzurufen. Bitte räume der App die entsprechende Berechtigung in den Systemeinstellungen ein.</string>
     <string name="voice_capture">Sprachnachricht aufnehmen</string>
     <string name="video_capture">Video aufnehmen</string>
     <string name="image_capture">Bild aufnehmen</string>

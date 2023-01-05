@@ -582,7 +582,7 @@
     <string name="boost_from_another_account">Framhev fra en annen konto</string>
     <string name="disable_fast_scroller">Skru av rask rulling (programomstart påkrevd)</string>
     <string name="resize_image">Endre størrelse på bildevedlegg (JPEG, PNG)</string>
-    <string name="missing_permission_to_access_media">Mangler programtilgang for å åpne media.</string>
+    <string name="permission_denied_media_access">Mangler programtilgang for å åpne media.</string>
     <string name="attachment_uploaded">Opplasting av multimediavedlegg fullført.</string>
     <string name="tab_indicator_color">Fanens indikatorfarge</string>
     <string name="text_to_speech_initializing">Starter tekst-til-tale…</string>

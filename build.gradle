@@ -3,7 +3,7 @@ buildscript {
     ext.jvm_target = "1.8"
 
     ext.min_sdk_version = 26
-    ext.target_sdk_version = 32
+    ext.target_sdk_version = 33
     ext.compile_sdk_version = 33
     ext.build_tools_version = "33.0.1"
 

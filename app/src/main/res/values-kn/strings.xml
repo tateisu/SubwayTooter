@@ -220,7 +220,7 @@
     <string name="image_capture">ಚಿತ್ರ ತೆಗೆ</string>
     <string name="video_capture">ವೀಡಿಯೊ ಸೆರೆಹಿಡಿ</string>
     <string name="voice_capture">ಧ್ವನಿ ಸೆರೆಹಿಡಿ</string>
-    <string name="missing_permission_to_access_media">ಮಾಧ್ಯಮವನ್ನು ಪಡೆಯಲು ಅನ್ವಯಕ್ಕೆ ಅನುಮತಿ ಕಾಣೆಯಾಗಿದೆ.</string>
+    <string name="permission_denied_media_access">ಮಾಧ್ಯಮವನ್ನು ಪಡೆಯಲು ಅನ್ವಯಕ್ಕೆ ಅನುಮತಿ ಕಾಣೆಯಾಗಿದೆ.</string>
     <string name="attachment_uploading">ಮಾಧ್ಯಮ ಲಗತ್ತನ್ನು ಜಾಲಕ್ಕೆ ಏರಿಸಲಾಗುತ್ತಿದೆ…</string>
     <string name="attachment_uploaded">ಮಾಧ್ಯಮ ಲಗತ್ತನ್ನು ಜಾಲಕ್ಕೆ ಏರಿಸಲಾಯಿತು.</string>
     <string name="actions_for_status">ಈ ಟೂಟ್‌ಗಾಗಿ ಕ್ರಿಯೆಗಳು</string>

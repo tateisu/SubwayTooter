@@ -86,18 +86,13 @@ class AttachmentPicker(
             }
     }
 
-    private val prPickAttachment = PermissionRequester(
-        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        deniedId = R.string.missing_permission_to_access_media,
-    ) { openPicker() }
+    private val prPickAttachment = permissionSpecImagePicker.requester{ openPicker() }
 
-    private val prPickCustomThumbnail = PermissionRequester(
-        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        deniedId = R.string.missing_permission_to_access_media,
-    ) {
+    private val prPickCustomThumbnail = permissionSpecImagePicker.requester{
         callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)
             ?.let { openCustomThumbnail(it) }
     }
+
 
     init {
         // must register all ARHs before onStart
@@ -132,12 +127,6 @@ class AttachmentPicker(
 
     fun openPicker() {
         if (!prPickAttachment.checkOrLaunch()) return
-
-        //		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
-        //		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
-        //			preparePermission();
-        //			return;
-        //		}
 
         with(activity) {
             val a = ActionsDialog()

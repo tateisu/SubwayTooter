@@ -3,14 +3,11 @@ package jp.juggler.util
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.provider.Settings
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import jp.juggler.subwaytooter.R
@@ -23,21 +20,9 @@ import kotlin.coroutines.resumeWithException
  */
 class PermissionRequester(
     /**
-     * 必要なパーミッションのリスト
+     * 権限の詳細
      */
-    val permissions: List<String>,
-
-    /**
-     * 要求が拒否された場合に表示するメッセージのID
-     */
-    @StringRes val deniedId: Int,
-
-    /**
-     * なぜ権限が必要なのか説明するメッセージのID。
-     * デフォルトは0で、この場合はメッセージを出さない。
-     */
-    @StringRes val rationalId: Int = 0,
-
+    private val spec: PermissionSpec,
     /**
      * 権限が与えられた際に処理を再開するラムダ
      * - ラムダの引数にこのPermissionRequester自身が渡される
@@ -79,10 +64,9 @@ class PermissionRequester(
      */
     fun checkOrLaunch(): Boolean {
         val activity = activity ?: error("missing activity.")
-        val listNotGranted = permissions.filter {
-            PackageManager.PERMISSION_GRANTED !=
-                    ContextCompat.checkSelfPermission(activity, it)
-        }
+
+        val listNotGranted = spec.listNotGranded(activity)
+
         if (listNotGranted.isEmpty()) return true
 
         launchMain {
@@ -91,10 +75,10 @@ class PermissionRequester(
                     shouldShowRequestPermissionRationale(activity, it)
                 }
 
-                if (shouldShowRational && rationalId != 0) {
+                if (shouldShowRational && spec.rationalId != 0) {
                     suspendCancellableCoroutine { cont ->
                         AlertDialog.Builder(activity)
-                            .setMessage(rationalId)
+                            .setMessage(spec.rationalId)
                             .setNegativeButton(R.string.cancel, null)
                             .setPositiveButton(R.string.ok) { _, _ ->
                                 if (cont.isActive) cont.resumeWith(Result.success(Unit))
@@ -136,7 +120,7 @@ class PermissionRequester(
             // 許可されなかった。
             val activity = activity ?: error("missing activity.")
             AlertDialog.Builder(activity)
-                .setMessage(deniedId)
+                .setMessage(spec.deniedId)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.setting) { _, _ ->
                     openAppSetting(activity)
@@ -160,3 +144,6 @@ class PermissionRequester(
         }
     }
 }
+
+fun PermissionSpec.requester(onGrant: (PermissionRequester) -> Unit) =
+    PermissionRequester(this, onGrant)

@@ -244,7 +244,7 @@
     <string name="image_capture">Fes una foto</string>
     <string name="video_capture">Filma un vídeo</string>
     <string name="voice_capture">Grava una veu</string>
-    <string name="missing_permission_to_access_media">Falta el permís de l\'aplicació per accedir al contingut multimèdia. Concediu el permís a l\'aplicació a la configuració del dispositiu.</string>
+    <string name="permission_denied_media_access">Falta el permís de l\'aplicació per accedir al contingut multimèdia. Concediu el permís a l\'aplicació a la configuració del dispositiu.</string>
     <string name="attachment_uploading">Carregant adjunció de mèdia…</string>
     <string name="attachment_uploaded">S\'ha adjuntat el mèdia.</string>
     <string name="actions_for_status">Accions en relació al bram</string>

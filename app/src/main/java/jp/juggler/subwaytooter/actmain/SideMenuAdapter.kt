@@ -384,6 +384,7 @@ class SideMenuAdapter(
 //        Item(icon = R.drawable.ic_search, title = R.string.tootsearch) {
 //            addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_TS, "")
 //        },
+
         Item(icon = R.drawable.ic_search, title = R.string.notestock) {
             addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_NOTESTOCK, "")
         },
@@ -531,7 +532,7 @@ class SideMenuAdapter(
                 }
             }
         } catch (ex: Throwable) {
-            log.w(ex,"getTimeZoneString failed.")
+            log.w(ex, "getTimeZoneString failed.")
             return "(incorrect TimeZone)"
         }
     }

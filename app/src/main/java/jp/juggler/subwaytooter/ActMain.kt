@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.KeyEvent
@@ -16,6 +17,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
@@ -43,6 +45,7 @@ import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.view.MyDrawerLayout
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
+import okhttp3.internal.toHexString
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -363,7 +366,6 @@ class ActMain : AppCompatActivity(),
         }
 
         checkPrivacyPolicy()
-
     }
 
     override fun onDestroy() {
@@ -434,6 +436,7 @@ class ActMain : AppCompatActivity(),
         log.d("onStart")
         isStartedEx = true
         super.onStart()
+        galaxyBackgroundWorkaround()
         benchmark("onStart total") {
             benchmark("reload color") { reloadColors() }
             benchmark("reload timezone") { reloadTimeZone() }
@@ -455,7 +458,7 @@ class ActMain : AppCompatActivity(),
                 try {
                     SavedAccount.sweepBuggieData()
                 } catch (ex: Throwable) {
-                    log.e(ex,"sweepBuggieData failed.")
+                    log.e(ex, "sweepBuggieData failed.")
                 }
             }
 
@@ -693,6 +696,8 @@ class ActMain : AppCompatActivity(),
 
         Column.reloadDefaultColor(this, pref)
 
+        galaxyBackgroundWorkaround()
+
         reloadFonts()
         reloadIconSize()
         reloadRoundRatio()
@@ -714,5 +719,17 @@ class ActMain : AppCompatActivity(),
         reloadMediaHeight()
         initPhoneTablet()
         showFooterColor()
+    }
+
+    private fun galaxyBackgroundWorkaround() {
+        // set window background (redundant)
+        window.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.window_background))
+
+        val color = attrColor(R.attr.colorWindowBackground)
+        log.i("Build MANUFACTURER=${Build.MANUFACTURER}, BRAND=${Build.BRAND}, MODEL=${Build.MODEL}, bgColor=${color.toHexString()}")
+        if (Build.MANUFACTURER?.contains("samsung", ignoreCase = true) == true) {
+            // 余計なオーバードローを一回追加する
+            window.decorView.rootView.setBackgroundColor(color)
+        }
     }
 }

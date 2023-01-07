@@ -253,6 +253,15 @@ internal class DlgContextMenu(
                 }
             )
 
+            arrayOf(
+                views.btnStatusEdit2,
+                views.btnStatusHistory2,
+                views.btnStatusTranslate2,
+                views.btnStatusTranslate2,
+            ).forEach {
+                it.imageTintList = ColorStateList.valueOf(colorButtonNormal)
+            }
+
             views.btnFollow.imageTintList = ColorStateList.valueOf(
                 when {
                     relation.getRequested(who) -> colorButtonError

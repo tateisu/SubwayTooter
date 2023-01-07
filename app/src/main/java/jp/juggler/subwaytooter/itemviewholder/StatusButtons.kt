@@ -645,7 +645,7 @@ class StatusButtonsViewHolder(
     lateinit var btnCustomShare3: ImageButton
     lateinit var btnMore: ImageButton
 
-    fun AnkoFlexboxLayout.normalButtons() {
+    private fun AnkoFlexboxLayout.normalButtons() {
         btnConversation = imageButton {
             background = ContextCompat.getDrawable(
                 context,

@@ -230,13 +230,13 @@ class SideMenuAdapter(
 
     private val list = arrayOf(
 
-        Item(icon = R.drawable.ic_info, title = 1),
-        Item(icon = R.drawable.ic_info, title = 2),
+        Item(icon = R.drawable.ic_info_outline, title = 1),
+        Item(icon = R.drawable.ic_info_outline, title = 2),
 
         Item(),
         Item(title = R.string.account),
 
-        Item(title = R.string.account_add, icon = R.drawable.ic_account_add) {
+        Item(title = R.string.account_add, icon = R.drawable.ic_person_add) {
             accountAdd()
         },
 
@@ -308,7 +308,7 @@ class SideMenuAdapter(
         Item(icon = R.drawable.ic_trend, title = R.string.trend_post) {
             timeline(defaultInsertPosition, ColumnType.TREND_POST)
         },
-        Item(icon = R.drawable.ic_star, title = R.string.favourites) {
+        Item(icon = R.drawable.ic_star_outline, title = R.string.favourites) {
             timeline(defaultInsertPosition, ColumnType.FAVOURITES)
         },
 
@@ -343,15 +343,15 @@ class SideMenuAdapter(
             timeline(defaultInsertPosition, ColumnType.FOLLOW_REQUESTS)
         },
 
-        Item(icon = R.drawable.ic_follow_plus, title = R.string.follow_suggestion) {
+        Item(icon = R.drawable.ic_person_add, title = R.string.follow_suggestion) {
             timeline(defaultInsertPosition, ColumnType.FOLLOW_SUGGESTION)
         },
 
-        Item(icon = R.drawable.ic_follow_plus, title = R.string.endorse_set) {
+        Item(icon = R.drawable.ic_person_add, title = R.string.endorse_set) {
             timeline(defaultInsertPosition, ColumnType.ENDORSEMENT)
         },
 
-        Item(icon = R.drawable.ic_follow_plus, title = R.string.profile_directory) {
+        Item(icon = R.drawable.ic_person_add, title = R.string.profile_directory) {
             serverProfileDirectoryFromSideMenu()
         },
 
@@ -421,14 +421,14 @@ class SideMenuAdapter(
             startActivity(Intent(this, ActMutedPseudoAccount::class.java))
         },
 
-        Item(icon = R.drawable.ic_info, title = R.string.app_about) {
+        Item(icon = R.drawable.ic_info_outline, title = R.string.app_about) {
 
             arAbout.launch(
                 Intent(this, ActAbout::class.java)
             )
         },
 
-        Item(icon = R.drawable.ic_info, title = R.string.oss_license) {
+        Item(icon = R.drawable.ic_info_outline, title = R.string.oss_license) {
             startActivity(Intent(this, ActOSSLicense::class.java))
         },
 

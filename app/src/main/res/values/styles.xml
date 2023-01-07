@@ -264,4 +264,53 @@
         <item name="android:layout_marginStart">2dp</item>
     </style>
 
+    <style name="context_menu_divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+
+        <item name="android:background">?attr/colorSettingDivider</item>
+
+    </style>
+
+    <style name="context_menu_expand_label">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/btn_bg_transparent_round6dp</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingVertical">4dp</item>
+        <item name="android:paddingHorizontal">8dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">?attr/colorTimeSmall</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="context_menu_expand_group">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="context_menu_text_button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/btn_bg_transparent_round6dp</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingHorizontal">8dp</item>
+        <item name="android:paddingVertical">4dp</item>
+        <item name="android:textAllCaps">false</item>
+
+    </style>
+
+    <style name="context_menu_image_button">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:background">@drawable/btn_bg_transparent_round6dp</item>
+    </style>
+
 </resources>

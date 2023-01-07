@@ -553,10 +553,10 @@ fun ItemViewHolder.showStatusTime(
             sb.appendColorShadeIcon(activity, R.drawable.ic_mobile, "mobile")
         }
 
-        // mobileマーク
+        // ブックマーク済み
         if (status.bookmarked) {
             if (sb.isNotEmpty()) sb.append('\u200B')
-            sb.appendColorShadeIcon(activity, R.drawable.ic_bookmark, "bookmarked")
+            sb.appendColorShadeIcon(activity, R.drawable.ic_bookmark_added, "bookmarked")
         }
 
         // NSFWマーク

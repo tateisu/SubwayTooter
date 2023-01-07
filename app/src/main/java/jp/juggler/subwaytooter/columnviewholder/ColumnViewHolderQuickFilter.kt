@@ -103,7 +103,7 @@ fun ColumnViewHolder.showQuickFilter() {
 
     showQuickFilterButton(
         btnQuickFilterFavourite,
-        R.drawable.ic_star,
+        R.drawable.ic_star_outline,
         column.quickFilter == Column.QUICK_FILTER_FAVOURITE
     )
 
@@ -115,7 +115,7 @@ fun ColumnViewHolder.showQuickFilter() {
 
     showQuickFilterButton(
         btnQuickFilterFollow,
-        R.drawable.ic_follow_plus,
+        R.drawable.ic_person_add,
         column.quickFilter == Column.QUICK_FILTER_FOLLOW
     )
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <ScrollView
@@ -20,6 +20,7 @@
             android:orientation="vertical"
             android:padding="12dp">
 
+            <!-- 投稿中のリンクの一覧 -->
             <LinearLayout
                 android:id="@+id/llLinks"
                 android:layout_width="match_parent"
@@ -27,14 +28,13 @@
                 android:orientation="vertical">
 
                 <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="2dp"
+                    style="@style/context_menu_divider"
                     android:layout_marginBottom="6dp"
-                    android:background="?attr/colorSettingDivider" />
+                    android:layout_marginTop="2dp" />
 
             </LinearLayout>
 
+            <!-- 投稿に関する操作 -->
             <LinearLayout
                 android:id="@+id/llStatus"
                 android:layout_width="match_parent"
@@ -44,532 +44,243 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
                     android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
                     android:text="@string/actions_for_status"
                     android:textColor="?attr/colorTimeSmall"
                     android:textSize="12sp" />
 
-                <Button
-                    android:id="@+id/btnStatusHistory"
+                <LinearLayout
+                    android:id="@+id/flStatusButtons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/edit_history"
-                    android:textAllCaps="false" />
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    app:flexWrap="wrap">
 
+                    <ImageButton
+                        android:id="@+id/btnStatusEdit2"
+                        style="@style/context_menu_image_button"
+                        android:contentDescription="@string/edit"
+                        android:src="@drawable/ic_edit" />
+
+                    <ImageButton
+                        android:id="@+id/btnStatusTranslate2"
+                        style="@style/context_menu_image_button"
+                        android:contentDescription="@string/translate"
+                        android:src="@drawable/ic_translate" />
+
+                    <ImageButton
+                        android:id="@+id/btnStatusHistory2"
+                        style="@style/context_menu_image_button"
+                        android:contentDescription="@string/edit_history"
+                        android:src="@drawable/ic_history" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/btnStatusDelete2"
+                        style="@style/context_menu_image_button"
+                        android:contentDescription="@string/delete"
+                        android:src="@drawable/ic_delete" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnStatusHistory"
+                    style="@style/context_menu_text_button"
+                    android:text="@string/edit_history" />
 
                 <Button
                     android:id="@+id/btnStatusWebPage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/open_web_page"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/open_web_page" />
 
                 <Button
                     android:id="@+id/btnText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/select_and_copy"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/select_and_copy" />
 
                 <Button
                     android:id="@+id/btnTranslate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/translate"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/translate" />
 
                 <Button
                     android:id="@+id/btnQuoteUrlStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/quote_url"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/quote_url" />
+
 
                 <Button
                     android:id="@+id/btnShareUrlStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/share_url_more"
-                    android:textAllCaps="false" />
-
+                    style="@style/context_menu_text_button"
+                    android:text="@string/share_url_more" />
 
 
                 <Button
                     android:id="@+id/btnGroupStatusCrossAccount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/cross_account_actions"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp" />
+                    style="@style/context_menu_expand_label"
+                    android:text="@string/cross_account_actions" />
 
                 <LinearLayout
                     android:id="@+id/llGroupStatusCrossAccount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="24dp"
-                    android:visibility="gone"
-                    tools:ignore="RtlSymmetry">
+                    style="@style/context_menu_expand_group"
+                    tools:visibility="visible">
 
                     <Button
                         android:id="@+id/btnConversationAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/conversation_view"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/conversation_view" />
 
                     <Button
                         android:id="@+id/btnReplyAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/reply"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/reply" />
 
                     <Button
                         android:id="@+id/btnBoostAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/boost"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/boost" />
 
                     <Button
                         android:id="@+id/btnFavouriteAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/favourite"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/favourite" />
 
                     <Button
                         android:id="@+id/btnBookmarkAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/bookmark"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/bookmark" />
 
                     <Button
                         android:id="@+id/btnReactionAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/reaction"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/reaction" />
 
                     <Button
                         android:id="@+id/btnQuoteAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/quote"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/quote" />
 
                     <Button
                         android:id="@+id/btnQuoteTootBT"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/quote_toot_bt"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/quote_toot_bt" />
                 </LinearLayout>
 
                 <Button
                     android:id="@+id/btnGroupStatusAround"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/around_this_toot"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp" />
+                    style="@style/context_menu_expand_label"
+                    android:text="@string/around_this_toot" />
 
                 <LinearLayout
                     android:id="@+id/llGroupStatusAround"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="24dp"
-                    android:visibility="gone"
-                    tools:ignore="RtlSymmetry">
+                    style="@style/context_menu_expand_group"
+                    tools:visibility="visible">
+
                     <Button
                         android:id="@+id/btnAroundAccountTL"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/account_timeline"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/account_timeline" />
 
                     <Button
                         android:id="@+id/btnAroundLTL"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/local_timeline"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/local_timeline" />
 
                     <Button
                         android:id="@+id/btnAroundFTL"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/federate_timeline"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/federate_timeline" />
 
                 </LinearLayout>
 
 
                 <Button
                     android:id="@+id/btnGroupStatusByMe"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/your_toot"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp" />
+                    style="@style/context_menu_expand_label"
+                    android:text="@string/your_toot" />
 
                 <LinearLayout
                     android:id="@+id/llGroupStatusByMe"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="24dp"
-                    android:visibility="gone"
-                    tools:ignore="RtlSymmetry">
+                    style="@style/context_menu_expand_group"
+                    tools:visibility="visible">
 
                     <Button
                         android:id="@+id/btnStatusEdit"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/status_edit"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/edit" />
 
                     <Button
                         android:id="@+id/btnRedraft"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/redraft_and_delete"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/redraft_and_delete" />
 
                     <Button
                         android:id="@+id/btnProfilePin"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/profile_pin"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/profile_pin" />
 
                     <Button
                         android:id="@+id/btnProfileUnpin"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/profile_unpin"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/profile_unpin" />
 
                     <Button
                         android:id="@+id/btnDelete"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/delete"
-                        android:textAllCaps="false" />
-
-
-
+                        style="@style/context_menu_text_button"
+                        android:text="@string/delete" />
 
                 </LinearLayout>
-
 
                 <Button
                     android:id="@+id/btnGroupStatusExtra"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/extra_actions"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp" />
+                    style="@style/context_menu_expand_label"
+                    android:text="@string/extra_actions" />
 
                 <LinearLayout
                     android:id="@+id/llGroupStatusExtra"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="24dp"
-                    android:visibility="gone"
-                    tools:ignore="RtlSymmetry">
+                    style="@style/context_menu_expand_group"
+                    tools:visibility="visible">
 
                     <Button
                         android:id="@+id/btnBoostedBy"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/boosted_by"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/boosted_by" />
 
                     <Button
                         android:id="@+id/btnFavouritedBy"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/favourited_by"
-                        android:textAllCaps="false" />
-
+                        style="@style/context_menu_text_button"
+                        android:text="@string/favourited_by" />
 
                     <Button
                         android:id="@+id/btnBoostWithVisibility"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/boost_with_visibility"
-                        android:textAllCaps="false" />
-
+                        style="@style/context_menu_text_button"
+                        android:text="@string/boost_with_visibility" />
 
                     <Button
                         android:id="@+id/btnMuteApp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:textAllCaps="false"
-                        tools:text="mute app '…'"
-
-                        />
+                        style="@style/context_menu_text_button"
+                        tools:text="mute app '…'" />
 
                     <Button
                         android:id="@+id/btnConversationMute"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/mute_this_conversation"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/mute_this_conversation" />
 
                     <Button
                         android:id="@+id/btnReportStatus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/report"
-                        android:textAllCaps="false"
-
-                        />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/report" />
 
                 </LinearLayout>
+
                 <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="2dp"
-                    android:background="?attr/colorSettingDivider" />
+                    style="@style/context_menu_divider"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -582,31 +293,20 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
                     android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
                     android:text="@string/actions_for_notification"
                     android:textColor="?attr/colorTimeSmall"
                     android:textSize="12sp" />
 
                 <Button
                     android:id="@+id/btnNotificationDelete"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/delete_this_notification"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/delete_this_notification" />
 
                 <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="2dp"
-                    android:background="?attr/colorSettingDivider" />
+                    style="@style/context_menu_divider"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -619,8 +319,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
                     android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
                     android:text="@string/actions_for_user"
                     android:textColor="?attr/colorTimeSmall"
                     android:textSize="12sp" />
@@ -628,12 +328,10 @@
                 <LinearLayout
                     android:id="@+id/llAccountActionBar"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp">
+                    <FrameLayout style="@style/context_menu_image_button">
 
                         <ImageButton
                             android:id="@+id/btnFollow"
@@ -661,17 +359,13 @@
 
                     <ImageButton
                         android:id="@+id/btnMute"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
+                        style="@style/context_menu_image_button"
                         android:contentDescription="@string/mute"
                         android:src="@drawable/ic_volume_off" />
 
                     <ImageButton
                         android:id="@+id/btnBlock"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
+                        style="@style/context_menu_image_button"
                         android:contentDescription="@string/block"
                         android:src="@drawable/ic_block" />
 
@@ -680,573 +374,226 @@
 
                 <Button
                     android:id="@+id/btnProfile"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/open_profile"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/open_profile" />
 
                 <Button
                     android:id="@+id/btnAccountWebPage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/open_web_page"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/open_web_page" />
 
                 <Button
                     android:id="@+id/btnAccountText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/select_and_copy"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/select_and_copy" />
 
                 <Button
                     android:id="@+id/btnSendMessage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/send_message"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/send_message" />
 
 
                 <Button
                     android:id="@+id/btnQuoteUrlAccount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/quote_url"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/quote_url" />
 
                 <Button
                     android:id="@+id/btnShareUrlAccount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/share_url_more"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/share_url_more" />
 
                 <Button
                     android:id="@+id/btnQuoteName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/quote_name"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/quote_name" />
 
                 <Button
                     android:id="@+id/btnFollowRequestOK"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/follow_request_ok"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/follow_request_ok" />
 
                 <Button
                     android:id="@+id/btnFollowRequestNG"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/follow_request_ng"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/follow_request_ng" />
 
                 <Button
                     android:id="@+id/btnListMemberAddRemove"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/list_member_add_remove"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/list_member_add_remove" />
 
                 <Button
                     android:id="@+id/btnReportUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/report"
-                    android:textAllCaps="false"
-
-                    />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/report" />
 
                 <Button
                     android:id="@+id/btnGroupUserCrossAccount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/cross_account_actions"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp" />
+                    style="@style/context_menu_expand_label"
+                    android:text="@string/cross_account_actions" />
 
                 <LinearLayout
                     android:id="@+id/llGroupUserCrossAccount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="24dp"
-                    android:visibility="gone"
-
-                    tools:ignore="RtlSymmetry">
+                    style="@style/context_menu_expand_group"
+                    tools:visibility="visible">
 
                     <Button
                         android:id="@+id/btnOpenProfileFromAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/open_profile"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/open_profile" />
 
                     <Button
                         android:id="@+id/btnFollowFromAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/follow"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/follow" />
 
                     <Button
                         android:id="@+id/btnSendMessageFromAnotherAccount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/send_message"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/send_message" />
                 </LinearLayout>
 
                 <Button
                     android:id="@+id/btnGroupUserExtra"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/extra_actions"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp" />
+                    style="@style/context_menu_expand_label"
+                    android:text="@string/extra_actions" />
 
                 <LinearLayout
                     android:id="@+id/llGroupUserExtra"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="24dp"
-                    android:visibility="gone"
-                    tools:ignore="RtlSymmetry">
+                    style="@style/context_menu_expand_group"
+                    tools:visibility="visible">
 
                     <Button
                         android:id="@+id/btnStatusNotification"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        tools:text="(status notification?)" />
 
                     <Button
                         android:id="@+id/btnNickname"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/nickname_and_color_and_notification_sound"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/nickname_and_color_and_notification_sound" />
 
                     <Button
                         android:id="@+id/btnAvatarImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/show_avatar_image"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/show_avatar_image" />
 
                     <Button
                         android:id="@+id/btnAccountQrCode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/qr_code"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/qr_code" />
 
 
                     <Button
                         android:id="@+id/btnNotificationFrom"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/notifications_from_acct"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/notifications_from_acct" />
 
 
                     <Button
                         android:id="@+id/btnEndorse"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:textAllCaps="false"
+                        style="@style/context_menu_text_button"
+
                         tools:text="@string/endorse_set" />
 
                     <Button
                         android:id="@+id/btnHideBoost"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/hide_boost_in_home"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/hide_boost_in_home" />
 
                     <Button
                         android:id="@+id/btnShowBoost"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/show_boost_in_home"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/show_boost_in_home" />
 
                     <Button
                         android:id="@+id/btnHideFavourite"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/hide_favourite_notification_from_user"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/hide_favourite_notification_from_user" />
 
                     <Button
                         android:id="@+id/btnShowFavourite"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/show_favourite_notification_from_user"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/show_favourite_notification_from_user" />
 
 
                     <Button
                         android:id="@+id/btnDeleteSuggestion"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:drawablePadding="4dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/delete_suggestion"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/delete_suggestion" />
 
                     <Button
                         android:id="@+id/btnCopyAccountId"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        tools:text="(copy account id)" />
 
                     <Button
                         android:id="@+id/btnOpenAccountInAdminWebUi"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/btn_bg_transparent_round6dp"
-                        android:gravity="start|center_vertical"
-                        android:minHeight="32dp"
-                        android:paddingStart="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/open_in_admin_ui"
-                        android:textAllCaps="false" />
+                        style="@style/context_menu_text_button"
+                        android:text="@string/open_in_admin_ui" />
 
                 </LinearLayout>
 
                 <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="2dp"
-                    android:background="?attr/colorSettingDivider" />
+                    style="@style/context_menu_divider"
+                    android:layout_marginTop="2dp" />
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/llInstance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
                 android:layout_marginBottom="6dp"
-                android:orientation="vertical"
-                android:id="@+id/llInstance"
-                >
+                android:layout_marginTop="6dp"
+                android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvInstanceActions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
                     android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
                     android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp"
-                    android:id="@+id/tvInstanceActions"
-                    />
+                    android:textSize="12sp" />
 
                 <Button
                     android:id="@+id/btnOpenTimeline"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:textAllCaps="false"
-                    android:text="@string/local_timeline"
-                    />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/local_timeline" />
 
                 <Button
                     android:id="@+id/btnInstanceInformation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:textAllCaps="false"
-                    android:text="@string/instance_information"
-                    />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/instance_information" />
 
                 <Button
                     android:id="@+id/btnProfileDirectory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:textAllCaps="false"
-                    android:text="@string/profile_directory"
-
-                    />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/profile_directory" />
 
                 <Button
                     android:id="@+id/btnDomainBlock"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:textAllCaps="false"
-                    android:text="@string/block_domain"
-                    />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/block_domain" />
 
                 <Button
                     android:id="@+id/btnOpenInstanceInAdminWebUi"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/open_in_admin_ui"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/open_in_admin_ui" />
 
                 <Button
                     android:id="@+id/btnDomainTimeline"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    android:text="@string/fedibird_domain_timeline"
-                    android:textAllCaps="false" />
+                    style="@style/context_menu_text_button"
+                    android:text="@string/fedibird_domain_timeline" />
 
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="2dp"
-        android:background="?attr/colorSettingDivider" />
+    <View style="@style/context_menu_divider" />
 
     <Button
         android:id="@+id/btnCancel"

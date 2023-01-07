@@ -87,7 +87,7 @@ private fun ItemViewHolder.showNotificationFollow(
         showBoost(
             it,
             n.time_created_at,
-            R.drawable.ic_follow_plus,
+            R.drawable.ic_person_add,
             R.string.display_name_followed_by
         )
         showAccount(it)
@@ -157,7 +157,7 @@ private fun ItemViewHolder.showNotificationFollowRequestAccepted(
         showBoost(
             it,
             n.time_created_at,
-            R.drawable.ic_follow_plus,
+            R.drawable.ic_person_add,
             R.string.display_name_follow_request_accepted_by
         )
         showAccount(it)
@@ -234,7 +234,7 @@ private fun ItemViewHolder.showNotificationFavourite(
     nStatus: TootStatus?,
 ) {
     nAccountRef?.let {
-        val iconId = if (accessInfo.isNicoru(it.get())) R.drawable.ic_nicoru else R.drawable.ic_star
+        val iconId = R.drawable.ic_star_outline
         showBoost(it, n.time_created_at, iconId, R.string.display_name_favourited_by)
     }
     val colorBg = PrefI.ipEventBgColorFavourite(activity.pref)

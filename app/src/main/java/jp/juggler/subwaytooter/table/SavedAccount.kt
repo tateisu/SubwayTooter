@@ -743,10 +743,6 @@ class SavedAccount(
                 return 0
             }
 
-        fun isNicoru(acct: Acct): Boolean {
-            return acct.host == Host.FRIENDS_NICO
-        }
-
         //		private fun charAtLower(src : CharSequence, pos : Int) : Char {
         //			val c = src[pos]
         //			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c

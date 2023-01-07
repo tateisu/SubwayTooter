@@ -11,7 +11,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
@@ -283,8 +285,8 @@ class StatusButtons(
                         else -> colorNormal
                     },
                     when {
-                        accessInfo.isNicoru(status.account) -> R.drawable.ic_nicoru
-                        else -> R.drawable.ic_star
+                        status.favourited -> R.drawable.ic_star
+                        else -> R.drawable.ic_star_outline
                     },
                     when (val favouritesCount = status.favourites_count) {
                         null -> ""
@@ -327,7 +329,10 @@ class StatusButtons(
                                 else ->
                                     colorNormal
                             },
-                            R.drawable.ic_bookmark,
+                            when {
+                                status.bookmarked -> R.drawable.ic_bookmark_added
+                                else -> R.drawable.ic_bookmark
+                            },
                             activity.getString(R.string.bookmark)
                         )
                 }

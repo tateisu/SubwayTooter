@@ -163,6 +163,32 @@ object CustomShare {
         }
     }
 
+    /**
+     * 翻訳アプリが利用できるなら真
+     * ただしクリップボードは偽
+     */
+    fun hasTranslateApp(
+        target: CustomShareTarget,
+        context: Context,
+    )= try {
+        getCustomShareComponentName(target)?.let { cn ->
+            val cnStr = "${cn.packageName}/${cn.className}"
+            if (cnStr == CN_CLIPBOARD) {
+                false
+            } else {
+                val intent = Intent()
+                intent.action = Intent.ACTION_SEND
+                intent.type = "text/plain"
+                intent.putExtra(Intent.EXTRA_TEXT, "this is a test")
+                intent.component = cn
+                val ri = context.packageManager.resolveActivityCompat(intent)
+                ri != null
+            }
+        }
+    }catch(ignores:Throwable) {
+        null
+    }?: false
+
     private val cache = HashMap<CustomShareTarget, Pair<CharSequence?, Drawable?>>()
 
     fun getCache(target: CustomShareTarget) = cache[target]

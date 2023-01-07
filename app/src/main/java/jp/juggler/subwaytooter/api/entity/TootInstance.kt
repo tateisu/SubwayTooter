@@ -572,4 +572,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             }
         }
     }
+
+    val isMastodon get() = instanceType == InstanceType.Mastodon
 }

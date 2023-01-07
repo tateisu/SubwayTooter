@@ -162,12 +162,32 @@ internal class DlgContextMenu(
                 }
             }
 
-            views.btnStatusHistory.vg(status.time_edited_at > 0L && columnType != ColumnType.STATUS_HISTORY)
+            val hasEditHistory =
+                status.time_edited_at > 0L && columnType != ColumnType.STATUS_HISTORY
+
+            views.btnStatusHistory2.vg(hasEditHistory)
+            views.btnStatusHistory.vg(hasEditHistory)
                 ?.text = activity.getString(R.string.edit_history) + "\n" +
                     TootStatus.formatTime(activity, status.time_edited_at, bAllowRelative = false)
 
             views.llLinks.vg(views.llLinks.childCount > 1)
 
+            val hasTranslateApp = CustomShare.hasTranslateApp(
+                CustomShareTarget.Translate,
+                activity,
+            )
+
+            views.btnStatusTranslate2.vg(hasTranslateApp)
+            views.btnTranslate.vg(hasTranslateApp)
+
+            val canEdit = statusByMe && (TootInstance.getCached(column.accessInfo)
+                ?.let { it.isMastodon && it.versionGE(TootInstance.VERSION_3_5_0_rc1) } ?: false)
+
+            views.btnStatusEdit2.vg(canEdit)
+            views.btnStatusEdit.vg(canEdit)
+
+
+            views.btnStatusDelete2.vg(statusByMe)
             views.btnGroupStatusByMe.vg(statusByMe)
 
             views.btnQuoteTootBT.vg(status.reblogParent != null)
@@ -565,13 +585,13 @@ internal class DlgContextMenu(
             R.id.btnQuoteAnotherAccount -> quoteFromAnotherAccount(accessInfo, status)
             R.id.btnQuoteTootBT -> quoteFromAnotherAccount(accessInfo, status.reblogParent)
             R.id.btnConversationAnotherAccount -> conversationOtherInstance(pos, status)
-            R.id.btnDelete -> clickStatusDelete(accessInfo, status)
+            R.id.btnDelete, R.id.btnStatusDelete2 -> clickStatusDelete(accessInfo, status)
             R.id.btnRedraft -> statusRedraft(accessInfo, status)
-            R.id.btnStatusEdit -> statusEdit(accessInfo, status)
+            R.id.btnStatusEdit, R.id.btnStatusEdit2 -> statusEdit(accessInfo, status)
             R.id.btnMuteApp -> appMute(status.application)
             R.id.btnBoostedBy -> clickBoostBy(pos, accessInfo, status, ColumnType.BOOSTED_BY)
             R.id.btnFavouritedBy -> clickBoostBy(pos, accessInfo, status, ColumnType.FAVOURITED_BY)
-            R.id.btnTranslate -> CustomShare.invokeStatusText(
+            R.id.btnTranslate, R.id.btnStatusTranslate2 -> CustomShare.invokeStatusText(
                 CustomShareTarget.Translate,
                 activity,
                 accessInfo,
@@ -582,7 +602,9 @@ internal class DlgContextMenu(
             R.id.btnConversationMute -> conversationMute(accessInfo, status)
             R.id.btnProfilePin -> statusPin(accessInfo, status, true)
             R.id.btnProfileUnpin -> statusPin(accessInfo, status, false)
-            R.id.btnStatusHistory -> openStatusHistory(pos, accessInfo, status)
+            R.id.btnStatusHistory, R.id.btnStatusHistory2 -> openStatusHistory(pos,
+                accessInfo,
+                status)
             else -> return false
         }
         return true

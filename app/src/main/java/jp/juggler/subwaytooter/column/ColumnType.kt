@@ -711,7 +711,7 @@ enum class ColumnType(
 
     FAVOURITES(
         5,
-        iconId = { if (SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
+        iconId = { R.drawable.ic_star_outline },
         name1 = { it.getString(R.string.favourites) },
         bAllowPseudo = false,
 
@@ -1294,7 +1294,7 @@ enum class ColumnType(
 
     FAVOURITED_BY(
         15,
-        iconId = { if (SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
+        iconId = { R.drawable.ic_star_outline },
         name1 = { it.getString(R.string.favourited_by) },
 
         loading = { client ->
@@ -1395,7 +1395,7 @@ enum class ColumnType(
 
     INSTANCE_INFORMATION(
         18,
-        iconId = { R.drawable.ic_info },
+        iconId = { R.drawable.ic_info_outline },
         name1 = { it.getString(R.string.instance_information) },
         name2 = { long ->
             when {
@@ -1724,7 +1724,7 @@ enum class ColumnType(
 
     FOLLOW_SUGGESTION(
         25,
-        iconId = { R.drawable.ic_follow_plus },
+        iconId = { R.drawable.ic_person_add },
         name1 = { it.getString(R.string.follow_suggestion) },
         bAllowPseudo = false,
 
@@ -1811,7 +1811,7 @@ enum class ColumnType(
 
     ENDORSEMENT(
         28,
-        iconId = { R.drawable.ic_follow_plus },
+        iconId = { R.drawable.ic_person_add },
         name1 = { it.getString(R.string.endorse_set) },
         bAllowPseudo = false,
         bAllowMisskey = false,
@@ -1834,7 +1834,7 @@ enum class ColumnType(
 
     PROFILE_DIRECTORY(
         36,
-        iconId = { R.drawable.ic_follow_plus },
+        iconId = { R.drawable.ic_person_add },
         name1 = { it.getString(R.string.profile_directory) },
         name2 = { context.getString(R.string.profile_directory_of, instanceUri) },
         bAllowPseudo = true,
@@ -1875,7 +1875,7 @@ enum class ColumnType(
     @Suppress("unused")
     REPORTS(
         6,
-        iconId = { R.drawable.ic_info },
+        iconId = { R.drawable.ic_info_outline },
         name1 = { it.getString(R.string.reports) },
 
         loading = { client -> getReportList(client, ApiPath.PATH_REPORTS) },

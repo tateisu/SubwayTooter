@@ -34,12 +34,12 @@ fun ItemViewHolder.showStatusOrReply(
     val inReplyToAccountId = item.in_reply_to_account_id
     when {
         reply != null -> {
-            showReply(reply, R.drawable.ic_reply, R.string.reply_to)
+            showReply(item.account, reply, R.drawable.ic_reply, R.string.reply_to)
             if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention(activity.pref)
         }
 
         inReplyToId != null && inReplyToAccountId != null -> {
-            showReply(item, inReplyToAccountId)
+            showReply(null, item, inReplyToAccountId)
             if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention(activity.pref)
         }
     }

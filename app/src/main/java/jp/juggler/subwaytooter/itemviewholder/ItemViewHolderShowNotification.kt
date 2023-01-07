@@ -127,6 +127,7 @@ private fun ItemViewHolder.showNotificationSignup(
         showAccount(it)
     }
 }
+
 private fun ItemViewHolder.showNotificationFollowRequest(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
@@ -393,7 +394,7 @@ private fun ItemViewHolder.showNotificationStatus(
 
         item.isQuoteToot -> {
             // 引用Renote
-            showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
+            showReply(item.account, reblog, R.drawable.ic_repeat, R.string.quote_to)
             showStatus(item, PrefI.ipEventBgColorQuote(activity.pref), fadeText = fadeText)
         }
 

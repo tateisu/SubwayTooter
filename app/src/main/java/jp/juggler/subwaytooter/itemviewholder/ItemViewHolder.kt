@@ -34,6 +34,7 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.applyAlphaMultiplier
 import jp.juggler.util.attrColor
 import org.jetbrains.anko.*
+import kotlin.math.min
 
 class ItemViewHolder(
     val activity: ActMain,
@@ -58,12 +59,14 @@ class ItemViewHolder(
     internal lateinit var listAdapter: ItemListAdapter
 
     lateinit var llBoosted: View
+    lateinit var ivBoostAvatar: MyNetworkImageView
     lateinit var ivBoosted: ImageView
     lateinit var tvBoosted: MyTextView
     lateinit var tvBoostedAcct: MyTextView
     lateinit var tvBoostedTime: MyTextView
 
     lateinit var llReply: View
+    lateinit var ivReplyAvatar: MyNetworkImageView
     lateinit var ivReply: ImageView
     lateinit var tvReply: MyTextView
 
@@ -306,9 +309,16 @@ class ItemViewHolder(
         s = ActMain.replyIconSize + (activity.density * 8).toInt()
         ivReply.layoutParams.width = s
         ivReply.layoutParams.height = s
+        ivReplyAvatar.layoutParams.width = s
+        ivReplyAvatar.layoutParams.height = s
 
         s = activity.notificationTlIconSize
         ivBoosted.layoutParams.height = s
+
+        min(activity.notificationTlIconSize, activity.avatarIconSize).let {
+            ivBoostAvatar.layoutParams.width = it
+            ivBoostAvatar.layoutParams.height = it
+        }
 
         this.contentInvalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
         this.spoilerInvalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
@@ -395,9 +405,24 @@ class ItemViewHolder(
                     }.lparams(wrapContent, wrapContent)
                 }
 
-                tvBoosted = myTextView {
-                    // tools:text = "～にブーストされました"
-                }.lparams(matchParent, wrapContent)
+                linearLayout {
+                    lparams(matchParent, wrapContent)
+
+                    ivBoostAvatar = myNetworkImageView {
+                        scaleType = ImageView.ScaleType.FIT_END
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                        padding = dip(4)
+                    }.lparams(dip(32), dip(32)) {
+                        gravity = Gravity.CENTER_VERTICAL
+                    }
+
+                    tvBoosted = myTextView {
+                        // tools:text = "～にブーストされました"
+                    }.lparams(matchParent, wrapContent){
+                        endMargin = dip(2)
+                        gravity = Gravity.CENTER_VERTICAL
+                    }
+                }
             }
         }
     }
@@ -599,6 +624,14 @@ class ItemViewHolder(
                 ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
             gravity = Gravity.CENTER_VERTICAL
 
+            ivReplyAvatar = myNetworkImageView {
+                scaleType = ImageView.ScaleType.FIT_END
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                padding = dip(4)
+            }.lparams(dip(32), dip(32)) {
+                endMargin = dip(1)
+            }
+
             ivReply = imageView {
                 scaleType = ImageView.ScaleType.FIT_END
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
@@ -668,11 +701,12 @@ class ItemViewHolder(
             repeat(MEDIA_VIEW_COUNT) {
                 tvMediaDescriptions.add(
                     button {
-                        gravity=Gravity.START
-                        allCaps= false
+                        gravity = Gravity.START
+                        allCaps = false
                         background =
-                            ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-                        padding=dip(4)
+                            ContextCompat.getDrawable(context,
+                                R.drawable.btn_bg_transparent_round6dp)
+                        padding = dip(4)
                     }.lparams(matchParent, wrapContent)
                 )
             }

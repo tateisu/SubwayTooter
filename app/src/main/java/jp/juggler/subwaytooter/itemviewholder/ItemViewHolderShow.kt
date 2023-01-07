@@ -206,7 +206,7 @@ fun ItemViewHolder.bind(
                 item.isQuoteToot -> {
                     // 引用Renote
                     val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
-                    showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
+                    showReply(item.account, reblog, R.drawable.ic_repeat, R.string.quote_to)
                     showStatus(item, colorBg)
                 }
 
@@ -321,6 +321,8 @@ fun ItemViewHolder.showBoost(
 ) {
     boostAccount = whoRef
 
+    val who = whoRef.get()
+
     setIconDrawableId(
         activity,
         ivBoosted,
@@ -329,7 +331,13 @@ fun ItemViewHolder.showBoost(
         alphaMultiplier = Styler.boostAlpha
     )
 
-    val who = whoRef.get()
+    ivBoostAvatar.let { v ->
+        v.setImageUrl(
+            Styler.calcIconRound(v.layoutParams),
+            accessInfo.supplyBaseUrl(who.avatar_static),
+            accessInfo.supplyBaseUrl(who.avatar)
+        )
+    }
 
     // フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
     val text: Spannable = if (reaction != null) {
@@ -465,8 +473,14 @@ fun ItemViewHolder.showSearchGap(item: TootSearchGap) {
     )
 }
 
-fun ItemViewHolder.showReply(iconId: Int, text: Spannable) {
-
+fun ItemViewHolder.showReply(
+    // 返信した人
+    replyer: TootAccount?,
+    // 返信された人
+    target: TootAccount?,
+    iconId: Int,
+    text: Spannable,
+) {
     llReply.visibility = View.VISIBLE
 
     setIconDrawableId(
@@ -477,19 +491,29 @@ fun ItemViewHolder.showReply(iconId: Int, text: Spannable) {
         alphaMultiplier = Styler.boostAlpha
     )
 
+    ivReplyAvatar.vg(target != null && target.avatar != replyer?.avatar)?.let { v ->
+        v.setImageUrl(
+            Styler.calcIconRound(v.layoutParams),
+            accessInfo.supplyBaseUrl(target!!.avatar_static),
+            accessInfo.supplyBaseUrl(target.avatar)
+        )
+    }
+
     tvReply.text = text
     replyInvalidator.register(text)
 }
 
-fun ItemViewHolder.showReply(reply: TootStatus, iconId: Int, stringId: Int) {
+fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, iconId: Int, stringId: Int) {
     statusReply = reply
     showReply(
+        replyer = replyer,
+        target = reply.accountRef.get(),
         iconId,
         reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
     )
 }
 
-fun ItemViewHolder.showReply(reply: TootStatus, accountId: EntityId) {
+fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, accountId: EntityId) {
     val name = if (accountId == reply.account.id) {
         // 自己レスなら
         AcctColor.getNicknameWithColor(accessInfo, reply.account)
@@ -503,7 +527,7 @@ fun ItemViewHolder.showReply(reply: TootStatus, accountId: EntityId) {
     }
 
     val text = name.intoStringResource(activity, R.string.reply_to)
-    showReply(R.drawable.ic_reply, text)
+    showReply(replyer = replyer, target = null, R.drawable.ic_reply, text)
 
     // tootsearchはreplyオブジェクトがなくin_reply_toだけが提供される場合があるが
     // tootsearchではどのタンスから読んだか分からないのでin_reply_toのIDも信用できない

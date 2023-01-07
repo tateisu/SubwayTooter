@@ -66,7 +66,7 @@ object CustomShare {
                     label =
                         "${context.getString(R.string.copy_to_clipboard)}(${context.getString(R.string.app_name)})"
                     icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply {
-                        setTint(context.attrColor(R.attr.colorVectorDrawable))
+                        setTint(context.attrColor(R.attr.colorContentText))
                         setTintMode(PorterDuff.Mode.SRC_IN)
                     }
                 } else {

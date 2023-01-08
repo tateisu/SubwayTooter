@@ -214,7 +214,7 @@ object Styler {
                 setIconDrawableId(
                     context,
                     ivDot,
-                    R.drawable.ic_followed_by,
+                    R.drawable.ic_follow_dot,
                     color = colorAccent(),
                     alphaMultiplier = alphaMultiplier
                 )

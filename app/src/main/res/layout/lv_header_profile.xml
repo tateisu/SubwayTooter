@@ -84,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="center"
-                android:src="@drawable/ic_followed_by"
+                android:src="@drawable/ic_follow_dot"
                 tools:ignore="ContentDescription" />
         </FrameLayout>
     </LinearLayout>
@@ -176,7 +176,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="center"
-                android:src="@drawable/ic_followed_by"
+                android:src="@drawable/ic_follow_dot"
                 tools:ignore="ContentDescription" />
         </FrameLayout>
 

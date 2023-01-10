@@ -7,7 +7,6 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.notEmpty
-import java.util.*
 
 class TootAnnouncement(parser: TootParser, src: JsonObject) {
 
@@ -44,8 +43,13 @@ class TootAnnouncement(parser: TootParser, src: JsonObject) {
 
     init {
         // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-        this.custom_emojis =
-            parseMapOrNull(CustomEmoji.decode, parser.apDomain, src.jsonArray("emojis"), log)
+        this.custom_emojis = parseMapOrNull(
+            CustomEmoji.decode,
+            parser.apDomain,
+            parser.apiHost,
+            src.jsonArray("emojis"),
+            log
+        )
 
         this.tags = TootTag.parseListOrNull(parser, src.jsonArray("tags"))
 

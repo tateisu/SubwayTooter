@@ -5,7 +5,6 @@ import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonException
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
-import java.util.HashMap
 
 object EntityUtil {
     val log = LogCategory("EntityUtil")
@@ -122,8 +121,9 @@ inline fun <reified K, reified V> parseMapOrNull(
 }
 
 inline fun <reified K, reified V> parseMapOrNull(
-    factory: (host: Host, src: JsonObject) -> V,
-    host: Host,
+    factory: (apDomain: Host, apiHost: Host, src: JsonObject) -> V,
+    apDomain: Host,
+    apiHost: Host,
     src: JsonArray?,
     log: LogCategory = EntityUtil.log,
 ): HashMap<K, V>? where V : Mappable<K> {
@@ -132,7 +132,7 @@ inline fun <reified K, reified V> parseMapOrNull(
         if (size > 0) {
             val dst = HashMap<K, V>()
             for (i in 0 until size) {
-                val item = parseItem(factory, host, src.jsonObject(i), log)
+                val item = parseItem(factory, apDomain, apiHost, src.jsonObject(i), log)
                 if (item != null) dst[item.mapKey] = item
             }
             if (dst.isNotEmpty()) return dst
@@ -183,6 +183,22 @@ inline fun <P, reified T> parseItem(
     }
 }
 
+inline fun <P1, P2, reified T> parseItem(
+    factory: (p1: P1, p2: P2, src: JsonObject) -> T,
+    p1: P1,
+    p2: P2,
+    src: JsonObject?,
+    log: LogCategory = EntityUtil.log,
+): T? {
+    if (src == null) return null
+    return try {
+        factory(p1, p2, src)
+    } catch (ex: Throwable) {
+        log.e(ex, "${T::class.simpleName} parse failed.")
+        null
+    }
+}
+
 inline fun <reified T> parseItem(
     factory: (serviceType: ServiceType, src: JsonObject) -> T,
     serviceType: ServiceType,
@@ -198,9 +214,9 @@ inline fun <reified T> parseItem(
     }
 }
 
-inline fun <reified T> parseList(
-    factory: (parser: TootParser, src: JsonObject) -> T,
-    parser: TootParser,
+inline fun <P1, reified T> parseListP1(
+    factory: (p1: P1, src: JsonObject) -> T,
+    p1: P1,
     src: JsonArray?,
     log: LogCategory = EntityUtil.log,
 ): ArrayList<T> {
@@ -210,7 +226,28 @@ inline fun <reified T> parseList(
         if (src_length > 0) {
             dst.ensureCapacity(src_length)
             for (i in src.indices) {
-                val item = parseItem(factory, parser, src.jsonObject(i), log)
+                val item = parseItem(factory, p1, src.jsonObject(i), log)
+                if (item != null) dst.add(item)
+            }
+        }
+    }
+    return dst
+}
+
+inline fun <P1, P2, reified T> parseListP2(
+    factory: (p1: P1, p2: P2, src: JsonObject) -> T,
+    p1: P1,
+    p2: P2,
+    src: JsonArray?,
+    log: LogCategory = EntityUtil.log,
+): ArrayList<T> {
+    val dst = ArrayList<T>()
+    if (src != null) {
+        val src_length = src.size
+        if (src_length > 0) {
+            dst.ensureCapacity(src_length)
+            for (i in src.indices) {
+                val item = parseItem(factory, p1, p2, src.jsonObject(i), log)
                 if (item != null) dst.add(item)
             }
         }

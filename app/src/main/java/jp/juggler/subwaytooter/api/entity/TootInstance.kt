@@ -239,11 +239,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     val canUseReference: Boolean?
         get() = fedibird_capabilities?.contains("status_reference")
 
-    fun versionGE(check: VersionString): Boolean {
-        if (decoded_version.isEmpty || check.isEmpty) return false
-        val i = VersionString.compare(decoded_version, check)
-        return i >= 0
-    }
+    fun versionGE(check: VersionString) = decoded_version.ge(check)
 
     companion object {
         private val log = LogCategory("TootInstance")

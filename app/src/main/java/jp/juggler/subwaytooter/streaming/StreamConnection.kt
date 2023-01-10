@@ -197,7 +197,11 @@ class StreamConnection(
                     log.e("$name handleMisskeyMessage: noteUpdated body is null")
                     return
                 }
-                fireNoteUpdated(MisskeyNoteUpdate(acctGroup.account.apDomain, body), channelId)
+                fireNoteUpdated(MisskeyNoteUpdate(
+                    acctGroup.account.apDomain,
+                    acctGroup.account.apiHost,
+                    body
+                ), channelId)
             }
 
             "notification" -> {

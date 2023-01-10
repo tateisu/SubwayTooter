@@ -161,4 +161,11 @@ class VersionString(src: String?) : Comparable<VersionString> {
             }
         }
     }
+
+    // false if this is empty or argument is empty
+    // else, true is this is greater or equal argument version
+    fun ge(other: VersionString) = when {
+        this.isEmpty || other.isEmpty -> false
+        else -> this >= other
+    }
 }

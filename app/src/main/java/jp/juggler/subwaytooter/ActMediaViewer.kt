@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.ClipData
@@ -296,6 +295,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         App1.initEdgeToEdge(this)
 
         views.pbvImage.background = MediaBackgroundDrawable(
+            context = views.root.context,
             tileStep = tileStep,
             kind = MediaBackgroundDrawable.Kind.fromIndex(PrefI.ipMediaBackground(this))
         )
@@ -811,11 +811,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun mediaBackgroundDialog() {
         val ad = ActionsDialog()
         for (k in MediaBackgroundDrawable.Kind.values()) {
+            if (!k.isMediaBackground) continue
             ad.addAction(k.name) {
                 val idx = k.toIndex()
                 appPref.edit().put(PrefI.ipMediaBackground, idx).apply()
-
                 views.pbvImage.background = MediaBackgroundDrawable(
+                    context = views.root.context,
                     tileStep = tileStep,
                     kind = k
                 )

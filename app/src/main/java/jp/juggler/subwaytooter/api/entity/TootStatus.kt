@@ -238,13 +238,13 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 // お気に入りカラムなどではパース直後に変更することがある
 
                 // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-                this.custom_emojis =
-                    parseMapOrNull(
-                        CustomEmoji.decodeMisskey,
-                        parser.apDomain,
-                        src.jsonArray("emojis"),
-                        log
-                    )
+                this.custom_emojis = parseMapOrNull(
+                    CustomEmoji.decodeMisskey,
+                    parser.apDomain,
+                    parser.apiHost,
+                    src.jsonArray("emojis"),
+                    log
+                )
                 this.profile_emojis = null
 
                 val who = parser.account(src.jsonObject("user"))
@@ -581,13 +581,13 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.created_at = src.string("created_at")
 
                 // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-                this.custom_emojis =
-                    parseMapOrNull(
-                        CustomEmoji.decode,
-                        parser.apDomain,
-                        src.jsonArray("emojis"),
-                        log
-                    )
+                this.custom_emojis = parseMapOrNull(
+                    CustomEmoji.decode,
+                    parser.apDomain,
+                    parser.apiHost,
+                    src.jsonArray("emojis"),
+                    log
+                )
 
                 this.profile_emojis = when (val o = src["profile_emojis"]) {
                     is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
@@ -809,9 +809,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     }
 
     private fun mergeMentions(
-        mentions1: java.util.ArrayList<TootMention>?,
-        mentions2: java.util.ArrayList<TootMention>?,
-    ): java.util.ArrayList<TootMention>? {
+        mentions1: List<TootMention>?,
+        mentions2: List<TootMention>?,
+    ): ArrayList<TootMention>? {
         val size = (mentions1?.size ?: 0) + (mentions2?.size ?: 0)
         if (size == 0) return null
         val dst = ArrayList<TootMention>(size)

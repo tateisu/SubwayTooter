@@ -466,7 +466,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpUseInternalMediaViewer, R.string.use_internal_media_viewer)
 
         spinner(PrefI.ipMediaBackground, R.string.background_pattern) {
-            MediaBackgroundDrawable.Kind.values().map { it.name }
+            MediaBackgroundDrawable.Kind.values()
+                .filter{it.isMediaBackground}
+                .map { it.name }
         }
 
         sw(PrefB.bpPriorLocalURL, R.string.prior_local_url_when_open_attachment)

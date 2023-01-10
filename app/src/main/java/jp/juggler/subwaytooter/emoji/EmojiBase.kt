@@ -7,7 +7,6 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
 import jp.juggler.util.notEmpty
-import java.util.*
 
 sealed interface EmojiBase
 
@@ -81,7 +80,7 @@ class CustomEmoji(
 
     companion object {
 
-        val decode: (Host, JsonObject) -> CustomEmoji = { apDomain, src ->
+        val decode: (Host, Host, JsonObject) -> CustomEmoji = { apDomain, _, src ->
             CustomEmoji(
                 apDomain = apDomain,
                 shortcode = src.stringOrThrow("shortcode"),
@@ -92,12 +91,25 @@ class CustomEmoji(
             )
         }
 
-        val decodeMisskey: (Host, JsonObject) -> CustomEmoji = { apDomain, src ->
+        val decodeMisskey: (Host, Host, JsonObject) -> CustomEmoji = { apDomain, _, src ->
             val url = src.string("url") ?: error("missing url")
 
             CustomEmoji(
                 apDomain = apDomain,
                 shortcode = src.string("name") ?: error("missing name"),
+                url = url,
+                staticUrl = url,
+                aliases = parseAliases(src.jsonArray("aliases")),
+                category = src.string("category"),
+            )
+        }
+
+        val decodeMisskey13: (Host, Host, JsonObject) -> CustomEmoji = { apDomain, apiHost, src ->
+            val name = src.string("name") ?: error("missing name")
+            val url = "https://${apiHost.ascii}/emoji/$name.webp"
+            CustomEmoji(
+                apDomain = apDomain,
+                shortcode = name,
                 url = url,
                 staticUrl = url,
                 aliases = parseAliases(src.jsonArray("aliases")),

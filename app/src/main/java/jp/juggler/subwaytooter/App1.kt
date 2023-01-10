@@ -465,22 +465,29 @@ class App1 : Application() {
         suspend fun getHttpCachedString(
             url: String,
             accessInfo: SavedAccount? = null,
+            misskeyPost: Boolean = false,
             builderBlock: (Request.Builder) -> Unit = {},
         ): String? {
             val response: Response
 
             try {
-                val request_builder = Request.Builder()
-                    .url(url)
-                    .cacheControl(CACHE_CONTROL)
-
-                val access_token = accessInfo?.getAccessToken()
-                if (access_token?.isNotEmpty() == true) {
-                    request_builder.header("Authorization", "Bearer $access_token")
+                val request_builder = when {
+                    misskeyPost && accessInfo?.isMisskey == true ->
+                        accessInfo.putMisskeyApiToken().toPostRequestBuilder()
+                            .url(url)
+                            .cacheControl(CACHE_CONTROL)
+                    else ->
+                        Request.Builder()
+                            .url(url)
+                            .cacheControl(CACHE_CONTROL)
+                            .also {
+                                val access_token = accessInfo?.getAccessToken()
+                                if (access_token?.isNotEmpty() == true) {
+                                    it.header("Authorization", "Bearer $access_token")
+                                }
+                            }
                 }
-
                 builderBlock(request_builder)
-
                 val call = ok_http_client2.newCall(request_builder.build())
                 response = call.await()
             } catch (ex: Throwable) {

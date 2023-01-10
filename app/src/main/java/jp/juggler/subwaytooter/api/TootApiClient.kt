@@ -498,7 +498,6 @@ class TootApiClient(
 
         try {
             if (!sendRequest(result) {
-
                     val url = "https://${apiHost?.ascii}$path"
 
                     requestBuilder.url(url)
@@ -508,7 +507,8 @@ class TootApiClient(
 
                     requestBuilder.build()
                         .also { log.d("request: ${it.method} $url") }
-                }) return result
+                }
+            ) return result
 
             return parseJson(result)
         } finally {

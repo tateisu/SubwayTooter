@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.api.entity.parseListP2
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -35,6 +35,7 @@ class CustomEmojiLister(
         val key: String,
         var list: List<CustomEmoji>,
         var listWithAliases: List<CustomEmoji>,
+        var mapShortCode: Map<String, CustomEmoji>,
         // ロードした時刻
         var timeUpdate: Long = elapsedTime,
         // 参照された時刻
@@ -63,7 +64,12 @@ class CustomEmojiLister(
     // エラーキャッシュ
     internal val cacheError = ConcurrentHashMap<String, Long>()
 
-    private val cacheErrorItem = CacheItem("error", emptyList(), emptyList())
+    private val cacheErrorItem = CacheItem(
+        key = "error",
+        list = emptyList(),
+        listWithAliases = emptyList(),
+        mapShortCode = emptyMap(),
+    )
 
     // ロード要求
     internal val queue = ConcurrentLinkedQueue<Request>()
@@ -75,18 +81,21 @@ class CustomEmojiLister(
         cacheError.clear()
     }
 
-    private fun getCached(now: Long, accessInfo: SavedAccount): CacheItem? {
-        val host = accessInfo.apiHost.ascii
+    private fun getCached(now: Long, accessInfo: SavedAccount) =
+        getCached(now, accessInfo.apiHost.ascii)
+
+    private fun getCached(now: Long, apiHostAscii: String?): CacheItem? {
+        apiHostAscii ?: return null
 
         // 成功キャッシュ
-        val item = cache[host]
+        val item = cache[apiHostAscii]
         if (item != null && now - item.timeUpdate <= ERROR_EXPIRE) {
             item.timeUsed = now
             return item
         }
 
         // エラーキャッシュ
-        val timeError = cacheError[host]
+        val timeError = cacheError[apiHostAscii]
         if (timeError != null && now < timeError + ERROR_EXPIRE) {
             return cacheErrorItem
         }
@@ -143,6 +152,9 @@ class CustomEmojiLister(
             }
         }
 
+    fun getCachedEmoji(apiHostAscii: String?, shortcode: String): CustomEmoji? =
+        getCached(elapsedTime, apiHostAscii)?.mapShortCode?.get(shortcode)
+
     private inner class Worker : WorkerBase() {
 
         override fun cancel() {
@@ -186,39 +198,92 @@ class CustomEmojiLister(
 
             val accessInfo = request.accessInfo
             val cacheKey = accessInfo.apiHost.ascii
-            val data = if (accessInfo.isMisskey) {
+
+            // v12のmetaからemojisをパース
+            suspend fun misskeyEmojis12(): List<CustomEmoji>? =
                 App1.getHttpCachedString(
                     "https://$cacheKey/api/meta",
                     accessInfo = accessInfo
                 ) { builder ->
                     builder.post(JsonObject().toRequestBody())
+                }?.decodeJsonObject()
+                    ?.jsonArray("emojis")
+                    ?.let { emojis12 ->
+                        parseListP2(
+                            CustomEmoji.decodeMisskey,
+                            accessInfo.apDomain,
+                            accessInfo.apiHost,
+                            emojis12,
+                        )
+                    }
+
+            // v13のemojisを読む
+            suspend fun misskeyEmojis13(): List<CustomEmoji>? =
+                App1.getHttpCachedString(
+                    "https://$cacheKey/api/emojis",
+                    accessInfo = accessInfo,
+                    misskeyPost = true,
+                ) { builder ->
+                    builder.post(JsonObject().toRequestBody())
                 }
-            } else {
+                    ?.decodeJsonObject()
+                    ?.jsonArray("emojis")
+                    ?.let { emojis13 ->
+                        parseListP2(
+                            CustomEmoji.decodeMisskey13,
+                            accessInfo.apDomain,
+                            accessInfo.apiHost,
+                            emojis13,
+                        )
+                    }
+
+            // マストドンのカスタム絵文字一覧を読む
+            suspend fun mastodonEmojis() =
                 App1.getHttpCachedString(
                     "https://$cacheKey/api/v1/custom_emojis",
                     accessInfo = accessInfo
-                )
-            }
-            var list: List<CustomEmoji>? = null
-            var listWithAlias: List<CustomEmoji>? = null
-            if (data != null) {
-                val a = decodeEmojiList(data, accessInfo)
-                list = a
-                listWithAlias = makeListWithAlias(a)
-            }
+                )?.let { data ->
+                    parseListP2(
+                        CustomEmoji.decode,
+                        accessInfo.apDomain,
+                        accessInfo.apiHost,
+                        data.decodeJsonArray()
+                    )
+                }
+
+            val list = when {
+                accessInfo.isMastodon -> mastodonEmojis()
+                else -> misskeyEmojis12() ?: misskeyEmojis13()
+            }?.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
+
+            val listWithAlias = list?.let { srcList ->
+                ArrayList<CustomEmoji>(srcList).apply {
+                    for (item in srcList) {
+                        item.aliases
+                            ?.filter { !it.equals(item.shortcode, ignoreCase = true) }
+                            ?.forEach { add(item.makeAlias(it)) }
+                    }
+                }
+            }?.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.alias ?: it.shortcode })
+
             return synchronized(cache) {
                 val now = elapsedTime
                 if (list == null || listWithAlias == null) {
                     cacheError[cacheKey] = now
                     error("can't load custom emoji for ${accessInfo.apiHost}")
                 } else {
+                    val mapShortCode = buildMap {
+                        list.forEach { put(it.alias ?: it.shortcode, it) }
+                        listWithAlias.forEach { put(it.alias ?: it.shortcode, it) }
+                    }
                     var item = cache[cacheKey]
                     if (item == null) {
-                        item = CacheItem(cacheKey, list, listWithAlias)
+                        item = CacheItem(cacheKey, list, listWithAlias, mapShortCode)
                         cache[cacheKey] = item
                     } else {
                         item.list = list
                         item.listWithAliases = listWithAlias
+                        item.mapShortCode = mapShortCode
                         item.timeUpdate = now
                     }
                     item
@@ -248,40 +313,6 @@ class CustomEmojiLister(
                 cache.remove(item.key)
                 if (++removed >= over) break
             }
-        }
-
-        private fun decodeEmojiList(
-            data: String,
-            accessInfo: SavedAccount,
-        ): List<CustomEmoji> =
-            if (accessInfo.isMisskey) {
-                parseList(
-                    CustomEmoji.decodeMisskey,
-                    accessInfo.apDomain,
-                    data.decodeJsonObject().jsonArray("emojis")
-                )
-            } else {
-                parseList(
-                    CustomEmoji.decode,
-                    accessInfo.apDomain,
-                    data.decodeJsonArray()
-                )
-            }.apply {
-                sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
-            }
-
-        private fun makeListWithAlias(
-            list: List<CustomEmoji>,
-        ) = ArrayList<CustomEmoji>().apply {
-            addAll(list)
-            for (item in list) {
-                val aliases = item.aliases ?: continue
-                for (alias in aliases) {
-                    if (alias.equals(item.shortcode, ignoreCase = true)) continue
-                    add(item.makeAlias(alias))
-                }
-            }
-            sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.alias ?: it.shortcode })
         }
     }
 }

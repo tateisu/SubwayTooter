@@ -1,10 +1,12 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
+import android.os.SystemClock
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
+import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
@@ -382,6 +384,11 @@ object EmojiDecoder {
 
                 // カスタム絵文字
                 val emojiCustom = emojiMapCustom?.get(name)
+                    ?: App1.custom_emoji_lister.getCachedEmoji(
+                         options.linkHelper?.apiHost?.ascii,
+                        name
+                    )
+
                 if (emojiCustom != null) {
                     val url = when {
                         PrefB.bpDisableEmojiAnimation() && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl

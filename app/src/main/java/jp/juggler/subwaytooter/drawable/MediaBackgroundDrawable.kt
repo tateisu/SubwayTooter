@@ -1,22 +1,35 @@
 package jp.juggler.subwaytooter.drawable
 
+import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
-import androidx.annotation.ColorInt
+import jp.juggler.subwaytooter.R
+import jp.juggler.util.attrColor
 import kotlin.math.min
 
 class MediaBackgroundDrawable(
+    private val context: Context,
     private val tileStep: Int,
-    private val kind: Kind
+    private val kind: Kind,
 ) : Drawable() {
 
-    enum class Kind(@ColorInt val c1: Int, @ColorInt val c2: Int = 0) {
-        Black(Color.BLACK),
-        BlackTile(Color.BLACK, Color.BLACK or 0x202020),
-        Grey(Color.BLACK or 0x787878),
-        GreyTile(Color.BLACK or 0x707070, Color.BLACK or 0x808080),
-        White(Color.WHITE),
-        WhiteTile(Color.WHITE, Color.BLACK or 0xe0e0e0),
+    enum class Kind(
+        val c1: Context.() -> Int,
+        val c2: Context.() -> Int,
+        val isMediaBackground: Boolean = true,
+    ) {
+        Black({ Color.BLACK }, { 0 }),
+        BlackTile({ Color.BLACK }, { Color.BLACK or 0x202020 }),
+        Grey({ Color.BLACK or 0x787878 }, { 0 }),
+        GreyTile({ Color.BLACK or 0x707070 }, { Color.BLACK or 0x808080 }),
+        White({ Color.WHITE }, { 0 }),
+        WhiteTile({ Color.WHITE }, { Color.BLACK or 0xe0e0e0 }),
+
+        EmojiPickerBg(
+            { attrColor(R.attr.colorWindowBackground) },
+            { attrColor(R.attr.colorTimeSmall) },
+            isMediaBackground = false
+        ),
 
         ;
 
@@ -51,8 +64,8 @@ class MediaBackgroundDrawable(
 
     override fun draw(canvas: Canvas) {
         val bounds = this.bounds
-        val c1 = kind.c1
-        val c2 = kind.c2
+        val c1 = kind.c1.invoke(context)
+        val c2 = kind.c2.invoke(context)
         if (c2 == 0) {
             paint.color = c1
             canvas.drawRect(bounds, paint)

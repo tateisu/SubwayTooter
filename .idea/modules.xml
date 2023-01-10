@@ -22,6 +22,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.main.iml" filepath="$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.iml" filepath="$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.main.iml" filepath="$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/icon_material_symbols/SubwayTooter.icon_material_symbols.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.main.iml" />

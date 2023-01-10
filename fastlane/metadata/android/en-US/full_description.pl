@@ -57,8 +57,6 @@ __DATA__
 
 <p>Mastodon client for Android 8.0 or later.</p>
 
-<p>Also this app has partially support for Misskey. But it does not include function to use message, drive, reversi, widget.</p>
-
 <p><b>Multiple accounts, Multiple columns</b></p>
 <ul>
 <li>You can swipe horizontally to switch columns and accounts.</li>

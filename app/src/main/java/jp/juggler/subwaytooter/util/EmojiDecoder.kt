@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import android.os.SystemClock
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
@@ -18,15 +17,15 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
 import jp.juggler.util.codePointBefore
-import java.util.*
 import java.util.regex.Pattern
 import kotlin.math.min
 
 object EmojiDecoder {
 
-    // private val log = LogCategory("EmojiDecoder")
+    private val log = LogCategory("EmojiDecoder")
 
     private const val cpColon = ':'.code
 
@@ -383,17 +382,50 @@ object EmojiDecoder {
                 }
 
                 // カスタム絵文字
-                val emojiCustom = emojiMapCustom?.get(name)
-                    ?: App1.custom_emoji_lister.getCachedEmoji(
-                         options.linkHelper?.apiHost?.ascii,
-                        name
-                    )
+                fun CustomEmoji.customEmojiToUrl(): String = when {
+                    PrefB.bpDisableEmojiAnimation() && staticUrl?.isNotEmpty() == true ->
+                        this.staticUrl
+                    else ->
+                        this.url
+                }
 
-                if (emojiCustom != null) {
-                    val url = when {
-                        PrefB.bpDisableEmojiAnimation() && emojiCustom.staticUrl?.isNotEmpty() == true -> emojiCustom.staticUrl
-                        else -> emojiCustom.url
+                fun findCustomEmojiUrl(): String? {
+                    val misskeyVersion = options.linkHelper?.misskeyVersion ?: 0
+                    if (misskeyVersion >= 13) {
+                        val cols = name.split("@", limit = 2)
+                        val apiHostAscii = options.linkHelper?.apiHost?.ascii
+
+                        // @以降にあるホスト名か、投稿者のホスト名か、閲覧先サーバのホスト名
+                        val userHost = cols.elementAtOrNull(1)
+                            ?: options.authorDomain?.apiHost?.ascii
+                            ?: apiHostAscii
+
+                        log.i("decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
+                            cols.elementAtOrNull(1)
+                        } apiHostAscii=$apiHostAscii, userHost=$userHost")
+
+                        when {
+                            apiHostAscii == null -> {
+                                log.w("decodeEmoji Misskey13 missing apiHostAscii")
+                            }
+                            userHost != null && userHost != "." && userHost != apiHostAscii -> {
+                                // 投稿者のホスト名を使う
+                                return "https://${apiHostAscii}/emoji/${
+                                    cols.elementAtOrNull(0)
+                                }@${userHost}.webp"
+                            }
+                            else -> {
+                                // 閲覧先サーバの絵文字を探す
+                                App1.custom_emoji_lister.getCachedEmoji(apiHostAscii, name)
+                                    ?.let { return it.customEmojiToUrl() }
+                            }
+                        }
                     }
+                    return emojiMapCustom?.get(name)?.customEmojiToUrl()
+                }
+
+                val url = findCustomEmojiUrl()
+                if (url != null) {
                     builder.addNetworkEmojiSpan(part, url)
                     return
                 }

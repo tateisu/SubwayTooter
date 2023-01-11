@@ -168,4 +168,14 @@ class VersionString(src: String?) : Comparable<VersionString> {
         this.isEmpty || other.isEmpty -> false
         else -> this >= other
     }
+
+    val majorVersion: Int?
+        get(){
+            nodeList.forEach {
+                if(it is BigInteger){
+                    return it.toString().toIntOrNull()
+                }
+            }
+            return null
+        }
 }

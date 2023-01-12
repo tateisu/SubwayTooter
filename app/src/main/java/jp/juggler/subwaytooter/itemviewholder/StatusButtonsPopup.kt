@@ -16,8 +16,8 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.util.LogCategory
-import jp.juggler.util.clip
 import org.jetbrains.anko.matchParent
+import kotlin.math.max
 
 internal class StatusButtonsPopup(
     private val activity: ActMain,
@@ -67,7 +67,6 @@ internal class StatusButtonsPopup(
         status: TootStatus,
         notification: TootNotification?,
     ) {
-
         val window = PopupWindow(activity)
         this.window = window
 
@@ -105,6 +104,7 @@ internal class StatusButtonsPopup(
         val anchorLeft = location[0]
         val anchorTop = location[1]
         val anchorWidth = anchor.width
+        val anchorHeight = anchor.height
 
         // popupの大きさ
         viewRoot.measure(
@@ -117,8 +117,9 @@ internal class StatusButtonsPopup(
         val clipTop = listviewTop + dip(8f)
         val clipBottom = listviewTop + listView.height - dip(8f)
 
-        // ポップアップウィンドウの上端
-        var popupY = anchorTop + anchor.height / 2
+        // ポップアップウィンドウの左上（基準は親ウィンドウの左上)
+        val popupX = anchorLeft + max(0, (anchorWidth - popupWidth) / 2)
+        var popupY = anchorTop + anchorHeight / 2
         if (popupY < clipTop) {
             // 画面外のは画面内にする
             popupY = clipTop
@@ -131,13 +132,6 @@ internal class StatusButtonsPopup(
             viewRoot.findViewById<View>(R.id.ivTriangleBottom).visibility = View.VISIBLE
             popupY -= popupHeight
         }
-
-        val popupX = (anchorLeft + anchorWidth / 2 - popupWidth / 2).clip(
-            0,
-            activity.resources.displayMetrics.widthPixels - popupWidth
-        )
-
-        log.i("show listView=${listviewTop},${listviewLeft},${listView.width}, anchor=${anchorTop},${anchorLeft},popup=${popupY},${popupX}")
 
         window.showAtLocation(listView, Gravity.LEFT or Gravity.TOP, popupX, popupY)
     }

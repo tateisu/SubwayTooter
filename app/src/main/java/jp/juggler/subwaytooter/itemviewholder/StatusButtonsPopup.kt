@@ -92,20 +92,7 @@ internal class StatusButtonsPopup(
         buttonsForStatus.closeWindow = window
 
         val density = activity.density
-        fun dip(src: Float) = (src * density + 0.5f).toInt()
-
-        val location = IntArray(2)
-
-        listView.getLocationInWindow(location)
-        val listviewTop = location[1]
-        val clipTop = listviewTop + dip(8f)
-        val clipBottom = listviewTop + listView.height - dip(8f)
-
-        anchor.getLocationInWindow(location)
-        val anchorLeft = location[0]
-        val anchorTop = location[1]
-        val anchorWidth = anchor.width
-        val anchorHeight = anchor.height
+        fun Int.dp() = (this * density + 0.5f).toInt()
 
         // popupの大きさ
         viewRoot.measure(
@@ -114,6 +101,19 @@ internal class StatusButtonsPopup(
         )
         val popupWidth = viewRoot.measuredWidth
         val popupHeight = viewRoot.measuredHeight
+
+        val location = IntArray(2)
+
+        listView.getLocationInWindow(location)
+        val listviewTop = location[1]
+        val clipTop = listviewTop + 8.dp()
+        val clipBottom = listviewTop + listView.height - 8.dp()
+
+        anchor.getLocationInWindow(location)
+        val anchorLeft = location[0]
+        val anchorTop = location[1]
+        val anchorWidth = anchor.width
+        val anchorHeight = anchor.height
 
         // ポップアップウィンドウの左上（基準は親ウィンドウの左上)
         val popupX = anchorLeft + max(0, (anchorWidth - popupWidth) / 2)

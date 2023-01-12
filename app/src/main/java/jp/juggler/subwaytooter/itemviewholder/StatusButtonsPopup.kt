@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.util.LogCategory
+import jp.juggler.util.clip
 import org.jetbrains.anko.matchParent
 
 internal class StatusButtonsPopup(
@@ -29,12 +30,6 @@ internal class StatusButtonsPopup(
 
         @Suppress("unused")
         private var log = LogCategory("StatusButtonsPopup")
-
-        private fun getViewWidth(v: View): Int {
-            val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-            v.measure(spec, spec)
-            return v.measuredWidth
-        }
 
         var lastPopupClose = 0L
     }
@@ -97,27 +92,36 @@ internal class StatusButtonsPopup(
         buttonsForStatus.bind(status, notification)
         buttonsForStatus.closeWindow = window
 
+        val density = activity.density
+        fun dip(src: Float) = (src * density + 0.5f).toInt()
+
         val location = IntArray(2)
 
-        anchor.getLocationOnScreen(location)
-        val anchorLeft = location[0]
-        val anchorTop = location[1]
-
-        listView.getLocationOnScreen(location)
+        listView.getLocationInWindow(location)
+        val listviewLeft = location[0]
         val listviewTop = location[1]
 
-        val density = activity.density
+        anchor.getLocationInWindow(location)
+        val anchorLeft = location[0]
+        val anchorTop = location[1]
+        val anchorWidth = anchor.width
 
-        val clipTop = listviewTop + (0.5f + 8f * density).toInt()
-        val clipBottom = listviewTop + listView.height - (0.5f + 8f * density).toInt()
+        // popupsize
+        viewRoot.measure(
+            View.MeasureSpec.makeMeasureSpec(listView.width, View.MeasureSpec.AT_MOST),
+            View.MeasureSpec.makeMeasureSpec(listView.height, View.MeasureSpec.AT_MOST)
+        )
+        val popupWidth = viewRoot.measuredWidth
+        val popupHeight = viewRoot.measuredHeight
 
-        val popupHeight = (0.5f + (56f + 24f) * density).toInt()
+        val clipTop = listviewTop+ dip(8f)
+        val clipBottom = listviewTop+ listView.height - dip(8f)
+        // ポップアップウィンドウの上端。listViewベース
         var popupY = anchorTop + anchor.height / 2
-
         if (popupY < clipTop) {
             // 画面外のは画面内にする
             popupY = clipTop
-        } else if (clipBottom - popupY < popupHeight) {
+        } else if (popupY + popupHeight > clipBottom) {
             // 画面外のは画面内にする
             if (popupY > clipBottom) popupY = clipBottom
 
@@ -127,13 +131,13 @@ internal class StatusButtonsPopup(
             popupY -= popupHeight
         }
 
-        val anchorWidth = anchor.width
-        val popupWidth = getViewWidth(viewRoot)
-        var popupX = anchorLeft + anchorWidth / 2 - popupWidth / 2
-        if (popupX < 0) popupX = 0
-        val popupXMax = activity.resources.displayMetrics.widthPixels - popupWidth
-        if (popupX > popupXMax) popupX = popupXMax
+        val popupX = (anchorLeft + anchorWidth / 2 - popupWidth / 2).clip(
+            0,
+            activity.resources.displayMetrics.widthPixels - popupWidth
+        )
 
-        window.showAtLocation(listView, Gravity.LEFT or Gravity.TOP, popupX, popupY)
+        log.i("show listView=${listviewTop},${listviewLeft},${listView.width}, anchor=${anchorTop},${anchorLeft},popup=${popupY},${popupX}")
+
+        window.showAtLocation(listView, Gravity.LEFT or Gravity.TOP, popupX, popupY )
     }
 }

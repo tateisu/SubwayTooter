@@ -71,7 +71,8 @@ fun ItemViewHolder.showStatus(
 
     if (status.conversation_main) {
         PrefI.ipConversationMainTootBgColor(activity.pref).notZero()
-            ?: (activity.attrColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
+            ?: activity.attrColor(R.attr.colorImageButtonAccent)
+                .and(0xffffff).or(0x20000000)
     } else {
         colorBg.notZero() ?: when (status.bookmarked) {
             true -> PrefI.ipEventBgColorBookmark()

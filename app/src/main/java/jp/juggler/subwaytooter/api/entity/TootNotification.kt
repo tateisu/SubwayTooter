@@ -18,7 +18,7 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
         // ブーストとリノート
         const val TYPE_REBLOG = "reblog" // Mastodon
         const val TYPE_RENOTE = "renote" // Misskey
-        const val TYPE_QUOTE = "quote" // Misskey 引用Renote
+        const val TYPE_QUOTE = "quote" // Misskeyの引用Renote, fedibirdのquote
 
         // フォロー
         const val TYPE_FOLLOW = "follow" // Mastodon,Misskey

@@ -206,7 +206,7 @@ fun ItemViewHolder.bind(
                 item.isQuoteToot -> {
                     // 引用Renote
                     val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
-                    showReply(item.account, reblog, R.drawable.ic_repeat, R.string.quote_to)
+                    showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
                     showStatus(item, colorBg)
                 }
 

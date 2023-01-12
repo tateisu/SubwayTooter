@@ -319,7 +319,7 @@ private fun ItemViewHolder.showNotificationQuote(
         showBoost(
             it,
             n.time_created_at,
-            R.drawable.ic_repeat,
+            R.drawable.ic_quote,
             R.string.display_name_quoted_by
         )
     }
@@ -394,7 +394,7 @@ private fun ItemViewHolder.showNotificationStatus(
 
         item.isQuoteToot -> {
             // 引用Renote
-            showReply(item.account, reblog, R.drawable.ic_repeat, R.string.quote_to)
+            showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
             showStatus(item, PrefI.ipEventBgColorQuote(activity.pref), fadeText = fadeText)
         }
 

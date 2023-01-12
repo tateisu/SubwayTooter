@@ -182,7 +182,7 @@ internal class PopupAutoCompleteAcct(
     fun updatePosition() {
 
         val location = IntArray(2)
-        etContent.getLocationOnScreen(location)
+        etContent.getLocationInWindow(location)
         val textTop = location[1]
 
         var popupTop: Int
@@ -197,7 +197,7 @@ internal class PopupAutoCompleteAcct(
             if (popupHeight > max) popupHeight = max
             popupTop = popupBottom - popupHeight
         } else {
-            formRoot.getLocationOnScreen(location)
+            formRoot.getLocationInWindow(location)
             val formTop = location[1]
             val formBottom = location[1] + formRoot.height
 

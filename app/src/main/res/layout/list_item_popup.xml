@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/ivTriangleTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/list_item_popup_triangle"
-        android:importantForAccessibility="no"
-        />
+        android:importantForAccessibility="no" />
 
     <LinearLayout
+        android:id="@+id/llBarPlaceHolder"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:background="@drawable/list_item_popup_bg"
+        android:backgroundTintMode="src_in"
         android:orientation="horizontal"
-        android:id="@+id/llBarPlaceHolder"
-        />
+        tools:layout_height="100dp" />
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/ivTriangleBottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/list_item_popup_triangle_bottom"
-        android:visibility="gone"
         android:importantForAccessibility="no"
-
-        />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
 </LinearLayout>

@@ -1172,4 +1172,5 @@
 
     <string name="permission_rational_media_access">Permission required to access the device\'s media data.</string>
     <string name="permission_denied_media_access">Missing app permission to access the device\'s media data.</string>
+    <string name="popup_background_color">Popup background color</string>
 </resources>

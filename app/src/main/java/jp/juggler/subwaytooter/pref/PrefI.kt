@@ -112,6 +112,7 @@ object PrefI {
     val ipConversationMainTootBgColor = IntPref("ConversationMainTootBgColor", 0)
     val ipVerifiedLinkBgColor = IntPref("VerifiedLinkBgColor", 0)
     val ipVerifiedLinkFgColor = IntPref("VerifiedLinkFgColor", 0)
+    val ipPopupBgColor = IntPref("PopupBgColor", 0)
 
     //	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
     //	const val TTCS_WEEKLY = 0

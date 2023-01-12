@@ -1,13 +1,13 @@
 package jp.juggler.subwaytooter.itemviewholder
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.os.SystemClock
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
@@ -15,7 +15,11 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.databinding.ListItemPopupBinding
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.LogCategory
+import jp.juggler.util.attrColor
+import jp.juggler.util.notZero
 import org.jetbrains.anko.matchParent
 import kotlin.math.max
 
@@ -34,16 +38,14 @@ internal class StatusButtonsPopup(
         var lastPopupClose = 0L
     }
 
-    private val viewRoot: View
+    private val views = ListItemPopupBinding.inflate(activity.layoutInflater)
     private val buttonsForStatus: StatusButtons
     private var window: PopupWindow? = null
 
     init {
         @SuppressLint("InflateParams")
-        this.viewRoot = activity.layoutInflater.inflate(R.layout.list_item_popup, null, false)
         val statusButtonsViewHolder = StatusButtonsViewHolder(activity, matchParent, 0f)
-        viewRoot.findViewById<LinearLayout>(R.id.llBarPlaceHolder)
-            .addView(statusButtonsViewHolder.viewRoot)
+        views.llBarPlaceHolder.addView(statusButtonsViewHolder.viewRoot)
         this.buttonsForStatus = StatusButtons(
             activity,
             column,
@@ -72,7 +74,7 @@ internal class StatusButtonsPopup(
 
         window.width = WindowManager.LayoutParams.WRAP_CONTENT
         window.height = WindowManager.LayoutParams.WRAP_CONTENT
-        window.contentView = viewRoot
+        window.contentView = views.root
         window.setBackgroundDrawable(ColorDrawable(0x00000000))
         window.isTouchable = true
         window.isOutsideTouchable = true
@@ -91,16 +93,23 @@ internal class StatusButtonsPopup(
         buttonsForStatus.bind(status, notification)
         buttonsForStatus.closeWindow = window
 
+        val bgColor = PrefI.ipPopupBgColor.invoke(activity.pref)
+            .notZero() ?: activity.attrColor(R.attr.colorStatusButtonsPopupBg)
+        val bgColorState = ColorStateList.valueOf(bgColor)
+        views.ivTriangleTop.backgroundTintList = bgColorState
+        views.ivTriangleBottom.backgroundTintList = bgColorState
+        views.llBarPlaceHolder.backgroundTintList = bgColorState
+
         val density = activity.density
         fun Int.dp() = (this * density + 0.5f).toInt()
 
         // popupの大きさ
-        viewRoot.measure(
+        views.root.measure(
             View.MeasureSpec.makeMeasureSpec(listView.width, View.MeasureSpec.AT_MOST),
             View.MeasureSpec.makeMeasureSpec(listView.height, View.MeasureSpec.AT_MOST)
         )
-        val popupWidth = viewRoot.measuredWidth
-        val popupHeight = viewRoot.measuredHeight
+        val popupWidth = views.root.measuredWidth
+        val popupHeight = views.root.measuredHeight
 
         val location = IntArray(2)
 
@@ -126,8 +135,8 @@ internal class StatusButtonsPopup(
             if (popupY > clipBottom) popupY = clipBottom
 
             // 画面の下側にあるならポップアップの吹き出しが下から出ているように見せる
-            viewRoot.findViewById<View>(R.id.ivTriangleTop).visibility = View.GONE
-            viewRoot.findViewById<View>(R.id.ivTriangleBottom).visibility = View.VISIBLE
+            views.ivTriangleTop.visibility = View.GONE
+            views.ivTriangleBottom.visibility = View.VISIBLE
             popupY -= popupHeight
         }
 

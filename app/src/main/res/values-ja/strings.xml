@@ -1163,5 +1163,6 @@
 
     <string name="permission_rational_media_access">端末上のデータにアクセスするには権限が必要です。</string>
     <string name="permission_denied_media_access">端末上のデータにアクセスする権限がありません。</string>
+    <string name="popup_background_color">ポップアップ背景色</string>
 
 </resources>

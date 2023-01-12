@@ -961,6 +961,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         colorOpaque(PrefI.ipSearchBgColor, R.string.search_bar_background_color)
+        colorAlpha(PrefI.ipPopupBgColor, R.string.popup_background_color)
         colorAlpha(PrefI.ipAnnouncementsBgColor, R.string.announcement_background_color)
         colorAlpha(PrefI.ipVerifiedLinkBgColor, R.string.verified_link_background_color)
         colorAlpha(PrefI.ipVerifiedLinkFgColor, R.string.verified_link_foreground_color)

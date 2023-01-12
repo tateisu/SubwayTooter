@@ -460,42 +460,26 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     // not private
     class VhSettingItem(
-        val activity: ActAppSetting,
+        private val actAppSetting: ActAppSetting,
         parent: ViewGroup,
-        private val views: LvSettingItemBinding = LvSettingItemBinding
-            .inflate(activity.layoutInflater, parent, false),
+        val views: LvSettingItemBinding = LvSettingItemBinding
+            .inflate(actAppSetting.layoutInflater, parent, false),
     ) : RecyclerView.ViewHolder(views.root),
         TextWatcher,
         AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
 
-        private val btnAction = views.btnAction
-
-        private val checkBox = views.checkBox
-            .also { it.setOnCheckedChangeListener(this) }
-
-        private val swSwitch = views.swSwitch
-            .also { it.setOnCheckedChangeListener(this) }
-
-        val llExtra = views.llExtra
-
-        val textView1 = views.textView1
-
-        private val llButtonBar = views.llButtonBar
-        private val vColor = views.vColor
-        private val btnEdit = views.btnEdit
-        private val btnReset = views.btnReset
-
-        private val spSpinner = views.spSpinner
-            .also { it.onItemSelectedListener = this }
-
-        private val etEditText = views.etEditText
-            .also { it.addTextChangedListener(this) }
+        init {
+            views.checkBox.setOnCheckedChangeListener(this)
+            views.swSwitch.setOnCheckedChangeListener(this)
+            views.spSpinner.onItemSelectedListener = this
+            views.etEditText.addTextChangedListener(this)
+        }
 
         private val tvDesc = views.tvDesc
         private val tvError = views.tvError
 
-        private val pref = activity.pref
+        private val pref = actAppSetting.pref
 
         var item: AppSettingItem? = null
 
@@ -507,169 +491,165 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 this.item = item
 
                 views.tvCaption.vg(false)
-                btnAction.vg(false)
-                checkBox.vg(false)
-                swSwitch.vg(false)
-                llExtra.vg(false)
-                textView1.vg(false)
-                llButtonBar.vg(false)
-                vColor.vg(false)
-                spSpinner.vg(false)
-                etEditText.vg(false)
-                tvDesc.vg(false)
-                tvError.vg(false)
+                views.btnAction.vg(false)
+                views.checkBox.vg(false)
+                views.swSwitch.vg(false)
+                views.llExtra.vg(false)
+                views.textView1.vg(false)
+                views.llButtonBar.vg(false)
+                views.vColor.vg(false)
+                views.spSpinner.vg(false)
+                views.etEditText.vg(false)
+                views.tvDesc.vg(false)
+                views.tvError.vg(false)
 
-                val name = if (item.caption == 0) "" else activity.getString(item.caption)
+                val name = if (item.caption == 0) "" else actAppSetting.getString(item.caption)
 
-                if (item.desc != 0) {
-                    tvDesc.vg(true)
-                    tvDesc.text = activity.getString(item.desc)
+                tvDesc.vg(item.desc != 0)?.run {
+                    text = context.getString(item.desc)
                     if (item.descClickSet) {
-                        tvDesc.background = ContextCompat.getDrawable(
-                            activity,
+                        background = ContextCompat.getDrawable(
+                            context,
                             R.drawable.btn_bg_transparent_round6dp
                         )
-                        tvDesc.setOnClickListener { item.descClick.invoke(activity) }
+                        setOnClickListener { item.descClick.invoke(actAppSetting) }
                     } else {
-                        tvDesc.background = null
-                        tvDesc.setOnClickListener(null)
-                        tvDesc.isClickable = false
+                        background = null
+                        setOnClickListener(null)
+                        isClickable = false
                     }
                 }
 
                 when (item.type) {
 
-                    SettingType.Section -> {
-                        btnAction.vg(true)
-                        btnAction.text = name
-                        btnAction.isEnabledAlpha = item.enabled
-                        btnAction.setOnClickListener {
-                            activity.load(item.cast()!!, null)
+                    SettingType.Section -> views.btnAction.vg(true)?.run {
+                        text = name
+                        isEnabledAlpha = item.enabled
+                        setOnClickListener {
+                            actAppSetting.load(item.cast()!!, null)
                         }
                     }
 
-                    SettingType.Action -> {
-                        btnAction.vg(true)
-                        btnAction.text = name
-                        btnAction.isEnabledAlpha = item.enabled
-                        btnAction.setOnClickListener {
-                            item.action(activity)
-                        }
+                    SettingType.Action -> views.btnAction.vg(true)?.run {
+                        text = name
+                        isEnabledAlpha = item.enabled
+                        setOnClickListener { item.action(actAppSetting) }
                     }
 
-                    SettingType.CheckBox -> {
-                        val bp: BooleanPref =
-                            item.pref.cast() ?: error("$name has no boolean pref")
-                        checkBox.vg(false) // skip animation
-                        checkBox.text = name
-                        checkBox.isEnabledAlpha = item.enabled
-                        checkBox.isChecked = bp(activity.pref)
-                        checkBox.vg(true)
+                    SettingType.CheckBox -> views.checkBox.run {
+                        val bp: BooleanPref = item.pref.cast()
+                            ?: error("$name has no boolean pref")
+                        vg(false) // skip animation
+                        text = name
+                        isEnabledAlpha = item.enabled
+                        isChecked = bp(pref)
+                        vg(true)
                     }
 
-                    SettingType.Switch -> {
-                        val bp: BooleanPref =
-                            item.pref.cast() ?: error("$name has no boolean pref")
+                    SettingType.Switch -> views.swSwitch.run {
+                        val bp: BooleanPref = item.pref.cast()
+                            ?: error("$name has no boolean pref")
                         showCaption(name)
-                        swSwitch.vg(false) // skip animation
-                        activity.setSwitchColor(swSwitch)
-                        swSwitch.isEnabledAlpha = item.enabled
-                        swSwitch.isChecked = bp(activity.pref)
-                        swSwitch.vg(true)
+                        vg(false) // skip animation
+                        actAppSetting.setSwitchColor(views.swSwitch)
+                        isEnabledAlpha = item.enabled
+                        isChecked = bp(pref)
+                        vg(true)
                     }
 
-                    SettingType.Group -> {
-                        showCaption(name)
-                    }
+                    SettingType.Group -> showCaption(name)
 
-                    SettingType.Sample -> {
-                        llExtra.vg(true)
-                        llExtra.removeAllViews()
-                        activity.layoutInflater.inflate(item.sampleLayoutId, llExtra, true)
-                        item.sampleUpdate(activity, llExtra)
+                    SettingType.Sample -> views.llExtra.run {
+                        vg(true)
+                        removeAllViews()
+                        actAppSetting.layoutInflater.inflate(
+                            item.sampleLayoutId,
+                            views.llExtra,
+                            true
+                        )
+                        item.sampleUpdate(actAppSetting, this)
                     }
 
                     SettingType.ColorAlpha, SettingType.ColorOpaque -> {
                         val ip = item.pref.cast<IntPref>() ?: error("$name has no int pref")
                         showCaption(name)
-                        llButtonBar.vg(true)
-                        vColor.vg(true)
-                        vColor.setBackgroundColor(ip(activity.pref))
-                        btnEdit.isEnabledAlpha = item.enabled
-                        btnReset.isEnabledAlpha = item.enabled
-                        btnEdit.setOnClickListener {
-                            activity.colorTarget = item
-                            val color = ip(activity.pref)
+                        views.llButtonBar.vg(true)
+                        views.vColor.vg(true)
+                        views.vColor.setBackgroundColor(ip(pref))
+                        views.btnEdit.isEnabledAlpha = item.enabled
+                        views.btnReset.isEnabledAlpha = item.enabled
+                        views.btnEdit.setOnClickListener {
+                            actAppSetting.colorTarget = item
+                            val color = ip(pref)
                             val builder = ColorPickerDialog.newBuilder()
                                 .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
                                 .setAllowPresets(true)
                                 .setShowAlphaSlider(item.type == SettingType.ColorAlpha)
                                 .setDialogId(COLOR_DIALOG_ID)
                             if (color != 0) builder.setColor(color)
-                            builder.show(activity)
+                            builder.show(actAppSetting)
                         }
-                        btnReset.setOnClickListener {
-                            activity.pref.edit().remove(ip).apply()
+                        views.btnReset.setOnClickListener {
+                            pref.edit().remove(ip).apply()
                             showColor()
-                            item.changed.invoke(activity)
+                            item.changed.invoke(actAppSetting)
                         }
                     }
 
                     SettingType.Spinner -> {
                         showCaption(name)
 
-                        spSpinner.vg(true)
-                        spSpinner.isEnabledAlpha = item.enabled
+                        views.spSpinner.vg(true)
+                        views.spSpinner.isEnabledAlpha = item.enabled
 
                         val pi = item.pref
                         if (pi is IntPref) {
                             // 整数型の設定のSpinnerは全て選択肢を単純に覚える
                             val argsInt = item.spinnerArgs
-                            if (argsInt != null) {
-                                activity.initSpinner(spSpinner,
-                                    argsInt.map { activity.getString(it) })
-                            } else {
-                                activity.initSpinner(spSpinner, item.spinnerArgsProc(activity))
-                            }
-                            spSpinner.setSelection(pi.invoke(activity.pref))
+                            actAppSetting.initSpinner(
+                                views.spSpinner,
+                                argsInt?.map { actAppSetting.getString(it) }
+                                    ?: item.spinnerArgsProc(actAppSetting)
+                            )
+                            views.spSpinner.setSelection(pi.invoke(pref))
                         } else {
-                            item.spinnerInitializer.invoke(activity, spSpinner)
+                            item.spinnerInitializer.invoke(actAppSetting, views.spSpinner)
                         }
                     }
 
                     SettingType.EditText -> {
                         showCaption(name)
-                        etEditText.vg(true)
+                        views.etEditText.vg(true)
                             ?: error("EditText must have preference.")
-                        etEditText.inputType = item.inputType
+                        views.etEditText.inputType = item.inputType
                         val text = when (val pi = item.pref) {
                             is FloatPref ->
-                                item.fromFloat.invoke(activity, pi(activity.pref))
+                                item.fromFloat.invoke(actAppSetting, pi(pref))
                             is StringPref ->
-                                pi(activity.pref)
+                                pi(pref)
                             else -> error("EditText han incorrect pref $pi")
                         }
-                        etEditText.setText(text)
-                        etEditText.setSelection(0, text.length)
+                        views.etEditText.setText(text)
+                        views.etEditText.setSelection(0, text.length)
 
-                        item.hint?.let { etEditText.hint = it }
+                        item.hint?.let { views.etEditText.hint = it }
 
                         updateErrorView()
                     }
 
                     SettingType.TextWithSelector -> {
                         showCaption(name)
-                        llButtonBar.vg(true)
-                        vColor.vg(false)
-                        textView1.vg(true)
+                        views.llButtonBar.vg(true)
+                        views.vColor.vg(false)
+                        views.textView1.vg(true)
 
-                        item.showTextView.invoke(activity, textView1)
+                        item.showTextView.invoke(actAppSetting, views.textView1)
 
-                        btnEdit.setOnClickListener {
-                            item.onClickEdit.invoke(activity)
+                        views.btnEdit.setOnClickListener {
+                            item.onClickEdit.invoke(actAppSetting)
                         }
-                        btnReset.setOnClickListener {
-                            item.onClickReset.invoke(activity)
+                        views.btnReset.setOnClickListener {
+                            item.onClickReset.invoke(actAppSetting)
                         }
                     }
 
@@ -692,21 +672,21 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             val key = item.pref?.key ?: return
 
             val sample = views.tvCaption
-            var defaultExtra = activity.defaultLineSpacingExtra[key]
+            var defaultExtra = actAppSetting.defaultLineSpacingExtra[key]
             if (defaultExtra == null) {
                 defaultExtra = sample.lineSpacingExtra
-                activity.defaultLineSpacingExtra[key] = defaultExtra
+                actAppSetting.defaultLineSpacingExtra[key] = defaultExtra
             }
-            var defaultMultiplier = activity.defaultLineSpacingMultiplier[key]
+            var defaultMultiplier = actAppSetting.defaultLineSpacingMultiplier[key]
             if (defaultMultiplier == null) {
                 defaultMultiplier = sample.lineSpacingMultiplier
-                activity.defaultLineSpacingMultiplier[key] = defaultMultiplier
+                actAppSetting.defaultLineSpacingMultiplier[key] = defaultMultiplier
             }
 
-            val size = item.captionFontSize.invoke(activity)
+            val size = item.captionFontSize.invoke(actAppSetting)
             if (size != null) sample.textSize = size
 
-            val spacing = item.captionSpacing.invoke(activity)
+            val spacing = item.captionSpacing.invoke(actAppSetting)
             if (spacing == null || !spacing.isFinite()) {
                 sample.setLineSpacing(defaultExtra, defaultMultiplier)
             } else {
@@ -716,16 +696,16 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
         private fun updateErrorView() {
             val item = item ?: return
-            val sv = etEditText.text.toString()
-            val error = item.getError.invoke(activity, sv)
+            val sv = views.etEditText.text.toString()
+            val error = item.getError.invoke(actAppSetting, sv)
             tvError.vg(error != null)?.text = error
         }
 
         fun showColor() {
             val item = item ?: return
             val ip = item.pref.cast<IntPref>() ?: return
-            val c = ip(activity.pref)
-            vColor.setBackgroundColor(c)
+            val c = ip(pref)
+            views.vColor.setBackgroundColor(c)
         }
 
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -741,17 +721,15 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             val sv = item.filter.invoke(p0?.toString() ?: "")
 
             when (val pi = item.pref) {
-
-                is StringPref -> {
-                    activity.pref.edit().put(pi, sv).apply()
-                }
+                is StringPref ->
+                    pref.edit().put(pi, sv).apply()
 
                 is FloatPref -> {
-                    val fv = item.toFloat.invoke(activity, sv)
+                    val fv = item.toFloat.invoke(actAppSetting, sv)
                     if (fv.isFinite()) {
-                        activity.pref.edit().put(pi, fv).apply()
+                        pref.edit().put(pi, fv).apply()
                     } else {
-                        activity.pref.edit().remove(pi.key).apply()
+                        pref.edit().remove(pi.key).apply()
                     }
                 }
 
@@ -760,7 +738,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 }
             }
 
-            item.changed.invoke(activity)
+            item.changed.invoke(actAppSetting)
             updateErrorView()
         }
 
@@ -775,10 +753,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             if (bindingBusy) return
             val item = item ?: return
             when (val pi = item.pref) {
-                is IntPref -> activity.pref.edit().put(pi, spSpinner.selectedItemPosition).apply()
-                else -> item.spinnerOnSelected.invoke(activity, spSpinner, position)
+                is IntPref -> pref.edit().put(pi, views.spSpinner.selectedItemPosition).apply()
+                else -> item.spinnerOnSelected.invoke(actAppSetting, views.spSpinner, position)
             }
-            item.changed.invoke(activity)
+            item.changed.invoke(actAppSetting)
         }
 
         override fun onCheckedChanged(v: CompoundButton?, isChecked: Boolean) {
@@ -788,7 +766,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 is BooleanPref -> pref.edit().put(pi, isChecked).apply()
                 else -> error("CompoundButton has no booleanPref $pi")
             }
-            item.changed.invoke(activity)
+            item.changed.invoke(actAppSetting)
         }
     }
 
@@ -894,7 +872,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     fun showSample(item: AppSettingItem?) {
         item ?: error("showSample: missing item…")
         findItemViewHolder(item)?.let {
-            item.sampleUpdate.invoke(this, it.llExtra)
+            item.sampleUpdate.invoke(this, it.views.llExtra)
         }
     }
 
@@ -945,7 +923,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     fun showTimelineFont(item: AppSettingItem?) {
         item ?: return
         val holder = findItemViewHolder(item) ?: return
-        item.showTextView.invoke(this, holder.textView1)
+        item.showTextView.invoke(this, holder.views.textView1)
     }
 
     fun showTimelineFont(item: AppSettingItem, tv: TextView) {
@@ -1193,7 +1171,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         val sp: StringPref = appSettingItem.pref.cast() ?: error("$target: not StringPref")
         pref.edit().put(sp, value).apply()
 
-        showCustomShareIcon(findItemViewHolder(appSettingItem)?.textView1, target)
+        showCustomShareIcon(findItemViewHolder(appSettingItem)?.views?.textView1, target)
     }
 
     fun showCustomShareIcon(tv: TextView?, target: CustomShareTarget) {
@@ -1230,7 +1208,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             ?: error("${getString(appSettingItem.caption)}: not StringPref")
         pref.edit().put(sp, value).apply()
 
-        showWebBrowser(findItemViewHolder(appSettingItem)?.textView1, value)
+        showWebBrowser(findItemViewHolder(appSettingItem)?.views?.textView1, value)
     }
 
     private fun showWebBrowser(tv: TextView?, prefValue: String) {

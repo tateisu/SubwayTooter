@@ -18,15 +18,19 @@ import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.appsetting.AppSettingItem
 import jp.juggler.subwaytooter.appsetting.SettingType
 import jp.juggler.subwaytooter.appsetting.appSettingRoot
+import jp.juggler.subwaytooter.databinding.ActAppSettingBinding
+import jp.juggler.subwaytooter.databinding.LvSettingItemBinding
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.notification.restartAllWorker
 import jp.juggler.subwaytooter.pref.impl.BooleanPref
@@ -47,8 +51,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStreamWriter
+import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -79,9 +85,14 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     lateinit var pref: SharedPreferences
     lateinit var handler: Handler
-    private lateinit var lvList: ListView
-    private lateinit var adapter: MyAdapter
-    private lateinit var etSearch: EditText
+
+    val views by lazy {
+        ActAppSettingBinding.inflate(layoutInflater)
+    }
+
+    private val adapter by lazy {
+        MyAdapter()
+    }
 
     private val arNoop = ActivityResultHandler(log) { }
 
@@ -107,6 +118,18 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             )
         }
     }
+
+    private var pendingQuery: String? = null
+
+    private val procQuery: Runnable = Runnable {
+        if (pendingQuery != null) load(null, pendingQuery)
+    }
+
+    private val divider = Any()
+
+    private var lastSection: AppSettingItem? = null
+    private var lastQuery: String? = null
+    private var colorTarget: AppSettingItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,42 +174,39 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     }
 
     private fun initUi() {
-        setContentView(R.layout.act_app_setting)
+        setContentView(views.root)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
-        lvList = findViewById(R.id.lvList)
+        Styler.fixHorizontalPadding0(views.llContent)
 
-        adapter = MyAdapter()
-        lvList.adapter = adapter
+        views.lvList.layoutManager = LinearLayoutManager(this)
+        views.lvList.adapter = adapter
 
-        etSearch = findViewById<EditText>(R.id.etSearch).apply {
-            addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(p0: Editable?) {
-                    pendingQuery = p0?.toString()
-                    this@ActAppSetting.handler.removeCallbacks(procQuery)
-                    this@ActAppSetting.handler.postDelayed(procQuery, 166L)
-                }
+        views.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {
+                pendingQuery = p0?.toString()
+                this@ActAppSetting.handler.removeCallbacks(procQuery)
+                this@ActAppSetting.handler.postDelayed(procQuery, 166L)
+            }
 
-                override fun beforeTextChanged(
-                    p0: CharSequence?,
-                    p1: Int,
-                    p2: Int,
-                    p3: Int,
-                ) {
-                }
+            override fun beforeTextChanged(
+                p0: CharSequence?,
+                p1: Int,
+                p2: Int,
+                p3: Int,
+            ) {
+            }
 
-                override fun onTextChanged(
-                    p0: CharSequence?,
-                    p1: Int,
-                    p2: Int,
-                    p3: Int,
-                ) {
-                }
-            })
-        }
+            override fun onTextChanged(
+                p0: CharSequence?,
+                p1: Int,
+                p2: Int,
+                p3: Int,
+            ) {
+            }
+        })
 
-        findViewById<View>(R.id.btnSearchReset).setOnClickListener(this@ActAppSetting)
+        views.btnSearchReset.setOnClickListener(this)
     }
 
     private fun removeDefaultPref() {
@@ -215,213 +235,111 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         when (v.id) {
             R.id.btnSearchReset -> {
                 handler.removeCallbacks(procQuery)
-                etSearch.setText("")
-                etSearch.hideKeyboard()
+                views.etSearch.setText("")
+                views.etSearch.hideKeyboard()
                 load(lastSection, null)
             }
         }
     }
 
-    ///////////////////////////////////////////////////////////////
-    private var pendingQuery: String? = null
-
-    private val procQuery: Runnable = Runnable {
-        if (pendingQuery != null) load(null, pendingQuery)
-    }
-
-    ///////////////////////////////////////////////////////////////
-
-    private val divider = Any()
-    private val list = ArrayList<Any>()
-
-    private var lastSection: AppSettingItem? = null
-    private var lastQuery: String? = null
-
     private fun load(section: AppSettingItem?, query: String?) {
-        list.clear()
+        adapter.items = buildList {
+            var lastPath: String? = null
+            fun addParentPath(item: AppSettingItem) {
+                add(divider)
 
-        var lastPath: String? = null
-        fun addParentPath(item: AppSettingItem) {
-            list.add(divider)
-
-            val pathList = ArrayList<String>()
-            var parent = item.parent
-            while (parent != null) {
-                if (parent.caption != 0) pathList.add(0, getString(parent.caption))
-                parent = parent.parent
+                val pathList = ArrayList<String>()
+                var parent = item.parent
+                while (parent != null) {
+                    if (parent.caption != 0) pathList.add(0, getString(parent.caption))
+                    parent = parent.parent
+                }
+                val path = pathList.joinToString("/")
+                if (path != lastPath) {
+                    lastPath = path
+                    add(path)
+                    add(divider)
+                }
             }
-            val path = pathList.joinToString("/")
-            if (path != lastPath) {
-                lastPath = path
-                list.add(path)
-                list.add(divider)
-            }
-        }
 
-        if (query?.isNotEmpty() == true) {
-            lastQuery = query
-            fun scanGroup(level: Int, item: AppSettingItem) {
-                if (item.caption == 0) return
-                if (item.type != SettingType.Section) {
-                    var match = getString(item.caption).contains(query, ignoreCase = true)
-                    if (item.type == SettingType.Group) {
+            when {
+                // 検索キーワードあり
+                query?.isNotBlank() == true -> {
+                    lastQuery = query
+                    fun scanGroup(level: Int, item: AppSettingItem) {
+                        if (item.caption == 0) return
+                        if (item.type != SettingType.Section) {
+                            var match = getString(item.caption).contains(query, ignoreCase = true)
+                            if (item.type == SettingType.Group) {
+                                for (child in item.items) {
+                                    if (child.caption == 0) continue
+                                    if (getString(item.caption).contains(query,
+                                            ignoreCase = true)
+                                    ) {
+                                        match = true
+                                        break
+                                    }
+                                }
+                                if (match) {
+                                    // put entire group
+                                    addParentPath(item)
+                                    add(item)
+                                    addAll(item.items)
+                                }
+                                return
+                            }
+
+                            if (match) {
+                                addParentPath(item)
+                                add(item)
+                            }
+                        }
                         for (child in item.items) {
-                            if (child.caption == 0) continue
-                            if (getString(item.caption).contains(query, ignoreCase = true)) {
-                                match = true
-                                break
-                            }
-                        }
-                        if (match) {
-                            // put entire group
-                            addParentPath(item)
-                            list.add(item)
-                            for (child in item.items) {
-                                list.add(child)
-                            }
-                        }
-                        return
-                    }
-
-                    if (match) {
-                        addParentPath(item)
-                        list.add(item)
-                    }
-                }
-                for (child in item.items) {
-                    scanGroup(level + 1, child)
-                }
-            }
-            scanGroup(0, appSettingRoot)
-            if (list.isNotEmpty()) list.add(divider)
-        } else if (section == null) {
-            // show root page
-            val root = appSettingRoot
-            lastQuery = null
-            lastSection = null
-            for (child in root.items) {
-                list.add(divider)
-                list.add(child)
-            }
-            list.add(divider)
-        } else {
-            // show section page
-            lastSection = section
-            lastQuery = null
-            fun scanGroup(level: Int, parent: AppSettingItem?) {
-                parent ?: return
-                for (item in parent.items) {
-                    list.add(divider)
-                    list.add(item)
-                    if (item.items.isNotEmpty()) {
-                        if (item.type == SettingType.Group) {
-                            for (child in item.items) {
-                                list.add(child)
-                            }
-                        } else {
-                            scanGroup(level + 1, item)
+                            scanGroup(level + 1, child)
                         }
                     }
+                    scanGroup(0, appSettingRoot)
+                }
+                // show root page
+                section == null -> {
+                    val root = appSettingRoot
+                    lastQuery = null
+                    lastSection = null
+                    for (child in root.items) {
+                        add(divider)
+                        add(child)
+                    }
+                }
+                // show section page
+                else -> {
+                    lastSection = section
+                    lastQuery = null
+                    fun scanGroup(level: Int, parent: AppSettingItem?) {
+                        parent ?: return
+                        for (item in parent.items) {
+                            add(divider)
+                            add(item)
+                            if (item.items.isNotEmpty()) {
+                                if (item.type == SettingType.Group) {
+                                    addAll(item.items)
+                                } else {
+                                    scanGroup(level + 1, item)
+                                }
+                            }
+                        }
+                    }
+                    scanGroup(0, section.cast())
                 }
             }
-            scanGroup(0, section.cast())
-            if (list.isNotEmpty()) list.add(divider)
+            if (isNotEmpty()) add(divider)
         }
-        adapter.notifyDataSetChanged()
-        lvList.setSelectionFromTop(0, 0)
-    }
-
-    inner class MyAdapter : BaseAdapter() {
-
-        override fun getCount(): Int = list.size
-        override fun getItemId(position: Int): Long = 0
-        override fun getItem(position: Int): Any = list[position]
-        override fun getViewTypeCount(): Int = SettingType.values().maxByOrNull { it.id }!!.id + 1
-
-        override fun getItemViewType(position: Int): Int =
-            when (val item = list[position]) {
-                is AppSettingItem -> item.type.id
-                is String -> SettingType.Path.id
-                divider -> SettingType.Divider.id
-                else -> error("can't generate view for type $item")
-            }
-
-        // true if the item at the specified position is not a separator.
-        // (A separator is a non-selectable, non-clickable item).
-        override fun areAllItemsEnabled(): Boolean = false
-
-        override fun isEnabled(position: Int): Boolean = list[position] is AppSettingItem
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View =
-            when (val item = list[position]) {
-                is AppSettingItem ->
-                    getViewSettingItem(item, convertView, parent)
-                is String -> getViewPath(item, convertView)
-                divider -> getViewDivider(convertView)
-                else -> error("can't generate view for type $item")
-            }
+        views.lvList.scrollToPosition(0)
     }
 
     private fun dip(dp: Float): Int =
         (resources.displayMetrics.density * dp + 0.5f).toInt()
 
     private fun dip(dp: Int): Int = dip(dp.toFloat())
-
-    private fun getViewDivider(convertView: View?): View =
-        convertView ?: FrameLayout(this@ActAppSetting).apply {
-            layoutParams = AbsListView.LayoutParams(
-                AbsListView.LayoutParams.MATCH_PARENT,
-                AbsListView.LayoutParams.WRAP_CONTENT
-            )
-            addView(View(this@ActAppSetting).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    AbsListView.LayoutParams.MATCH_PARENT,
-                    dip(1)
-                ).apply {
-                    val marginX = 0
-                    val marginY = dip(6)
-                    setMargins(marginX, marginY, marginX, marginY)
-                }
-                setBackgroundColor(context.attrColor(R.attr.colorSettingDivider))
-            })
-        }
-
-    private fun getViewPath(path: String, convertView: View?): View {
-        val tv: MyTextView =
-            convertView.cast() ?: MyTextView(this@ActAppSetting).apply {
-                layoutParams = AbsListView.LayoutParams(
-                    AbsListView.LayoutParams.MATCH_PARENT,
-                    AbsListView.LayoutParams.WRAP_CONTENT
-                )
-                val padX = 0
-                val padY = dip(3)
-                setTypeface(typeface, Typeface.BOLD)
-                setPaddingRelative(padX, padY, padX, padY)
-            }
-        tv.text = path
-        return tv
-    }
-
-    private fun getViewSettingItem(
-        item: AppSettingItem,
-        convertView: View?,
-        parent: ViewGroup?,
-    ): View {
-        val view: View
-        val holder: ViewHolderSettingItem
-        if (convertView != null) {
-            view = convertView
-            holder = convertView.tag.cast()!!
-        } else {
-            view = layoutInflater.inflate(R.layout.lv_setting_item, parent, false)
-            holder = ViewHolderSettingItem(view)
-            view.tag = holder
-        }
-        holder.bind(item)
-        return view
-    }
-
-    private var colorTarget: AppSettingItem? = null
 
     override fun onDialogDismissed(dialogId: Int) {
     }
@@ -438,40 +356,146 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         colorTarget.changed(this)
     }
 
-    inner class ViewHolderSettingItem(viewRoot: View) :
+    inner class MyAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        var items: List<Any> = emptyList()
+            set(newItems) {
+                val oldItems = field
+                field = newItems
+                DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                    override fun getOldListSize() = oldItems.size
+                    override fun getNewListSize() = newItems.size
+                    override fun areItemsTheSame(
+                        oldItemPosition: Int,
+                        newItemPosition: Int,
+                    ) = oldItems.elementAtOrNull(oldItemPosition) == newItems.elementAtOrNull(
+                        newItemPosition)
+
+                    override fun areContentsTheSame(
+                        oldItemPosition: Int,
+                        newItemPosition: Int,
+                    ) = oldItems.elementAtOrNull(oldItemPosition) == newItems.elementAtOrNull(
+                        newItemPosition)
+                }, true).dispatchUpdatesTo(this)
+            }
+
+        private val settingHolderList =
+            ConcurrentHashMap<AppSettingItem, WeakReference<VhSettingItem>>()
+
+        override fun getItemCount() = items.size
+
+        override fun getItemViewType(position: Int) =
+            when (val item = items.elementAtOrNull(position)) {
+                divider -> SettingType.Divider.id
+                is String -> SettingType.Path.id
+                is AppSettingItem -> item.type.id
+                else -> error("can't generate view for type $item")
+            }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+            when (SettingType.map[viewType]) {
+                SettingType.Divider -> VhDivider()
+                SettingType.Path -> VhPath(parent)
+                else -> VhSettingItem(this@ActAppSetting, parent)
+            }
+
+        override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
+            when (val item = items.elementAtOrNull(position)) {
+                divider -> viewHolder.cast<VhDivider>()
+                is String -> viewHolder.cast<VhPath>()?.bind(item)
+                is AppSettingItem -> if (viewHolder is VhSettingItem) {
+                    viewHolder.bind(item)
+                    // 古い紐付けを削除
+                    settingHolderList.entries.filter {
+                        when (it.value.get()) {
+                            null, viewHolder -> true
+                            else -> false
+                        }
+                    }.forEach { settingHolderList.remove(it.key) }
+                    // 新しい紐付けを覚える
+                    settingHolderList[item] = WeakReference(viewHolder)
+                }
+            }
+        }
+
+        fun findVhSetting(item: AppSettingItem) = settingHolderList[item]?.get()
+    }
+
+    private inner class VhDivider(
+        viewRoot: FrameLayout = FrameLayout(this@ActAppSetting).apply {
+            layoutParams = RecyclerView.LayoutParams(
+                RecyclerView.LayoutParams.MATCH_PARENT,
+                RecyclerView.LayoutParams.WRAP_CONTENT
+            )
+            addView(View(this@ActAppSetting).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    dip(1)
+                ).apply {
+                    val marginX = 0
+                    val marginY = dip(6)
+                    setMargins(marginX, marginY, marginX, marginY)
+                }
+                setBackgroundColor(context.attrColor(R.attr.colorSettingDivider))
+            })
+        },
+    ) : RecyclerView.ViewHolder(viewRoot)
+
+    private inner class VhPath(
+        val parent: ViewGroup,
+        val viewRoot: MyTextView = MyTextView(this@ActAppSetting).apply {
+            layoutParams = RecyclerView.LayoutParams(
+                RecyclerView.LayoutParams.MATCH_PARENT,
+                RecyclerView.LayoutParams.WRAP_CONTENT
+            )
+            val padX = 0
+            val padY = dip(3)
+            setTypeface(typeface, Typeface.BOLD)
+            setPaddingRelative(padX, padY, padX, padY)
+        },
+    ) : RecyclerView.ViewHolder(viewRoot) {
+        fun bind(path: String) {
+            viewRoot.text = path
+        }
+    }
+
+    // not private
+    class VhSettingItem(
+        val activity: ActAppSetting,
+        parent: ViewGroup,
+        private val views: LvSettingItemBinding = LvSettingItemBinding
+            .inflate(activity.layoutInflater, parent, false),
+    ) : RecyclerView.ViewHolder(views.root),
         TextWatcher,
         AdapterView.OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
 
-        private val tvCaption: TextView = viewRoot.findViewById(R.id.tvCaption)
-        private val btnAction: Button = viewRoot.findViewById(R.id.btnAction)
+        private val btnAction = views.btnAction
 
-        private val checkBox: CheckBox = viewRoot.findViewById<CheckBox>(R.id.checkBox)
+        private val checkBox = views.checkBox
             .also { it.setOnCheckedChangeListener(this) }
 
-        private val swSwitch: SwitchCompat = viewRoot.findViewById<SwitchCompat>(R.id.swSwitch)
+        private val swSwitch = views.swSwitch
             .also { it.setOnCheckedChangeListener(this) }
 
-        val llExtra: LinearLayout = viewRoot.findViewById(R.id.llExtra)
+        val llExtra = views.llExtra
 
-        val textView1: TextView = viewRoot.findViewById(R.id.textView1)
+        val textView1 = views.textView1
 
-        private val llButtonBar: LinearLayout = viewRoot.findViewById(R.id.llButtonBar)
-        private val vColor: View = viewRoot.findViewById(R.id.vColor)
-        private val btnEdit: Button = viewRoot.findViewById(R.id.btnEdit)
-        private val btnReset: Button = viewRoot.findViewById(R.id.btnReset)
+        private val llButtonBar = views.llButtonBar
+        private val vColor = views.vColor
+        private val btnEdit = views.btnEdit
+        private val btnReset = views.btnReset
 
-        private val spSpinner: Spinner = viewRoot.findViewById<Spinner>(R.id.spSpinner)
+        private val spSpinner = views.spSpinner
             .also { it.onItemSelectedListener = this }
 
-        private val etEditText: EditText = viewRoot.findViewById<EditText>(R.id.etEditText)
+        private val etEditText = views.etEditText
             .also { it.addTextChangedListener(this) }
 
-        private val tvDesc: TextView = viewRoot.findViewById(R.id.tvDesc)
-        private val tvError: TextView = viewRoot.findViewById(R.id.tvError)
+        private val tvDesc = views.tvDesc
+        private val tvError = views.tvError
 
-        val activity: ActAppSetting
-            get() = this@ActAppSetting
+        private val pref = activity.pref
 
         var item: AppSettingItem? = null
 
@@ -482,7 +506,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             try {
                 this.item = item
 
-                tvCaption.vg(false)
+                views.tvCaption.vg(false)
                 btnAction.vg(false)
                 checkBox.vg(false)
                 swSwitch.vg(false)
@@ -495,11 +519,11 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 tvDesc.vg(false)
                 tvError.vg(false)
 
-                val name = if (item.caption == 0) "" else getString(item.caption)
+                val name = if (item.caption == 0) "" else activity.getString(item.caption)
 
                 if (item.desc != 0) {
                     tvDesc.vg(true)
-                    tvDesc.text = getString(item.desc)
+                    tvDesc.text = activity.getString(item.desc)
                     if (item.descClickSet) {
                         tvDesc.background = ContextCompat.getDrawable(
                             activity,
@@ -520,7 +544,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         btnAction.text = name
                         btnAction.isEnabledAlpha = item.enabled
                         btnAction.setOnClickListener {
-                            load(item.cast()!!, null)
+                            activity.load(item.cast()!!, null)
                         }
                     }
 
@@ -539,7 +563,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         checkBox.vg(false) // skip animation
                         checkBox.text = name
                         checkBox.isEnabledAlpha = item.enabled
-                        checkBox.isChecked = bp(pref)
+                        checkBox.isChecked = bp(activity.pref)
                         checkBox.vg(true)
                     }
 
@@ -548,9 +572,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             item.pref.cast() ?: error("$name has no boolean pref")
                         showCaption(name)
                         swSwitch.vg(false) // skip animation
-                        setSwitchColor(swSwitch)
+                        activity.setSwitchColor(swSwitch)
                         swSwitch.isEnabledAlpha = item.enabled
-                        swSwitch.isChecked = bp(pref)
+                        swSwitch.isChecked = bp(activity.pref)
                         swSwitch.vg(true)
                     }
 
@@ -561,7 +585,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     SettingType.Sample -> {
                         llExtra.vg(true)
                         llExtra.removeAllViews()
-                        layoutInflater.inflate(item.sampleLayoutId, llExtra, true)
+                        activity.layoutInflater.inflate(item.sampleLayoutId, llExtra, true)
                         item.sampleUpdate(activity, llExtra)
                     }
 
@@ -570,12 +594,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         showCaption(name)
                         llButtonBar.vg(true)
                         vColor.vg(true)
-                        vColor.setBackgroundColor(ip(pref))
+                        vColor.setBackgroundColor(ip(activity.pref))
                         btnEdit.isEnabledAlpha = item.enabled
                         btnReset.isEnabledAlpha = item.enabled
                         btnEdit.setOnClickListener {
-                            colorTarget = item
-                            val color = ip(pref)
+                            activity.colorTarget = item
+                            val color = ip(activity.pref)
                             val builder = ColorPickerDialog.newBuilder()
                                 .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
                                 .setAllowPresets(true)
@@ -585,7 +609,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             builder.show(activity)
                         }
                         btnReset.setOnClickListener {
-                            pref.edit().remove(ip).apply()
+                            activity.pref.edit().remove(ip).apply()
                             showColor()
                             item.changed.invoke(activity)
                         }
@@ -602,11 +626,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             // 整数型の設定のSpinnerは全て選択肢を単純に覚える
                             val argsInt = item.spinnerArgs
                             if (argsInt != null) {
-                                initSpinner(spSpinner, argsInt.map { getString(it) })
+                                activity.initSpinner(spSpinner,
+                                    argsInt.map { activity.getString(it) })
                             } else {
-                                initSpinner(spSpinner, item.spinnerArgsProc(activity))
+                                activity.initSpinner(spSpinner, item.spinnerArgsProc(activity))
                             }
-                            spSpinner.setSelection(pi.invoke(pref))
+                            spSpinner.setSelection(pi.invoke(activity.pref))
                         } else {
                             item.spinnerInitializer.invoke(activity, spSpinner)
                         }
@@ -615,18 +640,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     SettingType.EditText -> {
                         showCaption(name)
                         etEditText.vg(true)
-
                             ?: error("EditText must have preference.")
                         etEditText.inputType = item.inputType
                         val text = when (val pi = item.pref) {
-                            is FloatPref -> {
-                                item.fromFloat.invoke(activity, pi(pref))
-                            }
-
-                            is StringPref -> {
-                                pi(pref)
-                            }
-
+                            is FloatPref ->
+                                item.fromFloat.invoke(activity, pi(activity.pref))
+                            is StringPref ->
+                                pi(activity.pref)
                             else -> error("EditText han incorrect pref $pi")
                         }
                         etEditText.setText(text)
@@ -662,8 +682,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
         private fun showCaption(caption: String) {
             if (caption.isNotEmpty()) {
-                tvCaption.vg(true)
-                tvCaption.text = caption
+                views.tvCaption.vg(true)?.text = caption
                 updateCaption()
             }
         }
@@ -672,16 +691,16 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             val item = item ?: return
             val key = item.pref?.key ?: return
 
-            val sample: TextView = tvCaption
-            var defaultExtra = defaultLineSpacingExtra[key]
+            val sample = views.tvCaption
+            var defaultExtra = activity.defaultLineSpacingExtra[key]
             if (defaultExtra == null) {
                 defaultExtra = sample.lineSpacingExtra
-                defaultLineSpacingExtra[key] = defaultExtra
+                activity.defaultLineSpacingExtra[key] = defaultExtra
             }
-            var defaultMultiplier = defaultLineSpacingMultiplier[key]
+            var defaultMultiplier = activity.defaultLineSpacingMultiplier[key]
             if (defaultMultiplier == null) {
                 defaultMultiplier = sample.lineSpacingMultiplier
-                defaultLineSpacingMultiplier[key] = defaultMultiplier
+                activity.defaultLineSpacingMultiplier[key] = defaultMultiplier
             }
 
             val size = item.captionFontSize.invoke(activity)
@@ -705,7 +724,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         fun showColor() {
             val item = item ?: return
             val ip = item.pref.cast<IntPref>() ?: return
-            val c = ip(pref)
+            val c = ip(activity.pref)
             vColor.setBackgroundColor(c)
         }
 
@@ -724,15 +743,15 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             when (val pi = item.pref) {
 
                 is StringPref -> {
-                    pref.edit().put(pi, sv).apply()
+                    activity.pref.edit().put(pi, sv).apply()
                 }
 
                 is FloatPref -> {
                     val fv = item.toFloat.invoke(activity, sv)
                     if (fv.isFinite()) {
-                        pref.edit().put(pi, fv).apply()
+                        activity.pref.edit().put(pi, fv).apply()
                     } else {
-                        pref.edit().remove(pi.key).apply()
+                        activity.pref.edit().remove(pi.key).apply()
                     }
                 }
 
@@ -756,7 +775,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             if (bindingBusy) return
             val item = item ?: return
             when (val pi = item.pref) {
-                is IntPref -> pref.edit().put(pi, spSpinner.selectedItemPosition).apply()
+                is IntPref -> activity.pref.edit().put(pi, spSpinner.selectedItemPosition).apply()
                 else -> item.spinnerOnSelected.invoke(activity, spSpinner, position)
             }
             item.changed.invoke(activity)
@@ -865,13 +884,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         finish()
     }
 
-    fun findItemViewHolder(item: AppSettingItem?): ViewHolderSettingItem? {
+    fun findItemViewHolder(item: AppSettingItem?): VhSettingItem? {
         if (item != null) {
-            for (i in 0 until lvList.childCount) {
-                val view = lvList.getChildAt(i)
-                val holder: ViewHolderSettingItem? = view?.tag?.cast()
-                if (holder?.item == item) return holder
-            }
+            adapter.findVhSetting(item)
         }
         return null
     }
@@ -884,8 +899,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     }
 
     // リスト内部のSwitchCompat全ての色を更新する
-    fun setSwitchColor() =
-        setSwitchColor(lvList)
+    fun setSwitchColor() = setSwitchColor(views.lvList)
 
     //////////////////////////////////////////////////////
 
@@ -914,8 +928,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         return Float.NaN
     }
 
-    private val defaultLineSpacingExtra = HashMap<String, Float>()
-    private val defaultLineSpacingMultiplier = HashMap<String, Float>()
+    val defaultLineSpacingExtra = HashMap<String, Float>()
+    val defaultLineSpacingMultiplier = HashMap<String, Float>()
 
     private fun handleFontResult(item: AppSettingItem?, data: Intent, fileName: String) {
         item ?: error("handleFontResult : setting item is null")

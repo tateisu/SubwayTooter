@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundDrawable
+import java.util.concurrent.atomic.AtomicInteger
 
 enum class SettingType(val id: Int) {
     Path(0),
@@ -33,6 +34,12 @@ enum class SettingType(val id: Int) {
     TextWithSelector(10),
     CheckBox(11),
     Section(12)
+
+    ;
+
+    companion object {
+        val map = values().associateBy { it.id }
+    }
 }
 
 class AppSettingItem(
@@ -41,6 +48,7 @@ class AppSettingItem(
     @StringRes val caption: Int,
     val pref: BasePref<*>? = null,
 ) {
+    val id = idSeed.incrementAndGet()
 
     @StringRes
     var desc: Int = 0
@@ -191,7 +199,11 @@ class AppSettingItem(
         for (item in items) item.scan(block)
     }
 
+    override fun hashCode() = id
+    override fun equals(other: Any?) = (other as? AppSettingItem)?.id == this.id
+
     companion object {
+        var idSeed = AtomicInteger(0)
 
         var SAMPLE_CCD_HEADER: AppSettingItem? = null
         var SAMPLE_CCD_BODY: AppSettingItem? = null
@@ -467,7 +479,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         spinner(PrefI.ipMediaBackground, R.string.background_pattern) {
             MediaBackgroundDrawable.Kind.values()
-                .filter{it.isMediaBackground}
+                .filter { it.isMediaBackground }
                 .map { it.name }
         }
 

@@ -106,7 +106,7 @@ internal class StatusButtonsPopup(
         val anchorTop = location[1]
         val anchorWidth = anchor.width
 
-        // popupsize
+        // popupの大きさ
         viewRoot.measure(
             View.MeasureSpec.makeMeasureSpec(listView.width, View.MeasureSpec.AT_MOST),
             View.MeasureSpec.makeMeasureSpec(listView.height, View.MeasureSpec.AT_MOST)
@@ -114,9 +114,10 @@ internal class StatusButtonsPopup(
         val popupWidth = viewRoot.measuredWidth
         val popupHeight = viewRoot.measuredHeight
 
-        val clipTop = listviewTop+ dip(8f)
-        val clipBottom = listviewTop+ listView.height - dip(8f)
-        // ポップアップウィンドウの上端。listViewベース
+        val clipTop = listviewTop + dip(8f)
+        val clipBottom = listviewTop + listView.height - dip(8f)
+
+        // ポップアップウィンドウの上端
         var popupY = anchorTop + anchor.height / 2
         if (popupY < clipTop) {
             // 画面外のは画面内にする
@@ -138,6 +139,6 @@ internal class StatusButtonsPopup(
 
         log.i("show listView=${listviewTop},${listviewLeft},${listView.width}, anchor=${anchorTop},${anchorLeft},popup=${popupY},${popupX}")
 
-        window.showAtLocation(listView, Gravity.LEFT or Gravity.TOP, popupX, popupY )
+        window.showAtLocation(listView, Gravity.LEFT or Gravity.TOP, popupX, popupY)
     }
 }

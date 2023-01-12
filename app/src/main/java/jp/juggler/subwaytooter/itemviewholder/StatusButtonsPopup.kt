@@ -98,6 +98,8 @@ internal class StatusButtonsPopup(
 
         listView.getLocationInWindow(location)
         val listviewTop = location[1]
+        val clipTop = listviewTop + dip(8f)
+        val clipBottom = listviewTop + listView.height - dip(8f)
 
         anchor.getLocationInWindow(location)
         val anchorLeft = location[0]
@@ -112,9 +114,6 @@ internal class StatusButtonsPopup(
         )
         val popupWidth = viewRoot.measuredWidth
         val popupHeight = viewRoot.measuredHeight
-
-        val clipTop = listviewTop + dip(8f)
-        val clipBottom = listviewTop + listView.height - dip(8f)
 
         // ポップアップウィンドウの左上（基準は親ウィンドウの左上)
         val popupX = anchorLeft + max(0, (anchorWidth - popupWidth) / 2)

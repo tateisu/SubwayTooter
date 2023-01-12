@@ -97,7 +97,6 @@ internal class StatusButtonsPopup(
         val location = IntArray(2)
 
         listView.getLocationInWindow(location)
-        val listviewLeft = location[0]
         val listviewTop = location[1]
 
         anchor.getLocationInWindow(location)

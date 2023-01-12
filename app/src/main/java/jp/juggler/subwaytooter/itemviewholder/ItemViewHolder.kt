@@ -34,7 +34,6 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.applyAlphaMultiplier
 import jp.juggler.util.attrColor
 import org.jetbrains.anko.*
-import kotlin.math.min
 
 class ItemViewHolder(
     val activity: ActMain,
@@ -304,21 +303,18 @@ class ItemViewHolder(
         ivAvatar.layoutParams.height = s
         ivAvatar.layoutParams.width = s
         ivFollow.layoutParams.width = s
-        ivBoosted.layoutParams.width = s
 
-        s = ActMain.replyIconSize + (activity.density * 8).toInt()
+        s = ActMain.replyIconSize
         ivReply.layoutParams.width = s
         ivReply.layoutParams.height = s
         ivReplyAvatar.layoutParams.width = s
         ivReplyAvatar.layoutParams.height = s
 
         s = activity.notificationTlIconSize
+        ivBoosted.layoutParams.width = s
         ivBoosted.layoutParams.height = s
-
-        min(activity.notificationTlIconSize, activity.avatarIconSize).let {
-            ivBoostAvatar.layoutParams.width = it
-            ivBoostAvatar.layoutParams.height = it
-        }
+        ivBoostAvatar.layoutParams.width = s
+        ivBoostAvatar.layoutParams.height = s
 
         this.contentInvalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
         this.spoilerInvalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
@@ -370,15 +366,19 @@ class ItemViewHolder(
             gravity = Gravity.CENTER_VERTICAL
 
             ivBoosted = imageView {
-                scaleType = ImageView.ScaleType.FIT_END
+                scaleType = ImageView.ScaleType.FIT_CENTER
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-            }.lparams(dip(48), dip(32)) {
-                endMargin = dip(4)
-            }
+            }.lparams(dip(32), dip(32)) {}
+
+            ivBoostAvatar = myNetworkImageView {
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }.lparams(dip(32), dip(32)) {}
 
             verticalLayout {
                 lparams(dip(0), wrapContent) {
                     weight = 1f
+                    startMargin = dip(4)
                 }
 
                 linearLayout {
@@ -405,23 +405,10 @@ class ItemViewHolder(
                     }.lparams(wrapContent, wrapContent)
                 }
 
-                linearLayout {
-                    lparams(matchParent, wrapContent)
-
-                    ivBoostAvatar = myNetworkImageView {
-                        scaleType = ImageView.ScaleType.FIT_END
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                        padding = dip(4)
-                    }.lparams(dip(32), dip(32)) {
-                        gravity = Gravity.CENTER_VERTICAL
-                    }
-
-                    tvBoosted = myTextView {
-                        // tools:text = "～にブーストされました"
-                    }.lparams(matchParent, wrapContent){
-                        endMargin = dip(2)
-                        gravity = Gravity.CENTER_VERTICAL
-                    }
+                tvBoosted = myTextView {
+                    // tools:text = "～にブーストされました"
+                }.lparams(matchParent, wrapContent) {
+                    gravity = Gravity.CENTER_VERTICAL
                 }
             }
         }
@@ -616,32 +603,33 @@ class ItemViewHolder(
 
     private fun _LinearLayout.inflateStatusReplyInfo() {
         llReply = linearLayout {
-            lparams(matchParent, wrapContent) {
-                bottomMargin = dip(3)
-            }
+            lparams(matchParent, wrapContent) {}
+
+            minimumHeight = dip(40)
+
+            padding = dip(4)
 
             background =
                 ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+
             gravity = Gravity.CENTER_VERTICAL
 
-            ivReplyAvatar = myNetworkImageView {
-                scaleType = ImageView.ScaleType.FIT_END
+            ivReply = imageView {
+                scaleType = ImageView.ScaleType.FIT_CENTER
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                padding = dip(4)
             }.lparams(dip(32), dip(32)) {
-                endMargin = dip(1)
             }
 
-            ivReply = imageView {
-                scaleType = ImageView.ScaleType.FIT_END
+            ivReplyAvatar = myNetworkImageView {
+                scaleType = ImageView.ScaleType.FIT_CENTER
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                padding = dip(4)
             }.lparams(dip(32), dip(32)) {
-                endMargin = dip(4)
+                startMargin = dip(2)
             }
 
             tvReply = myTextView {
             }.lparams(dip(0), wrapContent) {
+                startMargin = dip(4)
                 weight = 1f
             }
         }
@@ -806,8 +794,8 @@ class ItemViewHolder(
                 verticalLayout {
                     lparams(0, wrapContent) { weight = 1f }
 
-                    tvName = myTextView {
-                    }.lparams(matchParent, wrapContent)
+                    tvName = myTextView {}
+                        .lparams(matchParent, wrapContent)
 
                     inflateOpenSticker()
                     inflateStatusReplyInfo()

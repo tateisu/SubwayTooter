@@ -372,7 +372,7 @@
     <string name="relative_time_phrase_past">%1$d %2$s siden</string>
     <string name="relative_time_phrase_future">%1$d %2$s senere</string>
     <string name="notification_channel_description">Disse innstillingen brukes for merknad for %1$s</string>
-    <string name="notification_style_after_oreo">Merknadsstil (Android 8.0 eller senere)</string>
+    <string name="notification_style_after_oreo">Merknadsstil</string>
     <string name="notification_for">Merknad for %1$s</string>
     <string name="enquete_voted">Innsendt.</string>
     <string name="enquete_vote_failed">Stemmegivning mislyktes. %1$s</string>

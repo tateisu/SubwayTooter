@@ -463,7 +463,7 @@
     <string name="relative_time_phrase_past">%1$d %2$s</string>
     <string name="relative_time_phrase_future">%1$d %2$s 후</string>
     <string name="notification_channel_description">이 설정은 %1$s에 대한 알림을 조절하는 데 사용됩니다</string>
-    <string name="notification_style_after_oreo">알림 스타일 (안드로이드 8.0 이상)</string>
+    <string name="notification_style_after_oreo">알림 스타일</string>
     <string name="notification_for">%1$s에 대한 알림</string>
     <string name="enquete_was_end">설문조사 끝남.</string>
     <string name="enquete_voted">투표함.</string>

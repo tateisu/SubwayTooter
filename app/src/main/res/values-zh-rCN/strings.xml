@@ -567,7 +567,7 @@
     <string name="announcements_period1">事件日期:%1$s</string>
     <string name="announcements_index">%1$d %2$d</string>
     <string name="announcements">公告</string>
-    <string name="divide_notification">去除通知(android6 +)</string>
+    <string name="divide_notification">去除通知</string>
     <string name="push_notification_server_key_empty">推送通知将不起作用，因为服务器配置错误，服务器公钥为空.</string>
     <string name="push_notification_server_key_missing">推送通知将无法工作，因为服务器配置错误，缺少服务器公钥.</string>
     <string name="follow_request">关注请求</string>
@@ -601,7 +601,7 @@
     <string name="release_notes_latest">发布注释(v%1$s)</string>
     <string name="always_expand_context_menu_sub_items">总是展开上下文菜单的子项目</string>
     <string name="timeline_line_spacing">时间线行间距(浮动数字用作行间距倍增器，默认留空，应用需要重启)</string>
-    <string name="separate_notification_group_for_reply">独立的回复通知组(android8 +)</string>
+    <string name="separate_notification_group_for_reply">独立的回复通知组</string>
     <string name="quick_toot_omit_account_selection">当使用快速嘟嘟时，如果可能的话，省略帐户选择</string>
     <string name="instance_actions_for">\"%1$s\"实例的动作</string>
     <string name="block_domain">阻止整个域名</string>
@@ -1006,7 +1006,7 @@
     <string name="enquete_voted">已投票.</string>
     <string name="enquete_was_end">投票结束.</string>
     <string name="notification_for">%1$s的通知</string>
-    <string name="notification_style_after_oreo">通知方式(Android 8.0+)</string>
+    <string name="notification_style_after_oreo">通知方式</string>
     <string name="notification_channel_description">此设置用于调整%1$s</string>
     <string name="relative_time_phrase_future">%1$d %2$s 之后</string>
     <string name="relative_time_unit_days">天数</string>
@@ -1031,7 +1031,6 @@
     <string name="custom_share_button_3">自定义共享按钮3</string>
     <string name="custom_share_button_2">自定义共享按钮2</string>
     <string name="custom_share_button_1">自定义共享按钮1</string>
-    <string name="app_chooser_works_android_5_1">对不起，应用选择器工作中Android 5.1+.</string>
     <string name="select_destination_app_and_back">选择目标应用，然后返回到应用设置.</string>
     <string name="missing_app_can_receive_action_send">丢失可以接收 ACTION _ send的应用.</string>
     <string name="translation_app">翻译应用</string>

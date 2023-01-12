@@ -451,7 +451,7 @@
     <string name="relative_time_unit_days">jours</string>
     <string name="relative_time_phrase_past">Il y a %1$d %2$s</string>
     <string name="relative_time_phrase_future">Dans %1$d %2$s</string>
-    <string name="notification_style_after_oreo">Style de notifications (Android 8.0+)</string>
+    <string name="notification_style_after_oreo">Style de notifications</string>
     <string name="notification_for">Notification for %1$s</string>
     <string name="notification_channel_description">Ce paramètre est utilisé pour ajuster les  notifications pour %1$s</string>
     <string name="enquete_was_end">Sondage terminé.</string>
@@ -907,7 +907,6 @@
     <string name="missing_app_can_receive_action_send">Application pouvant recevoir ACTION-SEND manquante.</string>
     <string name="translation_app">Application de traduction</string>
     <string name="select_destination_app_and_back">Sélectionnez l’application de destination puis retournez aux paramètres de l’application.</string>
-    <string name="app_chooser_works_android_5_1">Désolé, le sélecteur d’applications fonctionne sur Android 5.1+.</string>
     <string name="custom_share_button_1">Bouton de partage personnalisé 1</string>
     <string name="custom_share_button_2">Bouton de partage personnalisé 2</string>
     <string name="custom_share_button_3">Bouton de partage personnalisé 3</string>
@@ -998,7 +997,7 @@
     <string name="copied_to_clipboard">A été copié vers le presse-papiers.</string>
     <string name="copy_to_clipboard">Copier vers le presse-papiers</string>
     <string name="hide_followers_count">Cacher le nombre des abonné·e·s</string>
-    <string name="divide_notification">Séparer les notifications (Android 6+)</string>
+    <string name="divide_notification">Séparer les notifications</string>
     <string name="show_bookmark_button">Afficher le bouton des signets (redémarrage requis)</string>
     <string name="release_notes_updated">Notes de version (v%1$s→v%2$s)</string>
     <string name="release_notes_latest">Notes de version (v%1$s)</string>
@@ -1030,7 +1029,7 @@
     <string name="custom_thumbnail">Vignette personnalisée</string>
     <string name="personal_notes">Notes personnelles</string>
     <string name="conversation_main_toot_background_color">Couleur d’arrière-plan du pouet principal de la conversation</string>
-    <string name="separate_notification_group_for_reply">Groupes de notification distincts pour la réponse (Android 8+)</string>
+    <string name="separate_notification_group_for_reply">Groupes de notification distincts pour la réponse</string>
     <string name="warn_hashtag_ascii_and_non_ascii">Avertir si le hashtag contient à la fois des caractères ASCII et non-ASCII</string>
     <string name="hashtag_contains_ascii_and_not_ascii">Le Hashtag %1$s contient à la fois des caractères ASCII et non ASCII. Il peut s’agir d’une faute de frappe. En êtes-vous sûr \?</string>
     <string name="direct_with_user_visibility">Visibilité \"direct aux utilisateur·rice·s\"</string>

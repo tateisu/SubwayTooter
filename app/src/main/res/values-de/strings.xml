@@ -671,7 +671,6 @@
     <string name="custom_share_button_3">Benutzerdefinierter Teile-Button 3</string>
     <string name="custom_share_button_2">Benutzerdefinierter Teile-Button 2</string>
     <string name="custom_share_button_1">Benutzerdefinierter Teile-Button 1</string>
-    <string name="app_chooser_works_android_5_1">Sorry, die App-Auswahl funktioniert unter Android 5.1 und später.</string>
     <string name="select_destination_app_and_back">Wähle die Ziel-App, dann zurück zu den App-Einstellungen.</string>
     <string name="missing_app_can_receive_action_send">Es fehlt eine App, die mit der Aktion ACTION_SEND etwas anfangen kann.</string>
     <string name="translation_app">Übersetzungs-App</string>
@@ -720,7 +719,7 @@
     <string name="release_notes_updated">Versionsinformationen (v%1$s→v%2$s)</string>
     <string name="release_notes_latest">Versionsinformationen (v%1$s)</string>
     <string name="always_expand_context_menu_sub_items">Unterpunkte eines Kontextmenüs immer aufklappen</string>
-    <string name="separate_notification_group_for_reply">Trenne Benachrichtigungsgruppen zur Beantwortung auf (Android 8.0 und später)</string>
+    <string name="separate_notification_group_for_reply">Trenne Benachrichtigungsgruppen zur Beantwortung auf</string>
     <string name="timeline_line_spacing">Zeilenabstände in der Timeline (Gleitkommazahl als Multiplikator für den Zeilenabstand, leer lassen für standard. App-Neustart erforderlich)</string>
     <string name="quick_toot_omit_account_selection">Bei der Nutzung von Quick-Toot nach Möglichkeit keine Kontenauswahl treffen</string>
     <string name="instance_actions_for">Aktionen bzgl. Server \"%1$s\"</string>
@@ -758,7 +757,7 @@
     <string name="edited_at">Bearbeitet: %1$s</string>
     <string name="announcements_index">%1$d/%2$d</string>
     <string name="announcements">Ankündigungen</string>
-    <string name="divide_notification">Benachrichtigungen aufteilen (Android 6.0 und später)</string>
+    <string name="divide_notification">Benachrichtigungen aufteilen</string>
     <string name="push_notification_server_key_empty">Push-Benachrichtigungen werden aufgrund einer Fehlkonfiguration des Servers nicht funktionieren. Der öffentliche Schlüssel des Servers ist leer.</string>
     <string name="push_notification_server_key_missing">Push-Benachrichtigungen werden aufgrund einer Fehlkonfiguration des Servers nicht funktionieren. Der öffentliche Schlüssel des Servers fehlt.</string>
     <string name="follow_request">Anfrage folgen</string>
@@ -935,7 +934,7 @@
     <string name="enquete_vote_failed">Konnte nicht abstimmen. %1$s</string>
     <string name="enquete_voted">Abgestimmt.</string>
     <string name="notification_for">Benachrichtigung für %1$s</string>
-    <string name="notification_style_after_oreo">Benachrichtigungsstil (Android 8.0 und später)</string>
+    <string name="notification_style_after_oreo">Benachrichtigungsstil</string>
     <string name="notification_channel_description">Diese Einstellung legt die Benachrichtigung für %1$s fest</string>
     <string name="relative_time_phrase_future">%1$d %2$s später</string>
     <string name="relative_time_phrase_past">%1$d %2$s</string>

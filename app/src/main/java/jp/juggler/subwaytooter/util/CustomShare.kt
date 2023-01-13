@@ -170,7 +170,7 @@ object CustomShare {
     fun hasTranslateApp(
         target: CustomShareTarget,
         context: Context,
-    )= try {
+    ) = try {
         getCustomShareComponentName(target)?.let { cn ->
             val cnStr = "${cn.packageName}/${cn.className}"
             if (cnStr == CN_CLIPBOARD) {
@@ -185,9 +185,9 @@ object CustomShare {
                 ri != null
             }
         }
-    }catch(ignores:Throwable) {
+    } catch (ignores: Throwable) {
         null
-    }?: false
+    } ?: false
 
     private val cache = HashMap<CustomShareTarget, Pair<CharSequence?, Drawable?>>()
 

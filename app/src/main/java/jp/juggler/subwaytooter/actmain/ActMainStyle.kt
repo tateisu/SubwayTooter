@@ -101,13 +101,8 @@ fun ActMain.reloadBoostAlpha() {
         .toIntOrNull()
         ?.toFloat()
         ?.let { (it + 0.5f) / 100f }
-        ?.let {
-            when {
-                it >= 1f -> 1f
-                it < 0f -> 0.66f
-                else -> it
-            }
-        } ?: 0.8f
+        ?.takeIf { it > 0f && it < 1f }
+        ?: 1f
 }
 
 fun ActMain.reloadMediaHeight() {
@@ -223,6 +218,8 @@ fun ActMain.showFooterColor() {
 
     svColumnStrip.setBackgroundColor(colorColumnStripBackground)
     llQuickPostBar.setBackgroundColor(colorColumnStripBackground)
+
+    vBottomPadding.setBackgroundColor(colorColumnStripBackground)
 
     val colorButtonBg = footerButtonBgColor.notZero()
         ?: colorColumnStripBackground

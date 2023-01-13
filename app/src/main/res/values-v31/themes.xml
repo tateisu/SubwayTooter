@@ -13,4 +13,11 @@
         <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="android:windowSplashScreenAnimationDuration">1000</item>
     </style>
+
+    <!-- Mastidon theme -->
+    <style name="AppTheme.Mastodon" parent="AppTheme.Mastodon.Base">
+        <item name="android:windowSplashScreenBackground">@color/Other_splashBackground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimationDuration">1000</item>
+    </style>
 </resources>

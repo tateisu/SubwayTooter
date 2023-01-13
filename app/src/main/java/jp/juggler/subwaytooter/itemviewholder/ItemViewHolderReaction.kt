@@ -95,8 +95,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 // 自分がリアクションしたやつは背景を変える
                 getAdaptiveRippleDrawableRound(
                     act,
-                    PrefI.ipButtonReactionedColor(act.pref).notZero()
-                        ?: act.attrColor(R.attr.colorImageButtonAccent),
+                    PrefI.ipButtonReactionedColor.invoke(act.pref).notZero()
+                        ?: act.attrColor(R.attr.colorButtonAccentReaction),
                     act.attrColor(R.attr.colorRippleEffect),
                     roundNormal = true
                 )

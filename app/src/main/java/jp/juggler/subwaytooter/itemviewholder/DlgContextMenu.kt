@@ -186,7 +186,6 @@ internal class DlgContextMenu(
             views.btnStatusEdit2.vg(canEdit)
             views.btnStatusEdit.vg(canEdit)
 
-
             views.btnStatusDelete2.vg(statusByMe)
             views.btnGroupStatusByMe.vg(statusByMe)
 
@@ -228,11 +227,11 @@ internal class DlgContextMenu(
 
         val colorButtonAccent =
             PrefI.ipButtonFollowingColor(activity.pref).notZero()
-                ?: activity.attrColor(R.attr.colorImageButtonAccent)
+                ?: activity.attrColor(R.attr.colorButtonAccentFollow)
 
         val colorButtonError =
             PrefI.ipButtonFollowRequestColor(activity.pref).notZero()
-                ?: activity.attrColor(R.attr.colorRegexFilterError)
+                ?: activity.attrColor(R.attr.colorButtonAccentFollowRequest)
 
         val colorButtonNormal =
             activity.attrColor(R.attr.colorImageButton)
@@ -257,7 +256,7 @@ internal class DlgContextMenu(
                 views.btnStatusEdit2,
                 views.btnStatusHistory2,
                 views.btnStatusTranslate2,
-                views.btnStatusTranslate2,
+                views.btnStatusDelete2,
             ).forEach {
                 it.imageTintList = ColorStateList.valueOf(colorButtonNormal)
             }

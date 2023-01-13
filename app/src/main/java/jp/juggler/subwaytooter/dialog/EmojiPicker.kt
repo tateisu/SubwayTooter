@@ -23,7 +23,6 @@ import com.google.android.flexbox.FlexboxLayout
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.EmojiPickerDialogBinding
-import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.emoji.*
 import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefB
@@ -575,7 +574,7 @@ private class EmojiPicker(
                 category.createFiltered(keywordLower)
                     .takeIf { it.items.isNotEmpty() }
             }.forEach {
-                if( it.category == EmojiCategory.Custom || selectedCategory == null) add(it)
+                if (it.category == EmojiCategory.Custom || selectedCategory == null) add(it)
                 addAll(it.items)
                 val mod = it.items.size % gridCols
                 if (mod > 0) {
@@ -743,8 +742,6 @@ private class EmojiPicker(
         }
 
         views.etFilter.addTextChangedListener(textWatcher)
-
-
 
         showFiltered(null, null)
 

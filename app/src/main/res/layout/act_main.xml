@@ -134,6 +134,11 @@
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_send" />
         </LinearLayout>
+
+        <View android:id="@+id/vBottomPadding"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            />
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView

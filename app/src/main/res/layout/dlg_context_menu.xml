@@ -348,7 +348,7 @@
                             android:layout_height="match_parent"
                             android:scaleType="center"
                             android:src="@drawable/ic_follow_dot"
-                            app:tint="?attr/colorImageButtonAccent"
+                            app:tint="?attr/colorButtonAccentFollow"
                             tools:ignore="ContentDescription" />
                     </FrameLayout>
 

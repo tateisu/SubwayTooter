@@ -774,7 +774,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             PrefI.ipUiTheme,
             R.string.ui_theme,
             R.string.theme_light,
-            R.string.theme_dark
+            R.string.theme_dark,
+            R.string.theme_mastodon_dark,
         )
 
         colorAlpha(PrefI.ipListDividerColor, R.string.list_divider_color)

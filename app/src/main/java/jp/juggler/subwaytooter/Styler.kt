@@ -178,11 +178,11 @@ object Styler {
     ) {
         fun colorAccent() =
             PrefI.ipButtonFollowingColor(context.pref()).notZero()
-                ?: context.attrColor(R.attr.colorImageButtonAccent)
+                ?: context.attrColor(R.attr.colorButtonAccentFollow)
 
         fun colorError() =
             PrefI.ipButtonFollowRequestColor(context.pref()).notZero()
-                ?: context.attrColor(R.attr.colorRegexFilterError)
+                ?: context.attrColor(R.attr.colorButtonAccentFollowRequest)
 
         // 被フォロー状態
         when {

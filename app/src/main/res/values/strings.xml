@@ -197,6 +197,7 @@
     <string name="ui_theme">UI theme (app restart required)</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="theme_mastodon_dark">Mastodon Dark</string>
     <string name="dont_show_boost">Don\'t show boosts</string>
     <string name="dont_show_reply">Don\'t show replies</string>
     <string name="regex_filter">Regex filter</string>

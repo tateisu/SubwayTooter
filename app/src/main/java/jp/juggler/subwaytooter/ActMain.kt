@@ -127,6 +127,7 @@ class ActMain : AppCompatActivity(),
     var quickPostVisibility: TootVisibility = TootVisibility.AccountSetting
 
     lateinit var llFormRoot: LinearLayout
+    lateinit var vBottomPadding: View
     lateinit var llQuickPostBar: LinearLayout
     lateinit var etQuickPost: MyEditText
     lateinit var btnQuickToot: ImageButton
@@ -667,6 +668,7 @@ class ActMain : AppCompatActivity(),
     // ビューのlateinit変数を初期化する
     private fun findViews() {
         llFormRoot = findViewById(R.id.llFormRoot)
+        vBottomPadding = findViewById(R.id.vBottomPadding)
         llEmpty = findViewById(R.id.llEmpty)
         drawer = findViewById(R.id.drawer_layout)
         btnMenu = findViewById(R.id.btnMenu)
@@ -710,7 +712,7 @@ class ActMain : AppCompatActivity(),
 
         sideMenuAdapter = SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
 
-        llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
+        vBottomPadding.layoutParams?.height = screenBottomPadding
 
         justifyWindowContentPortrait()
 

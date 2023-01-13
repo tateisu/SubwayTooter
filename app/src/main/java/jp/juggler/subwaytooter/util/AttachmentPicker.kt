@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.util
 
-import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
@@ -86,13 +85,12 @@ class AttachmentPicker(
             }
     }
 
-    private val prPickAttachment = permissionSpecImagePicker.requester{ openPicker() }
+    private val prPickAttachment = permissionSpecImagePicker.requester { openPicker() }
 
-    private val prPickCustomThumbnail = permissionSpecImagePicker.requester{
+    private val prPickCustomThumbnail = permissionSpecImagePicker.requester {
         callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)
             ?.let { openCustomThumbnail(it) }
     }
-
 
     init {
         // must register all ARHs before onStart

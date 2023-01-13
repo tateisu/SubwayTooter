@@ -170,9 +170,9 @@ class VersionString(src: String?) : Comparable<VersionString> {
     }
 
     val majorVersion: Int?
-        get(){
+        get() {
             nodeList.forEach {
-                if(it is BigInteger){
+                if (it is BigInteger) {
                     return it.toString().toIntOrNull()
                 }
             }

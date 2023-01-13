@@ -291,11 +291,10 @@ fun CharSequence.copyToClipboard(context: Context) {
 
         clipboard.setPrimaryClip(clip)
 
-        if(Build.VERSION.SDK_INT < 33){
+        if (Build.VERSION.SDK_INT < 33) {
             context.showToast(false, R.string.copy_complete)
             // API 33以上はOSがクリップボード使用メッセージをだすので、アプリはトーストを出さない
         }
-
     } catch (ex: Throwable) {
         log.e(ex, "copy failed.")
         context.showToast(ex, "copy failed.")

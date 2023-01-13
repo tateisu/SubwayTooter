@@ -704,6 +704,7 @@
     <string name="thanks_for">Thanks for %1$s</string>
     <string name="theme_dark">暗い</string>
     <string name="theme_light">明るい</string>
+    <string name="theme_mastodon_dark">Mastodon Dark</string>
     <string name="thumbnail">サムネイル</string>
     <string name="thumbnails_arrange_vertically">サムネイルを縦に並べる (アプリ再起動が必要)</string>
     <string name="time_within_second">たった今</string>

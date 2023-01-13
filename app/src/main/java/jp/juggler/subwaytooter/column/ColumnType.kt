@@ -16,7 +16,6 @@ import jp.juggler.subwaytooter.search.TootsearchHelper.loadingTootsearch
 import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
 import jp.juggler.subwaytooter.streaming.StreamSpec
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.util.*
 import kotlin.math.max

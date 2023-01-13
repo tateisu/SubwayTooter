@@ -17,7 +17,7 @@
     <attr name="colorImageButton" format="color"/>
 
     <!-- イメージボタンの図柄の色 ファボ済みなど 0xff0088ff-->
-    <attr name="colorImageButtonAccent" format="color"/>
+    <attr name="colorConversationMainTootBg" format="color"/>
 
     <!-- リップルエフェクトの色 FF808080-->
     <attr name="colorRippleEffect" format="color"/>
@@ -93,5 +93,16 @@
 
     <!-- @drawable/window_background_light と @drawable/window_background に指定した色をgetAttributeColorで取得したい -->
     <attr name="colorWindowBackground" format="color"/>
+
+    <!-- アプリ設定などのスイッチのオフの色 -->
+    <attr name="colorSwitchOff" format="color"/>
+
+    <!-- ボタンアクセント色 -->
+    <attr name="colorButtonAccentBoost" format="color"/>
+    <attr name="colorButtonAccentFavourite" format="color"/>
+    <attr name="colorButtonAccentBookmark" format="color"/>
+    <attr name="colorButtonAccentFollow" format="color"/>
+    <attr name="colorButtonAccentFollowRequest" format="color"/>
+    <attr name="colorButtonAccentReaction" format="color"/>
 
 </resources>

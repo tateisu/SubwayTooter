@@ -85,9 +85,6 @@ class StatusButtons(
 
     private val colorNormal = column.getContentColor()
 
-    private val colorAccent: Int
-        get() = activity.attrColor(R.attr.colorImageButtonAccent)
-
     private var optionalButtonFirst: View? = null
     private var optionalButtonCount = 0
     var ti: TootInstance? = null
@@ -191,7 +188,8 @@ class StatusButtons(
                 setButton(
                     btnBoost,
                     false,
-                    colorAccent,
+                    PrefI.ipButtonBoostedColor(activity.pref).notZero()
+                        ?: activity.attrColor(R.attr.colorButtonAccentBoost),
                     R.drawable.ic_mail,
                     "",
                     activity.getString(R.string.boost)
@@ -212,7 +210,8 @@ class StatusButtons(
                 true,
                 when {
                     status.reblogged ->
-                        PrefI.ipButtonBoostedColor(activity.pref).notZero() ?: colorAccent
+                        PrefI.ipButtonBoostedColor(activity.pref).notZero()
+                            ?: activity.attrColor(R.attr.colorButtonAccentBoost)
                     else ->
                         colorNormal
                 },
@@ -281,7 +280,8 @@ class StatusButtons(
                     true,
                     when {
                         status.favourited ->
-                            PrefI.ipButtonFavoritedColor(activity.pref).notZero() ?: colorAccent
+                            PrefI.ipButtonFavoritedColor(activity.pref).notZero()
+                                ?: activity.attrColor(R.attr.colorButtonAccentFavourite)
                         else -> colorNormal
                     },
                     when {
@@ -325,7 +325,7 @@ class StatusButtons(
                             when {
                                 status.bookmarked ->
                                     PrefI.ipButtonBookmarkedColor(activity.pref).notZero()
-                                        ?: colorAccent
+                                        ?: activity.attrColor(R.attr.colorButtonAccentBookmark)
                                 else ->
                                     colorNormal
                             },

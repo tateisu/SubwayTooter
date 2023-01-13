@@ -517,6 +517,7 @@ class ItemViewHolder(
             llMedia = linearLayout {
                 lparams(matchParent, matchParent)
                 ivMediaThumbnails.clear()
+
                 repeat(MEDIA_VIEW_COUNT) { idx ->
                     myNetworkImageView {
                         background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
@@ -526,8 +527,8 @@ class ItemViewHolder(
                         weight = 1f
                         if (idx > 0) startMargin = dip(8)
                     }.let { ivMediaThumbnails.add(it) }
-
                 }
+
                 btnHideMedia = imageButton {
                     background =
                         ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)

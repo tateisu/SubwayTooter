@@ -410,9 +410,9 @@ object EmojiDecoder {
                             }
                             userHost != null && userHost != "." && userHost != apiHostAscii -> {
                                 // 投稿者のホスト名を使う
-                                return "https://${apiHostAscii}/emoji/${
+                                return "https://$apiHostAscii/emoji/${
                                     cols.elementAtOrNull(0)
-                                }@${userHost}.webp"
+                                }@$userHost.webp"
                             }
                             else -> {
                                 // 閲覧先サーバの絵文字を探す

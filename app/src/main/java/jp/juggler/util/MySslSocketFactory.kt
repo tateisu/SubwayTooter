@@ -40,10 +40,8 @@ object MySslSocketFactory : SSLSocketFactory() {
         originalFactory.supportedCipherSuites
 
     @Throws(IOException::class)
-    override fun createSocket(
-    ): Socket? = check(
-        originalFactory.createSocket()
-    )
+    override fun createSocket(): Socket? =
+        check(originalFactory.createSocket())
 
     @Throws(IOException::class)
     override fun createSocket(

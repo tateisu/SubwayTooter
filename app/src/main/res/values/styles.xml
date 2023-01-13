@@ -14,7 +14,7 @@
         <item name="list_item_bg_pressed_dragged">@color/Light_list_item_bg_pressed_dragged</item>
         <item name="color_column_header">@color/Light_color_column_header</item>
         <item name="colorImageButton">@color/Light_colorImageButton</item>
-        <item name="colorImageButtonAccent">@color/Light_colorImageButtonAccent</item>
+        <item name="colorConversationMainTootBg">@color/Light_colorConversationMainTootBg</item>
         <item name="colorRippleEffect">@color/Light_colorRippleEffect</item>
         <item name="colorButtonSelected">@color/Light_colorButtonSelected</item>
         <item name="colorReplyBackground">@color/Light_colorReplyBackground</item>
@@ -46,6 +46,14 @@
         <item name="colorRefreshErrorBg">@color/Light_colorRefreshErrorBg</item>
         <item name="colorVectorDrawable">@color/Light_colorVectorDrawable</item>
         <item name="colorWindowBackground">@color/Light_colorBackground</item>
+        <item name="colorButtonAccentBoost">@color/Light_colorButtonAccentBoost</item>
+        <item name="colorButtonAccentFavourite">@color/Light_colorButtonAccentFavourite</item>
+        <item name="colorButtonAccentBookmark">@color/Light_colorButtonAccentBookmark</item>
+        <item name="colorButtonAccentFollow">@color/Light_colorButtonAccentFollow</item>
+        <item name="colorButtonAccentFollowRequest">@color/Light_colorButtonAccentFollowRequest</item>
+        <item name="colorButtonAccentReaction">@color/Light_colorButtonAccentReaction</item>
+
+        <item name="colorSwitchOff">@color/Light_colorSwitchOff</item>
 
     </style>
 
@@ -64,7 +72,7 @@
         <item name="list_item_bg_pressed_dragged">@color/Dark_list_item_bg_pressed_dragged</item>
         <item name="color_column_header">@color/Dark_color_column_header</item>
         <item name="colorImageButton">@color/Dark_colorImageButton</item>
-        <item name="colorImageButtonAccent">@color/Dark_colorImageButtonAccent</item>
+        <item name="colorConversationMainTootBg">@color/Dark_colorConversationMainTootBg</item>
         <item name="colorRippleEffect">@color/Dark_colorRippleEffect</item>
         <item name="colorButtonSelected">@color/Dark_colorButtonSelected</item>
         <item name="colorReplyBackground">@color/Dark_colorReplyBackground</item>
@@ -99,6 +107,76 @@
         <item name="colorVectorDrawable">@color/Dark_colorVectorDrawable</item>
         <item name="colorWindowBackground">@color/Dark_colorBackground</item>
 
+        <item name="colorButtonAccentBoost">@color/Dark_colorButtonAccentBoost</item>
+        <item name="colorButtonAccentFavourite">@color/Dark_colorButtonAccentFavourite</item>
+        <item name="colorButtonAccentBookmark">@color/Dark_colorButtonAccentBookmark</item>
+        <item name="colorButtonAccentFollow">@color/Dark_colorButtonAccentFollow</item>
+        <item name="colorButtonAccentFollowRequest">@color/Dark_colorButtonAccentFollowRequest</item>
+        <item name="colorButtonAccentReaction">@color/Dark_colorButtonAccentReaction</item>
+
+        <item name="colorSwitchOff">@color/Dark_colorSwitchOff</item>
+
+    </style>
+
+    <style name="AppTheme.Mastodon.Base" parent="Theme.AppCompat">
+
+        <item name="android:windowBackground">@drawable/window_background</item>
+        <item name="android:textColor">?attr/colorContentText</item>
+
+        <item name="android:navigationBarColor">@color/Mastodon_colorColumnStripBackground</item>
+
+        <item name="colorPrimary">@color/Mastodon_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/Mastodon_colorPrimaryDark</item>
+        <item name="colorAccent">@color/Mastodon_colorAccent</item>
+
+        <item name="colorLink">@color/Mastodon_colorLink</item>
+        <item name="list_item_bg_pressed_dragged">@color/Mastodon_list_item_bg_pressed_dragged</item>
+        <item name="color_column_header">@color/Mastodon_color_column_header</item>
+        <item name="colorImageButton">@color/Mastodon_colorImageButton</item>
+        <item name="colorConversationMainTootBg">@color/Mastodon_colorConversationMainTootBg</item>
+        <item name="colorRippleEffect">@color/Mastodon_colorRippleEffect</item>
+        <item name="colorButtonSelected">@color/Mastodon_colorButtonSelected</item>
+        <item name="colorReplyBackground">@color/Mastodon_colorReplyBackground</item>
+        <item name="colorColumnListDeleteBackground">@color/Mastodon_colorColumnListDeleteBackground
+        </item>
+        <item name="colorColumnListDeleteText">@color/Mastodon_colorColumnListDeleteText</item>
+        <item name="colorColumnListDragHandleBackground">
+            @color/Mastodon_colorColumnListDragHandleBackground
+        </item>
+        <item name="colorThumbnailBackground">@color/Mastodon_colorThumbnailBackground</item>
+
+        <item name="colorColumnListItemText">@color/Mastodon_colorColumnListItemText</item>
+        <item name="colorTimeSmall">@color/Mastodon_colorTimeSmall</item>
+        <item name="colorContentText">@color/Mastodon_colorContentText</item>
+
+        <item name="colorProfileBackgroundMask">@color/Mastodon_colorProfileBackgroundMask</item>
+        <item name="colorShowMediaBackground">@color/Mastodon_colorShowMediaBackground</item>
+        <item name="colorShowMediaText">@color/Mastodon_colorShowMediaText</item>
+        <item name="colorColumnHeaderAcct">@color/Mastodon_colorColumnHeaderAcct</item>
+        <item name="colorColumnHeaderPageNumber">@color/Mastodon_colorColumnHeaderPageNumber</item>
+        <item name="colorColumnSettingBackground">@color/Mastodon_colorColumnSettingBackground</item>
+        <item name="colorSearchFormBackground">@color/Mastodon_colorSearchFormBackground</item>
+        <item name="colorSettingDivider">@color/Mastodon_colorSettingDivider</item>
+        <item name="colorRegexFilterError">@color/Mastodon_colorRegexFilterError</item>
+        <item name="colorPostFormBackground">@color/Mastodon_colorPostFormBackground</item>
+        <item name="colorColumnStripBackground">@color/Mastodon_colorColumnStripBackground</item>
+        <item name="colorColumnHeaderName">@color/Mastodon_colorColumnHeaderName</item>
+        <item name="colorStatusButtonsPopupBg">@color/Mastodon_colorStatusButtonsPopupBg</item>
+        <item name="colorButtonBgCw">@color/Mastodon_colorButtonBgCw</item>
+        <item name="colorRefreshErrorBg">@color/Mastodon_colorRefreshErrorBg</item>
+
+        <item name="colorVectorDrawable">@color/Mastodon_colorVectorDrawable</item>
+        <item name="colorWindowBackground">@color/Mastodon_colorBackground</item>
+
+        <item name="colorButtonAccentBoost">@color/Mastodon_colorButtonAccentBoost</item>
+        <item name="colorButtonAccentFavourite">@color/Mastodon_colorButtonAccentFavourite</item>
+        <item name="colorButtonAccentBookmark">@color/Mastodon_colorButtonAccentBookmark</item>
+        <item name="colorButtonAccentFollow">@color/Mastodon_colorButtonAccentFollow</item>
+        <item name="colorButtonAccentFollowRequest">@color/Mastodon_colorButtonAccentFollowRequest</item>
+        <item name="colorButtonAccentReaction">@color/Mastodon_colorButtonAccentReaction</item>
+
+        <item name="colorSwitchOff">@color/Mastodon_colorSwitchOff</item>
+
     </style>
 
     <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
@@ -107,6 +185,11 @@
     </style>
 
     <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.Mastodon.NoActionBar" parent="AppTheme.Mastodon">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

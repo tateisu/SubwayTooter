@@ -418,12 +418,13 @@ class App1 : Application() {
 
             prepare(activity.applicationContext, "setActivityTheme")
 
-            val theme_idx = PrefI.ipUiTheme(appPref)
+            var nTheme = PrefI.ipUiTheme(appPref)
+            if (forceDark && nTheme == 0) nTheme = 1
             activity.setTheme(
-                if (forceDark || theme_idx == 1) {
-                    if (noActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark
-                } else {
-                    if (noActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
+                when (nTheme) {
+                    2 -> if (noActionBar) R.style.AppTheme_Mastodon_NoActionBar else R.style.AppTheme_Dark
+                    1 -> if (noActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Mastodon
+                    else -> if (noActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
                 }
             )
 

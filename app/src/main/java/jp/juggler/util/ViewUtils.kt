@@ -51,7 +51,7 @@ fun View.hideKeyboard() {
             else -> log.e("hideKeyboard: can't get InputMethodManager")
         }
     } catch (ex: Throwable) {
-        log.e(ex,"hideKeyboard failed.")
+        log.e(ex, "hideKeyboard failed.")
     }
 }
 
@@ -65,7 +65,7 @@ fun View.showKeyboard() {
             else -> log.e("showKeyboard: can't get InputMethodManager")
         }
     } catch (ex: Throwable) {
-        log.e(ex,"showKeyboard failed.")
+        log.e(ex, "showKeyboard failed.")
     }
 }
 
@@ -119,9 +119,8 @@ private fun mixColor(col1: Int, col2: Int): Int = Color.rgb(
 
 fun Context.setSwitchColor(root: View?) {
     val colorBg = attrColor(R.attr.colorWindowBackground)
+    val colorOff = attrColor(R.attr.colorSwitchOff)
     val colorOn = PrefI.ipSwitchOnColor()
-    val colorOff = /* PrefI.ipSwitchOffColor().notZero() ?: */
-        attrColor(android.R.attr.colorPrimary)
 
     val colorDisabled = mixColor(colorBg, colorOff)
 

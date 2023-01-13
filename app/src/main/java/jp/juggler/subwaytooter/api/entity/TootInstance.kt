@@ -232,7 +232,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     val misskeyVersion: Int
         get() = when {
             instanceType != InstanceType.Misskey -> 0
-            else-> decoded_version.majorVersion ?: 10
+            else -> decoded_version.majorVersion ?: 10
         }
 
     val canUseReference: Boolean?

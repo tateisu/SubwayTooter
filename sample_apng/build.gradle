@@ -49,6 +49,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    implementation project(':base')
     implementation project(':apng_android')
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"

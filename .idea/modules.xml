@@ -14,6 +14,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.main.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.main.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.main.iml" />

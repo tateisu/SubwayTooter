@@ -5,7 +5,7 @@ import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.streaming.StreamSpec.Companion.CHANNEL
 import jp.juggler.subwaytooter.streaming.StreamSpec.Companion.PARAMS
 import jp.juggler.subwaytooter.streaming.StreamSpec.Companion.STREAM
-import jp.juggler.util.*
+import jp.juggler.util.data.*
 import java.io.StringWriter
 
 private fun StringWriter.appendValue(v: Any?) {
@@ -36,7 +36,7 @@ class StreamSpec(
     val params: JsonObject,
     val path: String,
     val name: String,
-    val streamFilter: Column.(JsonArray, TimelineItem) -> Boolean = { _, _ -> true }
+    val streamFilter: Column.(JsonArray, TimelineItem) -> Boolean = { _, _ -> true },
 ) {
     companion object {
         const val STREAM = "stream"
@@ -115,7 +115,8 @@ fun Column.streamSpecMisskey(): StreamSpec? {
             ColumnType.MISSKEY_HYBRID,
             ColumnType.NOTIFICATIONS,
             ColumnType.LIST_TL,
-            ColumnType.MISSKEY_ANTENNA_TL -> true
+            ColumnType.MISSKEY_ANTENNA_TL,
+            -> true
             else -> false
         }
     ) return null

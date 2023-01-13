@@ -15,9 +15,9 @@ import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.getAdaptiveRippleDrawableRound
-import jp.juggler.util.showToast
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import org.jetbrains.anko.textColor
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume

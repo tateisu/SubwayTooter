@@ -1,9 +1,9 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import okhttp3.*
 import jp.juggler.subwaytooter.App1
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
+import okhttp3.*
 import ru.gildor.coroutines.okhttp.await
 
 // okhttpそのままだとモックしづらいので
@@ -20,18 +20,18 @@ interface SimpleHttpClient {
 
     suspend fun getResponse(
         request: Request,
-        tmpOkhttpClient: OkHttpClient? = null
+        tmpOkhttpClient: OkHttpClient? = null,
     ): Response
 
     fun getWebSocket(
         request: Request,
-        webSocketListener: WebSocketListener
+        webSocketListener: WebSocketListener,
     ): WebSocket
 }
 
 class SimpleHttpClientImpl(
     val context: Context,
-    private val okHttpClient: OkHttpClient
+    private val okHttpClient: OkHttpClient,
 ) : SimpleHttpClient {
 
     companion object {
@@ -52,7 +52,7 @@ class SimpleHttpClientImpl(
 
     override suspend fun getResponse(
         request: Request,
-        tmpOkhttpClient: OkHttpClient?
+        tmpOkhttpClient: OkHttpClient?,
     ): Response {
         App1.getAppState(context).networkTracker.checkNetworkState()
         val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
@@ -62,7 +62,7 @@ class SimpleHttpClientImpl(
 
     override fun getWebSocket(
         request: Request,
-        webSocketListener: WebSocketListener
+        webSocketListener: WebSocketListener,
     ): WebSocket {
         App1.getAppState(context).networkTracker.checkNetworkState()
         return okHttpClient.newWebSocket(request, webSocketListener)

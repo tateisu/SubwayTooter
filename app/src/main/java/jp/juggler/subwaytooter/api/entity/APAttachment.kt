@@ -1,9 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.cast
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.cast
+import jp.juggler.util.log.LogCategory
 
 class APAttachment(jsonArray: JsonArray?) {
 

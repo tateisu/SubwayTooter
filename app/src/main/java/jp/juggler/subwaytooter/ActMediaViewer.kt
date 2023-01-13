@@ -14,6 +14,7 @@ import android.os.SystemClock
 import android.view.View
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.Player.TimelineChangeReason
 import com.google.android.exoplayer2.source.LoadEventInfo
@@ -33,8 +34,20 @@ import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.util.ProgressResponseBody
+import jp.juggler.subwaytooter.util.permissionSpecMediaDownload
+import jp.juggler.subwaytooter.util.requester
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.media.imageOrientation
+import jp.juggler.util.media.resolveOrientation
+import jp.juggler.util.media.rotateSize
+import jp.juggler.util.network.MySslSocketFactory
+import jp.juggler.util.ui.*
 import kotlinx.coroutines.yield
 import okhttp3.Request
 import java.io.ByteArrayInputStream
@@ -67,10 +80,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         internal fun decodeMediaList(src: String?) =
             ArrayList<TootAttachment>().apply {
-                src?.decodeJsonArray()?.forEach {
-                    if (it !is JsonObject) return@forEach
-                    add(TootAttachment.decodeJson(it))
-                }
+                src?.decodeJsonArray()?.objectList()
+                    ?.map { TootAttachment.decodeJson(it) }
+                    ?.let { addAll(it) }
             }
 
         fun open(
@@ -242,9 +254,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         prDownload.register(this)
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true, forceDark = true)
 
         this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
@@ -698,7 +710,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         val fileName = (
                 url.mayUri()?.pathSegments?.findLast { !it.isNullOrBlank() }
                     ?: url
-                        .replaceFirst("https?://".asciiPattern(), "")
+                        .replaceFirst("https?://".asciiRegex(), "")
                         .replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
                 )
             .take(20)

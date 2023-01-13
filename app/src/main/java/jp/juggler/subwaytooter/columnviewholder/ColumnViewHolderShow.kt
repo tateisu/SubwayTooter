@@ -7,7 +7,11 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.util.*
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
 
 private val log = LogCategory("ColumnViewHolderShow")

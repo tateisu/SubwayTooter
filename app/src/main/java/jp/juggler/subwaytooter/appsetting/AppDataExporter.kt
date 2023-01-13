@@ -23,6 +23,8 @@ import jp.juggler.subwaytooter.pref.impl.*
 import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -34,6 +36,7 @@ object AppDataExporter {
 
     internal val log = LogCategory("AppDataExporter")
 
+    @Suppress("FloatingPointLiteralPrecision")
     private const val MAGIC_NAN = -76287755398823900.0
 
     private const val KEY_PREF = "pref"
@@ -88,7 +91,7 @@ object AppDataExporter {
             JsonToken.STRING -> nextString()
             JsonToken.BOOLEAN -> nextBoolean()
             JsonToken.NUMBER -> nextDouble()
-            JsonToken.BEGIN_OBJECT -> jsonObject {
+            JsonToken.BEGIN_OBJECT -> buildJsonObject {
                 beginObject()
                 while (hasNext()) {
                     val name = nextName()
@@ -97,7 +100,7 @@ object AppDataExporter {
                 }
                 endObject()
             }
-            JsonToken.BEGIN_ARRAY -> jsonArray {
+            JsonToken.BEGIN_ARRAY -> buildJsonArray {
                 beginArray()
                 while (hasNext()) {
                     add(readJsonValue())
@@ -313,7 +316,7 @@ object AppDataExporter {
         writer.name(KEY_COLUMN)
         writer.beginArray()
         for (column in appState.columnList) {
-            writer.writeJsonValue(jsonObject { ColumnEncoder.encode(column, this, 0) })
+            writer.writeJsonValue(buildJsonObject { ColumnEncoder.encode(column, this, 0) })
         }
         writer.endArray()
     }

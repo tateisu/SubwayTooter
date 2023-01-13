@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.util.JsonArray
+import jp.juggler.util.data.JsonArray
 
 interface StreamCallback {
     fun onStreamStatusChanged(status: StreamStatus)

@@ -12,6 +12,15 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.coroutine.runOnMainLooperDelayed
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.AdapterChangeType
 
 @Suppress("ClassNaming")
 class ColumnTask_Refresh(

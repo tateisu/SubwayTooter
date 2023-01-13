@@ -7,8 +7,8 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.util.decodeJsonObject
-import jp.juggler.util.isLiveActivity
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.ui.isLiveActivity
 
 // マルチウィンドウモードでは投稿画面から直接呼ばれる
 // 通常モードでは activityResultHandler 経由で呼ばれる

@@ -16,7 +16,14 @@ import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.pref.impl.*
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.openBrowser
-import jp.juggler.util.*
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.intentOpenDocument
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.InputTypeEx
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.getAdaptiveRippleDrawable
+import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import org.jetbrains.anko.backgroundDrawable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -801,8 +808,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             colorAlpha(PrefI.ipEventBgColorVote, R.string.vote_polls)
             colorAlpha(PrefI.ipEventBgColorStatus, R.string.status)
             colorAlpha(PrefI.ipEventBgColorUpdate, R.string.notification_type_update)
-            colorAlpha(PrefI.ipEventBgColorStatusReference,
-                R.string.notification_type_status_reference)
+            colorAlpha(
+                PrefI.ipEventBgColorStatusReference,
+                R.string.notification_type_status_reference
+            )
             colorAlpha(PrefI.ipEventBgColorSignUp, R.string.notification_type_signup)
 
             colorAlpha(

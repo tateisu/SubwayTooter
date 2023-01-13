@@ -3,21 +3,21 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
+import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
-import jp.juggler.util.dismissSafe
-import java.lang.ref.WeakReference
-import android.view.Gravity
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.put
+import jp.juggler.util.ui.dismissSafe
+import java.lang.ref.WeakReference
 
 class DlgQuickTootMenu(
     internal val activity: ActMain,
-    internal val callback: Callback
+    internal val callback: Callback,
 ) : View.OnClickListener {
 
     companion object {
@@ -116,7 +116,10 @@ class DlgQuickTootMenu(
             wlp.gravity = Gravity.BOTTOM or Gravity.START
             wlp.flags = wlp.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
             attributes = wlp
-            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+            setLayout(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
         }
         dialog.show()
     }
@@ -146,7 +149,7 @@ class DlgQuickTootMenu(
     private fun performVisibility() {
 
         val captionList = visibilityList
-            .map { Styler.getVisibilityCaption(activity, false, it) }
+            .map { getVisibilityCaption(activity, false, it) }
             .toTypedArray()
 
         AlertDialog.Builder(activity)
@@ -162,6 +165,6 @@ class DlgQuickTootMenu(
     }
 
     private fun showVisibility() {
-        btnVisibility.text = Styler.getVisibilityCaption(activity, false, callback.visibility)
+        btnVisibility.text = getVisibilityCaption(activity, false, callback.visibility)
     }
 }

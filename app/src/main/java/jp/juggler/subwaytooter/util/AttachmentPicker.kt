@@ -8,7 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.kJson
-import jp.juggler.util.*
+import jp.juggler.util.data.GetContentResultEntry
+import jp.juggler.util.data.UriSerializer
+import jp.juggler.util.data.handleGetContentResult
+import jp.juggler.util.data.intentGetContent
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.isNotOk
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -175,8 +182,10 @@ class AttachmentPicker(
             }
 
             val newUri =
-                activity.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    values)
+                activity.contentResolver.insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    values
+                )
                     .also { states.uriCameraImage = it }
 
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
@@ -212,9 +221,11 @@ class AttachmentPicker(
         // SAFのIntentで開く
         try {
             arCustomThumbnail.launch(
-                intentGetContent(false,
+                intentGetContent(
+                    false,
                     activity.getString(R.string.pick_images),
-                    arrayOf("image/*"))
+                    arrayOf("image/*")
+                )
             )
         } catch (ex: Throwable) {
             log.e(ex, "openCustomThumbnail failed.")

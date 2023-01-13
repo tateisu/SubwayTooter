@@ -11,10 +11,10 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnTask_Loading
 import jp.juggler.subwaytooter.column.ColumnTask_Refresh
 import jp.juggler.subwaytooter.column.addWithFilterStatus
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.cast
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.cast
+import jp.juggler.util.log.LogCategory
 
 object TootsearchHelper {
 
@@ -68,7 +68,7 @@ object TootsearchHelper {
                         val source = src.cast<JsonObject>()?.jsonObject("_source") ?: continue
                         add(TootStatus(parser, source))
                     } catch (ex: Throwable) {
-                        log.e(ex,"parse item failed.")
+                        log.e(ex, "parse item failed.")
                     }
                 }
             }

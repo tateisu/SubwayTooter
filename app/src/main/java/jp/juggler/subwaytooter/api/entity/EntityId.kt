@@ -4,9 +4,9 @@ import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
-import jp.juggler.util.JsonObject
-import jp.juggler.util.getStringOrNull
-import jp.juggler.util.notZero
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.getStringOrNull
+import jp.juggler.util.data.notZero
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

@@ -9,7 +9,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 object CheckerNotification {
 

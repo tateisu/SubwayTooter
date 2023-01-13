@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
 
 class MisskeyAntenna(src: JsonObject) : TimelineItem() {
 

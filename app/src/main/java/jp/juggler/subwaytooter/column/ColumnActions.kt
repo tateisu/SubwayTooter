@@ -7,7 +7,11 @@ import jp.juggler.subwaytooter.notification.onNotificationCleared
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.EmptyScope
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.AdapterChangeType
 import kotlinx.coroutines.launch
 import kotlin.collections.set
 

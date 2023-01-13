@@ -14,8 +14,15 @@ import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.*
-import java.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.errorEx
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.media.MovideResizeMode
+import jp.juggler.util.media.MovieResizeConfig
+import jp.juggler.util.media.ResizeConfig
+import jp.juggler.util.media.ResizeType
 import kotlin.math.max
 
 class SavedAccount(
@@ -798,7 +805,7 @@ class SavedAccount(
         }
 
         fun sort(accountList: MutableList<SavedAccount>) {
-            Collections.sort(accountList, account_comparator)
+            accountList.sortWith(account_comparator)
         }
 
         fun sweepBuggieData() {

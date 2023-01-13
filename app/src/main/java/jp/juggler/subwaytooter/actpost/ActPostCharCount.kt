@@ -7,9 +7,9 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.util.attrColor
-import jp.juggler.util.launchMain
-import jp.juggler.util.wrapWeakReference
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.wrapWeakReference
+import jp.juggler.util.ui.attrColor
 
 // 最大文字数を取得する
 // 暫定で仮の値を返すことがある

@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonObject
 
 class TootContext(
     // The ancestors of the status in the conversation, as a list of Statuses

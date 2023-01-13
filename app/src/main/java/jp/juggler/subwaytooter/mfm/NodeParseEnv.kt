@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.mfm
 
-import jp.juggler.util.firstNonNull
-import java.util.*
+import jp.juggler.util.data.firstNonNull
 import java.util.regex.Pattern
 
 class NodeParseEnv(

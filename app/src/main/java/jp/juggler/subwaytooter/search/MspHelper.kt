@@ -10,10 +10,10 @@ import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.column.ColumnTask_Loading
 import jp.juggler.subwaytooter.column.ColumnTask_Refresh
 import jp.juggler.subwaytooter.column.addWithFilterStatus
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.cast
-import jp.juggler.util.notEmpty
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.notEmpty
 
 object MspHelper {
     private const val mspTokenUrl = "https://msearch.fediverse.media/api/v1.0.1/utoken"

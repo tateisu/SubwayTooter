@@ -10,7 +10,8 @@ import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.syncAccountByAcct
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 
 private val log = LogCategory("ColumnUrls")
 
@@ -136,7 +137,7 @@ fun Column.makePublicFederateUrl(): String {
 fun JsonObject.addMisskeyNotificationFilter(column: Column): JsonObject {
     when (column.quickFilter) {
         Column.QUICK_FILTER_ALL -> {
-            val excludeList = jsonArray {
+            val excludeList = buildJsonArray {
                 // Misskeyのお気に入りは通知されない
                 // if(dont_show_favourite) ...
 
@@ -354,7 +355,8 @@ fun Column.makeProfileStatusesUrl(profileId: EntityId?): String {
 }
 
 fun StringBuilder.appendHashtagExtra(column: Column): StringBuilder {
-    val limit = (Column.HASHTAG_ELLIPSIZE * 2 - kotlin.math.min(length, Column.HASHTAG_ELLIPSIZE)) / 3
+    val limit =
+        (Column.HASHTAG_ELLIPSIZE * 2 - kotlin.math.min(length, Column.HASHTAG_ELLIPSIZE)) / 3
     if (column.hashtagAny.isNotBlank()) append(' ').append(
         column.context.getString(
             R.string.hashtag_title_any,

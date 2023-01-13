@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.api.entity.TimelineItem
-import jp.juggler.util.JsonArray
-import jp.juggler.util.LogCategory
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.log.LogCategory
 import java.util.concurrent.ConcurrentHashMap
 
 // 同じ種類のストリーミングを複数のカラムで受信する場合がある

@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.attrColor
+import jp.juggler.util.ui.*
 import kotlin.math.min
 
 class MediaBackgroundDrawable(

@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonObject
 
 class TootMention(
     val id: EntityId, // Account ID

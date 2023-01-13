@@ -4,10 +4,10 @@ import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import jp.juggler.util.LogCategory
-import jp.juggler.util.getIntOrNull
-import jp.juggler.util.getStringOrNull
-import jp.juggler.util.showToast
+import jp.juggler.util.data.getIntOrNull
+import jp.juggler.util.data.getStringOrNull
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 
 class DownloadReceiver : BroadcastReceiver() {
 

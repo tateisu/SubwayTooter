@@ -7,7 +7,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.attrDrawable
+import jp.juggler.util.ui.attrDrawable
 
 class ListDivider(context: Context) : RecyclerView.ItemDecoration() {
 

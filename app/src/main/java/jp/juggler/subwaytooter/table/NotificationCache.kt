@@ -11,6 +11,9 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.network.toPostRequestBuilder
 
 class NotificationCache(private val account_db_id: Long) {
 

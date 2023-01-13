@@ -10,7 +10,8 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 
 class UserRelation {
 
@@ -365,7 +366,7 @@ class UserRelation {
             try {
                 appDatabase.delete(table, "$COL_ID=$rowId", null)
             } catch (ex: Throwable) {
-                log.e(ex,"deletePseudo failed. rowId=$rowId")
+                log.e(ex, "deletePseudo failed. rowId=$rowId")
             }
         }
     }

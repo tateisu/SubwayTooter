@@ -6,10 +6,10 @@ import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.api.runApiTask
-import jp.juggler.util.jsonObject
-import jp.juggler.util.launchMain
-import jp.juggler.util.toPostRequestBuilder
-import jp.juggler.util.wrapWeakReference
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.wrapWeakReference
+import jp.juggler.util.network.toPostRequestBuilder
 
 class FeaturedTagCache(val list: List<TootTag>, val time: Long)
 
@@ -33,8 +33,7 @@ fun ActPost.updateFeaturedTags() {
                 if (account.isMisskey) {
                     client.request(
                         "/api/hashtags/trend",
-                        jsonObject { }
-                            .toPostRequestBuilder()
+                        JsonObject().toPostRequestBuilder()
                     )?.also { result ->
                         val list = TootTag.parseList(
                             TootParser(this@runApiTask, account),

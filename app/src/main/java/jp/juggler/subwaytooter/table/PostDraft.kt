@@ -7,6 +7,11 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.TableCompanion
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.digestSHA256Hex
+import jp.juggler.util.log.LogCategory
 
 class PostDraft {
 

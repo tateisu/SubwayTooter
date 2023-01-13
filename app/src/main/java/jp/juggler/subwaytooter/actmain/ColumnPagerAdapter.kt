@@ -10,8 +10,8 @@ import jp.juggler.subwaytooter.column.getColumnName
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.onPageCreate
 import jp.juggler.subwaytooter.columnviewholder.onPageDestroy
-import jp.juggler.subwaytooter.util.Benchmark
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.Benchmark
+import jp.juggler.util.log.LogCategory
 import java.util.*
 
 internal class ColumnPagerAdapter(private val activity: ActMain) : PagerAdapter() {

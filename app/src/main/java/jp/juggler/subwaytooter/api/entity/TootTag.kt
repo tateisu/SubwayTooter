@@ -4,6 +4,8 @@ import android.net.Uri
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 import java.util.regex.Pattern
 
 open class TootTag constructor(

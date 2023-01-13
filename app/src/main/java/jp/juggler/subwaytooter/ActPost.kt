@@ -30,6 +30,12 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchIO
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.GetContentResultEntry
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.isNotOk
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -320,8 +326,8 @@ class ActPost : AppCompatActivity(),
         }
 
         if (!isMultiWindowPost) {
-            Styler.fixHorizontalMargin(findViewById(R.id.scrollView))
-            Styler.fixHorizontalMargin(findViewById(R.id.llFooterBar))
+            fixHorizontalMargin(findViewById(R.id.scrollView))
+            fixHorizontalMargin(findViewById(R.id.llFooterBar))
         }
 
         views.root.callbackOnSizeChanged = { _, _, _, _ ->

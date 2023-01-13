@@ -21,7 +21,11 @@ import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.*
 
 private val rePleromaStatusUrl = """/objects/""".toRegex()
 
@@ -249,13 +253,17 @@ fun ActMain.reactionRemove(
                 else -> {
                     when (val newStatus = resultStatus) {
                         null ->
-                            if (status.decreaseReactionMisskey(reaction.name,
+                            if (status.decreaseReactionMisskey(
+                                    reaction.name,
                                     true,
-                                    "removeReaction")
+                                    "removeReaction"
+                                )
                             ) {
                                 // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-                                column.fireShowContent(reason = "removeReaction complete",
-                                    reset = true)
+                                column.fireShowContent(
+                                    reason = "removeReaction complete",
+                                    reset = true
+                                )
                             }
 
                         else ->

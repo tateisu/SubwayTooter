@@ -15,10 +15,9 @@ import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.neatSpaces
-import jp.juggler.util.notBlank
-import jp.juggler.util.showToast
-import jp.juggler.util.vg
+import jp.juggler.util.data.*
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.*
 
 class DlgCreateAccount(
     val activity: AppCompatActivity,
@@ -29,8 +28,8 @@ class DlgCreateAccount(
         email: String,
         password: String,
         agreement: Boolean,
-        reason: String?
-    ) -> Unit
+        reason: String?,
+    ) -> Unit,
 ) : View.OnClickListener {
 
     companion object {

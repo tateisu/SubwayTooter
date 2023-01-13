@@ -11,8 +11,7 @@ import android.widget.*
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.util.LogCategory
-import jp.juggler.util.showToast
+import jp.juggler.util.log.*
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.IDN

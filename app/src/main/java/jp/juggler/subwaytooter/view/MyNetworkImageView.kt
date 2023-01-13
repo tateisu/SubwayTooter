@@ -23,8 +23,8 @@ import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.LogCategory
-import jp.juggler.util.clipRange
+import jp.juggler.util.data.clip
+import jp.juggler.util.log.LogCategory
 
 class MyNetworkImageView : AppCompatImageView {
 
@@ -480,8 +480,8 @@ class MyNetworkImageView : AppCompatImageView {
         // https://github.com/jonom/jquery-focuspoint#1-calculate-your-images-focus-point
         // このタイミングで正規化してしまう
 
-        this.focusX = clipRange(-1f, 1f, focusX)
-        this.focusY = -clipRange(-1f, 1f, focusY)
+        this.focusX = focusX.clip(-1f, 1f)
+        this.focusY = focusY.clip(-1f, 1f).times(-1)
     }
 
     override fun setImageBitmap(bm: Bitmap?) {

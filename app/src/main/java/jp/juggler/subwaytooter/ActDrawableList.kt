@@ -7,10 +7,10 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
-import jp.juggler.subwaytooter.global.appDispatchers
-import jp.juggler.subwaytooter.util.AsyncActivity
-import jp.juggler.util.LogCategory
-import jp.juggler.util.asciiPattern
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.AsyncActivity
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +37,7 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
     private fun initUI() {
         setContentView(R.layout.act_drawable_list)
         App1.initEdgeToEdge(this)
-        Styler.fixHorizontalPadding(findViewById(R.id.llContent))
+        fixHorizontalPadding(findViewById(R.id.llContent))
 
         listView = findViewById(R.id.listView)
         adapter = MyAdapter()
@@ -50,7 +50,7 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
             val reSkipName =
                 """^(abc_|avd_|btn_checkbox_|btn_radio_|googleg_|ic_keyboard_arrow_|ic_menu_arrow_|notification_|common_|emj_|cpv_|design_|exo_|mtrl_|ic_mtrl_)"""
                     .asciiPattern()
-            val list = withContext(appDispatchers.io) {
+            val list = withContext(AppDispatchers.io) {
                 R.drawable::class.java.fields
                     .mapNotNull {
                         val id = it.get(null) as? Int ?: return@mapNotNull null

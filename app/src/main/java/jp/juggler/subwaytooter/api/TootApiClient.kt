@@ -10,6 +10,13 @@ import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPost
+import jp.juggler.util.network.toPostRequestBuilder
 import okhttp3.*
 import okhttp3.internal.closeQuietly
 import java.util.*
@@ -61,7 +68,7 @@ class TootApiClient(
         }
 
         fun getScopeArrayMisskey(@Suppress("UNUSED_PARAMETER") ti: TootInstance) =
-            JsonArray().apply {
+            buildJsonArray {
                 if (ti.versionGE(TootInstance.MISSKEY_VERSION_11)) {
                     // https://github.com/syuilo/misskey/blob/master/src/server/api/kinds.ts
                     arrayOf(
@@ -525,9 +532,7 @@ class TootApiClient(
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
         if (sendRequest(result) {
-                JsonObject().apply {
-                    put("appId", appId)
-                }
+                jsonObjectOf("appId" to appId)
                     .toPostRequestBuilder()
                     .url("https://${apiHost?.ascii}/api/app/show")
                     .build()

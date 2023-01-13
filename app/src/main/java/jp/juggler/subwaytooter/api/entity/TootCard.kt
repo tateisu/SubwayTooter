@@ -3,8 +3,8 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.JsonObject
-import jp.juggler.util.filterNotEmpty
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.filterNotEmpty
 
 class TootCard(
 

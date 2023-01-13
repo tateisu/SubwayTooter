@@ -17,9 +17,9 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.databinding.ListItemPopupBinding
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.util.LogCategory
-import jp.juggler.util.attrColor
-import jp.juggler.util.notZero
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.matchParent
 import kotlin.math.max
 

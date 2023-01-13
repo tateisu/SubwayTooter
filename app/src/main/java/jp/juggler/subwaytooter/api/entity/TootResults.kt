@@ -1,8 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.JsonObject
-import java.util.*
+import jp.juggler.util.data.JsonObject
 
 class TootResults private constructor(
     // An array of matched Accounts

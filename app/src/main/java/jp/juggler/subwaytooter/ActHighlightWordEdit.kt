@@ -14,7 +14,16 @@ import androidx.appcompat.widget.SwitchCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.mayUri
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.decodeRingtonePickerResult
 import org.jetbrains.anko.textColor
 
 class ActHighlightWordEdit
@@ -54,7 +63,7 @@ class ActHighlightWordEdit
     private var bBusy = false
 
     private val arNotificationSound = ActivityResultHandler(log) { r ->
-        r.decodeRingtonePickerResult()?.let { uri ->
+        r.decodeRingtonePickerResult?.let { uri ->
             item.sound_uri = uri.toString()
             item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
             showSound()
@@ -62,7 +71,7 @@ class ActHighlightWordEdit
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        backPressed{
+        backPressed {
             AlertDialog.Builder(this)
                 .setCancelable(true)
                 .setMessage(R.string.discard_changes)

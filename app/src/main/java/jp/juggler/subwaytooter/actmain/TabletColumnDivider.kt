@@ -7,7 +7,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.attrDrawable
+import jp.juggler.util.ui.attrDrawable
 
 class TabletColumnDivider(context: Context) : RecyclerView.ItemDecoration() {
 
@@ -34,7 +34,7 @@ class TabletColumnDivider(context: Context) : RecyclerView.ItemDecoration() {
         outRect: Rect,
         view: View,
         parent: RecyclerView,
-        state: RecyclerView.State
+        state: RecyclerView.State,
     ) {
         outRect.set(0, 0, barWidth, 0)
     }

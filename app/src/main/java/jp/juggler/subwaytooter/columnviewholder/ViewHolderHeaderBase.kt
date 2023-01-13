@@ -8,8 +8,8 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.scan
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.scan
 
 abstract class ViewHolderHeaderBase(
     val activity: ActMain,

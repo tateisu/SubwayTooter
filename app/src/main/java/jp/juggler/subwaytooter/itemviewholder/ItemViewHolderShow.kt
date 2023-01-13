@@ -12,13 +12,10 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.StringRes
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.appendColorShadeIcon
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.getAcctColor
@@ -29,10 +26,13 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.subwaytooter.util.Benchmark
+import jp.juggler.util.log.Benchmark
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 import kotlin.math.max
@@ -205,14 +205,14 @@ fun ItemViewHolder.bind(
 
                 item.isQuoteToot -> {
                     // 引用Renote
-                    val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
+                    val colorBg = PrefI.ipEventBgColorBoost.invoke(activity.pref)
                     showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
                     showStatus(item, colorBg)
                 }
 
                 else -> {
                     // 引用なしブースト
-                    val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
+                    val colorBg = PrefI.ipEventBgColorBoost.invoke(activity.pref)
                     showBoost(
                         item.accountRef,
                         item.time_created_at,
@@ -264,7 +264,7 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
     val who = whoRef.get()
     llFollow.visibility = View.VISIBLE
     ivFollow.setImageUrl(
-        Styler.calcIconRound(ivFollow.layoutParams),
+        calcIconRound(ivFollow.layoutParams),
         accessInfo.supplyBaseUrl(who.avatar_static),
         accessInfo.supplyBaseUrl(who.avatar)
     )
@@ -286,14 +286,14 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
     )
 
     val relation = UserRelation.load(accessInfo.db_id, who.id)
-    Styler.setFollowIcon(
+    setFollowIcon(
         activity,
         btnFollow,
         ivFollowedBy,
         relation,
         who,
         contentColor,
-        alphaMultiplier = Styler.boostAlpha
+        alphaMultiplier = boostAlpha
     )
 
     if (column.type == ColumnType.FOLLOW_REQUESTS) {
@@ -328,12 +328,12 @@ fun ItemViewHolder.showBoost(
         ivBoosted,
         iconId,
         color = contentColor,
-        alphaMultiplier = Styler.boostAlpha
+        alphaMultiplier = boostAlpha
     )
 
     ivBoostAvatar.let { v ->
         v.setImageUrl(
-            Styler.calcIconRound(v.layoutParams),
+            calcIconRound(v.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
         )
@@ -488,12 +488,12 @@ fun ItemViewHolder.showReply(
         ivReply,
         iconId,
         color = contentColor,
-        alphaMultiplier = Styler.boostAlpha
+        alphaMultiplier = boostAlpha
     )
 
     ivReplyAvatar.vg(target != null && target.avatar != replyer?.avatar)?.let { v ->
         v.setImageUrl(
-            Styler.calcIconRound(v.layoutParams),
+            calcIconRound(v.layoutParams),
             accessInfo.supplyBaseUrl(target!!.avatar_static),
             accessInfo.supplyBaseUrl(target.avatar)
         )
@@ -590,14 +590,13 @@ fun ItemViewHolder.showStatusTime(
         }
 
         // visibility
-        val visIconId =
-            Styler.getVisibilityIconId(accessInfo.isMisskey, status.visibility)
+        val visIconId = getVisibilityIconId(accessInfo.isMisskey, status.visibility)
         if (R.drawable.ic_public != visIconId) {
             if (sb.isNotEmpty()) sb.append('\u200B')
             sb.appendColorShadeIcon(
                 activity,
                 visIconId,
-                Styler.getVisibilityString(
+                getVisibilityString(
                     activity,
                     accessInfo.isMisskey,
                     status.visibility
@@ -653,13 +652,13 @@ fun ItemViewHolder.showStatusTime(
         }
     } else {
         reblogVisibility?.takeIf { it != TootVisibility.Unknown }?.let { visibility ->
-            val visIconId = Styler.getVisibilityIconId(accessInfo.isMisskey, visibility)
+            val visIconId = getVisibilityIconId(accessInfo.isMisskey, visibility)
             if (R.drawable.ic_public != visIconId) {
                 if (sb.isNotEmpty()) sb.append('\u200B')
                 sb.appendColorShadeIcon(
                     activity,
                     visIconId,
-                    Styler.getVisibilityString(
+                    getVisibilityString(
                         activity,
                         accessInfo.isMisskey,
                         visibility
@@ -694,14 +693,13 @@ fun ItemViewHolder.showStatusTimeScheduled(
     }
 
     // visibility
-    val visIconId =
-        Styler.getVisibilityIconId(accessInfo.isMisskey, item.visibility)
+    val visIconId = getVisibilityIconId(accessInfo.isMisskey, item.visibility)
     if (R.drawable.ic_public != visIconId) {
         if (sb.isNotEmpty()) sb.append('\u200B')
         sb.appendColorShadeIcon(
             activity,
             visIconId,
-            Styler.getVisibilityString(
+            getVisibilityString(
                 activity,
                 accessInfo.isMisskey,
                 item.visibility
@@ -753,7 +751,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
         tvName.text = whoRef.decoded_display_name
         nameInvalidator.register(whoRef.decoded_display_name)
         ivAvatar.setImageUrl(
-            Styler.calcIconRound(ivAvatar.layoutParams),
+            calcIconRound(ivAvatar.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
         )
@@ -812,7 +810,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 btnHideMedia,
                 R.drawable.ic_close,
                 color = contentColor,
-                alphaMultiplier = Styler.boostAlpha
+                alphaMultiplier = boostAlpha
             )
         }
 
@@ -850,7 +848,7 @@ fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
 
             val who = accountsOther[idx].get()
             iv.setImageUrl(
-                Styler.calcIconRound(iv.layoutParams),
+                calcIconRound(iv.layoutParams),
                 accessInfo.supplyBaseUrl(who.avatar_static),
                 accessInfo.supplyBaseUrl(who.avatar)
             )

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.*
+import jp.juggler.util.data.*
 
 class TootAttachment : TootAttachmentLike {
 
@@ -11,7 +12,7 @@ class TootAttachment : TootAttachmentLike {
         private fun parseFocusValue(parent: JsonObject?, key: String): Float {
             if (parent != null) {
                 val dv = parent.double(key)
-                if (dv != null && dv.isFinite()) return clipRange(-1f, 1f, dv.toFloat())
+                if (dv != null && dv.isFinite()) return dv.toFloat().clip(-1f, 1f)
             }
             return 0f
         }
@@ -218,7 +219,7 @@ class TootAttachment : TootAttachmentLike {
             }
         }
 
-    fun encodeJson() = jsonObject {
+    fun encodeJson() = buildJsonObject {
         put(KEY_IS_STRING_ID, true)
         put(KEY_ID, id.toString())
         put(KEY_TYPE, type.id)
@@ -232,8 +233,8 @@ class TootAttachment : TootAttachmentLike {
         put(KEY_BLURHASH, blurhash)
 
         if (focusX != 0f || focusY != 0f) {
-            put(KEY_META, jsonObject {
-                put(KEY_FOCUS, jsonObject {
+            put(KEY_META, buildJsonObject {
+                put(KEY_FOCUS, buildJsonObject {
                     put(KEY_X, focusX)
                     put(KEY_Y, focusY)
                 })

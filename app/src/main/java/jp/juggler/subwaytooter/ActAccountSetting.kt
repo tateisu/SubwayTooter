@@ -15,7 +15,6 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -31,6 +30,18 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.coroutine.launchProgress
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.media.ResizeConfig
+import jp.juggler.util.media.ResizeType
+import jp.juggler.util.media.createResizedBitmap
+import jp.juggler.util.network.toPatch
+import jp.juggler.util.network.toPost
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okhttp3.MediaType
@@ -241,7 +252,7 @@ class ActAccountSetting : AppCompatActivity(),
         setContentView(viewBinding.root)
 
         App1.initEdgeToEdge(this)
-        Styler.fixHorizontalPadding(viewBinding.root)
+        fixHorizontalPadding(viewBinding.root)
         setSwitchColor(viewBinding.root)
 
         viewBinding.apply {
@@ -623,7 +634,7 @@ class ActAccountSetting : AppCompatActivity(),
 
     private fun showVisibility() {
         viewBinding.btnVisibility.text =
-            Styler.getVisibilityString(this, account.isMisskey, visibility)
+            getVisibilityString(this, account.isMisskey, visibility)
     }
 
     private fun performVisibility() {
@@ -651,7 +662,7 @@ class ActAccountSetting : AppCompatActivity(),
         }
 
         val captionList = list.map {
-            Styler.getVisibilityCaption(this, account.isMisskey, it)
+            getVisibilityCaption(this, account.isMisskey, it)
         }.toTypedArray()
 
         AlertDialog.Builder(this)
@@ -854,7 +865,7 @@ class ActAccountSetting : AppCompatActivity(),
         profileBusy = true
         try {
             viewBinding.ivProfileAvatar.setImageUrl(
-                Styler.calcIconRound(viewBinding.ivProfileAvatar.layoutParams),
+                calcIconRound(viewBinding.ivProfileAvatar.layoutParams),
                 src.avatar_static,
                 src.avatar
             )

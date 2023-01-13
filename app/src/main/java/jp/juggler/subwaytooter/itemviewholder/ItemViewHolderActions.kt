@@ -13,8 +13,14 @@ import jp.juggler.subwaytooter.column.startGap
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
+import jp.juggler.subwaytooter.util.copyToClipboard
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.*
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.ellipsizeDot3
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.vg
 
 private val log = LogCategory("ItemViewHolderActions")
 

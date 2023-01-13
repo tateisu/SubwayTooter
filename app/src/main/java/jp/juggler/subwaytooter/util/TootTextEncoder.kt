@@ -5,11 +5,11 @@ import android.content.Intent
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.ActText
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.notEmpty
+import jp.juggler.util.data.notEmpty
 import java.util.*
 
 object TootTextEncoder {
@@ -25,7 +25,7 @@ object TootTextEncoder {
         context: Context,
         sb: StringBuilder,
         @StringRes keyStrId: Int,
-        value: Any?
+        value: Any?,
     ) {
         if (sb.isNotEmpty() && sb[sb.length - 1] != '\n') {
             sb.append('\n')
@@ -39,7 +39,7 @@ object TootTextEncoder {
         intent: Intent,
         context: Context,
         accessInfo: SavedAccount,
-        status: TootStatus
+        status: TootStatus,
     ) {
         val sb = StringBuilder()
 
@@ -90,7 +90,7 @@ object TootTextEncoder {
     fun encodeStatusForTranslate(
         context: Context,
         accessInfo: SavedAccount,
-        status: TootStatus
+        status: TootStatus,
     ): String {
         val sb = StringBuilder()
 
@@ -180,7 +180,7 @@ object TootTextEncoder {
         context: Context,
         enquete: TootPolls,
         canVote: Boolean,
-        item: TootPollsChoice
+        item: TootPollsChoice,
     ) {
 
         val text = when (enquete.pollType) {
@@ -221,7 +221,7 @@ object TootTextEncoder {
     private fun encodePollFooterMastodon(
         sb: StringBuilder,
         context: Context,
-        enquete: TootPolls
+        enquete: TootPolls,
     ) {
         val line = StringBuilder()
 
@@ -253,7 +253,7 @@ object TootTextEncoder {
         intent: Intent,
         context: Context,
         accessInfo: SavedAccount,
-        who: TootAccount
+        who: TootAccount,
     ) {
         val sb = StringBuilder()
 

@@ -17,6 +17,9 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import java.util.*
 
 @SuppressLint("InflateParams")

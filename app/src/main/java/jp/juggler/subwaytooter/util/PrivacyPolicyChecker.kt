@@ -4,14 +4,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.pref.put
-import jp.juggler.util.decodeUTF8
-import jp.juggler.util.digestSHA256
-import jp.juggler.util.encodeBase64Url
-import jp.juggler.util.loadRawResource
+import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.data.digestSHA256
+import jp.juggler.util.data.encodeBase64Url
+import jp.juggler.util.data.loadRawResource
 import java.lang.ref.WeakReference
 
 // 利用規約

@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.notification.restartAllWorker
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.table.NotificationCache
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.runBlocking
 import java.util.*
 

@@ -10,7 +10,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.WordTrieTree
+import jp.juggler.util.data.WordTrieTree
 import org.jetbrains.anko.collections.forEachReversedByIndex
 
 class DecodeOptions(

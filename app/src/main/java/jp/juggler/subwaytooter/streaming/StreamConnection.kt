@@ -9,7 +9,11 @@ import jp.juggler.subwaytooter.column.onStatusRemoved
 import jp.juggler.subwaytooter.column.reloadFilter
 import jp.juggler.subwaytooter.column.replaceStatus
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -197,11 +201,13 @@ class StreamConnection(
                     log.e("$name handleMisskeyMessage: noteUpdated body is null")
                     return
                 }
-                fireNoteUpdated(MisskeyNoteUpdate(
-                    acctGroup.account.apDomain,
-                    acctGroup.account.apiHost,
-                    body
-                ), channelId)
+                fireNoteUpdated(
+                    MisskeyNoteUpdate(
+                        acctGroup.account.apDomain,
+                        acctGroup.account.apiHost,
+                        body
+                    ), channelId
+                )
             }
 
             "notification" -> {
@@ -400,7 +406,7 @@ class StreamConnection(
                     { "type":"disconnect", "body": { "id": "foobar" } }
                 */
 
-                jsonObject {
+                buildJsonObject {
                     put("type", "disconnect")
                     put("body", jsonObjectOf("id" to spec.channelId))
                 }

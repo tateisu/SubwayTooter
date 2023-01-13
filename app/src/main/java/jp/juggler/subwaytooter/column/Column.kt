@@ -4,16 +4,19 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.SparseArray
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.AppState
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.DuplicateMap
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.streaming.*
-import jp.juggler.subwaytooter.table.*
+import jp.juggler.subwaytooter.streaming.StreamCallback
+import jp.juggler.subwaytooter.streaming.StreamStatus
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.ui.attrColor
 import okhttp3.Handshake
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -297,7 +300,11 @@ class Column(
             this@Column.onStreamingTimelineItem(item)
 
         override fun onEmojiReactionNotification(notification: TootNotification) =
-            runOnMainLooperForStreamingEvent { this@Column.updateEmojiReactionByApiResponse(notification.status) }
+            runOnMainLooperForStreamingEvent {
+                this@Column.updateEmojiReactionByApiResponse(
+                    notification.status
+                )
+            }
 
         override fun onEmojiReactionEvent(reaction: TootReaction) =
             runOnMainLooperForStreamingEvent { this@Column.updateEmojiReactionByEvent(reaction) }

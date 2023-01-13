@@ -6,9 +6,9 @@ import android.content.Intent
 import jp.juggler.subwaytooter.notification.TrackingType
 import jp.juggler.subwaytooter.notification.onNotificationDeleted
 import jp.juggler.subwaytooter.table.NotificationTracking
-import jp.juggler.util.LogCategory
-import jp.juggler.util.launchMain
-import jp.juggler.util.notEmpty
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
 
 class EventReceiver : BroadcastReceiver() {
 

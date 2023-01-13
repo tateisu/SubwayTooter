@@ -12,6 +12,10 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.view.FocusPointView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 
 @SuppressLint("InflateParams")
 class DlgFocusPoint(

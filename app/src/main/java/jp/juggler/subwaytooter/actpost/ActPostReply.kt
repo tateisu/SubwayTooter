@@ -3,16 +3,20 @@ package jp.juggler.subwaytooter.actpost
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
+import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.vg
 
 private val log = LogCategory("ActPostReply")
 
@@ -35,8 +39,10 @@ fun ActPost.showReplyTo() {
             short = true,
             decodeEmoji = true,
         ).decodeHTML(states.inReplyToText)
-        views.ivReply.setImageUrl(Styler.calcIconRound(views.ivReply.layoutParams),
-            states.inReplyToImage)
+        views.ivReply.setImageUrl(
+            calcIconRound(views.ivReply.layoutParams),
+            states.inReplyToImage
+        )
     }
 }
 

@@ -19,7 +19,9 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.fontSpan
 import java.util.regex.Pattern
 import kotlin.math.min
 

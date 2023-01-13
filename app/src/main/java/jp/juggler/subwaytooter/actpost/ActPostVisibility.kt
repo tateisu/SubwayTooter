@@ -3,14 +3,17 @@ package jp.juggler.subwaytooter.actpost
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.entity.InstanceCapability
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.getVisibilityCaption
+import jp.juggler.subwaytooter.getVisibilityIconId
 
 fun ActPost.showVisibility() {
-    val iconId = Styler.getVisibilityIconId(account?.isMisskey == true,
-        states.visibility ?: TootVisibility.Public)
+    val iconId = getVisibilityIconId(
+        account?.isMisskey == true,
+        states.visibility ?: TootVisibility.Public
+    )
     views.btnVisibility.setImageResource(iconId)
 }
 
@@ -58,7 +61,7 @@ fun ActPost.openVisibilityPicker() {
         )
     }
     val captionList = list
-        .map { Styler.getVisibilityCaption(this, account?.isMisskey == true, it) }
+        .map { getVisibilityCaption(this, account?.isMisskey == true, it) }
         .toTypedArray()
 
     AlertDialog.Builder(this)

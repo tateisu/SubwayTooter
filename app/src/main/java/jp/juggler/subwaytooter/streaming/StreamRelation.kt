@@ -2,12 +2,12 @@ package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.canStreamingState
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import java.lang.ref.WeakReference
 
 class StreamRelation(
     column: Column,
-    val spec: StreamSpec
+    val spec: StreamSpec,
 ) {
     companion object {
         private val log = LogCategory("StreamDestination")

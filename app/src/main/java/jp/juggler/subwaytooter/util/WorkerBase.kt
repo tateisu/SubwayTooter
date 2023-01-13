@@ -1,13 +1,13 @@
 package jp.juggler.subwaytooter.util
 
-import jp.juggler.util.launchDefault
+import jp.juggler.util.coroutine.launchDefault
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.withTimeout
 
 abstract class WorkerBase(
-    private val waiter: Channel<Unit> = Channel(capacity = Channel.CONFLATED)
+    private val waiter: Channel<Unit> = Channel(capacity = Channel.CONFLATED),
 ) {
 
     private val suspendJob: Job

@@ -7,9 +7,14 @@ buildscript {
     ext.compile_sdk_version = 33
     ext.build_tools_version = "33.0.1"
 
-    ext.appcompat_version = "1.5.1"
+    ext.desugar_lib_bersion = "1.2.0"
+    ext.startup_version = "1.1.1"
+
+    ext.appcompat_version = "1.6.0"
     ext.lifecycle_version = "2.5.1"
     ext.arch_version = "2.1.0"
+
+    ext.okhttpVersion = "4.10.0"
 
     ext.kotlin_version = '1.7.21'
     ext.kotlinx_coroutines_version = '1.6.4'

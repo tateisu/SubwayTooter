@@ -9,8 +9,8 @@ import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.launchDefault
+import jp.juggler.util.coroutine.launchDefault
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.util.concurrent.ConcurrentHashMap

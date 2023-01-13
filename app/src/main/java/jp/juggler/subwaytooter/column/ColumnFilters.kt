@@ -12,6 +12,11 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.WordTrieTree
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.AdapterChangeType
 import java.util.regex.Pattern
 
 private val log = LogCategory("ColumnFilters")
@@ -167,7 +172,7 @@ fun Column.initFilter() {
                     }
                 }
         } catch (ex: Throwable) {
-            log.e(ex,"initFilter failed.")
+            log.e(ex, "initFilter failed.")
         }
     }
 

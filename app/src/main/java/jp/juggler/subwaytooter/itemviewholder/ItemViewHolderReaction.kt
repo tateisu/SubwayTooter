@@ -22,9 +22,9 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.util.startMargin
-import jp.juggler.util.attrColor
-import jp.juggler.util.getAdaptiveRippleDrawableRound
-import jp.juggler.util.notZero
+import jp.juggler.util.data.notZero
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.dip
 

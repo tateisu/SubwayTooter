@@ -1,9 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.notEmpty
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
 
 class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
 

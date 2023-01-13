@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.util.*
+import jp.juggler.util.data.*
 import java.util.*
 
 class TootReaction(
@@ -124,11 +125,7 @@ class TootReaction(
             } ?: emptyList()
 
         fun encodeEmojiQuery(src: List<TootReaction>): String =
-            jsonArray {
-                for (reaction in src) {
-                    add(reaction.jsonFedibird())
-                }
-            }.toString()
+            JsonArray(src.map { it.jsonFedibird() } as Collection<JsonObject>).toString()
 
         fun urlToSpan(options: DecodeOptions, code: String, url: String) =
             SpannableStringBuilder(code).apply {
@@ -233,7 +230,7 @@ class TootReaction(
     }
 
     // リアクションカラムの絵文字絞り込み用
-    fun jsonFedibird() = jsonObject {
+    fun jsonFedibird() = buildJsonObject {
         val (basename, domain) = splitEmojiDomain()
         put("name", basename ?: name)
         putNotNull("domain", domain)

@@ -9,9 +9,9 @@ import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
-import jp.juggler.util.ellipsize
-import jp.juggler.util.textOrGone
-import jp.juggler.util.vg
+import jp.juggler.util.data.ellipsize
+import jp.juggler.util.ui.textOrGone
+import jp.juggler.util.ui.vg
 
 private fun addLinkAndCaption(
     sb: StringBuilder,

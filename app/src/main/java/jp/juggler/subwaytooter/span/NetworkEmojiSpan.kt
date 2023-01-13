@@ -9,12 +9,12 @@ import androidx.annotation.IntRange
 import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import java.lang.ref.WeakReference
 
 class NetworkEmojiSpan internal constructor(
     private val url: String,
-    private val scale: Float = 1f
+    private val scale: Float = 1f,
 ) : ReplacementSpan(), AnimatableSpan {
 
     companion object {
@@ -41,7 +41,7 @@ class NetworkEmojiSpan internal constructor(
 
     override fun setInvalidateCallback(
         drawTargetTag: Any,
-        invalidateCallback: AnimatableSpanInvalidator
+        invalidateCallback: AnimatableSpanInvalidator,
     ) {
         this.refDrawTarget = WeakReference(drawTargetTag)
         this.invalidateCallback = invalidateCallback
@@ -52,7 +52,7 @@ class NetworkEmojiSpan internal constructor(
         text: CharSequence,
         @IntRange(from = 0) start: Int,
         @IntRange(from = 0) end: Int,
-        fm: Paint.FontMetricsInt?
+        fm: Paint.FontMetricsInt?,
     ): Int {
         val size = (paint.textSize * scaleRatio * scale + 0.5f).toInt()
         if (fm != null) {
@@ -75,7 +75,7 @@ class NetworkEmojiSpan internal constructor(
         top: Int,
         baseline: Int,
         bottom: Int,
-        textPaint: Paint
+        textPaint: Paint,
     ) {
         val invalidateCallback = this.invalidateCallback
         if (invalidateCallback == null) {

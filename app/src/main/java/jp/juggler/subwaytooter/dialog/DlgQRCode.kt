@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.launchProgress
+import jp.juggler.util.coroutine.launchProgress
 import net.glxn.qrgen.android.QRCode
 
 @SuppressLint("StaticFieldLeak")

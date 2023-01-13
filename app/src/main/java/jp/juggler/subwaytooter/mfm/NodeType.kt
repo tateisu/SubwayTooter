@@ -1,7 +1,8 @@
 package jp.juggler.subwaytooter.mfm
 
-import jp.juggler.util.encodePercent
-import jp.juggler.util.notEmpty
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.ui.fontSpan
 
 // ノード種別および種別ごとのレンダリング関数
 enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
@@ -49,7 +50,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(start, sb.length, android.text.style.BackgroundColorSpan(0x40808080))
             spanList.addLast(
                 start, sb.length,
-                jp.juggler.util.fontSpan(android.graphics.Typeface.MONOSPACE)
+                fontSpan(android.graphics.Typeface.MONOSPACE)
             )
         }
     }),
@@ -74,7 +75,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(0.7f))
             spanList.addLast(
                 start, sb.length,
-                jp.juggler.util.fontSpan(android.graphics.Typeface.MONOSPACE)
+                fontSpan(android.graphics.Typeface.MONOSPACE)
             )
             closeBlock()
         }
@@ -94,7 +95,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(
                 start,
                 sb.length,
-                jp.juggler.util.fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+                fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
             )
         }
     }),
@@ -142,7 +143,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
         } else {
             val start = this.start
             fireRenderChildNodes(it)
-            spanList.addLast(start, sb.length, jp.juggler.util.fontSpan(fontBold))
+            spanList.addLast(start, sb.length, fontSpan(fontBold))
         }
     }),
 
@@ -187,7 +188,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             fireRenderChildNodes(it)
             spanList.addLast(
                 start, sb.length,
-                jp.juggler.util.fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+                fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
             )
         }
     }),
@@ -333,7 +334,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(
                 start,
                 sb.length,
-                jp.juggler.util.fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+                fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
             )
 
             closeBlock()

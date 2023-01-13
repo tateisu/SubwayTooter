@@ -14,7 +14,7 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.util.startMargin
-import jp.juggler.util.launchAndShowError
+import jp.juggler.util.coroutine.launchAndShowError
 import org.jetbrains.anko.allCaps
 
 fun ColumnViewHolder.addEmojiQuery(reaction: TootReaction? = null) {

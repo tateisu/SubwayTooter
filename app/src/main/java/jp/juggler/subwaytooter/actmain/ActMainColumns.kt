@@ -19,6 +19,11 @@ import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
+import jp.juggler.util.data.clip
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.backgroundDrawable
 import kotlin.math.abs
 import kotlin.math.min
@@ -489,7 +494,7 @@ fun ActMain.updateColumnStripSelection(position: Int, positionOffset: Float) {
                 if (vr.first <= vr.last) {
                     val child = env.tabletLayoutManager.findViewByPosition(vr.first)
                     slideRatio =
-                        clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
+                        (abs((child?.left ?: 0) / nColumnWidth.toFloat())).clip(0f, 1f)
                 }
 
                 llColumnStrip.setVisibleRange(vr.first, vr.last, slideRatio)

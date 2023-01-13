@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 object NotificationHelper {
 

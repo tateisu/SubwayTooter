@@ -5,9 +5,9 @@ import android.text.style.ClickableSpan
 import android.view.View
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.util.activity
-import jp.juggler.util.cast
-import jp.juggler.util.notZero
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.notZero
+import jp.juggler.util.ui.activity
 
 interface MyClickableSpanHandler {
     fun onMyClickableSpanClicked(viewClicked: View, span: MyClickableSpan)
@@ -18,7 +18,7 @@ class LinkInfo(
     var ac: AcctColor? = null,
     var tag: Any? = null,
     var caption: CharSequence = "",
-    var mention: TootMention? = null
+    var mention: TootMention? = null,
 ) {
     val text: String
         get() = caption.toString()

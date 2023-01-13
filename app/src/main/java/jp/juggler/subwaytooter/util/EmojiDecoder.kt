@@ -17,9 +17,9 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.LogCategory
-import jp.juggler.util.asciiPattern
-import jp.juggler.util.codePointBefore
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.codePointBefore
+import jp.juggler.util.log.LogCategory
 import java.util.regex.Pattern
 import kotlin.math.min
 
@@ -400,9 +400,11 @@ object EmojiDecoder {
                             ?: options.authorDomain?.apiHost?.ascii
                             ?: apiHostAscii
 
-                        log.i("decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
-                            cols.elementAtOrNull(1)
-                        } apiHostAscii=$apiHostAscii, userHost=$userHost")
+                        log.i(
+                            "decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
+                                cols.elementAtOrNull(1)
+                            } apiHostAscii=$apiHostAscii, userHost=$userHost"
+                        )
 
                         when {
                             apiHostAscii == null -> {

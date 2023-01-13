@@ -2,9 +2,9 @@ package jp.juggler.subwaytooter.column
 
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.util.JsonException
-import jp.juggler.util.JsonObject
-import jp.juggler.util.encodeBase64Url
+import jp.juggler.util.data.JsonException
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.encodeBase64Url
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 

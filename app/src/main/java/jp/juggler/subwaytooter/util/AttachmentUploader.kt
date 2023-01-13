@@ -13,10 +13,22 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
-import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
-import jp.juggler.util.VideoInfo.Companion.videoInfo
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchIO
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.media.ResizeConfig
+import jp.juggler.util.media.ResizeType
+import jp.juggler.util.media.VideoInfo.Companion.videoInfo
+import jp.juggler.util.media.createResizedBitmap
+import jp.juggler.util.media.transcodeVideo
+import jp.juggler.util.network.toPost
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.network.toPut
+import jp.juggler.util.network.toPutRequestBuilder
+import jp.juggler.util.ui.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
@@ -213,7 +225,7 @@ class AttachmentUploader(
                             }
                             val result = try {
                                 if (request.pa.isCancelled) continue
-                                withContext(request.pa.job + appDispatchers.io) {
+                                withContext(request.pa.job + AppDispatchers.io) {
                                     request.upload()
                                 }
                             } catch (ex: Throwable) {
@@ -221,7 +233,7 @@ class AttachmentUploader(
                             }
                             try {
                                 request.pa.progress = ""
-                                withContext(appDispatchers.main) {
+                                withContext(AppDispatchers.mainImmediate) {
                                     handleResult(request, result)
                                 }
                             } catch (ex: Throwable) {
@@ -928,10 +940,9 @@ class AttachmentUploader(
                 } else {
                     client.request(
                         "/api/v1/media/$attachmentId",
-                        jsonObject {
+                        buildJsonObject {
                             put("description", description)
-                        }
-                            .toPutRequestBuilder()
+                        }.toPutRequestBuilder()
                     )?.also { result ->
                         resultAttachment =
                             parseItem(::TootAttachment, ServiceType.MASTODON, result.jsonObject)

@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.emoji.CustomEmoji
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
 
 class MisskeyNoteUpdate(apDomain: Host, apiHost: Host, src: JsonObject) {
     companion object {

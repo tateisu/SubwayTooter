@@ -8,17 +8,17 @@ import androidx.core.view.GravityCompat
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.pickAccount
+import jp.juggler.subwaytooter.getVisibilityIconId
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.subwaytooter.util.PostResult
-import jp.juggler.util.hideKeyboard
-import jp.juggler.util.launchAndShowError
-import jp.juggler.util.launchMain
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.ui.hideKeyboard
 import org.jetbrains.anko.imageResource
 
 // 簡易投稿入力のテキスト
@@ -28,7 +28,7 @@ val ActMain.quickPostText: String
 fun ActMain.initUIQuickPost() {
     etQuickPost.typeface = ActMain.timelineFont
 
-    if (!PrefB.bpQuickPostBar(pref)) {
+    if (!PrefB.bpQuickPostBar.invoke(pref)) {
         llQuickPostBar.visibility = View.GONE
     }
 
@@ -70,7 +70,7 @@ fun ActMain.initUIQuickPost() {
 
 fun ActMain.showQuickPostVisibility() {
     btnQuickPostMenu.imageResource =
-        when (val resId = Styler.getVisibilityIconId(false, quickPostVisibility)) {
+        when (val resId = getVisibilityIconId(false, quickPostVisibility)) {
             R.drawable.ic_question -> R.drawable.ic_description
             else -> resId
         }

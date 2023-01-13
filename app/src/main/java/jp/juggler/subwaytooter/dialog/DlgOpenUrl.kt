@@ -9,10 +9,10 @@ import android.widget.EditText
 import androidx.core.view.postDelayed
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.DlgOpenUrlBinding
-import jp.juggler.util.LogCategory
-import jp.juggler.util.isEnabledAlpha
-import jp.juggler.util.showToast
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 import jp.juggler.util.systemService
+import jp.juggler.util.ui.isEnabledAlpha
 
 object DlgOpenUrl {
     private val log = LogCategory("DlgOpenUrl")
@@ -20,7 +20,7 @@ object DlgOpenUrl {
     fun show(
         activity: Activity,
         onEmptyError: () -> Unit = { activity.showToast(false, R.string.url_empty) },
-        onOK: (Dialog, String) -> Unit
+        onOK: (Dialog, String) -> Unit,
     ) {
 
         val allowEmpty = false

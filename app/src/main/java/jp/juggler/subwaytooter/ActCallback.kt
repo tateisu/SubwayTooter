@@ -6,6 +6,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.util.*
+import jp.juggler.util.data.digestSHA256Hex
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 import okhttp3.internal.toHexString
 import java.io.File
 import java.io.FileOutputStream

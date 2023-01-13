@@ -8,7 +8,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.util.clipRange
+import jp.juggler.util.data.clip
 
 class FocusPointView : View {
 
@@ -54,7 +54,7 @@ class FocusPointView : View {
 
     fun setAttachment(
         attachment: TootAttachment,
-        bitmap: Bitmap
+        bitmap: Bitmap,
     ) {
         this.attachment = attachment
         this.bitmap = bitmap
@@ -153,8 +153,8 @@ class FocusPointView : View {
     }
 
     private fun updateFocusPoint(event: MotionEvent) {
-        focusX = clipRange(-1f, 1f, ((event.x - drawX) / drawW) * 2f - 1f)
-        focusY = -clipRange(-1f, 1f, ((event.y - drawY) / drawH) * 2f - 1f)
+        focusX = (((event.x - drawX) / drawW) * 2f - 1f).clip(-1f, 1f)
+        focusY = (((event.y - drawY) / drawH) * 2f - 1f).clip(-1f, 1f).times(-1)
         invalidate()
     }
 }

@@ -6,10 +6,9 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctSet
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.LogCategory
-import jp.juggler.util.toJsonArray
-import jp.juggler.util.toPostRequestBuilder
-import java.util.HashSet
+import jp.juggler.util.data.toJsonArray
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.network.toPostRequestBuilder
 
 class UserRelationLoader(val column: Column) {
     companion object {

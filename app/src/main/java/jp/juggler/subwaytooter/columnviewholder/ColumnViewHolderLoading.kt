@@ -12,9 +12,9 @@ import jp.juggler.subwaytooter.column.toAdapterIndex
 import jp.juggler.subwaytooter.column.toListIndex
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.view.ListDivider
-import jp.juggler.util.LogCategory
-import jp.juggler.util.abs
+import jp.juggler.util.log.LogCategory
 import java.io.Closeable
+import kotlin.math.abs
 
 private val log = LogCategory("ColumnViewHolderLoading")
 
@@ -48,8 +48,8 @@ private class ErrorFlickListener(
         velocityY: Float,
     ): Boolean {
 
-        val vx = velocityX.abs()
-        val vy = velocityY.abs()
+        val vx = abs(velocityX)
+        val vy = abs(velocityY)
         if (vy < vx * 1.5f) {
             // フリック方向が上下ではない
             ColumnViewHolder.log.d("fling? not vertical view. $vx $vy")

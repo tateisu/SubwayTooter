@@ -13,7 +13,8 @@ import androidx.collection.LruCache
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 
 class AcctColor {
 

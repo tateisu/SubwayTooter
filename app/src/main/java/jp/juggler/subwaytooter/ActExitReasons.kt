@@ -13,9 +13,9 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.util.LogCategory
-import jp.juggler.util.decodeUTF8
-import jp.juggler.util.withCaption
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.log.withCaption
 
 @RequiresApi(Build.VERSION_CODES.R)
 class ActExitReasons : AppCompatActivity() {

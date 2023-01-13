@@ -16,7 +16,13 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.TootTextEncoder
+import jp.juggler.subwaytooter.util.copyToClipboard
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.*
 
 class ActText : AppCompatActivity() {
 
@@ -134,7 +140,7 @@ class ActText : AppCompatActivity() {
         setContentView(R.layout.act_text)
         etText = findViewById(R.id.etText)
         App1.initEdgeToEdge(this)
-        Styler.fixHorizontalMargin(etText)
+        fixHorizontalMargin(etText)
 
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.apply {

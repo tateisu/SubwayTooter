@@ -3,9 +3,9 @@ package jp.juggler.subwaytooter
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.util.LogCategory
-import jp.juggler.util.decodeUTF8
-import jp.juggler.util.loadRawResource
+import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.data.loadRawResource
+import jp.juggler.util.log.LogCategory
 
 class ActOSSLicense : AppCompatActivity() {
 

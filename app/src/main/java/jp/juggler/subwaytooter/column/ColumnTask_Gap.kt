@@ -9,6 +9,17 @@ import jp.juggler.subwaytooter.columnviewholder.setListItemTop
 import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.coroutine.runOnMainLooperDelayed
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.AdapterChangeType
 
 @Suppress("ClassNaming")
 class ColumnTask_Gap(

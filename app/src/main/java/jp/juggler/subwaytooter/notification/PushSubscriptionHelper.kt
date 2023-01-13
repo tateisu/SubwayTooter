@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.notification
 
 import android.content.Context
+import androidx.core.net.toUri
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -8,6 +9,10 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.SubscriptionServerKey
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.*
 import kotlinx.coroutines.CancellationException
 import okhttp3.Request
 import okhttp3.Response
@@ -135,7 +140,7 @@ class PushSubscriptionHelper(
         if (account.last_push_endpoint == endpoint) return TootApiResult()
 
         return client.http(
-            jsonObject {
+            buildJsonObject {
                 put("acct", account.acct.ascii)
                 put("deviceId", deviceId)
                 put("endpoint", endpoint)
@@ -412,7 +417,7 @@ class PushSubscriptionHelper(
         installId: String,
     ): CheckDeviceHasPriorityResult {
         val r = client.http(
-            jsonObject {
+            buildJsonObject {
                 put("token_digest", tokenDigest)
                 put("install_id", installId)
             }

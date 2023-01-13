@@ -7,10 +7,10 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.jsonObject
-import jp.juggler.util.showToast
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 
 private val log = LogCategory("ActionUtils")
 
@@ -43,7 +43,7 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
             ?: getInstanceInfo()
             ?: return null
 
-        val accountInfo = jsonObject {
+        val accountInfo = buildJsonObject {
             put("username", acct.username)
             put("acct", acct.username) // ローカルから参照した場合なのでshort acct
         }

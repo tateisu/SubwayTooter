@@ -18,6 +18,11 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchProgress
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
@@ -172,7 +177,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     private fun initUI() {
         setContentView(R.layout.act_language_filter)
         App1.initEdgeToEdge(this)
-        Styler.fixHorizontalPadding(findViewById(R.id.llContent))
+        fixHorizontalPadding(findViewById(R.id.llContent))
 
         for (id in intArrayOf(
             R.id.btnAdd,
@@ -189,7 +194,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     }
 
     // UIのデータをJsonObjectにエンコード
-    private fun encodeLanguageList() = jsonObject {
+    private fun encodeLanguageList() = buildJsonObject {
         for (item in languageList) {
             put(item.code, item.allow)
         }

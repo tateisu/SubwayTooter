@@ -1,11 +1,11 @@
 package jp.juggler.subwaytooter.emoji
 
+import android.annotation.SuppressLint
 import android.content.Context
-import jp.juggler.util.LogCategory
-import jp.juggler.util.errorEx
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.errorEx
 import java.io.EOFException
 import java.io.InputStream
-import java.util.HashMap
 
 class EmojiMapLoader(
     appContext: Context,
@@ -27,6 +27,7 @@ class EmojiMapLoader(
     private var lastEmoji: UnicodeEmoji? = null
     private var lastCategory: EmojiCategory? = null
 
+    @SuppressLint("DiscouragedApi")
     private fun getDrawableId(name: String) =
         resources.getIdentifier(name, "drawable", packageName).takeIf { it != 0 }
 
@@ -112,9 +113,15 @@ class EmojiMapLoader(
                 else -> error("unknown header $head")
             }
         } catch (ex: Throwable) {
-            log.e(ex, "readEmojiDataLine: ${ex.javaClass.simpleName} ${ex.message} lno=$lno line=$rawLine")
+            log.e(
+                ex,
+                "readEmojiDataLine: ${ex.javaClass.simpleName} ${ex.message} lno=$lno line=$rawLine"
+            )
             // 行番号の情報をつけて投げ直す
-            errorEx(ex, "readEmojiDataLine: ${ex.javaClass.simpleName} ${ex.message} lno=$lno line=$rawLine")
+            errorEx(
+                ex,
+                "readEmojiDataLine: ${ex.javaClass.simpleName} ${ex.message} lno=$lno line=$rawLine"
+            )
         }
     }
 

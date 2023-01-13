@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
+import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
@@ -14,7 +15,12 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPost
 
 private val log = LogCategory("Action_Conversation")
 
@@ -246,8 +252,12 @@ fun ActMain.conversationOtherInstance(
     val hostOriginal = Host.parse(urlArg.toUri().authority ?: "")
 
     // 選択肢：ブラウザで表示する
-    dialog.addAction(getString(R.string.open_web_on_host,
-        hostOriginal.pretty)) { openCustomTab(urlArg) }
+    dialog.addAction(
+        getString(
+            R.string.open_web_on_host,
+            hostOriginal.pretty
+        )
+    ) { openCustomTab(urlArg) }
 
     // トゥートの投稿元タンスにあるアカウント
     val localAccountList = ArrayList<SavedAccount>()

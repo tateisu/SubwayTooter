@@ -6,11 +6,12 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.calcIconRound
+import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgFocusPoint
 import jp.juggler.subwaytooter.dialog.DlgTextInput
@@ -18,7 +19,14 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.network.toPutRequestBuilder
+import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.vg
 
 private val log = LogCategory("ActPostAttachment")
 
@@ -66,9 +74,9 @@ fun ActPost.showMediaAttachmentOne(iv: MyNetworkImageView, idx: Int) {
         val a = pa.attachment
         when {
             a == null || pa.status != PostAttachment.Status.Ok -> {
-                iv.setDefaultImage(Styler.defaultColorIcon(this, R.drawable.ic_upload))
-                iv.setErrorImage(Styler.defaultColorIcon(this, R.drawable.ic_clip))
-                iv.setImageUrl(Styler.calcIconRound(iv.layoutParams.width), null)
+                iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
+                iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_clip))
+                iv.setImageUrl(calcIconRound(iv.layoutParams.width), null)
             }
 
             else -> {
@@ -80,9 +88,9 @@ fun ActPost.showMediaAttachmentOne(iv: MyNetworkImageView, idx: Int) {
                     TootAttachmentType.Audio -> R.drawable.ic_music_note
                     else -> R.drawable.ic_clip
                 }
-                iv.setDefaultImage(Styler.defaultColorIcon(this, defaultIconId))
-                iv.setErrorImage(Styler.defaultColorIcon(this, defaultIconId))
-                iv.setImageUrl(Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
+                iv.setDefaultImage(defaultColorIcon(this, defaultIconId))
+                iv.setErrorImage(defaultColorIcon(this, defaultIconId))
+                iv.setImageUrl(calcIconRound(iv.layoutParams.width), a.preview_url)
             }
         }
     }
@@ -253,7 +261,7 @@ fun ActPost.sendFocusPoint(pa: PostAttachment, attachment: TootAttachment, x: Fl
             try {
                 client.request(
                     "/api/v1/media/${attachment.id}",
-                    jsonObject {
+                    buildJsonObject {
                         put("focus", "%.2f,%.2f".format(x, y))
                     }.toPutRequestBuilder()
                 )?.also { result ->

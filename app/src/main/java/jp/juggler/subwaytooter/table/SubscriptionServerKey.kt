@@ -4,9 +4,9 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.LogCategory
-import jp.juggler.util.TableCompanion
-import jp.juggler.util.getString
+import jp.juggler.util.data.TableCompanion
+import jp.juggler.util.data.getString
+import jp.juggler.util.log.LogCategory
 
 object SubscriptionServerKey : TableCompanion {
 

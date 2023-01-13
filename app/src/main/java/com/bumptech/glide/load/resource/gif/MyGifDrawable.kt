@@ -13,8 +13,8 @@ import com.bumptech.glide.gifdecoder.GifDecoder.TOTAL_ITERATION_COUNT_FOREVER
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.util.Preconditions
-import jp.juggler.util.LogCategory
-import jp.juggler.util.errorEx
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.errorEx
 import java.lang.reflect.Field
 import java.nio.ByteBuffer
 

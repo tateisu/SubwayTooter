@@ -10,8 +10,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.util.openBrowser
-import jp.juggler.util.LogCategory
 import jp.juggler.util.getPackageInfoCompat
+import jp.juggler.util.log.LogCategory
 
 class ActAbout : AppCompatActivity() {
 
@@ -76,7 +76,7 @@ class ActAbout : AppCompatActivity() {
         setContentView(R.layout.act_about)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding(findViewById(R.id.svContent))
+        fixHorizontalPadding(findViewById(R.id.svContent))
 
         try {
             packageManager.getPackageInfoCompat(packageName)?.let { pInfo ->

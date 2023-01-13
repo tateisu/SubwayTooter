@@ -4,9 +4,9 @@ import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.WordTrieTree
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.WordTrieTree
 
 class TootParser(
     val context: Context,

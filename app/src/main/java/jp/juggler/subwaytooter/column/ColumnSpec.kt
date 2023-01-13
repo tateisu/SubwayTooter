@@ -4,8 +4,8 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
 
 private val log = LogCategory("ColumnSpec")
 

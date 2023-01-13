@@ -33,6 +33,10 @@ import jp.juggler.subwaytooter.util.minHeightCompat
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import kotlin.math.abs
 import kotlin.math.sign
 

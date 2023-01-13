@@ -13,7 +13,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.showToast
+import jp.juggler.util.log.*
 
 object ReportForm {
 
@@ -23,7 +23,7 @@ object ReportForm {
         accessInfo: SavedAccount,
         who: TootAccount,
         status: TootStatus?,
-        onClickOk: (dialog: Dialog, comment: String, forward: Boolean) -> Unit
+        onClickOk: (dialog: Dialog, comment: String, forward: Boolean) -> Unit,
     ) {
         val view = activity.layoutInflater.inflate(R.layout.dlg_report_user, null, false)
 

@@ -2,8 +2,9 @@ package jp.juggler.subwaytooter.mfm
 
 import android.graphics.Color
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.LogCategory
-import jp.juggler.util.removeEndWhitespaces
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import java.util.*
 
 object MisskeyMarkdownDecoder {

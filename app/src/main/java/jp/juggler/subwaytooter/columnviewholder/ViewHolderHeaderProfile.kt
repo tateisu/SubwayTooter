@@ -8,9 +8,7 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.*
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.action.followFromAnotherAccount
 import jp.juggler.subwaytooter.action.userProfileLocal
 import jp.juggler.subwaytooter.actmain.nextPosition
@@ -40,7 +38,17 @@ import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.intoStringResource
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.setIconDrawableId
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
@@ -230,7 +238,7 @@ internal class ViewHolderHeaderProfile(
             btnMore,
             R.drawable.ic_more,
             color = contentColor,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
 
         setIconDrawableId(
@@ -238,7 +246,7 @@ internal class ViewHolderHeaderProfile(
             btnPersonalNotesEdit,
             R.drawable.ic_edit,
             color = contentColor,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
 
         val acctColor = column.getAcctColor()
@@ -323,7 +331,7 @@ internal class ViewHolderHeaderProfile(
         ivBackground.setImageUrl(0f, accessInfo.supplyBaseUrl(who.header_static))
 
         ivAvatar.setImageUrl(
-            Styler.calcIconRound(ivAvatar.layoutParams),
+            calcIconRound(ivAvatar.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
         )
@@ -364,14 +372,14 @@ internal class ViewHolderHeaderProfile(
 
         val relation = UserRelation.load(accessInfo.db_id, who.id)
         this.relation = relation
-        Styler.setFollowIcon(
+        setFollowIcon(
             activity,
             btnFollow,
             ivFollowedBy,
             relation,
             who,
             contentColor,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
 
         tvPersonalNotes.text = relation.note ?: ""
@@ -397,7 +405,7 @@ internal class ViewHolderHeaderProfile(
 
         ivMoved.layoutParams.width = activity.avatarIconSize
         ivMoved.setImageUrl(
-            Styler.calcIconRound(ivMoved.layoutParams),
+            calcIconRound(ivMoved.layoutParams),
             accessInfo.supplyBaseUrl(moved.avatar_static)
         )
 
@@ -407,14 +415,14 @@ internal class ViewHolderHeaderProfile(
         setAcct(tvMovedAcct, accessInfo, moved)
 
         val relation = UserRelation.load(accessInfo.db_id, moved.id)
-        Styler.setFollowIcon(
+        setFollowIcon(
             activity,
             btnMoved,
             ivMovedBy,
             relation,
             moved,
             contentColor,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
     }
 
@@ -492,7 +500,7 @@ internal class ViewHolderHeaderProfile(
                                         else ->
                                             client.request(
                                                 "/api/v1/accounts/${who.id}/note",
-                                                jsonObject {
+                                                buildJsonObject {
                                                     put("comment", text)
                                                 }.toPostRequestBuilder()
                                             )

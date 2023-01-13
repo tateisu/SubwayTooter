@@ -8,7 +8,7 @@ import android.view.MotionEvent
 import android.widget.ListView
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 class MyListView : ListView {
 
@@ -18,9 +18,11 @@ class MyListView : ListView {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context,
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
         attrs,
-        defStyleAttr)
+        defStyleAttr
+    )
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {

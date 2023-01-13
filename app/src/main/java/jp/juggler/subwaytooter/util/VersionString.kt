@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util
 
-import jp.juggler.util.asciiPattern
-import jp.juggler.util.groupEx
+import jp.juggler.util.data.*
 import java.math.BigInteger
 import java.util.*
 

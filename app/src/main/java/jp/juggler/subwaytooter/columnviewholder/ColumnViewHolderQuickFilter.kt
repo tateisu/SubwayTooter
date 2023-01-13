@@ -5,13 +5,13 @@ import android.graphics.Color
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.util.applyAlphaMultiplier
-import jp.juggler.util.attrColor
-import jp.juggler.util.getAdaptiveRippleDrawableRound
-import jp.juggler.util.vg
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.util.ui.applyAlphaMultiplier
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 

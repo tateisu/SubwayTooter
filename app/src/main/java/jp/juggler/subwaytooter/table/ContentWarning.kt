@@ -5,7 +5,11 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.*
+import jp.juggler.util.data.ColumnMeta
+import jp.juggler.util.data.TableCompanion
+import jp.juggler.util.data.getBoolean
+import jp.juggler.util.data.put
+import jp.juggler.util.log.LogCategory
 
 object ContentWarning : TableCompanion {
     private val log = LogCategory("ContentWarning")

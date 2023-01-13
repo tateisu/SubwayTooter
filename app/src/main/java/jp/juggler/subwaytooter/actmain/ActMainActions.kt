@@ -21,7 +21,11 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.*
+import jp.juggler.util.data.addTo
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 
 private val log = LogCategory("ActMainActions")
 
@@ -73,8 +77,10 @@ fun ActMain.onBackPressedImpl() {
                     else -> showToast(false, R.string.missing_closeable_column)
                 }
                 1 -> closeColumn(closeableColumnList.first())
-                else -> showToast(false,
-                    R.string.cant_close_column_by_back_button_when_multiple_column_shown)
+                else -> showToast(
+                    false,
+                    R.string.cant_close_column_by_back_button_when_multiple_column_shown
+                )
             }
         }
         else /* PrefI.BACK_ASK_ALWAYS */ -> {

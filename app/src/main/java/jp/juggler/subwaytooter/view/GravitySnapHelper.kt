@@ -9,7 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 class GravitySnapHelper @SuppressLint("RtlHardcoded")
 constructor(gravity: Int) : androidx.recyclerview.widget.LinearSnapHelper() {

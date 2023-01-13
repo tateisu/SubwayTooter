@@ -6,7 +6,7 @@ import android.net.LinkProperties
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.os.Build
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.*
 
 class NetworkStateTracker(
     val context: Context,

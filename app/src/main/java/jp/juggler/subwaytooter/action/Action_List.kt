@@ -17,7 +17,13 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.network.toPutRequestBuilder
+import jp.juggler.util.ui.dismissSafe
 import okhttp3.Request
 
 fun ActMain.clickListTl(pos: Int, accessInfo: SavedAccount, item: TimelineItem?) {
@@ -83,10 +89,9 @@ fun ActMain.listCreate(
             } else {
                 client.request(
                     "/api/v1/lists",
-                    jsonObject {
+                    buildJsonObject {
                         put("title", title)
-                    }
-                        .toPostRequestBuilder()
+                    }.toPostRequestBuilder()
                 )
             }?.also { result ->
                 client.publishApiProgress(getString(R.string.parsing_response))
@@ -178,16 +183,14 @@ fun ActMain.listRename(
                                 accessInfo.putMisskeyApiToken().apply {
                                     put("listId", item.id)
                                     put("title", text)
-                                }
-                                    .toPostRequestBuilder()
+                                }.toPostRequestBuilder()
                             )
                         } else {
                             client.request(
                                 "/api/v1/lists/${item.id}",
-                                jsonObject {
+                                buildJsonObject {
                                     put("title", text)
-                                }
-                                    .toPutRequestBuilder()
+                                }.toPutRequestBuilder()
                             )
                         }?.also { result ->
                             client.publishApiProgress(getString(R.string.parsing_response))

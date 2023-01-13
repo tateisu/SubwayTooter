@@ -17,6 +17,8 @@ import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
 import jp.juggler.subwaytooter.streaming.StreamSpec
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -662,9 +664,11 @@ enum class ColumnType(
 
         loading = { client -> getPublicTlAroundTime(client, column.makePublicFederateUrl()) },
         refresh = { client ->
-            getStatusList(client,
+            getStatusList(
+                client,
                 column.makePublicFederateUrl(),
-                useMinId = true)
+                useMinId = true
+            )
         },
 
         canStreamingMastodon = streamingTypeNo,

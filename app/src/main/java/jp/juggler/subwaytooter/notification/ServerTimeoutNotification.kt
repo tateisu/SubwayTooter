@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.systemService
 
 object ServerTimeoutNotification {

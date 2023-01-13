@@ -19,7 +19,11 @@ import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import jp.juggler.util.*
+import jp.juggler.util.data.neatSpaces
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.isEnabledAlpha
 import org.conscrypt.OpenSSLX509Certificate
 
 internal class ViewHolderHeaderInstance(

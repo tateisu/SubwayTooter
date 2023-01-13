@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonObject
 
 class TootReport(src: JsonObject) : TimelineItem() {
 

@@ -9,7 +9,9 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.saveScrollPosition
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.network.toPostRequestBuilder
 import java.io.File
 
 private val log = LogCategory("ColumnExtra2")
@@ -72,55 +74,34 @@ val Column.isConversation
 // 読み込み処理の内部で使うメソッド
 
 fun Column.getNotificationTypeString(): String {
-    val sb = StringBuilder()
-    sb.append("(")
-
-    when (quickFilter) {
-        Column.QUICK_FILTER_ALL -> {
-            var n = 0
-            if (!dontShowReply) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_mention))
+    val list = buildList {
+        when (quickFilter) {
+            Column.QUICK_FILTER_MENTION -> add(R.string.notification_type_mention)
+            Column.QUICK_FILTER_FAVOURITE -> add(R.string.notification_type_favourite)
+            Column.QUICK_FILTER_BOOST -> add(R.string.notification_type_boost)
+            Column.QUICK_FILTER_FOLLOW -> add(R.string.notification_type_follow)
+            Column.QUICK_FILTER_REACTION -> add(R.string.notification_type_reaction)
+            Column.QUICK_FILTER_VOTE -> add(R.string.notification_type_vote)
+            Column.QUICK_FILTER_POST -> add(R.string.notification_type_post)
+            Column.QUICK_FILTER_ALL -> {
+                if (!dontShowReply) add(R.string.notification_type_mention)
+                if (!dontShowFollow) add(R.string.notification_type_follow)
+                if (!dontShowBoost) add(R.string.notification_type_boost)
+                if (!dontShowFavourite) add(R.string.notification_type_favourite)
+                if (isMisskey && !dontShowReaction) add(R.string.notification_type_reaction)
+                if (!dontShowVote) add(R.string.notification_type_vote)
             }
-            if (!dontShowFollow) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_follow))
-            }
-            if (!dontShowBoost) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_boost))
-            }
-            if (!dontShowFavourite) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_favourite))
-            }
-            if (isMisskey && !dontShowReaction) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_reaction))
-            }
-            if (!dontShowVote) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_vote))
-            }
-            val nMax = if (isMisskey) {
-                6
-            } else {
-                5
-            }
-            if (n == 0 || n == nMax) return "" // 全部か皆無なら部分表記は要らない
         }
-
-        Column.QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
-        Column.QUICK_FILTER_FAVOURITE -> sb.append(context.getString(R.string.notification_type_favourite))
-        Column.QUICK_FILTER_BOOST -> sb.append(context.getString(R.string.notification_type_boost))
-        Column.QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
-        Column.QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
-        Column.QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
-        Column.QUICK_FILTER_POST -> sb.append(context.getString(R.string.notification_type_post))
     }
-
-    sb.append(")")
-    return sb.toString()
+    val nMax = when {
+        isMisskey -> 6
+        else -> 5
+    }
+    return when {
+        // 全部か皆無なら部分表記は要らない
+        list.isEmpty() || list.size == nMax -> ""
+        else -> "(${list.joinToString(", ") { context.getString(it) }})"
+    }
 }
 
 suspend fun Column.loadProfileAccount(

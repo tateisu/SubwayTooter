@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.notZero
+import jp.juggler.util.data.notZero
 import java.net.IDN
 import java.util.concurrent.ConcurrentHashMap
 

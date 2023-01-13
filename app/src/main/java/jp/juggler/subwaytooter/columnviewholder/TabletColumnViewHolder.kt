@@ -5,12 +5,12 @@ import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.startLoading
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 internal class TabletColumnViewHolder(
     activity: ActMain,
     parent: ViewGroup,
-    val columnViewHolder: ColumnViewHolder = ColumnViewHolder(activity, parent)
+    val columnViewHolder: ColumnViewHolder = ColumnViewHolder(activity, parent),
 ) : RecyclerView.ViewHolder(columnViewHolder.viewRoot) {
 
     companion object {

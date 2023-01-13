@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonException
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonException
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
 
 object EntityUtil {
     val log = LogCategory("EntityUtil")

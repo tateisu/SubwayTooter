@@ -13,10 +13,10 @@ import jp.juggler.subwaytooter.actmain.closeColumn
 import jp.juggler.subwaytooter.actmain.closeColumnAll
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.util.hideKeyboard
-import jp.juggler.util.isCheckedNoAnime
-import jp.juggler.util.showToast
-import jp.juggler.util.withCaption
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.ui.hideKeyboard
+import jp.juggler.util.ui.isCheckedNoAnime
 import java.util.regex.Pattern
 
 fun ColumnViewHolder.onListListUpdated() {

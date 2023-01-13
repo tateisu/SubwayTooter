@@ -7,16 +7,16 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
 import jp.juggler.subwaytooter.notification.MessageNotification.getMessageNotifications
 import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
 import jp.juggler.subwaytooter.notification.MessageNotification.showMessageNotification
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.notEmpty
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -211,7 +211,7 @@ class PollingChecker(
                 return
             }
 
-            withContext(appDispatchers.default + checkJob) {
+            withContext(AppDispatchers.default + checkJob) {
                 if (importProtector.get()) {
                     log.w("aborted by importProtector.")
                     return@withContext

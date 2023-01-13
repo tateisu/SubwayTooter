@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import java.util.concurrent.TimeUnit

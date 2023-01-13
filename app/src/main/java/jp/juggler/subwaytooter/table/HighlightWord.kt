@@ -7,7 +7,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 import java.util.concurrent.atomic.AtomicReference
 
 class HighlightWord {

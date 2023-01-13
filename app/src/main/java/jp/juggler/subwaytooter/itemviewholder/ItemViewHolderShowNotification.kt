@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.itemviewholder
 import android.view.Gravity
 import android.view.View
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
@@ -11,8 +10,9 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.getVisibilityIconId
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.util.notZero
+import jp.juggler.util.data.notZero
 import org.jetbrains.anko.backgroundColor
 
 fun ItemViewHolder.showNotification(n: TootNotification) {
@@ -173,7 +173,7 @@ private fun ItemViewHolder.showNotificationPost(
     val colorBg = PrefI.ipEventBgColorStatus(activity.pref)
     val iconId = when (nStatus) {
         null -> R.drawable.ic_question
-        else -> Styler.getVisibilityIconId(accessInfo.isMisskey, nStatus.visibility)
+        else -> getVisibilityIconId(accessInfo.isMisskey, nStatus.visibility)
     }
     nAccountRef?.let { showBoost(it, n.time_created_at, iconId, R.string.display_name_posted_by) }
     nStatus?.let { showNotificationStatus(it, colorBg) }
@@ -187,10 +187,12 @@ private fun ItemViewHolder.showNotificationUpdate(
     val colorBg = PrefI.ipEventBgColorUpdate(activity.pref)
     val iconId = R.drawable.ic_history
     nAccountRef?.let {
-        showBoost(it,
+        showBoost(
+            it,
             n.time_created_at,
             iconId,
-            R.string.display_name_updates_post)
+            R.string.display_name_updates_post
+        )
     }
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
@@ -203,10 +205,12 @@ private fun ItemViewHolder.showNotificationStatusReference(
     val colorBg = PrefI.ipEventBgColorStatusReference(activity.pref)
     val iconId = R.drawable.ic_link_variant
     nAccountRef?.let {
-        showBoost(it,
+        showBoost(
+            it,
             n.time_created_at,
             iconId,
-            R.string.display_name_references_post)
+            R.string.display_name_references_post
+        )
     }
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }

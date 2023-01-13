@@ -17,6 +17,9 @@ import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.vg
 import java.util.*
 import java.util.regex.Pattern
 
@@ -203,7 +206,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 if (parser.misskeyDecodeProfilePin) {
                     val list = parseList(::TootStatus, parser, src.jsonArray("pinnedNotes"))
                     list.forEach { it.pinned = true }
-                    this.pinnedNotes = if (list.isNotEmpty()) list else null
+                    this.pinnedNotes = list.ifEmpty { null }
                 }
 
                 val profile = src.jsonObject("profile")

@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
@@ -20,6 +21,16 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.intoStringResource
+import jp.juggler.util.data.jsonObjectOf
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.*
+import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.vg
 import kotlinx.coroutines.*
 import okhttp3.Request
 import java.util.*
@@ -160,11 +171,10 @@ private fun ActMain.userMute(
                         when {
                             !bMute -> "".toFormRequestBody()
                             else ->
-                                jsonObject {
+                                buildJsonObject {
                                     put("notifications", bMuteNotification)
                                     if (duration != null) put("duration", duration)
-                                }
-                                    .toRequestBody()
+                                }.toRequestBody()
                         }.toPost()
                     )?.apply {
                         val jsonObject = jsonObject
@@ -743,12 +753,12 @@ private fun ActMain.userReport(
             } else {
                 client.request(
                     "/api/v1/reports",
-                    JsonObject().apply {
+                    buildJsonObject {
                         put("account_id", who.id.toString())
                         put("comment", comment)
                         put("forward", forward)
                         if (status != null) {
-                            put("status_ids", jsonArray {
+                            put("status_ids", buildJsonArray {
                                 add(status.id.toString())
                             })
                         }
@@ -808,25 +818,13 @@ fun ActMain.userSetShowBoosts(
 fun ActMain.userSuggestionDelete(
     accessInfo: SavedAccount,
     who: TootAccount,
-    bConfirmed: Boolean = false,
 ) {
-    if (!bConfirmed) {
-        val name = who.decodeDisplayName(applicationContext)
-        AlertDialog.Builder(this)
-            .setMessage(
-                name.intoStringResource(
-                    applicationContext,
-                    R.string.delete_succeeded_confirm
-                )
-            )
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                userSuggestionDelete(accessInfo, who, bConfirmed = true)
-            }
-            .show()
-        return
-    }
-    launchMain {
+    val activity = this
+    launchAndShowError {
+        confirm(
+            who.decodeDisplayName(activity)
+                .intoStringResource(activity, R.string.delete_succeeded_confirm)
+        )
         runApiTask(accessInfo) { client ->
             client.request("/api/v1/suggestions/${who.id}", Request.Builder().delete())
         }?.let { result ->
@@ -853,9 +851,8 @@ fun ActMain.userSetStatusNotification(
         runApiTask(accessInfo) { client ->
             client.request(
                 "/api/v1/accounts/$whoId/follow",
-                jsonObject {
-                    put("notify", enabled)
-                }.toPostRequestBuilder()
+                jsonObjectOf("notify" to enabled)
+                    .toPostRequestBuilder()
             )?.also { result ->
                 val relation = parseItem(
                     ::TootRelationShip,

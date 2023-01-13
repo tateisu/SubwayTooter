@@ -32,6 +32,9 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable
 import java.util.*
@@ -317,7 +320,7 @@ internal class DlgContextMenu(
                 )
 
                 views.btnDomainTimeline.vg(
-                    PrefB.bpEnableDomainTimeline(activity.pref) &&
+                    PrefB.bpEnableDomainTimeline.invoke(activity.pref) &&
                             !accessInfo.isPseudo &&
                             !accessInfo.isMisskey
                 )
@@ -610,9 +613,11 @@ internal class DlgContextMenu(
             R.id.btnConversationMute -> conversationMute(accessInfo, status)
             R.id.btnProfilePin -> statusPin(accessInfo, status, true)
             R.id.btnProfileUnpin -> statusPin(accessInfo, status, false)
-            R.id.btnStatusHistory, R.id.btnStatusHistory2 -> openStatusHistory(pos,
+            R.id.btnStatusHistory, R.id.btnStatusHistory2 -> openStatusHistory(
+                pos,
                 accessInfo,
-                status)
+                status
+            )
             else -> return false
         }
         return true

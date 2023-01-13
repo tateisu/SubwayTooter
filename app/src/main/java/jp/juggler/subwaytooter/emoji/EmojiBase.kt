@@ -4,9 +4,9 @@ import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.Mappable
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.notEmpty
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notEmpty
 
 sealed interface EmojiBase
 

@@ -7,7 +7,7 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 import jp.juggler.subwaytooter.api.entity.TootTag
-import jp.juggler.util.clipRange
+import jp.juggler.util.data.clip
 import kotlin.math.max
 import kotlin.math.min
 
@@ -117,7 +117,7 @@ class TagHistoryView : View {
                 // 始端
                 0 -> {
                     path.moveTo(x, y)
-                    val nextY = yWorkarea[i + 1]
+                    val nextY = yWorkarea[1]
                     lastSlope = (nextY - y) / xStep
                 }
 
@@ -125,7 +125,7 @@ class TagHistoryView : View {
                 size - 1 -> {
                     // 制御点1
                     val c1x = lastX + controlXStep
-                    val c1y = clipRange(yMin, yMax, lastY + controlXStep * lastSlope)
+                    val c1y = (lastY + controlXStep * lastSlope).clip(yMin, yMax)
 
                     // 制御点2
                     val slope = (y - lastY) / xStep
@@ -138,7 +138,7 @@ class TagHistoryView : View {
                 else -> {
                     // 制御点1
                     val c1x = lastX + controlXStep
-                    val c1y = clipRange(yMin, yMax, lastY + controlXStep * lastSlope)
+                    val c1y = (lastY + controlXStep * lastSlope).clip(yMin, yMax)
 
                     // 制御点2
                     val nextY = yWorkarea[i + 1]
@@ -156,7 +156,7 @@ class TagHistoryView : View {
                         }
                     }
                     val c2x = x - controlXStep
-                    val c2y = clipRange(yMin, yMax, y - controlXStep * slope)
+                    val c2y = (y - controlXStep * slope).clip(yMin, yMax)
 
                     path.cubicTo(c1x, c1y, c2x, c2y, x, y)
                     lastSlope = slope

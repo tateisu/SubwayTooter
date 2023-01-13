@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.annotation.TargetApi
 import android.content.Intent
 import android.os.Build
 import android.util.DisplayMetrics
@@ -21,15 +20,14 @@ import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.LogCategory
-import jp.juggler.util.isLiveActivity
-import jp.juggler.util.launchMain
-import jp.juggler.util.showToast
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.isLiveActivity
 import java.util.*
 
 private val log = LogCategory("Action_OpenPost")
 
-@TargetApi(24)
 fun ActPost.saveWindowSize() {
 
     // 最大化状態で起動することはできないので、最大化状態のサイズは覚えない

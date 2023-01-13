@@ -10,8 +10,8 @@ import jp.juggler.subwaytooter.actmain.handleOtherUri
 import jp.juggler.subwaytooter.api.entity.TootApplication
 import jp.juggler.subwaytooter.dialog.DlgOpenUrl
 import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.showToast
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.dismissSafe
 
 // カラム一覧を開く
 fun ActMain.openColumnList() =

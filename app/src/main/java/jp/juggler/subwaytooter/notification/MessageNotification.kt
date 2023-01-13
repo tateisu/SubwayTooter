@@ -7,15 +7,15 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.EventReceiver
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.encodePercent
-import jp.juggler.util.toMutableMap
-import jp.juggler.util.toUri
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.data.toMutableMap
+import jp.juggler.util.log.LogCategory
 
 object MessageNotification {
     private val log = LogCategory("MessageNotification")

@@ -39,12 +39,18 @@ import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.subwaytooter.util.checkPrivacyPolicy
-import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyDrawerLayout
 import jp.juggler.subwaytooter.view.MyEditText
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.int
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.benchmark
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.isNotOk
 import okhttp3.internal.toHexString
 import java.lang.ref.WeakReference
 import java.util.*
@@ -315,7 +321,7 @@ class ActMain : AppCompatActivity(),
         }
     }
 
-    var prNotification = permissionSpecNotification.requester {
+    private val prNotification = permissionSpecNotification.requester {
         // 特に何もしない
     }
 
@@ -323,10 +329,11 @@ class ActMain : AppCompatActivity(),
     // ライフサイクルイベント
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        backPressed { onBackPressedImpl() }
         log.d("onCreate")
-        super.onCreate(savedInstanceState)
         refActMain = WeakReference(this)
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
+        super.onCreate(savedInstanceState)
+        backPressed { onBackPressedImpl() }
 
         prNotification.register(this)
         arColumnColor.register(this)
@@ -339,7 +346,6 @@ class ActMain : AppCompatActivity(),
         arActPost.register(this)
         arActText.register(this)
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true)
 
         appState = App1.getAppState(this)

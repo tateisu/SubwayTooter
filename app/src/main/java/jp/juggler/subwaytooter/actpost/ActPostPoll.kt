@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.actpost
 
 import jp.juggler.subwaytooter.ActPost
-import jp.juggler.util.notEmpty
-import jp.juggler.util.vg
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.ui.vg
 
 private fun Double?.finiteOrZero(): Double = if (this?.isFinite() == true) this else 0.0
 

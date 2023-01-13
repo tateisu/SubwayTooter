@@ -30,6 +30,12 @@ import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.subwaytooter.view.OutsideDrawerLayout
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.Benchmark
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.CustomTextWatcher
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.scan
 import kotlinx.coroutines.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.custom.customView

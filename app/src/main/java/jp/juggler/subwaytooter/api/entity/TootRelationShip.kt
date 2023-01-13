@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonObject
 
 class TootRelationShip(parser: TootParser, src: JsonObject) {
 
@@ -73,7 +73,8 @@ class TootRelationShip(parser: TootParser, src: JsonObject) {
 
                 ov = ov["reblogs"]
                 if (ov is Boolean) {
-                    this.showing_reblogs = if (ov) UserRelation.REBLOG_SHOW else UserRelation.REBLOG_HIDE
+                    this.showing_reblogs =
+                        if (ov) UserRelation.REBLOG_SHOW else UserRelation.REBLOG_HIDE
                 } else {
                     this.showing_reblogs = UserRelation.REBLOG_UNKNOWN
                 }
@@ -84,7 +85,8 @@ class TootRelationShip(parser: TootParser, src: JsonObject) {
                 // 2.1 の挙動
                 ov = src["showing_reblogs"]
                 if (this.following && ov is Boolean) {
-                    this.showing_reblogs = if (ov) UserRelation.REBLOG_SHOW else UserRelation.REBLOG_HIDE
+                    this.showing_reblogs =
+                        if (ov) UserRelation.REBLOG_SHOW else UserRelation.REBLOG_HIDE
                 } else {
                     this.showing_reblogs = UserRelation.REBLOG_UNKNOWN
                 }

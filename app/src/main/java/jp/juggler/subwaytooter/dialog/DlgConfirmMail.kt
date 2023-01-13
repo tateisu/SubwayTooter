@@ -11,12 +11,12 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.isEnabledAlpha
+import jp.juggler.util.ui.isEnabledAlpha
 
 class DlgConfirmMail(
     val activity: AppCompatActivity,
     val accessInfo: SavedAccount,
-    val onClickOk: (email: String?) -> Unit
+    val onClickOk: (email: String?) -> Unit,
 ) : View.OnClickListener {
 
     @SuppressLint("InflateParams")

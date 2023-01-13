@@ -5,7 +5,9 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchDefault
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.channels.Channel
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
@@ -84,7 +86,7 @@ object OpenSticker {
 
     class Default(
         val fontColor: Int,
-        val bgColor: ColorBg
+        val bgColor: ColorBg,
     )
 
     private val colorBgDefault = ColorBg("#27c".toColor())

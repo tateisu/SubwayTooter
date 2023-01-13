@@ -7,6 +7,8 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 
 enum class TootPollsType {
     Mastodon, // Mastodon 2.8
@@ -297,7 +299,7 @@ class TootPolls(
                     src
                 )
             } catch (ex: Throwable) {
-                log.e(ex,"parse failed.")
+                log.e(ex, "parse failed.")
                 null
             }
         }

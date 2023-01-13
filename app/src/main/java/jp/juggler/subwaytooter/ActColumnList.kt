@@ -17,7 +17,14 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.ColumnType
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notZero
+import jp.juggler.util.data.toJsonArray
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.activity
+import jp.juggler.util.ui.attrColor
 
 class ActColumnList : AppCompatActivity() {
 
@@ -71,7 +78,7 @@ class ActColumnList : AppCompatActivity() {
         setContentView(R.layout.act_column_list)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
+        fixHorizontalPadding0(findViewById(R.id.llContent))
 
         // リストのアダプター
         listAdapter = MyListAdapter()

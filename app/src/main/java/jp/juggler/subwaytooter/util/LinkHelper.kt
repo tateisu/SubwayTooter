@@ -4,8 +4,8 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.HostAndDomain
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.util.findOrNull
-import jp.juggler.util.groupEx
+import jp.juggler.util.data.findOrNull
+import jp.juggler.util.data.groupEx
 
 interface LinkHelper : HostAndDomain {
 

@@ -8,7 +8,11 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchDefault
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.network.toPostRequestBuilder
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
@@ -310,7 +314,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             if (result.error != null) return result
 
             if (sendRequest(result) {
-                    jsonObject {
+                    buildJsonObject {
                         (forceAccessToken ?: account?.misskeyApiToken)
                             ?.notEmpty()?.let { put("i", it) }
                     }.toPostRequestBuilder()
@@ -331,7 +335,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             if (result.error != null) return result
 
             if (sendRequest(result) {
-                    jsonObject {
+                    buildJsonObject {
                         put("dummy", 1)
                         (forceAccessToken ?: account?.misskeyApiToken)
                             ?.notEmpty()?.let { put("i", it) }

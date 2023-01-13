@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.reloadAccountSetting
 import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
@@ -17,10 +16,15 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.findStatus
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.pickAccount
+import jp.juggler.subwaytooter.getVisibilityCaption
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.emptyCallback
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toPostRequestBuilder
 import kotlin.math.max
 
 private class BoostImpl(
@@ -229,8 +233,10 @@ private class BoostImpl(
             activity.showColumnMatchAccount(accessInfo)
 
             val result =
-                activity.runApiTask(accessInfo,
-                    progressStyle = ApiTask.PROGRESS_NONE) { client ->
+                activity.runApiTask(
+                    accessInfo,
+                    progressStyle = ApiTask.PROGRESS_NONE
+                ) { client ->
                     try {
                         val targetStatus = syncStatus(client)
                         boostApi(client, targetStatus)
@@ -347,7 +353,7 @@ fun ActMain.clickBoostWithVisibility(
         )
     }
     val captionList = list
-        .map { Styler.getVisibilityCaption(this, accessInfo.isMisskey, it) }
+        .map { getVisibilityCaption(this, accessInfo.isMisskey, it) }
         .toTypedArray()
 
     AlertDialog.Builder(this)

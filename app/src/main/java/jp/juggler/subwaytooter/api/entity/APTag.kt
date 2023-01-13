@@ -2,10 +2,10 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.emoji.CustomEmoji
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.cast
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.cast
+import jp.juggler.util.log.LogCategory
 
 class APTag(parser: TootParser, jsonArray: JsonArray?) {
 
@@ -51,12 +51,14 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                         "Mention" ->
                             Acct.parse(it.string("name")!!)
                                 .let { acct ->
-                                    mentions.add(TootMention(
-                                        id = EntityId.DEFAULT,
-                                        url = it.string("href")!!,
-                                        acct = acct,  // may local
-                                        username = acct.username
-                                    ))
+                                    mentions.add(
+                                        TootMention(
+                                            id = EntityId.DEFAULT,
+                                            url = it.string("href")!!,
+                                            acct = acct,  // may local
+                                            username = acct.username
+                                        )
+                                    )
                                 }
                     }
                 } catch (ex: Throwable) {

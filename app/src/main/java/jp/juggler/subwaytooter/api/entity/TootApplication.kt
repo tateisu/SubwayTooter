@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonObject
 
 class TootApplication(parser: TootParser, src: JsonObject) {
 

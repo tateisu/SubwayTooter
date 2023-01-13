@@ -8,9 +8,9 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.SimpleHttpClientImpl
-import jp.juggler.util.LogCategory
-import jp.juggler.util.MySslSocketFactory
-import kotlinx.coroutines.Dispatchers
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.network.MySslSocketFactory
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.ConnectionSpec
@@ -78,7 +78,7 @@ class TestTootInstance {
     @Test
     fun testWithoutAccount() {
         runBlocking {
-            withContext(Dispatchers.IO) {
+            withContext(AppDispatchers.io) {
                 suspend fun a(host: Host) {
                     val (ti, ri) = TootInstance.getEx(client, hostArg = host)
                     assertNotNull(ti)
@@ -94,7 +94,7 @@ class TestTootInstance {
     @Test
     fun testWithAccount() {
         runBlocking {
-            withContext(Dispatchers.IO) {
+            withContext(AppDispatchers.io) {
                 suspend fun a(account: SavedAccount) {
                     val (ti, ri) = TootInstance.getEx(client, account = account)
                     assertNull(ri?.error)

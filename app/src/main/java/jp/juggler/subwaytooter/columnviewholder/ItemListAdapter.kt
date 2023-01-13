@@ -16,9 +16,9 @@ import jp.juggler.subwaytooter.column.toAdapterIndex
 import jp.juggler.subwaytooter.column.toListIndex
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
 import jp.juggler.subwaytooter.itemviewholder.bind
-import jp.juggler.util.AdapterChange
-import jp.juggler.util.AdapterChangeType
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.AdapterChangeType
 
 class ItemListAdapter(
     private val activity: ActMain,
@@ -133,7 +133,11 @@ class ItemListAdapter(
             }
             HeaderType.ProfileDirectory.viewType -> {
                 val viewRoot =
-                    activity.layoutInflater.inflate(R.layout.lv_header_profile_directory, parent, false)
+                    activity.layoutInflater.inflate(
+                        R.layout.lv_header_profile_directory,
+                        parent,
+                        false
+                    )
                 val holder = ViewHolderHeaderProfileDirectory(activity, viewRoot)
                 viewRoot.tag = holder
                 return holder
@@ -199,9 +203,18 @@ class ItemListAdapter(
                     val adapterIndex = column.toAdapterIndex(c.listIndex)
                     log.d("notifyChange: ChangeType=${c.type} offset=$adapterIndex,count=${c.count}")
                     when (c.type) {
-                        AdapterChangeType.RangeInsert -> notifyItemRangeInserted(adapterIndex, c.count)
-                        AdapterChangeType.RangeRemove -> notifyItemRangeRemoved(adapterIndex, c.count)
-                        AdapterChangeType.RangeChange -> notifyItemRangeChanged(adapterIndex, c.count)
+                        AdapterChangeType.RangeInsert -> notifyItemRangeInserted(
+                            adapterIndex,
+                            c.count
+                        )
+                        AdapterChangeType.RangeRemove -> notifyItemRangeRemoved(
+                            adapterIndex,
+                            c.count
+                        )
+                        AdapterChangeType.RangeChange -> notifyItemRangeChanged(
+                            adapterIndex,
+                            c.count
+                        )
                     }
                 }
             }

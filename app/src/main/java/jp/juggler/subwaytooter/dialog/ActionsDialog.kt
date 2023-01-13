@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.dialog
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.notEmpty
+import jp.juggler.util.data.notEmpty
 import java.util.*
 
 class ActionsDialog {

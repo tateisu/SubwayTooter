@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.afterAccountVerify
@@ -18,11 +19,23 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchIO
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPost
+import jp.juggler.util.ui.dismissSafe
 import kotlinx.coroutines.*
 import ru.gildor.coroutines.okhttp.await
 
 private val log = LogCategory("Action_Account")
 
+// Androidでは \w や \d がUnicode文字にマッチしてしまうので、IDEの警告を無視する
+@Suppress("RegExpSimplifiable")
 private val mailRegex =
     """\A[a-z0-9_+&*-]+(?:\.[a-z0-9_+&*-]+)*@(?:[a-z0-9-]+\.)+[a-z]{2,12}\z""".toRegex(
         RegexOption.IGNORE_CASE
@@ -89,7 +102,7 @@ private fun ActMain.accountCreate(
                     }
                 }
 
-                val jsonObject = jsonObject {
+                val jsonObject = buildJsonObject {
                     put("id", EntityId.CONFIRMING.toString())
                     put("username", username)
                     put("acct", username)
@@ -102,11 +115,13 @@ private fun ActMain.accountCreate(
                 r1
             }?.let { result ->
                 val sa: SavedAccount? = null
-                if (activity.afterAccountVerify(result,
+                if (activity.afterAccountVerify(
+                        result,
                         resultTootAccount,
                         sa,
                         apiHost,
-                        resultApDomain)
+                        resultApDomain
+                    )
                 ) {
                     dialogHost.dismissSafe()
                     dialog_create.dismissSafe()
@@ -247,7 +262,7 @@ private fun appServerUnregister(context: Context, account: SavedAccount) {
             )
 
             val response = call.await()
-            if(!response.isSuccessful){
+            if (!response.isSuccessful) {
                 log.e("appServerUnregister: $response")
             }
         } catch (ex: Throwable) {

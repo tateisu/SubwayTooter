@@ -12,9 +12,9 @@ import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.util.LogCategory
-import jp.juggler.util.attrColor
 import jp.juggler.util.backPressed
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.attrColor
 
 class ActMutedApp : AppCompatActivity() {
 
@@ -41,7 +41,7 @@ class ActMutedApp : AppCompatActivity() {
         setContentView(R.layout.act_word_list)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
+        fixHorizontalPadding0(findViewById(R.id.llContent))
 
         // リストのアダプター
         listAdapter = MyListAdapter()

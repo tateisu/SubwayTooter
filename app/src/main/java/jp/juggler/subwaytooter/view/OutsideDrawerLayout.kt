@@ -6,7 +6,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import jp.juggler.util.cast
+import jp.juggler.util.data.cast
 import java.util.*
 
 /*

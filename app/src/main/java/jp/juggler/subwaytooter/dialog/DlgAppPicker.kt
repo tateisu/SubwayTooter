@@ -15,6 +15,8 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.ui.*
 
 class DlgAppPicker(
     val activity: Activity,

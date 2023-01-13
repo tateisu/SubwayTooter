@@ -1,9 +1,8 @@
 package jp.juggler.subwaytooter.api
 
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.util.LogCategory
-import jp.juggler.util.cast
-import java.util.*
+import jp.juggler.util.data.cast
+import jp.juggler.util.log.LogCategory
 
 class DuplicateMap {
 

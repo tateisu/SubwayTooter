@@ -7,7 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.DlgConfirmBinding
-import jp.juggler.util.dismissSafe
+import jp.juggler.util.ui.dismissSafe
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -97,7 +97,7 @@ object DlgConfirm {
     suspend fun AppCompatActivity.confirm(@StringRes messageId: Int, vararg args: Any?) =
         confirm(getString(messageId, *args))
 
-    suspend fun AppCompatActivity.confirm(message: String) {
+    suspend fun AppCompatActivity.confirm(message: CharSequence) {
         suspendCancellableCoroutine<Unit> { cont ->
             try {
                 val views = DlgConfirmBinding.inflate(layoutInflater)

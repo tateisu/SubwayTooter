@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.view.GravitySnapHelper
-import jp.juggler.util.clipRange
+import jp.juggler.util.data.clip
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -26,7 +26,7 @@ class ActMainTabletViews(val actMain: ActMain) {
 
             val child = tabletLayoutManager.findViewByPosition(vs)
             val slideRatio =
-                clipRange(0f, 1f, abs((child?.left ?: 0) / actMain.nColumnWidth.toFloat()))
+                abs((child?.left ?: 0) / actMain.nColumnWidth.toFloat()).clip(0f, 1f)
             if (slideRatio >= 0.95f) {
                 ++vs
                 ++ve

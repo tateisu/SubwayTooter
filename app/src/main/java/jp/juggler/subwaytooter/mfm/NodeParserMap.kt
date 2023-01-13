@@ -3,10 +3,9 @@ package jp.juggler.subwaytooter.mfm
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.asciiPattern
-import jp.juggler.util.ellipsizeDot3
-import jp.juggler.util.groupEx
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import java.util.*
 import java.util.regex.Pattern
 
@@ -260,7 +259,7 @@ private fun String.unescapeLatex(): String {
 // \} \]はムダなエスケープに見えるが、androidでは必要なので削ってはいけない
 @Suppress("RegExpRedundantEscape")
 private val reLatexRemove =
-    """\\(?:quad|Huge|atop|sf|scriptsize|bf|small|tiny|underline|large|(?:color)\{[^}]*\})""".toRegex()
+    """\\(?:quad|Huge|atop|sf|scriptsize|bf|small|tiny|underline|large|color\{[^}]*\})""".toRegex()
 
 @Suppress("RegExpRedundantEscape")
 private val reLatex1 =

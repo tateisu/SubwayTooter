@@ -4,7 +4,8 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 
 object ClientInfo : TableCompanion {
     private val log = LogCategory("ClientInfo")

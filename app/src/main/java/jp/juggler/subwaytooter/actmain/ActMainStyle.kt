@@ -7,18 +7,24 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.boostAlpha
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefF
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.impl.StringPref
+import jp.juggler.subwaytooter.round_ratio
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.view.ListDivider
-import jp.juggler.util.*
+import jp.juggler.util.data.clip
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import org.jetbrains.anko.backgroundDrawable
 import java.util.*
 import kotlin.math.max
@@ -92,12 +98,12 @@ fun ActMain.reloadRoundRatio() {
             ?.takeIf { it.isFinite() }
             ?: 33f
     }
-    Styler.round_ratio = clipRange(0f, 1f, sizeDp / 100f) * 0.5f
+    round_ratio = (sizeDp / 100f).clip(0f, 1f) * 0.5f
 }
 
 // initUI から呼ばれる
 fun ActMain.reloadBoostAlpha() {
-    Styler.boostAlpha = PrefS.spBoostAlpha(pref)
+    boostAlpha = PrefS.spBoostAlpha(pref)
         .toIntOrNull()
         ?.toFloat()
         ?.let { (it + 0.5f) / 100f }
@@ -118,7 +124,7 @@ private fun Float.clipFontSize(): Float =
     if (isNaN()) this else max(1f, this)
 
 fun ActMain.reloadTextSize() {
-    timelineFontSizeSp = PrefF.fpTimelineFontSize(pref).clipFontSize()
+    timelineFontSizeSp = PrefF.fpTimelineFontSize.invoke(pref).clipFontSize()
     acctFontSizeSp = PrefF.fpAcctFontSize(pref).clipFontSize()
     notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize(pref).clipFontSize()
     headerTextSizeSp = PrefF.fpHeaderTextSize(pref).clipFontSize()

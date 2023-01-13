@@ -14,7 +14,15 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.network.toPut
+import jp.juggler.util.network.toRequestBody
 
 class ActKeywordFilter
     : AppCompatActivity(), View.OnClickListener {
@@ -133,7 +141,7 @@ class ActKeywordFilter
         setContentView(R.layout.act_keyword_filter)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding(findViewById(R.id.svContent))
+        fixHorizontalPadding(findViewById(R.id.svContent))
 
         tvAccount = findViewById(R.id.tvAccount)
         etPhrase = findViewById(R.id.etPhrase)
@@ -233,7 +241,7 @@ class ActKeywordFilter
     private fun save() {
         if (loading) return
 
-        val params = jsonObject {
+        val params = buildJsonObject {
 
             put("phrase", etPhrase.text.toString())
 

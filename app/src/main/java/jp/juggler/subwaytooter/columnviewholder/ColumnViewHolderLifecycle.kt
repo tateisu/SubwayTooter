@@ -2,17 +2,25 @@ package jp.juggler.subwaytooter.columnviewholder
 
 import android.view.View
 import android.widget.ImageView
+import androidx.core.net.toUri
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.endPadding
 import jp.juggler.subwaytooter.util.startPadding
 import jp.juggler.subwaytooter.view.ListDivider
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.media.createResizedBitmap
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.createRoundDrawable
+import jp.juggler.util.ui.isCheckedNoAnime
+import jp.juggler.util.ui.vg
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
@@ -62,7 +70,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
         // 非同期処理を開始
         lastImageTask = launchMain {
             val bitmap = try {
-                withContext(appDispatchers.io) {
+                withContext(AppDispatchers.io) {
                     try {
                         createResizedBitmap(
                             activity,

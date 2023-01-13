@@ -12,12 +12,17 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onTagFollowChanged
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPost
 import kotlinx.coroutines.withContext
 
 private val log = LogCategory("Action_Tag")
@@ -85,8 +90,12 @@ fun ActMain.tagDialog(
             }
 
             d.addAction(getString(R.string.open_in_browser)) { openCustomTab(url) }
-                .addAction(getString(R.string.quote_hashtag_of,
-                    tagWithSharp)) { openPost("$tagWithSharp ") }
+                .addAction(
+                    getString(
+                        R.string.quote_hashtag_of,
+                        tagWithSharp
+                    )
+                ) { openPost("$tagWithSharp ") }
 
             if (tagList != null && tagList.size > 1) {
                 val sb = StringBuilder()
@@ -265,7 +274,7 @@ fun ActMain.followHashTag(
                     // 成功時はTagオブジェクトが返る
                     // フォロー中のタグ一覧を更新する
                     TootParser(activity, accessInfo).tag(result.jsonObject)?.let { tag ->
-                        withContext(appDispatchers.main.immediate) {
+                        withContext(AppDispatchers.mainImmediate) {
                             for (column in appState.columnList) {
                                 column.onTagFollowChanged(accessInfo, tag)
                             }

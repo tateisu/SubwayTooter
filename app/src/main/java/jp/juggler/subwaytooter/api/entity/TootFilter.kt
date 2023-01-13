@@ -3,6 +3,9 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.Context
 import jp.juggler.subwaytooter.R
 import jp.juggler.util.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
 
 class TootFilter(src: JsonObject) : TimelineItem() {
 
@@ -28,7 +31,7 @@ class TootFilter(src: JsonObject) : TimelineItem() {
             FilterContext("account", CONTEXT_PROFILE, R.string.filter_profile)
         )
 
-        private val CONTEXT_MAP = CONTEXT_LIST.map { Pair(it.name, it) }.toMap()
+        private val CONTEXT_MAP = CONTEXT_LIST.associateBy { it.name }
 
         private fun parseFilterContext(src: JsonArray?): Int {
             var n = 0

@@ -15,7 +15,13 @@ import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPost
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.dismissSafe
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -50,10 +56,12 @@ fun ActMain.clickFollow(
         relation.blocking || relation.muting ->
             Unit // 何もしない
         accessInfo.isMisskey && relation.getRequested(who) && !relation.getFollowing(who) ->
-            followRequestDelete(pos,
+            followRequestDelete(
+                pos,
                 accessInfo,
                 whoRef,
-                callback = cancelFollowRequestCompleteCallback)
+                callback = cancelFollowRequestCompleteCallback
+            )
         relation.getFollowing(who) || relation.getRequested(who) ->
             follow(pos, accessInfo, whoRef, bFollow = false, callback = unfollowCompleteCallback)
         else ->
@@ -100,7 +108,7 @@ fun ActMain.follow(
 
     launchAndShowError {
         if (!bConfirmMoved && bFollow && who.moved != null) {
-            val selected = suspendCancellableCoroutine<Int> { cont ->
+            val selected = suspendCancellableCoroutine { cont ->
                 try {
                     val dialog = AlertDialog.Builder(activity)
                         .setMessage(

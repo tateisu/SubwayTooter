@@ -12,9 +12,9 @@ import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.LogCategory
-import jp.juggler.util.decodeUTF8
-import jp.juggler.util.loadRawResource
+import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.data.loadRawResource
+import jp.juggler.util.log.LogCategory
 
 private val log = LogCategory("ActPostMushroom")
 

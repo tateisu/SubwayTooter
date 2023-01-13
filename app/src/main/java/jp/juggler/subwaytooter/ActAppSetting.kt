@@ -47,6 +47,11 @@ import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchProgress
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -132,6 +137,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private var colorTarget: AppSettingItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         backPressed {
             when {
@@ -146,7 +152,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         arTimelineFont.register(this)
         arTimelineFontBold.register(this)
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true)
 
         this.handler = App1.getAppState(this).handler
@@ -177,7 +182,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         setContentView(views.root)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding0(views.llContent)
+        fixHorizontalPadding0(views.llContent)
 
         views.lvList.layoutManager = LinearLayoutManager(this)
         views.lvList.adapter = adapter
@@ -273,8 +278,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             if (item.type == SettingType.Group) {
                                 for (child in item.items) {
                                     if (child.caption == 0) continue
-                                    if (getString(item.caption).contains(query,
-                                            ignoreCase = true)
+                                    if (getString(item.caption).contains(
+                                            query,
+                                            ignoreCase = true
+                                        )
                                     ) {
                                         match = true
                                         break
@@ -368,13 +375,15 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         oldItemPosition: Int,
                         newItemPosition: Int,
                     ) = oldItems.elementAtOrNull(oldItemPosition) == newItems.elementAtOrNull(
-                        newItemPosition)
+                        newItemPosition
+                    )
 
                     override fun areContentsTheSame(
                         oldItemPosition: Int,
                         newItemPosition: Int,
                     ) = oldItems.elementAtOrNull(oldItemPosition) == newItems.elementAtOrNull(
-                        newItemPosition)
+                        newItemPosition
+                    )
                 }, true).dispatchUpdatesTo(this)
             }
 

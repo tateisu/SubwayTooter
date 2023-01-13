@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationOtherInstance
@@ -25,7 +26,15 @@ import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.decodePercent
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.data.notBlank
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.queryIntentActivitiesCompat
 import java.util.concurrent.atomic.AtomicReference
 
 private val log = LogCategory("ActMainIntent")

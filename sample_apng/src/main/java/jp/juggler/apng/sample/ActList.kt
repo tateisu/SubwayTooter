@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.apng.ApngFrames
+import jp.juggler.util.coroutine.AppDispatchers
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -35,7 +36,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
     private lateinit var activityJob: Job
 
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + activityJob
+        get() = AppDispatchers.mainImmediate + activityJob
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -74,14 +75,14 @@ class ActList : AppCompatActivity(), CoroutineScope {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE_STORAGE) {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 // 特に何もしてないらしい
             }
         }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun load() = launch {
@@ -123,7 +124,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
         override fun getView(
             position: Int,
             viewArg: View?,
-            parent: ViewGroup?
+            parent: ViewGroup?,
         ): View {
             val view: View
             val holder: MyViewHolder
@@ -143,17 +144,16 @@ class ActList : AppCompatActivity(), CoroutineScope {
             parent: AdapterView<*>?,
             view: View?,
             position: Int,
-            id: Long
+            id: Long,
         ) {
             val item = list[position]
             ActViewer.open(this@ActList, item.id, item.caption)
         }
-
     }
 
     inner class MyViewHolder(
         viewRoot: View,
-        _activity: ActList
+        _activity: ActList,
     ) {
 
         private val tvCaption: TextView = viewRoot.findViewById(R.id.tvCaption)
@@ -195,7 +195,6 @@ class ActList : AppCompatActivity(), CoroutineScope {
                             apngView.apngFrames = apngFrames
                             apngFrames = null
                         }
-
                     } catch (ex: Throwable) {
                         ex.printStackTrace()
                         Log.e(TAG, "load error: ${ex.javaClass.simpleName} ${ex.message}")

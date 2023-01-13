@@ -27,7 +27,13 @@ import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toDeleteRequestBuilder
+import jp.juggler.util.network.toPutRequestBuilder
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.padding
 import org.jetbrains.anko.textColor
@@ -100,13 +106,12 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     val enablePaging = listShown.size > 1
     val contentColor = column.getContentColor()
 
-    showAnnouncementColors(expand, enablePaging, contentColor)
+    showAnnouncementColors(true, enablePaging, contentColor)
     showAnnouncementFonts()
 
-    tvAnnouncementsIndex.vg(expand)?.text =
+    llAnnouncements.vg(true)
+    tvAnnouncementsIndex.vg(true)?.text =
         activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
-
-    llAnnouncements.vg(expand)
 
     showAnnouncementContent(item, contentColor)
     showReactionBox(column, item, contentColor)
@@ -391,7 +396,7 @@ private fun ColumnViewHolder.showReactions(
                 if (reaction.me) {
                     reactionRemove(item, reaction.name)
                 } else {
-                    reactionAdd(item, TootReaction.parseFedibird(jsonObject {
+                    reactionAdd(item, TootReaction.parseFedibird(buildJsonObject {
                         put("name", reaction.name)
                         put("count", 1)
                         put("me", true)
@@ -421,7 +426,7 @@ fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) 
                 is CustomEmoji -> emoji.shortcode
             }
             ColumnViewHolder.log.d("addReaction: $code ${emoji.javaClass.simpleName}")
-            reactionAdd(item, TootReaction.parseFedibird(jsonObject {
+            reactionAdd(item, TootReaction.parseFedibird(buildJsonObject {
                 put("name", code)
                 put("count", 1)
                 put("me", true)
@@ -477,22 +482,19 @@ fun ColumnViewHolder.reactionRemove(item: TootAnnouncement, name: String) {
             // 200 {}
         }?.let { result ->
             when (result.jsonObject) {
-                null ->
-                    activity.showToast(true, result.error)
-
-                else ->
-                    item.reactions?.iterator()?.let {
-                        while (it.hasNext()) {
-                            val reaction = it.next()
-                            if (reaction.name == name) {
-                                reaction.me = false
-                                if (--reaction.count <= 0) it.remove()
-                                break
-                            }
+                null -> activity.showToast(true, result.error)
+                else -> item.reactions?.iterator()?.let {
+                    while (it.hasNext()) {
+                        val reaction = it.next()
+                        if (reaction.name == name) {
+                            reaction.me = false
+                            if (--reaction.count <= 0) it.remove()
+                            break
                         }
-                        column.announcementUpdated = SystemClock.elapsedRealtime()
-                        showAnnouncements()
                     }
+                    column.announcementUpdated = SystemClock.elapsedRealtime()
+                    showAnnouncements()
+                }
             }
         }
     }

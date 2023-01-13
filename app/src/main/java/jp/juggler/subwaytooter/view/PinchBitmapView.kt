@@ -11,8 +11,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
-import jp.juggler.util.LogCategory
-import jp.juggler.util.runOnMainLooper
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.log.LogCategory
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -247,7 +247,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
             velocityTracker?.addMovement(ev)
 
             bPointerCountChanged = false
-            bDrag = bPointerCountChanged
+            bDrag = false
             trackStart(ev)
             return true
         }
@@ -258,7 +258,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> {
                 // タッチ操作中に指の数を変えた
                 bPointerCountChanged = true
-                bDrag = bPointerCountChanged
+                bDrag = true
                 trackStart(ev)
             }
 
@@ -449,7 +449,7 @@ class PinchBitmapView(context: Context, attrs: AttributeSet?, defStyle: Int) :
             // タッチ操作中に指の数が変わった
             log.d("nextTracking: pointer count changed")
             bPointerCountChanged = true
-            bDrag = bPointerCountChanged
+            bDrag = true
             trackStart(ev)
             return
         }

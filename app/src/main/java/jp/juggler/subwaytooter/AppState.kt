@@ -24,6 +24,11 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchIO
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.ref.WeakReference
@@ -226,7 +231,7 @@ class AppState(
                     } else {
                         log.d(
                             "proc_flushSpeechQueue: tts is speaking. queue_count=$queue_count, expire_remain=${
-                                expire_remain.div(1000f).toString("%.3f")
+                                "%.3f".format(expire_remain.div(1000f))
                             }"
                         )
                         handler.postDelayed(this, expire_remain)

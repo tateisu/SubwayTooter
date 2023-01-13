@@ -13,9 +13,8 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.launchMain
-import jp.juggler.util.showToast
-import java.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.log.showToast
 
 // アカウントを選んでタイムラインカラムを追加
 fun ActMain.timeline(
@@ -29,7 +28,10 @@ fun ActMain.timeline(
             bAllowMisskey = type.bAllowMisskey,
             bAllowMastodon = type.bAllowMastodon,
             bAuto = true,
-            message = getString(R.string.account_picker_add_timeline_of, type.name1(applicationContext))
+            message = getString(
+                R.string.account_picker_add_timeline_of,
+                type.name1(applicationContext)
+            )
         )?.let { account ->
             when (type) {
                 ColumnType.PROFILE ->
@@ -201,7 +203,12 @@ fun ActMain.timelineAroundByStatusAnotherAccount(
     }
 }
 
-fun ActMain.clickAroundAccountTL(accessInfo: SavedAccount, pos: Int, who: TootAccount, status: TootStatus?) =
+fun ActMain.clickAroundAccountTL(
+    accessInfo: SavedAccount,
+    pos: Int,
+    who: TootAccount,
+    status: TootStatus?,
+) =
     timelineAroundByStatusAnotherAccount(
         accessInfo,
         pos,
@@ -210,7 +217,12 @@ fun ActMain.clickAroundAccountTL(accessInfo: SavedAccount, pos: Int, who: TootAc
         ColumnType.ACCOUNT_AROUND, allowPseudo = false
     )
 
-fun ActMain.clickAroundLTL(accessInfo: SavedAccount, pos: Int, who: TootAccount, status: TootStatus?) =
+fun ActMain.clickAroundLTL(
+    accessInfo: SavedAccount,
+    pos: Int,
+    who: TootAccount,
+    status: TootStatus?,
+) =
     timelineAroundByStatusAnotherAccount(
         accessInfo,
         pos,
@@ -219,7 +231,12 @@ fun ActMain.clickAroundLTL(accessInfo: SavedAccount, pos: Int, who: TootAccount,
         ColumnType.LOCAL_AROUND
     )
 
-fun ActMain.clickAroundFTL(accessInfo: SavedAccount, pos: Int, who: TootAccount, status: TootStatus?) =
+fun ActMain.clickAroundFTL(
+    accessInfo: SavedAccount,
+    pos: Int,
+    who: TootAccount,
+    status: TootStatus?,
+) =
     timelineAroundByStatusAnotherAccount(
         accessInfo,
         pos,

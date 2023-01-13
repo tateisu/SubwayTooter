@@ -1,7 +1,8 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootNotification
@@ -11,10 +12,10 @@ import jp.juggler.subwaytooter.column.isNotificationColumn
 import jp.juggler.subwaytooter.column.removeNotificationOne
 import jp.juggler.subwaytooter.column.removeNotifications
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.launchMain
-import jp.juggler.util.showToast
-import jp.juggler.util.toFormRequestBody
-import jp.juggler.util.toPost
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPost
 
 fun ActMain.clickNotificationFrom(
     pos: Int,

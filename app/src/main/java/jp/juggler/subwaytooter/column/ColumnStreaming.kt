@@ -10,7 +10,11 @@ import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.StreamStatus
 import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.AdapterChange
+import jp.juggler.util.ui.AdapterChangeType
 import kotlin.math.max
 import kotlin.math.min
 

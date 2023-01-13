@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.search
 
-import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.column.addWithFilterStatus
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -10,7 +9,11 @@ import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnTask_Loading
 import jp.juggler.subwaytooter.column.ColumnTask_Refresh
-import jp.juggler.util.*
+import jp.juggler.subwaytooter.column.addWithFilterStatus
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.log.LogCategory
 import okhttp3.Request
 
 /*
@@ -58,7 +61,7 @@ object NotestockHelper {
                         if (src !is JsonObject) continue
                         add(TootStatus(parser, src))
                     } catch (ex: Throwable) {
-                        log.e(ex,"parse item failed.")
+                        log.e(ex, "parse item failed.")
                     }
                 }
             }

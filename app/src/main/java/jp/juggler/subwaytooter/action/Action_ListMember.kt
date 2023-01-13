@@ -13,6 +13,13 @@ import jp.juggler.subwaytooter.column.onListMemberUpdated
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.*
 import okhttp3.Request
 import java.util.regex.Pattern
 
@@ -83,10 +90,10 @@ fun ActMain.listMemberAdd(
 
                 client.request(
                     "/api/v1/lists/$listId/accounts",
-                    jsonObject {
+                    buildJsonObject {
                         put(
                             "account_ids",
-                            jsonArray {
+                            buildJsonArray {
                                 add(userId.toString())
                             }
                         )

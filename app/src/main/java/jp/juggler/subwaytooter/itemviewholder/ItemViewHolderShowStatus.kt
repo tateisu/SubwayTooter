@@ -4,9 +4,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.ImageView
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.checkAutoCW
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
@@ -17,7 +15,12 @@ import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.util.OpenSticker
-import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.setIconDrawableId
+import jp.juggler.util.ui.textOrGone
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 
@@ -98,7 +101,7 @@ fun ItemViewHolder.showStatus(
     tvName.text = whoRef.decoded_display_name
     nameInvalidator.register(whoRef.decoded_display_name)
     ivAvatar.setImageUrl(
-        Styler.calcIconRound(ivAvatar.layoutParams),
+        calcIconRound(ivAvatar.layoutParams),
         accessInfo.supplyBaseUrl(who.avatar_static),
         accessInfo.supplyBaseUrl(who.avatar)
     )
@@ -318,7 +321,7 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
             btnHideMedia,
             R.drawable.ic_close,
             color = contentColor,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
     }
 }
@@ -349,14 +352,14 @@ fun ItemViewHolder.setMedia(
     when (ta.type) {
         TootAttachmentType.Audio -> {
             iv.setMediaType(0)
-            iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_music))
+            iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_music))
             iv.setImageUrl(0f, ta.urlForThumbnail(activity.pref))
             showUrl = true
         }
 
         TootAttachmentType.Unknown -> {
             iv.setMediaType(0)
-            iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_question))
+            iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))
             iv.setImageUrl(0f, null)
             showUrl = true
         }
@@ -364,7 +367,7 @@ fun ItemViewHolder.setMedia(
         else -> when (val urlThumbnail = ta.urlForThumbnail(activity.pref)) {
             null, "" -> {
                 iv.setMediaType(0)
-                iv.setDefaultImage(Styler.defaultColorIcon(activity, R.drawable.wide_question))
+                iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))
                 iv.setImageUrl(0f, null)
                 showUrl = true
             }

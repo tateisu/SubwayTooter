@@ -2,8 +2,8 @@ package jp.juggler.subwaytooter.column
 
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.columnviewholder.*
-import jp.juggler.util.AdapterChange
-import jp.juggler.util.isMainThread
+import jp.juggler.util.coroutine.isMainThread
+import jp.juggler.util.ui.AdapterChange
 
 fun Column.removeColumnViewHolder(cvh: ColumnViewHolder) {
     val it = listViewHolder.iterator()

@@ -9,16 +9,21 @@ import android.view.WindowManager
 import android.widget.*
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.textColor
 import java.util.*
 
@@ -69,7 +74,7 @@ class DlgListMember(
         view.findViewById<View>(R.id.btnClose).setOnClickListener(this)
 
         ivUser.setImageUrl(
-            Styler.calcIconRound(ivUser.layoutParams),
+            calcIconRound(ivUser.layoutParams),
             who.avatar_static,
             who.avatar
         )

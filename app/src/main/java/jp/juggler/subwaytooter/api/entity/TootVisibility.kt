@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 enum class TootVisibility(
     val id: Int,

@@ -3,19 +3,24 @@ package jp.juggler.subwaytooter.util
 import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.getVisibilityString
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.network.MEDIA_TYPE_JSON
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.*
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.Request
@@ -137,7 +142,7 @@ class PostImpl(
         checkFun: (TootInstance) -> Boolean,
     ) {
         if (actual != extra || checkFun(instance)) return
-        val strVisibility = Styler.getVisibilityString(activity, account.isMisskey, extra)
+        val strVisibility = getVisibilityString(activity, account.isMisskey, extra)
         errorApiResult(
             activity.getString(
                 R.string.server_has_no_support_of_visibility,
@@ -310,7 +315,7 @@ class PostImpl(
             ?.let { json[if (useQuoteToot) "quote_id" else "in_reply_to_id"] = it }
 
         if (attachmentList != null) {
-            json["media_ids"] = jsonArray {
+            json["media_ids"] = buildJsonArray {
                 for (a in attachmentList) {
                     if (a.redraft && !instance.versionGE(TootInstance.VERSION_2_4_1)) continue
                     add(a.id.toString())
@@ -320,7 +325,7 @@ class PostImpl(
 
         if (enqueteItems != null) {
             if (pollType == TootPollsType.Mastodon) {
-                json["poll"] = jsonObject {
+                json["poll"] = buildJsonObject {
                     put("multiple", pollMultipleChoice)
                     put("hide_totals", pollHideTotals)
                     put("expires_in", pollExpireSeconds)
@@ -477,7 +482,7 @@ class PostImpl(
         // 全ての確認を終えたらバックグラウンドでの処理を開始する
         isPosting.set(true)
         return try {
-            withContext(Dispatchers.Main) {
+            withContext(AppDispatchers.mainImmediate) {
                 activity.runApiTask(
                     account,
                     progressSetup = { it.setCanceledOnTouchOutside(false) },

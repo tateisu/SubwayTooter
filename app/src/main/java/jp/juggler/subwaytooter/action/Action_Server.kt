@@ -1,7 +1,8 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.defaultInsertPosition
 import jp.juggler.subwaytooter.actmain.nextPosition
@@ -14,7 +15,11 @@ import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openBrowser
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toRequest
 
 // profile directory を開く
 private fun ActMain.serverProfileDirectory(

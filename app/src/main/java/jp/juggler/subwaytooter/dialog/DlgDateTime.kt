@@ -10,7 +10,7 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.dismissSafe
+import jp.juggler.util.ui.dismissSafe
 import java.util.*
 
 class DlgDateTime(

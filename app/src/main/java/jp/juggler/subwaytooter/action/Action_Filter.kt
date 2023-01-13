@@ -9,8 +9,8 @@ import jp.juggler.subwaytooter.column.onFilterDeleted
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.launchAndShowError
-import jp.juggler.util.showToast
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.log.showToast
 import okhttp3.Request
 
 // private val log = LogCategory("Action_Filter")

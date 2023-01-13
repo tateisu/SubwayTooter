@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.content.SharedPreferences
-import jp.juggler.util.JsonArray
-import jp.juggler.util.notBlank
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.notBlank
 
 class TootAttachmentMSP(
     val preview_url: String,

@@ -4,7 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 // 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 // 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加

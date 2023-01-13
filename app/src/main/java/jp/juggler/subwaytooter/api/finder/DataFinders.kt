@@ -3,8 +3,8 @@ package jp.juggler.subwaytooter.api.finder
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
 
 val nullArrayFinder: (JsonObject) -> JsonArray? =
     { null }

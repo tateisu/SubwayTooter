@@ -22,7 +22,16 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.media.createResizedBitmap
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.hideKeyboard
+import jp.juggler.util.ui.isNotOk
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
@@ -187,12 +196,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
 
             R.id.btnColumnBackgroundImage -> {
-                val intent =
-                    intentGetContent(
-                        false,
-                        getString(R.string.pick_image),
-                        arrayOf("image/*")
-                    )
+                val intent = intentGetContent(
+                    false,
+                    getString(R.string.pick_image),
+                    arrayOf("image/*")
+                )
                 arColumnBackgroundImage.launch(intent)
             }
 
@@ -289,7 +297,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         setContentView(R.layout.act_column_customize)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding(findViewById(R.id.svContent))
+        fixHorizontalPadding(findViewById(R.id.svContent))
 
         llColumnHeader = findViewById(R.id.llColumnHeader)
         ivColumnHeader = findViewById(R.id.ivColumnHeader)

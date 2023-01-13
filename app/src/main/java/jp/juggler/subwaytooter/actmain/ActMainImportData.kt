@@ -10,10 +10,10 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.notification.setImportProtector
-import jp.juggler.util.LogCategory
-import jp.juggler.util.launchProgress
-import jp.juggler.util.runOnMainLooper
-import jp.juggler.util.showToast
+import jp.juggler.util.coroutine.launchProgress
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -51,7 +51,7 @@ fun ActMain.importAppData(uri: Uri) {
             val cacheDir = cacheDir
             cacheDir.mkdir()
             val file = File(cacheDir, "SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp")
-            val copyBytes = contentResolver.openInputStream(uri)?.let { inStream ->
+            val copyBytes = contentResolver.openInputStream(uri)?.use { inStream ->
                 FileOutputStream(file).use { outStream ->
                     inStream.copyTo(outStream)
                 }

@@ -19,7 +19,12 @@ import jp.juggler.subwaytooter.column.isSearchColumn
 import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.log.showToast
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.isEnabledAlpha
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.padding
 
@@ -325,13 +330,13 @@ fun ItemViewHolder.onClickEnqueteChoice(
                 )
                 TootPollsType.Mastodon -> client.request(
                     "/api/v1/polls/${enquete.pollId}/votes",
-                    jsonObject {
-                        put("choices", jsonArray { add(idx) })
+                    buildJsonObject {
+                        put("choices", buildJsonArray { add(idx) })
                     }.toPostRequestBuilder()
                 )
                 TootPollsType.FriendsNico -> client.request(
                     "/api/v1/votes/${enquete.status_id}",
-                    jsonObject {
+                    buildJsonObject {
                         put("item_index", idx.toString())
                     }.toPostRequestBuilder()
                 )
@@ -407,8 +412,8 @@ fun ItemViewHolder.sendMultiple(
         activity.runApiTask(accessInfo) { client ->
             client.request(
                 "/api/v1/polls/${enquete.pollId}/votes",
-                jsonObject {
-                    put("choices", jsonArray {
+                buildJsonObject {
+                    put("choices", buildJsonArray {
                         enquete.items.forEachIndexed { index, choice ->
                             if (choice.checked) add(index)
                         }

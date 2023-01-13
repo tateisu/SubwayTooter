@@ -30,8 +30,19 @@ import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
-import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchIO
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.getPackageInfoCompat
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.activity
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.createColoredDrawable
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference
@@ -187,7 +198,7 @@ class SideMenuAdapter(
                         ?: error("missing appVersion json")
                     releaseInfo = json
                     versionText = createVersionRow()
-                    withContext(Dispatchers.Main) {
+                    withContext(AppDispatchers.mainImmediate) {
                         lastVersionView?.get()?.text = versionText
                     }
                 } catch (ex: Throwable) {

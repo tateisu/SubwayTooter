@@ -10,6 +10,13 @@ import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.OpenSticker
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.runOnMainLooper
+import jp.juggler.util.coroutine.runOnMainLooperDelayed
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
+import jp.juggler.util.network.toPostRequestBuilder
 import java.util.*
 
 @Suppress("ClassNaming")
@@ -105,7 +112,8 @@ class ColumnTask_Loading(
 
                     // 編集履歴は投稿日時で重複排除する
                     ColumnType.STATUS_HISTORY -> column.duplicateMap.filterDuplicateByCreatedAt(
-                        listTmp)
+                        listTmp
+                    )
 
                     // 他のカラムは重複排除してから追加
                     else -> column.duplicateMap.filterDuplicate(listTmp)

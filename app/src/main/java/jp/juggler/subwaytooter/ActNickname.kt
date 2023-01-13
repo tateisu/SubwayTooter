@@ -14,7 +14,12 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActNicknameBinding
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
+import jp.juggler.util.data.mayUri
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 
@@ -51,7 +56,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     private var loadingBusy = false
 
     private val arNotificationSound = ActivityResultHandler(log) { r ->
-        r.decodeRingtonePickerResult()?.let { uri ->
+        r.decodeRingtonePickerResult?.let { uri ->
             notificationSoundUri = uri.toString()
         }
     }
@@ -86,7 +91,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         setContentView(views.root)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding(findViewById(R.id.llContent))
+        fixHorizontalPadding(findViewById(R.id.llContent))
 
         views.btnTextColorEdit.setOnClickListener(this)
         views.btnTextColorReset.setOnClickListener(this)

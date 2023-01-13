@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter
 
 import androidx.test.runner.AndroidJUnit4
 import jp.juggler.util.CharacterGroup
-import jp.juggler.util.WordTrieTree
+import jp.juggler.util.data.WordTrieTree
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test

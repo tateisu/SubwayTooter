@@ -30,9 +30,10 @@ import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
-import jp.juggler.util.LogCategory
-import jp.juggler.util.applyAlphaMultiplier
-import jp.juggler.util.attrColor
+import jp.juggler.util.log.Benchmark
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.applyAlphaMultiplier
+import jp.juggler.util.ui.attrColor
 import org.jetbrains.anko.*
 
 class ItemViewHolder(
@@ -693,8 +694,10 @@ class ItemViewHolder(
                         gravity = Gravity.START
                         allCaps = false
                         background =
-                            ContextCompat.getDrawable(context,
-                                R.drawable.btn_bg_transparent_round6dp)
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.btn_bg_transparent_round6dp
+                            )
                         padding = dip(4)
                     }.lparams(matchParent, wrapContent)
                 )

@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.util
 
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.MediaType

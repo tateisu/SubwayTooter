@@ -5,7 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.util.SparseIntArray
 import androidx.appcompat.widget.AppCompatTextView
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sign

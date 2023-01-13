@@ -13,20 +13,23 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.boostAlpha
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.setFollowIcon
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.startMargin
-import jp.juggler.util.*
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.custom.customView
 
@@ -145,7 +148,7 @@ class StatusButtons(
             btnConversation,
             R.drawable.ic_forum,
             color = colorNormal,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
     }
 
@@ -155,7 +158,7 @@ class StatusButtons(
             btnMore,
             R.drawable.ic_more,
             color = colorNormal,
-            alphaMultiplier = Styler.boostAlpha
+            alphaMultiplier = boostAlpha
         )
     }
 
@@ -188,7 +191,7 @@ class StatusButtons(
                 setButton(
                     btnBoost,
                     false,
-                    PrefI.ipButtonBoostedColor(activity.pref).notZero()
+                    PrefI.ipButtonBoostedColor.invoke(activity.pref).notZero()
                         ?: activity.attrColor(R.attr.colorButtonAccentBoost),
                     R.drawable.ic_mail,
                     "",
@@ -347,14 +350,14 @@ class StatusButtons(
         } else {
             llFollow2.visibility = View.VISIBLE
             val relation = UserRelation.load(accessInfo.db_id, account.id)
-            Styler.setFollowIcon(
+            setFollowIcon(
                 activity,
                 btnFollow2,
                 ivFollowedBy2,
                 relation,
                 account,
                 colorNormal,
-                alphaMultiplier = Styler.boostAlpha
+                alphaMultiplier = boostAlpha
             )
             relation
         }
@@ -391,7 +394,7 @@ class StatusButtons(
                     this@StatusButtons.activity,
                     R.drawable.ic_question,
                     colorNormal,
-                    Styler.boostAlpha
+                    boostAlpha
                 )
             )
             ++optionalButtonCount
@@ -483,7 +486,7 @@ class StatusButtons(
         count: String,
         contentDescription: String,
     ) {
-        val alpha = Styler.boostAlpha
+        val alpha = boostAlpha
         val d = createColoredDrawable(
             activity,
             drawableId,
@@ -504,7 +507,7 @@ class StatusButtons(
         drawableId: Int,
         contentDescription: String,
     ) {
-        val alpha = Styler.boostAlpha
+        val alpha = boostAlpha
         val d = createColoredDrawable(
             activity,
             drawableId,

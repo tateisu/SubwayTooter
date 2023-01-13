@@ -17,7 +17,14 @@ import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.*
+import jp.juggler.util.data.mayUri
+import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.errorEx
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.vg
 import java.lang.ref.WeakReference
 
 class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
@@ -63,7 +70,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
         setContentView(R.layout.act_highlight_list)
         App1.initEdgeToEdge(this)
 
-        Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
+        fixHorizontalPadding0(findViewById(R.id.llContent))
 
         // リストのアダプター
         listAdapter = MyListAdapter()

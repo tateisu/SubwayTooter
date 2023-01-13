@@ -11,9 +11,14 @@ import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.parseList
-import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.WordTrieTree
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
@@ -131,7 +136,7 @@ abstract class ColumnTask(
     fun start() {
         job = launchMain {
             val result = try {
-                withContext(appDispatchers.io) { background() }
+                withContext(AppDispatchers.io) { background() }
             } catch (ignored: CancellationException) {
                 null // キャンセルされたらresult==nullとする
             } catch (ex: Throwable) {

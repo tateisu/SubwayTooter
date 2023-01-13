@@ -4,11 +4,10 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.text.style.ForegroundColorSpan
 import android.util.SparseBooleanArray
-import jp.juggler.util.asciiPattern
-import jp.juggler.util.firstNonNull
-import jp.juggler.util.fontSpan
-import jp.juggler.util.groupEx
-import java.util.*
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.firstNonNull
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.ui.fontSpan
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 

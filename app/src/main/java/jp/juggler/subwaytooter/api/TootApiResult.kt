@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter.api
 
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.*
+import jp.juggler.util.data.*
+import jp.juggler.util.log.LogCategory
 import okhttp3.Response
 import okhttp3.WebSocket
 

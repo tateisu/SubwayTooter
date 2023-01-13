@@ -10,12 +10,12 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.ContentInfoCompat
 import androidx.core.view.OnReceiveContentListener
 import androidx.core.view.ViewCompat
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 
 class MyEditText @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = androidx.appcompat.R.attr.editTextStyle
+    defStyleAttr: Int = androidx.appcompat.R.attr.editTextStyle,
 ) : AppCompatEditText(context, attrs, defStyleAttr) {
 
     companion object {
@@ -76,7 +76,7 @@ class MyEditText @JvmOverloads constructor(
         return try {
             super.onTouchEvent(event)
         } catch (ex: Throwable) {
-            log.e(ex,"onTouchEvent failed.")
+            log.e(ex, "onTouchEvent failed.")
             false
             //		java.lang.NullPointerException:
             //		at android.widget.Editor$SelectionModifierCursorController.onTouchEvent (Editor.java:4889)

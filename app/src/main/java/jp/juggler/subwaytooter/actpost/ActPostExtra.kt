@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.actpost
 
 import android.content.Intent
-import android.net.Uri
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.ActMain
@@ -20,7 +19,14 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.subwaytooter.util.PostResult
-import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.data.CharacterGroup
+import jp.juggler.util.getIntentExtra
+import jp.juggler.util.getStreamUriExtra
+import jp.juggler.util.getStreamUriListExtra
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.vg
 
 private val log = LogCategory("ActPostExtra")
 
@@ -243,7 +249,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
 
             Intent.ACTION_SEND_MULTIPLE -> {
                 val listUri = sharedIntent.getStreamUriListExtra()
-                        ?.filterNotNull()
+                    ?.filterNotNull()
                 if (listUri?.isNotEmpty() == true) {
                     for (uri in listUri) {
                         addAttachment(uri)
@@ -261,7 +267,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
             appendContentText(sharedIntent)
         }
     } catch (ex: Throwable) {
-        log.e(ex,"initializeFromSharedIntent failed.")
+        log.e(ex, "initializeFromSharedIntent failed.")
     }
 }
 

@@ -11,7 +11,6 @@ import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.global.appDispatchers
 import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
 import jp.juggler.subwaytooter.notification.ServerTimeoutNotification.createServerTimeoutNotification
 import jp.juggler.subwaytooter.pref.PrefDevice
@@ -20,6 +19,12 @@ import jp.juggler.subwaytooter.table.NotificationTracking
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PrivacyPolicyChecker
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.EmptyScope
+import jp.juggler.util.coroutine.launchDefault
+import jp.juggler.util.data.*
+import jp.juggler.util.log.*
+import jp.juggler.util.ui.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
@@ -96,8 +101,10 @@ suspend fun loadInstallId(
     // アカウントリストの取得より先に行う
     if (!PrivacyPolicyChecker(context).agreed) {
         cancelAllWorkAndJoin(context)
-        throw InstallIdException(null,
-            "the user not agreed to privacy policy.")
+        throw InstallIdException(
+            null,
+            "the user not agreed to privacy policy."
+        )
     }
 
     val prefDevice = PrefDevice.from(context)
@@ -297,7 +304,7 @@ suspend fun checkNoticifationAll(
     SavedAccount.loadAccountList(context).mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
-            else -> EmptyScope.launch(appDispatchers.default) {
+            else -> EmptyScope.launch(AppDispatchers.default) {
                 try {
                     PollingChecker(
                         context = context,
@@ -327,8 +334,10 @@ suspend fun checkNoticifationAll(
     }
 
     if (timeoutAccounts.isNotEmpty()) {
-        createServerTimeoutNotification(context,
-            timeoutAccounts.sorted().joinToString(", ").ellipsizeDot3(256))
+        createServerTimeoutNotification(
+            context,
+            timeoutAccounts.sorted().joinToString(", ").ellipsizeDot3(256)
+        )
     }
     if (!hasError && !nextPollingRequired) {
         PollingWorker2.cancelPolling(context)

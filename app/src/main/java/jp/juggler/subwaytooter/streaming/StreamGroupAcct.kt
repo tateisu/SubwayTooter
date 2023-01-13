@@ -3,14 +3,14 @@ package jp.juggler.subwaytooter.streaming
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
+import jp.juggler.util.log.LogCategory
 import java.util.concurrent.ConcurrentHashMap
 
 // ストリーミング接続をacct単位でグルーピングする
 class StreamGroupAcct(
     private val manager: StreamManager,
     val account: SavedAccount,
-    var ti: TootInstance
+    var ti: TootInstance,
 ) {
     companion object {
         private val log = LogCategory("StreamGroupAcct")

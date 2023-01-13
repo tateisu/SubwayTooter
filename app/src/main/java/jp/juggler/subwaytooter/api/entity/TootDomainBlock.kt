@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.JsonArray
-import java.util.ArrayList
+import jp.juggler.util.data.JsonArray
 
 class TootDomainBlock(
     val domain: Host,
@@ -10,13 +9,13 @@ class TootDomainBlock(
     companion object {
         fun parseList(array: JsonArray?) =
             ArrayList<TootDomainBlock>().also { result ->
-				array ?: return@also
-				result.ensureCapacity(array.size)
-				array.stringList().forEach {
-					if (it.isNotEmpty()) {
-						result.add(TootDomainBlock(Host.parse(it)))
-					}
-				}
+                array ?: return@also
+                result.ensureCapacity(array.size)
+                array.stringList().forEach {
+                    if (it.isNotEmpty()) {
+                        result.add(TootDomainBlock(Host.parse(it)))
+                    }
+                }
             }
     }
 }

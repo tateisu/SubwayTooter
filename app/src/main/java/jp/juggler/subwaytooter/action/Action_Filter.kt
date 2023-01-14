@@ -38,7 +38,7 @@ fun ActMain.filterDelete(
             confirm(R.string.filter_delete_confirm, filter.phrase)
         }
 
-        var resultFilterList: ArrayList<TootFilter>? = null
+        var resultFilterList: List<TootFilter>? = null
         runApiTask(accessInfo) { client ->
             var result =
                 client.request("/api/v1/filters/${filter.id}", Request.Builder().delete())

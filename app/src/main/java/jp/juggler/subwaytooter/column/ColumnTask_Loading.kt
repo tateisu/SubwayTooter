@@ -905,7 +905,7 @@ class ColumnTask_Loading(
         val result = client.request(pathBase)
         if (result != null) {
             val src = TootFilter.parseList(result.jsonArray)
-            this.listTmp = addAll(null, src)
+            this.listTmp = addAll(null, src?: emptyList())
         }
         return result
     }

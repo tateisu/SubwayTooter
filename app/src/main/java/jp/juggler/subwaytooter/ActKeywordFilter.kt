@@ -9,9 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootFilter
+import jp.juggler.subwaytooter.api.entity.TootFilterContext
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.databinding.ActKeywordFilterBinding
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.launchMain
@@ -65,18 +67,22 @@ class ActKeywordFilter
 
     private lateinit var account: SavedAccount
 
-    private lateinit var tvAccount: TextView
-    private lateinit var etPhrase: EditText
-    private lateinit var cbContextHome: CheckBox
-    private lateinit var cbContextNotification: CheckBox
-    private lateinit var cbContextPublic: CheckBox
-    private lateinit var cbContextThread: CheckBox
-    private lateinit var cbContextProfile: CheckBox
+    private val views by lazy {
+        ActKeywordFilterBinding.inflate(layoutInflater)
+    }
 
-    private lateinit var cbFilterIrreversible: CheckBox
-    private lateinit var cbFilterWordMatch: CheckBox
-    private lateinit var tvExpire: TextView
-    private lateinit var spExpire: Spinner
+//    private lateinit var tvAccount: TextView
+//    private lateinit var etPhrase: EditText
+//    private lateinit var cbContextHome: CheckBox
+//    private lateinit var cbContextNotification: CheckBox
+//    private lateinit var cbContextPublic: CheckBox
+//    private lateinit var cbContextThread: CheckBox
+//    private lateinit var cbContextProfile: CheckBox
+//
+//    private lateinit var cbFilterIrreversible: CheckBox
+//    private lateinit var cbFilterWordMatch: CheckBox
+//    private lateinit var tvExpire: TextView
+//    private lateinit var spExpire: Spinner
 
     private var loading = false
     private var density: Float = 1f
@@ -109,13 +115,13 @@ class ActKeywordFilter
             if (filterId != null) {
                 startLoading()
             } else {
-                spExpire.setSelection(1)
-                etPhrase.setText(intent.getStringExtra(EXTRA_INITIAL_PHRASE) ?: "")
+                views. spExpire.setSelection(1)
+                views.  etPhrase.setText(intent.getStringExtra(EXTRA_INITIAL_PHRASE) ?: "")
             }
         } else {
             val iv = savedInstanceState.getInt(STATE_EXPIRE_SPINNER, -1)
             if (iv != -1) {
-                spExpire.setSelection(iv)
+                views.  spExpire.setSelection(iv)
             }
             filterExpire = savedInstanceState.getLong(STATE_EXPIRE_AT, filterExpire)
         }
@@ -124,7 +130,7 @@ class ActKeywordFilter
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         if (!loading) {
-            outState.putInt(STATE_EXPIRE_SPINNER, spExpire.selectedItemPosition)
+            outState.putInt(STATE_EXPIRE_SPINNER, views.spExpire.selectedItemPosition)
             outState.putLong(STATE_EXPIRE_AT, filterExpire)
         }
     }
@@ -138,24 +144,24 @@ class ActKeywordFilter
         )
 
         this.density = resources.displayMetrics.density
-        setContentView(R.layout.act_keyword_filter)
+        setContentView(views.root)
         App1.initEdgeToEdge(this)
 
         fixHorizontalPadding(findViewById(R.id.svContent))
 
-        tvAccount = findViewById(R.id.tvAccount)
-        etPhrase = findViewById(R.id.etPhrase)
-        cbContextHome = findViewById(R.id.cbContextHome)
-        cbContextNotification = findViewById(R.id.cbContextNotification)
-        cbContextPublic = findViewById(R.id.cbContextPublic)
-        cbContextThread = findViewById(R.id.cbContextThread)
-        cbContextProfile = findViewById(R.id.cbContextProfile)
-        cbFilterIrreversible = findViewById(R.id.cbFilterIrreversible)
-        cbFilterWordMatch = findViewById(R.id.cbFilterWordMatch)
-        tvExpire = findViewById(R.id.tvExpire)
-        spExpire = findViewById(R.id.spExpire)
+//        tvAccount = findViewById(R.id.tvAccount)
+//        etPhrase = findViewById(R.id.etPhrase)
+//        cbContextHome = findViewById(R.id.cbContextHome)
+//        cbContextNotification = findViewById(R.id.cbContextNotification)
+//        cbContextPublic = findViewById(R.id.cbContextPublic)
+//        cbContextThread = findViewById(R.id.cbContextThread)
+//        cbContextProfile = findViewById(R.id.cbContextProfile)
+//        cbFilterIrreversible = findViewById(R.id.cbFilterIrreversible)
+//        cbFilterWordMatch = findViewById(R.id.cbFilterWordMatch)
+//        tvExpire = findViewById(R.id.tvExpire)
+//        spExpire = findViewById(R.id.spExpire)
 
-        findViewById<View>(R.id.btnSave).setOnClickListener(this)
+        views.btnSave.setOnClickListener(this)
 
         val captionList = arrayOf(
             getString(R.string.dont_change),
@@ -169,11 +175,11 @@ class ActKeywordFilter
         )
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, captionList)
         adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-        spExpire.adapter = adapter
+        views.spExpire.adapter = adapter
     }
 
     private fun showAccount() {
-        tvAccount.text = AcctColor.getNicknameWithColor(account.acct)
+        views.tvAccount.text = AcctColor.getNicknameWithColor(account.acct)
     }
 
     private fun startLoading() {
@@ -207,17 +213,17 @@ class ActKeywordFilter
 
         filterExpire = filter.time_expires_at
 
-        etPhrase.setText(filter.phrase)
-        setContextChecked(filter, cbContextHome, TootFilter.CONTEXT_HOME)
-        setContextChecked(filter, cbContextNotification, TootFilter.CONTEXT_NOTIFICATIONS)
-        setContextChecked(filter, cbContextPublic, TootFilter.CONTEXT_PUBLIC)
-        setContextChecked(filter, cbContextThread, TootFilter.CONTEXT_THREAD)
-        setContextChecked(filter, cbContextProfile, TootFilter.CONTEXT_PROFILE)
+        setContextChecked(filter, views.cbContextHome, TootFilterContext.Home)
+        setContextChecked(filter, views.cbContextNotification, TootFilterContext.Notifications)
+        setContextChecked(filter, views.cbContextPublic, TootFilterContext.Public)
+        setContextChecked(filter, views.cbContextThread, TootFilterContext.Thread)
+        setContextChecked(filter, views.cbContextProfile, TootFilterContext.Account)
 
-        cbFilterIrreversible.isChecked = filter.irreversible
-        cbFilterWordMatch.isChecked = filter.whole_word
+        views.etPhrase.setText(filter.phrase)
+        views.cbFilterIrreversible.isChecked = filter.irreversible
+        views.cbFilterWordMatch.isChecked = filter.whole_word
 
-        tvExpire.text = if (filter.time_expires_at == 0L) {
+        views.tvExpire.text = if (filter.time_expires_at == 0L) {
             getString(R.string.filter_expire_unlimited)
         } else {
             TootStatus.formatTime(this, filter.time_expires_at, false)
@@ -230,12 +236,12 @@ class ActKeywordFilter
         }
     }
 
-    private fun setContextChecked(filter: TootFilter, cb: CheckBox, bit: Int) {
-        cb.isChecked = ((filter.context and bit) != 0)
+    private fun setContextChecked(filter: TootFilter, cb: CheckBox, fc: TootFilterContext) {
+        cb.isChecked = filter.hasContext(fc)
     }
 
-    private fun JsonArray.putContextChecked(cb: CheckBox, key: String) {
-        if (cb.isChecked) add(key)
+    private fun JsonArray.putContextChecked(cb: CheckBox, fc:TootFilterContext) {
+        if (cb.isChecked) add(fc.apiName)
     }
 
     private fun save() {
@@ -243,22 +249,22 @@ class ActKeywordFilter
 
         val params = buildJsonObject {
 
-            put("phrase", etPhrase.text.toString())
-
             put("context", JsonArray().apply {
-                putContextChecked(cbContextHome, "home")
-                putContextChecked(cbContextNotification, "notifications")
-                putContextChecked(cbContextPublic, "public")
-                putContextChecked(cbContextThread, "thread")
-                putContextChecked(cbContextProfile, "account")
+                putContextChecked(views.cbContextHome, TootFilterContext.Home)
+                putContextChecked(views.cbContextNotification, TootFilterContext.Notifications)
+                putContextChecked(views.cbContextPublic,  TootFilterContext.Public)
+                putContextChecked(views.cbContextThread,  TootFilterContext.Thread)
+                putContextChecked(views.cbContextProfile,  TootFilterContext.Account)
             })
 
-            put("irreversible", cbFilterIrreversible.isChecked)
-            put("whole_word", cbFilterWordMatch.isChecked)
+            put("phrase", views.etPhrase.text.toString())
+
+            put("irreversible",views. cbFilterIrreversible.isChecked)
+            put("whole_word", views.cbFilterWordMatch.isChecked)
 
             var seconds = -1
 
-            val i = spExpire.selectedItemPosition
+            val i = views.spExpire.selectedItemPosition
             if (i >= 0 && i < expire_duration_list.size) {
                 seconds = expire_duration_list[i]
             }

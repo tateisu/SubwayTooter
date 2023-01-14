@@ -400,7 +400,7 @@ fun ItemViewHolder.showFilter(filter: TootFilter) {
     //
     sb.append(activity.getString(R.string.filter_context))
         .append(": ")
-        .append(filter.getContextNames(activity).joinToString("/"))
+        .append(filter.contextNames.joinToString("/") { activity.getString(it) })
     //
     val flags = ArrayList<String>()
     if (filter.irreversible) flags.add(activity.getString(R.string.filter_irreversible))

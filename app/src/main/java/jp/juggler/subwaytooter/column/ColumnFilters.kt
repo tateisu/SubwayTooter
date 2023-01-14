@@ -39,26 +39,25 @@ val Column.isFilterEnabled: Boolean
 // マストドン2.4.3rcのキーワードフィルタのコンテキスト
 fun Column.getFilterContext() = when (type) {
 
+    ColumnType.STATUS_HISTORY -> null
+
     ColumnType.HOME,
     ColumnType.LIST_TL,
     ColumnType.MISSKEY_HYBRID,
-    -> TootFilter.CONTEXT_HOME
+    -> TootFilterContext.Home
 
     ColumnType.NOTIFICATIONS,
     ColumnType.NOTIFICATION_FROM_ACCT,
-    -> TootFilter.CONTEXT_NOTIFICATIONS
+    -> TootFilterContext.Notifications
 
     ColumnType.CONVERSATION,
     ColumnType.CONVERSATION_WITH_REFERENCE,
-    -> TootFilter.CONTEXT_THREAD
+    ColumnType.DIRECT_MESSAGES,
+    -> TootFilterContext.Thread
 
-    ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_THREAD
+    ColumnType.PROFILE -> TootFilterContext.Account
 
-    ColumnType.PROFILE -> TootFilter.CONTEXT_PROFILE
-
-    ColumnType.STATUS_HISTORY -> TootFilter.CONTEXT_NONE
-
-    else -> TootFilter.CONTEXT_PUBLIC
+    else -> TootFilterContext.Public
     // ColumnType.MISSKEY_HYBRID や ColumnType.MISSKEY_ANTENNA_TL はHOMEでもPUBLICでもある…
     // Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 }
@@ -71,10 +70,7 @@ fun Column.canStatusFilter() =
         ColumnType.SEARCH_NOTESTOCK,
         ColumnType.STATUS_HISTORY,
         -> true
-        else -> when {
-            getFilterContext() == TootFilter.CONTEXT_NONE -> false
-            else -> true
-        }
+        else -> getFilterContext() !=null
     }
 
 // カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -125,13 +121,13 @@ fun Column.canFilterNonPublicToot(): Boolean = when (type) {
     else -> false
 }
 
-fun Column.onFiltersChanged2(filterList: ArrayList<TootFilter>) {
+fun Column.onFiltersChanged2(filterList: List<TootFilter>) {
     val newFilter = encodeFilterTree(filterList) ?: return
     this.keywordFilterTrees = newFilter
     checkFiltersForListData(newFilter)
 }
 
-fun Column.onFilterDeleted(filter: TootFilter, filterList: ArrayList<TootFilter>) {
+fun Column.onFilterDeleted(filter: TootFilter, filterList: List<TootFilter>) {
     if (type == ColumnType.KEYWORD_FILTER) {
         val tmpList = ArrayList<TimelineItem>(listData.size)
         for (o in listData) {
@@ -146,8 +142,7 @@ fun Column.onFilterDeleted(filter: TootFilter, filterList: ArrayList<TootFilter>
             fireShowContent(reason = "onFilterDeleted")
         }
     } else {
-        val context = getFilterContext()
-        if (context != TootFilter.CONTEXT_NONE) {
+        if( getFilterContext() != null){
             onFiltersChanged2(filterList)
         }
     }
@@ -386,38 +381,36 @@ fun Column.isFiltered(item: TootNotification): Boolean {
 }
 
 // フィルタを読み直してリストを返す。またはnull
-suspend fun Column.loadFilter2(client: TootApiClient): ArrayList<TootFilter>? {
+suspend fun Column.loadFilter2(client: TootApiClient): List<TootFilter>? {
     if (accessInfo.isPseudo || accessInfo.isMisskey) return null
-    val columnContext = getFilterContext()
-    if (columnContext == 0) return null
+    if (getFilterContext() ==null) return null
     val result = client.request(ApiPath.PATH_FILTERS)
 
     val jsonArray = result?.jsonArray ?: return null
     return TootFilter.parseList(jsonArray)
 }
 
-fun Column.encodeFilterTree(filterList: ArrayList<TootFilter>?): FilterTrees? {
+fun Column.encodeFilterTree(filterList: List<TootFilter>?): FilterTrees? {
     val columnContext = getFilterContext()
-    if (columnContext == 0 || filterList == null) return null
+    if (columnContext == null || filterList == null) return null
     val result = FilterTrees()
     val now = System.currentTimeMillis()
     for (filter in filterList) {
         if (filter.time_expires_at > 0L && now >= filter.time_expires_at) continue
-        if ((filter.context and columnContext) != 0) {
+        if (!filter.hasContext(columnContext)) continue
 
-            val validator = when (filter.whole_word) {
-                true -> WordTrieTree.WORD_VALIDATOR
-                else -> WordTrieTree.EMPTY_VALIDATOR
-            }
-
-            if (filter.irreversible) {
-                result.treeIrreversible
-            } else {
-                result.treeReversible
-            }.add(filter.phrase, validator = validator)
-
-            result.treeAll.add(filter.phrase, validator = validator)
+        val validator = when (filter.whole_word) {
+            true -> WordTrieTree.WORD_VALIDATOR
+            else -> WordTrieTree.EMPTY_VALIDATOR
         }
+
+        if (filter.irreversible) {
+            result.treeIrreversible
+        } else {
+            result.treeReversible
+        }.add(filter.phrase, validator = validator)
+
+        result.treeAll.add(filter.phrase, validator = validator)
     }
     return result
 }
@@ -452,7 +445,7 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
 
 fun reloadFilter(context: Context, accessInfo: SavedAccount) {
     launchMain {
-        var resultList: ArrayList<TootFilter>? = null
+        var resultList: List<TootFilter>? = null
 
         context.runApiTask(
             accessInfo,

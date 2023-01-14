@@ -309,7 +309,6 @@ private fun ColumnViewHolder.showReactionPlus(
         b,
         R.drawable.ic_add,
         color = contentColor,
-        alphaMultiplier = 1f
     )
 
     box.addView(b)

@@ -209,7 +209,7 @@
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s.</string>
     <string name="simple_list">Reduce buttons in timeline (app restart required)</string>
-    <string name="mute_app_desc">&gt;Swipe leftwards to delete. Reload columns to show statuses published by unmuted apps.</string>
+    <string name="refresh_after_ummute">After unmute items, reloading columns to refresh.</string>
     <string name="muted_app">Muted apps</string>
     <string name="application_is">app: %1$s</string>
     <string name="mute_app_of">mute app \"%1$s\"</string>
@@ -655,6 +655,7 @@
     <string name="show_favourite_notification_from_user">Enable Fav/BT notifications from this user</string>
     <string name="fav_muted_user">FBN disabled users</string>
     <string name="fav_muted_user_long">Fav/Boost notifications disabled users</string>
+    <string name="fav_muted_user_desc">Ignore notifications from users on this list. Favourite, Boost, Follow Request, Reaction, etc.</string>
     <string name="changed">Changed.</string>
     <string name="thumbnails_arrange_vertically">Vertical arrange thumbnails (app restart required)</string>
     <string name="instance_local">Server local</string>
@@ -1024,6 +1025,7 @@
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard.</string>
     <string name="language_filter_quit_waring">Language filter is not saved. exit anyway?</string>
+    <string name="keyword_filter_quit_waring">Keyword filter is not saved. exit anyway?</string>
     <string name="import_completed_please_restart_app">Import completed. Please restart app.</string>
     <string name="delete_custom_emoji_cache">Delete custom emoji cache</string>
     <string name="antenna_list">Antenna list</string>
@@ -1181,4 +1183,6 @@
     <string name="add_keyword_or_phrase">Add Keyword or phrase</string>
     <string name="filter_keyword_empty">filter keyword(s) is empty.</string>
     <string name="filter_title_empty">filter title is empty.</string>
+    <string name="acct_customize">Acct customize</string>
+    <string name="delete_confirm">delete \"%1$s\" ?</string>
 </resources>

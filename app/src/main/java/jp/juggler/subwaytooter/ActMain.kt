@@ -48,6 +48,8 @@ import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.benchmark
 import jp.juggler.util.log.showToast
+import jp.juggler.util.long
+import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
@@ -270,7 +272,7 @@ class ActMain : AppCompatActivity(),
 
     val arAbout = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
-        r.data?.getStringExtra(ActAbout.EXTRA_SEARCH)?.notEmpty()?.let { search ->
+        r.data?.string(ActAbout.EXTRA_SEARCH)?.notEmpty()?.let { search ->
             timeline(
                 defaultInsertPosition,
                 ColumnType.SEARCH,
@@ -286,8 +288,7 @@ class ActMain : AppCompatActivity(),
             RESULT_OK -> r.data?.data?.let { openBrowser(it) }
 
             ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
-                r.data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
-                    ?.takeIf { it != -1L }
+                r.data?.long(ActAccountSetting.EXTRA_DB_ID)
                     ?.let { checkAccessToken2(it) }
         }
     }
@@ -346,7 +347,7 @@ class ActMain : AppCompatActivity(),
         arActPost.register(this)
         arActText.register(this)
 
-        App1.setActivityTheme(this, noActionBar = true)
+        App1.setActivityTheme(this)
 
         appState = App1.getAppState(this)
         handler = appState.handler
@@ -696,7 +697,6 @@ class ActMain : AppCompatActivity(),
 
     internal fun initUI() {
         setContentView(R.layout.act_main)
-        App1.initEdgeToEdge(this)
 
         quickPostVisibility =
             TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility(pref))

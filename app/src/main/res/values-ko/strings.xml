@@ -200,7 +200,6 @@
     <string name="contributor">기여자</string>
     <string name="thanks_for">%1$s에 대해 감사합니다</string>
     <string name="simple_list">간략한 목록 (앱 재시작 필요)</string>
-    <string name="mute_app_desc">삭제하려면 왼쪽으로 스와이프. 칼럼을 새로 고침하면 음소거 안 된 앱으로 발행된 게시물이 보입니다.</string>
     <string name="muted_app">음소거된 앱들</string>
     <string name="application_is">앱: %1$s</string>
     <string name="mute_app_of">앱 \"%1$s\" 음소거</string>

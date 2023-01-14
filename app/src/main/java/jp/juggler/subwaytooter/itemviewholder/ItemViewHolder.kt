@@ -165,7 +165,7 @@ class ItemViewHolder(
 
     var boostTime: Long = 0L
 
-    var contentColor: Int = 0
+    var colorTextContent: Int = 0
     var acctColor: Int = 0
     var contentColorCsl: ColorStateList = ColorStateList.valueOf(0)
 

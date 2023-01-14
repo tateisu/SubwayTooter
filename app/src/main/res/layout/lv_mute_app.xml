@@ -1,72 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.woxthebox.draglistview.swipe.ListSwipeItem
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:leftViewId="@+id/item_left"
-    app:rightViewId="@+id/item_right"
-    app:swipeViewId="@+id/item_layout">
+    android:descendantFocusability="blocksDescendants"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="12dp"
+    android:minHeight="48dp"
+    android:paddingVertical="3dp">
 
     <TextView
-        android:id="@+id/item_left"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignBottom="@+id/item_layout"
-        android:layout_alignTop="@+id/item_layout"
-        android:background="#0088ff"
-        android:gravity="center"
-        android:text="@string/app_name"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"/>
-
-    <TextView
-        android:id="@+id/item_right"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignBottom="@+id/item_layout"
-        android:layout_alignTop="@+id/item_layout"
-        android:background="?attr/colorColumnListDeleteBackground"
-        android:gravity="center_vertical"
-        android:text="@string/delete"
-        android:textColor="?attr/colorColumnListDeleteText"
-        android:textSize="20sp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        />
-
-    <LinearLayout
-        android:id="@id/item_layout"
-        android:layout_width="match_parent"
+        android:id="@+id/tvName"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/column_list_selector"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        >
+        android:layout_weight="1"
+        android:textSize="20sp"
+        tools:text="text..." />
 
-        <ImageView
-            android:id="@+id/ivDragHandle"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="?attr/colorColumnListDragHandleBackground"
-            android:contentDescription="@string/drag_handle"
-            android:scaleType="center"
-            android:src="@drawable/ic_order"
-            android:visibility="gone"
-            />
-
-        <TextView
-            android:id="@+id/tvName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="20sp"
-            android:minHeight="48dp"
-            android:gravity="center_vertical|start"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            />
-
-    </LinearLayout>
-
-</com.woxthebox.draglistview.swipe.ListSwipeItem>
+    <ImageButton
+        android:id="@+id/btnDelete"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/btn_bg_transparent_round6dp"
+        android:contentDescription="@string/delete"
+        android:src="@drawable/ic_delete"
+        app:tint="?attr/colorTextContent" />
+</LinearLayout>

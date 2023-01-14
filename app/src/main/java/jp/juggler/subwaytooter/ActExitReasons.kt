@@ -8,14 +8,15 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ListView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.util.log.LogCategory
+import jp.juggler.subwaytooter.databinding.ActExitReasonsBinding
 import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
+import jp.juggler.util.ui.setNavigationBack
 
 @RequiresApi(Build.VERSION_CODES.R)
 class ActExitReasons : AppCompatActivity() {
@@ -71,14 +72,19 @@ class ActExitReasons : AppCompatActivity() {
         }
     }
 
-    private lateinit var listView: ListView
+    private val views by lazy {
+        ActExitReasonsBinding.inflate(layoutInflater)
+    }
+
     private lateinit var adapter: MyAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-        setContentView(R.layout.act_exit_reasons)
-        App1.initEdgeToEdge(this)
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalPadding(views.listView)
 
         val am = getSystemService(ActivityManager::class.java)
         if (am == null) {
@@ -87,13 +93,12 @@ class ActExitReasons : AppCompatActivity() {
             return
         }
 
-        this.listView = findViewById(R.id.listView)
         this.adapter = MyAdapter()
         adapter.list = am.getHistoricalProcessExitReasons(null, 0, 200)
             .filterNotNull()
             .toList()
 
-        listView.adapter = adapter
+        views.listView.adapter = adapter
     }
 
     class MyViewHolder(val viewRoot: View) {

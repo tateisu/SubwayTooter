@@ -5,12 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
-import android.widget.ListView
 import android.widget.TextView
+import jp.juggler.subwaytooter.databinding.ActDrawableListBinding
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.AsyncActivity
 import jp.juggler.util.data.asciiPattern
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.setNavigationBack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,7 +26,10 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
 
     private val drawableList = ArrayList<MyItem>()
     private lateinit var adapter: MyAdapter
-    private lateinit var listView: ListView
+
+    private val views by lazy {
+        ActDrawableListBinding.inflate(layoutInflater)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,13 +39,13 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
     }
 
     private fun initUI() {
-        setContentView(R.layout.act_drawable_list)
-        App1.initEdgeToEdge(this)
-        fixHorizontalPadding(findViewById(R.id.llContent))
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        fixHorizontalMargin(views.listView)
+        setNavigationBack(views.toolbar)
 
-        listView = findViewById(R.id.listView)
         adapter = MyAdapter()
-        listView.adapter = adapter
+        views.listView.adapter = adapter
     }
 
     private fun load() = launch {

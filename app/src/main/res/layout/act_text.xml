@@ -9,9 +9,10 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorStatusButtonsPopupBg"
-        app:title="@string/select_and_copy"
-        />
+        android:background="@drawable/action_bar_bg"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        android:elevation="4dp" />
+
     <jp.juggler.subwaytooter.view.MyEditText
         android:id="@+id/etText"
         android:layout_width="match_parent"

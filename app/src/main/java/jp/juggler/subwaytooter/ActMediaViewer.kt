@@ -257,24 +257,22 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         prDownload.register(this)
-        App1.setActivityTheme(this, noActionBar = true, forceDark = true)
+        App1.setActivityTheme(this, forceDark = true)
 
         this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
 
         this.serviceType = ServiceType.values()[
-                savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
-                    ?: intent.getIntExtra(EXTRA_SERVICE_TYPE, 0)
+                savedInstanceState?.int(EXTRA_SERVICE_TYPE)
+                    ?: intent.int(EXTRA_SERVICE_TYPE) ?: 0
         ]
 
         this.mediaList = decodeMediaList(
             savedInstanceState?.getString(EXTRA_DATA)
-                ?: intent.getStringExtra(EXTRA_DATA)
+                ?: intent.string(EXTRA_DATA)
         )
 
-        this.idx = (savedInstanceState?.getInt(EXTRA_IDX)
-            ?: intent.getIntExtra(EXTRA_IDX, 0))
-            .takeIf { it in mediaList.indices }
-            ?: 0
+        this.idx = (savedInstanceState?.int(EXTRA_IDX) ?: intent.int(EXTRA_IDX))
+            ?.takeIf { it in mediaList.indices } ?: 0
 
         initUI()
 
@@ -304,7 +302,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     internal fun initUI() {
         setContentView(views.root)
-        App1.initEdgeToEdge(this)
 
         views.pbvImage.background = MediaBackgroundDrawable(
             context = views.root.context,

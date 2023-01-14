@@ -7,6 +7,7 @@ import android.os.Bundle
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.getStringOrNull
 import jp.juggler.util.data.notZero
+import jp.juggler.util.string
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -36,10 +37,10 @@ class EntityId(val x: String) : Comparable<EntityId> {
         }
 
         fun from(intent: Intent?, key: String) =
-            intent?.getStringExtra(key)?.decode()
+            intent?.string(key)?.decode()
 
         fun from(bundle: Bundle?, key: String) =
-            bundle?.getString(key)?.decode()
+            bundle?.string(key)?.decode()
 
         // 内部保存データのデコード用。APIレスポンスのパースに使ってはいけない
         fun from(data: JsonObject?, key: String): EntityId? {

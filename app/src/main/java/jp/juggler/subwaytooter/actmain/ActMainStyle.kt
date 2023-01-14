@@ -8,14 +8,14 @@ import android.widget.LinearLayout
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.boostAlpha
+import jp.juggler.subwaytooter.stylerBoostAlpha
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefF
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.impl.StringPref
-import jp.juggler.subwaytooter.round_ratio
+import jp.juggler.subwaytooter.stylerRoundRatio
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.view.ListDivider
@@ -98,12 +98,12 @@ fun ActMain.reloadRoundRatio() {
             ?.takeIf { it.isFinite() }
             ?: 33f
     }
-    round_ratio = (sizeDp / 100f).clip(0f, 1f) * 0.5f
+    stylerRoundRatio = (sizeDp / 100f).clip(0f, 1f) * 0.5f
 }
 
 // initUI から呼ばれる
 fun ActMain.reloadBoostAlpha() {
-    boostAlpha = PrefS.spBoostAlpha(pref)
+    stylerBoostAlpha = PrefS.spBoostAlpha(pref)
         .toIntOrNull()
         ?.toFloat()
         ?.let { (it + 0.5f) / 100f }
@@ -243,7 +243,7 @@ fun ActMain.showFooterColor() {
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 
     val csl = ColorStateList.valueOf(
-        footerButtonFgColor.notZero() ?: attrColor(R.attr.colorVectorDrawable)
+        footerButtonFgColor.notZero() ?: attrColor(R.attr.colorTextContent)
     )
     btnToot.imageTintList = csl
     btnMenu.imageTintList = csl
@@ -255,7 +255,7 @@ fun ActMain.showFooterColor() {
     vFooterDivider2.setBackgroundColor(c)
 
     llColumnStrip.indicatorColor =
-        footerTabIndicatorColor.notZero() ?: attrColor(R.attr.colorAccent)
+        footerTabIndicatorColor.notZero() ?: attrColor(R.attr.colorTextHelp)
 }
 
 fun ActMain.closePopup() {

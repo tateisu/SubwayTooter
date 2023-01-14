@@ -39,7 +39,7 @@ private val log = LogCategory("Styler")
 
 fun defaultColorIcon(context: Context, iconId: Int): Drawable? =
     ContextCompat.getDrawable(context, iconId)?.also {
-        it.setTint(context.attrColor(R.attr.colorVectorDrawable))
+        it.setTint(context.attrColor(R.attr.colorTextContent))
         it.setTintMode(PorterDuff.Mode.SRC_IN)
     }
 
@@ -146,7 +146,7 @@ fun getVisibilityCaption(
 
     val iconId = getVisibilityIconId(isMisskeyData, visibility)
     val sv = getVisibilityString(context, isMisskeyData, visibility)
-    val color = context.attrColor(R.attr.colorVectorDrawable)
+    val color = context.attrColor(R.attr.colorTextContent)
     val sb = SpannableStringBuilder()
 
     // アイコン部分
@@ -181,13 +181,15 @@ fun setFollowIcon(
     defaultColor: Int,
     alphaMultiplier: Float,
 ) {
-    fun colorAccent() =
+    val colorFollowed =
         PrefI.ipButtonFollowingColor(context.pref()).notZero()
             ?: context.attrColor(R.attr.colorButtonAccentFollow)
 
-    fun colorError() =
+    val colorFollowRequest =
         PrefI.ipButtonFollowRequestColor(context.pref()).notZero()
             ?: context.attrColor(R.attr.colorButtonAccentFollowRequest)
+
+    val colorError = context.attrColor(R.attr.colorRegexFilterError)
 
     // 被フォロー状態
     when {
@@ -198,7 +200,7 @@ fun setFollowIcon(
                 context,
                 ivDot,
                 R.drawable.ic_blocked_by,
-                color = colorError(),
+                color = colorError,
                 alphaMultiplier = alphaMultiplier
             )
         }
@@ -209,7 +211,7 @@ fun setFollowIcon(
                 context,
                 ivDot,
                 R.drawable.ic_requested_by,
-                color = colorError(),
+                color = colorFollowRequest,
                 alphaMultiplier = alphaMultiplier
             )
         }
@@ -220,7 +222,7 @@ fun setFollowIcon(
                 context,
                 ivDot,
                 R.drawable.ic_follow_dot,
-                color = colorAccent(),
+                color = colorFollowed,
                 alphaMultiplier = alphaMultiplier
             )
             // 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
@@ -254,13 +256,13 @@ fun setFollowIcon(
 
         relation.getFollowing(who) -> {
             iconId = R.drawable.ic_follow_cross
-            color = colorAccent()
+            color = colorFollowed
             contentDescription = context.getString(R.string.unfollow)
         }
 
         relation.getRequested(who) -> {
             iconId = R.drawable.ic_follow_wait
-            color = colorError()
+            color = colorFollowRequest
             contentDescription = context.getString(R.string.unfollow)
         }
 
@@ -358,13 +360,13 @@ fun fixHorizontalMargin(v: View) {
 }
 
 // ActMainの初期化時に更新される
-var round_ratio: Float = 0.33f * 0.5f
-var boostAlpha: Float = 1f
+var stylerRoundRatio: Float = 0.33f * 0.5f
+var stylerBoostAlpha: Float = 1f
 
-fun calcIconRound(wh: Int) = wh.toFloat() * round_ratio
+fun calcIconRound(wh: Int) = wh.toFloat() * stylerRoundRatio
 
 fun calcIconRound(lp: ViewGroup.LayoutParams) =
-    min(lp.width, lp.height).toFloat() * round_ratio
+    min(lp.width, lp.height).toFloat() * stylerRoundRatio
 
 fun SpannableStringBuilder.appendColorShadeIcon(
     context: Context,

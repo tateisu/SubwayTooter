@@ -15,10 +15,12 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActNicknameBinding
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.util.backPressed
+import jp.juggler.util.boolean
 import jp.juggler.util.data.mayUri
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.string
 import jp.juggler.util.ui.*
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
@@ -47,9 +49,16 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         ActNicknameBinding.inflate(layoutInflater)
     }
 
-    private var showNotificationSound = false
-    private lateinit var acctAscii: String
-    private lateinit var acctPretty: String
+    private val acctAscii by lazy {
+        intent?.string(EXTRA_ACCT_ASCII)!!
+    }
+    private val acctPretty by lazy {
+        intent?.string(EXTRA_ACCT_PRETTY)!!
+    }
+    private val showNotificationSound by lazy {
+        intent?.boolean(EXTRA_SHOW_NOTIFICATION_SOUND) ?: false
+    }
+
     private var colorFg = 0
     private var colorBg = 0
     private var notificationSoundUri: String? = null
@@ -70,28 +79,22 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         arNotificationSound.register(this)
         App1.setActivityTheme(this)
 
-        val intent = intent
-        this.acctAscii = intent.getStringExtra(EXTRA_ACCT_ASCII)!!
-        this.acctPretty = intent.getStringExtra(EXTRA_ACCT_PRETTY)!!
-        this.showNotificationSound = intent.getBooleanExtra(EXTRA_SHOW_NOTIFICATION_SOUND, false)
-
         initUI()
-
         load()
     }
 
     private fun initUI() {
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
 
-        title = getString(
+        supportActionBar?.subtitle = getString(
             when {
                 showNotificationSound -> R.string.nickname_and_color_and_notification_sound
                 else -> R.string.nickname_and_color
             }
         )
-        setContentView(views.root)
-        App1.initEdgeToEdge(this)
-
-        fixHorizontalPadding(findViewById(R.id.llContent))
+        fixHorizontalMargin(views.llContent)
 
         views.btnTextColorEdit.setOnClickListener(this)
         views.btnTextColorReset.setOnClickListener(this)
@@ -127,8 +130,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     private fun load() {
         loadingBusy = true
 
-        findViewById<View>(R.id.llNotificationSound).visibility =
-            if (showNotificationSound) View.VISIBLE else View.GONE
+        views.llNotificationSound.vg(showNotificationSound)
 
         views.tvAcct.text = acctPretty
 

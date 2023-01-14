@@ -336,7 +336,7 @@ fun ActMain.setColumnsOrder(newOrder: List<Int>) {
 }
 
 fun ActMain.searchFromActivityResult(data: Intent?, columnType: ColumnType) =
-    data?.getStringExtra(Intent.EXTRA_TEXT)?.let {
+    data?.string(Intent.EXTRA_TEXT)?.let {
         addColumn(
             false,
             defaultInsertPosition,

@@ -74,7 +74,7 @@ class HighlightWord {
                 appDatabase.query(table, null, selection_name, arrayOf(name), null, null, null)
                     .use { cursor ->
                         if (cursor.moveToNext()) {
-                            return HighlightWord(cursor)
+                            return HighlightWord(cursor, ColIdx(cursor))
                         }
                     }
             } catch (ex: Throwable) {
@@ -95,7 +95,7 @@ class HighlightWord {
                     null
                 ).use { cursor ->
                     if (cursor.moveToNext()) {
-                        return HighlightWord(cursor)
+                        return HighlightWord(cursor, ColIdx(cursor))
                     }
                 }
             } catch (ex: Throwable) {
@@ -196,14 +196,24 @@ class HighlightWord {
         this.color_fg = -0x10000
     }
 
-    constructor(cursor: Cursor) {
-        this.id = cursor.getLong(COL_ID)
-        this.name = cursor.getString(COL_NAME)
-        this.color_bg = cursor.getInt(COL_COLOR_BG)
-        this.color_fg = cursor.getInt(COL_COLOR_FG)
-        this.sound_type = cursor.getInt(COL_SOUND_TYPE)
-        this.sound_uri = cursor.getStringOrNull(COL_SOUND_URI)
-        this.speech = cursor.getInt(COL_SPEECH)
+    class ColIdx(cursor: Cursor) {
+        val idxId = cursor.columnIndexOrThrow(COL_ID)
+        val idxName = cursor.columnIndexOrThrow(COL_NAME)
+        val idxColorBg = cursor.columnIndexOrThrow(COL_COLOR_BG)
+        val idxColorFg = cursor.columnIndexOrThrow(COL_COLOR_FG)
+        val idxSountType = cursor.columnIndexOrThrow(COL_SOUND_TYPE)
+        val idxSoundUri = cursor.columnIndexOrThrow(COL_SOUND_URI)
+        val idxSpeech = cursor.columnIndexOrThrow(COL_SPEECH)
+    }
+
+    constructor(cursor: Cursor, colIdx: ColIdx) {
+        id = cursor.getLong(colIdx.idxId)
+        name = cursor.getString(colIdx.idxName)
+        color_bg = cursor.getInt(colIdx.idxColorBg)
+        color_fg = cursor.getInt(colIdx.idxColorFg)
+        sound_type = cursor.getInt(colIdx.idxSountType)
+        sound_uri = cursor.getStringOrNull(colIdx.idxSoundUri)
+        speech = cursor.getInt(colIdx.idxSpeech)
     }
 
     fun save(context: Context) {

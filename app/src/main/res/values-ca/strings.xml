@@ -205,7 +205,6 @@
     <string name="contributor">col·laboradora</string>
     <string name="thanks_for">Gràcies per %1$s.</string>
     <string name="simple_list">Llista senzilla(cal reiniciar l\'aplicació)</string>
-    <string name="mute_app_desc">&gt;Llisca a l\'esquerra per eliminar. Refés les columnes per mostrar els missatges publicats per aplicacions no silenciades.</string>
     <string name="muted_app">Aplicacions silenciades</string>
     <string name="application_is">aplicació: %1$s</string>
     <string name="mute_app_of">Silencia l\'aplicació \"%1$s\"</string>

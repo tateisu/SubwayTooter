@@ -101,7 +101,6 @@ class PollingWorker2(
     private suspend fun showMessage(text: String) =
         CheckerNotification.showMessage(applicationContext, text) {
             try {
-                if (!isAppForehround()) error("app is not foreground.")
                 setForegroundAsync(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
                     .await()
             } catch (ex: Throwable) {

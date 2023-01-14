@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.string
 import jp.juggler.util.ui.isLiveActivity
 
 // マルチウィンドウモードでは投稿画面から直接呼ばれる
@@ -15,14 +16,14 @@ import jp.juggler.util.ui.isLiveActivity
 fun ActMain.onCompleteActPost(data: Intent) {
     if (!isLiveActivity) return
 
-    this.postedAcct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
+    this.postedAcct = data.string(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
     if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
         postedStatusId = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
         postedReplyId = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
         postedRedraftId = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
 
         val postedStatusId = postedStatusId
-        val statusJson = data.getStringExtra(ActPost.KEY_EDIT_STATUS)
+        val statusJson = data.string(ActPost.KEY_EDIT_STATUS)
             ?.decodeJsonObject()
         if (statusJson != null && postedStatusId != null) {
             appState.columnList

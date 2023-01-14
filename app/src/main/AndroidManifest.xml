@@ -293,7 +293,7 @@
         <activity
             android:name=".ActNickname"
             android:exported="false"
-            android:label="@string/nickname_and_color_and_notification_sound"
+            android:label="@string/acct_customize"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
@@ -305,7 +305,7 @@
         <activity
             android:name=".ActMediaViewer"
             android:exported="false"
-            android:theme="@style/AppTheme.Dark.NoActionBar" />
+            android:theme="@style/AppTheme.Dark" />
 
         <activity
             android:name=".ActExitReasons"
@@ -323,7 +323,7 @@
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/Light_colorAccent" />
+            android:resource="@color/Light_colorAppCompatAccent" />
 
         <meta-data
             android:name="android.allow_multiple_resumed_activities"

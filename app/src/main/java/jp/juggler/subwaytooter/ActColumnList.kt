@@ -6,8 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
@@ -17,22 +15,27 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.databinding.ActColumnListBinding
+import jp.juggler.subwaytooter.databinding.LvColumnListBinding
 import jp.juggler.util.backPressed
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notZero
 import jp.juggler.util.data.toJsonArray
+import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
-import jp.juggler.util.ui.activity
 import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.setNavigationBack
+import jp.juggler.util.ui.vg
 
 class ActColumnList : AppCompatActivity() {
 
     companion object {
 
         private val log = LogCategory("ActColumnList")
-        internal const val TMP_FILE_COLUMN_LIST = "tmp_column_list"
+        private const val TMP_FILE_COLUMN_LIST = "tmp_column_list"
 
+        // リザルトに使うのでpublic
         const val EXTRA_ORDER = "order"
         const val EXTRA_SELECTION = "selection"
 
@@ -44,90 +47,76 @@ class ActColumnList : AppCompatActivity() {
             }
     }
 
-    private lateinit var listView: DragListView
-    private lateinit var listAdapter: MyListAdapter
+    private val views by lazy {
+        ActColumnListBinding.inflate(layoutInflater)
+    }
+
+    private val listAdapter by lazy { MyListAdapter() }
+
+    private val defaultNameColor by lazy {
+        attrColor(R.attr.colorColumnListItemText)
+    }
+
     private var oldSelection: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         backPressed {
             makeResult(-1)
             finish()
         }
+
+        super.onCreate(savedInstanceState)
+
         App1.setActivityTheme(this)
+
         initUI()
 
         if (savedInstanceState != null) {
-            restoreData(savedInstanceState.getInt(EXTRA_SELECTION))
+            restoreData(savedInstanceState.int(EXTRA_SELECTION) ?: -1)
         } else {
             val intent = intent
-            restoreData(intent.getIntExtra(EXTRA_SELECTION, -1))
+            restoreData(intent?.int(EXTRA_SELECTION) ?: -1)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
         outState.putInt(EXTRA_SELECTION, oldSelection)
-
         val array = listAdapter.itemList.map { it.json }.toJsonArray()
         AppState.saveColumnList(this, TMP_FILE_COLUMN_LIST, array)
     }
 
     private fun initUI() {
-        setContentView(R.layout.act_column_list)
-        App1.initEdgeToEdge(this)
-
-        fixHorizontalPadding0(findViewById(R.id.llContent))
-
-        // リストのアダプター
-        listAdapter = MyListAdapter()
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.llContent)
 
         // ハンドル部分をドラッグで並べ替えできるRecyclerView
-        listView = findViewById(R.id.drag_list_view)
-        listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
-        listView.setAdapter(listAdapter, true)
-        listView.setCanDragHorizontally(false)
-        listView.setCustomDragItem(MyDragItem(this, R.layout.lv_column_list))
+        views.listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
+        views.listView.setAdapter(listAdapter, true)
+        views.listView.setCanDragHorizontally(false)
+        views.listView.setCustomDragItem(MyDragItem(this))
 
-        listView.recyclerView.isVerticalScrollBarEnabled = true
-        listView.setDragListListener(object : DragListView.DragListListenerAdapter() {
-            override fun onItemDragStarted(position: Int) {
-                // 操作中はリフレッシュ禁止
-                // mRefreshLayout.setEnabled( false );
-            }
-
-            override fun onItemDragEnded(fromPosition: Int, toPosition: Int) {
-                // 操作完了でリフレッシュ許可
-                // mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-
-                //				if( fromPosition != toPosition ){
-                //					// 並べ替えが発生した
-                //				}
-            }
+        views.listView.recyclerView.isVerticalScrollBarEnabled = true
+        views.listView.setDragListListener(object : DragListView.DragListListenerAdapter() {
+            override fun onItemDragStarted(position: Int) = Unit
+            override fun onItemDragEnded(fromPosition: Int, toPosition: Int) = Unit
         })
 
         // リストを左右スワイプした
-        listView.setSwipeListener(object : ListSwipeHelper.OnSwipeListenerAdapter() {
-
-            override fun onItemSwipeStarted(item: ListSwipeItem) {
-                // 操作中はリフレッシュ禁止
-                // mRefreshLayout.setEnabled( false );
-            }
-
+        views.listView.setSwipeListener(object : ListSwipeHelper.OnSwipeListenerAdapter() {
+            override fun onItemSwipeStarted(item: ListSwipeItem) = Unit
             override fun onItemSwipeEnded(
                 item: ListSwipeItem,
                 swipedDirection: ListSwipeItem.SwipeDirection?,
             ) {
-                // 操作完了でリフレッシュ許可
-                // mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-
                 // 左にスワイプした(右端に青が見えた) なら要素を削除する
                 if (swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-                    val adapterItem = item.tag as MyItem
+                    val adapterItem = (item.tag as MyViewHolder).lastItem!!
                     if (adapterItem.json.optBoolean(ColumnEncoder.KEY_DONT_CLOSE, false)) {
                         showToast(false, R.string.column_has_dont_close_option)
-                        listView.resetSwipedViews(null)
+                        views.listView.resetSwipedViews(null)
                         return
                     }
                     listAdapter.removeItem(listAdapter.getPositionForItem(adapterItem))
@@ -137,29 +126,27 @@ class ActColumnList : AppCompatActivity() {
     }
 
     private fun restoreData(ivSelection: Int) {
-
-        this.oldSelection = ivSelection
-
-        val tmpList = ArrayList<MyItem>()
-        try {
-            AppState.loadColumnList(this, TMP_FILE_COLUMN_LIST)
-                ?.objectList()
-                ?.forEachIndexed { index, src ->
-                    try {
-                        val item = MyItem(src, index.toLong(), this)
-                        tmpList.add(item)
-                        if (oldSelection == item.oldIndex) {
-                            item.setOldSelection(true)
+        oldSelection = ivSelection
+        // DragItemAdapter はMutableListを要求する
+        listAdapter.itemList = ArrayList<MyItem>().apply {
+            try {
+                AppState.loadColumnList(applicationContext, TMP_FILE_COLUMN_LIST)
+                    ?.objectList()
+                    ?.forEachIndexed { index, src ->
+                        try {
+                            val item = MyItem(src, index.toLong(), defaultNameColor)
+                            add(item)
+                            if (oldSelection == item.oldIndex) {
+                                item.setOldSelection(true)
+                            }
+                        } catch (ex: Throwable) {
+                            log.e(ex, "restoreData: item decode failed.")
                         }
-                    } catch (ex: Throwable) {
-                        log.e(ex, "restoreData: item decode failed.")
                     }
-                }
-        } catch (ex: Throwable) {
-            log.e(ex, "restoreData failed.")
+            } catch (ex: Throwable) {
+                log.e(ex, "restoreData failed.")
+            }
         }
-
-        listAdapter.itemList = tmpList
     }
 
     private fun makeResult(newSelection: Int) {
@@ -190,14 +177,15 @@ class ActColumnList : AppCompatActivity() {
         setResult(Activity.RESULT_OK, intent)
     }
 
-    private fun performItemSelected(item: MyItem) {
+    private fun performItemSelected(item: MyItem?) {
+        item ?: return
         val idx = listAdapter.getPositionForItem(item)
         makeResult(idx)
         finish()
     }
 
     // リスト要素のデータ
-    internal class MyItem(val json: JsonObject, val id: Long, context: Context) {
+    internal class MyItem(val json: JsonObject, val id: Long, defaultNameColor: Int) {
 
         val name: String = json.optString(ColumnEncoder.KEY_COLUMN_NAME)
         val acct: Acct = Acct.parse(json.optString(ColumnEncoder.KEY_COLUMN_ACCESS_ACCT))
@@ -206,7 +194,7 @@ class ActColumnList : AppCompatActivity() {
         val type = ColumnType.parse(json.optInt(ColumnEncoder.KEY_TYPE))
         val acctColorBg = json.optInt(ColumnEncoder.KEY_COLUMN_ACCESS_COLOR_BG, 0)
         val acctColorFg = json.optInt(ColumnEncoder.KEY_COLUMN_ACCESS_COLOR, 0)
-            .notZero() ?: context.attrColor(R.attr.colorColumnListItemText)
+            .notZero() ?: defaultNameColor
         var bOldSelection: Boolean = false
 
         fun setOldSelection(b: Boolean) {
@@ -215,88 +203,73 @@ class ActColumnList : AppCompatActivity() {
     }
 
     // リスト要素のViewHolder
-    internal inner class MyViewHolder(viewRoot: View) : DragItemAdapter.ViewHolder(
-        viewRoot,
+    private inner class MyViewHolder(
+        parent: ViewGroup?,
+        val views: LvColumnListBinding =
+            LvColumnListBinding.inflate(layoutInflater, parent, false),
+    ) : DragItemAdapter.ViewHolder(
+        views.root,
         R.id.ivDragHandle, // View ID。 ここを押すとドラッグ操作をすぐに開始する
         true, // 長押しでドラッグ開始するなら真
     ) {
-
-        private val ivBookmark: View = viewRoot.findViewById(R.id.ivBookmark)
-        private val tvAccess: TextView = viewRoot.findViewById(R.id.tvAccess)
-        private val tvName: TextView = viewRoot.findViewById(R.id.tvName)
-        private val ivColumnIcon: ImageView = viewRoot.findViewById(R.id.ivColumnIcon)
-        private val acctPadLr = (0.5f + 4f * viewRoot.resources.displayMetrics.density).toInt()
+        var lastItem: MyItem? = null
+        val acctPadLr = (0.5f + 4f * views.root.resources.displayMetrics.density).toInt()
 
         init {
-            // リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
-            if (viewRoot is ListSwipeItem) {
-                viewRoot.setSwipeInStyle(ListSwipeItem.SwipeInStyle.SLIDE)
-                viewRoot.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
-            }
+            views.root.tag = this
+            views.root.setSwipeInStyle(ListSwipeItem.SwipeInStyle.SLIDE)
+            views.root.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
         }
 
-        fun bind(item: MyItem) {
-            itemView.tag = item // itemView は親クラスのメンバ変数
-            ivBookmark.visibility = if (item.bOldSelection) View.VISIBLE else View.INVISIBLE
-            tvAccess.text = item.acctName
-            tvAccess.setTextColor(item.acctColorFg)
-            tvAccess.setBackgroundColor(item.acctColorBg)
-            tvAccess.setPaddingRelative(acctPadLr, 0, acctPadLr, 0)
-            tvName.text = item.name
-            ivColumnIcon.setImageResource(item.type.iconId(item.acct))
+        fun bind(item: MyItem?) {
+            item ?: return
+            lastItem = item
+            views.ivSelected.vg(item.bOldSelection)
+            views.tvAccess.text = item.acctName
+            views.tvAccess.setTextColor(item.acctColorFg)
+            views.tvAccess.setBackgroundColor(item.acctColorBg)
+            views.tvAccess.setPaddingRelative(acctPadLr, 0, acctPadLr, 0)
+            views.tvName.text = item.name
+            views.ivColumnIcon.setImageResource(item.type.iconId(item.acct))
             // 背景色がテーマ次第なので、カラム設定の色を反映するとアイコンが見えなくなる可能性がある
             // よってアイコンやテキストにカラム設定の色を反映しない
         }
 
-        //		@Override
-        //		public boolean onItemLongClicked( View view ){
-        //			return false;
-        //		}
-
         override fun onItemClicked(view: View?) {
-            val item = itemView.tag as MyItem // itemView は親クラスのメンバ変数
-            (view.activity as? ActColumnList)?.performItemSelected(item)
+            performItemSelected(lastItem)
         }
     }
 
     // ドラッグ操作中のデータ
-    private inner class MyDragItem(context: Context, layoutId: Int) :
-        DragItem(context, layoutId) {
-
+    private inner class MyDragItem(context: Context) : DragItem(context, R.layout.lv_column_list) {
         override fun onBindDragView(clickedView: View, dragView: View) {
-            val item = clickedView.tag as MyItem
+            val dragViews = LvColumnListBinding.bind(dragView)
+            val clickVh = clickedView.tag as MyViewHolder
+            val clickViews = clickVh.views
+            val item = clickVh.lastItem!!
 
-            var tv: TextView = dragView.findViewById(R.id.tvAccess)
-            tv.text = item.acctName
-            tv.setTextColor(item.acctColorFg)
-            tv.setBackgroundColor(item.acctColorBg)
+            dragViews.tvAccess.run {
+                text = item.acctName
+                setTextColor(item.acctColorFg)
+                setBackgroundColor(item.acctColorBg)
+            }
 
-            tv = dragView.findViewById(R.id.tvName)
-            tv.text = item.name
-
-            val ivColumnIcon: ImageView = dragView.findViewById(R.id.ivColumnIcon)
-            ivColumnIcon.setImageResource(item.type.iconId(item.acct))
-
-            dragView.findViewById<View>(R.id.ivBookmark).visibility =
-                clickedView.findViewById<View>(R.id.ivBookmark).visibility
-
-            dragView.findViewById<View>(R.id.item_layout)
-                .setBackgroundColor(attrColor(R.attr.list_item_bg_pressed_dragged))
+            dragViews.tvName.text = item.name
+            dragViews.ivColumnIcon.setImageResource(item.type.iconId(item.acct))
+            dragViews.ivSelected.visibility = clickViews.ivSelected.visibility
+            dragViews.itemLayout.setBackgroundColor(attrColor(R.attr.list_item_bg_pressed_dragged))
         }
     }
 
-    private inner class MyListAdapter :
-        DragItemAdapter<MyItem, MyViewHolder>() {
+    private inner class MyListAdapter : DragItemAdapter<MyItem, MyViewHolder>() {
 
         init {
             setHasStableIds(true)
             itemList = ArrayList()
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-            val view = layoutInflater.inflate(R.layout.lv_column_list, parent, false)
-            return MyViewHolder(view)
-        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder =
+            MyViewHolder(parent)
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             super.onBindViewHolder(holder, position)

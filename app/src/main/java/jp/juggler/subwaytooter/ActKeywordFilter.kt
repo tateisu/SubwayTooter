@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.CheckBox
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
 import jp.juggler.subwaytooter.api.ApiPath
@@ -16,13 +17,18 @@ import jp.juggler.subwaytooter.databinding.ActKeywordFilterBinding
 import jp.juggler.subwaytooter.databinding.LvKeywordFilterBinding
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
+import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import jp.juggler.util.long
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.network.toPut
 import jp.juggler.util.network.toRequestBody
+import jp.juggler.util.string
+import jp.juggler.util.ui.setNavigationBack
 
 class ActKeywordFilter : AppCompatActivity() {
 
@@ -93,6 +99,7 @@ class ActKeywordFilter : AppCompatActivity() {
     ///////////////////////////////////////////////////
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        backPressed { confirmBack() }
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
 
@@ -101,7 +108,8 @@ class ActKeywordFilter : AppCompatActivity() {
         // filter ID の有無はUIに影響するのでinitUIより先に初期化する
         this.filterId = EntityId.from(intent, EXTRA_FILTER_ID)
 
-        val a = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, -1L))
+        val a = intent.long(EXTRA_ACCOUNT_DB_ID)
+            ?.let { SavedAccount.loadAccount(this, it) }
         if (a == null) {
             finish()
             return
@@ -117,7 +125,7 @@ class ActKeywordFilter : AppCompatActivity() {
                 startLoading()
             } else {
                 views.spExpire.setSelection(1)
-                val initialText = intent.getStringExtra(EXTRA_INITIAL_PHRASE)?.trim() ?: ""
+                val initialText = intent.string(EXTRA_INITIAL_PHRASE)?.trim() ?: ""
                 views.etTitle.setText(initialText)
                 addKeywordArea(TootFilterKeyword(keyword = initialText))
             }
@@ -135,11 +143,12 @@ class ActKeywordFilter : AppCompatActivity() {
                         log.e(ex, "can't decode TootFilterKeyword")
                     }
                 }
-            val iv = savedInstanceState.getInt(STATE_EXPIRE_SPINNER, -1)
-            if (iv != -1) {
-                views.spExpire.setSelection(iv)
-            }
-            filterExpire = savedInstanceState.getLong(STATE_EXPIRE_AT, filterExpire)
+
+            savedInstanceState.int(STATE_EXPIRE_SPINNER)
+                ?.let { views.spExpire.setSelection(it) }
+
+            savedInstanceState.long(STATE_EXPIRE_AT)
+                ?.let { filterExpire = it }
         }
     }
 
@@ -159,18 +168,19 @@ class ActKeywordFilter : AppCompatActivity() {
     }
 
     private fun initUI() {
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.llContent)
+
+        this.density = resources.displayMetrics.density
+
         title = getString(
             when (filterId) {
                 null -> R.string.keyword_filter_new
                 else -> R.string.keyword_filter_edit
             }
         )
-
-        this.density = resources.displayMetrics.density
-        setContentView(views.root)
-        App1.initEdgeToEdge(this)
-
-        fixHorizontalPadding(findViewById(R.id.svContent))
 
         views.btnSave.setOnClickListener { save() }
         views.btnAddKeyword.setOnClickListener {
@@ -197,6 +207,14 @@ class ActKeywordFilter : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, captionList)
         adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
         views.spExpire.adapter = adapter
+    }
+
+    private fun confirmBack() {
+        AlertDialog.Builder(this)
+            .setMessage(R.string.keyword_filter_quit_waring)
+            .setPositiveButton(R.string.ok) { _, _ -> finish() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun showAccount() {
@@ -299,7 +317,7 @@ class ActKeywordFilter : AppCompatActivity() {
 
         launchMain {
 
-            var result = saveV2(vhList)
+            var result = saveV2(vhList, title)
             if (result?.response?.code == 404) {
                 result = saveV1(vhList)
             }
@@ -378,13 +396,12 @@ class ActKeywordFilter : AppCompatActivity() {
         }
     }
 
-    private suspend fun saveV2(vhList: List<VhKeyword>): TootApiResult? {
+    private suspend fun saveV2(vhList: List<VhKeyword>, title: String): TootApiResult? {
         val params = filterParamBase().apply {
+            put("title", title)
             put(
-                "filter_action", when {
-                    views.rbHide.isChecked -> "hide"
-                    else -> "warn"
-                }
+                "filter_action",
+                if (views.rbHide.isChecked) "hide" else "warn"
             )
             put("keywords_attributes", buildJsonArray {
                 vhList.forEach { vh ->

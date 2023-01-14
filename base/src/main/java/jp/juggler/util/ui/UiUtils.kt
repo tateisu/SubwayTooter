@@ -27,6 +27,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -251,7 +252,7 @@ fun setIconDrawableId(
     imageView: ImageView,
     drawableId: Int,
     color: Int? = null,
-    alphaMultiplier: Float,
+    alphaMultiplier: Float = 1f,
 ) {
     if (color == null) {
         // ImageViewにアイコンを設定する。デフォルトの色
@@ -380,4 +381,9 @@ val ActivityResult.decodeRingtonePickerResult
     get() = when {
         isNotOk -> null
         else -> data?.getUriExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+    }
+
+fun AppCompatActivity.setNavigationBack(toolbar: Toolbar) =
+    toolbar.setNavigationOnClickListener {
+        onBackPressedDispatcher.onBackPressed()
     }

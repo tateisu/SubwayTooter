@@ -107,10 +107,10 @@ class ActCallback : AppCompatActivity() {
     private fun copyExtraTexts(dst: Intent, src: Intent) {
         var sv: String?
         //
-        sv = src.getStringExtra(Intent.EXTRA_TEXT)
+        sv = src.string(Intent.EXTRA_TEXT)
         if (sv != null) dst.putExtra(Intent.EXTRA_TEXT, sv)
         //
-        sv = src.getStringExtra(Intent.EXTRA_SUBJECT)
+        sv = src.string(Intent.EXTRA_SUBJECT)
         if (sv != null) dst.putExtra(Intent.EXTRA_SUBJECT, sv)
     }
 
@@ -175,7 +175,7 @@ class ActCallback : AppCompatActivity() {
                 // Swarmアプリから送られたインテントは getType()==null だが EXTRA_TEXT は含まれている
                 // EXTRA_TEXT の存在を確認してからtypeがnullもしくは text/plain なら受け取る
 
-                val sv = src.getStringExtra(Intent.EXTRA_TEXT)
+                val sv = src.string(Intent.EXTRA_TEXT)
                 if (sv?.isNotEmpty() == true && (type == null || type.startsWith("text/"))) {
                     val dst = Intent(action)
                     dst.type = "text/plain"

@@ -48,21 +48,18 @@ object ServerTimeoutNotification {
         val header = context.getString(R.string.error_notification_title)
         val summary = context.getString(R.string.error_notification_summary)
 
-        builder
-            .setContentIntent(clickPi)
-            .setAutoCancel(true)
-            .setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
-            .setColor(
-                ContextCompat.getColor(
-                    context,
-                    R.color.Light_colorAccent
-                )
-            ) // ここは常に白テーマの色を使う
-            .setWhen(System.currentTimeMillis())
-            .setGroup(context.packageName + ":" + "Error")
-            .setContentTitle(header)
-            .setContentText("$summary: $accounts")
-
+        // ここは常に白テーマのアイコンを使う
+        // ここは常に白テーマの色を使う
+        builder.apply {
+            setContentIntent(clickPi)
+            setAutoCancel(true)
+            setSmallIcon(R.drawable.ic_notification)
+            color = ContextCompat.getColor(context, R.color.colorOsNotificationAccent)
+            setWhen(System.currentTimeMillis())
+            setGroup(context.packageName + ":" + "Error")
+            setContentTitle(header)
+            setContentText("$summary: $accounts")
+        }
         notificationManager.notify(NOTIFICATION_ID_TIMEOUT, builder.build())
     }
 }

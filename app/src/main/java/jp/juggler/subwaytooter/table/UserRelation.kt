@@ -351,7 +351,7 @@ class UserRelation {
 
         fun loadPseudo(acct: Acct) = load(DB_ID_PSEUDO, acct.ascii)
 
-        fun createCursorPseudo(): Cursor =
+        fun createCursorPseudoMuted(): Cursor =
             appDatabase.query(
                 table,
                 arrayOf(COL_ID.name, COL_WHO_ID.name),

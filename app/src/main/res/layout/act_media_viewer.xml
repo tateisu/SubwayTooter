@@ -62,7 +62,7 @@
             android:contentDescription="@string/more"
             android:minWidth="48dp"
             android:src="@drawable/ic_more"
-            app:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorTextContent" />
 
         <ImageButton
             android:id="@+id/btnDownload"
@@ -71,7 +71,7 @@
             android:contentDescription="@string/download"
             android:minWidth="48dp"
             android:src="@drawable/ic_download"
-            app:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorTextContent" />
 
         <ImageButton
             android:id="@+id/btnNext"
@@ -80,7 +80,7 @@
             android:contentDescription="@string/next"
             android:minWidth="48dp"
             android:src="@drawable/ic_arrow_end"
-            app:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorTextContent" />
 
         <ImageButton
             android:id="@+id/btnPrevious"
@@ -90,7 +90,7 @@
 
             android:minWidth="48dp"
             android:src="@drawable/ic_arrow_start"
-            app:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorTextContent" />
 
         <TextView
             android:id="@+id/tvStatus"

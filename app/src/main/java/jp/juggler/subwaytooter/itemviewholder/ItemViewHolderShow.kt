@@ -154,7 +154,7 @@ fun ItemViewHolder.bind(
 
     var c: Int
     c = column.getContentColor()
-    this.contentColor = c
+    this.colorTextContent = c
     this.contentColorCsl = ColorStateList.valueOf(c)
 
     tvBoosted.setTextColor(c)
@@ -291,8 +291,8 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
         ivFollowedBy,
         relation,
         who,
-        contentColor,
-        alphaMultiplier = boostAlpha
+        colorTextContent,
+        alphaMultiplier = stylerBoostAlpha
     )
 
     if (column.type == ColumnType.FOLLOW_REQUESTS) {
@@ -305,7 +305,7 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
 fun ItemViewHolder.showAntenna(a: MisskeyAntenna) {
     llList.visibility = View.VISIBLE
     btnListTL.text = a.name
-    btnListTL.textColor = contentColor
+    btnListTL.textColor = colorTextContent
     btnListMore.imageTintList = contentColorCsl
 }
 
@@ -326,8 +326,8 @@ fun ItemViewHolder.showBoost(
         activity,
         ivBoosted,
         iconId,
-        color = contentColor,
-        alphaMultiplier = boostAlpha
+        color = colorTextContent,
+        alphaMultiplier = stylerBoostAlpha
     )
 
     ivBoostAvatar.let { v ->
@@ -382,7 +382,7 @@ fun ItemViewHolder.showMessageHolder(item: TootMessageHolder) {
 fun ItemViewHolder.showList(list: TootList) {
     llList.visibility = View.VISIBLE
     btnListTL.text = list.title
-    btnListTL.textColor = contentColor
+    btnListTL.textColor = colorTextContent
     btnListMore.imageTintList = contentColorCsl
 }
 
@@ -486,8 +486,8 @@ fun ItemViewHolder.showReply(
         activity,
         ivReply,
         iconId,
-        color = contentColor,
-        alphaMultiplier = boostAlpha
+        color = colorTextContent,
+        alphaMultiplier = stylerBoostAlpha
     )
 
     ivReplyAvatar.vg(target != null && target.avatar != replyer?.avatar)?.let { v ->
@@ -808,8 +808,8 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 activity,
                 btnHideMedia,
                 R.drawable.ic_close,
-                color = contentColor,
-                alphaMultiplier = boostAlpha
+                color = colorTextContent,
+                alphaMultiplier = stylerBoostAlpha
             )
         }
 

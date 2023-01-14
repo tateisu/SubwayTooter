@@ -121,7 +121,7 @@ object MessageNotification {
             setSmallIcon(R.drawable.ic_notification)
 
             // 常に白テーマの色を使う
-            builder.color = ContextCompat.getColor(context, R.color.Light_colorAccent)
+            color = ContextCompat.getColor(context, R.color.colorOsNotificationAccent)
 
             // Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
             // 束ねられた通知をタップしても pi_click が実行されないので困るため、

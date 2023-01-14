@@ -19,11 +19,9 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.subwaytooter.util.PostResult
+import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.CharacterGroup
-import jp.juggler.util.getIntentExtra
-import jp.juggler.util.getStreamUriExtra
-import jp.juggler.util.getStreamUriListExtra
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.vg
@@ -81,9 +79,9 @@ fun ActPost.appendContentText(src: Intent) {
     val list = ArrayList<String>()
 
     var sv: String?
-    sv = src.getStringExtra(Intent.EXTRA_SUBJECT)
+    sv = src.string(Intent.EXTRA_SUBJECT)
     if (sv?.isNotEmpty() == true) list.add(sv)
-    sv = src.getStringExtra(Intent.EXTRA_TEXT)
+    sv = src.string(Intent.EXTRA_TEXT)
     if (sv?.isNotEmpty() == true) list.add(sv)
 
     if (list.isNotEmpty()) {
@@ -183,8 +181,9 @@ fun ActPost.updateText(
     if (resetAccount) {
         states.visibility = null
         this.account = null
-        val accountDbId = intent.getLongExtra(ActPost.KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
-        accountList.find { it.db_id == accountDbId }?.let { selectAccount(it) }
+        intent.long(ActPost.KEY_ACCOUNT_DB_ID)
+            ?.let { dbId -> accountList.find { it.db_id == dbId } }
+            ?.let { selectAccount(it) }
     }
 
     val sharedIntent = intent.getIntentExtra(ActPost.KEY_SHARED_INTENT)
@@ -193,12 +192,12 @@ fun ActPost.updateText(
         initializeFromSharedIntent(sharedIntent)
     }
 
-    appendContentText(intent.getStringExtra(ActPost.KEY_INITIAL_TEXT))
+    appendContentText(intent.string(ActPost.KEY_INITIAL_TEXT))
 
     val account = this.account
 
     if (account != null) {
-        intent.getStringExtra(ActPost.KEY_REPLY_STATUS)
+        intent.string(ActPost.KEY_REPLY_STATUS)
             ?.let { initializeFromReplyStatus(account, it) }
     }
 
@@ -207,15 +206,15 @@ fun ActPost.updateText(
 
     if (account != null) {
         // 再編集
-        intent.getStringExtra(ActPost.KEY_REDRAFT_STATUS)
+        intent.string(ActPost.KEY_REDRAFT_STATUS)
             ?.let { initializeFromRedraftStatus(account, it) }
 
         // 再編集
-        intent.getStringExtra(ActPost.KEY_EDIT_STATUS)
+        intent.string(ActPost.KEY_EDIT_STATUS)
             ?.let { initializeFromEditStatus(account, it) }
 
         // 予約編集の再編集
-        intent.getStringExtra(ActPost.KEY_SCHEDULED_STATUS)
+        intent.string(ActPost.KEY_SCHEDULED_STATUS)
             ?.let { initializeFromScheduledStatus(account, it) }
     }
 

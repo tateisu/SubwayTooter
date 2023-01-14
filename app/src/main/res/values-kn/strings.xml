@@ -181,7 +181,6 @@
     <string name="contributor">ಕೊಡುಗೆದಾರರು</string>
     <string name="thanks_for">%1$sಗೆ ಧನ್ಯವಾದಗಳು.</string>
     <string name="simple_list">ಸರಳ ಪಟ್ಟಿ (ಅನ್ವಯ ಮರುಪ್ರಾರಂಭ ಅಗತ್ಯ)</string>
-    <string name="mute_app_desc">&gt;ಅಳಿಸಲು ಎಡಕ್ಕೆ ತಳ್ಳಿ. ಸದ್ದಡಗಿಸಿರುವ ಅನ್ವಯಗಳಿಂದ ಪ್ರಕಟಿಸಲಾದ ಸ್ಥಿತಿಗಳನ್ನು ತೋರಿಸಲು ಅಂಕಣಗಳನ್ನು ಮರುಲೋಡ್ ಮಾಡಿ.</string>
     <string name="muted_app">ಸದ್ದಡಗಿಸಿರುವ ಅನ್ವಯಗಳು</string>
     <string name="application_is">ಅನ್ವಯ: %1$s</string>
     <string name="mute_app_of">\"%1$s\" ಅನ್ವಯ ಸದ್ದಡಗಿಸು</string>

@@ -110,7 +110,7 @@ internal class ViewHolderHeaderProfile(
     private val tvPersonalNotes: TextView
     private val btnPersonalNotesEdit: ImageButton
 
-    private var contentColor = 0
+    private var colorTextContent = 0
     private var relation: UserRelation? = null
 
     init {
@@ -220,7 +220,7 @@ internal class ViewHolderHeaderProfile(
     // bind時に呼ばれる
     private fun bindColors() {
         val contentColor = column.getContentColor()
-        this.contentColor = contentColor
+        this.colorTextContent = contentColor
 
         tvPersonalNotes.textColor = contentColor
         tvMoved.textColor = contentColor
@@ -238,7 +238,7 @@ internal class ViewHolderHeaderProfile(
             btnMore,
             R.drawable.ic_more,
             color = contentColor,
-            alphaMultiplier = boostAlpha
+            alphaMultiplier = stylerBoostAlpha
         )
 
         setIconDrawableId(
@@ -246,7 +246,7 @@ internal class ViewHolderHeaderProfile(
             btnPersonalNotesEdit,
             R.drawable.ic_edit,
             color = contentColor,
-            alphaMultiplier = boostAlpha
+            alphaMultiplier = stylerBoostAlpha
         )
 
         val acctColor = column.getAcctColor()
@@ -378,8 +378,8 @@ internal class ViewHolderHeaderProfile(
             ivFollowedBy,
             relation,
             who,
-            contentColor,
-            alphaMultiplier = boostAlpha
+            colorTextContent,
+            alphaMultiplier = stylerBoostAlpha
         )
 
         tvPersonalNotes.text = relation.note ?: ""
@@ -421,8 +421,8 @@ internal class ViewHolderHeaderProfile(
             ivMovedBy,
             relation,
             moved,
-            contentColor,
-            alphaMultiplier = boostAlpha
+            colorTextContent,
+            alphaMultiplier = stylerBoostAlpha
         )
     }
 
@@ -693,7 +693,7 @@ internal class ViewHolderHeaderProfile(
             nameLp.topMargin = (density * 6f).toInt()
             nameView.layoutParams = nameLp
             nameView.text = nameText
-            nameView.setTextColor(contentColor)
+            nameView.setTextColor(colorTextContent)
             nameView.typeface = nameTypeface
             nameView.movementMethod = MyLinkMovementMethod
             llFields.addView(nameView)
@@ -732,7 +732,7 @@ internal class ViewHolderHeaderProfile(
             valueLp.startMargin = (density * 32f).toInt()
             valueView.layoutParams = valueLp
             valueView.text = valueText
-            valueView.setTextColor(contentColor)
+            valueView.setTextColor(colorTextContent)
             valueView.typeface = valueTypeface
             valueView.movementMethod = MyLinkMovementMethod
 

@@ -160,7 +160,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
 
         if (ratio != null) {
             b.backgroundDrawable = PollPlotDrawable(
-                color = (contentColor and 0xFFFFFF) or 0x20000000,
+                color = (colorTextContent and 0xFFFFFF) or 0x20000000,
                 ratio = ratio,
                 isRtl = b.layoutDirection == View.LAYOUT_DIRECTION_RTL,
                 startWidth = (activity.density * 2f + 0.5f).toInt()

@@ -109,7 +109,7 @@ class Column(
                 ?: activity.attrColor(R.attr.colorTimeSmall)
 
             defaultColorContentText = PrefI.ipCcdContentText(pref).notZero()
-                ?: activity.attrColor(R.attr.colorContentText)
+                ?: activity.attrColor(R.attr.colorTextContent)
         }
 
         private val internalIdSeed = AtomicInteger(0)

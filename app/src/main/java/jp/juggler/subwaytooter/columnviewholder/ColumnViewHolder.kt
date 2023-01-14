@@ -1071,7 +1071,7 @@ class ColumnViewHolder(
                     contentDescription = context.getString(R.string.add)
                     imageResource = R.drawable.ic_add
                     imageTintList = ColorStateList.valueOf(
-                        context.attrColor(R.attr.colorVectorDrawable)
+                        context.attrColor(R.attr.colorTextContent)
                     )
                 }.lparams(dip(40), dip(40)) {
                     startMargin = dip(4)
@@ -1082,7 +1082,7 @@ class ColumnViewHolder(
                     contentDescription = context.getString(R.string.clear)
                     imageResource = R.drawable.ic_close
                     imageTintList = ColorStateList.valueOf(
-                        context.attrColor(R.attr.colorVectorDrawable)
+                        context.attrColor(R.attr.colorTextContent)
                     )
                 }.lparams(dip(40), dip(40)) {
                     startMargin = dip(4)
@@ -1093,7 +1093,7 @@ class ColumnViewHolder(
                     contentDescription = context.getString(R.string.search)
                     imageResource = R.drawable.ic_search
                     imageTintList = ColorStateList.valueOf(
-                        context.attrColor(R.attr.colorVectorDrawable)
+                        context.attrColor(R.attr.colorTextContent)
                     )
                 }.lparams(dip(40), dip(40)) {
                     startMargin = dip(4)
@@ -1132,9 +1132,7 @@ class ColumnViewHolder(
                 contentDescription = context.getString(R.string.add)
                 imageResource = R.drawable.ic_add
                 imageTintList = ColorStateList.valueOf(
-                    context.attrColor(
-                        R.attr.colorVectorDrawable
-                    )
+                    context.attrColor(R.attr.colorTextContent)
                 )
             }.lparams(dip(40), dip(40)) {
                 startMargin = dip(4)

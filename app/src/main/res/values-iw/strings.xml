@@ -163,7 +163,6 @@
     <string name="thanks_for">תודה עבור %1$s</string>
     <string name="confirm_post_from">לפרסם תרועה של %1$s \?</string>
     <string name="simple_list">רשימה פשוטה (נא הפעל מחדש את היישום)</string>
-    <string name="mute_app_desc">&gt; נגב שמאלה כדי למחוק. טען מחדש עמודות כדי להציג סטטוסים שפורסמו על ידי יישומים שלא הושתקו.</string>
     <string name="muted_app">יישומים מושתקים</string>
     <string name="application_is">יישום: %1$s</string>
     <string name="mute_app_of">השתק יישום \"%1$s\"</string>

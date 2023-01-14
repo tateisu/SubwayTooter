@@ -37,7 +37,7 @@ fun ColumnViewHolder.showQuickFilter() {
     if (insideColumnSetting) {
         svQuickFilter.setBackgroundColor(0)
 
-        val colorFg = activity.attrColor(R.attr.colorContentText)
+        val colorFg = activity.attrColor(R.attr.colorTextContent)
         val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
         val colorFgList = ColorStateList.valueOf(colorFg)
         val colorBg = activity.attrColor(R.attr.colorColumnSettingBackground)

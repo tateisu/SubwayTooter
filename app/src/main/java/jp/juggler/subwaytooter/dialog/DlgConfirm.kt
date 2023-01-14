@@ -98,7 +98,7 @@ object DlgConfirm {
         confirm(getString(messageId, *args))
 
     suspend fun AppCompatActivity.confirm(message: CharSequence) {
-        suspendCancellableCoroutine<Unit> { cont ->
+        suspendCancellableCoroutine { cont ->
             try {
                 val views = DlgConfirmBinding.inflate(layoutInflater)
                 views.tvMessage.text = message

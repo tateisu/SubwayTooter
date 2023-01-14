@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Build
@@ -418,22 +417,19 @@ class App1 : Application() {
 
         fun setActivityTheme(
             activity: AppCompatActivity,
-            noActionBar: Boolean = false,
             forceDark: Boolean = false,
         ) {
-
             prepare(activity.applicationContext, "setActivityTheme")
 
             var nTheme = PrefI.ipUiTheme(appPref)
             if (forceDark && nTheme == 0) nTheme = 1
             activity.setTheme(
                 when (nTheme) {
-                    2 -> if (noActionBar) R.style.AppTheme_Mastodon_NoActionBar else R.style.AppTheme_Dark
-                    1 -> if (noActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Mastodon
-                    else -> if (noActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
+                    2 -> R.style.AppTheme_Mastodon
+                    1 -> R.style.AppTheme_Dark
+                    else -> R.style.AppTheme_Light
                 }
             )
-
             activity.setStatusBarColor(forceDark = forceDark)
         }
 
@@ -513,19 +509,6 @@ class App1 : Application() {
                 log.e(ex, "getHttp content error. $url")
                 null
             }
-        }
-
-        // https://developer.android.com/preview/features/gesturalnav?hl=ja
-        fun initEdgeToEdge(@Suppress("UNUSED_PARAMETER") activity: Activity) {
-            //if(Build.VERSION.SDK_INT >= 29){
-            //	val viewRoot = activity.findViewById<ViewGroup>(android.R.id.content).getChildAt(0)
-            //	viewRoot.systemUiVisibility = (viewRoot.systemUiVisibility
-            //		or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            //		or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
-            //	viewRoot.setOnApplyWindowInsetsListener { v, insets ->
-            //		insets.consumeSystemWindowInsets()
-            //	}
-            //}
         }
     }
 }

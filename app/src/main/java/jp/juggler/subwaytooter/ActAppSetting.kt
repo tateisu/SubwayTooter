@@ -152,7 +152,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         arTimelineFont.register(this)
         arTimelineFontBold.register(this)
 
-        App1.setActivityTheme(this, noActionBar = true)
+        App1.setActivityTheme(this)
 
         this.handler = App1.getAppState(this).handler
         this.pref = pref()
@@ -180,7 +180,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private fun initUi() {
         setContentView(views.root)
-        App1.initEdgeToEdge(this)
 
         fixHorizontalPadding0(views.llContent)
 

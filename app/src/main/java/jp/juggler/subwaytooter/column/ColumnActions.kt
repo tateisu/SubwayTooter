@@ -7,12 +7,10 @@ import jp.juggler.subwaytooter.notification.onNotificationCleared
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.matchHost
-import jp.juggler.util.coroutine.EmptyScope
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.AdapterChange
 import jp.juggler.util.ui.AdapterChangeType
-import kotlinx.coroutines.launch
 import kotlin.collections.set
 
 private val log = LogCategory("ColumnActions")
@@ -194,14 +192,7 @@ fun Column.removeNotifications() {
     listData.clear()
     duplicateMap.clear()
     fireShowContent(reason = "removeNotifications", reset = true)
-
-    EmptyScope.launch {
-        try {
-            onNotificationCleared(context, accessInfo.db_id)
-        } catch (ex: Throwable) {
-            log.e(ex, "onNotificationCleared failed.")
-        }
-    }
+    onNotificationCleared(context, accessInfo.db_id)
 }
 
 // 通知を削除した後に呼ばれる

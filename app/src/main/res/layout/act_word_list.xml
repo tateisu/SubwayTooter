@@ -1,29 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="vertical">
 
-    android:id="@+id/llContent"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/action_bar_bg"
+        android:elevation="4dp"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
 
-    >
-
-    <!-- Need to wrap DragListView in another layout for wrap_content to work for some reason -->
-    <com.woxthebox.draglistview.DragListView
-        android:id="@+id/drag_list_view"
+    <LinearLayout
+        android:id="@+id/llContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:textSize="12sp"
-        android:text="@string/mute_app_desc"
-        android:gravity="center"
+        android:orientation="vertical">
 
-        />
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fadeScrollbars="false"
+            android:scrollbarStyle="outsideOverlay"
+            tools:ignore="NestedWeights" />
+
+        <TextView
+            android:id="@+id/tvFooterDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:text="@string/refresh_after_ummute"
+            android:textSize="12sp" />
+    </LinearLayout>
 </LinearLayout>

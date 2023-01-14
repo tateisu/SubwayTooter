@@ -13,9 +13,6 @@
     <!-- CWボタンの背景色 -->
     <attr name="colorButtonBgCw" format="color"/>
 
-    <!-- イメージボタンの図柄の色 0xff000000 -->
-    <attr name="colorImageButton" format="color"/>
-
     <!-- イメージボタンの図柄の色 ファボ済みなど 0xff0088ff-->
     <attr name="colorConversationMainTootBg" format="color"/>
 
@@ -44,10 +41,10 @@
     <attr name="colorTimeSmall" format="color"/>
 
     <!-- 本文テキスト -->
-    <attr name="colorContentText" format="color"/>
+    <!-- カスタマイズしない画面のImageButtonの図柄のtint -->
+    <attr name="colorTextContent" format="color"/>
 
     <attr name="colorRefreshErrorBg" format="color"/>
-
 
     <!-- プロフ背景を薄くするマスク #C0FFFFFF -->
     <attr name="colorProfileBackgroundMask" format="color"/>
@@ -88,8 +85,6 @@
     <!-- サムネイルの背景色 -->
     <attr name="colorThumbnailBackground" format="color"/>
 
-    <!-- VectorDrawableのXMLに指定するfillColor -->
-    <attr name="colorVectorDrawable" format="color"/>
 
     <!-- @drawable/window_background_light と @drawable/window_background に指定した色をgetAttributeColorで取得したい -->
     <attr name="colorWindowBackground" format="color"/>
@@ -104,5 +99,11 @@
     <attr name="colorButtonAccentFollow" format="color"/>
     <attr name="colorButtonAccentFollowRequest" format="color"/>
     <attr name="colorButtonAccentReaction" format="color"/>
+
+    <!-- ヘルプテキストなど、少し色の違うテキスト色 -->
+    <attr name="colorTextHelp" format="color"/>
+
+    <attr name="colorActionBarBg" format="color"/>
+    <attr name="colorActionBarBgStacked" format="color"/>
 
 </resources>

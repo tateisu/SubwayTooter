@@ -11,11 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorSearchFormBackground"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
         android:paddingEnd="12dp"
-        android:paddingBottom="6dp">
+        android:paddingStart="12dp"
+        android:paddingTop="6dp">
 
         <EditText
             android:id="@+id/etSearch"
@@ -28,14 +30,13 @@
 
         <ImageButton
             android:id="@+id/btnSearchReset"
-            android:background="@drawable/btn_bg_transparent_round6dp"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="6dp"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/reset"
-            android:padding="8dp"
             android:src="@drawable/ic_close"
-            app:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorTextContent" />
 
     </LinearLayout>
 
@@ -47,9 +48,9 @@
         android:clipToPadding="false"
         android:divider="@null"
         android:dividerHeight="0dp"
+        android:paddingBottom="128dp"
+        android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="12dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="128dp"
         android:scrollbarStyle="outsideOverlay" />
 </LinearLayout>

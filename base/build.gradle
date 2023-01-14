@@ -45,14 +45,12 @@ dependencies {
     //noinspection GradleDependency
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar_lib_bersion"
 
-    api "androidx.appcompat:appcompat:$appcompat_version"
-
     def emoji2Version = "1.2.0"
     api "androidx.emoji2:emoji2:$emoji2Version"
     api "androidx.emoji2:emoji2-views:$emoji2Version"
     api "androidx.emoji2:emoji2-views-helper:$emoji2Version"
     api "androidx.emoji2:emoji2-bundled:$emoji2Version"
-
+    api "androidx.appcompat:appcompat:$appcompat_version"
 
     api 'androidx.core:core-ktx:1.9.0'
     api 'com.google.android.material:material:1.7.0'

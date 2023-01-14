@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/btn_bg_transparent_round6dp"
-    android:textColor="?attr/colorContentText"
+    android:textColor="?attr/colorTextContent"
     android:gravity="center_vertical|start"
     android:drawablePadding="12dp"
     android:minHeight="44dp"

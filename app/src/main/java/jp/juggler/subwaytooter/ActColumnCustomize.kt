@@ -10,10 +10,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -22,9 +20,11 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.databinding.ActColumnCustomizeBinding
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
+import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
@@ -32,6 +32,7 @@ import jp.juggler.util.media.createResizedBitmap
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.setNavigationBack
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
@@ -65,15 +66,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     internal lateinit var appState: AppState
     internal var density: Float = 0f
 
-    private lateinit var flColumnBackground: View
-    internal lateinit var ivColumnBackground: ImageView
-    internal lateinit var sbColumnBackgroundAlpha: SeekBar
-    private lateinit var llColumnHeader: View
-    private lateinit var ivColumnHeader: ImageView
-    private lateinit var tvColumnName: TextView
-    internal lateinit var etAlpha: EditText
-    private lateinit var tvSampleAcct: TextView
-    private lateinit var tvSampleContent: TextView
+    private val views by lazy {
+        ActColumnCustomizeBinding.inflate(layoutInflater)
+    }
 
     internal var loadingBusy: Boolean = false
 
@@ -104,7 +99,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
         appState = App1.getAppState(this)
         density = appState.density
-        columnIndex = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
+        columnIndex = intent.int(EXTRA_COLUMN_INDEX) ?: 0
         column = appState.column(columnIndex)!!
         show()
     }
@@ -294,36 +289,31 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     }
 
     private fun initUI() {
-        setContentView(R.layout.act_column_customize)
-        App1.initEdgeToEdge(this)
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.svContent)
 
-        fixHorizontalPadding(findViewById(R.id.svContent))
+        arrayOf(
+            views.btnHeaderBackgroundEdit,
+            views.btnHeaderBackgroundReset,
+            views.btnHeaderTextEdit,
+            views.btnHeaderTextReset,
+            views.btnColumnBackgroundColor,
+            views.btnColumnBackgroundColorReset,
+            views.btnColumnBackgroundImage,
+            views.btnColumnBackgroundImageReset,
+            views.btnAcctColor,
+            views.btnAcctColorReset,
+            views.btnContentColor,
+            views.btnContentColorReset,
+        ).forEach {
+            it.setOnClickListener(this)
+        }
 
-        llColumnHeader = findViewById(R.id.llColumnHeader)
-        ivColumnHeader = findViewById(R.id.ivColumnHeader)
-        tvColumnName = findViewById(R.id.tvColumnName)
-        flColumnBackground = findViewById(R.id.flColumnBackground)
-        ivColumnBackground = findViewById(R.id.ivColumnBackground)
-        tvSampleAcct = findViewById(R.id.tvSampleAcct)
-        tvSampleContent = findViewById(R.id.tvSampleContent)
+        views.sbColumnBackgroundAlpha.max = PROGRESS_MAX
 
-        findViewById<View>(R.id.btnHeaderBackgroundEdit).setOnClickListener(this)
-        findViewById<View>(R.id.btnHeaderBackgroundReset).setOnClickListener(this)
-        findViewById<View>(R.id.btnHeaderTextEdit).setOnClickListener(this)
-        findViewById<View>(R.id.btnHeaderTextReset).setOnClickListener(this)
-        findViewById<View>(R.id.btnColumnBackgroundColor).setOnClickListener(this)
-        findViewById<View>(R.id.btnColumnBackgroundColorReset).setOnClickListener(this)
-        findViewById<View>(R.id.btnColumnBackgroundImage).setOnClickListener(this)
-        findViewById<View>(R.id.btnColumnBackgroundImageReset).setOnClickListener(this)
-        findViewById<View>(R.id.btnAcctColor).setOnClickListener(this)
-        findViewById<View>(R.id.btnAcctColorReset).setOnClickListener(this)
-        findViewById<View>(R.id.btnContentColor).setOnClickListener(this)
-        findViewById<View>(R.id.btnContentColorReset).setOnClickListener(this)
-
-        sbColumnBackgroundAlpha = findViewById(R.id.sbColumnBackgroundAlpha)
-        sbColumnBackgroundAlpha.max = PROGRESS_MAX
-
-        sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object :
+        views.sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
@@ -333,8 +323,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 if (loadingBusy) return
                 if (!fromUser) return
                 column.columnBgImageAlpha = progress / PROGRESS_MAX.toFloat()
-                ivColumnBackground.alpha = column.columnBgImageAlpha
-                etAlpha.setText(
+                views.ivColumnBackground.alpha = column.columnBgImageAlpha
+                views.etAlpha.setText(
                     String.format(
                         defaultLocale(this@ActColumnCustomize),
                         "%.4f",
@@ -344,8 +334,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
         })
 
-        etAlpha = findViewById(R.id.etAlpha)
-        etAlpha.addTextChangedListener(object : TextWatcher {
+        views.etAlpha.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
@@ -355,14 +344,14 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 try {
 
                     var f = NumberFormat.getInstance(defaultLocale(this@ActColumnCustomize))
-                        .parse(etAlpha.text.toString())?.toFloat()
+                        .parse(views.etAlpha.text.toString())?.toFloat()
 
                     if (f != null && !f.isNaN()) {
                         if (f < 0f) f = 0f
                         if (f > 1f) f = 1f
                         column.columnBgImageAlpha = f
-                        ivColumnBackground.alpha = column.columnBgImageAlpha
-                        sbColumnBackgroundAlpha.progress = (0.5f + f * PROGRESS_MAX).toInt()
+                        views.ivColumnBackground.alpha = column.columnBgImageAlpha
+                        views.sbColumnBackgroundAlpha.progress = (0.5f + f * PROGRESS_MAX).toInt()
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "alpha parse failed.")
@@ -370,10 +359,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
         })
 
-        etAlpha.setOnEditorActionListener { _, actionId, _ ->
+        views.etAlpha.setOnEditorActionListener { _, actionId, _ ->
             when (actionId) {
                 EditorInfo.IME_ACTION_DONE -> {
-                    etAlpha.hideKeyboard()
+                    views.etAlpha.hideKeyboard()
                     true
                 }
 
@@ -386,19 +375,19 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         try {
             loadingBusy = true
 
-            column.setHeaderBackground(llColumnHeader)
+            column.setHeaderBackground(views.llColumnHeader)
 
             val c = column.getHeaderNameColor()
-            tvColumnName.textColor = c
-            ivColumnHeader.setImageResource(column.getIconId())
-            ivColumnHeader.imageTintList = ColorStateList.valueOf(c)
+            views.tvColumnName.textColor = c
+            views.ivColumnHeader.setImageResource(column.getIconId())
+            views.ivColumnHeader.imageTintList = ColorStateList.valueOf(c)
 
-            tvColumnName.text = column.getColumnName(false)
+            views.tvColumnName.text = column.getColumnName(false)
 
             if (column.columnBgColor != 0) {
-                flColumnBackground.setBackgroundColor(column.columnBgColor)
+                views.flColumnBackground.setBackgroundColor(column.columnBgColor)
             } else {
-                ViewCompat.setBackground(flColumnBackground, null)
+                ViewCompat.setBackground(views.flColumnBackground, null)
             }
 
             var alpha = column.columnBgImageAlpha
@@ -406,10 +395,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 alpha = 1f
                 column.columnBgImageAlpha = alpha
             }
-            ivColumnBackground.alpha = alpha
-            sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
+            views.ivColumnBackground.alpha = alpha
+            views.sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
 
-            etAlpha.setText(
+            views.etAlpha.setText(
                 String.format(
                     defaultLocale(this@ActColumnCustomize),
                     "%.4f",
@@ -417,10 +406,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 )
             )
 
-            loadImage(ivColumnBackground, column.columnBgImage)
+            loadImage(views.ivColumnBackground, column.columnBgImage)
 
-            tvSampleAcct.setTextColor(column.getAcctColor())
-            tvSampleContent.setTextColor(column.getContentColor())
+            views.tvSampleAcct.setTextColor(column.getAcctColor())
+            views.tvSampleContent.setTextColor(column.getContentColor())
         } finally {
             loadingBusy = false
         }
@@ -428,7 +417,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     private fun closeBitmaps() {
         try {
-            ivColumnBackground.setImageDrawable(null)
+            views.ivColumnBackground.setImageDrawable(null)
             lastImageUri = null
 
             lastImageBitmap?.recycle()

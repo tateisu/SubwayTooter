@@ -1,291 +1,307 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/svContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp"
-    android:scrollbarStyle="outsideOverlay">
-
-    <LinearLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/action_bar_bg"
+        android:elevation="4dp"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
 
-        <View style="@style/setting_divider" />
+    <ScrollView
+        android:id="@+id/svContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/column_header" />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <LinearLayout
-                android:id="@+id/llColumnHeader"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
-                android:gravity="center_vertical"
-                android:paddingStart="12dp"
-                android:paddingTop="3dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="3dp"
-                tools:ignore="UseCompoundDrawables">
-
-                <ImageView
-                    android:id="@+id/ivColumnHeader"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginEnd="4dp"
-                    android:importantForAccessibility="no"
-                    tools:src="@drawable/ic_bike" />
-
-                <TextView
-                    android:id="@+id/tvColumnName"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="@string/federate_timeline" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <TextView
-            style="@style/setting_row_label_indent1"
-            android:text="@string/background_color" />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnHeaderBackgroundEdit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit" />
-
-            <Button
-                android:id="@+id/btnHeaderBackgroundReset"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset" />
-
-        </LinearLayout>
-
-        <TextView
-            style="@style/setting_row_label_indent1"
-            android:text="@string/foreground_color" />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnHeaderTextEdit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btnHeaderTextReset"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset"
-                android:textAllCaps="false" />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider" />
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/column" />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <FrameLayout
-                android:id="@+id/flColumnBackground"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:id="@+id/ivColumnBackground"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:importantForAccessibility="no"
-                    android:scaleType="centerCrop" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/tvSampleAcct"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:gravity="start"
-                        android:maxLines="1"
-                        android:text="@string/acct_sample"
-                        android:textColor="?attr/colorTimeSmall"
-                        android:textSize="12sp" />
-
-                    <jp.juggler.subwaytooter.view.MyTextView
-                        android:id="@+id/tvSampleContent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:gravity="start"
-                        android:lineSpacingMultiplier="1.1"
-                        android:text="@string/content_sample"
-                        android:textColor="?attr/colorContentText" />
-                </LinearLayout>
-            </FrameLayout>
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/background_color" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnColumnBackgroundColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btnColumnBackgroundColorReset"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset"
-                android:textAllCaps="false" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/background_image" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnColumnBackgroundImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/pick_image"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btnColumnBackgroundImageReset"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset"
-                android:textAllCaps="false" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:labelFor="@+id/etAlpha"
-                android:text="@string/background_image_alpha" />
-        </LinearLayout>
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:scrollbarStyle="outsideOverlay">
 
         <LinearLayout
-            style="@style/setting_row_form"
-            android:layout_height="48dp"
-            android:baselineAligned="false"
-            android:gravity="center_vertical">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="48dp" />
+            <View style="@style/setting_divider" />
 
-            <EditText
-                android:id="@+id/etAlpha"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:digits="0123456789.,"
-                android:importantForAutofill="no"
-                android:inputType="numberDecimal"
-                android:maxLines="1"
-                android:minWidth="64dp"
-                android:imeOptions="actionDone"
-                android:minLines="1" />
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/column_header" />
 
-            <SeekBar
-                android:id="@+id/sbColumnBackgroundAlpha"
-                style="@style/setting_horizontal_stretch"
+            <LinearLayout style="@style/setting_row_form">
+
+                <LinearLayout
+                    android:id="@+id/llColumnHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="3dp"
+                    tools:ignore="UseCompoundDrawables">
+
+                    <ImageView
+                        android:id="@+id/ivColumnHeader"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="4dp"
+                        android:importantForAccessibility="no"
+                        tools:src="@drawable/ic_bike" />
+
+                    <TextView
+                        android:id="@+id/tvColumnName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="@string/federate_timeline" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                style="@style/setting_row_label_indent1"
+                android:text="@string/background_color" />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Button
+                    android:id="@+id/btnHeaderBackgroundEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit" />
+
+                <Button
+                    android:id="@+id/btnHeaderBackgroundReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset" />
+
+            </LinearLayout>
+
+            <TextView
+                style="@style/setting_row_label_indent1"
+                android:text="@string/foreground_color" />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Button
+                    android:id="@+id/btnHeaderTextEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btnHeaderTextReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    android:textAllCaps="false" />
+
+            </LinearLayout>
+
+            <View style="@style/setting_divider" />
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/column" />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <FrameLayout
+                    android:id="@+id/flColumnBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/ivColumnBackground"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvSampleAcct"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:gravity="start"
+                            android:maxLines="1"
+                            android:text="@string/acct_sample"
+                            android:textColor="?attr/colorTimeSmall"
+                            android:textSize="12sp" />
+
+                        <jp.juggler.subwaytooter.view.MyTextView
+                            android:id="@+id/tvSampleContent"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:gravity="start"
+                            android:lineSpacingMultiplier="1.1"
+                            android:text="@string/content_sample"
+                            android:textColor="?attr/colorTextContent" />
+                    </LinearLayout>
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/background_color" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Button
+                    android:id="@+id/btnColumnBackgroundColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btnColumnBackgroundColorReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    android:textAllCaps="false" />
+
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/background_image" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Button
+                    android:id="@+id/btnColumnBackgroundImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pick_image"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btnColumnBackgroundImageReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    android:textAllCaps="false" />
+
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:labelFor="@+id/etAlpha"
+                    android:text="@string/background_image_alpha" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/setting_row_form"
                 android:layout_height="48dp"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp" />
+                android:baselineAligned="false"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="48dp" />
+
+                <EditText
+                    android:id="@+id/etAlpha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:digits="0123456789.,"
+                    android:imeOptions="actionDone"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1"
+                    android:minLines="1"
+                    android:minWidth="64dp" />
+
+                <SeekBar
+                    android:id="@+id/sbColumnBackgroundAlpha"
+                    style="@style/setting_horizontal_stretch"
+                    android:layout_height="48dp"
+                    android:paddingEnd="32dp"
+                    android:paddingStart="32dp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/acct_color" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Button
+                    android:id="@+id/btnAcctColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btnAcctColorReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    android:textAllCaps="false" />
+
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/content_color" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Button
+                    android:id="@+id/btnContentColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btnContentColorReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+            <View style="@style/setting_divider" />
+
         </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/acct_color" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnAcctColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btnAcctColorReset"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset"
-                android:textAllCaps="false" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/content_color" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnContentColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btnContentColorReset"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset"
-                android:textAllCaps="false" />
-        </LinearLayout>
-
-        <View style="@style/setting_divider" />
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</LinearLayout>

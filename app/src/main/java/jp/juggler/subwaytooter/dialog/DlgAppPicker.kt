@@ -144,8 +144,7 @@ class DlgAppPicker(
                     activity,
                     ivImage,
                     R.drawable.ic_question,
-                    color = activity.attrColor(R.attr.colorVectorDrawable),
-                    alphaMultiplier = 1f
+                    color = activity.attrColor(R.attr.colorTextContent),
                 )
             }
             tvText.text = item.text

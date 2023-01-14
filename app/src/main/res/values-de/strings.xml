@@ -305,7 +305,6 @@
     <string name="mute_app_of">Anwendung \"%1$s\" stummschalten</string>
     <string name="application_is">Anwendung: %1$s</string>
     <string name="muted_app">Stummgeschaltete Anwendungen</string>
-    <string name="mute_app_desc">&gt;Wische links um zu löschen. Lade Spalten neu, um Beiträge anzuzeigen, die von stummgeschalteten Anwendungen stammen.</string>
     <string name="simple_list">Einfache Liste (App-Neustart benötigt)</string>
     <string name="thanks_for">Danke für %1$s.</string>
     <string name="contributor">Mitwirkende(r)</string>

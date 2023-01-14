@@ -151,7 +151,7 @@ class ActPost : AppCompatActivity(),
 
     val arMushroom = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
-        r.data?.getStringExtra("replace_key")?.let { text ->
+        r.data?.string("replace_key")?.let { text ->
             when (states.mushroomInput) {
                 0 -> applyMushroomText(views.etContent, text)
                 1 -> applyMushroomText(views.etContentWarning, text)
@@ -175,7 +175,7 @@ class ActPost : AppCompatActivity(),
             saveDraft()
         }
         if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
-        App1.setActivityTheme(this, noActionBar = true)
+        App1.setActivityTheme(this)
         appState = App1.getAppState(this)
         handler = appState.handler
         pref = appState.pref
@@ -316,7 +316,6 @@ class ActPost : AppCompatActivity(),
 
     fun initUI() {
         setContentView(views.root)
-        App1.initEdgeToEdge(this)
 
         if (PrefB.bpPostButtonBarTop(pref)) {
             val bar = findViewById<View>(R.id.llFooterBar)

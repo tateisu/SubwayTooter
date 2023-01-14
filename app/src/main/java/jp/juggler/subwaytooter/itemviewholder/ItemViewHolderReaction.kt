@@ -107,7 +107,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 )
             }
 
-            setTextColor(contentColor)
+            setTextColor(colorTextContent)
             setPadding(paddingH, 0, paddingH, 0)
 
             text = ssb

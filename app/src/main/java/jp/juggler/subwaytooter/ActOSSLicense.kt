@@ -1,11 +1,12 @@
 package jp.juggler.subwaytooter
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import jp.juggler.subwaytooter.databinding.ActOssLicenseBinding
 import jp.juggler.util.data.decodeUTF8
 import jp.juggler.util.data.loadRawResource
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.setNavigationBack
 
 class ActOSSLicense : AppCompatActivity() {
 
@@ -13,15 +14,20 @@ class ActOSSLicense : AppCompatActivity() {
         private val log = LogCategory("ActOSSLicense")
     }
 
+    private val views by lazy {
+        ActOssLicenseBinding.inflate(layoutInflater)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        App1.setActivityTheme(this, noActionBar = true)
-        setContentView(R.layout.act_oss_license)
-        App1.initEdgeToEdge(this)
+        App1.setActivityTheme(this)
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.svContent)
 
         try {
-            findViewById<TextView>(R.id.tvText)
-                ?.text = loadRawResource(R.raw.oss_license).decodeUTF8()
+            views.tvText.text = loadRawResource(R.raw.oss_license).decodeUTF8()
         } catch (ex: Throwable) {
             log.e(ex, "can't show license text.")
         }

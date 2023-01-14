@@ -171,7 +171,6 @@
     <string name="contributor">bidragsyter</string>
     <string name="thanks_for">Takk for %1$s</string>
     <string name="simple_list">Enkel liste (programstart kreves)</string>
-    <string name="mute_app_desc">Dra for å slette. Du må kanskje laste inn igjen for å vise status offentliggjort av programmer som har fått sin forstumming opphevet.</string>
     <string name="muted_app">Forstummede programmer</string>
     <string name="application_is">program: %1$s</string>
     <string name="mute_app_of">forstum programmet \"%1$s\"</string>

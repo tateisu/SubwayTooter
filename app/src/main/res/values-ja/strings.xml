@@ -283,6 +283,7 @@
     <string name="exit_app_when_close_protected_column">保護されたカラムを戻るボタンで確認なしで閉じようとしたらアプリを終了する</string>
     <string name="fav_muted_user">Fav/BT非通知ユーザ</string>
     <string name="fav_muted_user_long">Fav/BT非通知ユーザ</string>
+    <string name="fav_muted_user_desc">このリストのユーザーからの通知を無視します。 お気に入り、ブースト、フォローリクエスト、リアクションなど。</string>
     <string name="favourite">お気に入り</string>
     <string name="favourite_from_another_account">別アカウントでお気に入り</string>
     <string name="favourite_succeeded">お気に入りにしました</string>
@@ -459,7 +460,7 @@
     <string name="misskey_hybrid_timeline_long">ソーシャルTL(Misskey)</string>
     <string name="more">その他</string>
     <string name="mute">ミュート</string>
-    <string name="mute_app_desc">スワイプで解除。解除した後はカラムをリロードすると再表示されます</string>
+    <string name="refresh_after_ummute">ミュート解除した後にカラムをリロードすると反映されます。</string>
     <string name="mute_app_of">\"%1$s\" アプリをミュート</string>
     <string name="mute_succeeded">ミュートできました</string>
     <string name="mute_this_conversation">この会話の次回以降の通知をミュート</string>
@@ -1016,6 +1017,7 @@
     <string name="copy_to_clipboard">クリップボードにコピー</string>
     <string name="copied_to_clipboard">クリップボードにコピーしました</string>
     <string name="language_filter_quit_waring">言語フィルタは保存されていません。構わず閉じますか?</string>
+    <string name="keyword_filter_quit_waring">単語フィルタは保存されていません。構わず閉じますか?</string>
     <string name="import_completed_please_restart_app">インポート完了。アプリを再起動してください</string>
     <string name="delete_custom_emoji_cache">カスタム絵文字のキャッシュを削除</string>
     <string name="antenna_list">アンテナ一覧</string>
@@ -1174,5 +1176,7 @@
     <string name="add_keyword_or_phrase">キーワードやフレーズを追加</string>
     <string name="filter_keyword_empty">キーワードがカラです</string>
     <string name="filter_title_empty">フィルタ名がカラです</string>
+    <string name="acct_customize">Acct customize</string>
+    <string name="delete_confirm">「%1$s」を削除しますか?</string>
 
 </resources>

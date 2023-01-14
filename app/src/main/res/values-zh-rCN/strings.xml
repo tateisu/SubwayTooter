@@ -278,7 +278,6 @@
     <string name="mute_app_of">静音“%1$s”应用</string>
     <string name="application_is">应用:%1$s</string>
     <string name="muted_app">被静音应用</string>
-    <string name="mute_app_desc">&gt;向左滑动可删除.重新加载列，以显示未被静音应用的发布状态.</string>
     <string name="simple_list">简单列表(需要重启应用)</string>
     <string name="thanks_for">感谢%1$s.</string>
     <string name="contributor">支持者</string>

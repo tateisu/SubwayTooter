@@ -6,13 +6,11 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Bundle
-import android.view.View
 import android.widget.CompoundButton
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.databinding.ActHighlightEditBinding
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.backPressed
 import jp.juggler.util.data.decodeJsonObject
@@ -21,14 +19,13 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
-import jp.juggler.util.ui.ActivityResultHandler
-import jp.juggler.util.ui.attrColor
-import jp.juggler.util.ui.decodeRingtonePickerResult
+import jp.juggler.util.long
+import jp.juggler.util.string
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.textColor
 
 class ActHighlightWordEdit
     : AppCompatActivity(),
-    View.OnClickListener,
     ColorPickerDialogListener,
     CompoundButton.OnCheckedChangeListener {
 
@@ -56,9 +53,9 @@ class ActHighlightWordEdit
 
     internal lateinit var item: HighlightWord
 
-    private lateinit var etName: EditText
-    private lateinit var swSound: SwitchCompat
-    private lateinit var swSpeech: SwitchCompat
+    private val views by lazy {
+        ActHighlightEditBinding.inflate(layoutInflater)
+    }
 
     private var bBusy = false
 
@@ -87,18 +84,14 @@ class ActHighlightWordEdit
         setResult(RESULT_CANCELED)
 
         fun loadData(): HighlightWord? {
-            savedInstanceState
-                ?.getString(STATE_ITEM)
+            savedInstanceState?.getString(STATE_ITEM)
                 ?.decodeJsonObject()
                 ?.let { return HighlightWord(it) }
 
-            intent
-                ?.getStringExtra(EXTRA_INITIAL_TEXT)
+            intent?.string(EXTRA_INITIAL_TEXT)
                 ?.let { return HighlightWord(it) }
 
-            intent
-                ?.getLongExtra(EXTRA_ITEM_ID, -1L)
-                ?.takeIf { it > 0L }
+            intent?.long(EXTRA_ITEM_ID)
                 ?.let { return HighlightWord.load(it) }
 
             return null
@@ -113,7 +106,7 @@ class ActHighlightWordEdit
 
         this.item = item
 
-        etName.setText(item.name)
+        views.etName.setText(item.name)
         showSound()
         showColor()
     }
@@ -130,74 +123,57 @@ class ActHighlightWordEdit
     }
 
     private fun initUI() {
-        setContentView(R.layout.act_highlight_edit)
-        App1.initEdgeToEdge(this)
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.llContent)
 
-        etName = findViewById(R.id.etName)
-        swSound = findViewById(R.id.swSound)
-        swSound.setOnCheckedChangeListener(this)
+        views.swSound.setOnCheckedChangeListener(this)
+        views.swSpeech.setOnCheckedChangeListener(this)
 
-        swSpeech = findViewById(R.id.swSpeech)
-        swSpeech.setOnCheckedChangeListener(this)
+        setSwitchColor(views.swSound)
+        setSwitchColor(views.swSpeech)
 
-        setSwitchColor(swSound)
-        setSwitchColor(swSpeech)
-
-        intArrayOf(
-            R.id.btnTextColorEdit,
-            R.id.btnTextColorReset,
-            R.id.btnBackgroundColorEdit,
-            R.id.btnBackgroundColorReset,
-            R.id.btnNotificationSoundEdit,
-            R.id.btnNotificationSoundReset,
-            R.id.btnDiscard,
-            R.id.btnSave,
-        ).forEach {
-            findViewById<View>(it)?.setOnClickListener(this)
+        views.btnDiscard.setOnClickListener { finish() }
+        views.btnSave.setOnClickListener { save() }
+        views.btnTextColorEdit.setOnClickListener {
+            openColorPicker(
+                COLOR_DIALOG_ID_TEXT,
+                item.color_fg
+            )
         }
-    }
-
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.btnDiscard ->
-                finish()
-
-            R.id.btnSave ->
-                save()
-
-            R.id.btnTextColorEdit ->
-                openColorPicker(COLOR_DIALOG_ID_TEXT, item.color_fg)
-
-            R.id.btnTextColorReset -> {
-                item.color_fg = 0
-                showColor()
+        views.btnTextColorReset.setOnClickListener {
+            item.color_fg = 0
+            showColor()
+        }
+        views.btnBackgroundColorEdit.setOnClickListener {
+            openColorPicker(
+                COLOR_DIALOG_ID_BACKGROUND,
+                item.color_bg
+            )
+        }
+        views.btnBackgroundColorReset.setOnClickListener {
+            item.color_bg = 0
+            showColor()
+        }
+        views.btnNotificationSoundEdit.setOnClickListener { openNotificationSoundPicker() }
+        views.btnNotificationSoundReset.setOnClickListener {
+            item.sound_uri = null
+            item.sound_type = when {
+                views.swSound.isChecked -> HighlightWord.SOUND_TYPE_DEFAULT
+                else -> HighlightWord.SOUND_TYPE_NONE
             }
-
-            R.id.btnBackgroundColorEdit ->
-                openColorPicker(COLOR_DIALOG_ID_BACKGROUND, item.color_bg)
-
-            R.id.btnBackgroundColorReset -> {
-                item.color_bg = 0
-                showColor()
-            }
-
-            R.id.btnNotificationSoundEdit ->
-                openNotificationSoundPicker()
-
-            R.id.btnNotificationSoundReset -> {
-                item.sound_uri = null
-                item.sound_type = when {
-                    swSound.isChecked -> HighlightWord.SOUND_TYPE_DEFAULT
-                    else -> HighlightWord.SOUND_TYPE_NONE
-                }
-                showSound()
-            }
+            showSound()
+        }
+        views.btnNotificationSoundTest.setOnClickListener {
+            ActHighlightWordList.sound(this, item)
         }
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (bBusy) return
         uiToData()
+        showSound()
     }
 
     private fun openColorPicker(id: Int, initialColor: Int) {
@@ -227,8 +203,10 @@ class ActHighlightWordEdit
     private fun showSound() {
         bBusy = true
         try {
-            swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
-            swSpeech.isChecked = item.speech != 0
+            val isSoundEnabled = item.sound_type != HighlightWord.SOUND_TYPE_NONE
+            views.btnNotificationSoundTest.isEnabledAlpha = isSoundEnabled
+            views.swSound.isChecked = isSoundEnabled
+            views.swSpeech.isChecked = item.speech != 0
         } finally {
             bBusy = false
         }
@@ -237,8 +215,9 @@ class ActHighlightWordEdit
     private fun showColor() {
         bBusy = true
         try {
-            etName.setBackgroundColor(item.color_bg) // may 0
-            etName.textColor = item.color_fg.notZero() ?: attrColor(android.R.attr.textColorPrimary)
+            views.etName.setBackgroundColor(item.color_bg) // may 0
+            views.etName.textColor =
+                item.color_fg.notZero() ?: attrColor(android.R.attr.textColorPrimary)
         } finally {
             bBusy = false
         }
@@ -260,15 +239,15 @@ class ActHighlightWordEdit
     }
 
     private fun uiToData() {
-        item.name = etName.text.toString().trim { it <= ' ' || it == '　' }
+        item.name = views.etName.text.toString().trim { it <= ' ' || it == '　' }
 
         item.sound_type = when {
-            !swSound.isChecked -> HighlightWord.SOUND_TYPE_NONE
+            !views.swSound.isChecked -> HighlightWord.SOUND_TYPE_NONE
             item.sound_uri?.notEmpty() == null -> HighlightWord.SOUND_TYPE_DEFAULT
             else -> HighlightWord.SOUND_TYPE_CUSTOM
         }
 
-        item.speech = when (swSpeech.isChecked) {
+        item.speech = when (views.swSpeech.isChecked) {
             false -> 0
             else -> 1
         }

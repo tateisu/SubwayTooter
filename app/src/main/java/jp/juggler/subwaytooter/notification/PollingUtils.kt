@@ -190,15 +190,21 @@ fun restartAllWorker(context: Context) {
     }
 }
 
-suspend fun onNotificationCleared(context: Context, accountDbId: Long) {
-    if (importProtector.get()) {
-        log.w("onNotificationCleared: abort by importProtector.")
-        return
-    }
-    PollingChecker.accountMutex(accountDbId).withLock {
-        log.d("deleteCacheData: db_id=$accountDbId")
-        SavedAccount.loadAccount(context, accountDbId) ?: return
-        NotificationCache.deleteCache(accountDbId)
+fun onNotificationCleared(context: Context, accountDbId: Long) {
+    EmptyScope.launch {
+        try {
+            if (importProtector.get()) {
+                log.w("onNotificationCleared: abort by importProtector.")
+                return@launch
+            }
+            PollingChecker.accountMutex(accountDbId).withLock {
+                log.d("deleteCacheData: db_id=$accountDbId")
+                SavedAccount.loadAccount(context, accountDbId) ?: return@withLock
+                NotificationCache.deleteCache(accountDbId)
+            }
+        } catch (ex: Throwable) {
+            log.e(ex, "onNotificationCleared failed.")
+        }
     }
 }
 

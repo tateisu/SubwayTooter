@@ -17,13 +17,13 @@ private val log = LogCategory("EmptyScope")
 // プロセスが生きてる間ずっと動いててほしいものや特にキャンセルのタイミングがないコルーチンでは使い続けたい
 object EmptyScope : CoroutineScope {
     override val coroutineContext: CoroutineContext
-        get() = EmptyCoroutineContext
+        get() = EmptyCoroutineContext + AppDispatchers.mainImmediate
 }
 
 // メインスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
-    EmptyScope.launch(context = AppDispatchers.mainImmediate) {
+    EmptyScope.launch {
         try {
             block()
         } catch (ex: Throwable) {
@@ -64,7 +64,15 @@ fun AppCompatActivity.launchAndShowError(
     try {
         block()
     } catch (ex: Throwable) {
-        showError(ex, errorCaption)
+        when (ex) {
+            is CancellationException -> {
+                log.w(ex, errorCaption ?: "launchAndShowError cancelled.")
+            }
+            else -> {
+                log.e(ex, errorCaption ?: "launchAndShowError failed.")
+                showError(ex, errorCaption)
+            }
+        }
     }
 }
 
@@ -102,7 +110,9 @@ fun <T : Any?> AppCompatActivity.launchProgress(
             if (result != null) afterProc(result)
         } catch (ex: Throwable) {
             log.e(ex, "launchProgress: $caption failed.")
-            showToast(ex, "$caption failed.")
+            if (ex !is CancellationException) {
+                showToast(ex, "$caption failed.")
+            }
         } finally {
             progress.dismissSafe()
             try {

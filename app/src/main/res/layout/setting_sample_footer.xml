@@ -23,7 +23,7 @@
                 android:id="@+id/vFooterDivider1"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
-                android:background="?attr/colorImageButton" />
+                android:background="?attr/colorColumnStripBackground" />
 
             <View
                 android:layout_width="0dp"
@@ -60,7 +60,7 @@
                 android:id="@+id/vFooterDivider2"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
-                android:background="?attr/colorImageButton" />
+                android:background="?attr/colorColumnStripBackground" />
 
             <ImageView
                 android:id="@+id/ivFooterToot"

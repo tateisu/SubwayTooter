@@ -885,7 +885,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     tvSampleContent.setTextColor(
                         colorColumnText.notZero()
-                            ?: activity.attrColor(R.attr.colorContentText)
+                            ?: activity.attrColor(R.attr.colorTextContent)
                     )
                 }
 
@@ -937,7 +937,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     val csl = ColorStateList.valueOf(
                         footerButtonFgColor.notZero()
-                            ?: activity.attrColor(R.attr.colorVectorDrawable)
+                            ?: activity.attrColor(R.attr.colorTextContent)
                     )
                     ivFooterToot.imageTintList = csl
                     ivFooterMenu.imageTintList = csl
@@ -949,7 +949,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     vIndicator.setBackgroundColor(
                         footerTabIndicatorColor.notZero()
-                            ?: activity.attrColor(android.R.attr.colorAccent)
+                            ?: activity.attrColor(R.attr.colorTextHelp)
                     )
                 }
 

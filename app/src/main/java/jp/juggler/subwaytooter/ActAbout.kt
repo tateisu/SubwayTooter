@@ -6,12 +6,13 @@ import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import jp.juggler.subwaytooter.databinding.ActAboutBinding
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.getPackageInfoCompat
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.setNavigationBack
 
 class ActAbout : AppCompatActivity() {
 
@@ -70,25 +71,27 @@ class ActAbout : AppCompatActivity() {
         )
     }
 
+    private val views by lazy {
+        ActAboutBinding.inflate(layoutInflater)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-        setContentView(R.layout.act_about)
-        App1.initEdgeToEdge(this)
-
-        fixHorizontalPadding(findViewById(R.id.svContent))
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.svContent)
 
         try {
             packageManager.getPackageInfoCompat(packageName)?.let { pInfo ->
-                findViewById<TextView>(R.id.tvVersion)
-                    ?.text = getString(R.string.version_is, pInfo.versionName)
+                views.tvVersion.text = getString(R.string.version_is, pInfo.versionName)
             }
         } catch (ex: Throwable) {
             log.e(ex, "can't get app version.")
         }
 
-        fun setButton(btnId: Int, caption: String, onClick: () -> Unit) {
-            val b: Button = findViewById(btnId)
+        fun setButton(b: Button, caption: String, onClick: () -> Unit) {
             b.text = caption
             b.setOnClickListener { onClick() }
         }
@@ -99,29 +102,28 @@ class ActAbout : AppCompatActivity() {
         }
 
         setButton(
-            R.id.btnDeveloper,
+            views.btnDeveloper,
             getString(R.string.search_for, developer_acct)
         ) { searchAcct(developer_acct) }
 
         setButton(
-            R.id.btnOfficialAccount,
+            views.btnOfficialAccount,
             getString(R.string.search_for, official_acct)
-        ) {
-            searchAcct(official_acct)
-        }
+        ) { searchAcct(official_acct) }
 
-        setButton(R.id.btnReleaseNote, url_release) {
-            openBrowser(url_release)
-        }
+        setButton(
+            views.btnReleaseNote,
+            url_release
+        ) { openBrowser(url_release) }
 
         // setButton(R.id.btnIconDesign, url_futaba)
         //   { openUrl(url_futaba) }
 
-        setButton(R.id.btnWeblate, getString(R.string.please_help_translation)) {
+        setButton(views.btnWeblate, getString(R.string.please_help_translation)) {
             openBrowser(url_weblate)
         }
 
-        val ll = findViewById<LinearLayout>(R.id.llContributors)
+        val ll = views.llContributors
         val density = resources.displayMetrics.density
         val marginTop = (0.5f + density * 8).toInt()
         val padding = (0.5f + density * 8).toInt()

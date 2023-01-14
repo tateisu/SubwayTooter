@@ -62,7 +62,7 @@ object CheckerNotification {
             .setAutoCancel(false)
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_notification)
-            .setColor(ContextCompat.getColor(context, R.color.Light_colorAccent))
+            .setColor(ContextCompat.getColor(context, R.color.colorOsNotificationAccent))
             .setWhen(System.currentTimeMillis())
             .setContentTitle(context.getString(R.string.loading_notification_title))
             .setContentText(text)

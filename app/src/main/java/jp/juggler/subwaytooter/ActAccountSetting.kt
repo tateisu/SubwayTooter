@@ -61,7 +61,6 @@ class ActAccountSetting : AppCompatActivity(),
     View.OnClickListener,
     CompoundButton.OnCheckedChangeListener,
     AdapterView.OnItemSelectedListener {
-
     companion object {
 
         internal val log = LogCategory("ActAccountSetting")
@@ -122,7 +121,9 @@ class ActAccountSetting : AppCompatActivity(),
 
     lateinit var account: SavedAccount
 
-    private lateinit var viewBinding: ActAccountSettingBinding
+    private val viewBinding by lazy {
+        ActAccountSettingBinding.inflate(layoutInflater, null, false)
+    }
 
     private lateinit var nameInvalidator: NetworkEmojiInvalidator
     private lateinit var noteInvalidator: NetworkEmojiInvalidator
@@ -218,11 +219,13 @@ class ActAccountSetting : AppCompatActivity(),
 
         initUI()
 
-        val a = SavedAccount.loadAccount(this, intent.getLongExtra(KEY_ACCOUNT_DB_ID, -1L))
+        val a = intent.long(KEY_ACCOUNT_DB_ID)
+            ?.let { SavedAccount.loadAccount(this, it) }
         if (a == null) {
             finish()
             return
         }
+        supportActionBar?.subtitle = a.acct.pretty
 
         loadUIFromData(a)
 
@@ -248,11 +251,9 @@ class ActAccountSetting : AppCompatActivity(),
     private fun initUI() {
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
-        this.viewBinding = ActAccountSettingBinding.inflate(layoutInflater, null, false)
         setContentView(viewBinding.root)
-
-        App1.initEdgeToEdge(this)
-        fixHorizontalPadding(viewBinding.root)
+        setSupportActionBar(viewBinding.toolbar)
+        fixHorizontalPadding(viewBinding.svContent)
         setSwitchColor(viewBinding.root)
 
         viewBinding.apply {

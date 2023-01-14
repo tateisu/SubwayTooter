@@ -50,6 +50,6 @@
             android:layout_marginStart="16dp"
             android:contentDescription="@string/delete"
             android:src="@drawable/ic_delete"
-            app:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorTextContent" />
     </LinearLayout>
 </LinearLayout>

@@ -1,164 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ScrollView
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/action_bar_bg"
+        android:elevation="4dp"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:clipToPadding="false"
-        android:fadeScrollbars="false"
-        android:fillViewport="true"
-        android:padding="12dp">
+        android:id="@+id/llContent"
+        android:orientation="vertical">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:fadeScrollbars="false"
+            android:fillViewport="true"
+            android:padding="12dp"
+            tools:ignore="NestedWeights">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View style="@style/setting_divider" />
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:labelFor="@+id/etName"
+                    android:text="@string/keyword" />
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <EditText
+                        android:id="@+id/etName"
+                        style="@style/setting_horizontal_stretch"
+                        android:gravity="center"
+                        android:importantForAutofill="no"
+                        android:inputType="text"
+                        android:padding="6dp" />
+                </LinearLayout>
+
+                <View style="@style/setting_divider" />
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/text_color" />
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <Button
+                        android:id="@+id/btnTextColorEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/edit"
+                        android:textAllCaps="false" />
+
+                    <Button
+                        android:id="@+id/btnTextColorReset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/reset"
+                        android:textAllCaps="false" />
+
+                </LinearLayout>
+
+                <View style="@style/setting_divider" />
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/background_color" />
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <Button
+                        android:id="@+id/btnBackgroundColorEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/edit"
+                        android:textAllCaps="false" />
+
+                    <Button
+                        android:id="@+id/btnBackgroundColorReset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/reset"
+                        android:textAllCaps="false" />
+
+                </LinearLayout>
+
+                <View style="@style/setting_divider" />
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/notification_sound" />
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swSound"
+                        style="@style/setting_horizontal_stretch"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <Button
+                        android:id="@+id/btnNotificationSoundEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/edit"
+                        android:textAllCaps="false" />
+
+                    <Button
+                        android:id="@+id/btnNotificationSoundReset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/reset"
+                        android:textAllCaps="false" />
+
+                    <Button
+                        android:id="@+id/btnNotificationSoundTest"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/test"
+                        android:textAllCaps="false" />
+
+                </LinearLayout>
+
+                <View style="@style/setting_divider" />
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/enable_speech" />
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swSpeech"
+                        style="@style/setting_horizontal_stretch"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
 
         <LinearLayout
+            style="?android:attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:measureWithLargestChild="true">
 
-            <View style="@style/setting_divider" />
 
-            <TextView
-                style="@style/setting_row_label"
-                android:labelFor="@+id/etName"
-                android:text="@string/keyword" />
+            <Button
+                android:id="@+id/btnDiscard"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/discard"
+                android:textAllCaps="false" />
 
-            <LinearLayout style="@style/setting_row_form">
-
-                <EditText
-                    android:id="@+id/etName"
-                    style="@style/setting_horizontal_stretch"
-                    android:gravity="center"
-                    android:inputType="text"
-                    android:importantForAutofill="no"
-                    android:padding="6dp" />
-            </LinearLayout>
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/text_color" />
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <Button
-                    android:id="@+id/btnTextColorEdit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/edit"
-                    android:textAllCaps="false" />
-
-                <Button
-                    android:id="@+id/btnTextColorReset"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/reset"
-                    android:textAllCaps="false" />
-
-            </LinearLayout>
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/background_color" />
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <Button
-                    android:id="@+id/btnBackgroundColorEdit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/edit"
-                    android:textAllCaps="false" />
-
-                <Button
-                    android:id="@+id/btnBackgroundColorReset"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/reset"
-                    android:textAllCaps="false" />
-
-            </LinearLayout>
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/notification_sound" />
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swSound"
-                    style="@style/setting_horizontal_stretch"
-                    android:gravity="center" />
-
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <Button
-                    android:id="@+id/btnNotificationSoundEdit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/edit"
-                    android:textAllCaps="false" />
-
-                <Button
-                    android:id="@+id/btnNotificationSoundReset"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/reset"
-                    android:textAllCaps="false" />
-
-            </LinearLayout>
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/enable_speech" />
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swSpeech"
-                    style="@style/setting_horizontal_stretch"
-                    android:gravity="center" />
-
-            </LinearLayout>
-
+            <Button
+                android:id="@+id/btnSave"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/save"
+                android:textAllCaps="false" />
         </LinearLayout>
-    </ScrollView>
-
-    <LinearLayout
-        style="?android:attr/buttonBarStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:measureWithLargestChild="true">
-
-
-
-        <Button
-            android:id="@+id/btnDiscard"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/discard"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btnSave"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/save"
-            android:textAllCaps="false" />
     </LinearLayout>
 </LinearLayout>

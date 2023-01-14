@@ -16,7 +16,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.boostAlpha
+import jp.juggler.subwaytooter.stylerBoostAlpha
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.pref.PrefB
@@ -86,7 +86,7 @@ class StatusButtons(
     private val btnCustomShare3 = holder.btnCustomShare3
     private val btnMore = holder.btnMore
 
-    private val colorNormal = column.getContentColor()
+    private val colorTextContent = column.getContentColor()
 
     private var optionalButtonFirst: View? = null
     private var optionalButtonCount = 0
@@ -147,8 +147,8 @@ class StatusButtons(
             activity,
             btnConversation,
             R.drawable.ic_forum,
-            color = colorNormal,
-            alphaMultiplier = boostAlpha
+            color = colorTextContent,
+            alphaMultiplier = stylerBoostAlpha
         )
     }
 
@@ -157,8 +157,8 @@ class StatusButtons(
             activity,
             btnMore,
             R.drawable.ic_more,
-            color = colorNormal,
-            alphaMultiplier = boostAlpha
+            color = colorTextContent,
+            alphaMultiplier = stylerBoostAlpha
         )
     }
 
@@ -166,7 +166,7 @@ class StatusButtons(
         setButton(
             btnReply,
             true,
-            colorNormal,
+            colorTextContent,
             R.drawable.ic_reply,
             when (val repliesCount = status.replies_count) {
                 null -> ""
@@ -202,7 +202,7 @@ class StatusButtons(
                 setButton(
                     btnBoost,
                     false,
-                    colorNormal,
+                    colorTextContent,
                     R.drawable.ic_refresh,
                     "?",
                     activity.getString(R.string.boost)
@@ -216,7 +216,7 @@ class StatusButtons(
                         PrefI.ipButtonBoostedColor(activity.pref).notZero()
                             ?: activity.attrColor(R.attr.colorButtonAccentBoost)
                     else ->
-                        colorNormal
+                        colorTextContent
                 },
                 R.drawable.ic_repeat,
                 when (val boostsCount = status.reblogs_count) {
@@ -241,7 +241,7 @@ class StatusButtons(
             setButton(
                 it,
                 true,
-                colorNormal,
+                colorTextContent,
                 R.drawable.ic_quote,
                 activity.getString(R.string.quote)
             )
@@ -256,7 +256,7 @@ class StatusButtons(
             setButton(
                 it,
                 true,
-                colorNormal,
+                colorTextContent,
                 if (bRemoveButton) R.drawable.ic_remove else R.drawable.ic_add,
                 activity.getString(
                     if (bRemoveButton) R.string.reaction_remove else R.string.reaction_add
@@ -271,7 +271,7 @@ class StatusButtons(
                 setButton(
                     btnFavourite,
                     false,
-                    colorNormal,
+                    colorTextContent,
                     R.drawable.ic_refresh,
                     "?",
                     activity.getString(R.string.favourite)
@@ -285,7 +285,7 @@ class StatusButtons(
                         status.favourited ->
                             PrefI.ipButtonFavoritedColor(activity.pref).notZero()
                                 ?: activity.attrColor(R.attr.colorButtonAccentFavourite)
-                        else -> colorNormal
+                        else -> colorTextContent
                     },
                     when {
                         status.favourited -> R.drawable.ic_star
@@ -316,7 +316,7 @@ class StatusButtons(
                         setButton(
                             btn,
                             false,
-                            colorNormal,
+                            colorTextContent,
                             R.drawable.ic_refresh,
                             activity.getString(R.string.bookmark)
                         )
@@ -330,7 +330,7 @@ class StatusButtons(
                                     PrefI.ipButtonBookmarkedColor(activity.pref).notZero()
                                         ?: activity.attrColor(R.attr.colorButtonAccentBookmark)
                                 else ->
-                                    colorNormal
+                                    colorTextContent
                             },
                             when {
                                 status.bookmarked -> R.drawable.ic_bookmark_added
@@ -356,8 +356,8 @@ class StatusButtons(
                 ivFollowedBy2,
                 relation,
                 account,
-                colorNormal,
-                alphaMultiplier = boostAlpha
+                colorTextContent,
+                alphaMultiplier = stylerBoostAlpha
             )
             relation
         }
@@ -393,8 +393,8 @@ class StatusButtons(
                 icon ?: createColoredDrawable(
                     this@StatusButtons.activity,
                     R.drawable.ic_question,
-                    colorNormal,
-                    boostAlpha
+                    colorTextContent,
+                    stylerBoostAlpha
                 )
             )
             ++optionalButtonCount
@@ -486,7 +486,7 @@ class StatusButtons(
         count: String,
         contentDescription: String,
     ) {
-        val alpha = boostAlpha
+        val alpha = stylerBoostAlpha
         val d = createColoredDrawable(
             activity,
             drawableId,
@@ -507,7 +507,7 @@ class StatusButtons(
         drawableId: Int,
         contentDescription: String,
     ) {
-        val alpha = boostAlpha
+        val alpha = stylerBoostAlpha
         val d = createColoredDrawable(
             activity,
             drawableId,

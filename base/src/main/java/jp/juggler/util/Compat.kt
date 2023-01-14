@@ -53,6 +53,21 @@ fun Intent.getIntentExtra(key: String) =
 /**
  * Bundleからキーを指定してint値またはnullを得る
  */
+fun Bundle.boolean(key: String) =
+    when (val v = getRaw(key)) {
+        is Boolean -> v
+        else -> null
+    }
+
+fun Bundle.string(key: String) =
+    when (val v = getRaw(key)) {
+        is String -> v
+        else -> null
+    }
+
+/**
+ * Bundleからキーを指定してint値またはnullを得る
+ */
 fun Bundle.int(key: String) =
     when (val v = getRaw(key)) {
         null -> null
@@ -72,6 +87,11 @@ fun Bundle.long(key: String) =
     }
 
 /**
+ * IntentのExtrasからキーを指定してboolean値またはnullを得る
+ */
+fun Intent.boolean(key: String) = extras?.boolean(key)
+
+/**
  * IntentのExtrasからキーを指定してint値またはnullを得る
  */
 fun Intent.int(key: String) = extras?.int(key)
@@ -80,6 +100,8 @@ fun Intent.int(key: String) = extras?.int(key)
  * IntentのExtrasからキーを指定してlong値またはnullを得る
  */
 fun Intent.long(key: String) = extras?.long(key)
+
+fun Intent.string(key: String) = extras?.string(key)
 
 fun PackageManager.getPackageInfoCompat(
     pakageName: String,

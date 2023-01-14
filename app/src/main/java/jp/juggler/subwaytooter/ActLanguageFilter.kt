@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.databinding.ActLanguageFilterBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchProgress
@@ -117,12 +118,15 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     internal lateinit var appState: AppState
     internal var density: Float = 0f
 
-    private lateinit var listView: ListView
+    private val views by lazy {
+        ActLanguageFilterBinding.inflate(layoutInflater)
+    }
     private lateinit var adapter: MyAdapter
     private val languageList = ArrayList<MyItem>()
     private var loadingBusy: Boolean = false
 
-    private val arExport = ActivityResultHandler(log) { }
+    private val arExport = ActivityResultHandler(log) {
+    }
 
     private val arImport = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
@@ -132,17 +136,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        backPressed {
-            if (equalsLanguageList(column.languageFilter, encodeLanguageList())) {
-                finish()
-            } else {
-                AlertDialog.Builder(this)
-                    .setMessage(R.string.language_filter_quit_waring)
-                    .setPositiveButton(R.string.ok) { _, _ -> finish() }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
-            }
-        }
+        backPressed { confirmBack() }
         arExport.register(this)
         arImport.register(this)
 
@@ -151,7 +145,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
         appState = App1.getAppState(this)
         density = appState.density
-        columnIndex = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
+        columnIndex = intent.int(EXTRA_COLUMN_INDEX) ?: 0
         column = appState.column(columnIndex)!!
 
         if (savedInstanceState != null) {
@@ -175,22 +169,22 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initUI() {
-        setContentView(R.layout.act_language_filter)
-        App1.initEdgeToEdge(this)
-        fixHorizontalPadding(findViewById(R.id.llContent))
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.llContent)
 
-        for (id in intArrayOf(
-            R.id.btnAdd,
-            R.id.btnSave,
-            R.id.btnMore
-        )) {
-            findViewById<View>(id)?.setOnClickListener(this)
+        arrayOf(
+            views.btnAdd,
+            views.btnSave,
+            views.btnMore,
+        ).forEach {
+            it.setOnClickListener(this)
         }
 
-        listView = findViewById(R.id.listView)
         adapter = MyAdapter()
-        listView.adapter = adapter
-        listView.onItemClickListener = adapter
+        views.listView.adapter = adapter
+        views.listView.onItemClickListener = adapter
     }
 
     // UIのデータをJsonObjectにエンコード
@@ -244,7 +238,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                 "${item.code} ${getDesc(item)} : ${getString(if (item.allow) R.string.language_show else R.string.language_hide)}"
             tv.textColor = attrColor(
                 when (item.allow) {
-                    true -> R.attr.colorContentText
+                    true -> R.attr.colorTextContent
                     false -> R.attr.colorRegexFilterError
                 }
             )
@@ -373,7 +367,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
                 btnPresets.setEnabledColor(
                     activity,
                     R.drawable.ic_edit,
-                    activity.attrColor(R.attr.colorVectorDrawable),
+                    activity.attrColor(R.attr.colorTextContent),
                     false
                 )
             }
@@ -460,5 +454,17 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             },
             afterProc = { load(it) }
         )
+    }
+
+    private fun confirmBack() {
+        if (equalsLanguageList(column.languageFilter, encodeLanguageList())) {
+            finish()
+        } else {
+            AlertDialog.Builder(this)
+                .setMessage(R.string.language_filter_quit_waring)
+                .setPositiveButton(R.string.ok) { _, _ -> finish() }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
     }
 }

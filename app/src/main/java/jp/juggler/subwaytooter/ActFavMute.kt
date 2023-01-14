@@ -1,21 +1,20 @@
 package jp.juggler.subwaytooter
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.BaseAdapter
 import androidx.appcompat.app.AppCompatActivity
-import com.woxthebox.draglistview.DragItem
-import com.woxthebox.draglistview.DragItemAdapter
-import com.woxthebox.draglistview.DragListView
-import com.woxthebox.draglistview.swipe.ListSwipeHelper
-import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.databinding.ActWordListBinding
+import jp.juggler.subwaytooter.databinding.LvMuteAppBinding
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.data.cast
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.setNavigationBack
 
 class ActFavMute : AppCompatActivity() {
 
@@ -23,8 +22,11 @@ class ActFavMute : AppCompatActivity() {
         private val log = LogCategory("ActFavMute")
     }
 
-    private lateinit var listView: DragListView
-    private lateinit var listAdapter: MyListAdapter
+    private val views by lazy {
+        ActWordListBinding.inflate(layoutInflater)
+    }
+
+    private val listAdapter by lazy { MyListAdapter() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,160 +40,83 @@ class ActFavMute : AppCompatActivity() {
     }
 
     private fun initUI() {
-        setContentView(R.layout.act_word_list)
-        App1.initEdgeToEdge(this)
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.llContent)
+        views.tvFooterDesc.text = getString(R.string.fav_muted_user_desc)
+        views.listView.adapter = listAdapter
+    }
 
-        fixHorizontalPadding0(findViewById(R.id.llContent))
-
-        // リストのアダプター
-        listAdapter = MyListAdapter()
-
-        // ハンドル部分をドラッグで並べ替えできるRecyclerView
-        listView = findViewById(R.id.drag_list_view)
-        listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
-        listView.setAdapter(listAdapter, false)
-
-        listView.setCanDragHorizontally(true)
-        listView.isDragEnabled = false
-        listView.setCustomDragItem(MyDragItem(this, R.layout.lv_mute_app))
-
-        listView.recyclerView.isVerticalScrollBarEnabled = true
-        //		listView.setDragListListener( new DragListView.DragListListenerAdapter() {
-        //			@Override
-        //			public void onItemDragStarted( int position ){
-        //				// 操作中はリフレッシュ禁止
-        //				// mRefreshLayout.setEnabled( false );
-        //			}
-        //
-        //			@Override
-        //			public void onItemDragEnded( int fromPosition, int toPosition ){
-        //				// 操作完了でリフレッシュ許可
-        //				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-        //
-        ////				if( fromPosition != toPosition ){
-        ////					// 並べ替えが発生した
-        ////				}
-        //			}
-        //		} );
-
-        // リストを左右スワイプした
-        listView.setSwipeListener(object : ListSwipeHelper.OnSwipeListenerAdapter() {
-
-            override fun onItemSwipeStarted(item: ListSwipeItem?) {
-                // 操作中はリフレッシュ禁止
-                // mRefreshLayout.setEnabled( false );
-            }
-
-            override fun onItemSwipeEnded(
-                item: ListSwipeItem?,
-                swipedDirection: ListSwipeItem.SwipeDirection?,
-            ) {
-                // 操作完了でリフレッシュ許可
-                // mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-
-                // 左にスワイプした(右端に青が見えた) なら要素を削除する
-                if (swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-                    val o = item?.tag
-                    if (o is MyItem) {
-                        FavMute.delete(o.name)
-                        listAdapter.removeItem(listAdapter.getPositionForItem(o))
-                    }
-                }
-            }
-        })
+    private fun delete(item: MyItem?) {
+        item ?: return
+        launchAndShowError {
+            confirm(R.string.delete_confirm, item.acct.pretty)
+            FavMute.delete(item.acct)
+            listAdapter.remove(item)
+        }
     }
 
     private fun loadData() {
-
-        val tmpList = ArrayList<MyItem>()
-        try {
-            FavMute.createCursor().use { cursor ->
-                val idxId = cursor.getColumnIndex(FavMute.COL_ID)
-                val idxName = cursor.getColumnIndex(FavMute.COL_ACCT)
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idxId)
-                    val name = cursor.getString(idxName)
-                    val item = MyItem(id, Acct.parse(name))
-                    tmpList.add(item)
+        listAdapter.items = buildList {
+            try {
+                FavMute.createCursor().use { cursor ->
+                    val idxId = cursor.getColumnIndex(FavMute.COL_ID)
+                    val idxName = cursor.getColumnIndex(FavMute.COL_ACCT)
+                    while (cursor.moveToNext()) {
+                        val item = MyItem(
+                            id = cursor.getLong(idxId),
+                            acct = Acct.parse(cursor.getString(idxName)),
+                        )
+                        add(item)
+                    }
                 }
+            } catch (ex: Throwable) {
+                log.e(ex, "loadData failed.")
             }
-        } catch (ex: Throwable) {
-            log.e(ex, "loadData failed.")
         }
-
-        listAdapter.itemList = tmpList
     }
 
     // リスト要素のデータ
-    internal class MyItem(val id: Long, val name: Acct)
+    internal class MyItem(val id: Long, val acct: Acct)
 
     // リスト要素のViewHolder
-    internal class MyViewHolder(viewRoot: View) :
-        DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false) {
+    private inner class MyViewHolder(parent: ViewGroup?) {
+        val views = LvMuteAppBinding.inflate(layoutInflater, parent, false)
 
-        val tvName: TextView
+        private var lastItem: MyItem? = null
 
         init {
+            views.root.tag = this
+            views.btnDelete.setOnClickListener { delete(lastItem) }
+        }
 
-            tvName = viewRoot.findViewById(R.id.tvName)
+        fun bind(item: MyItem?) {
+            item ?: return
+            lastItem = item
+            views.tvName.text = item.acct.pretty
+        }
+    }
 
-            // リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
-            if (viewRoot is ListSwipeItem) {
-                viewRoot.setSwipeInStyle(ListSwipeItem.SwipeInStyle.SLIDE)
-                viewRoot.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
+    private inner class MyListAdapter : BaseAdapter() {
+        var items: List<MyItem> = emptyList()
+            set(value) {
+                field = value
+                notifyDataSetChanged()
             }
-        } // View ID。 ここを押すとドラッグ操作をすぐに開始する
-        // 長押しでドラッグ開始するなら真
 
-        fun bind(item: MyItem) {
-            itemView.tag = item // itemView は親クラスのメンバ変数
-            tvName.text = item.name.pretty
+        fun remove(item: MyItem) {
+            items = items.filter { it != item }
         }
 
-        //		@Override
-        //		public boolean onItemLongClicked( View view ){
-        //			return false;
-        //		}
+        override fun getCount() = items.size
+        override fun getItem(position: Int) = items.elementAtOrNull(position)
+        override fun getItemId(position: Int) = 0L
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?) =
+            (convertView?.tag?.cast() ?: MyViewHolder(parent))
+                .also { it.bind(items.elementAtOrNull(position)) }
+                .views.root
 
-        //		@Override
-        //		public void onItemClicked( View view ){
-        //		}
-    }
-
-    // ドラッグ操作中のデータ
-    private inner class MyDragItem(context: Context, layoutId: Int) :
-        DragItem(context, layoutId) {
-
-        override fun onBindDragView(clickedView: View, dragView: View) {
-            dragView.findViewById<TextView>(R.id.tvName).text =
-                clickedView.findViewById<TextView>(R.id.tvName).text
-
-            dragView.findViewById<View>(R.id.item_layout)
-                .setBackgroundColor(attrColor(R.attr.list_item_bg_pressed_dragged))
-        }
-    }
-
-    private inner class MyListAdapter :
-        DragItemAdapter<MyItem, MyViewHolder>() {
-
-        init {
-            setHasStableIds(true)
-            itemList = ArrayList()
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-            val view = layoutInflater.inflate(R.layout.lv_mute_app, parent, false)
-            return MyViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            super.onBindViewHolder(holder, position)
-            holder.bind(itemList[position])
-        }
-
-        override fun getUniqueItemId(position: Int): Long {
-            val item = mItemList[position] // mItemList は親クラスのメンバ変数
-            return item.id
-        }
+        override fun isEnabled(position: Int) = false
     }
 }

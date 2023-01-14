@@ -6,10 +6,10 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.databinding.ActTextBinding
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -59,13 +59,17 @@ class ActText : AppCompatActivity() {
     }
 
     private var account: SavedAccount? = null
-    private lateinit var etText: EditText
+
+    private val views by lazy {
+        ActTextBinding.inflate(layoutInflater)
+    }
 
     private val selection: String
         get() {
-            val s = etText.selectionStart
-            val e = etText.selectionEnd
-            val text = etText.text.toString()
+            val et = views.etText
+            val s = et.selectionStart
+            val e = et.selectionEnd
+            val text = et.text.toString()
             return if (s == e) {
                 text
             } else {
@@ -112,41 +116,34 @@ class ActText : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        App1.setActivityTheme(this, noActionBar = true)
+        App1.setActivityTheme(this)
 
-        val intent = intent
-
-        account = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, -1L))
+        account = intent.long(EXTRA_ACCOUNT_DB_ID)
+            ?.let { SavedAccount.loadAccount(this, it) }
 
         initUI()
 
         if (savedInstanceState == null) {
-            val sv = intent.getStringExtra(EXTRA_TEXT) ?: ""
-            val contentStart = intent.getIntExtra(EXTRA_CONTENT_START, 0)
-            val contentEnd = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
-            etText.setText(sv)
+            val sv = intent.string(EXTRA_TEXT) ?: ""
+            val contentStart = intent.int(EXTRA_CONTENT_START) ?: 0
+            val contentEnd = intent.int(EXTRA_CONTENT_END) ?: sv.length
+            views.etText.setText(sv)
 
             // Android 9 以降ではフォーカスがないとsetSelectionできない
             if (Build.VERSION.SDK_INT >= 28) {
-                etText.requestFocus()
-                etText.hideKeyboard()
+                views.etText.requestFocus()
+                views.etText.hideKeyboard()
             }
 
-            etText.setSelection(contentStart, contentEnd)
+            views.etText.setSelection(contentStart, contentEnd)
         }
     }
 
     internal fun initUI() {
-        setContentView(R.layout.act_text)
-        etText = findViewById(R.id.etText)
-        App1.initEdgeToEdge(this)
-        fixHorizontalMargin(etText)
-
-        setSupportActionBar(findViewById(R.id.toolbar))
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(false)
-            setHomeButtonEnabled(false)
-        }
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        setNavigationBack(views.toolbar)
+        fixHorizontalMargin(views.etText)
     }
 
     private fun send() {

@@ -232,12 +232,12 @@ internal class DlgContextMenu(
             PrefI.ipButtonFollowingColor(activity.pref).notZero()
                 ?: activity.attrColor(R.attr.colorButtonAccentFollow)
 
-        val colorButtonError =
-            PrefI.ipButtonFollowRequestColor(activity.pref).notZero()
+        val colorButtonFollowRequest =
+            PrefI.ipButtonFollowRequestColor.invoke(activity.pref).notZero()
                 ?: activity.attrColor(R.attr.colorButtonAccentFollowRequest)
 
         val colorButtonNormal =
-            activity.attrColor(R.attr.colorImageButton)
+            activity.attrColor(R.attr.colorTextContent)
 
         fun showRelation(relation: UserRelation) {
 
@@ -266,7 +266,7 @@ internal class DlgContextMenu(
 
             views.btnFollow.imageTintList = ColorStateList.valueOf(
                 when {
-                    relation.getRequested(who) -> colorButtonError
+                    relation.getRequested(who) -> colorButtonFollowRequest
                     relation.getFollowing(who) -> colorButtonAccent
                     else -> colorButtonNormal
                 }
@@ -296,7 +296,7 @@ internal class DlgContextMenu(
             views.ivFollowedBy.vg(false)
             views.btnFollow.setImageResource(R.drawable.ic_follow_plus)
             views.btnFollow.imageTintList =
-                ColorStateList.valueOf(activity.attrColor(R.attr.colorImageButton))
+                ColorStateList.valueOf(colorButtonNormal)
 
             views.btnNotificationFrom.visibility = View.GONE
         } else {

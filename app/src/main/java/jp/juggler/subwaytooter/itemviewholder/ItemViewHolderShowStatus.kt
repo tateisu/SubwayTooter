@@ -320,8 +320,8 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
             activity,
             btnHideMedia,
             R.drawable.ic_close,
-            color = contentColor,
-            alphaMultiplier = boostAlpha
+            color = colorTextContent,
+            alphaMultiplier = stylerBoostAlpha
         )
     }
 }

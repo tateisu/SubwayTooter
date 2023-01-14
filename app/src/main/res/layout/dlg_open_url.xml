@@ -31,7 +31,7 @@
             android:layout_marginStart="4dp"
             android:contentDescription="@android:string/paste"
             android:src="@drawable/ic_paste"
-            app:tint="?attr/colorImageButton" />
+            app:tint="?attr/colorTextContent" />
 
     </LinearLayout>
 

@@ -8,6 +8,7 @@ import jp.juggler.util.data.getIntOrNull
 import jp.juggler.util.data.getStringOrNull
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import jp.juggler.util.long
 
 class DownloadReceiver : BroadcastReceiver() {
 
@@ -24,7 +25,9 @@ class DownloadReceiver : BroadcastReceiver() {
                     context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
                 try {
-                    val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0L)
+                    val id = intent.long(DownloadManager.EXTRA_DOWNLOAD_ID)
+                        ?: error("missing download id")
+
                     val query = DownloadManager.Query().setFilterById(id)
 
                     downloadManager.query(query)?.use { cursor ->

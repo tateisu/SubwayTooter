@@ -10,7 +10,7 @@ enum class TootFilterContext(
     // API中の識別子
     val apiName: String,
     // アプリに表示する文字列のID
-    val caption_id: Int
+    val caption_id: Int,
 ) {
     Home(1, "home", R.string.filter_home),
     Notifications(2, "notifications", R.string.filter_notification),
@@ -24,7 +24,7 @@ enum class TootFilterContext(
         private val log = LogCategory("TootFilterContext")
 
         private val valuesCache = values()
-        private val apiNameMap = values().associateBy { it.name }
+        private val apiNameMap = valuesCache.associateBy { it.apiName }
 
         fun parseBits(src: JsonArray?): Int =
             src?.stringList()?.mapNotNull { apiNameMap[it]?.bit }?.sum() ?: 0

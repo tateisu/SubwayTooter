@@ -28,8 +28,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 class FilterTrees(
-    val treeIrreversible: WordTrieTree = WordTrieTree(),
-    val treeReversible: WordTrieTree = WordTrieTree(),
+    val treeHide: WordTrieTree = WordTrieTree(),
+    val treeWarn: WordTrieTree = WordTrieTree(),
     val treeAll: WordTrieTree = WordTrieTree(),
 )
 
@@ -185,6 +185,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     // Mastodon 3.5.0
     var time_edited_at = 0L
+
+    // Mastodon 4.0.0
+    var filteredV4: List<TootFilterResult>? = null
 
     ///////////////////////////////////////////////////////////////////
     // 以下はentityから取得したデータではなく、アプリ内部で使う
@@ -639,6 +642,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                         this.visibility = TootVisibility.parseMastodon(visibilityString)
                             ?: TootVisibility.Unknown
                         this.sensitive = src.optBoolean("sensitive")
+
+                        this.filteredV4 = TootFilterResult.parseList(src.jsonArray("filtered"))
                     }
 
                     ServiceType.TOOTSEARCH -> {
@@ -904,55 +909,91 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     fun updateKeywordFilteredFlag(
         accessInfo: SavedAccount,
         trees: FilterTrees?,
-        checkIrreversible: Boolean = false,
+        matchedFiltersV4: List<TootFilterResult>? = null,
+        // フィルタ更新時などは隠すフィルタも含めてチェックする
+        checkAll: Boolean = false,
     ) {
-
         trees ?: return
+        val desc = if (accessInfo.isMe(account) || accessInfo.isMe(reblog?.account)) {
+            null
+        } else {
+            val tree = if (checkAll) trees.treeAll else trees.treeWarn
+            val m1 = matchKeywordFilter(accessInfo, tree)
+            val m2 = reblog?.matchKeywordFilter(accessInfo, tree)
 
-        // status from me or boosted by me is not filtered.
-        if (accessInfo.isMe(account)) {
-            _filteredWord = null
-            return
+            if (m1.isNullOrEmpty() &&
+                m2.isNullOrEmpty() &&
+                matchedFiltersV4.isNullOrEmpty()
+            ) {
+                null
+            } else {
+                val list = ArrayList<String>()
+                fun String.addToList() {
+                    if (this.isNotEmpty() && !list.contains(this)) list.add(this)
+                }
+
+                fun List<String>.addToList() {
+                    for (s in this) s.addToList()
+                }
+
+                matchedFiltersV4?.forEach { it.filter?.title?.addToList() }
+                m1?.forEach { m ->
+                    m.tags?.mapNotNull { (it as? TootFilter)?.title }
+                        ?.addToList()
+                }
+                m2?.forEach { m ->
+                    m.tags?.mapNotNull { (it as? TootFilter)?.title }
+                        ?.addToList()
+                }
+                if (list.isEmpty()) {
+                    matchedFiltersV4?.forEach { fr ->
+                        fr.filter?.keywords?.map { it.keyword }?.addToList()
+                    }
+                    m1?.forEach { m ->
+                        m.word.notEmpty()?.let { list.add(it) }
+                    }
+                    m2?.forEach { m ->
+                        m.word.notEmpty()?.let { list.add(it) }
+                    }
+                }
+                list.joinToString(", ")
+            }
         }
-
-        _filteredWord =
-            isKeywordFilteredSub(if (checkIrreversible) trees.treeAll else trees.treeReversible)
-                ?.joinToString(", ")
-
-        reblog?.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible)
+        _filteredWord = desc
+        reblog?._filteredWord = desc
     }
 
-    fun isKeywordFiltered(accessInfo: SavedAccount, tree: WordTrieTree?): Boolean {
-        tree ?: return false
+    fun matchKeywordFilterWithReblog(
+        accessInfo: SavedAccount,
+        tree: WordTrieTree?,
+    ): List<WordTrieTree.Match>? {
+        matchKeywordFilter(accessInfo, tree)
+            ?.notEmpty()?.let { return it }
 
-        // status from me or boosted by me is not filtered.
-        if (accessInfo.isMe(account)) return false
+        reblog?.matchKeywordFilter(accessInfo, tree)
+            ?.notEmpty()?.let { return it }
 
-        if (isKeywordFilteredSub(tree) != null) return true
-        if (reblog?.isKeywordFilteredSub(tree) != null) return true
-
-        return false
+        return null
     }
 
-    private fun isKeywordFilteredSub(tree: WordTrieTree): ArrayList<String>? {
+    private fun matchKeywordFilter(
+        accessInfo: SavedAccount,
+        tree: WordTrieTree?,
+    ): ArrayList<WordTrieTree.Match>? {
+        // フィルタ単語がない、または
+        if (tree.isNullOrEmpty() || accessInfo.isMe(account)) return null
 
-        var list: ArrayList<String>? = null
+        var list: ArrayList<WordTrieTree.Match>? = null
 
         fun check(t: CharSequence?) {
-            if (t?.isEmpty() != false) return
+            if (t.isNullOrEmpty()) return
             val matches = tree.matchList(t) ?: return
-            var dst = list
-            if (dst == null) {
-                dst = ArrayList()
-                list = dst
-            }
-            for (m in matches)
-                dst.add(m.word)
+            (list ?: ArrayList<WordTrieTree.Match>().also { list = it })
+                .addAll(matches)
         }
-
         check(decoded_spoiler_text)
         check(decoded_content)
-
+        media_attachments?.forEach { check(it.description) }
         return list
     }
 

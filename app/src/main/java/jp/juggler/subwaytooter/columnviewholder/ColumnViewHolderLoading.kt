@@ -235,7 +235,7 @@ fun ColumnViewHolder.setScrollPosition(sp: ScrollPosition, deltaDp: Float = 0f) 
             val state = ColumnViewHolder.fieldState.get(listView) as RecyclerView.State
             listLayoutManager.scrollVerticallyBy(dy, recycler, state)
         } catch (ex: Throwable) {
-            log.e("can't access field in class ${RecyclerView::class.java.simpleName}")
+            log.e(ex, "can't access field in class ${RecyclerView::class.java.simpleName}")
         }
     }, 20L)
 }

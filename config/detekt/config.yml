@@ -75,6 +75,11 @@ comments:
 
 complexity:
   active: true
+  
+  CyclomaticComplexMethod:
+    active: false
+    threshold: 20
+
   ComplexCondition:
     active: true
     threshold: 8
@@ -247,6 +252,10 @@ formatting:
   active: true
   android: false
   autoCorrect: true
+  
+  MultiLineIfElse:
+    active: false
+  
   Wrapping:
     active: false
   AnnotationOnSeparateLine:
@@ -270,7 +279,7 @@ formatting:
     active: false
     autoCorrect: true
   Filename:
-    active: true
+    active: false
   FinalNewline:
     active: false
     autoCorrect: true
@@ -292,7 +301,7 @@ formatting:
     active: true
     autoCorrect: true
   MultiLineIfElse:
-    active: true
+    active: false
     autoCorrect: true
   NoBlankLineBeforeRbrace:
     active: true

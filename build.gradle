@@ -1,3 +1,5 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 buildscript {
 
     ext.jvm_target = "1.8"
@@ -23,7 +25,7 @@ buildscript {
 
     ext.junit_version = '4.13.2'
 
-    ext.detekt_version = '1.21.0-RC1'
+    ext.detekt_version = '1.22.0'
 
     ext.compose_version = '1.0.5'
 

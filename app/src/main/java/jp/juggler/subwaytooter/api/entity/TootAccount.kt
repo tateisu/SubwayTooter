@@ -678,15 +678,13 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             return null
         }
 
-        private fun parseSource(src: JsonObject?): Source? {
-            src ?: return null
-            return try {
-                Source(src)
+        private fun parseSource(src: JsonObject?): Source? =
+            try {
+                src?.let { Source(it) }
             } catch (ex: Throwable) {
-                log.e("parseSource failed.")
+                log.e(ex, "parseSource failed.")
                 null
             }
-        }
 
         private fun findApDomain(acctArg: String?, linkHelper: LinkHelper?): Host? {
             // acctから調べる

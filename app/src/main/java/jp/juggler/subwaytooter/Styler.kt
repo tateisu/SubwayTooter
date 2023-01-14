@@ -144,7 +144,7 @@ fun getVisibilityCaption(
     visibility: TootVisibility,
 ): CharSequence {
 
-    val icon_id = getVisibilityIconId(isMisskeyData, visibility)
+    val iconId = getVisibilityIconId(isMisskeyData, visibility)
     val sv = getVisibilityString(context, isMisskeyData, visibility)
     val color = context.attrColor(R.attr.colorVectorDrawable)
     val sb = SpannableStringBuilder()
@@ -156,7 +156,7 @@ fun getVisibilityCaption(
     sb.setSpan(
         EmojiImageSpan(
             context,
-            icon_id,
+            iconId,
             useColorShader = true,
             color = color
         ),
@@ -300,28 +300,28 @@ private fun getOrientationString(orientation: Int?) = when (orientation) {
 }
 
 fun fixHorizontalPadding(v: View, dpDelta: Float = 12f) {
-    val pad_t = v.paddingTop
-    val pad_b = v.paddingBottom
+    val padT = v.paddingTop
+    val padB = v.paddingBottom
 
     val dm = v.resources.displayMetrics
     val widthDp = dm.widthPixels / dm.density
     if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
-        val pad_lr = (0.5f + dpDelta * dm.density).toInt()
+        val padLr = (0.5f + dpDelta * dm.density).toInt()
         when (PrefI.ipJustifyWindowContentPortrait()) {
             PrefI.JWCP_START -> {
-                v.setPaddingRelative(pad_lr, pad_t, pad_lr + dm.widthPixels / 2, pad_b)
+                v.setPaddingRelative(padLr, padT, padLr + dm.widthPixels / 2, padB)
                 return
             }
 
             PrefI.JWCP_END -> {
-                v.setPaddingRelative(pad_lr + dm.widthPixels / 2, pad_t, pad_lr, pad_b)
+                v.setPaddingRelative(padLr + dm.widthPixels / 2, padT, padLr, padB)
                 return
             }
         }
     }
 
-    val pad_lr = getHorizontalPadding(v, dpDelta)
-    v.setPaddingRelative(pad_lr, pad_t, pad_lr, pad_b)
+    val padLr = getHorizontalPadding(v, dpDelta)
+    v.setPaddingRelative(padLr, padT, padLr, padB)
 }
 
 fun fixHorizontalPadding0(v: View) = fixHorizontalPadding(v, 0f)
@@ -351,9 +351,9 @@ fun fixHorizontalMargin(v: View) {
             }
         }
 
-        val pad_lr = getHorizontalPadding(v, 0f)
-        lp.leftMargin = pad_lr
-        lp.rightMargin = pad_lr
+        val padLr = getHorizontalPadding(v, 0f)
+        lp.leftMargin = padLr
+        lp.rightMargin = padLr
     }
 }
 

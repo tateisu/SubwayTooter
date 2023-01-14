@@ -167,7 +167,7 @@ object CharacterGroup {
         internal var end: Int = 0
         var offset: Int = 0
 
-        internal fun reset(text: CharSequence, start: Int, end: Int): Tokenizer {
+        fun reset(text: CharSequence, start: Int, end: Int): Tokenizer {
             this.text = text
             this.offset = start
             this.end = end

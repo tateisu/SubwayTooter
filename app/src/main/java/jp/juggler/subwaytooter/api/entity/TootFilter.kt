@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 
 // https://docs.joinmastodon.org/entities/Filter/
@@ -32,9 +33,6 @@ class TootFilter(src: JsonObject) : TimelineItem() {
 
     val id: EntityId = EntityId.mayDefault(src.string("id"))
 
-    // v2
-    val title: String? = src.string("title")
-
     private val contextBits: Int = TootFilterContext.parseBits(src.jsonArray("context"))
 
     // フィルタの適用先の名前の文字列IDのリスト
@@ -49,15 +47,10 @@ class TootFilter(src: JsonObject) : TimelineItem() {
 
     // v2: filter_action is "warn" or "hide".
     // v1: irreversible boolean flag.
-    val filter_action: String = src.string("filter_action") ?: run {
-        // v1
-        when (src.boolean("irreversible")) {
-            true -> "hide"
-            else -> "warn"
-        }
-    }
+    val hide: Boolean = src.string("filter_action") == "hide" ||
+            src.boolean("irreversible") == true
 
-    val keywords: List<TootFilterKeyword>? =
+    var keywords: List<TootFilterKeyword> =
         src.jsonArray("keywords")?.let { a ->
             /* v2 */ a.objectList().map { TootFilterKeyword(it) }
         } ?: src.string("phrase").notBlank()?.let {
@@ -68,11 +61,22 @@ class TootFilter(src: JsonObject) : TimelineItem() {
                     whole_word = src.boolean("whole_word") ?: false
                 )
             )
-        }
+        } ?: emptyList()
 
     // フィルタにマッチしたステータスのIDのリスト
     val statuses = src.jsonArray("statuses")?.objectList()?.map { TootFilterStatus(it) }
 
+    // v2
+    val title: String? = src.string("title") ?: keywords.firstOrNull()?.keyword
+
     fun hasContext(fc: TootFilterContext) =
         contextBits.and(fc.bit) != 0
+
+    val displayString: String
+        get() = keywords.joinToString(", ") { it.keyword }.let { keywords ->
+            when (val t = title?.notEmpty()) {
+                null, "" -> keywords
+                else -> "($t)$keywords"
+            }
+        }
 }

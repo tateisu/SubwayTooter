@@ -42,6 +42,7 @@ object ApiPath {
     const val PATH_STATUSES = "/api/v1/statuses/%s" // 1:status_id
 
     const val PATH_FILTERS = "/api/v1/filters"
+    const val PATH_FILTERS_V2 = "/api/v2/filters"
 
     const val PATH_MISSKEY_PROFILE_FOLLOWING = "/api/users/following"
     const val PATH_MISSKEY_PROFILE_FOLLOWERS = "/api/users/followers"

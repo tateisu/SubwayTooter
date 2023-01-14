@@ -1173,4 +1173,12 @@
     <string name="permission_rational_media_access">Permission required to access the device\'s media data.</string>
     <string name="permission_denied_media_access">Missing app permission to access the device\'s media data.</string>
     <string name="popup_background_color">Popup background color</string>
+    <string name="filter_title">Filter title</string>
+    <string name="filter_action">Filter action</string>
+    <string name="filter_action_warn">Hide, but warn about filter.</string>
+    <string name="filter_action_hide">Hide. (for old server, it works as Irreversible)</string>
+    <string name="keyword_or_phrase">Keyword or phrase</string>
+    <string name="add_keyword_or_phrase">Add Keyword or phrase</string>
+    <string name="filter_keyword_empty">filter keyword(s) is empty.</string>
+    <string name="filter_title_empty">filter title is empty.</string>
 </resources>

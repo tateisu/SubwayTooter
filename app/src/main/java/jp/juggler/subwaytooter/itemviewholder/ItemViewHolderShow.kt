@@ -26,7 +26,6 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.util.log.Benchmark
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
@@ -394,30 +393,30 @@ fun ItemViewHolder.showDomainBlock(domainBlock: TootDomainBlock) {
 
 fun ItemViewHolder.showFilter(filter: TootFilter) {
     llFilter.visibility = View.VISIBLE
-    tvFilterPhrase.text = filter.phrase
+    tvFilterPhrase.text = filter.displayString
 
-    val sb = StringBuffer()
-    //
-    sb.append(activity.getString(R.string.filter_context))
-        .append(": ")
-        .append(filter.contextNames.joinToString("/") { activity.getString(it) })
-    //
-    val flags = ArrayList<String>()
-    if (filter.irreversible) flags.add(activity.getString(R.string.filter_irreversible))
-    if (filter.whole_word) flags.add(activity.getString(R.string.filter_word_match))
-    if (flags.isNotEmpty()) {
-        sb.append('\n')
-            .append(flags.joinToString(", "))
-    }
-    //
-    if (filter.time_expires_at != 0L) {
-        sb.append('\n')
-            .append(activity.getString(R.string.filter_expires_at))
-            .append(": ")
-            .append(TootStatus.formatTime(activity, filter.time_expires_at, false))
-    }
+    tvFilterDetail.text = StringBuffer().apply {
+        val contextNames = filter.contextNames.joinToString("/") { activity.getString(it) }
+        append(activity.getString(R.string.filter_context))
+        append(": ")
+        append(contextNames)
 
-    tvFilterDetail.text = sb.toString()
+        val action = when (filter.hide) {
+            true -> activity.getString(R.string.filter_action_hide)
+            else -> activity.getString(R.string.filter_action_warn)
+        }
+        append('\n')
+        append(activity.getString(R.string.filter_action))
+        append(": ")
+        append(action)
+
+        if (filter.time_expires_at > 0L) {
+            append('\n')
+            append(activity.getString(R.string.filter_expires_at))
+            append(": ")
+            append(TootStatus.formatTime(activity, filter.time_expires_at, false))
+        }
+    }.toString()
 }
 
 fun ItemViewHolder.showSearchTag(tag: TootTag) {

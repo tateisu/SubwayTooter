@@ -13,8 +13,8 @@
 
         android:clipToPadding="false"
         android:fillViewport="true"
-        android:paddingTop="12dp"
         android:paddingBottom="128dp"
+        android:paddingTop="12dp"
         android:scrollbarStyle="outsideOverlay"
         tools:ignore="TooManyViews">
 
@@ -37,14 +37,60 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:labelFor="@+id/etPhrase"
-                android:text="@string/filter_phrase" />
+                android:labelFor="@+id/etTitle"
+                android:text="@string/filter_title" />
 
             <EditText
-                android:id="@+id/etPhrase"
+                android:id="@+id/etTitle"
                 style="@style/setting_row_form"
                 android:importantForAutofill="no"
                 android:inputType="text" />
+
+            <View style="@style/setting_divider" />
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/filter_phrase" />
+
+            <LinearLayout
+                android:id="@+id/llKeywords"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnAddKeyword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_add"
+                android:text="@string/add_keyword_or_phrase"
+                android:textAllCaps="false" />
+
+            <View style="@style/setting_divider" />
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/filter_action" />
+
+            <RadioGroup
+                android:id="@+id/rgAction"
+                style="@style/setting_row_form"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/rbWarn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_action_warn" />
+
+                <RadioButton
+                    android:id="@+id/rbHide"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_action_hide" />
+            </RadioGroup>
 
             <View style="@style/setting_divider" />
 
@@ -81,24 +127,6 @@
                 style="@style/setting_row_form"
                 android:checked="true"
                 android:text="@string/filter_profile" />
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/filter_options" />
-
-            <CheckBox
-                android:id="@+id/cbFilterIrreversible"
-                style="@style/setting_row_form"
-                android:text="@string/filter_irreversible_long" />
-
-
-            <CheckBox
-                android:id="@+id/cbFilterWordMatch"
-                style="@style/setting_row_form"
-                android:layout_marginTop="8dp"
-                android:text="@string/filter_word_match_long" />
 
             <View style="@style/setting_divider" />
 

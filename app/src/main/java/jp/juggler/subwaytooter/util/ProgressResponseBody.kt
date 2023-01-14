@@ -103,7 +103,7 @@ class ProgressResponseBody private constructor(
 
                         return buffer.readByteArray()
                     } catch (ex: Throwable) {
-                        log.e("readByteArray() failed. ")
+                        log.e(ex, "readByteArray() failed.")
                         return originalSource.readByteArray()
                     }
                 }

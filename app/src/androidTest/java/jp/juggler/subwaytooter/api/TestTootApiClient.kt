@@ -8,10 +8,11 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.SimpleHttpClient
-import jp.juggler.util.JsonObject
-import jp.juggler.util.MEDIA_TYPE_JSON
-import jp.juggler.util.jsonArray
-import jp.juggler.util.jsonObject
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.network.MEDIA_TYPE_JSON
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -27,12 +28,15 @@ import java.util.concurrent.atomic.AtomicReference
 @Suppress("MemberVisibilityCanPrivate")
 @RunWith(AndroidJUnit4::class)
 class TestTootApiClient {
+    companion object {
+        private val log = LogCategory("TestTootApiClient")
+    }
 
     private val appContext = InstrumentationRegistry.getInstrumentation().targetContext!!
 
     class SimpleHttpClientMock(
         private val responseGenerator: (request: Request) -> Response,
-        val webSocketGenerator: (request: Request, ws_listener: WebSocketListener) -> WebSocket
+        val webSocketGenerator: (request: Request, ws_listener: WebSocketListener) -> WebSocket,
     ) : SimpleHttpClient {
 
         override var onCallCreated: (Call) -> Unit = {}
@@ -41,14 +45,14 @@ class TestTootApiClient {
 
         override suspend fun getResponse(
             request: Request,
-            tmpOkhttpClient: OkHttpClient?
+            tmpOkhttpClient: OkHttpClient?,
         ): Response {
             return responseGenerator(request)
         }
 
         override fun getWebSocket(
             request: Request,
-            webSocketListener: WebSocketListener
+            webSocketListener: WebSocketListener,
         ): WebSocket {
             return webSocketGenerator(request, webSocketListener)
         }
@@ -67,7 +71,12 @@ class TestTootApiClient {
             "応答の解析中…"
         )
     }
-    private fun assertReading(callback: ProgressRecordTootApiCallback,path:String){
+
+    private fun assertReading(
+        callback: ProgressRecordTootApiCallback,
+        @Suppress("SameParameterValue")
+        path: String,
+    ) {
         assertOneOf(
             callback.progressString,
             "Reading: GET $path",
@@ -82,7 +91,7 @@ class TestTootApiClient {
             copyBody.writeTo(buffer)
             return buffer.readUtf8()
         } catch (ex: Throwable) {
-            ex.printStackTrace()
+            log.e(ex, "requestBodyString failed.")
             return null
         }
     }
@@ -133,7 +142,6 @@ class TestTootApiClient {
                                     )
                                 )
                                 .build()
-
                         }
                         // アクセストークンの作成
                         bodyString?.contains("grant_type=authorization_code") == true -> {
@@ -201,16 +209,15 @@ class TestTootApiClient {
                             put("url", "http://$instance/@$username")
                         }
 
-                        val array = jsonArray {
+                        val array = buildJsonArray {
                             for (i in 0 until 10) {
-                                add(jsonObject {
+                                add(buildJsonObject {
                                     put("account", account1Json)
                                     put("id", i.toLong())
                                     put("uri", "https://$instance/@$username/$i")
                                     put("url", "https://$instance/@$username/$i")
                                 })
                             }
-
                         }
 
                         Response.Builder()
@@ -231,7 +238,6 @@ class TestTootApiClient {
                             .body(request.url.toString().toResponseBody(mediaTypeTextPlain))
                             .build()
                 }
-
             },
 
             webSocketGenerator = { request: Request, _: WebSocketListener ->
@@ -265,8 +271,9 @@ class TestTootApiClient {
 
         var progressString: String? = null
 
-        override val isApiCancelled: Boolean
-            get() = cancelled
+        override suspend fun isApiCancelled(): Boolean {
+            return cancelled
+        }
 
         override suspend fun publishApiProgress(s: String) {
             progressString = s
@@ -522,11 +529,10 @@ class TestTootApiClient {
                 appContext,
                 httpClient = createHttpClientNotImplemented(),
                 callback = object : TootApiCallback {
-                    override val isApiCancelled: Boolean
-                        get() {
-                            ++flag
-                            return true
-                        }
+                    override suspend fun isApiCancelled(): Boolean {
+                        ++flag
+                        return true
+                    }
 
                     override suspend fun publishApiProgress(s: String) {
                         ++flag
@@ -540,7 +546,7 @@ class TestTootApiClient {
                     }
                 }
             )
-            val isApiCancelled = client.isApiCancelled
+            val isApiCancelled = client.isApiCancelled()
             client.publishApiProgress("testing")
             client.publishApiProgressRatio(50, 100)
             assertEquals(3, flag)
@@ -548,7 +554,6 @@ class TestTootApiClient {
             assertEquals("testing", progressString)
             assertEquals(50, progressValue)
             assertEquals(100, progressMax)
-
         }
     }
 
@@ -604,7 +609,6 @@ class TestTootApiClient {
                     "instance: 通信エラー。: NotImplementedError An operation is not implemented.",
                 )
                 assertNull(result.response)
-
             }
 
             // progressPath を指定したらpublishApiProgressに渡されること
@@ -683,7 +687,7 @@ class TestTootApiClient {
                 val bodyString = client.readBodyString(result)
                 assertEquals(null, bodyString)
                 assertEquals(null, result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals("Error! (HTTP 500 status-message) instance", result.error)
                 assertNull(result.data)
             }
@@ -698,7 +702,7 @@ class TestTootApiClient {
                 val bodyString = client.readBodyString(result)
                 assertEquals("", bodyString)
                 assertEquals("", result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals(null, result.error)
                 assertNull(result.data)
             }
@@ -713,7 +717,7 @@ class TestTootApiClient {
                 val bodyString = client.readBodyString(result)
                 assertEquals("", bodyString)
                 assertEquals("", result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals(null, result.error)
                 assertNull(result.data)
             }
@@ -806,7 +810,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(null, result.string)
                 assertEquals(null, result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals("Error! (HTTP 500 status-message) instance", result.error)
             }
 
@@ -821,7 +825,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(null, result.string)
                 assertEquals(null, result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals("(no information) (HTTP 404 status-message) instance", result.error)
                 assertNull(result.data)
             }
@@ -837,7 +841,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals("", result.string)
                 assertEquals("", result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals(null, result.error)
                 assertEquals("", result.data)
             }
@@ -852,11 +856,10 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(null, result.string)
                 assertEquals(null, result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
                 assertNull(result.data)
             }
-
         }
     }
 
@@ -927,7 +930,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(null, result.data)
                 assertEquals(null, result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals("Error! (HTTP 500 status-message) instance", result.error)
             }
 
@@ -942,7 +945,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(0, result.jsonObject?.size)
                 assertEquals("", result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals(null, result.error)
             }
 
@@ -956,7 +959,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(0, result.jsonObject?.size)
                 assertEquals("", result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals(null, result.error)
             }
 
@@ -970,7 +973,7 @@ class TestTootApiClient {
                 assertNotNull(r2)
                 assertEquals(null, result.data)
                 assertEquals(null, result.bodyString)
-                assertReading(callback,"instance")
+                assertReading(callback, "instance")
                 assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
                 assertNull(result.data)
             }
@@ -1186,7 +1189,7 @@ class TestTootApiClient {
     @Test
     fun testWebSocket() {
         runBlocking {
-            val tokenInfo = jsonObject {
+            val tokenInfo = buildJsonObject {
                 put("access_token", "DUMMY_ACCESS_TOKEN")
             }
 
@@ -1211,4 +1214,3 @@ class TestTootApiClient {
         }
     }
 }
-

@@ -70,7 +70,7 @@ fun Column.canStatusFilter() =
         ColumnType.SEARCH_NOTESTOCK,
         ColumnType.STATUS_HISTORY,
         -> true
-        else -> getFilterContext() !=null
+        else -> getFilterContext() != null
     }
 
 // カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -142,7 +142,7 @@ fun Column.onFilterDeleted(filter: TootFilter, filterList: List<TootFilter>) {
             fireShowContent(reason = "onFilterDeleted")
         }
     } else {
-        if( getFilterContext() != null){
+        if (getFilterContext() != null) {
             onFiltersChanged2(filterList)
         }
     }
@@ -189,15 +189,39 @@ private fun Column.isFilteredByAttachment(status: TootStatus): Boolean {
 
 fun Column.isFiltered(status: TootStatus): Boolean {
 
-    val filterTrees = keywordFilterTrees
-    if (filterTrees != null) {
-        if (status.isKeywordFiltered(accessInfo, filterTrees.treeIrreversible)) {
-            log.d("status filtered by treeIrreversible")
-            return true
-        }
+    val isMe = accessInfo.isMe(status.account) ||
+            accessInfo.isMe(status.reblog?.account)
 
-        // just update _filtered flag for reversible filter
-        status.updateKeywordFilteredFlag(accessInfo, filterTrees)
+    val filterTrees = keywordFilterTrees
+    if (filterTrees != null && !isMe) {
+        val ti = TootInstance.getCached(accessInfo)
+        if (ti?.versionGE(TootInstance.VERSION_4_0_0) == true) {
+            // v4 はサーバ側でフィルタしてる
+            // XXX: フィルタが後から更新されたら再チェックが必要か？
+            val filteredV4 = status.filteredV4 ?: status.reblog?.filteredV4
+            if (filteredV4.isNullOrEmpty()) {
+                // フィルタされていない
+            } else if (filteredV4.any { it.isHide }) {
+                // 隠すフィルタ
+                log.d("isFiltered: status muted by filteredV4 hide.")
+                return true
+            } else {
+                // 警告フィルタ
+                status.updateKeywordFilteredFlag(
+                    accessInfo,
+                    filterTrees,
+                    matchedFiltersV4 = filteredV4
+                )
+            }
+        } else {
+            if (status.matchKeywordFilterWithReblog(accessInfo, filterTrees.treeHide) != null) {
+                log.d("status filtered by treeIrreversible")
+                return true
+            } else {
+                // 警告フィルタ
+                status.updateKeywordFilteredFlag(accessInfo, filterTrees)
+            }
+        }
     }
 
     if (isFilteredByAttachment(status)) return true
@@ -339,14 +363,39 @@ fun Column.isFiltered(item: TootNotification): Boolean {
     val status = item.status
     val filterTrees = keywordFilterTrees
     if (status != null && filterTrees != null) {
-        if (status.isKeywordFiltered(accessInfo, filterTrees.treeIrreversible)) {
-            log.d("isFiltered: status muted by treeIrreversible.")
-            return true
+        val ti = TootInstance.getCached(accessInfo)
+        if (ti?.versionGE(TootInstance.VERSION_4_0_0) == true) {
+            // v4 はサーバ側でフィルタしてる
+            // XXX: フィルタが後から更新されたら再チェックが必要か？
+            val filterResults = status.filteredV4 ?: status.reblog?.filteredV4
+            if (filterResults.isNullOrEmpty()) {
+                // フィルタされていない
+            } else if (filterResults.any { it.isHide }) {
+                // 隠すフィルタ
+                log.d("isFiltered: status muted by filteredV4 hide.")
+                return true
+            } else {
+                // 警告フィルタ
+                status.updateKeywordFilteredFlag(
+                    accessInfo,
+                    filterTrees,
+                    matchedFiltersV4 = filterResults
+                )
+            }
+        } else {
+            // v4未満は端末側でのチェック
+            if (status.matchKeywordFilterWithReblog(accessInfo, filterTrees.treeHide) != null) {
+                // 隠すフィルタ
+                log.d("isFiltered: status muted by treeIrreversible.")
+                return true
+            } else {
+                // 警告フィルタ
+                // just update _filtered flag for reversible filter
+                status.updateKeywordFilteredFlag(accessInfo, filterTrees)
+            }
         }
-
-        // just update _filtered flag for reversible filter
-        status.updateKeywordFilteredFlag(accessInfo, filterTrees)
     }
+
     if (checkLanguageFilter(status)) return true
 
     if (status?.checkMuted() == true) {
@@ -383,8 +432,11 @@ fun Column.isFiltered(item: TootNotification): Boolean {
 // フィルタを読み直してリストを返す。またはnull
 suspend fun Column.loadFilter2(client: TootApiClient): List<TootFilter>? {
     if (accessInfo.isPseudo || accessInfo.isMisskey) return null
-    if (getFilterContext() ==null) return null
-    val result = client.request(ApiPath.PATH_FILTERS)
+    if (getFilterContext() == null) return null
+    var result = client.request(ApiPath.PATH_FILTERS_V2)
+    if (result?.response?.code == 404) {
+        result = client.request(ApiPath.PATH_FILTERS)
+    }
 
     val jsonArray = result?.jsonArray ?: return null
     return TootFilter.parseList(jsonArray)
@@ -399,22 +451,30 @@ fun Column.encodeFilterTree(filterList: List<TootFilter>?): FilterTrees? {
         if (filter.time_expires_at > 0L && now >= filter.time_expires_at) continue
         if (!filter.hasContext(columnContext)) continue
 
-        val validator = when (filter.whole_word) {
-            true -> WordTrieTree.WORD_VALIDATOR
-            else -> WordTrieTree.EMPTY_VALIDATOR
+        for (kw in filter.keywords) {
+            val validator = when (kw.whole_word) {
+                true -> WordTrieTree.WORD_VALIDATOR
+                else -> WordTrieTree.EMPTY_VALIDATOR
+            }
+            when (filter.hide) {
+                true -> result.treeHide
+                else -> result.treeWarn
+            }.add(
+                s = kw.keyword,
+                tag = filter,
+                validator = validator
+            )
+            result.treeAll.add(
+                s = kw.keyword,
+                tag = filter,
+                validator = validator
+            )
         }
-
-        if (filter.irreversible) {
-            result.treeIrreversible
-        } else {
-            result.treeReversible
-        }.add(filter.phrase, validator = validator)
-
-        result.treeAll.add(filter.phrase, validator = validator)
     }
     return result
 }
 
+// フィルタ更新時に全部チェックし直す
 fun Column.checkFiltersForListData(trees: FilterTrees?) {
     trees ?: return
     val changeList = ArrayList<AdapterChange>()
@@ -422,7 +482,7 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
         when (item) {
             is TootStatus -> {
                 val oldFiltered = item.filtered
-                item.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible = true)
+                item.updateKeywordFilteredFlag(accessInfo, trees, checkAll = true)
                 if (oldFiltered != item.filtered) {
                     changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
                 }
@@ -432,7 +492,7 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
                 val s = item.status
                 if (s != null) {
                     val oldFiltered = s.filtered
-                    s.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible = true)
+                    s.updateKeywordFilteredFlag(accessInfo, trees, checkAll = true)
                     if (oldFiltered != s.filtered) {
                         changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
                     }
@@ -451,11 +511,14 @@ fun reloadFilter(context: Context, accessInfo: SavedAccount) {
             accessInfo,
             progressStyle = ApiTask.PROGRESS_NONE
         ) { client ->
-            client.request(ApiPath.PATH_FILTERS)?.also { result ->
-                result.jsonArray?.let {
-                    resultList = TootFilter.parseList(it)
-                }
+            var result = client.request(ApiPath.PATH_FILTERS_V2)
+            if (result?.response?.code == 404) {
+                result = client.request(ApiPath.PATH_FILTERS)
             }
+            result?.jsonArray?.let {
+                resultList = TootFilter.parseList(it)
+            }
+            result
         }
 
         resultList?.let {

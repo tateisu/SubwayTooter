@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter
 
 import androidx.test.runner.AndroidJUnit4
-import jp.juggler.util.CharacterGroup
+import jp.juggler.util.data.CharacterGroup
 import jp.juggler.util.data.WordTrieTree
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -15,7 +15,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class WordTrieTreeTest {
-
 
     companion object {
 
@@ -62,7 +61,6 @@ class WordTrieTreeTest {
     @Test
     @Throws(Exception::class)
     fun testCharacterGroupTokenizer() {
-
 
         val whitespace = String(whitespace_chars)
         val whitespace_len = whitespace.length
@@ -209,5 +207,4 @@ class WordTrieTreeTest {
             assertEquals(33, strTest.length.toLong()) // 末尾の空白はマッチ範囲には含まれない
         }
     }
-
 }

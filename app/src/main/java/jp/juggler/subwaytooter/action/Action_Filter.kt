@@ -25,7 +25,7 @@ fun ActMain.openFilterMenu(accessInfo: SavedAccount, item: TootFilter?) {
     ad.addAction(getString(R.string.delete)) {
         filterDelete(accessInfo, item)
     }
-    ad.show(this, getString(R.string.filter_of, item.phrase))
+    ad.show(this, getString(R.string.filter_of, item.displayString))
 }
 
 fun ActMain.filterDelete(
@@ -35,7 +35,7 @@ fun ActMain.filterDelete(
 ) {
     launchAndShowError {
         if (!bConfirmed) {
-            confirm(R.string.filter_delete_confirm, filter.phrase)
+            confirm(R.string.filter_delete_confirm, filter.displayString)
         }
 
         var resultFilterList: List<TootFilter>? = null

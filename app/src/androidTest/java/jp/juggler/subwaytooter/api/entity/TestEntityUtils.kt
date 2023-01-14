@@ -1,13 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
-import android.test.mock.MockContext
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.decodeJsonObject
-import jp.juggler.util.notEmptyOrThrow
+import jp.juggler.util.data.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -91,7 +88,6 @@ class TestEntityUtils {
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
         assertEquals(2, parseList(::TestEntity, src).size)
-
     }
 
     @Test
@@ -110,7 +106,6 @@ class TestEntityUtils {
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
         assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
-
     }
 
     @Test
@@ -129,7 +124,6 @@ class TestEntityUtils {
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
         assertEquals(2, parseMap(::TestEntity, src).size)
-
     }
 
     @Test
@@ -148,10 +142,14 @@ class TestEntityUtils {
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
         assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
-
     }
 
-    private val parser = TootParser(MockContext(), SavedAccount.na)
+    private val parser by lazy {
+        TootParser(
+            InstrumentationRegistry.getInstrumentation().targetContext,
+            SavedAccount.na,
+        )
+    }
 
     @Test
     fun testParseItemWithParser() {
@@ -214,7 +212,6 @@ class TestEntityUtils {
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
         assertEquals(2, parseList(::TestEntity, parser, src).size)
-
     }
 
     @Test
@@ -233,7 +230,6 @@ class TestEntityUtils {
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
         assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
-
     }
 
     @Test(expected = RuntimeException::class)

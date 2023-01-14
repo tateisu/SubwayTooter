@@ -1165,4 +1165,14 @@
     <string name="permission_denied_media_access">端末上のデータにアクセスする権限がありません。</string>
     <string name="popup_background_color">ポップアップ背景色</string>
 
+
+    <string name="filter_title">フィルタ名</string>
+    <string name="filter_action">フィルタ処理</string>
+    <string name="filter_action_warn">フィルタされたことを表示する</string>
+    <string name="filter_action_hide">完全に隠す。(Mastodon 3.xまでは非可逆を表す)</string>
+    <string name="keyword_or_phrase">キーワードやフレーズ</string>
+    <string name="add_keyword_or_phrase">キーワードやフレーズを追加</string>
+    <string name="filter_keyword_empty">キーワードがカラです</string>
+    <string name="filter_title_empty">フィルタ名がカラです</string>
+
 </resources>

@@ -1905,7 +1905,9 @@ enum class ColumnType(
         bAllowMisskey = false,
         headerType = HeaderType.Filter,
 
-        loading = { client -> getFilterList(client, ApiPath.PATH_FILTERS) },
+        loading = { client ->
+            getFilterList(client)
+        },
 
         canStreamingMastodon = streamingTypeNo,
         canStreamingMisskey = streamingTypeNo,

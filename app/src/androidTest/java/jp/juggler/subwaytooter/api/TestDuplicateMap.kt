@@ -4,8 +4,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.JsonObject
-import jp.juggler.util.jsonObject
+import jp.juggler.util.data.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -28,9 +27,9 @@ class TestDuplicateMap {
         accountJson: JsonObject,
         statusId: String,
         uri: String,
-        url: String?
+        url: String?,
     ): TootStatus {
-        val itemJson = jsonObject {
+        val itemJson = buildJsonObject {
             put("account", accountJson)
             put("id", statusId)
             put("uri", uri)
@@ -48,7 +47,7 @@ class TestDuplicateMap {
             accountJson: JsonObject,
             statusId: String,
             uri: String,
-            url: String?
+            url: String?,
         ) {
             val item = genStatus(parser, accountJson, statusId, uri, url)
             assertNotNull(item)
@@ -57,8 +56,7 @@ class TestDuplicateMap {
             assertEquals(true, map.isDuplicate(item))
         }
 
-
-        val account1Json = jsonObject {
+        val account1Json = buildJsonObject {
             put("username", "user1")
             put("acct", "user1")
             put("id", 1L)
@@ -110,13 +108,12 @@ class TestDuplicateMap {
         return generatedItems
     }
 
-
     private fun testDuplicateNotification(): ArrayList<TimelineItem> {
         val generatedItems = ArrayList<TimelineItem>()
         fun checkNotification(
             map: DuplicateMap,
             parser: TootParser,
-            id: String
+            id: String,
         ) {
             val itemJson = JsonObject()
 
@@ -144,7 +141,7 @@ class TestDuplicateMap {
         val generatedItems = ArrayList<TimelineItem>()
         fun checkReport(
             map: DuplicateMap,
-            id: String
+            id: String,
         ) {
             val item = TootReport(JsonObject().apply {
                 put("id", id)
@@ -157,7 +154,6 @@ class TestDuplicateMap {
             assertEquals(true, map.isDuplicate(item))
         }
 
-
         val map = DuplicateMap()
         checkReport(map, "r0")
         checkReport(map, "r1")
@@ -166,13 +162,12 @@ class TestDuplicateMap {
         return generatedItems
     }
 
-
     private fun testDuplicateAccount(): ArrayList<TimelineItem> {
         val generatedItems = ArrayList<TimelineItem>()
         fun checkAccount(
             map: DuplicateMap,
             parser: TootParser,
-            id: String
+            id: String,
         ) {
 
             val itemJson = JsonObject()

@@ -1,5 +1,9 @@
 package jp.juggler.util.data
 
+import androidx.collection.SparseArrayCompat
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
 class WordTrieTree {
 
     companion object {
@@ -42,10 +46,12 @@ class WordTrieTree {
     private class Node {
 
         // 続くノード
-        val childNodes = androidx.collection.SparseArrayCompat<Node>()
+        val childNodes = SparseArrayCompat<Node>()
 
         // このノードが終端なら、マッチした単語の元の表記がある
         var matchWord: String? = null
+
+        var matchTags: ArrayList<Any>? = null
 
         // Trieツリー的には終端単語と続くノードの両方が存在する場合がありうる。
         // たとえば ABC と ABCDEF を登録してから ABCDEFG を探索したら、単語 ABC と単語 ABCDEF にマッチする。
@@ -63,6 +69,7 @@ class WordTrieTree {
     // 単語の追加
     fun add(
         s: String,
+        tag:Any?=null,
         validator: (src: CharSequence, start: Int, end: Int) -> Boolean = EMPTY_VALIDATOR,
     ) {
         val t = CharacterGroup.Tokenizer().reset(s, 0, s.length)
@@ -84,6 +91,13 @@ class WordTrieTree {
                     node.validator = validator
                 }
 
+                // タグを覚える
+                if(tag!=null){
+                    val tags = node.matchTags
+                        ?: ArrayList<Any>().also{ node.matchTags = it}
+                    tags.add(tag)
+                }
+
                 return
             }
 
@@ -98,7 +112,12 @@ class WordTrieTree {
     }
 
     // マッチ結果
-    class Match internal constructor(val start: Int, val end: Int, val word: String)
+    class Match internal constructor(
+        val start: Int,
+        val end: Int,
+        val word: String,
+        val tags: ArrayList<Any>?,
+    )
 
     // Tokenizer が列挙する文字を使って Trie Tree を探索する
     private fun match(
@@ -117,7 +136,7 @@ class WordTrieTree {
             if (matchWord != null && node.validator(t.text, start, t.offset)) {
 
                 // マッチしたことを覚えておく
-                dst = Match(start, t.offset, matchWord)
+                dst = Match(start, t.offset, matchWord ,node.matchTags)
 
                 // ミュート用途の場合、ひとつでも単語にマッチすればより長い探索は必要ない
                 if (allowShortMatch) break
@@ -183,4 +202,12 @@ class WordTrieTree {
 
         return dst
     }
+}
+
+@OptIn(ExperimentalContracts::class)
+fun WordTrieTree?.isNullOrEmpty() :Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+    return this == null || this.isEmpty
 }

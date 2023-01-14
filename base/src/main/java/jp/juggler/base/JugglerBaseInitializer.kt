@@ -6,7 +6,7 @@ import jp.juggler.util.log.LogCategory
 
 class JugglerBaseInitializer : Initializer<Boolean> {
     companion object {
-        private val log = LogCategory("JugglerBaseInitializer")
+        private val log =   LogCategory("JugglerBaseInitializer")
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()

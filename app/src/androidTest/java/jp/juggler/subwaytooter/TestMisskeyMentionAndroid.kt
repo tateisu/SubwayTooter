@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter
 
 import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.util.asciiPatternString
+import jp.juggler.util.data.asciiPatternString
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,7 +35,6 @@ class TestMisskeyMentionAndroid {
         // IDEで警告が出るが、Androidは正規表現エンジンが異なるので仕方ない
         @Suppress("RegExpRedundantNestedCharacterClass")
         assertEquals(true, """[[ ]]][ ]""".toRegex().matches(" ] "))
-
     }
 
     @Test
@@ -56,7 +55,6 @@ class TestMisskeyMentionAndroid {
 
         // エスケープ文字の後に何もない場合も素通しする
         assertEquals("""\""", """\""".asciiPatternString())
-
     }
 
     @Test
@@ -96,5 +94,4 @@ class TestMisskeyMentionAndroid {
             findMention("@tateisu@xn--3-pfuzbe6htf.juggler.jp")
         )
     }
-
 }

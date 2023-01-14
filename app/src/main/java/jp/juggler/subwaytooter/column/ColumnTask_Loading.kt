@@ -898,14 +898,14 @@ class ColumnTask_Loading(
         return result
     }
 
-    suspend fun getFilterList(
-        client: TootApiClient,
-        pathBase: String,
-    ): TootApiResult? {
-        val result = client.request(pathBase)
+    suspend fun getFilterList(client: TootApiClient): TootApiResult? {
+        var result = client.request(ApiPath.PATH_FILTERS_V2)
+        if (result?.response?.code == 404) {
+            result = client.request(ApiPath.PATH_FILTERS)
+        }
         if (result != null) {
             val src = TootFilter.parseList(result.jsonArray)
-            this.listTmp = addAll(null, src?: emptyList())
+            this.listTmp = addAll(null, src ?: emptyList())
         }
         return result
     }

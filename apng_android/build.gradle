@@ -13,10 +13,6 @@ android {
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
-
-        versionCode 1
-        versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -45,13 +41,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation "junit:junit:$junit_version"
-    androidTestImplementation 'androidx.test:runner:1.5.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
-
     api project(':apng')
-    // 'api' に指定した依存関係はこのライブラリの利用者に公開されます
-    // 'implementation' に指定した依存関係はこのライブラリの利用者に公開されません
-
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(":base")
 }

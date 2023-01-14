@@ -47,19 +47,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation project(':base')
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar_lib_bersion"
+    implementation project(":base")
     implementation project(':apng_android')
-
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    //noinspection KtxExtensionAvailable
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
-
-    testImplementation "junit:junit:$junit_version"
-    androidTestImplementation 'androidx.test:runner:1.5.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
-
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
 }

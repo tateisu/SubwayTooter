@@ -1,14 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //noinspection DifferentStdlibGradleVersion
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-
-    testImplementation "junit:junit:$junit_version"
-}
-
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -20,12 +12,14 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = jvm_target
         freeCompilerArgs += [
-                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-                "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
+                "-opt-in=kotlin.ExperimentalStdlibApi",
         ]
     }
+}
 
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //noinspection DifferentStdlibGradleVersion
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "junit:junit:$junit_version"
 }

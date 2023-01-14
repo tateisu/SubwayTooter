@@ -11,6 +11,9 @@ buildscript {
 
     ext.desugar_lib_bersion = "1.2.0"
     ext.startup_version = "1.1.1"
+    ext.roomVersion = "2.5.0"
+    ext.workVersion = "2.7.1"
+    ext.glideVersion = '4.13.2'
 
     ext.appcompat_version = "1.6.0"
     ext.lifecycle_version = "2.5.1"

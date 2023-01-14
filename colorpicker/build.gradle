@@ -5,11 +5,6 @@ android {
     compileSdkVersion compile_sdk_version
     buildToolsVersion build_tools_version
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
@@ -17,11 +12,16 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    resourcePrefix "cpv_"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+    }
     lintOptions {
         abortOnError false
     }
-
-    resourcePrefix "cpv_"
 
     kotlinOptions {
         jvmTarget = jvm_target
@@ -36,15 +36,6 @@ android {
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-
-    implementation 'com.google.android.flexbox:flexbox:3.0.0'
-
-    testImplementation "junit:junit:$junit_version"
-
-    androidTestImplementation "androidx.test:core:$androidx_test_version"
-
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar_lib_bersion"
+    implementation project(":base")
 }

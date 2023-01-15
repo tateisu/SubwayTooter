@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.util.data.CharacterGroup
 import jp.juggler.util.data.WordTrieTree
 import org.junit.Assert.assertEquals

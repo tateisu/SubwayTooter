@@ -43,7 +43,6 @@ import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.activity
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.createColoredDrawable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference

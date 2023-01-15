@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
+import jp.juggler.util.coroutine.AppDispatchers.withTimeoutSafe
 import jp.juggler.util.coroutine.launchDefault
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -15,7 +16,6 @@ import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPostRequestBuilder
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
 import okhttp3.Request
 import java.util.regex.Pattern
 import kotlin.coroutines.Continuation
@@ -431,7 +431,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                         try {
                             val req = requestQueue.receive()
                             val r = try {
-                                withTimeout(30000L) {
+                                withTimeoutSafe(30000L) {
                                     handleRequest(req)
                                 }
                             } catch (ex: Throwable) {
@@ -481,7 +481,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 val cacheEntry = (hostArg ?: account?.apiHost ?: client.apiHost)?.getCacheEntry()
                     ?: return tiError("missing host.")
 
-                return withTimeout(30000L) {
+                return withTimeoutSafe(30000L) {
                     suspendCoroutine { cont ->
                         QueuedRequest(cont, allowPixelfed) { cached ->
 

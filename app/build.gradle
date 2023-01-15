@@ -135,6 +135,7 @@ dependencies {
     implementation project(':apng_android')
     implementation fileTree(include: ['*.aar'], dir: 'src/main/libs')
 
+
     // App1 とサーバ情報カラムで使う
     api "org.conscrypt:conscrypt-android:2.5.2"
 
@@ -143,19 +144,48 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version")
+
+    testImplementation(project(":base"))
+    androidTestImplementation(project(":base"))
+
+    testApi "androidx.arch.core:core-testing:$arch_version"
+    testApi "junit:junit:$junit_version"
+    testApi "org.jetbrains.kotlin:kotlin-test"
+    testApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
+
+    androidTestApi "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestApi "androidx.test.ext:junit-ktx:1.1.5"
+    androidTestApi "androidx.test.ext:junit:1.1.5"
+    androidTestApi "androidx.test.ext:truth:1.5.0"
+    androidTestApi "androidx.test:core-ktx:1.5.0"
+    androidTestApi "androidx.test:core:$androidx_test_version"
+    androidTestApi "androidx.test:runner:1.5.2"
+    androidTestApi "org.jetbrains.kotlin:kotlin-test"
+    androidTestApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
+
+    // To use android test orchestrator
+    androidTestUtil "androidx.test:orchestrator:1.4.2"
+
+    testApi("com.squareup.okhttp3:mockwebserver:$okhttpVersion") {
+        exclude group: "com.squareup.okio", module: "okio"
+        exclude group: "com.squareup.okhttp3", module: "okhttp"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-common"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"
+    }
+    androidTestApi("com.squareup.okhttp3:mockwebserver:$okhttpVersion") {
+        exclude group: "com.squareup.okio", module: "okio"
+        exclude group: "com.squareup.okhttp3", module: "okhttp"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-common"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib"
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"
+    }
 }
 
 repositories {
     mavenCentral()
 }
 
-// detekt
-def projectSource = file(projectDir)
-def configFile = files("$rootDir/config/detekt/config.yml")
-def baselineFile = file("$rootDir/config/detekt/baseline.xml")
-def kotlinFiles = "**/*.kt"
-def resourceFiles = "**/resources/**"
-def buildFiles = "**/build/**"
 
 tasks.register("detektAll", Detekt) {
     description = "Custom DETEKT build for all modules"
@@ -173,12 +203,30 @@ tasks.register("detektAll", Detekt) {
     // preconfigure defaults
     buildUponDefaultConfig = true
 
-    setSource(projectSource)
+    def configFile = files("$rootDir/config/detekt/config.yml")
     config.setFrom(configFile)
+
+    def baselineFile = file("$rootDir/config/detekt/baseline.xml")
     if (baselineFile.isFile()) {
         baseline.set(baselineFile)
     }
-    include(kotlinFiles)
+
+    source = files(
+            "$rootDir/apng/src",
+            "$rootDir/apng_android/src",
+            "$rootDir/app/src",
+            "$rootDir/base/src",
+            "$rootDir/colorpicker/src",
+            "$rootDir/emoji/src",
+            "$rootDir/icon_material_symbols/src",
+            "$rootDir/sample_apng/src",
+    )
+
+//    def kotlinFiles = "**/*.kt"
+//    include(kotlinFiles)
+
+    def resourceFiles = "**/resources/**"
+    def buildFiles = "**/build/**"
     exclude(resourceFiles, buildFiles)
     reports {
         html.enabled = true

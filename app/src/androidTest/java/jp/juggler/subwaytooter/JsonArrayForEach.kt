@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter
 
-import androidx.test.runner.AndroidJUnit4
-import jp.juggler.util.jsonArray
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import jp.juggler.util.data.*
 import org.jetbrains.anko.collections.forEachReversedByIndex
 import org.jetbrains.anko.collections.forEachReversedWithIndex
 import org.junit.Assert.assertEquals
@@ -19,7 +19,7 @@ class JsonArrayForEach {
     @Test
     @Throws(Exception::class)
     fun test() {
-        val array = jsonArray {
+        val array = buildJsonArray {
             add("a")
             add("b")
             add(null)

@@ -69,7 +69,7 @@ class WordTrieTree {
     // 単語の追加
     fun add(
         s: String,
-        tag:Any?=null,
+        tag: Any? = null,
         validator: (src: CharSequence, start: Int, end: Int) -> Boolean = EMPTY_VALIDATOR,
     ) {
         val t = CharacterGroup.Tokenizer().reset(s, 0, s.length)
@@ -92,9 +92,9 @@ class WordTrieTree {
                 }
 
                 // タグを覚える
-                if(tag!=null){
+                if (tag != null) {
                     val tags = node.matchTags
-                        ?: ArrayList<Any>().also{ node.matchTags = it}
+                        ?: ArrayList<Any>().also { node.matchTags = it }
                     tags.add(tag)
                 }
 
@@ -136,7 +136,7 @@ class WordTrieTree {
             if (matchWord != null && node.validator(t.text, start, t.offset)) {
 
                 // マッチしたことを覚えておく
-                dst = Match(start, t.offset, matchWord ,node.matchTags)
+                dst = Match(start, t.offset, matchWord, node.matchTags)
 
                 // ミュート用途の場合、ひとつでも単語にマッチすればより長い探索は必要ない
                 if (allowShortMatch) break
@@ -205,7 +205,7 @@ class WordTrieTree {
 }
 
 @OptIn(ExperimentalContracts::class)
-fun WordTrieTree?.isNullOrEmpty() :Boolean {
+fun WordTrieTree?.isNullOrEmpty(): Boolean {
     contract {
         returns(false) implies (this@isNullOrEmpty != null)
     }

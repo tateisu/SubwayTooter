@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter
 
 import androidx.test.platform.app.InstrumentationRegistry
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.util.asciiRegex
+import jp.juggler.util.data.asciiRegex
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

@@ -1,0 +1,226 @@
+{
+  "https://mastodon.juggler.jp/api/v1/instance": {
+    "uri": "mastodon.juggler.jp",
+    "title": "juggler.jp Mastodon サービス",
+    "short_description": "日本語で楽しめるMastodonサーバを提供しています。",
+    "description": "日本語で楽しめるMastodonサーバを提供しています。\u003ca href=\"https://mastodon.juggler.jp/terms\"\u003e利用規約\u003c/a\u003eを読んでからサインアップしてください。",
+    "email": "tateisu+juggler@gmail.com",
+    "version": "4.0.2",
+    "urls": {
+      "streaming_api": "wss://mastodon.juggler.jp"
+    },
+    "stats": {
+      "user_count": 1799,
+      "status_count": 725461,
+      "domain_count": 11626
+    },
+    "thumbnail": "https://m1j.zzz.ac/site_uploads/files/000/000/001/@1x/6f06b912bd963e28.png",
+    "languages": [
+      "ja"
+    ],
+    "registrations": true,
+    "approval_required": false,
+    "invites_enabled": true,
+    "configuration": {
+      "accounts": {
+        "max_featured_tags": 10
+      },
+      "statuses": {
+        "max_characters": 500,
+        "max_media_attachments": 4,
+        "characters_reserved_per_url": 23
+      },
+      "media_attachments": {
+        "supported_mime_types": [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/heic",
+          "image/heif",
+          "image/webp",
+          "image/avif",
+          "video/webm",
+          "video/mp4",
+          "video/quicktime",
+          "video/ogg",
+          "audio/wave",
+          "audio/wav",
+          "audio/x-wav",
+          "audio/x-pn-wave",
+          "audio/vnd.wave",
+          "audio/ogg",
+          "audio/vorbis",
+          "audio/mpeg",
+          "audio/mp3",
+          "audio/webm",
+          "audio/flac",
+          "audio/aac",
+          "audio/m4a",
+          "audio/x-m4a",
+          "audio/mp4",
+          "audio/3gpp",
+          "video/x-ms-asf"
+        ],
+        "image_size_limit": 10485760,
+        "image_matrix_limit": 16777216,
+        "video_size_limit": 41943040,
+        "video_frame_rate_limit": 60,
+        "video_matrix_limit": 2304000
+      },
+      "polls": {
+        "max_options": 4,
+        "max_characters_per_option": 50,
+        "min_expiration": 300,
+        "max_expiration": 2629746
+      }
+    },
+    "contact_account": {
+      "id": "33698",
+      "username": "juggler",
+      "acct": "juggler",
+      "display_name": "mastodon.juggler.jp運営情報",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "group": false,
+      "created_at": "2017-09-10T00:00:00.000Z",
+      "note": "\u003cp\u003emastodon.juggler.jp の運営情報アカウントです。\u003cbr /\u003eメンテナンス中の進捗は \u003ca href=\"https://fedibird.com/@tateisu\" target=\"_blank\" rel=\"nofollow noopener noreferrer\"\u003e\u003cspan class=\"invisible\"\u003ehttps://\u003c/span\u003e\u003cspan class=\"\"\u003efedibird.com/@tateisu\u003c/span\u003e\u003cspan class=\"invisible\"\u003e\u003c/span\u003e\u003c/a\u003e や \u003ca href=\"https://twitter.com/tateisu\" target=\"_blank\" rel=\"nofollow noopener noreferrer\"\u003e\u003cspan class=\"invisible\"\u003ehttps://\u003c/span\u003e\u003cspan class=\"\"\u003etwitter.com/tateisu\u003c/span\u003e\u003cspan class=\"invisible\"\u003e\u003c/span\u003e\u003c/a\u003e で報告するかもしれません。\u003cbr /\u003e\u003ca href=\"https://mastodon.juggler.jp/tags/%E9%81%8B%E5%96%B6%E6%83%85%E5%A0%B1\" class=\"mention hashtag\" rel=\"tag\"\u003e#\u003cspan\u003e運営情報\u003c/span\u003e\u003c/a\u003e \u003ca href=\"https://mastodon.juggler.jp/tags/Mastodon\" class=\"mention hashtag\" rel=\"tag\"\u003e#\u003cspan\u003eMastodon\u003c/span\u003e\u003c/a\u003e\u003c/p\u003e",
+      "url": "https://mastodon.juggler.jp/@juggler",
+      "avatar": "https://m1j.zzz.ac/accounts/avatars/000/033/698/original/a2db8e1efe4dec82.jpg",
+      "avatar_static": "https://m1j.zzz.ac/accounts/avatars/000/033/698/original/a2db8e1efe4dec82.jpg",
+      "header": "https://m1j.zzz.ac/accounts/headers/000/033/698/original/6396b4dcb2f3b580.png",
+      "header_static": "https://m1j.zzz.ac/accounts/headers/000/033/698/original/6396b4dcb2f3b580.png",
+      "followers_count": 605,
+      "following_count": 0,
+      "statuses_count": 215,
+      "last_status_at": "2023-01-07",
+      "noindex": false,
+      "emojis": [],
+      "fields": [
+        {
+          "name": "Fantia",
+          "value": "\u003ca href=\"https://fantia.jp/fanclubs/8239\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\"\u003e\u003cspan class=\"invisible\"\u003ehttps://\u003c/span\u003e\u003cspan class=\"\"\u003efantia.jp/fanclubs/8239\u003c/span\u003e\u003cspan class=\"invisible\"\u003e\u003c/span\u003e\u003c/a\u003e",
+          "verified_at": null
+        },
+        {
+          "name": "Amazon干し芋",
+          "value": "\u003ca href=\"http://amzn.asia/axmNivM\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\"\u003e\u003cspan class=\"invisible\"\u003ehttp://\u003c/span\u003e\u003cspan class=\"\"\u003eamzn.asia/axmNivM\u003c/span\u003e\u003cspan class=\"invisible\"\u003e\u003c/span\u003e\u003c/a\u003e",
+          "verified_at": null
+        }
+      ]
+    },
+    "rules": [
+      {
+        "id": "1",
+        "text": "日本の法律や判例で禁止されてることはダメです。ただし親告罪は関係者からの通報がない場合は黙認する場合があります。"
+      },
+      {
+        "id": "3",
+        "text": "(ネット上のアバターを含む)実在する人格へのなりすましを禁止します。"
+      },
+      {
+        "id": "4",
+        "text": "サーバ運営を妨害する行為はダメです。これはアカウント大量作成、無差別フォロー、無差別ブースト、無差別ファボを含みます。\r\n"
+      },
+      {
+        "id": "7",
+        "text": "(GDPR免責) あなたがデータを削除したい場合、我々は可能な範囲で対応します。しかし連合先のサーバ上のデータの削除について完全な責任を持つことは非常に困難です。これはEUのGDPRに厳密には適合しません。ユーザはこれに同意した上でアカウントを作成したものとみなします。"
+      },
+      {
+        "id": "8",
+        "text": "公開TLからのサイレンス対象。セールス、政治活動、宗教勧誘、SEO目的の投稿が多い人。公開TLに自動投稿するボット。オカルトやスピリチュアルや愚痴ばかり書いて住民からの呼びかけにはほとんど答えない人。アバターアイコンや名前が食事時に見たくない感じの人。その他管理者が公開TLに不適切であると判断したアカウントはサイレンス、凍結、停止などの処置を行う場合があります。"
+      },
+      {
+        "id": "10",
+        "text": "年齢が14歳未満のユーザはこのサーバを利用できません。"
+      }
+    ]
+  },
+  "https://misskey.io/api/v1/instance": 404,
+  "https://misskey.io/api/meta": {
+    "driveCapacityPerLocalUserMb": 0,
+    "driveCapacityPerRemoteUserMb": 0,
+    "cacheRemoteFiles": true,
+    "emailRequiredForSignup": true,
+    "enableHcaptcha": true,
+    "hcaptchaSiteKey": "string",
+    "enableRecaptcha": true,
+    "recaptchaSiteKey": "string",
+    "swPublickey": "string",
+    "mascotImageUrl": "/assets/ai.png",
+    "bannerUrl": "string",
+    "errorImageUrl": "https://xn--931a.moe/aiart/yubitun.png",
+    "iconUrl": "string",
+    "maxNoteTextLength": 0,
+    "emojis": [
+      {
+        "id": "string",
+        "aliases": [
+          "string"
+        ],
+        "category": "string",
+        "host": "string",
+        "url": "string"
+      }
+    ],
+    "ads": [
+      {
+        "place": "string",
+        "url": "string",
+        "imageUrl": "string"
+      }
+    ],
+    "enableEmail": true,
+    "enableTwitterIntegration": true,
+    "enableGithubIntegration": true,
+    "enableDiscordIntegration": true,
+    "enableServiceWorker": true,
+    "translatorAvailable": true,
+    "proxyAccountName": "string",
+    "userStarForReactionFallback": true,
+    "pinnedUsers": [
+      "string"
+    ],
+    "hiddenTags": [
+      "string"
+    ],
+    "blockedHosts": [
+      "string"
+    ],
+    "hcaptchaSecretKey": "string",
+    "recaptchaSecretKey": "string",
+    "sensitiveMediaDetection": "string",
+    "sensitiveMediaDetectionSensitivity": "string",
+    "setSensitiveFlagAutomatically": true,
+    "enableSensitiveMediaDetectionForVideos": true,
+    "proxyAccountId": "string",
+    "twitterConsumerKey": "string",
+    "twitterConsumerSecret": "string",
+    "githubClientId": "string",
+    "githubClientSecret": "string",
+    "discordClientId": "string",
+    "discordClientSecret": "string",
+    "summaryProxy": "string",
+    "email": "string",
+    "smtpSecure": true,
+    "smtpHost": "string",
+    "smtpPort": "string",
+    "smtpUser": "string",
+    "smtpPass": "string",
+    "swPrivateKey": "string",
+    "useObjectStorage": true,
+    "objectStorageBaseUrl": "string",
+    "objectStorageBucket": "string",
+    "objectStoragePrefix": "string",
+    "objectStorageEndpoint": "string",
+    "objectStorageRegion": "string",
+    "objectStoragePort": 0,
+    "objectStorageAccessKey": "string",
+    "objectStorageSecretKey": "string",
+    "objectStorageUseSSL": true,
+    "objectStorageUseProxy": true,
+    "objectStorageSetPublicRead": true,
+    "enableIpLogging": true,
+    "enableActiveEmailValidation": true
+  }
+}

@@ -133,3 +133,4 @@ detektReport/
 
 
 app/detekt-*.xml
+.idea/androidTestResultsUserPreferences.xml

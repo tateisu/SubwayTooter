@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.util.data.asciiPatternString
 import org.junit.Assert.assertEquals

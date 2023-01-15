@@ -59,8 +59,8 @@ fun Cursor.getBlobOrNull(keyIdx: Int) =
 fun Cursor.getBlobOrNull(key: String) =
     getBlobOrNull(getColumnIndex(key))
 
-fun Cursor.columnIndexOrThrow(key:String)=
-    getColumnIndex(key).takeIf{it>=0L} ?: error("missing column $key")
+fun Cursor.columnIndexOrThrow(key: String) =
+    getColumnIndex(key).takeIf { it >= 0L } ?: error("missing column $key")
 
 /////////////////////////////////////////////////////////////
 

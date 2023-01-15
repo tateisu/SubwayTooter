@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter.util
 
+import jp.juggler.util.coroutine.AppDispatchers.withTimeoutSafe
 import jp.juggler.util.coroutine.launchDefault
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.withTimeout
 
 abstract class WorkerBase(
     private val waiter: Channel<Unit> = Channel(capacity = Channel.CONFLATED),
@@ -17,7 +17,7 @@ abstract class WorkerBase(
     abstract suspend fun run()
 
     suspend fun waitEx(ms: Long) = try {
-        withTimeout(ms) { waiter.receive() }
+        withTimeoutSafe(ms) { waiter.receive() }
     } catch (ignored: TimeoutCancellationException) {
         null
     }

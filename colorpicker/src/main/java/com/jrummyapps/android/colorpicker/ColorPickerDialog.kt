@@ -265,11 +265,10 @@ class ColorPickerDialog :
         super.onSaveInstanceState(outState)
     }
 
-
     // region Custom Picker
     private fun createPickerView(): View {
-        val args = arguments ?: throw RuntimeException("createPickerView: args is null")
-        val activity = activity ?: throw RuntimeException("createPickerView: activity is null")
+        val args = arguments ?: error("createPickerView: args is null")
+        val activity = activity ?: error("createPickerView: activity is null")
         val contentView = View.inflate(getActivity(), R.layout.cpv_dialog_color_picker, null)
         colorPicker = contentView.findViewById(R.id.cpv_color_picker_view)
         val oldColorPanel: ColorPanelView = contentView.findViewById(R.id.cpv_color_panel_old)
@@ -376,13 +375,12 @@ class ColorPickerDialog :
     }
 
     private fun setHex(color: Int) {
-        if (showAlphaSlider) {
-            hexEditText!!.setText(String.format("%08X", color))
-        } else {
-            hexEditText!!.setText(String.format("%06X", 0xFFFFFF and color))
+        val hexText = when {
+            showAlphaSlider -> "%08X".format(color)
+            else -> "%06X".format(color and 0xFFFFFF)
         }
+        hexEditText?.setText(hexText)
     }
-
 
     // -- endregion --
     // region Presets Picker
@@ -399,13 +397,13 @@ class ColorPickerDialog :
             shadesLayout?.visibility = View.GONE
             contentView.findViewById<View>(R.id.shades_divider).visibility = View.GONE
         }
-        adapter = ColorPaletteAdapter(presets, selectedItemPosition, colorShape){
-            when(it){
-                color ->  {
+        adapter = ColorPaletteAdapter(presets, selectedItemPosition, colorShape) {
+            when (it) {
+                color -> {
                     colorPickerDialogListener?.onColorSelected(dialogId, color)
                     dismiss()
                 }
-                else ->{
+                else -> {
                     color = it
                     if (showColorShades) {
                         createColorShades(color)
@@ -519,18 +517,18 @@ class ColorPickerDialog :
     }
 
     private fun shadeColor(@ColorInt color: Int, percent: Double): Int {
-        val hex = String.format("#%06X", 0xFFFFFF and color)
+        val hex = "#%06X".format(color and 0xFFFFFF)
         val f = hex.substring(1).toLong(16)
         val t = (if (percent < 0) 0 else 255).toDouble()
         val p = if (percent < 0) percent * -1 else percent
-        val R = f shr 16
-        val G = f shr 8 and 0x00FF
-        val B = f and 0x0000FF
+        val cR = f shr 16
+        val cG = f shr 8 and 0x00FF
+        val cB = f and 0x0000FF
         return Color.argb(
             Color.alpha(color),
-            ((t - R) * p).roundToInt() + R.toInt(),
-            ((t - G) * p).roundToInt() + G.toInt(),
-            ((t - B) * p).roundToInt() + B.toInt(),
+            ((t - cR) * p).roundToInt() + cR.toInt(),
+            ((t - cG) * p).roundToInt() + cG.toInt(),
+            ((t - cB) * p).roundToInt() + cB.toInt(),
         )
     }
 

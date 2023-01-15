@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.subwaytooter.util.LinkHelper
 import org.junit.Assert.assertEquals
 import org.junit.Test

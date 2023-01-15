@@ -1,7 +1,6 @@
 package jp.juggler.util.coroutine
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 
 /**
  * Test時にdispatcherを差し替えられるようにする
@@ -33,4 +32,15 @@ object AppDispatchers {
         default = testDispatcher
         io = testDispatcher
     }
+
+    /**
+     * withTimeout はrunTest内部だと即座に例外を出すので、
+     * テスト中はタイムアウトをチェックしないようにする
+     * https://stackoverflow.com/questions/70658926/how-to-use-kotlinx-coroutines-withtimeout-in-kotlinx-coroutines-test-runtest
+     */
+    suspend fun <T> withTimeoutSafe(timeMillis: Long, block: suspend CoroutineScope.() -> T) =
+        when (io) {
+            Dispatchers.IO -> withTimeout(timeMillis, block)
+            else -> coroutineScope { block() }
+        }
 }

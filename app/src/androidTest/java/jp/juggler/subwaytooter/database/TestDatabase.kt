@@ -4,7 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.subwaytooter.global.DB_VERSION
 import jp.juggler.subwaytooter.global.TABLE_LIST
 import org.junit.Assert.assertNull

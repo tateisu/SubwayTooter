@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.graphics.Color
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.jrummyapps.android.colorpicker.parseColorString
 import org.junit.Assert.assertEquals
 import org.junit.Test

@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.*

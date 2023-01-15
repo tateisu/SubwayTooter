@@ -1,15 +1,13 @@
 package jp.juggler.base
 
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import jp.juggler.base.JugglerBase.Companion.jugglerBase
 import jp.juggler.base.JugglerBase.Companion.jugglerBaseNullable
 import jp.juggler.base.JugglerBase.Companion.prepareJugglerBase
-
+import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -23,6 +21,6 @@ class JugglerBaseTest {
         assertNotNull("JubblerBase is initialized for a test.", jugglerBaseNullable)
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         appContext.prepareJugglerBase
-        assertNotNull( "JubblerBase is initialized after prepare.",jugglerBase)
+        assertNotNull("JubblerBase is initialized after prepare.", jugglerBase)
     }
 }

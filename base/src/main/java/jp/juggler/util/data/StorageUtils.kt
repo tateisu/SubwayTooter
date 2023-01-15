@@ -7,8 +7,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RawRes
-import jp.juggler.util.data.getStringOrNull
-import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import okhttp3.internal.closeQuietly
 import java.io.InputStream

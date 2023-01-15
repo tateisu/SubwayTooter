@@ -14,7 +14,7 @@ internal class IdatDecoder(
     private val bitmap: ApngBitmap,
     private val inflateBufferPool: BufferPool,
     private val callback: ApngDecoderCallback,
-    private val onCompleted: () -> Unit
+    private val onCompleted: () -> Unit,
 ) {
 
     private class PassInfo(val xStep: Int, val xStart: Int, val yStep: Int, val yStart: Int)
@@ -47,9 +47,9 @@ internal class IdatDecoder(
             }
         }
 
-        private inline fun scanLine1(baLine: ByteArray, pass_w: Int, block: (v: Int) -> Unit) {
+        private inline fun scanLine1(baLine: ByteArray, passW: Int, block: (v: Int) -> Unit) {
             var pos = 1
-            var remain = pass_w
+            var remain = passW
             while (remain >= 8) {
                 remain -= 8
                 val v = baLine[pos++].toInt()
@@ -74,9 +74,9 @@ internal class IdatDecoder(
             }
         }
 
-        private inline fun scanLine2(baLine: ByteArray, pass_w: Int, block: (v: Int) -> Unit) {
+        private inline fun scanLine2(baLine: ByteArray, passW: Int, block: (v: Int) -> Unit) {
             var pos = 1
-            var remain = pass_w
+            var remain = passW
             while (remain >= 4) {
                 remain -= 4
                 val v = baLine[pos++].toInt()
@@ -93,9 +93,9 @@ internal class IdatDecoder(
             }
         }
 
-        private inline fun scanLine4(baLine: ByteArray, pass_w: Int, block: (v: Int) -> Unit) {
+        private inline fun scanLine4(baLine: ByteArray, passW: Int, block: (v: Int) -> Unit) {
             var pos = 1
-            var remain = pass_w
+            var remain = passW
             while (remain >= 2) {
                 remain -= 2
                 val v = baLine[pos++].toInt()
@@ -108,14 +108,13 @@ internal class IdatDecoder(
             }
         }
 
-        private inline fun scanLine8(baLine: ByteArray, pass_w: Int, block: (v: Int) -> Unit) {
+        private inline fun scanLine8(baLine: ByteArray, passW: Int, block: (v: Int) -> Unit) {
             var pos = 1
-            var remain = pass_w
+            var remain = passW
             while (remain-- > 0) {
                 block(baLine.getUInt8(pos++))
             }
         }
-
     }
 
     private val inflater = Inflater()
@@ -405,7 +404,7 @@ internal class IdatDecoder(
 
         val filterNum = baLine.getUInt8(0)
 
-		// if( callback.canApngDebug() ) callback.onApngDebug("y=$passY/${passHeight},filterType=$filterType")
+        // if( callback.canApngDebug() ) callback.onApngDebug("y=$passY/${passHeight},filterType=$filterType")
 
         when (FilterType.values().first { it.num == filterNum }) {
             FilterType.None -> {
@@ -424,7 +423,6 @@ internal class IdatDecoder(
                     //  val y = passInfo.yStart + passInfo.yStep * passY
                     //  callback.onApngDebug("sub pos=$pos,x=$x,y=$y,left=$vLeft,cur=$vCur,after=${baLine[pos].toInt() and 255}")
                     // }
-
                 }
             }
 
@@ -464,7 +462,6 @@ internal class IdatDecoder(
                     //						val y = passInfo.yStart + passInfo.yStep * passY
                     //						callback.onApngDebug("paeth pos=$pos,x=$x,y=$y,left=$vLeft,up=$vUp,ul=$vUpperLeft,cur=$vCur,paeth=${paeth(vLeft, vUp, vUpperLeft)}")
                     //					}
-
                 }
             }
         }
@@ -498,7 +495,7 @@ internal class IdatDecoder(
         inStream: InputStream,
         size: Int,
         inBuffer: ByteArray,
-        crc32: CRC32
+        crc32: CRC32,
     ) {
         var foundEnd = false
         var inRemain = size
@@ -541,11 +538,11 @@ internal class IdatDecoder(
                     inflateBufferQueue.add(ByteSequence(buffer, 0, nInflated))
 
                     // キューに追加したデータをScanLine単位で消費する
-					@Suppress("ControlFlowWithEmptyBody")
-					while (!isCompleted && readScanLine()){
-					}
+                    @Suppress("ControlFlowWithEmptyBody", "EmptyWhileBlock")
+                    while (!isCompleted && readScanLine()) {
+                    }
 
-					if (isCompleted) {
+                    if (isCompleted) {
                         inflateBufferQueue.clear()
                         break
                     }

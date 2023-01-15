@@ -2,18 +2,19 @@
 
 package jp.juggler.subwaytooter.api
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.testutil.MainDispatcherRule
 import jp.juggler.subwaytooter.util.SimpleHttpClient
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.buildJsonArray
 import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.network.MEDIA_TYPE_JSON
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -21,6 +22,7 @@ import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
 import org.junit.Assert.*
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicReference
@@ -28,6 +30,12 @@ import java.util.concurrent.atomic.AtomicReference
 @Suppress("MemberVisibilityCanPrivate")
 @RunWith(AndroidJUnit4::class)
 class TestTootApiClient {
+
+    // テスト毎に書くと複数テストで衝突するので、MainDispatcherRuleに任せる
+    // プロパティは記述順に初期化されることに注意
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     companion object {
         private val log = LogCategory("TestTootApiClient")
     }
@@ -229,14 +237,21 @@ class TestTootApiClient {
                             .build()
                     }
 
-                    else ->
-                        Response.Builder()
-                            .request(request)
-                            .protocol(Protocol.HTTP_1_1)
-                            .code(200)
-                            .message("status-message")
-                            .body(request.url.toString().toResponseBody(mediaTypeTextPlain))
-                            .build()
+                    "/api/meta" -> Response.Builder()
+                        .request(request)
+                        .protocol(Protocol.HTTP_1_1)
+                        .code(404)
+                        .message("not found")
+                        .body("""{"error":"404 not found"}""".toResponseBody(MEDIA_TYPE_JSON))
+                        .build()
+
+                    else -> Response.Builder()
+                        .request(request)
+                        .protocol(Protocol.HTTP_1_1)
+                        .code(200)
+                        .message("status-message")
+                        .body(request.url.toString().toResponseBody(mediaTypeTextPlain))
+                        .build()
                 }
             },
 
@@ -519,7 +534,7 @@ class TestTootApiClient {
 
     @Test
     fun testIsApiCancelled() {
-        runBlocking {
+        runTest {
             var flag = 0
             var progressString: String? = null
             var progressValue: Int? = null
@@ -559,7 +574,7 @@ class TestTootApiClient {
 
     @Test
     fun testSendRequest() {
-        runBlocking {
+        runTest {
 
             val callback = ProgressRecordTootApiCallback()
 
@@ -637,7 +652,7 @@ class TestTootApiClient {
 
     @Test
     fun testReadBodyString() {
-        runBlocking {
+        runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
@@ -745,7 +760,7 @@ class TestTootApiClient {
 
     @Test
     fun testParseString() {
-        runBlocking {
+        runTest {
 
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
@@ -865,7 +880,7 @@ class TestTootApiClient {
 
     @Test
     fun testParseJson() {
-        runBlocking {
+        runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
@@ -1046,7 +1061,7 @@ class TestTootApiClient {
 
     @Test
     fun testRegisterClient() {
-        runBlocking {
+        runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
@@ -1064,7 +1079,7 @@ class TestTootApiClient {
             assertEquals(null, result?.error)
             var jsonObject = result?.jsonObject
             assertNotNull(jsonObject)
-            if (jsonObject == null) return@runBlocking
+            if (jsonObject == null) return@runTest
             val clientInfo = jsonObject
 
             // clientCredential の作成
@@ -1073,7 +1088,7 @@ class TestTootApiClient {
             assertEquals(null, result?.error)
             val clientCredential = result?.string
             assertNotNull(clientCredential)
-            if (clientCredential == null) return@runBlocking
+            if (clientCredential == null) return@runTest
             clientInfo[TootApiClient.KEY_CLIENT_CREDENTIAL] = clientCredential
 
             // clientCredential の検証
@@ -1082,7 +1097,7 @@ class TestTootApiClient {
             assertEquals(null, result?.error)
             jsonObject = result?.jsonObject
             assertNotNull(jsonObject) // 中味は別に見てない。jsonObjectなら良いらしい
-            if (jsonObject == null) return@runBlocking
+            if (jsonObject == null) return@runTest
 
             var url: String?
 
@@ -1095,7 +1110,7 @@ class TestTootApiClient {
             result = client.authentication1(clientName)
             url = result?.string
             assertNotNull(url)
-            if (url == null) return@runBlocking
+            if (url == null) return@runTest
             println(url)
 
             // ブラウザからコールバックで受け取ったcodeを処理する
@@ -1103,29 +1118,29 @@ class TestTootApiClient {
             result = client.authentication2Mastodon(clientName, "DUMMY_CODE", refToken)
             jsonObject = result?.jsonObject
             assertNotNull(jsonObject)
-            if (jsonObject == null) return@runBlocking
+            if (jsonObject == null) return@runTest
             println(jsonObject.toString())
 
             // 認証できたならアクセストークンがある
             val tokenInfo = result?.tokenInfo
             assertNotNull(tokenInfo)
-            if (tokenInfo == null) return@runBlocking
+            if (tokenInfo == null) return@runTest
             val accessToken = tokenInfo.string("access_token")
             assertNotNull(accessToken)
-            if (accessToken == null) return@runBlocking
+            if (accessToken == null) return@runTest
 
             // アカウント手動入力でログインする場合はこの関数を直接呼び出す
             result = client.getUserCredential(accessToken, tokenInfo)
             jsonObject = result?.jsonObject
             assertNotNull(jsonObject)
-            if (jsonObject == null) return@runBlocking
+            if (jsonObject == null) return@runTest
             println(jsonObject.toString())
         }
     }
 
     @Test
     fun testGetInstanceInformation() {
-        runBlocking {
+        runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
@@ -1135,8 +1150,8 @@ class TestTootApiClient {
             val instance = Host.parse("unit-test")
             client.apiHost = instance
             val (instanceInfo, instanceResult) = TootInstance.get(client)
-            assertNotNull(instanceInfo)
-            assertNotNull(instanceResult)
+            assertNull("no error", instanceResult?.error)
+            assertNotNull("instance info", instanceInfo)
             val json = instanceResult?.jsonObject
             if (json != null) println(json.toString())
         }
@@ -1144,7 +1159,7 @@ class TestTootApiClient {
 
     @Test
     fun testGetHttp() {
-        runBlocking {
+        runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
@@ -1160,7 +1175,7 @@ class TestTootApiClient {
 
     @Test
     fun testRequest() {
-        runBlocking {
+        runTest {
             val tokenInfo = JsonObject()
             tokenInfo["access_token"] = "DUMMY_ACCESS_TOKEN"
 
@@ -1188,7 +1203,7 @@ class TestTootApiClient {
 
     @Test
     fun testWebSocket() {
-        runBlocking {
+        runTest {
             val tokenInfo = buildJsonObject {
                 put("access_token", "DUMMY_ACCESS_TOKEN")
             }

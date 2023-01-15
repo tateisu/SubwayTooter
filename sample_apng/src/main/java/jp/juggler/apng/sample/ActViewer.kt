@@ -125,7 +125,7 @@ class ActViewer : AsyncActivity() {
                 Log.d(TAG, "$title[$i] timeWidth=${f.timeWidth}")
                 val bitmap = f.bitmap
 
-                FileOutputStream(File(dir, "${title}_${i}.png")).use { fo ->
+                FileOutputStream(File(dir, "${title}_$i.png")).use { fo ->
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fo)
                 }
 

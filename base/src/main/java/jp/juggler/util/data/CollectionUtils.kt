@@ -1,7 +1,5 @@
 package jp.juggler.util.data
 
-import java.util.LinkedHashMap
-
 // same as x?.let{ dst.add(it) }
 fun <T> T.addTo(dst: ArrayList<T>) = dst.add(this)
 
@@ -34,4 +32,3 @@ fun <T : Any> MutableCollection<T>.removeFirst(check: (T) -> Boolean): T? {
     }
     return null
 }
-

@@ -1,55 +1,48 @@
 package jp.juggler.subwaytooter
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.testutil.MainDispatcherRule
+import jp.juggler.subwaytooter.testutil.MockInterceptor
 import jp.juggler.subwaytooter.util.SimpleHttpClientImpl
-import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.network.MySslSocketFactory
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import okhttp3.ConnectionSpec
-import okhttp3.OkHttpClient
+import kotlinx.coroutines.test.runTest
+import okhttp3.*
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class TestTootInstance {
 
     companion object {
         private val log = LogCategory("TestTootInstance")
+    }
 
-//        val cookieJar = JavaNetCookieJar(CookieManager().apply {
-//            setCookiePolicy(CookiePolicy.ACCEPT_ALL)
-//            CookieHandler.setDefault(this)
-//        })
+    // テスト毎に書くと複数テストで衝突するので、MainDispatcherRuleに任せる
+    // プロパティは記述順に初期化されることに注意
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
 
-        private val okHttp = OkHttpClient.Builder()
-            .connectTimeout(60.toLong(), TimeUnit.SECONDS)
-            .readTimeout(60.toLong(), TimeUnit.SECONDS)
-            .writeTimeout(60.toLong(), TimeUnit.SECONDS)
-            .pingInterval(10, TimeUnit.SECONDS)
-            .connectionSpecs(
-                Collections.singletonList(
-                    ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-                        .allEnabledCipherSuites()
-                        .allEnabledTlsVersions()
-                        .build()
-                )
-            )
-            .sslSocketFactory(MySslSocketFactory, MySslSocketFactory.trustManager)
-            .build()
+    private val client by lazy {
+        val mockInterceptor = MockInterceptor(
+            // テストアプリのコンテキスト
+            context = InstrumentationRegistry.getInstrumentation().context!!,
+            // テストアプリ中のリソースID
+            rawId = jp.juggler.subwaytooter.test.R.raw.test_toot_instance_mock,
+        )
 
-        private val dummyClientCallback = object : TootApiCallback {
+        val okHttp = OkHttpClient.Builder().addInterceptor(mockInterceptor).build()
+
+        val dummyClientCallback = object : TootApiCallback {
             override suspend fun isApiCancelled() = false
 
             override suspend fun publishApiProgress(s: String) {
@@ -61,9 +54,8 @@ class TestTootInstance {
             }
         }
 
-        private val appContext = InstrumentationRegistry.getInstrumentation().targetContext!!
-
-        val client = TootApiClient(
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext!!
+        TootApiClient(
             context = appContext,
             httpClient = SimpleHttpClientImpl(appContext, okHttp),
             callback = dummyClientCallback
@@ -76,34 +68,26 @@ class TestTootInstance {
     */
 
     @Test
-    fun testWithoutAccount() {
-        runBlocking {
-            withContext(AppDispatchers.io) {
-                suspend fun a(host: Host) {
-                    val (ti, ri) = TootInstance.getEx(client, hostArg = host)
-                    assertNotNull(ti)
-                    assertNull(ri?.error)
-                    ti!!.run { log.d("$instanceType $uri $version") }
-                }
-                a(Host.parse("mastodon.juggler.jp"))
-                a(Host.parse("misskey.io"))
-            }
+    fun instanceByHostname() = runTest {
+        suspend fun a(host: Host) {
+            val (ti, ri) = TootInstance.getEx(client, hostArg = host)
+            assertNull("no error", ri?.error)
+            assertNotNull("instance information", ti)
+            ti!!.run { log.d("$instanceType $uri $version") }
         }
+        a(Host.parse("mastodon.juggler.jp"))
+        a(Host.parse("misskey.io"))
     }
 
     @Test
-    fun testWithAccount() {
-        runBlocking {
-            withContext(AppDispatchers.io) {
-                suspend fun a(account: SavedAccount) {
-                    val (ti, ri) = TootInstance.getEx(client, account = account)
-                    assertNull(ri?.error)
-                    assertNotNull(ti)
-                    ti!!.run { log.d("${account.acct} $instanceType $uri $version") }
-                }
-                a(SavedAccount(45, "tateisu@mastodon.juggler.jp"))
-                a(SavedAccount(45, "tateisu@misskey.io", misskeyVersion = 12))
-            }
+    fun testWithAccount() = runTest {
+        suspend fun a(account: SavedAccount) {
+            val (ti, ri) = TootInstance.getEx(client, account = account)
+            assertNull(ri?.error)
+            assertNotNull(ti)
+            ti!!.run { log.d("${account.acct} $instanceType $uri $version") }
         }
+        a(SavedAccount(45, "tateisu@mastodon.juggler.jp"))
+        a(SavedAccount(45, "tateisu@misskey.io", misskeyVersion = 12))
     }
 }

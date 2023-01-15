@@ -37,7 +37,7 @@ import androidx.core.view.ViewCompat
 class ColorPanelView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : View(context, attrs, defStyle) {
 
     companion object {
@@ -97,7 +97,6 @@ class ColorPanelView @JvmOverloads constructor(
             }
         }
 
-
     init {
         val a = getContext().obtainStyledAttributes(attrs, R.styleable.ColorPanelView)
         shape = a.getInt(R.styleable.ColorPanelView_cpv_colorShape, ColorShape.CIRCLE)
@@ -117,10 +116,7 @@ class ColorPanelView @JvmOverloads constructor(
             borderColor = typedArray.getColor(0, borderColor)
             typedArray.recycle()
         }
-
-
     }
-
 
     public override fun onSaveInstanceState(): Parcelable {
         val state = Bundle()
@@ -137,7 +133,6 @@ class ColorPanelView @JvmOverloads constructor(
             super.onRestoreInstanceState(state)
         }
     }
-
 
     override fun onDraw(canvas: Canvas) {
         borderPaint.color = borderColor
@@ -236,7 +231,6 @@ class ColorPanelView @JvmOverloads constructor(
         alphaPattern.setBounds(left, top, right, bottom)
     }
 
-
     /**
      * Set the original color. This is only used for previewing colors.
      *
@@ -264,13 +258,12 @@ class ColorPanelView @JvmOverloads constructor(
             val screenWidth = context.resources.displayMetrics.widthPixels
             referenceX = screenWidth - referenceX // mirror
         }
-        val hint = StringBuilder("#")
-        if (Color.alpha(color) != 255) {
-            hint.append(Integer.toHexString(color).uppercase())
-        } else {
-            hint.append(String.format("%06X", 0xFFFFFF and color).uppercase())
+        val hexText = when {
+            Color.alpha(color) == 255 -> "%06X".format(color and 0xFFFFFF)
+            else -> Integer.toHexString(color)
         }
-        val cheatSheet = Toast.makeText(context, hint.toString(), Toast.LENGTH_SHORT)
+        val hint = "#${hexText.uppercase()}"
+        val cheatSheet = Toast.makeText(context, hint, Toast.LENGTH_SHORT)
         if (midy < displayFrame.height()) {
             // Show along the top; follow action buttons
             cheatSheet.setGravity(

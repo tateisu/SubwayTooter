@@ -8,11 +8,11 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.PowerManager
 import jp.juggler.subwaytooter.App1
+import jp.juggler.util.coroutine.AppDispatchers.withTimeoutSafe
 import jp.juggler.util.log.*
 import jp.juggler.util.systemService
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
 
 class CheckerWakeLocks(contextArg: Context) {
     companion object {
@@ -118,7 +118,7 @@ class CheckerWakeLocks(contextArg: Context) {
     suspend fun checkConnection() {
         var connectionState: String? = null
         try {
-            withTimeout(10000L) {
+            withTimeoutSafe(10000L) {
                 while (true) {
                     connectionState = appState.networkTracker.connectionState
                         ?: break // null if connected

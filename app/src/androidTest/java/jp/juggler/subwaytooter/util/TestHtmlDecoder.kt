@@ -1,9 +1,9 @@
 package jp.juggler.subwaytooter.util
 
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.util.neatSpaces
+import jp.juggler.util.data.*
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,7 +17,7 @@ class TestHtmlDecoder {
         val start: Int,
         val end: Int,
         val flags: Int,
-        val text: String
+        val text: String,
     ) {
         override fun toString() = "[$start..$end) $flags ${span.javaClass.simpleName} $text"
     }

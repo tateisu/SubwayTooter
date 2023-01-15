@@ -502,13 +502,13 @@ class ColorPickerView @JvmOverloads constructor(
         return p
     }
 
-    private fun satValToPoint(sat: Float, `val`: Float): Point {
-        val rect = satValRect
-        val height = rect!!.height().toFloat()
+    private fun satValToPoint(sat: Float, inValue: Float): Point {
+        val rect = satValRect!!
+        val height = rect.height().toFloat()
         val width = rect.width().toFloat()
         val p = Point()
         p.x = (sat * width + rect.left).toInt()
-        p.y = ((1f - `val`) * height + rect.top).toInt()
+        p.y = ((1f - inValue) * height + rect.top).toInt()
         return p
     }
 

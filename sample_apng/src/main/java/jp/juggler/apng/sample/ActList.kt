@@ -78,11 +78,11 @@ class ActList : AppCompatActivity(), CoroutineScope {
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE_STORAGE) {
-            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                // 特に何もしてないらしい
-            }
-        }
+//        if (requestCode == PERMISSION_REQUEST_CODE_STORAGE) {
+//            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+//                // 特に何もしてないらしい
+//            }
+//        }
     }
 
     private fun load() = launch {
@@ -153,14 +153,14 @@ class ActList : AppCompatActivity(), CoroutineScope {
 
     inner class MyViewHolder(
         viewRoot: View,
-        _activity: ActList,
+        actList: ActList,
     ) {
 
         private val tvCaption: TextView = viewRoot.findViewById(R.id.tvCaption)
         private val apngView: ApngView = viewRoot.findViewById(R.id.apngView)
 
         init {
-            apngView.timeAnimationStart = _activity.timeAnimationStart
+            apngView.timeAnimationStart = actList.timeAnimationStart
         }
 
         private var lastId: Int = 0

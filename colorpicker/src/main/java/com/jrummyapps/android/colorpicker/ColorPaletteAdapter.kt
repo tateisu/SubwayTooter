@@ -28,7 +28,7 @@ internal class ColorPaletteAdapter(
     val colors: IntArray,
     var selectedPosition: Int,
     @ColorShape val colorShape: Int,
-    val listener: (Int)->Unit
+    val listener: (Int) -> Unit,
 ) : BaseAdapter() {
 
     override fun getCount(): Int = colors.size

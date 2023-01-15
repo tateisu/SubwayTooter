@@ -37,7 +37,6 @@ internal class AlphaPatternDrawable(private val rectangleSize: Int) : Drawable()
      */
     private var bitmap: Bitmap? = null
 
-
     /**
      * This will generate a bitmap with the pattern as big as the rectangle we were allow to draw on.
      * We do this to chache the bitmap so we don't need to recreate it each time draw() is called since it takes a few milliseconds

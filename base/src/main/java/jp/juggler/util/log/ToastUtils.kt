@@ -12,11 +12,11 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import jp.juggler.util.coroutine.AppDispatchers.withTimeoutSafe
 import jp.juggler.util.coroutine.runOnMainLooper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
 import me.drakeet.support.toast.ToastCompat
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
@@ -84,7 +84,7 @@ fun initializeToastUtils(app: Application) {
  */
 suspend fun Animation.startAndAwait(duration: Long, v: View) =
     try {
-        withTimeout(duration + 333L) {
+        withTimeoutSafe(duration + 333L) {
             suspendCancellableCoroutine { cont ->
                 v.clearAnimation()
                 this@startAndAwait.duration = duration

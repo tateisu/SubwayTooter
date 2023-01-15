@@ -23,7 +23,6 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toFormRequestBody
 import jp.juggler.util.network.toPost
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private val log = LogCategory("Action_Tag")

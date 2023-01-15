@@ -589,6 +589,7 @@ class ItemViewHolder(
                             )
                         contentDescription = context.getString(R.string.hide)
                         imageResource = R.drawable.ic_close
+
                     }.lparams(dip(32), matchParent) {
                         startMargin = dip(4)
                     }

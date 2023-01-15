@@ -139,6 +139,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             ivCardImage.setImageUrl(0f, imageUrl, imageUrl)
 
             btnCardImageShow.blurhash = card.blurhash
+            btnCardImageHide.imageTintList = contentColorCsl
 
             // show about card outer
             bShowOuter = true

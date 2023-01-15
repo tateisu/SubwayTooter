@@ -1,5 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
-
 buildscript {
 
     ext.jvm_target = "1.8"
@@ -13,7 +11,7 @@ buildscript {
     ext.startup_version = "1.1.1"
     ext.roomVersion = "2.5.0"
     ext.workVersion = "2.7.1"
-    ext.glideVersion = '4.13.2'
+    ext.glideVersion = "4.13.2"
 
     ext.appcompat_version = "1.6.0"
     ext.lifecycle_version = "2.5.1"
@@ -21,20 +19,20 @@ buildscript {
 
     ext.okhttpVersion = "4.10.0"
 
-    ext.kotlin_version = '1.7.21'
-    ext.kotlinx_coroutines_version = '1.6.4'
+    ext.kotlin_version = "1.7.21"
+    ext.kotlinx_coroutines_version = "1.6.4"
 
-    ext.anko_version = '0.10.8'
+    ext.anko_version = "0.10.8"
 
-    ext.junit_version = '4.13.2'
+    ext.junit_version = "4.13.2"
 
-    ext.detekt_version = '1.22.0'
+    ext.detekt_version = "1.22.0"
 
-    ext.compose_version = '1.0.5'
+    ext.compose_version = "1.0.5"
 
-    ext.koin_version = '3.1.3'
+    ext.koin_version = "3.1.3"
 
-    ext.androidx_test_version = '1.5.0'
+    ext.androidx_test_version = "1.5.0"
 
     repositories {
         google()
@@ -42,10 +40,10 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath "com.android.tools.build:gradle:7.3.1"
 
         // room のバージョンの影響で google-services を上げられない場合がある
-        classpath 'com.google.gms:google-services:4.3.14'
+        classpath "com.google.gms:google-services:4.3.14"
 
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
@@ -59,13 +57,13 @@ buildscript {
 allprojects {
     repositories {
         google()
-        maven { url 'https://maven.google.com' }
-        maven { url 'https://jitpack.io' }
+        maven { url "https://maven.google.com" }
+        maven { url "https://jitpack.io" }
 
         mavenCentral()
 
-        maven { url 'https://dl.bintray.com/google/exoplayer/' }
-        maven { url 'https://dl.bintray.com/google/flexbox-layout/' }
+        maven { url "https://dl.bintray.com/google/exoplayer/" }
+        maven { url "https://dl.bintray.com/google/flexbox-layout/" }
     }
 }
 
@@ -73,7 +71,7 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 tasks.withType(JavaCompile) {
-    options.compilerArgs << '-Xlint:unchecked'
-    options.compilerArgs << '-Xlint:deprecation'
-    options.compilerArgs << '-Xlint:divzero'
+    options.compilerArgs << "-Xlint:unchecked"
+    options.compilerArgs << "-Xlint:deprecation"
+    options.compilerArgs << "-Xlint:divzero"
 }

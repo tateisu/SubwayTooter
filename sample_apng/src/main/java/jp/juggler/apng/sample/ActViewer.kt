@@ -7,16 +7,17 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.apng.ApngFrames
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.AsyncActivity
 import jp.juggler.util.int
 import jp.juggler.util.string
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.coroutines.CoroutineContext
 
-class ActViewer : AppCompatActivity(), CoroutineScope {
+class ActViewer : AsyncActivity() {
 
     companion object {
         const val TAG = "ActViewer"
@@ -34,13 +35,7 @@ class ActViewer : AppCompatActivity(), CoroutineScope {
     private lateinit var apngView: ApngView
     private lateinit var tvError: TextView
 
-    private lateinit var activityJob: Job
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + activityJob
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        activityJob = Job()
         super.onCreate(savedInstanceState)
 
         val resId = intent.int(EXTRA_RES_ID) ?: 0
@@ -64,7 +59,7 @@ class ActViewer : AppCompatActivity(), CoroutineScope {
         launch {
             var apngFrames: ApngFrames? = null
             try {
-                apngFrames = withContext(Dispatchers.IO) {
+                apngFrames = withContext(AppDispatchers.io) {
                     try {
                         ApngFrames.parse(
                             1024,
@@ -99,13 +94,12 @@ class ActViewer : AppCompatActivity(), CoroutineScope {
     override fun onDestroy() {
         super.onDestroy()
         apngView.apngFrames?.dispose()
-        activityJob.cancel()
     }
 
     private fun save(apngFrames: ApngFrames) {
         val title = this.title
 
-        launch(Dispatchers.IO) {
+        launch(AppDispatchers.io) {
 
             //deprecated in Android 10 (API level 29)
             //val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)

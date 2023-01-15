@@ -113,16 +113,16 @@
     <color name="Mastodon_colorConversationMainTootBg">#2000a2ff</color>
 
     <color name="Mastodon_colorLink">#FE4E92D6</color>
-    <color name="Mastodon_colorListItemDrag">#AA444444</color>
+    <color name="Mastodon_colorListItemDrag">#AA2F6091</color>
     <color name="Mastodon_colorPostFormBackground">#222</color>
-    <color name="Mastodon_colorActionBarBg">#333</color>
-    <color name="Mastodon_colorActionBarBgStacked">#222</color>
+    <color name="Mastodon_colorActionBarBg">#444B5D</color>
+    <color name="Mastodon_colorActionBarBgStacked">#444B5D</color>
     <color name="Mastodon_colorStatusBarBg">#444B5D</color>
     <color name="Mastodon_colorProfileBackgroundMask">#C0000000</color>
     <color name="Mastodon_colorRefreshErrorBg">#D222</color>
     <color name="Mastodon_colorRegexFilterError">#f00</color>
     <color name="Mastodon_colorReplyBackground">#333</color>
-    <color name="Mastodon_colorRippleEffect">#777</color>
+    <color name="Mastodon_colorRippleEffect">#C1607ECC</color>
     <color name="Mastodon_colorSearchFormBackground">#333370</color>
     <color name="Mastodon_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
     <color name="Mastodon_colorShowMediaBackground">#222</color>

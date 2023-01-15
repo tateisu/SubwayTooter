@@ -84,7 +84,7 @@ class PollingWorker2(
 
             workManager.enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                ExistingPeriodicWorkPolicy.REPLACE,
                 workRequest
             ).await()
 

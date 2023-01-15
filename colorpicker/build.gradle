@@ -1,5 +1,5 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
 
 android {
     compileSdkVersion compile_sdk_version

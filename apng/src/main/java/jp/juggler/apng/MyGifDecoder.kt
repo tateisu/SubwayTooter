@@ -10,7 +10,7 @@ import kotlin.math.min
 // http://www.theimage.com/animation/pages/disposal3.html
 // great sample images.
 
-class GifDecoder(val callback: GifDecoderCallback) {
+class MyGifDecoder(val callback: MyGifDecoderCallback) {
 
     private class Rectangle(var x: Int = 0, var y: Int = 0, var w: Int = 0, var h: Int = 0) {
 

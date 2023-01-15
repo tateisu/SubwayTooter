@@ -43,4 +43,6 @@ repositories {
 dependencies {
     api project(":apng")
     implementation project(":base")
+
+    implementation "com.github.zjupure:webpdecoder:2.3.$glideVersion"
 }

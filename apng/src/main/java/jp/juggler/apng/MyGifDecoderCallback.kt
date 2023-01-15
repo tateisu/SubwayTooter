@@ -1,6 +1,6 @@
 package jp.juggler.apng
 
-interface GifDecoderCallback {
+interface MyGifDecoderCallback {
     fun onGifWarning(message: String)
     fun onGifDebug(message: String)
     fun canGifDebug(): Boolean

@@ -2,6 +2,7 @@ package jp.juggler.apng
 
 import android.graphics.*
 import android.util.Log
+import jp.juggler.util.data.encodeUTF8
 import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -9,7 +10,7 @@ import kotlin.math.min
 class ApngFrames private constructor(
     private val pixelSizeMax: Int = 0,
     private val debug: Boolean = false,
-) : ApngDecoderCallback, GifDecoderCallback {
+) : ApngDecoderCallback, MyGifDecoderCallback {
 
     companion object {
 
@@ -102,6 +103,23 @@ class ApngFrames private constructor(
             }
         }
 
+        private fun parseWebP(
+            inStream: InputStream,
+            pixelSizeMax: Int,
+            debug: Boolean = false,
+        ): ApngFrames {
+            val result = ApngFrames(pixelSizeMax, debug)
+            try {
+                MyWebPDecoder(result).parse(inStream)
+                result.onParseComplete()
+                return result.takeIf { result.defaultImage != null || result.frames?.isNotEmpty() == true }
+                    ?: error("WebP has no image")
+            } catch (ex: Throwable) {
+                result.dispose()
+                throw ex
+            }
+        }
+
         private fun parseGif(
             inStream: InputStream,
             pixelSizeMax: Int,
@@ -109,7 +127,7 @@ class ApngFrames private constructor(
         ): ApngFrames {
             val result = ApngFrames(pixelSizeMax, debug)
             try {
-                GifDecoder(result).parse(inStream)
+                MyGifDecoder(result).parse(inStream)
                 result.onParseComplete()
                 return result.takeIf { result.defaultImage != null || result.frames?.isNotEmpty() == true }
                     ?: error("GIF has no image")
@@ -120,6 +138,8 @@ class ApngFrames private constructor(
         }
 
         private val apngHeadKey = byteArrayOf(0x89.toByte(), 0x50)
+        private val webpHeadKey1 = "RIFF".encodeUTF8()
+        private val webpHeadKey2 = "WEBP".encodeUTF8()
         private val gifHeadKey = "GIF".toByteArray(Charsets.UTF_8)
 
         private fun matchBytes(
@@ -133,19 +153,36 @@ class ApngFrames private constructor(
             return true
         }
 
+        private fun matchBytesOffset(
+            ba1: ByteArray,
+            ba1Offset: Int,
+            ba2: ByteArray,
+            length: Int = ba2.size,
+        ): Boolean {
+            for (i in 0 until length) {
+                if (ba1[i + ba1Offset] != ba2[i]) return false
+            }
+            return true
+        }
+
         fun parse(
             pixelSizeMax: Int,
             debug: Boolean = false,
             opener: () -> InputStream?,
         ): ApngFrames? {
 
-            val buf = ByteArray(8) { 0.toByte() }
+            val buf = ByteArray(12) { 0.toByte() }
             opener()?.use { it.read(buf, 0, buf.size) }
 
             if (buf.size >= 8 && matchBytes(buf, apngHeadKey)) {
                 return opener()?.use { parseApng(it, pixelSizeMax, debug) }
             }
-
+            if (buf.size >= 12 &&
+                matchBytesOffset(buf, 0, webpHeadKey1) &&
+                matchBytesOffset(buf, 8, webpHeadKey2)
+            ) {
+                return opener()?.use { parseWebP(it, pixelSizeMax, debug) }
+            }
             if (buf.size >= 6 && matchBytes(buf, gifHeadKey)) {
                 return opener()?.use { parseGif(it, pixelSizeMax, debug) }
             }

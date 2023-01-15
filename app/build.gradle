@@ -135,7 +135,6 @@ dependencies {
     implementation project(':apng_android')
     implementation fileTree(include: ['*.aar'], dir: 'src/main/libs')
 
-
     // App1 とサーバ情報カラムで使う
     api "org.conscrypt:conscrypt-android:2.5.2"
 

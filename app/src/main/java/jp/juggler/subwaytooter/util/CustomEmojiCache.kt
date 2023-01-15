@@ -464,7 +464,7 @@ class CustomEmojiCache(
             val errors = ArrayList<Throwable>()
 
             try {
-                // APNGをデコード
+                // APNGをデコード AWebPも
                 val x = ApngFrames.parse(64) { ByteArrayInputStream(data) }
                 if (x != null) return x
                 error("ApngFrames.parse returns null.")

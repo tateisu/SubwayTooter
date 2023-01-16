@@ -479,6 +479,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             PrefB.bpManyWindowPost,
             R.string.many_window_post
         )
+        sw(
+            PrefB.bpTabletSnap,
+            R.string.tablet_snap
+        )
     }
 
     section(R.string.media_attachment) {

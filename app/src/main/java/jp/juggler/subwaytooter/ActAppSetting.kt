@@ -11,10 +11,14 @@ import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.JsonWriter
+import android.view.KeyEvent
 import android.view.View
+import android.view.View.FOCUS_FORWARD
 import android.view.ViewGroup
 import android.view.Window
+import android.view.inputmethod.EditorInfo
 import android.widget.*
+import android.widget.TextView.OnEditorActionListener
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -217,7 +221,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         val e = pref.edit()
         var changed = false
         appSettingRoot.scan {
-            if (it.pref?.removeDefault(pref, e) == true) changed = true
+            when {
+                (it.pref as? IntPref)?.noRemove == true -> Unit
+                it.pref?.removeDefault(pref, e) == true -> changed = true
+            }
         }
         if (changed) e.apply()
     }
@@ -226,6 +233,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         super.onSaveInstanceState(outState)
         val sv = customShareTarget?.name
         if (sv != null) outState.putString(STATE_CHOOSE_INTENT_TARGET, sv)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent) = try {
+        super.dispatchKeyEvent(event)
+    } catch (ex: Throwable) {
+        log.e(ex, "dispatchKeyEvent error")
+        false
     }
 
     override fun onStop() {
@@ -482,6 +496,17 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             views.swSwitch.setOnCheckedChangeListener(this)
             views.spSpinner.onItemSelectedListener = this
             views.etEditText.addTextChangedListener(this)
+
+            // https://stackoverflow.com/questions/13614101/fatal-crash-focus-search-returned-a-view-that-wasnt-able-to-take-focus
+            views.etEditText.setOnEditorActionListener(OnEditorActionListener { textView, actionId, event ->
+                if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                    @Suppress("WrongConstant")
+                    textView.focusSearch(FOCUS_FORWARD)?.requestFocus(FOCUS_FORWARD)
+                    // 結果に関わらずこのアクションを処理したとみなす
+                    return@OnEditorActionListener true
+                }
+                false
+            })
         }
 
         private val tvDesc = views.tvDesc
@@ -627,21 +652,20 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
                     SettingType.EditText -> {
                         showCaption(name)
-                        views.etEditText.vg(true)
-                            ?: error("EditText must have preference.")
-                        views.etEditText.inputType = item.inputType
-                        val text = when (val pi = item.pref) {
-                            is FloatPref ->
-                                item.fromFloat.invoke(actAppSetting, pi(pref))
-                            is StringPref ->
-                                pi(pref)
-                            else -> error("EditText han incorrect pref $pi")
+                        views.etEditText.vg(true)?.let { etEditText ->
+                            val text = when (val pi = item.pref) {
+                                is FloatPref ->
+                                    item.fromFloat.invoke(actAppSetting, pi(pref))
+                                is StringPref ->
+                                    pi(pref)
+                                else -> error("EditText has incorrect pref $pi")
+                            }
+
+                            etEditText.hint = item.hint ?: ""
+                            etEditText.inputType = item.inputType
+                            etEditText.setText(text)
+                            etEditText.setSelection(0, text.length)
                         }
-                        views.etEditText.setText(text)
-                        views.etEditText.setSelection(0, text.length)
-
-                        item.hint?.let { views.etEditText.hint = it }
-
                         updateErrorView()
                     }
 

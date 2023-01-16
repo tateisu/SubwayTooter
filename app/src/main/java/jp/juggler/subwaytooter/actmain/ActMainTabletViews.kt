@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.view.GravitySnapHelper
 import jp.juggler.util.data.clip
 import kotlin.math.abs
@@ -14,7 +15,6 @@ class ActMainTabletViews(val actMain: ActMain) {
     internal lateinit var tabletPager: RecyclerView
     internal lateinit var tabletPagerAdapter: TabletColumnPagerAdapter
     internal lateinit var tabletLayoutManager: LinearLayoutManager
-    private lateinit var tabletSnapHelper: GravitySnapHelper
 
     val visibleColumnsIndices: IntRange
         get() {
@@ -92,8 +92,8 @@ class ActMainTabletViews(val actMain: ActMain) {
         //			if( animator is DefaultItemAnimator){
         //				animator.supportsChangeAnimations = false
         //			}
-
-        this.tabletSnapHelper = GravitySnapHelper(Gravity.START)
-        this.tabletSnapHelper.attachToRecyclerView(this.tabletPager)
+        if(PrefB.bpTabletSnap()){
+            GravitySnapHelper(Gravity.START).attachToRecyclerView(this.tabletPager)
+        }
     }
 }

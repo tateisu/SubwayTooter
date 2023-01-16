@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.actmain
 
+import android.app.AlertDialog
 import android.text.Spannable
 import android.view.View
 import android.widget.TextView
@@ -10,6 +11,7 @@ import jp.juggler.subwaytooter.action.openColumnList
 import jp.juggler.subwaytooter.action.openPost
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
+import jp.juggler.subwaytooter.appsetting.appSettingRoot
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.TabletColumnViewHolder
@@ -17,8 +19,7 @@ import jp.juggler.subwaytooter.columnviewholder.ViewHolderHeaderBase
 import jp.juggler.subwaytooter.columnviewholder.ViewHolderItem
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
-import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.data.addTo
@@ -26,6 +27,7 @@ import jp.juggler.util.data.cast
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import java.util.concurrent.TimeUnit
 
 private val log = LogCategory("ActMainActions")
 
@@ -174,4 +176,44 @@ fun ActMain.onMyClickableSpanClickedImpl(viewClicked: View, span: MyClickableSpa
         whoRef = whoRef,
         linkInfo = linkInfo
     )
+}
+
+fun ActMain.themeDefaultChangedDialog() {
+    val lpThemeDefaultChangedWarnTime = PrefL.lpThemeDefaultChangedWarnTime
+    val ipUiTheme = PrefI.ipUiTheme
+    val now = System.currentTimeMillis()
+
+    // テーマが未定義でなければ警告しない
+    if (pref.getInt(ipUiTheme.key, -1) != -1) {
+        log.i("themeDefaultChangedDialog: theme was set.")
+        return
+    }
+
+    // 頻繁には警告しない
+    if (now - lpThemeDefaultChangedWarnTime.invoke(pref) < TimeUnit.DAYS.toMillis(60L)) {
+        log.i("themeDefaultChangedDialog: avoid frequently check.")
+        return
+    }
+    pref.edit().put(lpThemeDefaultChangedWarnTime, now).apply()
+
+    // 色がすべてデフォルトなら警告不要
+    val customizedKeys = ArrayList<String>()
+    appSettingRoot.items.find { it.caption == R.string.color }?.scan { item ->
+        item.pref?.let { p ->
+            when {
+                p == PrefS.spBoostAlpha -> Unit
+                p.hasNonDefaultValue(pref) -> customizedKeys.add(p.key)
+            }
+        }
+    }
+    log.w("themeDefaultChangedDialog: customizedKeys=${customizedKeys.joinToString(",")}")
+    if (customizedKeys.isEmpty()) {
+        pref.edit().put(ipUiTheme, ipUiTheme.defVal).apply()
+        return
+    }
+
+    AlertDialog.Builder(this)
+        .setMessage(R.string.color_theme_changed)
+        .setPositiveButton(android.R.string.ok, null)
+        .show()
 }

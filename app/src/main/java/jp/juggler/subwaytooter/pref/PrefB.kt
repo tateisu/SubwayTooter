@@ -338,6 +338,10 @@ object PrefB {
         "ManyWindowPost",
         false
     )
+    val bpTabletSnap = BooleanPref(
+        "bpTabletSnap",
+        true
+    )
 
     val bpMfmDecorationEnabled = BooleanPref(
         "MfmDecorationEnabled",

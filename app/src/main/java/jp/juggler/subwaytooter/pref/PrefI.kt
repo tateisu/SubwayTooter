@@ -15,7 +15,7 @@ object PrefI {
     const val BACK_OPEN_COLUMN_LIST = 2
     const val BACK_EXIT_APP = 3
 
-    val ipUiTheme = IntPref("ui_theme", 2)
+    val ipUiTheme = IntPref("ui_theme", 2, noRemove = true)
 
 //	val ipResizeImage = IntPref("resize_image", 4)
 

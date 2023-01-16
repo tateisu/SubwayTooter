@@ -455,6 +455,7 @@ class ActMain : AppCompatActivity(),
             handler.postDelayed(onStartAfter, 1L)
 
             prNotification.checkOrLaunch()
+            themeDefaultChangedDialog()
         }
     }
 

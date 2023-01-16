@@ -12,6 +12,7 @@ fun SharedPreferences.Editor.remove(item: BasePref<*>): SharedPreferences.Editor
     return this
 }
 
+// 戻り値はEditor
 fun SharedPreferences.Editor.put(item: BooleanPref, v: Boolean) =
     this.apply { item.put(this, v) }
 

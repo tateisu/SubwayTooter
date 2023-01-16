@@ -46,4 +46,6 @@ abstract class BasePref<T>(val key: String, val defVal: T) {
         } else {
             false
         }
+
+    abstract fun hasNonDefaultValue(pref: SharedPreferences): Boolean
 }

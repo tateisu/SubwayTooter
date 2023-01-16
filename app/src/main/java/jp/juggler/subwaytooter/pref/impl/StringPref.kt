@@ -15,5 +15,8 @@ class StringPref(
         if (v == defVal) editor.remove(key) else editor.putString(key, v)
     }
 
+    override fun hasNonDefaultValue(pref: SharedPreferences) =
+        defVal != pref.getString(key, defVal)
+
     fun toInt(pref: SharedPreferences) = invoke(pref).toIntOrNull() ?: defVal.toInt()
 }

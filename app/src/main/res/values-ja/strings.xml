@@ -1178,5 +1178,7 @@
     <string name="filter_title_empty">フィルタ名がカラです</string>
     <string name="acct_customize">Acct customize</string>
     <string name="delete_confirm">「%1$s」を削除しますか?</string>
+    <string name="color_theme_changed">色テーマのデフォルトが変わりました。カスタマイズ済の色設定と競合する場合があります。 アプリ設定の色セクションを確認することをお勧めします。</string>
+    <string name="tablet_snap">スクロール時にカラム端と画面端を揃える （アプリ再起動が必要)</string>
 
 </resources>

@@ -11,4 +11,7 @@ class BooleanPref(key: String, defVal: Boolean) : BasePref<Boolean>(key, defVal)
     override fun put(editor: SharedPreferences.Editor, v: Boolean) {
         if (v == defVal) editor.remove(key) else editor.putBoolean(key, v)
     }
+
+    override fun hasNonDefaultValue(pref: SharedPreferences) =
+        defVal != pref.getBoolean(key, defVal)
 }

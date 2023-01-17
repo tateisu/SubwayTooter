@@ -439,7 +439,7 @@
     <string name="delete_this_notification">Delete this notification</string>
     <string name="mute_this_conversation">Mute more notifications for this conversation</string>
     <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
-    <string name="input_access_token">Access token</string>
+    <string name="input_access_token">Enter access token</string>
     <string name="input_access_token_desc">Specify access token instead of normal user authentication. (advanced)</string>
     <string name="access_token_or_api_token">Access token (if using Misskey, please input API token)</string>
     <string name="token_not_specified">Please input access token.</string>

@@ -30,6 +30,11 @@ fun Long.notZero(): Long? = if (this != 0L) this else null
 fun Float.notZero(): Float? = if (this != 0f) this else null
 fun Double.notZero(): Double? = if (this != .0) this else null
 
+////////////////////////////////////////////////////////////////////
+// boolean
+inline fun <T : Any?> Boolean.ifTrue(block: () -> T?) = if (this) block() else null
+inline fun <T : Any?> Boolean.ifFalse(block: () -> T?) = if (this) null else block()
+
 // usage: boolean.truth() ?: fallback()
 // equivalent: if(this != 0 ) this else null
 // fun Boolean.truth() : Boolean? = if(this) this else null

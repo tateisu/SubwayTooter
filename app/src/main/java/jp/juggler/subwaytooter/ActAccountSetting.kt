@@ -16,20 +16,18 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.action.accountRemove
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.*
@@ -42,6 +40,7 @@ import jp.juggler.util.network.toPatch
 import jp.juggler.util.network.toPost
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.ui.*
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okhttp3.MediaType
@@ -121,7 +120,7 @@ class ActAccountSetting : AppCompatActivity(),
 
     lateinit var account: SavedAccount
 
-    private val viewBinding by lazy {
+    private val views by lazy {
         ActAccountSettingBinding.inflate(layoutInflater, null, false)
     }
 
@@ -231,7 +230,7 @@ class ActAccountSetting : AppCompatActivity(),
 
         initializeProfile()
 
-        viewBinding.btnOpenBrowser.text =
+        views.btnOpenBrowser.text =
             getString(R.string.open_instance_website, account.apiHost.pretty)
     }
 
@@ -251,12 +250,12 @@ class ActAccountSetting : AppCompatActivity(),
     private fun initUI() {
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
-        setContentView(viewBinding.root)
-        setSupportActionBar(viewBinding.toolbar)
-        fixHorizontalPadding(viewBinding.svContent)
-        setSwitchColor(viewBinding.root)
+        setContentView(views.root)
+        setSupportActionBar(views.toolbar)
+        fixHorizontalPadding(views.svContent)
+        setSwitchColor(views.root)
 
-        viewBinding.apply {
+        views.apply {
             btnPushSubscriptionNotForce.vg(BuildConfig.DEBUG)
 
             imageResizeItems = SavedAccount.resizeConfigList.map {
@@ -337,7 +336,7 @@ class ActAccountSetting : AppCompatActivity(),
                 R.id.etFieldValue4
             ).map { findViewById(it) }
 
-            btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup())
+            btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup.invoke())
 
             nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
             noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -355,7 +354,7 @@ class ActAccountSetting : AppCompatActivity(),
                 saveUIToData()
             }
 
-            viewBinding.root.scan {
+            views.root.scan {
                 when (it) {
                     etMaxTootChars -> etMaxTootChars.addTextChangedListener(
                         simpleTextWatcher {
@@ -390,7 +389,7 @@ class ActAccountSetting : AppCompatActivity(),
         loadingBusy = true
         try {
 
-            viewBinding.apply {
+            views.apply {
 
                 tvInstance.text = a.apiHost.pretty
                 tvUser.text = a.acct.pretty
@@ -507,7 +506,7 @@ class ActAccountSetting : AppCompatActivity(),
     private fun showAcctColor() {
         val sa = this.account
         val ac = AcctColor.load(sa)
-        viewBinding.tvUserCustom.apply {
+        views.tvUserCustom.apply {
             backgroundColor = ac.color_bg
             text = ac.nickname
             textColor = ac.color_fg.notZero() ?: attrColor(R.attr.colorTimeSmall)
@@ -519,7 +518,7 @@ class ActAccountSetting : AppCompatActivity(),
         if (loadingBusy) return
         account.visibility = visibility
 
-        viewBinding.apply {
+        views.apply {
 
             account.dont_hide_nsfw = swNSFWOpen.isChecked
             account.dont_show_timeout = swDontShowTimeout.isChecked
@@ -574,7 +573,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-        if (buttonView == viewBinding.cbLocked) {
+        if (buttonView == views.cbLocked) {
             if (!profileBusy) sendLocked(isChecked)
         } else {
             saveUIToData()
@@ -634,7 +633,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun showVisibility() {
-        viewBinding.btnVisibility.text =
+        views.btnVisibility.text =
             getVisibilityString(this, account.isMisskey, visibility)
     }
 
@@ -705,19 +704,19 @@ class ActAccountSetting : AppCompatActivity(),
                     val tmpDefaultSensitive = json.boolean("posting:default:sensitive")
                     if (tmpDefaultSensitive != null) {
                         bChanged = true
-                        viewBinding.swMarkSensitive.isChecked = tmpDefaultSensitive
+                        views.swMarkSensitive.isChecked = tmpDefaultSensitive
                     }
 
                     val tmpExpandMedia = json.string("reading:expand:media")
                     if (tmpExpandMedia?.isNotEmpty() == true) {
                         bChanged = true
-                        viewBinding.swNSFWOpen.isChecked = (tmpExpandMedia == "show_all")
+                        views.swNSFWOpen.isChecked = (tmpExpandMedia == "show_all")
                     }
 
                     val tmpExpandCW = json.boolean("reading:expand:spoilers")
                     if (tmpExpandCW != null) {
                         bChanged = true
-                        viewBinding.swExpandCW.isChecked = tmpExpandCW
+                        views.swExpandCW.isChecked = tmpExpandCW
                     }
                 } finally {
                     loadingBusy = false
@@ -744,27 +743,17 @@ class ActAccountSetting : AppCompatActivity(),
     ///////////////////////////////////////////////////
     private fun performAccessToken() {
         launchMain {
-            runApiTask(account) { client ->
-                client.authentication1(
-                    PrefS.spClientName(this@ActAccountSetting),
-                    forceUpdateClient = true
-                )
-            }?.let { result ->
-                val uri = result.string.mayUri()
-                val error = result.error
-                when {
-                    uri != null -> {
-                        val data = Intent()
-                        data.data = uri
-                        setResult(Activity.RESULT_OK, data)
+            try {
+                runApiTask2(account) { client ->
+                    val authUrl = client.authStep1(forceUpdateClient = true)
+                    withContext(AppDispatchers.MainImmediate) {
+                        val resultIntent = Intent().apply { data = authUrl }
+                        setResult(Activity.RESULT_OK, resultIntent)
                         finish()
                     }
-
-                    error != null -> {
-                        showToast(true, error)
-                        log.e("can't get oauth browser URL. $error")
-                    }
                 }
+            } catch (ex: Throwable) {
+                showApiError(ex)
             }
         }
     }
@@ -787,7 +776,7 @@ class ActAccountSetting : AppCompatActivity(),
             else -> "(loading…)"
         }
 
-        viewBinding.apply {
+        views.apply {
 
             ivProfileAvatar.setErrorImage(defaultColorIcon(this@ActAccountSetting, questionId))
             ivProfileAvatar.setDefaultImage(defaultColorIcon(this@ActAccountSetting, questionId))
@@ -823,38 +812,33 @@ class ActAccountSetting : AppCompatActivity(),
     // サーバから情報をロードする
     private fun loadProfile() {
         launchMain {
-            var resultAccount: TootAccount? = null
-            runApiTask(account) { client ->
-                if (account.isMisskey) {
-                    client.request(
-                        "/api/i",
-                        account.putMisskeyApiToken().toPostRequestBuilder()
-                    )?.also { result ->
-                        val jsonObject = result.jsonObject
-                        if (jsonObject != null) {
-                            resultAccount = TootParser(this, account).account(jsonObject)
-                                ?: return@runApiTask TootApiResult("TootAccount parse failed.")
-                        }
-                    }
-                } else {
-                    val r0 = account.checkConfirmed(this, client)
-                    if (r0 == null || r0.error != null) return@runApiTask r0
+            try {
+                runApiTask2(account) { client ->
+                    val json = if (account.isMisskey) {
+                        val result = client.request(
+                            "/api/i",
+                            account.putMisskeyApiToken().toPostRequestBuilder()
+                        ) ?: return@runApiTask2
+                        result.error?.let { error(it) }
+                        result.jsonObject
+                    } else {
+                        // 承認待ち状態のチェック
+                        account.checkConfirmed(this, client)
 
-                    client.request("/api/v1/accounts/verify_credentials")
-                        ?.also { result ->
-                            val jsonObject = result.jsonObject
-                            if (jsonObject != null) {
-                                resultAccount =
-                                    TootParser(this@ActAccountSetting, account).account(jsonObject)
-                                        ?: return@runApiTask TootApiResult("TootAccount parse failed.")
-                            }
-                        }
+                        val result = client.request(
+                            "/api/v1/accounts/verify_credentials"
+                        ) ?: return@runApiTask2
+                        result.error?.let { error(it) }
+                        result.jsonObject
+                    }
+                    val newAccount = TootParser(this, account)
+                        .account(json) ?: error("parse error.")
+                    withContext(AppDispatchers.MainImmediate) {
+                        showProfile(newAccount)
+                    }
                 }
-            }?.let { result ->
-                when (val account = resultAccount) {
-                    null -> showToast(true, result.error)
-                    else -> showProfile(account)
-                }
+            } catch (ex: Throwable) {
+                showApiError(ex)
             }
         }
     }
@@ -865,13 +849,13 @@ class ActAccountSetting : AppCompatActivity(),
 
         profileBusy = true
         try {
-            viewBinding.ivProfileAvatar.setImageUrl(
-                calcIconRound(viewBinding.ivProfileAvatar.layoutParams),
+            views.ivProfileAvatar.setImageUrl(
+                calcIconRound(views.ivProfileAvatar.layoutParams),
                 src.avatar_static,
                 src.avatar
             )
 
-            viewBinding.ivProfileHeader.setImageUrl(
+            views.ivProfileHeader.setImageUrl(
                 0f,
                 src.header_static,
                 src.header
@@ -887,7 +871,7 @@ class ActAccountSetting : AppCompatActivity(),
 
             val displayName = src.display_name
             val name = decodeOptions.decodeEmoji(displayName)
-            viewBinding.etDisplayName.setText(name)
+            views.etDisplayName.setText(name)
             nameInvalidator.register(name)
 
             val noteString = src.source?.note ?: src.note
@@ -901,13 +885,13 @@ class ActAccountSetting : AppCompatActivity(),
                 }
             }
 
-            viewBinding.etNote.setText(noteSpannable)
+            views.etNote.setText(noteSpannable)
             noteInvalidator.register(noteSpannable)
 
-            viewBinding.cbLocked.isChecked = src.locked
+            views.cbLocked.isChecked = src.locked
 
             // 編集可能にする
-            viewBinding.apply {
+            views.apply {
                 arrayOf(
                     btnProfileAvatar,
                     btnProfileHeader,
@@ -1012,7 +996,7 @@ class ActAccountSetting : AppCompatActivity(),
             .setType(MultipartBody.FORM)
 
         val apiKey =
-            account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
+            account.token_info?.string(AuthBase.KEY_API_KEY_MISSKEY)
         if (apiKey?.isNotEmpty() == true) {
             multipartBuilder.addFormDataPart("i", apiKey)
         }
@@ -1167,7 +1151,7 @@ class ActAccountSetting : AppCompatActivity(),
                         val value = arg.second
                         if (key == "locked" && value is Boolean) {
                             profileBusy = true
-                            viewBinding.cbLocked.isChecked = !value
+                            views.cbLocked.isChecked = !value
                             profileBusy = false
                         }
                     }
@@ -1177,7 +1161,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun sendDisplayName(bConfirmed: Boolean = false) {
-        val sv = viewBinding.etDisplayName.text.toString()
+        val sv = views.etDisplayName.text.toString()
         if (!bConfirmed) {
             val length = sv.codePointCount(0, sv.length)
             if (length > max_length_display_name) {
@@ -1201,7 +1185,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun sendNote(bConfirmed: Boolean = false) {
-        val sv = viewBinding.etNote.text.toString()
+        val sv = views.etNote.text.toString()
         if (!bConfirmed) {
 
             val length = TootAccount.countText(sv)

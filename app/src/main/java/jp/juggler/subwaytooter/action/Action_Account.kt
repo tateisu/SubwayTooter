@@ -3,13 +3,13 @@ package jp.juggler.subwaytooter.action
 import android.app.Dialog
 import android.content.Context
 import android.os.Build
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.afterAccountVerify
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.auth.Auth2Result
+import jp.juggler.subwaytooter.api.auth.MastodonAuth
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.*
@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
@@ -66,66 +67,64 @@ private fun ActMain.accountCreate(
     ) { dialog_create, username, email, password, agreement, reason ->
         // dialog引数が二つあるのに注意
         launchMain {
-            var resultTootAccount: TootAccount? = null
-            var resultApDomain: Host? = null
-            runApiTask(apiHost) { client ->
-                val r1 = client.createUser2Mastodon(
-                    clientInfo,
-                    username,
-                    email,
-                    password,
-                    agreement,
-                    reason
-                )
-                val tokenJson = r1?.jsonObject ?: return@runApiTask r1
+            try {
+                val auth2Result = runApiTask2(apiHost) { client ->
+                    // Mastodon限定
+                    val misskeyVersion = 0 // TootInstance.parseMisskeyVersion(tokenJson)
 
-                val misskeyVersion = TootInstance.parseMisskeyVersion(tokenJson)
-                val parser = TootParser(
-                    activity,
-                    linkHelper = LinkHelper.create(apiHost, misskeyVersion = misskeyVersion)
-                )
+                    val auth = MastodonAuth(client)
 
-                // ここだけMastodon専用
-                val accessToken = tokenJson.string("access_token")
-                    ?: return@runApiTask TootApiResult("can't get user access token")
-
-                client.apiHost = apiHost
-                val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
-                ti ?: return@runApiTask ri
-
-                resultApDomain = ti.uri?.let { Host.parse(it) }
-
-                client.getUserCredential(accessToken, misskeyVersion = misskeyVersion)?.let { r2 ->
-                    parser.account(r2.jsonObject)?.let {
-                        resultTootAccount = it
-                        return@runApiTask r2
-                    }
-                }
-
-                val jsonObject = buildJsonObject {
-                    put("id", EntityId.CONFIRMING.toString())
-                    put("username", username)
-                    put("acct", username)
-                    put("url", "https://$apiHost/@$username")
-                }
-
-                resultTootAccount = parser.account(jsonObject)
-                r1.data = jsonObject
-                r1.tokenInfo = tokenJson
-                r1
-            }?.let { result ->
-                val sa: SavedAccount? = null
-                if (activity.afterAccountVerify(
-                        result,
-                        resultTootAccount,
-                        sa,
-                        apiHost,
-                        resultApDomain
+                    val tokenJson = auth.createUser(
+                        clientInfo,
+                        username,
+                        email,
+                        password,
+                        agreement,
+                        reason
                     )
-                ) {
+
+                    val accessToken = tokenJson.string("access_token")
+                        ?: error("can't get user access token")
+
+                    var accountJson = auth.verifyAccount(
+                        accessToken = accessToken,
+                        outTokenJson = tokenJson,
+                        misskeyVersion = misskeyVersion
+                    )
+
+                    client.apiHost = apiHost
+                    val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
+                    ti ?: error("missing server information. ${ri?.error}")
+
+                    val parser = TootParser(
+                        activity,
+                        linkHelper = LinkHelper.create(ti)
+                    )
+
+                    var ta = parser.account(accountJson)
+                    if (ta == null) {
+                        accountJson = buildJsonObject {
+                            put("id", EntityId.CONFIRMING.toString())
+                            put("username", username)
+                            put("acct", username)
+                            put("url", "https://$apiHost/@$username")
+                        }
+                        ta = parser.account(accountJson)!!
+                    }
+                    Auth2Result(
+                        tootInstance = ti,
+                        accountJson = accountJson,
+                        tootAccount = ta,
+                        tokenJson = tokenJson,
+                    )
+                }
+                val verified = activity.afterAccountVerify(auth2Result)
+                if (verified) {
                     dialogHost.dismissSafe()
                     dialog_create.dismissSafe()
                 }
+            } catch (ex: Throwable) {
+                showApiError(ex)
             }
         }
     }.show()
@@ -134,91 +133,74 @@ private fun ActMain.accountCreate(
 // アカウントの追加
 fun ActMain.accountAdd() {
     val activity = this
-    LoginForm.showLoginForm(this, null) { dialog, instance, action ->
+    LoginForm.showLoginForm(this, null) { dialogHost, instance, action ->
         launchMain {
-            val result = runApiTask(instance) { client ->
+            try {
                 when (action) {
-
+                    // ログイン画面を開く
                     LoginForm.Action.Existing ->
-                        client.authentication1(PrefS.spClientName(pref))
-
-                    LoginForm.Action.Create ->
-                        client.createUser1(PrefS.spClientName(pref))
-
-                    LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
-                        val (ti, ri) = TootInstance.get(client)
-                        if (ti != null) ri?.data = ti
-                        ri
-                    }
-                }
-            } ?: return@launchMain // cancelled.
-
-            val data = result.data
-            if (result.error == null && data != null) {
-                when (action) {
-                    LoginForm.Action.Existing -> if (data is String) {
-                        // ブラウザ用URLが生成された
-                        openBrowser(data.toUri())
-                        dialog.dismissSafe()
-                        return@launchMain
-                    }
-
-                    LoginForm.Action.Create -> if (data is JsonObject) {
-                        // インスタンスを確認できた
-                        accountCreate(instance, data, dialog)
-                        return@launchMain
-                    }
-
-                    LoginForm.Action.Pseudo -> if (data is TootInstance) {
-                        addPseudoAccount(instance, data)?.let { a ->
-                            showToast(false, R.string.server_confirmed)
-                            val pos = activity.appState.columnCount
-                            addColumn(pos, a, ColumnType.LOCAL)
-                            dialog.dismissSafe()
+                        runApiTask2(instance) { client ->
+                            val authUri = client.authStep1()
+                            withContext(AppDispatchers.MainImmediate) {
+                                openBrowser(authUri)
+                                dialogHost.dismissSafe()
+                            }
                         }
-                    }
 
-                    LoginForm.Action.Token -> if (data is TootInstance) {
-                        DlgTextInput.show(
-                            activity,
-                            getString(R.string.access_token_or_api_token),
-                            null,
-                            callback = object : DlgTextInput.Callback {
+                    // ユーザ作成
+                    LoginForm.Action.Create ->
+                        runApiTask2(instance) { client ->
+                            val clientInfo = client.prepareClient()
+                            withContext(AppDispatchers.MainImmediate) {
+                                accountCreate(instance, clientInfo, dialogHost)
+                            }
+                        }
 
-                                @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-                                override fun onOK(
-                                    dialog_token: Dialog,
-                                    text: String,
-                                ) {
-
-                                    // dialog引数が二つあるのに注意
-                                    activity.checkAccessToken(
-                                        dialog,
-                                        dialog_token,
-                                        instance,
-                                        text,
-                                        null
-                                    )
-                                }
-
-                                override fun onEmptyError() {
-                                    activity.showToast(true, R.string.token_not_specified)
+                    // 疑似アカウント
+                    LoginForm.Action.Pseudo ->
+                        runApiTask2(instance) { client ->
+                            val (ti, ri) = TootInstance.get(client)
+                            ti ?: error("${ri?.error}")
+                            withContext(AppDispatchers.MainImmediate) {
+                                addPseudoAccount(instance, ti)?.let { a ->
+                                    showToast(false, R.string.server_confirmed)
+                                    val pos = activity.appState.columnCount
+                                    addColumn(pos, a, ColumnType.LOCAL)
+                                    dialogHost.dismissSafe()
                                 }
                             }
-                        )
-                        return@launchMain
-                    }
-                }
-            }
+                        }
 
-            val errorText = result.error ?: "(no error information)"
-            if (isAndroid7TlsBug(errorText)) {
-                AlertDialog.Builder(activity)
-                    .setMessage(errorText + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
-                    .setNeutralButton(R.string.close, null)
-                    .show()
-            } else {
-                activity.showToast(true, "$errorText ${result.requestInfo}".trim())
+                    LoginForm.Action.Token ->
+                        runApiTask2(instance) { client ->
+                            val (ti, ri) = TootInstance.get(client)
+                            ti ?: error("${ri?.error}")
+                            withContext(AppDispatchers.MainImmediate) {
+                                DlgTextInput.show(
+                                    activity,
+                                    getString(R.string.access_token_or_api_token),
+                                    null,
+                                    callback = object : DlgTextInput.Callback {
+                                        override fun onEmptyError() {
+                                            showToast(true, R.string.token_not_specified)
+                                        }
+
+                                        override fun onOK(dialog: Dialog, text: String) {
+                                            // dialog引数が二つあるのに注意
+                                            activity.checkAccessToken(
+                                                dialogHost = dialogHost,
+                                                dialogToken = dialog,
+                                                apiHost = instance,
+                                                accessToken = text,
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                }
+            } catch (ex: Throwable) {
+                showApiError(ex)
             }
         }
     }
@@ -422,58 +404,64 @@ fun ActMain.checkAccessToken(
     dialogToken: Dialog?,
     apiHost: Host,
     accessToken: String,
-    sa: SavedAccount?,
 ) {
     launchMain {
-        var resultAccount: TootAccount? = null
-        var resultApDomain: Host? = null
+        try {
+            val auth2Result = runApiTask2(apiHost) { client ->
+                val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
+                ti ?: error("missing uri in Instance Information. ${ri?.error}")
 
-        runApiTask(apiHost) { client ->
-            val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
-            ti ?: return@runApiTask ri
+                val tokenJson = JsonObject()
 
-            val apDomain = ti.uri?.let { Host.parse(it) }
-                ?: return@runApiTask TootApiResult("missing uri in Instance Information")
+                val userJson = client.getUserCredential(
+                    accessToken,
+                    outTokenInfo = tokenJson, // 更新される
+                    misskeyVersion = ti.misskeyVersionMajor
+                )
 
-            val misskeyVersion = ti.misskeyVersion
+                val parser = TootParser(this, linkHelper = LinkHelper.create(ti))
 
-            client.getUserCredential(accessToken, misskeyVersion = misskeyVersion)
-                ?.also { result ->
-                    resultApDomain = apDomain
-                    resultAccount = TootParser(
-                        this,
-                        LinkHelper.create(
-                            apiHostArg = apiHost,
-                            apDomainArg = apDomain,
-                            misskeyVersion = misskeyVersion
-                        )
-                    ).account(result.jsonObject)
-                }
-        }?.let { result ->
-            if (afterAccountVerify(result, resultAccount, sa, apiHost, resultApDomain)) {
+                Auth2Result(
+                    tootInstance = ti,
+                    accountJson = userJson,
+                    tootAccount = parser.account(userJson)
+                        ?: error("can't parse user information."),
+                    tokenJson = tokenJson,
+                )
+            }
+            val verified = afterAccountVerify(auth2Result)
+            if (verified) {
                 dialogHost?.dismissSafe()
                 dialogToken?.dismissSafe()
             }
+        } catch (ex: Throwable) {
+            showApiError(ex)
         }
     }
 }
 
 // アクセストークンの手動入力(更新)
 fun ActMain.checkAccessToken2(dbId: Long) {
-
-    val sa = SavedAccount.loadAccount(this, dbId) ?: return
+    val apiHost = SavedAccount.loadAccount(this, dbId)
+        ?.apiHost
+        ?: return
 
     DlgTextInput.show(
         this,
         getString(R.string.access_token_or_api_token),
         null,
         callback = object : DlgTextInput.Callback {
-            override fun onOK(dialog: Dialog, text: String) {
-                checkAccessToken(null, dialog, sa.apiHost, text, sa)
-            }
-
             override fun onEmptyError() {
                 showToast(true, R.string.token_not_specified)
+            }
+
+            override fun onOK(dialog: Dialog, text: String) {
+                checkAccessToken(
+                    dialogHost = null,
+                    dialogToken = dialog,
+                    apiHost = apiHost,
+                    accessToken = text,
+                )
             }
         })
 }

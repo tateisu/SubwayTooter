@@ -73,7 +73,7 @@ class TestTootInstance {
             val (ti, ri) = TootInstance.getEx(client, hostArg = host)
             assertNull("no error", ri?.error)
             assertNotNull("instance information", ti)
-            ti!!.run { log.d("$instanceType $uri $version") }
+            ti?.run { log.d("$instanceType $apDomain $version") }
         }
         a(Host.parse("mastodon.juggler.jp"))
         a(Host.parse("misskey.io"))
@@ -85,7 +85,7 @@ class TestTootInstance {
             val (ti, ri) = TootInstance.getEx(client, account = account)
             assertNull(ri?.error)
             assertNotNull(ti)
-            ti!!.run { log.d("${account.acct} $instanceType $uri $version") }
+            ti?.run { log.d("${account.acct} $instanceType $apDomain $version") }
         }
         a(SavedAccount(45, "tateisu@mastodon.juggler.jp"))
         a(SavedAccount(45, "tateisu@misskey.io", misskeyVersion = 12))

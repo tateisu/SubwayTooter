@@ -211,7 +211,7 @@ class PollingChecker(
                 return
             }
 
-            withContext(AppDispatchers.default + checkJob) {
+            withContext(AppDispatchers.DEFAULT + checkJob) {
                 if (importProtector.get()) {
                     log.w("aborted by importProtector.")
                     return@withContext

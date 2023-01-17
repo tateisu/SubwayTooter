@@ -22,18 +22,14 @@ import com.google.android.exoplayer2.source.MediaLoadData
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.util.RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE
-import jp.juggler.subwaytooter.api.ApiTask
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.put
-import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.subwaytooter.util.permissionSpecMediaDownload
 import jp.juggler.subwaytooter.util.requester
 import jp.juggler.subwaytooter.view.PinchBitmapView
@@ -48,6 +44,7 @@ import jp.juggler.util.media.resolveOrientation
 import jp.juggler.util.media.rotateSize
 import jp.juggler.util.network.MySslSocketFactory
 import jp.juggler.util.ui.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.yield
 import okhttp3.Request
 import java.io.ByteArrayInputStream
@@ -566,51 +563,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         return Pair(bitmap2, null)
     }
 
-    private suspend fun getHttpCached(
-        client: TootApiClient,
-        url: String,
-    ): Pair<TootApiResult?, ByteArray?> {
-        val result = TootApiResult.makeWithCaption(url)
-
-        val request = try {
-            Request.Builder()
-                .url(url)
-                .cacheControl(App1.CACHE_CONTROL)
-                .addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
-                .build()
-        } catch (ex: Throwable) {
-            result.setError(ex.withCaption("incorrect URL."))
-            return Pair(result, null)
-        }
-
-        if (!client.sendRequest(result, tmpOkhttpClient = App1.ok_http_client_media_viewer) {
-                request
-            }) return Pair(result, null)
-
-        if (client.isApiCancelled()) return Pair(null, null)
-
-        val response = result.response!!
-        if (!response.isSuccessful) {
-            result.parseErrorResponse()
-            return Pair(result, null)
-        }
-
-        try {
-            val ba = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
-                // 50MB以上のデータはキャンセルする
-                if (max(bytesRead, bytesTotal) >= 50000000) {
-                    error("media attachment is larger than 50000000")
-                }
-                client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
-            }
-            if (client.isApiCancelled()) return Pair(null, null)
-            return Pair(result, ba)
-        } catch (ignored: Throwable) {
-            result.parseErrorResponse("?")
-            return Pair(result, null)
-        }
-    }
-
     @SuppressLint("StaticFieldLeak")
     private fun loadBitmap(ta: TootAttachment) {
 
@@ -627,33 +579,52 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
 
         launchMain {
-            val options = BitmapFactory.Options()
-
-            var resultBitmap: Bitmap? = null
-
-            runApiTask(progressStyle = ApiTask.PROGRESS_HORIZONTAL) { client ->
-                if (urlList.isEmpty()) return@runApiTask TootApiResult("missing url")
-                var lastResult: TootApiResult? = null
-                for (url in urlList) {
-                    val (result, ba) = getHttpCached(client, url)
-                    lastResult = result
-                    if (ba != null) {
-                        client.publishApiProgress("decoding image…")
-
-                        val (bitmap, error) = decodeBitmap(options, ba, 2048)
-                        if (bitmap != null) {
-                            resultBitmap = bitmap
-                            break
-                        }
-                        if (error != null) lastResult = TootApiResult(error)
+            try {
+                val errors = ArrayList<String>()
+                val bitmap = runApiTask2(progressStyle = ApiTask.PROGRESS_HORIZONTAL) { client ->
+                    if (urlList.isEmpty()) {
+                        errors.add("missing url(s)")
                     }
+                    val options = BitmapFactory.Options()
+                    for (url in urlList) {
+                        try {
+                            val ba = Request.Builder()
+                                .url(url)
+                                .cacheControl(App1.CACHE_CONTROL)
+                                .addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
+                                .build()
+                                .send(
+                                    client,
+                                    errorSuffix = url,
+                                    overrideClient = App1.ok_http_client_media_viewer
+                                )
+                                .readBytes { bytesRead, bytesTotal ->
+                                    // 50MB以上のデータはキャンセルする
+                                    if (max(bytesRead, bytesTotal) >= 50000000) {
+                                        error("media attachment is larger than 50000000")
+                                    }
+                                    client.publishApiProgressRatio(
+                                        bytesRead.toInt(),
+                                        bytesTotal.toInt()
+                                    )
+                                }
+                            client.publishApiProgress("decoding image…")
+                            val (b, error) = decodeBitmap(options, ba, 2048)
+                            if (b != null) return@runApiTask2 b
+                            if (error != null) errors.add(error)
+                        } catch (ex: Throwable) {
+                            if (ex is CancellationException) break
+                            errors.add("load error. ${ex.withCaption()} url=$url")
+                        }
+                    }
+                    return@runApiTask2 null
                 }
-                lastResult
-            }.let { result -> // may null
-                when (val bitmap = resultBitmap) {
-                    null -> if (result != null) showToast(true, result.error)
-                    else -> views.pbvImage.setBitmap(bitmap)
+                when {
+                    bitmap != null -> views.pbvImage.setBitmap(bitmap)
+                    else -> errors.notEmpty()?.let { dialogOrToast(it.joinToString("\n")) }
                 }
+            } catch (ex: Throwable) {
+                showApiError(ex)
             }
         }
     }

@@ -76,7 +76,7 @@ suspend fun transcodeVideo(
     resizeConfig: MovieResizeConfig,
     onProgress: (Float) -> Unit,
 ): File = try {
-    withContext(AppDispatchers.io) {
+    withContext(AppDispatchers.IO) {
         if (!resizeConfig.isTranscodeRequired(info)) {
             log.i("transcodeVideo: isTranscodeRequired returns false.")
             return@withContext inFile
@@ -99,7 +99,7 @@ suspend fun transcodeVideo(
         val resultFile = FileInputStream(inFile).use { inStream ->
             // 進捗コールバックの発生頻度が多すぎるので間引く
             val progressChannel = Channel<Float>(capacity = Channel.CONFLATED)
-            val progressSender = launch(AppDispatchers.mainImmediate) {
+            val progressSender = launch(AppDispatchers.MainImmediate) {
                 try {
                     while (true) {
                         onProgress(progressChannel.receive())

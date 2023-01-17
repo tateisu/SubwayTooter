@@ -6,21 +6,19 @@ import jp.juggler.util.log.LogCategory
 import okhttp3.*
 import ru.gildor.coroutines.okhttp.await
 
-// okhttpそのままだとモックしづらいので
-// リクエストを投げてレスポンスを得る部分をインタフェースにまとめる
-
+/**
+ * okhttpClientをラップしたクラス。
+ * - モック用途
+ * - onCallCreated ラムダ
+ * - networkTracker.checkNetworkState
+ */
 interface SimpleHttpClient {
 
     var onCallCreated: (Call) -> Unit
 
-//    fun getResponse(
-//		request: Request,
-//		tmpOkhttpClient: OkHttpClient? = null
-//	): Response
-
     suspend fun getResponse(
         request: Request,
-        tmpOkhttpClient: OkHttpClient? = null,
+        overrideClient: OkHttpClient? = null,
     ): Response
 
     fun getWebSocket(
@@ -40,22 +38,12 @@ class SimpleHttpClientImpl(
 
     override var onCallCreated: (Call) -> Unit = {}
 
-//    override fun getResponse(
-//		request: Request,
-//		tmpOkhttpClient: OkHttpClient?
-//	): Response {
-//        App1.getAppState(context).networkTracker.checkNetworkState()
-//        val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
-//		onCallCreated(call)
-//        return call.execute()
-//    }
-
     override suspend fun getResponse(
         request: Request,
-        tmpOkhttpClient: OkHttpClient?,
+        overrideClient: OkHttpClient?,
     ): Response {
         App1.getAppState(context).networkTracker.checkNetworkState()
-        val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
+        val call = (overrideClient ?: this.okHttpClient).newCall(request)
         onCallCreated(call)
         return call.await()
     }

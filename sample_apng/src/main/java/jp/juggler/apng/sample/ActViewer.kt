@@ -59,7 +59,7 @@ class ActViewer : AsyncActivity() {
         launch {
             var apngFrames: ApngFrames? = null
             try {
-                apngFrames = withContext(AppDispatchers.io) {
+                apngFrames = withContext(AppDispatchers.IO) {
                     try {
                         ApngFrames.parse(
                             1024,
@@ -99,7 +99,7 @@ class ActViewer : AsyncActivity() {
     private fun save(apngFrames: ApngFrames) {
         val title = this.title
 
-        launch(AppDispatchers.io) {
+        launch(AppDispatchers.IO) {
 
             //deprecated in Android 10 (API level 29)
             //val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)

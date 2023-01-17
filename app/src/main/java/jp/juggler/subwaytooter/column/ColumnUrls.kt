@@ -263,12 +263,12 @@ fun JsonObject.encodeQuery(): String {
         when (v) {
             null, is String, is Number, is Boolean -> {
                 if (sb.isNotEmpty()) sb.append('&')
-                sb.append(k).append('=').append(v.toString().encodePercent())
+                sb.append(k).append('=').append(v.toString().encodePercentPlus())
             }
             is List<*> -> {
                 v.forEach {
                     if (sb.isNotEmpty()) sb.append('&')
-                    sb.append(k).append("[]=").append(it.toString().encodePercent())
+                    sb.append(k).append("[]=").append(it.toString().encodePercentPlus())
                 }
             }
             else -> error("encodeQuery: unsupported type ${v.javaClass.name}")

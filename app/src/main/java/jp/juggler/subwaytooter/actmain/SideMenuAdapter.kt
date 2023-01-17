@@ -198,7 +198,7 @@ class SideMenuAdapter(
                         ?: error("missing appVersion json")
                     releaseInfo = json
                     versionText = createVersionRow()
-                    withContext(AppDispatchers.mainImmediate) {
+                    withContext(AppDispatchers.MainImmediate) {
                         lastVersionView?.get()?.text = versionText
                     }
                 } catch (ex: Throwable) {

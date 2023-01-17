@@ -8,9 +8,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.*
-import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Assert.*
 import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * kotlinx.coroutines.test の使い方の説明
  * https://developer.android.com/kotlin/coroutines/test?hl=ja#testdispatchers
  */
-@RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(AndroidJUnit4::class)
 class DispatchersTest {
 
     // 単純なリポジトリ
@@ -31,7 +31,7 @@ class DispatchersTest {
 
     // Dispatcherを受け取るリポジトリ
     private class Repository(
-        private val ioDispatcher: CoroutineDispatcher = AppDispatchers.io,
+        private val ioDispatcher: CoroutineDispatcher = AppDispatchers.IO,
     ) {
         private val ioScope = CoroutineScope(ioDispatcher)
         val initialized = AtomicBoolean(false)
@@ -50,15 +50,12 @@ class DispatchersTest {
         }
     }
 
-    //================================================================
-
-    // テスト毎に書くと複数テストで衝突するので、MainDispatcherRuleに任せる
-    // プロパティは記述順に初期化されることに注意
+    // プロパティの定義順序に注意
     @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val dispatcheRule = AppTestDispatcherRule()
 
-    // スケジューラを共有するリポジトリ
-    private val repository = Repository(mainDispatcherRule.testDispatcher)
+    // リポジトリのスケジューラを共有する
+    private val repository = Repository(dispatcheRule.testDispatcher)
 
     //====================================================
     // テストでの suspend 関数の呼び出し

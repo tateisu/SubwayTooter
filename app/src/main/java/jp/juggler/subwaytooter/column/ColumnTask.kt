@@ -136,7 +136,7 @@ abstract class ColumnTask(
     fun start() {
         job = launchMain {
             val result = try {
-                withContext(AppDispatchers.io) { background() }
+                withContext(AppDispatchers.IO) { background() }
             } catch (ignored: CancellationException) {
                 null // キャンセルされたらresult==nullとする
             } catch (ex: Throwable) {

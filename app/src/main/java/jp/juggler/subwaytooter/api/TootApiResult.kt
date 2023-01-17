@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api
 
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.*
 import jp.juggler.util.data.*
@@ -19,19 +20,20 @@ open class TootApiResult(
 
         private val log = LogCategory("TootApiResult")
 
-        private val reWhiteSpace = """\s+""".asciiPattern()
+        val reWhiteSpace = """\s+""".asciiPattern()
 
         private val reLinkURL = """<([^>]+)>;\s*rel="([^"]+)"""".asciiPattern()
 
-        fun makeWithCaption(caption: String?): TootApiResult {
-            val result = TootApiResult()
-            if (caption?.isEmpty() != false) {
-                log.e("makeWithCaption: missing caption!")
-                result.error = "missing instance name"
-            } else {
-                result.caption = caption
+        fun makeWithCaption(apiHost: Host?) = makeWithCaption(apiHost?.pretty)
+
+        fun makeWithCaption(caption: String?) = TootApiResult().apply {
+            when (caption) {
+                null, "" -> {
+                    log.e("makeWithCaption: missing caption!")
+                    error = "missing instance name"
+                }
+                else -> this.caption = caption
             }
-            return result
         }
     }
 
@@ -79,10 +81,7 @@ open class TootApiResult(
     }
 
     // return result.setError(...) と書きたい
-    fun setError(error: String): TootApiResult {
-        this.error = error
-        return this
-    }
+    fun setError(error: String) = also{ it.error = error}
 
     private fun parseLinkHeader(response: Response?, array: JsonArray) {
         response ?: return

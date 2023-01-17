@@ -310,7 +310,7 @@ suspend fun checkNoticifationAll(
     SavedAccount.loadAccountList(context).mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
-            else -> EmptyScope.launch(AppDispatchers.default) {
+            else -> EmptyScope.launch(AppDispatchers.DEFAULT) {
                 try {
                     PollingChecker(
                         context = context,

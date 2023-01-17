@@ -274,7 +274,7 @@ fun ActMain.followHashTag(
                     // 成功時はTagオブジェクトが返る
                     // フォロー中のタグ一覧を更新する
                     TootParser(activity, accessInfo).tag(result.jsonObject)?.let { tag ->
-                        withContext(AppDispatchers.mainImmediate) {
+                        withContext(AppDispatchers.MainImmediate) {
                             for (column in appState.columnList) {
                                 column.onTagFollowChanged(accessInfo, tag)
                             }

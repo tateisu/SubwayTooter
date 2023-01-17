@@ -13,21 +13,22 @@ import org.junit.runner.Description
 /**
  * Dispatchers.Main のテスト中の置き換えを複数テストで衝突しないようにルール化する
  * https://developer.android.com/kotlin/coroutines/test?hl=ja
+ *
+ * junit5対応について
+ * https://stackoverflow.com/questions/69423060/viewmodel-ui-testing-with-junit-5
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-class MainDispatcherRule(
-    /**
-     * UnconfinedTestDispatcher か StandardTestDispatcher のどちらかを指定する
-     */
+@ExperimentalCoroutinesApi
+class AppTestDispatcherRule(
     val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
 ) : TestWatcher() {
+
     override fun starting(description: Description) {
         Dispatchers.setMain(testDispatcher)
         AppDispatchers.setTest(testDispatcher)
     }
 
     override fun finished(description: Description) {
-        AppDispatchers.reset()
         Dispatchers.resetMain()
+        AppDispatchers.reset()
     }
 }

@@ -17,7 +17,7 @@ private val log = LogCategory("EmptyScope")
 // プロセスが生きてる間ずっと動いててほしいものや特にキャンセルのタイミングがないコルーチンでは使い続けたい
 object EmptyScope : CoroutineScope {
     override val coroutineContext: CoroutineContext
-        get() = EmptyCoroutineContext + AppDispatchers.mainImmediate
+        get() = EmptyCoroutineContext + AppDispatchers.MainImmediate
 }
 
 // メインスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
@@ -38,7 +38,7 @@ fun launchMain(block: suspend CoroutineScope.() -> Unit): Job =
 // Default Dispatcherで動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
-    EmptyScope.launch(context = AppDispatchers.default) {
+    EmptyScope.launch(context = AppDispatchers.DEFAULT) {
         try {
             block()
         } catch (ex: Throwable) {
@@ -49,7 +49,7 @@ fun launchDefault(block: suspend CoroutineScope.() -> Unit): Job =
 // IOスレッド上で動作するコルーチンを起動して、終了を待たずにリターンする。
 // 起動されたアクティビティのライフサイクルに関わらず中断しない。
 fun launchIO(block: suspend CoroutineScope.() -> Unit): Job =
-    EmptyScope.launch(context = AppDispatchers.io) {
+    EmptyScope.launch(context = AppDispatchers.IO) {
         try {
             block()
         } catch (ex: Throwable) {
@@ -100,7 +100,7 @@ fun <T : Any?> AppCompatActivity.launchProgress(
                 log.e(ex, "launchProgress: preProc failed.")
             }
             val result = supervisorScope {
-                val task = async(AppDispatchers.io) {
+                val task = async(AppDispatchers.IO) {
                     doInBackground(progress)
                 }
                 progress.setOnCancelListener { task.cancel() }

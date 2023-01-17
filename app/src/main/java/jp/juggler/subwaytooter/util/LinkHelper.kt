@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter.util
 
-import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.subwaytooter.api.entity.HostAndDomain
-import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.util.data.findOrNull
 import jp.juggler.util.data.groupEx
 
@@ -40,6 +37,12 @@ interface LinkHelper : HostAndDomain {
             override val apiHost: Host = Host.UNKNOWN
             override val apDomain: Host = Host.UNKNOWN
         }
+
+        fun create(ti: TootInstance) = create(
+            apiHostArg = ti.apiHost,
+            apDomainArg = ti.apDomain,
+            misskeyVersion = ti.misskeyVersionMajor
+        )
 
         fun create(apiHostArg: Host, apDomainArg: Host? = null, misskeyVersion: Int = 0) =
             object : LinkHelper {

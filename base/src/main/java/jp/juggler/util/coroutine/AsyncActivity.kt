@@ -11,7 +11,7 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
     private lateinit var activityJob: Job
 
     override val coroutineContext: CoroutineContext
-        get() = activityJob + AppDispatchers.mainImmediate
+        get() = activityJob + AppDispatchers.MainImmediate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activityJob = Job()
@@ -20,6 +20,6 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 
     override fun onDestroy() {
         super.onDestroy()
-        (activityJob + AppDispatchers.default).cancel()
+        (activityJob + AppDispatchers.DEFAULT).cancel()
     }
 }

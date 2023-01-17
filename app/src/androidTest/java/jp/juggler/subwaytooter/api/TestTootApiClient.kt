@@ -2,16 +2,19 @@
 
 package jp.juggler.subwaytooter.api
 
+import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import jp.juggler.subwaytooter.api.auth.AuthBase
+import jp.juggler.subwaytooter.api.auth.MastodonAuth
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.testutil.MainDispatcherRule
+import jp.juggler.subwaytooter.testutil.assertThrowsSuspend
 import jp.juggler.subwaytooter.util.SimpleHttpClient
-import jp.juggler.util.data.JsonObject
-import jp.juggler.util.data.buildJsonArray
-import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.network.MEDIA_TYPE_JSON
 import kotlinx.coroutines.test.runTest
@@ -25,7 +28,6 @@ import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.atomic.AtomicReference
 
 @Suppress("MemberVisibilityCanPrivate")
 @RunWith(AndroidJUnit4::class)
@@ -38,6 +40,8 @@ class TestTootApiClient {
 
     companion object {
         private val log = LogCategory("TestTootApiClient")
+        private val mediaTypeTextPlain = "text/plain".toMediaType()
+        private val mediaTypeHtml = "text/html".toMediaType()
     }
 
     private val appContext = InstrumentationRegistry.getInstrumentation().targetContext!!
@@ -53,7 +57,7 @@ class TestTootApiClient {
 
         override suspend fun getResponse(
             request: Request,
-            tmpOkhttpClient: OkHttpClient?,
+            overrideClient: OkHttpClient?,
         ): Response {
             return responseGenerator(request)
         }
@@ -104,9 +108,9 @@ class TestTootApiClient {
         }
     }
 
-    private fun createHttpClientNormal(): SimpleHttpClient {
+    private fun createHttpClientMock(): SimpleHttpClient {
         return SimpleHttpClientMock(
-            responseGenerator = { request: Request ->
+            responseGenerator = { request ->
 
                 val bodyString = requestBodyString(request)
 
@@ -258,15 +262,10 @@ class TestTootApiClient {
             webSocketGenerator = { request: Request, _: WebSocketListener ->
                 object : WebSocket {
                     override fun queueSize(): Long = 4096L
-
                     override fun send(text: String): Boolean = true
-
                     override fun send(bytes: ByteString): Boolean = true
-
                     override fun close(code: Int, reason: String?): Boolean = true
-
                     override fun cancel() = Unit
-
                     override fun request(): Request = request
                 }
             }
@@ -381,9 +380,6 @@ class TestTootApiClient {
         .message("status-message")
         .body(strJsonObject2.toResponseBody(MEDIA_TYPE_JSON))
         .build()
-
-    private val mediaTypeTextPlain = "text/plain".toMediaType()
-    private val mediaTypeHtml = "text/html".toMediaType()
 
     private fun createResponsePlainText() = Response.Builder()
         .request(requestSimple)
@@ -582,7 +578,7 @@ class TestTootApiClient {
             run {
                 val client = TootApiClient(
                     appContext,
-                    httpClient = createHttpClientNormal(),
+                    httpClient = createHttpClientMock(),
                     callback = callback
                 )
                 val result = TootApiResult.makeWithCaption("instance")
@@ -630,7 +626,7 @@ class TestTootApiClient {
             run {
                 val client = TootApiClient(
                     appContext,
-                    httpClient = createHttpClientNormal(),
+                    httpClient = createHttpClientMock(),
                     callback = callback
                 )
                 val result = TootApiResult.makeWithCaption("instance")
@@ -656,7 +652,7 @@ class TestTootApiClient {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
-                httpClient = createHttpClientNormal(),
+                httpClient = createHttpClientMock(),
                 callback = callback
             )
 
@@ -765,7 +761,7 @@ class TestTootApiClient {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
-                httpClient = createHttpClientNormal(),
+                httpClient = createHttpClientMock(),
                 callback = callback
             )
 
@@ -884,7 +880,7 @@ class TestTootApiClient {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
-                httpClient = createHttpClientNormal(),
+                httpClient = createHttpClientMock(),
                 callback = callback
             )
 
@@ -1060,91 +1056,145 @@ class TestTootApiClient {
     }
 
     @Test
-    fun testRegisterClient() {
-        runTest {
-            val callback = ProgressRecordTootApiCallback()
-            val client = TootApiClient(
-                appContext,
-                httpClient = createHttpClientNormal(),
-                callback = callback
-            )
-            val instance = Host.parse("unit-test")
-            client.apiHost = instance
-            val clientName = "SubwayTooterUnitTest"
-            val scope_string = "read+write+follow+push"
+    fun testRegisterClient() = runTest {
+        AuthBase.testClientName = "SubwayTooterUnitTest"
+        val client = TootApiClient(
+            appContext,
+            httpClient = createHttpClientMock(),
+            callback = ProgressRecordTootApiCallback()
+        )
+        val testHost = Host.parse("unit-test")
+        client.apiHost = testHost
 
-            // まずクライアント情報を作らないとcredentialのテストができない
-            var result = client.registerClient(scope_string, clientName)
-            assertNotNull(result)
-            assertEquals(null, result?.error)
-            var jsonObject = result?.jsonObject
-            assertNotNull(jsonObject)
-            if (jsonObject == null) return@runTest
-            val clientInfo = jsonObject
+        val (ti, ri) = TootInstance.get(client)
+        ti ?: error("can't get server information. ${ri?.error}")
 
-            // clientCredential の作成
-            result = client.getClientCredential(clientInfo)
-            assertNotNull(result)
-            assertEquals(null, result?.error)
-            val clientCredential = result?.string
-            assertNotNull(clientCredential)
-            if (clientCredential == null) return@runTest
-            clientInfo[TootApiClient.KEY_CLIENT_CREDENTIAL] = clientCredential
+        val auth = AuthBase.findAuth(client, ti, ri) as MastodonAuth
+        val authUri = auth.authStep1(ti, forceUpdateClient = false)
+        println("authUri=$authUri")
 
-            // clientCredential の検証
-            result = client.verifyClientCredential(clientCredential)
-            assertNotNull(result)
-            assertEquals(null, result?.error)
-            jsonObject = result?.jsonObject
-            assertNotNull(jsonObject) // 中味は別に見てない。jsonObjectなら良いらしい
-            if (jsonObject == null) return@runTest
+        // ブラウザからコールバックで受け取ったcodeを処理する
 
-            var url: String?
+        val clientInfo = jsonObjectOf(
+            // ...
+            "client_id" to "abc",
+            "client_secret" to "def",
+            AuthBase.KEY_CLIENT_SCOPE to "scope",
+        )
 
-            // ブラウザURLの作成
-            url = client.prepareBrowserUrl(scope_string, clientInfo)
-            assertNotNull(url)
-            println(url)
+        ClientInfo.save(testHost, AuthBase.clientName, clientInfo.toString())
 
-            // ここまでと同じことをauthorize1でまとめて行う
-            result = client.authentication1(clientName)
-            url = result?.string
-            assertNotNull(url)
-            if (url == null) return@runTest
-            println(url)
-
-            // ブラウザからコールバックで受け取ったcodeを処理する
-            val refToken = AtomicReference<String>(null)
-            result = client.authentication2Mastodon(clientName, "DUMMY_CODE", refToken)
-            jsonObject = result?.jsonObject
-            assertNotNull(jsonObject)
-            if (jsonObject == null) return@runTest
-            println(jsonObject.toString())
-
-            // 認証できたならアクセストークンがある
-            val tokenInfo = result?.tokenInfo
-            assertNotNull(tokenInfo)
-            if (tokenInfo == null) return@runTest
-            val accessToken = tokenInfo.string("access_token")
-            assertNotNull(accessToken)
-            if (accessToken == null) return@runTest
-
-            // アカウント手動入力でログインする場合はこの関数を直接呼び出す
-            result = client.getUserCredential(accessToken, tokenInfo)
-            jsonObject = result?.jsonObject
-            assertNotNull(jsonObject)
-            if (jsonObject == null) return@runTest
-            println(jsonObject.toString())
+        // コールバックのエラーケース
+        arrayOf(
+            // handle error message
+            Triple("?error=e1", IllegalStateException::class.java, "e1"),
+            Triple("?error_description=e1", IllegalStateException::class.java, "e1"),
+            Triple("?error=e1&error_description=e2", IllegalStateException::class.java, "e1 e2"),
+            // missing 'code'
+            Triple("", IllegalStateException::class.java, "missing code in callback url."),
+            Triple("?", IllegalStateException::class.java, "missing code in callback url."),
+            Triple("?code=", IllegalStateException::class.java, "missing code in callback url."),
+            // missing 'state'
+            Triple("?code=a", IllegalStateException::class.java, "missing state in callback url."),
+            Triple(
+                "?code=a&state=",
+                IllegalStateException::class.java,
+                "missing state in callback url."
+            ),
+            // bad db id
+            Triple(
+                "?code=a&state=db:",
+                IllegalStateException::class.java,
+                "invalide state.db in callback parameter."
+            ),
+            Triple(
+                "?code=a&state=db:a",
+                IllegalStateException::class.java,
+                "invalide state.db in callback parameter."
+            ),
+            Triple(
+                "?code=a&state=db:-1",
+                IllegalStateException::class.java,
+                "invalide state.db in callback parameter."
+            ),
+            // bad host
+            Triple(
+                "?code=a&state=host:",
+                IllegalStateException::class.java,
+                "can't find client info for apiHost=, clientName=SubwayTooterUnitTest"
+            ),
+            Triple(
+                "?code=a&state=host:a",
+                IllegalStateException::class.java,
+                "can't find client info for apiHost=a, clientName=SubwayTooterUnitTest"
+            ),
+            Triple(
+                "?code=a&state=host:-1",
+                IllegalStateException::class.java,
+                "can't find client info for apiHost=-1, clientName=SubwayTooterUnitTest"
+            ),
+            // other params in state ignored
+            Triple("?code=a&state=host:${testHost.ascii},other:a", null, "ignored"),
+        ).forEach {
+            val (suffix, exClass, exMessage) = it
+            val callbackUrl = "${MastodonAuth.callbackUrl}$suffix".toUri()
+            if (exClass == null) {
+                // expect not throw
+                auth.authStep2(callbackUrl)
+            } else {
+                val ex = assertThrowsSuspend("exClass callbackUrl=$callbackUrl", exClass) {
+                    auth.authStep2(callbackUrl)
+                }
+                assertEquals("exMessage callbackUrl=$callbackUrl", exMessage, ex.message)
+            }
         }
+
+        // 正常ケース
+        val auth2Result =
+            auth.authStep2("${MastodonAuth.callbackUrl}?code=a&state=host:${testHost.ascii}".toUri())
+
+        assertEquals(
+            "auth2Result.tokenJson",
+            """{"SubwayTooterAuthVersion":5,"access_token":"DUMMY_ACCESS_TOKEN"}""",
+            auth2Result.tokenJson.toString(0, sort = true)
+        )
+        assertEquals(
+            "auth2Result.accountJson",
+            """{"_fromStream":false,"acct":"user1","id":1,"url":"http://unit-test/@user1","username":"user1"}""",
+            auth2Result.accountJson.toString(0, sort = true)
+        )
+
+        // 認証できたならアクセストークンがある
+        val accessToken = auth2Result.tokenJson.string("access_token")
+        assertEquals(
+            "accessToken",
+            "DUMMY_ACCESS_TOKEN",
+            accessToken
+        )
+        accessToken!!
+
+        // アクセストークン手動入力
+        val outTokenJson = JsonObject()
+        val accountJson = auth.verifyAccount(accessToken, outTokenJson, misskeyVersion = 0)
+        assertEquals(
+            "outTokenJson",
+            """{"SubwayTooterAuthVersion":5,"access_token":"DUMMY_ACCESS_TOKEN"}""",
+            outTokenJson.toString(0, sort = true)
+        )
+        assertEquals(
+            "accountJson",
+            """{"acct":"user1","id":1,"url":"http://unit-test/@user1","username":"user1"}""",
+            accountJson.toString(0, sort = true)
+        )
     }
 
     @Test
-    fun testGetInstanceInformation() {
+    fun testGetInstanceInformation() =
         runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,
-                httpClient = createHttpClientNormal(),
+                httpClient = createHttpClientMock(),
                 callback = callback
             )
             val instance = Host.parse("unit-test")
@@ -1155,77 +1205,71 @@ class TestTootApiClient {
             val json = instanceResult?.jsonObject
             if (json != null) println(json.toString())
         }
+
+    @Test
+    fun testGetHttp() = runTest {
+        val callback = ProgressRecordTootApiCallback()
+        val client = TootApiClient(
+            appContext,
+            httpClient = createHttpClientMock(),
+            callback = callback
+        )
+        val result = client.getHttp("http://juggler.jp/")
+        val content = result?.string
+        assertNotNull(content)
+        println(content.toString())
     }
 
     @Test
-    fun testGetHttp() {
-        runTest {
-            val callback = ProgressRecordTootApiCallback()
-            val client = TootApiClient(
-                appContext,
-                httpClient = createHttpClientNormal(),
-                callback = callback
-            )
-            val result = client.getHttp("http://juggler.jp/")
-            val content = result?.string
-            assertNotNull(content)
-            println(content.toString())
-        }
+    fun testRequest() = runTest {
+        val tokenInfo = JsonObject()
+        tokenInfo["access_token"] = "DUMMY_ACCESS_TOKEN"
+
+        val accessInfo = SavedAccount(
+            db_id = 1,
+            acctArg = "user1@host1",
+            apiHostArg = null,
+            token_info = tokenInfo
+        )
+        val callback = ProgressRecordTootApiCallback()
+        val client = TootApiClient(
+            appContext,
+            httpClient = createHttpClientMock(),
+            callback = callback
+        )
+        client.account = accessInfo
+        val result = client.request("/api/v1/timelines/public")
+        println(result?.bodyString)
+
+        val content = result?.jsonArray
+        assertNotNull(content)
+        println(content?.jsonObject(0).toString())
     }
 
     @Test
-    fun testRequest() {
-        runTest {
-            val tokenInfo = JsonObject()
-            tokenInfo["access_token"] = "DUMMY_ACCESS_TOKEN"
-
-            val accessInfo = SavedAccount(
-                db_id = 1,
-                acctArg = "user1@host1",
-                apiHostArg = null,
-                token_info = tokenInfo
-            )
-            val callback = ProgressRecordTootApiCallback()
-            val client = TootApiClient(
-                appContext,
-                httpClient = createHttpClientNormal(),
-                callback = callback
-            )
-            client.account = accessInfo
-            val result = client.request("/api/v1/timelines/public")
-            println(result?.bodyString)
-
-            val content = result?.jsonArray
-            assertNotNull(content)
-            println(content?.jsonObject(0).toString())
+    fun testWebSocket() = runTest {
+        val tokenInfo = buildJsonObject {
+            put("access_token", "DUMMY_ACCESS_TOKEN")
         }
-    }
 
-    @Test
-    fun testWebSocket() {
-        runTest {
-            val tokenInfo = buildJsonObject {
-                put("access_token", "DUMMY_ACCESS_TOKEN")
-            }
-
-            val accessInfo = SavedAccount(
-                db_id = 1,
-                acctArg = "user1@host1",
-                apiHostArg = null,
-                token_info = tokenInfo
-            )
-            val callback = ProgressRecordTootApiCallback()
-            val client = TootApiClient(
-                appContext,
-                httpClient = createHttpClientNormal(),
-                callback = callback
-            )
-            client.account = accessInfo
-            val (_, ws) = client.webSocket("/api/v1/streaming/?stream=public:local",
-                object : WebSocketListener() {
-                })
-            assertNotNull(ws)
-            ws?.cancel()
-        }
+        val accessInfo = SavedAccount(
+            db_id = 1,
+            acctArg = "user1@host1",
+            apiHostArg = null,
+            token_info = tokenInfo
+        )
+        val callback = ProgressRecordTootApiCallback()
+        val client = TootApiClient(
+            appContext,
+            httpClient = createHttpClientMock(),
+            callback = callback
+        )
+        client.account = accessInfo
+        val (_, ws) = client.webSocket(
+            "/api/v1/streaming/?stream=public:local",
+            object : WebSocketListener() {}
+        )
+        assertNotNull(ws)
+        ws?.cancel()
     }
 }

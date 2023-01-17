@@ -4,6 +4,7 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -89,9 +90,12 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     val isExpired: Boolean
         get() = SystemClock.elapsedRealtime() - time_parse >= EXPIRE
 
+    // サーバのAPIホスト
+    val apiHost: Host = parser.apiHost
+
     //	URI of the current instance
     // apiHost ではなく apDomain を示す
-    val uri: String?
+    val apDomain: Host
 
     //	The instance's title
     val title: String?
@@ -153,7 +157,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.misskeyEndpoints = src.jsonArray("_endpoints")?.stringList()?.toSet()
 
-            this.uri = parser.apiHost.ascii
+            // Misskeyは apiHost と apDomain の区別がない
+            this.apDomain = parser.apiHost
             this.title = parser.apiHost.pretty
             val sv = src.jsonObject("maintainer")?.string("url")
             this.email = when {
@@ -178,7 +183,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.invites_enabled = null
         } else {
-            this.uri = src.string("uri")
+            this.apDomain = src.string("uri")?.let { Host.parse(it) } ?: parser.apDomain
             this.title = src.string("title")
 
             val sv = src.string("email")
@@ -202,12 +207,18 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             languages = src.jsonArray("languages")?.stringArrayList()
 
-            val parser2 = TootParser(
-                parser.context,
-                LinkHelper.create(Host.parse(uri ?: "?"))
+            contact_account = parseItem(
+                ::TootAccount,
+                TootParser(
+                    parser.context,
+                    LinkHelper.create(
+                        apiHostArg = apiHost,
+                        apDomainArg = apDomain,
+                        misskeyVersion = 0,
+                    )
+                ),
+                src.jsonObject("contact_account")
             )
-            contact_account =
-                parseItem(::TootAccount, parser2, src.jsonObject("contact_account"))
 
             this.description = src.string("description")
             this.short_description = src.string("short_description")
@@ -233,7 +244,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         val domain_count = src.long("domain_count") ?: -1L
     }
 
-    val misskeyVersion: Int
+    val misskeyVersionMajor: Int
         get() = when {
             instanceType != InstanceType.Misskey -> 0
             else -> decoded_version.majorVersion ?: 10
@@ -271,6 +282,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         val MISSKEY_VERSION_11 = VersionString("11.0")
         val MISSKEY_VERSION_12 = VersionString("12.0")
         val MISSKEY_VERSION_12_75_0 = VersionString("12.75.0")
+        val MISSKEY_VERSION_13 = VersionString("13.0")
 
         private val reDigits = """(\d+)""".asciiPattern()
 
@@ -279,9 +291,10 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         const val DESCRIPTION_DEFAULT = "(no description)"
 
         // 引数はtoken_infoかTootInstanceのパース前のいずれか
-        fun parseMisskeyVersion(tokenInfo: JsonObject): Int {
-            return when (val o = tokenInfo[TootApiClient.KEY_MISSKEY_VERSION]) {
-                is Int -> o
+        private fun parseMisskeyVersion(tokenInfo: JsonObject): Int {
+            log.i("parseMisskeyVersion ${AuthBase.KEY_MISSKEY_VERSION}=${tokenInfo[AuthBase.KEY_MISSKEY_VERSION]}, (version)=${tokenInfo["version"]}")
+            return when (val o = tokenInfo[AuthBase.KEY_MISSKEY_VERSION]) {
+                is Int -> tokenInfo.string("version")?.let { VersionString(it).majorVersion } ?: o
                 is Boolean -> if (o) 10 else 0
                 else -> 0
             }
@@ -291,7 +304,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         private suspend fun TootApiClient.getInstanceInformationMastodon(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-            val result = TootApiResult.makeWithCaption(apiHost?.pretty)
+            val result = TootApiResult.makeWithCaption(apiHost)
             if (result.error != null) return result
 
             if (sendRequest(result) {
@@ -311,7 +324,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         private suspend fun TootApiClient.getMisskeyEndpoints(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-            val result = TootApiResult.makeWithCaption(apiHost?.pretty)
+            val result = TootApiResult.makeWithCaption(apiHost)
             if (result.error != null) return result
 
             if (sendRequest(result) {
@@ -332,7 +345,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         private suspend fun TootApiClient.getInstanceInformationMisskey(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-            val result = TootApiResult.makeWithCaption(apiHost?.pretty)
+            val result = TootApiResult.makeWithCaption(apiHost)
             if (result.error != null) return result
 
             if (sendRequest(result) {
@@ -350,7 +363,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     result.jsonObject?.apply {
                         val m = reDigits.matcher(string("version") ?: "")
                         if (m.find()) {
-                            put(TootApiClient.KEY_MISSKEY_VERSION, max(1, m.groupEx(1)!!.toInt()))
+                            put(AuthBase.KEY_MISSKEY_VERSION, max(1, m.groupEx(1)!!.toInt()))
                         }
 
                         // add endpoints
@@ -574,4 +587,5 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     }
 
     val isMastodon get() = instanceType == InstanceType.Mastodon
+    val isMisskey get() = misskeyVersionMajor > 0
 }

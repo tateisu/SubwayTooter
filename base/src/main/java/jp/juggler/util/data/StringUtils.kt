@@ -279,6 +279,10 @@ fun String.digestSHA256Base64Url(): String {
 // Uri.encode(s:Nullable) だと nullチェックができないので、簡単なラッパーを用意する
 fun String.encodePercent(allow: String? = null): String = Uri.encode(this, allow)
 
+// %HH エンコードした後に %20 を + に変換する
+fun String.encodePercentPlus(allow: String? = null): String =
+    Uri.encode(this, allow).replace("""%20""".toRegex(),"+")
+
 // replace + to %20, then decode it.
 fun String.decodePercent(): String =
     Uri.decode(replace("+", "%20"))

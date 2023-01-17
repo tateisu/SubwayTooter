@@ -51,10 +51,10 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
         val rowId = SavedAccount.insert(
             acct = acct.ascii,
             host = host.ascii,
-            domain = instanceInfo.uri,
+            domain = instanceInfo.apDomain.ascii,
             account = accountInfo,
             token = JsonObject(),
-            misskeyVersion = instanceInfo.misskeyVersion
+            misskeyVersion = instanceInfo.misskeyVersionMajor
         )
 
         account = SavedAccount.loadAccount(applicationContext, rowId)

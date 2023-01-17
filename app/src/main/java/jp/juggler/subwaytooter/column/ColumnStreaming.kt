@@ -4,6 +4,7 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.DedupMode
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.*
 import jp.juggler.subwaytooter.notification.injectData
@@ -374,7 +375,7 @@ fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {
     // userId が自分かどうか調べる
     // アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
     // （でないとリアクションの2重カウントなどが発生してしまう)
-    val myId = EntityId.from(accessInfo.token_info, TootApiClient.KEY_USER_ID)
+    val myId = EntityId.from(accessInfo.token_info, AuthBase.KEY_USER_ID)
     if (myId == null) {
         log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
     }

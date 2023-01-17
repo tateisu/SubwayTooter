@@ -41,7 +41,7 @@ object LoginForm {
         instanceArg: String?,
         onClickOk: (
             dialog: Dialog,
-            instance: Host,
+            apiHost: Host,
             action: Action,
         ) -> Unit,
     ) {

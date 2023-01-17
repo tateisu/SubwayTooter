@@ -45,4 +45,5 @@ dependencies {
     implementation project(":base")
 
     implementation "com.github.zjupure:webpdecoder:2.3.$glideVersion"
+    testImplementation 'junit:junit:4.12'
 }

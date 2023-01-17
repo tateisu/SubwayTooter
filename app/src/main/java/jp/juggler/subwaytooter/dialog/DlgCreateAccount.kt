@@ -69,7 +69,7 @@ class DlgCreateAccount(
                 activity,
                 linkHelper = LinkHelper.create(
                     apiHost,
-                    misskeyVersion = instanceInfo?.misskeyVersion ?: 0
+                    misskeyVersion = instanceInfo?.misskeyVersionMajor ?: 0
                 )
             ).decodeHTML(
                 instanceInfo?.short_description?.notBlank()

@@ -7,8 +7,9 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.auth.Auth2Result
+import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
@@ -116,6 +117,8 @@ class SavedAccount(
     var notification_status_reference by jsonDelegates.boolean
 
     init {
+        log.i("afterAccountVerify sa.ctor acctArg=$acctArg")
+
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
         if (username.isEmpty()) error("missing username in acct")
@@ -229,15 +232,16 @@ class SavedAccount(
         }
     }
 
-    fun updateTokenInfo(tokenInfoArg: JsonObject?) {
-
+    fun updateTokenInfo(auth2Result: Auth2Result) {
         if (db_id == INVALID_DB_ID) error("updateTokenInfo: missing db_id")
 
-        val token_info = tokenInfoArg ?: JsonObject()
-        this.token_info = token_info
+        this.token_info = auth2Result.tokenJson
+        this.loginAccount = auth2Result.tootAccount
 
         ContentValues().apply {
-            put(COL_TOKEN, token_info.toString())
+            put(COL_TOKEN, auth2Result.tokenJson.toString())
+            put(COL_ACCOUNT, auth2Result.accountJson.toString())
+            put(COL_MISSKEY_VERSION, auth2Result.tootInstance.misskeyVersionMajor)
         }.let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
     }
 
@@ -289,27 +293,6 @@ class SavedAccount(
             // register_key
         }.let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
     }
-
-    //	fun saveNotificationTag() {
-    //		if(db_id == INVALID_DB_ID)
-    //			throw RuntimeException("SavedAccount.saveNotificationTag missing db_id")
-    //
-    //		val cv = ContentValues()
-    //		cv.put(COL_NOTIFICATION_TAG, notification_tag)
-    //
-    //		appDatabase.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-    //	}
-    //
-    //	fun saveRegisterKey() {
-    //		if(db_id == INVALID_DB_ID)
-    //			throw RuntimeException("SavedAccount.saveRegisterKey missing db_id")
-    //
-    //		val cv = ContentValues()
-    //		cv.put(COL_REGISTER_KEY, register_key)
-    //		cv.put(COL_REGISTER_TIME, register_time)
-    //
-    //		appDatabase.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-    //	}
 
     // onResumeの時に設定を読み直す
     fun reloadSetting(context: Context, newData: SavedAccount? = null) {
@@ -686,7 +669,10 @@ class SavedAccount(
             return result
         }
 
-        fun loadAccountByAcct(context: Context, fullAcct: String): SavedAccount? {
+        /**
+         * acctを指定してアカウントを取得する
+         */
+        fun loadAccountByAcct(context: Context, fullAcct: String) =
             try {
                 appDatabase.query(
                     table,
@@ -696,18 +682,13 @@ class SavedAccount(
                     null,
                     null,
                     null
-                )
-                    .use { cursor ->
-                        if (cursor.moveToNext()) {
-                            return parse(context, cursor)
-                        }
-                    }
+                ).use { cursor ->
+                    if (cursor.moveToNext()) parse(context, cursor) else null
+                }
             } catch (ex: Throwable) {
                 log.e(ex, "loadAccountByAcct failed.")
+                null
             }
-
-            return null
-        }
 
         fun hasRealAccount(): Boolean {
             try {
@@ -846,7 +827,7 @@ class SavedAccount(
     }
 
     val misskeyApiToken: String?
-        get() = token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
+        get() = token_info?.string(AuthBase.KEY_API_KEY_MISSKEY)
 
     fun putMisskeyApiToken(params: JsonObject = JsonObject()): JsonObject {
         val apiKey = misskeyApiToken
@@ -902,36 +883,42 @@ class SavedAccount(
             return myId != EntityId.CONFIRMING
         }
 
-    suspend fun checkConfirmed(context: Context, client: TootApiClient): TootApiResult? {
-        try {
-            val myId = this.loginAccount?.id
-            if (db_id != INVALID_DB_ID && myId == EntityId.CONFIRMING) {
-                val accessToken = getAccessToken()
-                if (accessToken != null) {
-                    val result = client.getUserCredential(accessToken)
-                    if (result == null || result.error != null) return result
-                    val ta = TootParser(context, this).account(result.jsonObject)
-                    if (ta != null) {
-                        this.loginAccount = ta
-                        ContentValues().apply {
-                            put(COL_ACCOUNT, result.jsonObject.toString())
-                        }.let {
-                            appDatabase.update(
-                                table,
-                                it,
-                                "$COL_ID=?",
-                                arrayOf(db_id.toString())
-                            )
-                        }
-                        checkNotificationImmediateAll(context, onlySubscription = true)
-                        checkNotificationImmediate(context, db_id)
-                    }
-                }
-            }
-            return TootApiResult()
-        } catch (ex: Throwable) {
-            log.e(ex, "account confirmation failed.")
-            return TootApiResult(ex.withCaption("account confirmation failed."))
+    /**
+     * ユーザ登録の確認手順が完了しているかどうか
+     *
+     * - マストドン以外だと何もしないはず
+     */
+    suspend fun checkConfirmed(context: Context, client: TootApiClient) {
+        // 承認待ち状態ではないならチェックしない
+        if (loginAccount?.id != EntityId.CONFIRMING) return
+
+        // DBに保存されていないならチェックしない
+        if (db_id == INVALID_DB_ID) return
+
+        // アクセストークンがないならチェックしない
+        val accessToken = getAccessToken()
+            ?: return
+
+        // ユーザ情報を取得してみる。承認済みなら読めるはず
+        // 読めなければ例外が出る
+        val userJson = client.getUserCredential(
+            accessToken = accessToken,
+            outTokenInfo = null,
+            misskeyVersion = 0, // Mastodon only
+        )
+        // 読めたらアプリ内の記録を更新する
+        TootParser(context, this).account(userJson)?.let { ta ->
+            this.loginAccount = ta
+            appDatabase.update(
+                table,
+                ContentValues().apply {
+                    put(COL_ACCOUNT, userJson.toString())
+                },
+                "$COL_ID=?",
+                arrayOf(db_id.toString())
+            )
+            checkNotificationImmediateAll(context, onlySubscription = true)
+            checkNotificationImmediate(context, db_id)
         }
     }
 

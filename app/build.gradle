@@ -28,8 +28,9 @@ android {
         versionCode 509
         versionName "5.0.9"
         applicationId "jp.juggler.subwaytooter"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     viewBinding {
@@ -147,11 +148,6 @@ dependencies {
     testImplementation(project(":base"))
     androidTestImplementation(project(":base"))
 
-    testApi "androidx.arch.core:core-testing:$arch_version"
-    testApi "junit:junit:$junit_version"
-    testApi "org.jetbrains.kotlin:kotlin-test"
-    testApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
-
     androidTestApi "androidx.test.espresso:espresso-core:3.5.1"
     androidTestApi "androidx.test.ext:junit-ktx:1.1.5"
     androidTestApi "androidx.test.ext:junit:1.1.5"
@@ -161,6 +157,10 @@ dependencies {
     androidTestApi "androidx.test:runner:1.5.2"
     androidTestApi "org.jetbrains.kotlin:kotlin-test"
     androidTestApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
+    testApi "androidx.arch.core:core-testing:$arch_version"
+    testApi "junit:junit:$junit_version"
+    testApi "org.jetbrains.kotlin:kotlin-test"
+    testApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
 
     // To use android test orchestrator
     androidTestUtil "androidx.test:orchestrator:1.4.2"

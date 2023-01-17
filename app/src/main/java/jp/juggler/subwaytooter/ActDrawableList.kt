@@ -54,7 +54,7 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
             val reSkipName =
                 """^(abc_|avd_|btn_checkbox_|btn_radio_|googleg_|ic_keyboard_arrow_|ic_menu_arrow_|notification_|common_|emj_|cpv_|design_|exo_|mtrl_|ic_mtrl_)"""
                     .asciiPattern()
-            val list = withContext(AppDispatchers.io) {
+            val list = withContext(AppDispatchers.IO) {
                 R.drawable::class.java.fields
                     .mapNotNull {
                         val id = it.get(null) as? Int ?: return@mapNotNull null

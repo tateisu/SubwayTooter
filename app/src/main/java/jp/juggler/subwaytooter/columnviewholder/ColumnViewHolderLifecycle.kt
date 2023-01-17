@@ -70,7 +70,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
         // 非同期処理を開始
         lastImageTask = launchMain {
             val bitmap = try {
-                withContext(AppDispatchers.io) {
+                withContext(AppDispatchers.IO) {
                     try {
                         createResizedBitmap(
                             activity,

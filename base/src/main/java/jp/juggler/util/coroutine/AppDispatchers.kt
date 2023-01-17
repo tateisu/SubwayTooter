@@ -15,22 +15,22 @@ import kotlinx.coroutines.*
 object AppDispatchers {
 
     // Main と Main.immediate は Dispatchers.setMain 差し替えられる
-    val mainImmediate get() = Dispatchers.Main.immediate
+    val MainImmediate get() = Dispatchers.Main.immediate
 
-    var unconfined: CoroutineDispatcher = Dispatchers.Unconfined
-    var default: CoroutineDispatcher = Dispatchers.Default
-    var io: CoroutineDispatcher = Dispatchers.IO
+    var Unconfined: CoroutineDispatcher = Dispatchers.Unconfined
+    var DEFAULT: CoroutineDispatcher = Dispatchers.Default
+    var IO: CoroutineDispatcher = Dispatchers.IO
 
     fun reset() {
-        unconfined = Dispatchers.Unconfined
-        default = Dispatchers.Default
-        io = Dispatchers.IO
+        Unconfined = Dispatchers.Unconfined
+        DEFAULT = Dispatchers.Default
+        IO = Dispatchers.IO
     }
 
     fun setTest(testDispatcher: CoroutineDispatcher) {
-        unconfined = testDispatcher
-        default = testDispatcher
-        io = testDispatcher
+        Unconfined = testDispatcher
+        DEFAULT = testDispatcher
+        IO = testDispatcher
     }
 
     /**
@@ -39,7 +39,7 @@ object AppDispatchers {
      * https://stackoverflow.com/questions/70658926/how-to-use-kotlinx-coroutines-withtimeout-in-kotlinx-coroutines-test-runtest
      */
     suspend fun <T> withTimeoutSafe(timeMillis: Long, block: suspend CoroutineScope.() -> T) =
-        when (io) {
+        when (IO) {
             Dispatchers.IO -> withTimeout(timeMillis, block)
             else -> coroutineScope { block() }
         }

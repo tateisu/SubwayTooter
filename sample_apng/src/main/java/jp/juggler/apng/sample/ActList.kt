@@ -36,7 +36,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
     private lateinit var activityJob: Job
 
     override val coroutineContext: CoroutineContext
-        get() = activityJob + AppDispatchers.mainImmediate
+        get() = activityJob + AppDispatchers.MainImmediate
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -86,7 +86,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
     }
 
     private fun load() = launch {
-        val list = withContext(AppDispatchers.io) {
+        val list = withContext(AppDispatchers.IO) {
             // RawリソースのIDと名前の一覧
             R.raw::class.java.fields
                 .mapNotNull { it.get(null) as? Int }
@@ -179,7 +179,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
                     try {
                         lastJob?.cancelAndJoin()
 
-                        val job = async(AppDispatchers.io) {
+                        val job = async(AppDispatchers.IO) {
                             try {
                                 ApngFrames.parse(128) { resources?.openRawResource(resId) }
                             } catch (ex: Throwable) {

@@ -127,7 +127,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 
         task = launchMain {
             val cursor = try {
-                withContext(AppDispatchers.io) {
+                withContext(AppDispatchers.IO) {
                     PostDraft.createCursor()
                 } ?: error("cursor is null")
             } catch (ignored: CancellationException) {

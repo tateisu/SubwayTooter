@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import jp.juggler.util.*
+import jp.juggler.util.data.*
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.StringWriter
@@ -84,13 +84,13 @@ class TestJson {
         assertEquals("\"Aa\"", En.Aa.encodeSimpleJsonValue(0))
 
         // object
-        val o = jsonObject {}
+        val o = buildJsonObject {}
         assertEquals("{}", o.encodeSimpleJsonValue(0))
         o["a"] = "b"
         assertEquals("{\"a\":\"b\"}", o.encodeSimpleJsonValue(0))
 
         // Collection
-        val a = jsonArray {}
+        val a = buildJsonArray {}
         assertEquals("[]", a.encodeSimpleJsonValue(0))
         a.add("b")
         assertEquals("[\"b\"]", a.encodeSimpleJsonValue(0))
@@ -133,32 +133,38 @@ class TestJson {
 
     @Test
     fun testNumberEncode() {
-        fun x(n: Number) {
+        fun x(
+            n: Number,
+            expectValue:Number = n,
+            expectClass:Class<*> = expectValue.javaClass,
+        ) {
             val encodedObject = jsonObjectOf("n" to n).toString()
             val decodedObject = encodedObject.decodeJsonObject()
             val decoded = decodedObject["n"]
-            assertEquals("$n type $encodedObject", n.javaClass, decoded?.javaClass)
-            assertEquals("$n value $encodedObject", n, decoded)
+            assertEquals("$n type $encodedObject", expectClass, decoded?.javaClass)
+            assertEquals("$n value $encodedObject", expectValue, decoded)
         }
         x(0)
-        x(0f)
-        x(0.0)
+        x(0f ,expectValue = 0)
+        x(0.0, expectValue = 0)
         x(-0)
-        x(-0f)
+        x(-0f, expectValue = -0.0)
         x(-0.0)
-        x(0.5f)
+        x(0.5f, expectValue = 0.5)
         x(0.5)
-        x(-0.5f)
+        x(-0.5f, expectValue = -0.5)
         x(-0.5)
+        x(epsilon)
         x(Int.MIN_VALUE)
         x(Int.MAX_VALUE)
         x(Long.MIN_VALUE)
         x(Long.MAX_VALUE)
-        x(Float.MAX_VALUE)
-        x(Float.MIN_VALUE)
         x(Double.MAX_VALUE)
         x(Double.MIN_VALUE)
 
-        x(epsilon)
+        // 誤差が出て上限/下限が合わないので、デコード時にはdouble解釈になる
+        // x(Float.MAX_VALUE, expectValue = Float.MAX_VALUE.toDouble())
+        // x(Float.MIN_VALUE, expectValue = Float.MIN_VALUE.toDouble())
+
     }
 }

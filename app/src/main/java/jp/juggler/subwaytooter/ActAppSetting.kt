@@ -498,7 +498,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             views.etEditText.addTextChangedListener(this)
 
             // https://stackoverflow.com/questions/13614101/fatal-crash-focus-search-returned-a-view-that-wasnt-able-to-take-focus
-            views.etEditText.setOnEditorActionListener(OnEditorActionListener { textView, actionId, event ->
+            views.etEditText.setOnEditorActionListener(OnEditorActionListener { textView, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_NEXT) {
                     @Suppress("WrongConstant")
                     textView.focusSearch(FOCUS_FORWARD)?.requestFocus(FOCUS_FORWARD)

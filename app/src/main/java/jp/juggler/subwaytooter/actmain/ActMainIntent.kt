@@ -10,11 +10,14 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationOtherInstance
 import jp.juggler.subwaytooter.action.openActPostImpl
 import jp.juggler.subwaytooter.action.userProfile
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.auth.Auth2Result
+import jp.juggler.subwaytooter.api.auth.AuthBase
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
-import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.runApiTask2
+import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.dialog.pickAccount
@@ -22,20 +25,13 @@ import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.notification.recycleClickedNotification
-import jp.juggler.subwaytooter.pref.PrefDevice
-import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.coroutine.launchMain
-import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.decodePercent
 import jp.juggler.util.data.groupEx
-import jp.juggler.util.data.notBlank
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
-import jp.juggler.util.log.withCaption
 import jp.juggler.util.queryIntentActivitiesCompat
-import java.util.concurrent.atomic.AtomicReference
 
 private val log = LogCategory("ActMainIntent")
 
@@ -203,188 +199,46 @@ private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
 
 private fun ActMain.handleOAuth2Callback(uri: Uri) {
     launchMain {
-        var resultTootAccount: TootAccount? = null
-        var resultSavedAccount: SavedAccount? = null
-        var resultApiHost: Host? = null
-        var resultApDomain: Host? = null
-        runApiTask { client ->
-
-            val uriStr = uri.toString()
-            if (uriStr.startsWith("subwaytooter://misskey/auth_callback") ||
-                uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
-            ) {
-                // Misskey 認証コールバック
-                val token = uri.getQueryParameter("token")?.notBlank()
-                    ?: return@runApiTask TootApiResult("missing token in callback URL")
-
-                val prefDevice = PrefDevice.from(this)
-
-                val hostStr = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)?.notBlank()
-                    ?: return@runApiTask TootApiResult("missing instance name.")
-
-                val instance = Host.parse(hostStr)
-
-                when (val dbId = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
-
-                    // new registration
-                    -1L -> client.apiHost = instance
-
-                    // update access token
-                    else -> try {
-                        val sa = SavedAccount.loadAccount(applicationContext, dbId)
-                            ?: return@runApiTask TootApiResult("missing account db_id=$dbId")
-                        resultSavedAccount = sa
-                        client.account = sa
-                    } catch (ex: Throwable) {
-                        log.e(ex, "handleOAuth2Callback failed.")
-                        return@runApiTask TootApiResult(ex.withCaption("invalid state"))
-                    }
-                }
-
-                val (ti, r2) = TootInstance.get(client)
-                ti ?: return@runApiTask r2
-
-                resultApiHost = instance
-                resultApDomain = ti.uri?.let { Host.parse(it) }
-
-                val parser = TootParser(
-                    applicationContext,
-                    linkHelper = LinkHelper.create(instance, misskeyVersion = ti.misskeyVersion)
-                )
-                client.authentication2Misskey(PrefS.spClientName(pref), token, ti.misskeyVersion)
-                    ?.also { resultTootAccount = parser.account(it.jsonObject) }
-            } else {
-                // Mastodon 認証コールバック
-
-                // エラー時
-                // subwaytooter://oauth(\d*)/
-                // ?error=access_denied
-                // &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
-                // &state=db%3A3
-                val error = uri.getQueryParameter("error")
-                val errorDescription = uri.getQueryParameter("error_description")
-                if (error != null || errorDescription != null) {
-                    return@runApiTask TootApiResult(
-                        errorDescription.notBlank() ?: error.notBlank() ?: "?"
-                    )
-                }
-
-                // subwaytooter://oauth(\d*)/
-                //    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
-                //    &state=host%3Amastodon.juggler.jp
-
-                val code = uri.getQueryParameter("code")?.notBlank()
-                    ?: return@runApiTask TootApiResult("missing code in callback url.")
-
-                val sv = uri.getQueryParameter("state")?.notBlank()
-                    ?: return@runApiTask TootApiResult("missing state in callback url.")
-
-                for (param in sv.split(",")) {
-                    when {
-                        param.startsWith("db:") -> try {
-                            val dataId = param.substring(3).toLong(10)
-                            val sa = SavedAccount.loadAccount(applicationContext, dataId)
-                                ?: return@runApiTask TootApiResult("missing account db_id=$dataId")
-                            resultSavedAccount = sa
-                            client.account = sa
-                        } catch (ex: Throwable) {
-                            log.e(ex, "handleOAuth2Callback failed.")
-                            return@runApiTask TootApiResult(ex.withCaption("invalid state"))
-                        }
-
-                        param.startsWith("host:") -> {
-                            val host = Host.parse(param.substring(5))
-                            client.apiHost = host
-                        }
-
-                        // ignore other parameter
-                    }
-                }
-
-                val apiHost = client.apiHost
-                    ?: return@runApiTask TootApiResult("missing instance in callback url.")
-
-                resultApiHost = apiHost
-
-                val parser = TootParser(
-                    applicationContext,
-                    linkHelper = LinkHelper.create(apiHost)
-                )
-
-                val refToken = AtomicReference<String>(null)
-
-                client.authentication2Mastodon(
-                    PrefS.spClientName(pref),
-                    code,
-                    outAccessToken = refToken
-                )?.also { result ->
-                    val ta = parser.account(result.jsonObject)
-                    if (ta != null) {
-                        val (ti, ri) = TootInstance.getEx(client, forceAccessToken = refToken.get())
-                        ti ?: return@runApiTask ri
-                        resultTootAccount = ta
-                        resultApDomain = ti.uri?.let { Host.parse(it) }
-                    }
-                }
+        try {
+            val auth2Result = runApiTask2 { client ->
+                AuthBase.findAuthForAuthCallback(client, uri.toString())
+                    .authStep2(uri)
             }
-        }?.let { result ->
-            val apiHost = resultApiHost
-            val apDomain = resultApDomain
-            val ta = resultTootAccount
-            var sa = resultSavedAccount
-            if (ta != null && apiHost?.isValid == true && sa == null) {
-                val acct = Acct.parse(ta.username, apDomain ?: apiHost)
-                // アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
-                sa = SavedAccount.loadAccountByAcct(applicationContext, acct.ascii)
-            }
-            afterAccountVerify(result, ta, sa, apiHost, apDomain)
+            afterAccountVerify(auth2Result)
+        } catch (ex: Throwable) {
+            showApiError(ex)
         }
     }
 }
 
-fun ActMain.afterAccountVerify(
-    result: TootApiResult?,
-    ta: TootAccount?,
-    sa: SavedAccount?,
-    apiHost: Host?,
-    apDomain: Host?,
-): Boolean {
-    result ?: return false
+/**
+ * アカウントを確認した後に呼ばれる
+ * @return 何かデータを更新したら真
+ */
+fun ActMain.afterAccountVerify(auth2Result: Auth2Result): Boolean = auth2Result.run {
 
-    val jsonObject = result.jsonObject
-    val tokenInfo = result.tokenInfo
-    val error = result.error
+    // ユーザ情報中のacctはfull acct ではないので、組み立てる
+    val newAcct = Acct.parse(tootAccount.username, apDomain)
 
-    when {
-        error != null -> showToast(true, "${result.error} ${result.requestInfo}".trim())
-        tokenInfo == null -> showToast(true, "can't get access token.")
-        jsonObject == null -> showToast(true, "can't parse json response.")
+    // full acctだよな？
+    """\A[^@]+@[^@]+\z""".toRegex().find(newAcct.ascii)
+        ?: error("afterAccountAdd: incorrect userAcct. ${newAcct.ascii}")
 
-        // 自分のユーザネームを取れなかった
-        // …普通はエラーメッセージが設定されてるはずだが
-        ta == null -> showToast(true, "can't verify user credential.")
-
-        // アクセストークン更新時
-        // インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
-        sa != null -> return afterAccessTokenUpdate(ta, sa, tokenInfo)
-
-        apiHost != null -> return afterAccountAdd(apDomain, apiHost, ta, jsonObject, tokenInfo)
+    // 「アカウント追加のハズが既存アカウントで認証していた」
+    // 「アクセストークン更新のハズが別アカウントで認証していた」
+    // などを防止するため、full acctでアプリ内DBを検索
+    when (val sa = SavedAccount.loadAccountByAcct(this@afterAccountVerify, newAcct.ascii)) {
+        null -> afterAccountAdd(newAcct, auth2Result)
+        else -> afterAccessTokenUpdate(auth2Result, sa)
     }
-    return false
 }
 
 private fun ActMain.afterAccessTokenUpdate(
-    ta: TootAccount,
+    auth2Result: Auth2Result,
     sa: SavedAccount,
-    tokenInfo: JsonObject?,
 ): Boolean {
-    if (sa.username != ta.username) {
-        showToast(true, R.string.user_name_not_match)
-        return false
-    }
-
     // DBの情報を更新する
-    sa.updateTokenInfo(tokenInfo)
+    sa.updateTokenInfo(auth2Result)
 
     // 各カラムの持つアカウント情報をリロードする
     reloadAccountSetting()
@@ -404,22 +258,18 @@ private fun ActMain.afterAccessTokenUpdate(
 }
 
 private fun ActMain.afterAccountAdd(
-    apDomain: Host?,
-    apiHost: Host,
-    ta: TootAccount,
-    jsonObject: JsonObject,
-    tokenInfo: JsonObject,
+    newAcct: Acct,
+    auth2Result: Auth2Result,
 ): Boolean {
-    // アカウント追加時
-    val user = Acct.parse(ta.username, apDomain ?: apiHost)
+    val ta = auth2Result.tootAccount
 
     val rowId = SavedAccount.insert(
-        acct = user.ascii,
-        host = apiHost.ascii,
-        domain = (apDomain ?: apiHost).ascii,
-        account = jsonObject,
-        token = tokenInfo,
-        misskeyVersion = TootInstance.parseMisskeyVersion(tokenInfo)
+        acct = newAcct.ascii,
+        host = auth2Result.apiHost.ascii,
+        domain = auth2Result.apDomain.ascii,
+        account = auth2Result.accountJson,
+        token = auth2Result.tokenJson,
+        misskeyVersion = auth2Result.tootInstance.misskeyVersionMajor,
     )
     val account = SavedAccount.loadAccount(applicationContext, rowId)
     if (account == null) {

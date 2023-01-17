@@ -52,8 +52,7 @@ class ColumnTask_Loading(
         client.account = accessInfo
 
         try {
-            val result = accessInfo.checkConfirmed(context, client)
-            if (result == null || result.error != null) return result
+            accessInfo.checkConfirmed(context, client)
 
             column.keywordFilterTrees = column.encodeFilterTree(column.loadFilter2(client))
 
@@ -69,7 +68,6 @@ class ColumnTask_Loading(
         } catch (ex: Throwable) {
             return TootApiResult(ex.withCaption("loading failed."))
         } finally {
-
             try {
                 column.updateRelation(client, listTmp, column.whoAccount, parser)
             } catch (ex: Throwable) {

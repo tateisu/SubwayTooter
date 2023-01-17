@@ -482,7 +482,7 @@ class PostImpl(
         // 全ての確認を終えたらバックグラウンドでの処理を開始する
         isPosting.set(true)
         return try {
-            withContext(AppDispatchers.mainImmediate) {
+            withContext(AppDispatchers.MainImmediate) {
                 activity.runApiTask(
                     account,
                     progressSetup = { it.setCanceledOnTouchOutside(false) },

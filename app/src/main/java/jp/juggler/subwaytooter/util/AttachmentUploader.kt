@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -225,7 +226,7 @@ class AttachmentUploader(
                             }
                             val result = try {
                                 if (request.pa.isCancelled) continue
-                                withContext(request.pa.job + AppDispatchers.io) {
+                                withContext(request.pa.job + AppDispatchers.IO) {
                                     request.upload()
                                 }
                             } catch (ex: Throwable) {
@@ -233,7 +234,7 @@ class AttachmentUploader(
                             }
                             try {
                                 request.pa.progress = ""
-                                withContext(AppDispatchers.mainImmediate) {
+                                withContext(AppDispatchers.MainImmediate) {
                                     handleResult(request, result)
                                 }
                             } catch (ex: Throwable) {
@@ -373,7 +374,7 @@ class AttachmentUploader(
                 val multipartBuilder = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
 
-                val apiKey = account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
+                val apiKey = account.token_info?.string(AuthBase.KEY_API_KEY_MISSKEY)
                 if (apiKey?.isNotEmpty() == true) {
                     multipartBuilder.addFormDataPart("i", apiKey)
                 }

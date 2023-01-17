@@ -371,7 +371,7 @@
     <string name="video_capture">動画を記録</string>
     <string name="voice_capture">音声を記録</string>
     <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
-    <string name="input_access_token">アクセストークン</string>
+    <string name="input_access_token">アクセストークンを入力</string>
     <string name="input_access_token_desc">通常のユーザ認証の代わりにアクセストークンを指定します。(上級者向け)</string>
     <string name="instance">サーバー</string>
     <string name="instance_does_not_support_push_api">サーバーのバージョン %1$s は古くてプッシュ購読を利用できません</string>

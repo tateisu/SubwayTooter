@@ -106,20 +106,16 @@ internal class ViewHolderHeaderInstance(
             btnAboutMore.isEnabledAlpha = false
             btnExplore.isEnabledAlpha = false
         } else {
-            val uri = instance.uri ?: ""
-            val hasUri = uri.isNotEmpty()
-
-            val host = Host.parse(uri)
-            btnInstance.text = if (host.ascii == host.pretty) {
-                host.pretty
-            } else {
-                "${host.pretty}\n${host.ascii}"
+            val domain = instance.apDomain
+            btnInstance.text = when {
+                domain.pretty != domain.ascii -> "${domain.pretty}\n${domain.ascii}"
+                else -> domain.ascii
             }
 
-            btnInstance.isEnabledAlpha = hasUri
-            btnAbout.isEnabledAlpha = hasUri
-            btnAboutMore.isEnabledAlpha = hasUri
-            btnExplore.isEnabledAlpha = hasUri
+            btnInstance.isEnabledAlpha = true
+            btnAbout.isEnabledAlpha = true
+            btnAboutMore.isEnabledAlpha = true
+            btnExplore.isEnabledAlpha = true
 
             tvVersion.text = instance.version ?: ""
             tvTitle.text = instance.title ?: ""
@@ -170,7 +166,7 @@ internal class ViewHolderHeaderInstance(
             val thumbnail = instance.thumbnail?.let {
                 if (it.startsWith("/")) {
                     // "/instance/thumbnail.jpeg" in case of pleroma.noellabo.jp
-                    "https://${host.ascii}$it"
+                    "https://${instance.apiHost.ascii}$it"
                 } else {
                     it
                 }

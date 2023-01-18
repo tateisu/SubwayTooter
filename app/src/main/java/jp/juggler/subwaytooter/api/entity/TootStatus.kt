@@ -440,7 +440,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 deletedAt = null
                 time_deleted_at = 0L
 
-                this.url = src.string("url")
                 this.created_at = src.string("published")
 
                 val apTag = APTag(parser, src.jsonArray("tag"))
@@ -459,6 +458,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 this.readerApDomain = null
                 this.uri = src.string("id") ?: error("missing uri")
+                this.url = src.string("url") ?: uri
                 this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
 
                 this.time_created_at = parseTime(this.created_at)

@@ -10,6 +10,7 @@
         <item name="android:textColorPrimary">@color/Light_colorTextContent</item>
         <item name="android:textColorSecondary">@color/Light_colorTextContent</item>
         <item name="android:textColorTertiary">@color/Light_colorTextContent</item>
+        <item name="android:textColorHint">@color/Light_colorTextHint</item>
 
         <!-- TabLayoutの下線やRadioButton選択時などの色 -->
         <item name="colorAccent">@color/Light_colorAppCompatAccent</item>
@@ -23,7 +24,12 @@
         <item name="colorPrimaryDark">@color/Light_colorStatusBarBg</item>
 
         <!-- ナビゲーションバー（戻るキー・ホームキーなどがあるバー）の背景色 -->
-        <item name="android:navigationBarColor">@color/Light_colorColumnStripBackground</item>
+        <!--
+            ナビゲーションバーのデフォルト色は通常はカラムストリップと揃えたいが、
+            Lightテーマでそれをやるとボタン図柄の色が白いままの端末で問題になる。
+            仕方ないので白テーマだけデフォルト色が異なる。
+        -->
+        <item name="android:navigationBarColor">@color/colorNavigationBarWorkaround</item>
 
         <!-- ウィンドウ背景Drawable -->
         <item name="android:windowBackground">@drawable/window_background</item>
@@ -104,6 +110,7 @@
         <item name="android:textColorPrimary">@color/Dark_colorTextContent</item>
         <item name="android:textColorSecondary">@color/Dark_colorTextContent</item>
         <item name="android:textColorTertiary">@color/Dark_colorTextContent</item>
+        <item name="android:textColorHint">@color/Dark_colorTextHint</item>
 
         <!-- TabLayoutの下線やRadioButton選択時などの色 -->
         <item name="colorAccent">@color/Dark_colorAppCompatAccent</item>
@@ -205,6 +212,7 @@
         <item name="android:textColorPrimary">@color/Mastodon_colorTextContent</item>
         <item name="android:textColorSecondary">@color/Mastodon_colorTextContent</item>
         <item name="android:textColorTertiary">@color/Mastodon_colorTextContent</item>
+        <item name="android:textColorHint">@color/Mastodon_colorTextHint</item>
 
         <!-- TabLayoutの下線やRadioButton選択時などの色 -->
         <item name="colorAccent">@color/Mastodon_colorAppCompatAccent</item>

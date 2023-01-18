@@ -4,6 +4,7 @@ import android.net.Uri
 import jp.juggler.subwaytooter.api.SendException
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
@@ -11,6 +12,7 @@ import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
@@ -233,11 +235,10 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
         // ?error=access_denied
         // &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
         // &state=db%3A3
-        arrayOf(
-            uri.getQueryParameter("error")?.trim()?.notEmpty(),
-            uri.getQueryParameter("error_description")?.trim()?.notEmpty()
-        ).filterNotNull().joinToString(" ")
-            .notEmpty()?.let { error(it) }
+        arrayOf("error_description", "error")
+            .mapNotNull { uri.getQueryParameter(it)?.trim()?.notEmpty() }
+            .notEmpty()
+            ?.let { error(it.joinToString("\n")) }
 
         // subwaytooter://oauth(\d*)/
         //    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
@@ -296,16 +297,14 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
             misskeyVersion = 0
         )
 
-        val (ti, ri) = TootInstance.getEx(client, forceAccessToken = accessToken)
-        ti ?: error("can't get server information. ${ri?.error}")
-
+        val ti = TootInstance.getExOrThrow(client, forceAccessToken = accessToken)
+        val parser = TootParser(context, linkHelper = LinkHelper.create(ti))
         return Auth2Result(
             tootInstance = ti,
-            accountJson = accountJson,
             tokenJson = tokenInfo,
-            tootAccount = TootParser(context, linkHelper = LinkHelper.create(ti))
-                .account(accountJson)
-                ?: error("can't parse user information."),
+            accountJson = accountJson,
+            tootAccount = parser.account(accountJson)
+                ?: error("can't parse user information.")
         )
     }
 
@@ -322,26 +321,48 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
         forceUpdateClient = false
     )
 
-    /**
-     * ユーザ作成
-     * - クライアントは登録済みであること
-     */
-
     suspend fun createUser(
         clientInfo: JsonObject,
-        username: String,
-        email: String,
-        password: String,
-        agreement: Boolean,
-        reason: String?,
-    ) = api.createUser(
-        apiHost = apiHost ?: error("createUser: missing apiHost"),
-        clientCredential = clientInfo.string(KEY_CLIENT_CREDENTIAL)
-            ?: error("createUser: missing client credential"),
-        username = username,
-        email = email,
-        password = password,
-        agreement = agreement,
-        reason = reason
-    )
+        params: CreateUserParams,
+    ): Auth2Result {
+        val apiHost = apiHost ?: error("createUser: missing apiHost")
+
+        val tokenJson = api.createUser(
+            apiHost = apiHost,
+            clientCredential = clientInfo.string(KEY_CLIENT_CREDENTIAL)
+                ?: error("createUser: missing client credential"),
+            params = params,
+        )
+
+        val accessToken = tokenJson.string("access_token")
+            ?: error("can't get user access token")
+
+        val ti = TootInstance.getExOrThrow(client, forceAccessToken = accessToken)
+        val parser = TootParser(context, linkHelper = LinkHelper.create(ti))
+
+        val accountJson = try {
+            verifyAccount(
+                accessToken = accessToken,
+                outTokenJson = tokenJson,
+                misskeyVersion = 0,  // Mastodon限定
+            )
+            // メール確認が不要な場合は成功する
+        } catch (ex: Throwable) {
+            // メール確認がまだなら、verifyAccount は失敗する
+            log.e(ex, "createUser: can't verify account.")
+            buildJsonObject {
+                put("id", EntityId.CONFIRMING.toString())
+                put("username", params.username)
+                put("acct", params.username)
+                put("url", "https://$apiHost/@${params.username}")
+            }
+        }
+        return Auth2Result(
+            tootInstance = ti,
+            tokenJson = tokenJson,
+            accountJson = accountJson,
+            tootAccount = parser.account(accountJson)
+                ?: error("can't verify user information."),
+        )
+    }
 }

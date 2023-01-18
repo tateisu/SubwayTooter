@@ -5,11 +5,14 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.wrapWeakReference
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
+
+private val log = LogCategory("ActPostCharCount")
 
 // 最大文字数を取得する
 // 暫定で仮の値を返すことがある
@@ -25,17 +28,17 @@ private fun ActPost.getMaxCharCount(): Int {
             // 同時に実行するタスクは1つまで
             if (jobMaxCharCount?.get()?.isActive != true) {
                 jobMaxCharCount = launchMain {
-                    var newInfo: TootInstance? = null
-                    runApiTask(account, progressStyle = ApiTask.PROGRESS_NONE) { client ->
-                        val (ti, result) = TootInstance.get(client)
-                        newInfo = ti
-                        result
+                    try {
+                        runApiTask2(account, progressStyle = ApiTask.PROGRESS_NONE) {
+                            TootInstance.getOrThrow(it)
+                        }
+                        if (isFinishing || isDestroyed) return@launchMain
+                        updateTextCount()
+                    } catch (ex: Throwable) {
+                        log.w(ex, "getMaxCharCount failed.")
                     }
-                    if (isFinishing || isDestroyed) return@launchMain
-                    if (newInfo != null) updateTextCount()
                 }.wrapWeakReference
             }
-
             // fall thru
         }
 

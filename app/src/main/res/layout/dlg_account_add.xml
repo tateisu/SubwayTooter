@@ -1,68 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
+    android:layout_height="match_parent"
+    android:fadeScrollbars="false"
+    android:scrollbarStyle="outsideOverlay">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        android:text="@string/instance"
-        />
-
-    <AutoCompleteTextView
-        android:id="@+id/etInstance"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:hint="@string/instance_hint"
-        android:imeOptions="actionDone"
-        android:inputType="textUri"
-        />
-
-    <Spinner
-        android:id="@+id/spAction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="12dp"
-        android:id="@+id/tvActionDesc"
-        />
     <LinearLayout
-        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
-
-        <Button
-            android:id="@+id/btnCancel"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
+        android:orientation="vertical">
+        <!-- header -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/cancel"
-            />
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnOk"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvHeader"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:textSize="18sp"
+                tools:text="@string/server_host_name" />
+
+            <ImageButton
+                android:id="@+id/btnCancel"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/btn_bg_transparent_round6dp"
+                android:contentDescription="@string/cancel"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/colorColumnHeaderName" />
+        </LinearLayout>
+
+        <!-- page 1: input server name -->
+        <LinearLayout
+            android:id="@+id/llPageServerHost"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/ok"
-            />
+            android:layout_margin="12dp"
+            android:orientation="vertical">
+
+            <AutoCompleteTextView
+                android:id="@+id/etInstance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/instance_hint"
+                android:imeOptions="actionDone"
+                android:includeFontPadding="false"
+                android:inputType="textUri" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="top"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvError"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center|start"
+                    android:textColor="?attr/colorRegexFilterError"
+                    tools:text="error error" />
+
+                <Button
+                    android:id="@+id/btnNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="@string/next_step" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web"
+                android:gravity="top"
+                android:text="@string/input_server_name_desc"
+                android:textColor="?attr/colorTextHelp" />
+        </LinearLayout>
+        <!-- page 2: select action -->
+        <LinearLayout
+            android:id="@+id/llPageAuthType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvServerHost"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:includeFontPadding="false"
+                    android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    tools:text="mastdon.social" />
+
+                <ImageButton
+                    android:id="@+id/btnPrev"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/previous"
+                    android:src="@drawable/ic_edit"
+                    app:tint="?attr/colorColumnHeaderName" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvServerDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:background="?attr/colorColumnSettingBackground"
+                android:padding="2dp"
+                android:textColor="?attr/colorTextContent"
+                tools:text="error error" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:autoLink="web"
+                android:text="@string/authentication_select_desc"
+                android:textColor="?attr/colorTextHelp" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

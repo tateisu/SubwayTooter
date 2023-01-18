@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import jp.juggler.subwaytooter.action.checkAccessToken2
+import jp.juggler.subwaytooter.action.accessTokenPrompt
 import jp.juggler.subwaytooter.action.timeline
 import jp.juggler.subwaytooter.actmain.*
 import jp.juggler.subwaytooter.actpost.CompletionHelper
@@ -289,7 +289,8 @@ class ActMain : AppCompatActivity(),
 
             ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
                 r.data?.long(ActAccountSetting.EXTRA_DB_ID)
-                    ?.let { checkAccessToken2(it) }
+                    ?.let { SavedAccount.loadAccount(this, it) }
+                    ?.let { accessTokenPrompt(it.apiHost) }
         }
     }
 

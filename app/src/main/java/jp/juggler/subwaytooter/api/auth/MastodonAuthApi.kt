@@ -151,17 +151,13 @@ class MastodonAuthApi(
     suspend fun createUser(
         apiHost: Host,
         clientCredential: String,
-        username: String,
-        email: String,
-        password: String,
-        agreement: Boolean,
-        reason: String?,
+        params: CreateUserParams,
     ) = buildJsonObject {
-        put("username", username)
-        put("email", email)
-        put("password", password)
-        put("agreement", agreement)
-        reason?.notEmpty()?.let { put("reason", reason) }
+        put("username", params.username)
+        put("email", params.email)
+        put("password", params.password)
+        put("agreement", params.agreement)
+        params.reason?.notEmpty()?.let { put("reason", it) }
     }.encodeQuery().toFormRequestBody().toPost()
         .url("https://${apiHost.ascii}/api/v1/accounts")
         .header("Authorization", "Bearer $clientCredential")

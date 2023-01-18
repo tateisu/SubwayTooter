@@ -1186,5 +1186,13 @@
     <string name="acct_customize">Acct customize</string>
     <string name="delete_confirm">delete \"%1$s\" ?</string>
     <string name="color_theme_changed">Default color theme has been updated. This may conflict with your customized color settings. We recommend reviewing the colors section in app settings.</string>
-    <string name="tablet_snap" >Align column edge to screen edge when scrolling (app restart required)</string>
+    <string name="tablet_snap">Align column edge to screen edge when scrolling (app restart required)</string>
+
+    <string name="server_host_name">Server\'s host name</string>
+    <string name="input_server_name_desc">・The host name part in the server\'s URL.\n・without http:// or trailing /path… .\n・Mastodon server list: https://joinmastodon.org/servers</string>
+    <string name="authentication_select">Select authentication method</string>
+    <string name="authentication_select_desc">Select how to access the server from below.</string>
+    <string name="server_host_name_cant_contains_it">host name can\'t contains [%1$s].</string>
+    <string name="next_step">Next step</string>
+    <string name="user_creation_not_supported">[%1$s, %2$s] server type does not support user registration from app.</string>
 </resources>

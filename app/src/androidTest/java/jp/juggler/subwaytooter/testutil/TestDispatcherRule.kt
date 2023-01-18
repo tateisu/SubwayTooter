@@ -15,7 +15,7 @@ import org.junit.runner.Description
  * https://developer.android.com/kotlin/coroutines/test?hl=ja
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class MainDispatcherRule(
+class TestDispatcherRule(
     /**
      * UnconfinedTestDispatcher か StandardTestDispatcher のどちらかを指定する
      */

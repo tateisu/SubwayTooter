@@ -157,8 +157,19 @@ class CustomEmojiLister(
             }
         }
 
-    fun getCachedEmoji(apiHostAscii: String?, shortcode: String): CustomEmoji? =
-        getCached(elapsedTime, apiHostAscii)?.mapShortCode?.get(shortcode)
+    fun getCachedEmoji(apiHostAscii: String?, shortcode: String): CustomEmoji? {
+        val cache = getCached(elapsedTime, apiHostAscii)
+        if (cache == null) {
+            log.w("getCachedEmoji: missing cache for $apiHostAscii")
+            return null
+        }
+        val emoji = cache.mapShortCode.get(shortcode)
+        if (emoji == null) {
+            log.w("getCachedEmoji: missing emoji for $shortcode in $apiHostAscii")
+            return null
+        }
+        return emoji
+    }
 
     private inner class Worker : WorkerBase() {
 
@@ -303,21 +314,14 @@ class CustomEmojiLister(
             if (over <= 0) return
 
             // 古い要素を一時リストに集める
-            val now = elapsedTime
-            val list = ArrayList<CacheItem>(over)
-            for (item in cache.values) {
-                if (now - item.timeUsed > 1000L) list.add(item)
-            }
-
             // 昇順ソート
-            list.sortBy { it.timeUsed }
-
             // 古い物から順に捨てる
-            var removed = 0
-            for (item in list) {
-                cache.remove(item.key)
-                if (++removed >= over) break
-            }
+            val now = elapsedTime
+            cache.entries
+                .filter { now - it.value.timeUsed > 1000L }
+                .sortedBy { it.value.timeUsed }
+                .take(over)
+                .forEach { cache.remove(it.key) }
         }
     }
 }

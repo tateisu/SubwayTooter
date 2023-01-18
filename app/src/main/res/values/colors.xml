@@ -23,7 +23,7 @@
     <color name="Light_colorPostFormBackground">#eee</color>
     <color name="Light_colorActionBarBg">#ccc</color>
     <color name="Light_colorActionBarBgStacked">#ddd</color>
-    <color name="Light_colorStatusBarBg">#303030</color> <!-- ステータスバー背景 -->
+    <color name="Light_colorStatusBarBg">#707070</color> <!-- ステータスバー背景 -->
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
     <color name="Light_colorRefreshErrorBg">#D222</color>
     <color name="Light_colorRegexFilterError">#f00</color>
@@ -41,6 +41,8 @@
     <color name="Light_colorTextContent">#ff333333</color>
     <color name="Light_colorTextDivider">#80000000</color>
     <color name="Light_colorTextHelp">#5a5a5a</color>
+    <color name="Light_colorTextHint">#40000000</color>
+
     <color name="Light_colorTextTimeSmall">#ff666666</color>
     <color name="Light_colorThumbnailBackground">#20000000</color>
     <color name="Light_colotListItemDrag">#AACCCCCC</color>
@@ -88,6 +90,8 @@
     <color name="Dark_colorTextColumnListItem">#66FFFFFF</color>
     <color name="Dark_colorTextContent">#dddddd</color>
     <color name="Dark_colorTextHelp">#ccFFFFFF</color>
+    <color name="Dark_colorTextHint">#40ffffff</color>
+
     <color name="Dark_colorTextTimeSmall">#BBBBBB</color>
     <color name="Dark_colorThumbnailBackground">#20ffffff</color>
     <color name="Dark_colorAppCompatAccent">#0080ff</color>
@@ -134,7 +138,9 @@
     <color name="Mastodon_colorTextColumnHeaderPageNumber">#e4e4e4</color>
     <color name="Mastodon_colorTextColumnListItem">#66FFFFFF</color>
     <color name="Mastodon_colorTextContent">#dddddd</color>
-    <color name="Mastodon_colorTextHelp">#ccFFFFFF</color>
+    <color name="Mastodon_colorTextHelp">#bbFFFFFF</color>
+    <color name="Mastodon_colorTextHint">#40FFFFFF</color>
+
     <color name="Mastodon_colorTextTimeSmall">#BBBBBB</color>
     <color name="Mastodon_colorThumbnailBackground">#20ffffff</color>
     <color name="Mastodon_colorAppCompatAccent">#0080ff</color>
@@ -146,4 +152,8 @@
 
     <!-- 通知のアクセント色 -->
     <color name="colorOsNotificationAccent">#B3E1FF</color>
+
+    <!-- 白テーマのナビゲーションバーは白ではない -->
+    <color name="colorNavigationBarWorkaround">#707070</color>
+
 </resources>

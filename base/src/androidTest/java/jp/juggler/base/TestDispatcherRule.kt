@@ -18,7 +18,7 @@ import org.junit.runner.Description
  * https://stackoverflow.com/questions/69423060/viewmodel-ui-testing-with-junit-5
  */
 @ExperimentalCoroutinesApi
-class AppTestDispatcherRule(
+class TestDispatcherRule(
     val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
 ) : TestWatcher() {
 

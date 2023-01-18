@@ -430,34 +430,20 @@ class TootApiClient(
         forceUpdateClient: Boolean = false,
     ): Uri {
         val (ti, ri) = TootInstance.get(this)
+        // 情報が取れなくても続ける
         log.i("authentication1: instance info version=${ti?.version} misskeyVersion=${ti?.misskeyVersionMajor} responseCode=${ri?.response?.code}")
-        return when (val auth = AuthBase.findAuth(this, ti, ri)) {
+        return when (val auth = AuthBase.findAuthForAuthStep1(this, ti, ri)) {
             null -> error("can't get server information. ${ri?.error}")
             else -> auth.authStep1(ti, forceUpdateClient)
         }
     }
 
-    suspend fun getUserCredential(
+    suspend fun verifyAccount(
         accessToken: String,
         outTokenInfo: JsonObject?,
         misskeyVersion: Int = 0,
-    ) = AuthBase.findAuthForUserCredentian(this, misskeyVersion)
+    ) = AuthBase.findAuthForVerifyAccount(this, misskeyVersion)
         .verifyAccount(accessToken, outTokenInfo, misskeyVersion)
-
-    /**
-     * サーバにクライアントアプリを登録する
-     * - Mastodonのユーザ作成で呼ばれる
-     *
-     * @return clientInfo
-     */
-    suspend fun prepareClient(): JsonObject {
-        val (ti, ri) = TootInstance.get(this)
-        ti ?: error("${ri?.error}")
-        return when (val auth = AuthBase.findAuthForCreateUser(this, ti)) {
-            null -> error("user creation not supported for server type [${ti.instanceType}]")
-            else -> auth.prepareClient(ti)
-        }
-    }
 
     ////////////////////////////////////////////////////////////////////////
     // JSONデータ以外を扱うリクエスト

@@ -11,7 +11,7 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.testutil.MainDispatcherRule
+import jp.juggler.subwaytooter.testutil.TestDispatcherRule
 import jp.juggler.subwaytooter.testutil.assertThrowsSuspend
 import jp.juggler.subwaytooter.util.SimpleHttpClient
 import jp.juggler.util.data.*
@@ -36,7 +36,7 @@ class TestTootApiClient {
     // テスト毎に書くと複数テストで衝突するので、MainDispatcherRuleに任せる
     // プロパティは記述順に初期化されることに注意
     @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val mainDispatcherRule = TestDispatcherRule()
 
     companion object {
         private val log = LogCategory("TestTootApiClient")
@@ -1069,7 +1069,7 @@ class TestTootApiClient {
         val (ti, ri) = TootInstance.get(client)
         ti ?: error("can't get server information. ${ri?.error}")
 
-        val auth = AuthBase.findAuth(client, ti, ri) as MastodonAuth
+        val auth = AuthBase.findAuthForAuthStep1(client, ti, ri) as MastodonAuth
         val authUri = auth.authStep1(ti, forceUpdateClient = false)
         println("authUri=$authUri")
 
@@ -1189,8 +1189,7 @@ class TestTootApiClient {
     }
 
     @Test
-    fun testGetInstanceInformation() =
-        runTest {
+    fun testGetInstanceInformation() = runTest {
             val callback = ProgressRecordTootApiCallback()
             val client = TootApiClient(
                 appContext,

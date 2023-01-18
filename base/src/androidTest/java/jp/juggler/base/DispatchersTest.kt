@@ -52,7 +52,7 @@ class DispatchersTest {
 
     // プロパティの定義順序に注意
     @get:Rule
-    val dispatcheRule = AppTestDispatcherRule()
+    val dispatcheRule = TestDispatcherRule()
 
     // リポジトリのスケジューラを共有する
     private val repository = Repository(dispatcheRule.testDispatcher)

@@ -3,7 +3,8 @@ package jp.juggler.subwaytooter.action
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.api.runApiTask2
+import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.matchHost
@@ -24,14 +25,12 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
 
     try {
         suspend fun AppCompatActivity.getInstanceInfo(): TootInstance? {
-            var resultTi: TootInstance? = null
-            val result = runApiTask(host) { client ->
-                val (instance, instanceResult) = TootInstance.get(client)
-                resultTi = instance
-                instanceResult
+            return try {
+                runApiTask2(host) { TootInstance.getOrThrow(it) }
+            } catch (ex: Throwable) {
+                showApiError(ex)
+                null
             }
-            result?.error?.let { showToast(true, it) }
-            return resultTi
         }
 
         val acct = Acct.parse("?", host)

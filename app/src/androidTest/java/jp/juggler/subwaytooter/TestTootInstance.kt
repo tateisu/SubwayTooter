@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.testutil.MainDispatcherRule
+import jp.juggler.subwaytooter.testutil.TestDispatcherRule
 import jp.juggler.subwaytooter.testutil.MockInterceptor
 import jp.juggler.subwaytooter.util.SimpleHttpClientImpl
 import jp.juggler.util.log.LogCategory
@@ -30,7 +30,7 @@ class TestTootInstance {
     // テスト毎に書くと複数テストで衝突するので、MainDispatcherRuleに任せる
     // プロパティは記述順に初期化されることに注意
     @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val mainDispatcherRule = TestDispatcherRule()
 
     private val client by lazy {
         val mockInterceptor = MockInterceptor(

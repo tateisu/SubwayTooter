@@ -109,8 +109,7 @@ class MisskeyAuth13(override val client: TootApiClient) : AuthBase() {
             error("auth session id not match.")
         }
 
-        val (ti, r2) = TootInstance.get(client)
-        ti ?: error("missing server information. ${r2?.error}")
+        val ti = TootInstance.getOrThrow(client)
 
         val misskeyVersion = ti.misskeyVersionMajor
 
@@ -136,13 +135,13 @@ class MisskeyAuth13(override val client: TootApiClient) : AuthBase() {
 
         return Auth2Result(
             tootInstance = ti,
-            accountJson = accountJson,
             tokenJson = JsonObject().apply {
                 user.id.putTo(this, KEY_USER_ID)
                 put(KEY_MISSKEY_VERSION, misskeyVersion)
                 put(KEY_AUTH_VERSION, AUTH_VERSION)
                 put(KEY_API_KEY_MISSKEY, apiKey)
             },
+            accountJson = accountJson,
             tootAccount = user,
         )
     }

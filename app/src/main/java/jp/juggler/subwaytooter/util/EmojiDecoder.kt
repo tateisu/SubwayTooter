@@ -407,6 +407,7 @@ object EmojiDecoder {
                         )
 
                         when {
+                            // 絵文字プロクシを利用できない
                             apiHostAscii == null -> {
                                 log.w("decodeEmoji Misskey13 missing apiHostAscii")
                             }
@@ -434,26 +435,20 @@ object EmojiDecoder {
 
                 // 通常の絵文字
                 when {
-                    reHohoemi.matcher(name).find() -> builder.addImageSpan(
-                        part,
-                        R.drawable.emoji_hohoemi
-                    )
-                    reNicoru.matcher(name).find() -> builder.addImageSpan(
-                        part,
-                        R.drawable.emoji_nicoru
-                    )
+                    reHohoemi.matcher(name).find() ->
+                        builder.addImageSpan(part, R.drawable.emoji_hohoemi)
+                    reNicoru.matcher(name).find() ->
+                        builder.addImageSpan(part, R.drawable.emoji_nicoru)
                     else -> {
                         // EmojiOneのショートコード
-                        val emoji = if (useEmojioneShortcode) {
-                            EmojiMap.shortNameMap[name.lowercase().replace('-', '_')]
-                        } else {
-                            null
+                        val emoji = when {
+                            useEmojioneShortcode ->
+                                EmojiMap.shortNameMap[name.lowercase().replace('-', '_')]
+                            else -> null
                         }
-
-                        if (emoji == null) {
-                            builder.addUnicodeString(part)
-                        } else {
-                            builder.addImageSpan(part, emoji)
+                        when (emoji) {
+                            null -> builder.addUnicodeString(part)
+                            else -> builder.addImageSpan(part, emoji)
                         }
                     }
                 }
@@ -481,19 +476,13 @@ object EmojiDecoder {
             }
 
             override fun onShortCode(prevCodePoint: Int, part: String, name: String) {
-
                 // カスタム絵文字にマッチするなら変換しない
-                val emojiCustom = emojiMapCustom?.get(name)
-                if (emojiCustom != null) {
-                    sb.append(part)
-                    return
-                }
-
                 // カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
-                val emoji = if (decodeEmojioneShortcode) {
-                    EmojiMap.shortNameMap[name.lowercase().replace('-', '_')]
-                } else {
-                    null
+                val emoji = when {
+                    decodeEmojioneShortcode &&
+                            emojiMapCustom?.get(name) == null ->
+                        EmojiMap.shortNameMap[name.lowercase().replace('-', '_')]
+                    else -> null
                 }
                 sb.append(emoji?.unifiedCode ?: part)
             }

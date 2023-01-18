@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.auth.CreateUserParams
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -22,18 +23,16 @@ import jp.juggler.util.ui.*
 class DlgCreateAccount(
     val activity: AppCompatActivity,
     val apiHost: Host,
-    val onClickOk: (
-        dialog: Dialog,
-        username: String,
-        email: String,
-        password: String,
-        agreement: Boolean,
-        reason: String?,
-    ) -> Unit,
+    val onClickOk: (dialog: Dialog, params: CreateUserParams) -> Unit,
 ) : View.OnClickListener {
 
     companion object {
         // private val log = LogCategory("DlgCreateAccount")
+
+        fun AppCompatActivity.showUserCreateDialog(
+            apiHost: Host,
+            onClickOk: (dialog: Dialog, params: CreateUserParams) -> Unit,
+        ) = DlgCreateAccount(this, apiHost, onClickOk).show()
     }
 
     @SuppressLint("InflateParams")
@@ -123,14 +122,16 @@ class DlgCreateAccount(
 
                     else -> onClickOk(
                         dialog,
-                        username,
-                        email,
-                        password,
-                        cbAgreement.isChecked,
-                        when (etReason.visibility) {
-                            View.VISIBLE -> etReason.text.toString().trim()
-                            else -> null
-                        }
+                        CreateUserParams(
+                            username = username,
+                            email = email,
+                            password = password,
+                            agreement = cbAgreement.isChecked,
+                            reason = when (etReason.visibility) {
+                                View.VISIBLE -> etReason.text.toString().trim()
+                                else -> null
+                            },
+                        )
                     )
                 }
             }

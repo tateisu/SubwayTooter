@@ -38,44 +38,34 @@ abstract class AuthBase {
             ).firstNotNullOfOrNull { it.notBlank() }
                 ?: DEFAULT_CLIENT_NAME
 
-        fun findAuth(client: TootApiClient, ti: TootInstance?, ri: TootApiResult?): AuthBase? =
+        fun findAuthForVerifyAccount(client: TootApiClient, misskeyVersionMajor: Int) =
             when {
-                // インスタンス情報を取得できない
-                ti == null -> when (ri?.response?.code) {
+                misskeyVersionMajor >= 13 -> MisskeyAuth13(client)
+                misskeyVersionMajor > 0 -> MisskeyAuth10(client)
+                else -> MastodonAuth(client)
+            }
+
+        fun findAuthForAuthStep1(client: TootApiClient, ti: TootInstance?, ri: TootApiResult?) =
+            ti?.let { findAuthForVerifyAccount(client, ti.misskeyVersionMajor) }
+                ?: when (ri?.response?.code) {
+                    // インスタンス情報を取得できないが、マストドンだと分かる場合がある
                     // https://github.com/tateisu/SubwayTooter/issues/155
                     // Mastodon's WHITELIST_MODE
                     401 -> MastodonAuth(client)
                     else -> null
                 }
-                ti.isMisskey -> when {
-                    ti.versionGE(TootInstance.MISSKEY_VERSION_13) ->
-                        MisskeyAuth13(client)
-                    else ->
-                        MisskeyAuth10(client)
-                }
-                else -> MastodonAuth(client)
-            }
 
-        fun findAuthForAuthCallback(client: TootApiClient, callbackUrl: String): AuthBase =
+        fun findAuthForAuthCallback(client: TootApiClient, callbackUrl: String) =
             when {
                 MisskeyAuth10.isCallbackUrl(callbackUrl) -> MisskeyAuth10(client)
                 MisskeyAuth13.isCallbackUrl(callbackUrl) -> MisskeyAuth13(client)
                 else -> MastodonAuth(client)
             }
 
-        fun findAuthForUserCredentian(client: TootApiClient, misskeyVersion: Int) =
-            when {
-                misskeyVersion >= 13 -> MisskeyAuth13(client)
-                misskeyVersion > 0 -> MisskeyAuth10(client)
-                else -> MastodonAuth(client)
-            }
-
-        fun findAuthForCreateUser(client: TootApiClient, ti: TootInstance) =
-            when (ti.instanceType) {
-                InstanceType.Misskey -> null
-                InstanceType.Pleroma -> null
-                InstanceType.Pixelfed -> null
-                else -> MastodonAuth(client)
+        fun findAuthForCreateUser(client: TootApiClient, ti: TootInstance?) =
+            when (ti?.instanceType) {
+                InstanceType.Mastodon -> MastodonAuth(client)
+                else -> null
             }
     }
 
@@ -84,7 +74,6 @@ abstract class AuthBase {
     protected val apiHost get() = client.apiHost
     protected val account get() = client.account
     protected val context get() = client.context
-
 
     /**
      * クライアントを登録してブラウザで開くURLを生成する

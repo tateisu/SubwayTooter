@@ -901,7 +901,7 @@ class SavedAccount(
 
         // ユーザ情報を取得してみる。承認済みなら読めるはず
         // 読めなければ例外が出る
-        val userJson = client.getUserCredential(
+        val userJson = client.verifyAccount(
             accessToken = accessToken,
             outTokenInfo = null,
             misskeyVersion = 0, // Mastodon only

@@ -480,7 +480,32 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         fun getCached(apiHost: Host) = apiHost.getCacheEntry().cacheData
         fun getCached(a: SavedAccount?) = a?.apiHost?.getCacheEntry()?.cacheData
 
-        suspend fun get(client: TootApiClient): Pair<TootInstance?, TootApiResult?> = getEx(client)
+        suspend fun get(client: TootApiClient): Pair<TootInstance?, TootApiResult?> =
+            getEx(client)
+
+        suspend fun getOrThrow(client: TootApiClient): TootInstance {
+            val (ti, ri) = get(client)
+            return ti ?: error("can't get server information. ${ri?.error}")
+        }
+
+        suspend fun getExOrThrow(
+            client: TootApiClient,
+            hostArg: Host? = null,
+            account: SavedAccount? = null,
+            allowPixelfed: Boolean = false,
+            forceUpdate: Boolean = false,
+            forceAccessToken: String? = null, // マストドンのwhitelist modeでアカウント追加時に必要
+        ): TootInstance {
+            val (ti, ri) = getEx(
+                client = client,
+                hostArg = hostArg,
+                account = account,
+                allowPixelfed = allowPixelfed,
+                forceUpdate = forceUpdate,
+                forceAccessToken = forceAccessToken,
+            )
+            return ti ?: error("can't get server information. ${ri?.error}")
+        }
 
         suspend fun getEx(
             client: TootApiClient,

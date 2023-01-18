@@ -1181,4 +1181,13 @@
     <string name="color_theme_changed">色テーマのデフォルトが変わりました。カスタマイズ済の色設定と競合する場合があります。 アプリ設定の色セクションを確認することをお勧めします。</string>
     <string name="tablet_snap">スクロール時にカラム端と画面端を揃える （アプリ再起動が必要)</string>
 
+    <string name="server_host_name">サーバのホスト名</string>
+    <string name="input_server_name_desc">\n\n・サーバのURLのホスト名部分。\n・https:// や/以降のパスを含まない。\n・サーバ一覧 https://joinmastodon.org/servers</string>
+    <string name="authentication_select">認証方法の選択</string>
+    <string name="authentication_select_desc">サーバにアクセスする方法を以下から選択してください。</string>
+    <string name="server_host_name_cant_contains_it">ホスト名に使えない文字が含まれています。[%1$s]</string>
+    <string name="next_step">次へ</string>
+    <string name="user_creation_not_supported">[%1$s, %2$s] サーバ種別はアプリからのユーザ登録に対応していません。</string>
+
 </resources>
+

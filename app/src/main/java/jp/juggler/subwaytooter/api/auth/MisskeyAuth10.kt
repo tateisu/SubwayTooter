@@ -201,8 +201,7 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
             } ?: error("missing account db_id=$dbId")
         }
 
-        val (ti, r2) = TootInstance.get(client)
-        ti ?: error("${r2?.error} ($apiHost)")
+        val ti = TootInstance.getOrThrow(client)
 
         val parser = TootParser(
             context,
@@ -230,14 +229,10 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
         val accountJson = tokenInfo["user"].cast<JsonObject>()
             ?: error("missing user in the userkey response.")
 
-        val tootAccount = parser.account(accountJson)
-            ?: error("can't parse user information")
-
         tokenInfo.remove("user")
 
         return Auth2Result(
             tootInstance = ti,
-            accountJson = accountJson,
             tokenJson = tokenInfo.also {
                 EntityId.mayNull(accountJson.string("id"))?.putTo(it, KEY_USER_ID)
                 it[KEY_MISSKEY_VERSION] = ti.misskeyVersionMajor
@@ -245,7 +240,9 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
                 val apiKey = "$accessToken$appSecret".encodeUTF8().digestSHA256().encodeHexLower()
                 it[KEY_API_KEY_MISSKEY] = apiKey
             },
-            tootAccount = tootAccount,
+            accountJson = accountJson,
+            tootAccount = parser.account(accountJson)
+                ?: error("can't parse user information"),
         )
     }
 

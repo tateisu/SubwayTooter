@@ -7,13 +7,13 @@ import jp.juggler.subwaytooter.pref.impl.IntPref
 object PrefI {
     // int
 
-    val ipBackButtonAction = IntPref("back_button_action", 0)
-
     @Suppress("unused")
     const val BACK_ASK_ALWAYS = 0
     const val BACK_CLOSE_COLUMN = 1
     const val BACK_OPEN_COLUMN_LIST = 2
     const val BACK_EXIT_APP = 3
+
+    val ipBackButtonAction = IntPref("back_button_action", BACK_CLOSE_COLUMN)
 
     val ipUiTheme = IntPref("ui_theme", 2, noRemove = true)
 

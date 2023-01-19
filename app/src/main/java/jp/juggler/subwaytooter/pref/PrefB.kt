@@ -19,7 +19,7 @@ object PrefB {
 
     val bpDontConfirmBeforeCloseColumn = BooleanPref(
         "DontConfirmBeforeCloseColumn",
-        false
+        true
     )
 
     val bpDontCropMediaThumb = BooleanPref(
@@ -64,7 +64,7 @@ object PrefB {
 
     val bpExitAppWhenCloseProtectedColumn = BooleanPref(
         "ExitAppWhenCloseProtectedColumn",
-        false
+        true
     )
 
     val bpMentionFullAcct = BooleanPref(

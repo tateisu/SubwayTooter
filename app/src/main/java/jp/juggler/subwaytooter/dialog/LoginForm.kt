@@ -243,14 +243,17 @@ class LoginForm(
                         }
                         else -> {
                             textColor = attrColor(R.attr.colorTextContent)
-                            text = tootInstance.short_description.notBlank()
-                                ?: DecodeOptions(
-                                    applicationContext,
-                                    LinkHelper.create(tootInstance),
-                                    forceHtml = true,
-                                    short = true,
-                                ).decodeHTML(tootInstance.description)
-                                    .replace("""\n[\s\n]+""".toRegex(),"\n")
+                            text = (tootInstance.short_description.notBlank()
+                                ?: tootInstance.description.notBlank()
+                                ?: "(empty server description)"
+                                    ).let {
+                                    DecodeOptions(
+                                        applicationContext,
+                                        LinkHelper.create(tootInstance),
+                                        forceHtml = true,
+                                        short = true,
+                                    ).decodeHTML(it)
+                                }.replace("""\n[\s\n]+""".toRegex(), "\n")
                         }
                     }
                 }

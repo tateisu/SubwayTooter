@@ -163,29 +163,47 @@ fun ActPost.onPostAttachmentCompleteImpl(pa: PostAttachment) {
 
         PostAttachment.Status.Ok -> {
             when (val a = pa.attachment) {
-                null -> log.e("onPostAttachmentComplete: upload complete, but missing attachment entity.")
+                null -> log.w("onPostAttachmentComplete: upload complete, but missing attachment entity.")
                 else -> {
                     // アップロード完了
                     log.i("onPostAttachmentComplete: upload complete.")
 
                     // 投稿欄の末尾に追記する
-                    if (PrefB.bpAppendAttachmentUrlToContent(pref)) {
-                        val selStart = views.etContent.selectionStart
-                        val selEnd = views.etContent.selectionEnd
-                        val e = views.etContent.editableText
-                        val len = e.length
-                        val lastChar = if (len <= 0) ' ' else e[len - 1]
-                        if (!CharacterGroup.isWhitespace(lastChar.code)) {
-                            e.append(" ").append(a.text_url)
-                        } else {
-                            e.append(a.text_url)
-                        }
-                        views.etContent.setSelection(selStart, selEnd)
+                    if (PrefB.bpAppendAttachmentUrlToContent.invoke(pref)) {
+                        appendArrachmentUrl(a)
                     }
                 }
             }
             showMediaAttachment()
         }
+    }
+}
+
+/**
+ * 添付メディアのURLを編集中テキストに挿入する
+ */
+private fun ActPost.appendArrachmentUrl(a: TootAttachment) {
+    // text_url is not provided on recent mastodon.
+    val textUrl = a.text_url ?: a.url
+    if (textUrl == null) {
+        log.w("missing attachment.textUrl")
+        return
+    }
+    val e = views.etContent.editableText
+    if (e == null) {
+        // 編注中テキストにアクセスできないなら先頭に空白とURLを置いて、先頭を選択する
+        val appendText = " $textUrl"
+        views.etContent.setText(appendText)
+        views.etContent.setSelection(0, 0)
+    } else {
+        // 末尾に空白とURLを置く。選択位置は変わらない。
+        val selStart = views.etContent.selectionStart
+        val selEnd = views.etContent.selectionEnd
+        if (e.lastOrNull()?.let { CharacterGroup.isWhitespace(it.code) } != true) {
+            e.append(" ")
+        }
+        e.append(textUrl)
+        views.etContent.setSelection(selStart, selEnd)
     }
 }
 

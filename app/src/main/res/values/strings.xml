@@ -1195,4 +1195,5 @@
     <string name="server_host_name_cant_contains_it">host name can\'t contains [%1$s].</string>
     <string name="next_step">Next step</string>
     <string name="user_creation_not_supported">[%1$s, %2$s] server type does not support user registration from app.</string>
+    <string name="confirm_remove_column_mark_as_dont_close">Remove column that mark as \"don\'t close\" ?</string>
 </resources>

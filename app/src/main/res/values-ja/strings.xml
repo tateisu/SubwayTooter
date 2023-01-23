@@ -1188,6 +1188,7 @@
     <string name="server_host_name_cant_contains_it">ホスト名に使えない文字が含まれています。[%1$s]</string>
     <string name="next_step">次へ</string>
     <string name="user_creation_not_supported">[%1$s, %2$s] サーバ種別はアプリからのユーザ登録に対応していません。</string>
+    <string name="confirm_remove_column_mark_as_dont_close">保護されたカラムですが、削除しますか?</string>
 
 </resources>
 

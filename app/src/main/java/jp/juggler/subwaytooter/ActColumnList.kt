@@ -13,11 +13,14 @@ import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.ActColumnListBinding
 import jp.juggler.subwaytooter.databinding.LvColumnListBinding
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notZero
 import jp.juggler.util.data.toJsonArray
@@ -113,13 +116,22 @@ class ActColumnList : AppCompatActivity() {
             ) {
                 // 左にスワイプした(右端に青が見えた) なら要素を削除する
                 if (swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-                    val adapterItem = (item.tag as MyViewHolder).lastItem!!
-                    if (adapterItem.json.optBoolean(ColumnEncoder.KEY_DONT_CLOSE, false)) {
-                        showToast(false, R.string.column_has_dont_close_option)
-                        views.listView.resetSwipedViews(null)
-                        return
+                    val adapterItem = (item.tag as MyViewHolder).lastItem ?:return
+                    launchMain {
+                        try{
+                            if (adapterItem.json.optBoolean(ColumnEncoder.KEY_DONT_CLOSE, false)) {
+                                confirm(R.string.confirm_remove_column_mark_as_dont_close)
+                            }
+                            listAdapter.removeItem(listAdapter.getPositionForItem(adapterItem))
+                        }catch(ex:Throwable){
+                            showApiError(ex)
+                        }finally {
+                            try {
+                                views.listView.resetSwipedViews(null)
+                            }catch(_:Throwable) {
+                            }
+                        }
                     }
-                    listAdapter.removeItem(listAdapter.getPositionForItem(adapterItem))
                 }
             }
         })

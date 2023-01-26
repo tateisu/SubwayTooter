@@ -42,7 +42,7 @@ fun ActMain.tagDialog(
     pos: Int,
     // タグのURL
     // URLのホスト部分は普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
-    url: String,
+    url: String?,
     // タグのHost。
     // 普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
     host: Host,
@@ -166,7 +166,7 @@ fun ActMain.tagTimelineFromAccount(
     pos: Int,
     // タグのURL
     // URLのホスト部分は普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
-    url: String,
+    url: String?,
     // タグのHost。
     // 普通はaccessInfoと同じだが、検索などでバラバラになる場合がある
     host: Host,
@@ -209,8 +209,10 @@ fun ActMain.tagTimelineFromAccount(
     }
 
     // ブラウザで表示する
-    dialog.addAction(getString(R.string.open_web_on_host, host)) {
-        openCustomTab(url)
+    if (!url.isNullOrBlank()) {
+        dialog.addAction(getString(R.string.open_web_on_host, host)) {
+            openCustomTab(url)
+        }
     }
 
     // 同タンスのアカウントがない場合は疑似アカウントを作成して開く

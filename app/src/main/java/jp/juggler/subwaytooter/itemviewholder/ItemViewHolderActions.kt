@@ -296,7 +296,7 @@ private fun ItemViewHolder.clickTag(pos: Int, item: TimelineItem?) {
                     tagDialog(
                         accessInfo,
                         pos,
-                        item.url!!,
+                        item.url,
                         accessInfo.apiHost,
                         item.name,
                         tagInfo = item,

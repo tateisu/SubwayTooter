@@ -28,11 +28,12 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
-
     packagingOptions {
-        // https://github.com/Kotlin/kotlinx.coroutines/issues/1064
-        pickFirst("META-INF/atomicfu.kotlin_module")
+        resources {
+            pickFirsts += ['META-INF/atomicfu.kotlin_module']
+        }
     }
+
 
     kotlinOptions {
         jvmTarget = jvm_target
@@ -44,6 +45,7 @@ android {
 //                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
+    namespace 'jp.juggler.apng.sample'
 }
 
 dependencies {

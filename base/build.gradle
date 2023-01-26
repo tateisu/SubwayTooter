@@ -39,7 +39,12 @@ android {
         jvmTarget = "1.8"
     }
     packagingOptions {
-        exclude("META-INF/LICENSE*")
+        jniLibs {
+            excludes += ['META-INF/LICENSE*']
+        }
+        resources {
+            excludes += ['META-INF/LICENSE*']
+        }
     }
 }
 
@@ -92,7 +97,7 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
-    api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
+    api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
     api "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"
 
     // Koin main features for Android

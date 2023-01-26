@@ -93,20 +93,20 @@ android {
     }
 
     packagingOptions {
-        // https://github.com/Kotlin/kotlinx.coroutines/issues/1064
-        pickFirst("META-INF/atomicfu.kotlin_module")
         resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}', 'META-INF/DEPENDENCIES']
+            // https://github.com/Kotlin/kotlinx.coroutines/issues/1064
+            pickFirsts += ['META-INF/atomicfu.kotlin_module']
         }
-        exclude 'META-INF/DEPENDENCIES'
     }
 
     useLibrary 'android.test.base'
     useLibrary 'android.test.mock'
-
-    lintOptions {
+    lint {
         warning 'DuplicatePlatformClasses'
     }
+    namespace 'jp.juggler.subwaytooter'
+
 }
 
 static def gitBranch() {

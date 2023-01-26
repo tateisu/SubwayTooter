@@ -10,6 +10,8 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    namespace 'jp.juggler.apng'
+
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version

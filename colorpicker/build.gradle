@@ -19,9 +19,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         coreLibraryDesugaringEnabled true
     }
-    lintOptions {
-        abortOnError false
-    }
 
     kotlinOptions {
         jvmTarget = jvm_target
@@ -33,6 +30,10 @@ android {
                 //"-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
+    lint {
+        abortOnError false
+    }
+    namespace 'com.jrummyapps.android.colorpicker'
 }
 
 dependencies {

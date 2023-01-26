@@ -81,7 +81,7 @@ open class TootApiResult(
     }
 
     // return result.setError(...) と書きたい
-    fun setError(error: String) = also{ it.error = error}
+    fun setError(error: String) = also { it.error = error }
 
     private fun parseLinkHeader(response: Response?, array: JsonArray) {
         response ?: return
@@ -92,17 +92,17 @@ open class TootApiResult(
         // https://mastodon.juggler.jp/@tateisu/109756228563804507
         // リンクヘッダが複数ある場合がある
         val linkHeaders = response.headers("Link")
-        if( linkHeaders.isEmpty()){
+        if (linkHeaders.isEmpty()) {
             log.d("missing Link header")
-        }else{
-            for( sv in linkHeaders){
+        } else {
+            for (sv in linkHeaders) {
                 // Link:  <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&max_id=405228>; rel="next",
                 //        <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&since_id=436946>; rel="prev"
                 val m = reLinkURL.matcher(sv)
                 while (m.find()) {
                     val url = m.groupEx(1)
                     val rel = m.groupEx(2)
-                    //	warning.d("Link %s,%s",rel,url);
+                    log.d("Link: $rel $url")
                     when (rel) {
                         "next" -> linkOlder = url
                         "prev" -> linkNewer = url

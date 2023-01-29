@@ -49,6 +49,7 @@ import kotlinx.coroutines.yield
 import okhttp3.Request
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
@@ -675,13 +676,49 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             download_history_list.addLast(DownloadHistory(now, url))
         }
 
-        val fileName = (
-                url.mayUri()?.pathSegments?.findLast { !it.isNullOrBlank() }
-                    ?: url
-                        .replaceFirst("https?://".asciiRegex(), "")
-                        .replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
-                )
-            .take(20)
+        /**
+         * Linuxはフォルダ中のファイルの名前の上限が255バイトと決まっている。
+         * その上限に収まるように文字を切りたいが、それはUTF-8の区切りを考慮する必要がある。
+         */
+        fun shortenName(src: String, limitBytes: Int): String {
+            val bytes = src.encodeUTF8()
+            if (bytes.size <= limitBytes) return src
+            // 制限バイト数の終端の一つ先
+            var pos = limitBytes
+            while (pos >= 0) {
+                if (bytes[pos].toInt().and(0x80) == 0) {
+                    // 現在位置がUTF-8の後続ではないなら、その手前までを返す
+                    return String(bytes, 0, pos, StandardCharsets.UTF_8)
+                }
+                // 現在位置はUTF-8の文字の2バイト目以降なので、この手前で切ると文字が壊れる
+                --pos
+            }
+            // UTF-8表現がおかしい
+            return "media"
+        }
+
+        var fileName = url.mayUri()?.pathSegments?.findLast { !it.isNullOrBlank() }
+            ?: url.replaceFirst("https?://".asciiRegex(), "")
+
+        // Windowsでファイル名に使えない文字を避ける
+        fileName = """[\\/|"<>?*:-]+""".toRegex().replace(fileName, "-")
+
+        // 末尾から20文字以内にある最初のドット
+        val extDotPos = fileName.indexOf('.', startIndex = max(0, fileName.length - 20))
+        val fileNameMaxBytes = 255
+        fileName = if (extDotPos == -1) {
+            // 拡張子なし
+            shortenName(fileName, fileNameMaxBytes)
+        } else {
+            // 拡張子の手前だけを短縮する
+            val extPart = fileName.substring(extDotPos)
+            val extPartBytes = extPart.encodeUTF8().size
+            val namePart = shortenName(
+                fileName.substring(0, extDotPos),
+                fileNameMaxBytes - extPartBytes
+            )
+            "$namePart$extPart"
+        }
 
         val request = DownloadManager.Request(url.toUri())
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)

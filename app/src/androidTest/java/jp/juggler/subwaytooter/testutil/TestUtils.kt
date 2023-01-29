@@ -55,8 +55,8 @@ suspend fun <T : Throwable?> assertThrowsSuspend(
                 expected += "@" + Integer.toHexString(System.identityHashCode(expectedThrowable))
                 actual += "@" + Integer.toHexString(System.identityHashCode(actualThrowable))
             }
-            val mismatchMessage = (buildPrefix(message)
-                    + format("unexpected exception type thrown;", expected, actual))
+            val mismatchMessage = (buildPrefix(message) +
+                    format("unexpected exception type thrown;", expected, actual))
 
             // The AssertionError(String, Throwable) ctor is only available on JDK7.
             val assertionError = AssertionError(mismatchMessage)

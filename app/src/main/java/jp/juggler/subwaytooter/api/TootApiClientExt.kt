@@ -163,7 +163,8 @@ class ResponseBeforeRead(
                     throw SendException(
                         response = response,
                         request = request,
-                        message = parseErrorResponse(ex.withCaption("readString failed."))
+                        message = parseErrorResponse(ex.withCaption("readString failed.")),
+                        cause = ex,
                     )
                 }
             }
@@ -219,7 +220,8 @@ class ResponseBeforeRead(
                     throw SendException(
                         response = response,
                         request = request,
-                        message = parseErrorResponse(ex.withCaption("readString failed."))
+                        message = parseErrorResponse(ex.withCaption("readString failed.")),
+                        cause = ex,
                     )
                 }
             }
@@ -304,7 +306,7 @@ suspend fun ResponseWith<String?>.stringToJsonObject(): JsonObject =
                 else -> throw SendException(
                     response = response,
                     request = response.request,
-                    message = parseErrorResponse("not a JSON object.")
+                    message = parseErrorResponse("not a JSON object."),
                 )
             }
         }
@@ -317,6 +319,7 @@ suspend fun ResponseWith<String?>.stringToJsonObject(): JsonObject =
                     response = response,
                     request = response.request,
                     message = ex.withCaption("readJsonObject failed. ($errorSuffix)"),
+                    cause = ex,
                 )
             }
         }

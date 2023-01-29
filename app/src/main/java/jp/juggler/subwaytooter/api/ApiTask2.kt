@@ -208,7 +208,7 @@ private class TootTaskRunner2<ReturnType : Any?>(
     }
 }
 
-suspend fun <T : Any?,A : Context> A.runApiTask2(
+suspend fun <T : Any?, A : Context> A.runApiTask2(
     accessInfo: SavedAccount,
     progressStyle: Int = ApiTask.PROGRESS_SPINNER,
     progressPrefix: String? = null,

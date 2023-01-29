@@ -54,7 +54,7 @@ class MisskeyAuthApi10(val client: TootApiClient) {
         "appSecret" to appSecret,
         "token" to token,
     ).toPostRequestBuilder()
-        .url("https://${apiHost}/api/auth/session/userkey")
+        .url("https://${apiHost.ascii}/api/auth/session/userkey")
         .build()
         .send(client, errorSuffix = apiHost.pretty)
         .readJsonObject()

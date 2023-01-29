@@ -92,7 +92,7 @@ class ActMainTabletViews(val actMain: ActMain) {
         //			if( animator is DefaultItemAnimator){
         //				animator.supportsChangeAnimations = false
         //			}
-        if(PrefB.bpTabletSnap()){
+        if (PrefB.bpTabletSnap()) {
             GravitySnapHelper(Gravity.START).attachToRecyclerView(this.tabletPager)
         }
     }

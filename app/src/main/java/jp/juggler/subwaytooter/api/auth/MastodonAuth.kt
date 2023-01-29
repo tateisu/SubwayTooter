@@ -210,7 +210,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
             "random:${System.currentTimeMillis()}",
             when (accountDbId) {
                 null -> "host:${apiHost.ascii}"
-                else -> "db:${accountDbId}"
+                else -> "db:$accountDbId"
             }
         ).joinToString(",")
 

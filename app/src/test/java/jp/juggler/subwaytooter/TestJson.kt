@@ -135,8 +135,8 @@ class TestJson {
     fun testNumberEncode() {
         fun x(
             n: Number,
-            expectValue:Number = n,
-            expectClass:Class<*> = expectValue.javaClass,
+            expectValue: Number = n,
+            expectClass: Class<*> = expectValue.javaClass,
         ) {
             val encodedObject = jsonObjectOf("n" to n).toString()
             val decodedObject = encodedObject.decodeJsonObject()
@@ -145,7 +145,7 @@ class TestJson {
             assertEquals("$n value $encodedObject", expectValue, decoded)
         }
         x(0)
-        x(0f ,expectValue = 0)
+        x(0f, expectValue = 0)
         x(0.0, expectValue = 0)
         x(-0)
         x(-0f, expectValue = -0.0)
@@ -165,6 +165,5 @@ class TestJson {
         // 誤差が出て上限/下限が合わないので、デコード時にはdouble解釈になる
         // x(Float.MAX_VALUE, expectValue = Float.MAX_VALUE.toDouble())
         // x(Float.MIN_VALUE, expectValue = Float.MIN_VALUE.toDouble())
-
     }
 }

@@ -39,10 +39,8 @@ class MisskeyAuthApi13(val client: TootApiClient) {
         sessionId: String,
     ): JsonObject = JsonObject(/*empty*/)
         .toPostRequestBuilder()
-        .url("https://${apiHost.ascii}/api/miauth/${sessionId}/check")
+        .url("https://${apiHost.ascii}/api/miauth/$sessionId/check")
         .build()
         .send(client, errorSuffix = apiHost.pretty)
         .readJsonObject()
-
-
 }

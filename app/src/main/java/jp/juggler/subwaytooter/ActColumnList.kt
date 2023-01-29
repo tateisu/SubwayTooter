@@ -26,7 +26,6 @@ import jp.juggler.util.data.notZero
 import jp.juggler.util.data.toJsonArray
 import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.setNavigationBack
 import jp.juggler.util.ui.vg
@@ -116,19 +115,19 @@ class ActColumnList : AppCompatActivity() {
             ) {
                 // 左にスワイプした(右端に青が見えた) なら要素を削除する
                 if (swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-                    val adapterItem = (item.tag as MyViewHolder).lastItem ?:return
+                    val adapterItem = (item.tag as MyViewHolder).lastItem ?: return
                     launchMain {
-                        try{
+                        try {
                             if (adapterItem.json.optBoolean(ColumnEncoder.KEY_DONT_CLOSE, false)) {
                                 confirm(R.string.confirm_remove_column_mark_as_dont_close)
                             }
                             listAdapter.removeItem(listAdapter.getPositionForItem(adapterItem))
-                        }catch(ex:Throwable){
+                        } catch (ex: Throwable) {
                             showApiError(ex)
-                        }finally {
+                        } finally {
                             try {
                                 views.listView.resetSwipedViews(null)
-                            }catch(_:Throwable) {
+                            } catch (_: Throwable) {
                             }
                         }
                     }

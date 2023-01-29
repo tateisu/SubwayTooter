@@ -104,7 +104,7 @@ class LoginForm(
     }
 
     private fun initServerNameList() {
-        val instance_list = HashSet<String>().apply {
+        val instanceList = HashSet<String>().apply {
             try {
                 activity.resources.openRawResource(R.raw.server_list).use { inStream ->
                     val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
@@ -135,7 +135,7 @@ class LoginForm(
                             val key = constraint.toString().lowercase()
                             // suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
                             val suggestions = StringArray()
-                            for (s in instance_list) {
+                            for (s in instanceList) {
                                 if (s.contains(key)) {
                                     suggestions.add(s)
                                     if (suggestions.size >= 20) break

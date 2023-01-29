@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.column
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.DedupMode
-import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.columnviewholder.*

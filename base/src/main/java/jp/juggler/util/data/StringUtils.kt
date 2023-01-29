@@ -281,7 +281,7 @@ fun String.encodePercent(allow: String? = null): String = Uri.encode(this, allow
 
 // %HH エンコードした後に %20 を + に変換する
 fun String.encodePercentPlus(allow: String? = null): String =
-    Uri.encode(this, allow).replace("""%20""".toRegex(),"+")
+    Uri.encode(this, allow).replace("""%20""".toRegex(), "+")
 
 // replace + to %20, then decode it.
 fun String.decodePercent(): String =

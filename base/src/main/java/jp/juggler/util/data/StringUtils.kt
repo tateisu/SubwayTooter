@@ -5,46 +5,48 @@ import android.net.Uri
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import android.util.Base64
 import androidx.core.net.toUri
 import jp.juggler.util.log.LogCategory
+import org.apache.commons.codec.binary.Base64.*
 import java.security.MessageDigest
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-object StringUtils {
+private val log = LogCategory("StringUtils")
 
-    val log = LogCategory("StringUtils")
+private const val HEX_LOWER = "0123456789abcdef"
 
-    val hexLower =
-        charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+// BDI制御文字からその制御文字を閉じる文字を得るためのマップ
+val SanitizeBdiMap = HashMap<Char, Char>().apply {
 
-    // BDI制御文字からその制御文字を閉じる文字を得るためのマップ
-    val sanitizeBdiMap = HashMap<Char, Char>().apply {
+    val PDF = 0x202C.toChar() // Pop directional formatting (PDF)
+    this[0x202A.toChar()] = PDF // Left-to-right embedding (LRE)
+    this[0x202B.toChar()] = PDF // Right-to-left embedding (RLE)
+    this[0x202D.toChar()] = PDF // Left-to-right override (LRO)
+    this[0x202E.toChar()] = PDF // Right-to-left override (RLO)
 
-        val PDF = 0x202C.toChar() // Pop directional formatting (PDF)
-        this[0x202A.toChar()] = PDF // Left-to-right embedding (LRE)
-        this[0x202B.toChar()] = PDF // Right-to-left embedding (RLE)
-        this[0x202D.toChar()] = PDF // Left-to-right override (LRO)
-        this[0x202E.toChar()] = PDF // Right-to-left override (RLO)
+    val PDI = 0x2069.toChar() // Pop directional isolate (PDI)
+    this[0x2066.toChar()] = PDI // Left-to-right isolate (LRI)
+    this[0x2067.toChar()] = PDI // Right-to-left isolate (RLI)
+    this[0x2068.toChar()] = PDI // First strong isolate (FSI)
 
-        val PDI = 0x2069.toChar() // Pop directional isolate (PDI)
-        this[0x2066.toChar()] = PDI // Left-to-right isolate (LRI)
-        this[0x2067.toChar()] = PDI // Right-to-left isolate (RLI)
-        this[0x2068.toChar()] = PDI // First strong isolate (FSI)
-
-        //	private const val ALM = 0x061c.toChar() // Arabic letter mark (ALM)
-        //	private const val LRM = 0x200E.toChar() //	Left-to-right mark (LRM)
-        //	private const val RLM = 0x200F.toChar() //	Right-to-left mark (RLM)
-    }
+    //	private const val ALM = 0x061c.toChar() // Arabic letter mark (ALM)
+    //	private const val LRM = 0x200E.toChar() //	Left-to-right mark (LRM)
+    //	private const val RLM = 0x200F.toChar() //	Right-to-left mark (RLM)
 }
 
 ////////////////////////////////////////////////////////////////////
 // ByteArray
 
 fun ByteArray.encodeBase64Url(): String =
-    Base64.encodeToString(this, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+    encodeBase64URLSafeString(this)
+
+fun ByteArray.encodeBase64(): String =
+    encodeBase64String(this)
+
+fun String.decodeBase64(): ByteArray =
+    decodeBase64(this)
 
 fun ByteArray.digestSHA256(): ByteArray {
     val digest = MessageDigest.getInstance("SHA-256")
@@ -171,8 +173,8 @@ fun ByteArray.encodeHex(): String {
 }
 
 fun StringBuilder.appendHex2(value: Int): StringBuilder {
-    this.append(StringUtils.hexLower[(value shr 4) and 15])
-    this.append(StringUtils.hexLower[value and 15])
+    append(HEX_LOWER[(value shr 4) and 15])
+    append(HEX_LOWER[value and 15])
     return this
 }
 
@@ -181,8 +183,8 @@ fun ByteArray.encodeHexLower(): String {
     val sb = StringBuilder(size * 2)
     for (i in 0 until size) {
         val value = this[i].toInt()
-        sb.append(StringUtils.hexLower[(value shr 4) and 15])
-        sb.append(StringUtils.hexLower[value and 15])
+        sb.append(HEX_LOWER[(value shr 4) and 15])
+        sb.append(HEX_LOWER[value and 15])
     }
     return sb.toString()
 }
@@ -220,7 +222,7 @@ fun String.sanitizeBDI(): String {
     // 文字列をスキャンしてBDI制御文字をスタックに入れていく
     var stack: LinkedList<Char>? = null
     for (c in this) {
-        val closer = StringUtils.sanitizeBdiMap[c]
+        val closer = SanitizeBdiMap[c]
         if (closer != null) {
             if (stack == null) stack = LinkedList()
             stack.add(closer)

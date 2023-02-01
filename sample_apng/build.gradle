@@ -2,8 +2,8 @@ apply plugin: "com.android.application"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion compile_sdk_version
-    buildToolsVersion build_tools_version
+    compileSdkVersion stCompileSdkVersion
+    buildToolsVersion stBuildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -11,8 +11,8 @@ android {
     }
 
     defaultConfig {
-        targetSdkVersion target_sdk_version
-        minSdkVersion min_sdk_version
+        targetSdkVersion stTargetSdkVersion
+        minSdkVersion stMinSdkVersion
 
         applicationId "jp.juggler.apng.sample"
         versionCode 1
@@ -36,7 +36,7 @@ android {
 
 
     kotlinOptions {
-        jvmTarget = jvm_target
+        jvmTarget = kotlinJvmTarget
         freeCompilerArgs += [
                 "-opt-in=kotlin.ExperimentalStdlibApi",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -49,7 +49,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar_lib_bersion"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarLibVersion"
     implementation project(":base")
     implementation project(":apng_android")
 }

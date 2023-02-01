@@ -2,12 +2,12 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion compile_sdk_version
-    buildToolsVersion build_tools_version
+    compileSdkVersion stCompileSdkVersion
+    buildToolsVersion stBuildToolsVersion
 
     defaultConfig {
-        targetSdkVersion target_sdk_version
-        minSdkVersion min_sdk_version
+        targetSdkVersion stTargetSdkVersion
+        minSdkVersion stMinSdkVersion
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -21,7 +21,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = jvm_target
+        jvmTarget = kotlinJvmTarget
         freeCompilerArgs += [
                 "-opt-in=kotlin.ExperimentalStdlibApi",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -37,6 +37,6 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar_lib_bersion"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarLibVersion"
     implementation project(":base")
 }

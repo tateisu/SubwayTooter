@@ -3,6 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SubwayTooter.iml" filepath="$PROJECT_DIR$/SubwayTooter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.iml" filepath="$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.main.iml" filepath="$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/anko/SubwayTooter.anko.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.iml" filepath="$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.main.iml" filepath="$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.test.iml" filepath="$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.test.iml" />

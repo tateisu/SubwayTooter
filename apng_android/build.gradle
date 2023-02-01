@@ -2,19 +2,19 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion compile_sdk_version
-    buildToolsVersion build_tools_version
+    compileSdkVersion stCompileSdkVersion
+    buildToolsVersion stBuildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    namespace 'jp.juggler.apng'
+    namespace "jp.juggler.apng"
 
     defaultConfig {
-        targetSdkVersion target_sdk_version
-        minSdkVersion min_sdk_version
+        targetSdkVersion stTargetSdkVersion
+        minSdkVersion stMinSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -27,7 +27,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = jvm_target
+        jvmTarget = kotlinJvmTarget
         freeCompilerArgs += [
                 // "-opt-in=kotlin.ExperimentalStdlibApi",
                 // "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -47,5 +47,5 @@ dependencies {
     implementation project(":base")
 
     implementation "com.github.zjupure:webpdecoder:2.3.$glideVersion"
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$junitVersion"
 }

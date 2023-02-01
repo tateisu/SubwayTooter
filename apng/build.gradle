@@ -10,7 +10,7 @@ compileKotlin {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     kotlinOptions {
-        jvmTarget = jvm_target
+        jvmTarget = kotlinJvmTarget
         freeCompilerArgs += [
                 "-opt-in=kotlin.ExperimentalStdlibApi",
         ]
@@ -20,8 +20,8 @@ compileKotlin {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection DifferentStdlibGradleVersion
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
-    testImplementation "junit:junit:$junit_version"
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
 }

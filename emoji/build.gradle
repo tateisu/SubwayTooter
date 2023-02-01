@@ -2,8 +2,8 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion compile_sdk_version
-    buildToolsVersion build_tools_version
+    compileSdkVersion stCompileSdkVersion
+    buildToolsVersion stBuildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -11,8 +11,8 @@ android {
     }
 
     defaultConfig {
-        targetSdkVersion target_sdk_version
-        minSdkVersion min_sdk_version
+        targetSdkVersion stTargetSdkVersion
+        minSdkVersion stMinSdkVersion
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -24,7 +24,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = jvm_target
+        jvmTarget = kotlinJvmTarget
     }
     namespace 'jp.juggler.emoji'
 }

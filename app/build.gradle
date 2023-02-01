@@ -11,8 +11,8 @@ apply plugin: "io.gitlab.arturbosch.detekt"
 
 
 android {
-    compileSdkVersion compile_sdk_version
-    buildToolsVersion build_tools_version
+    compileSdkVersion stCompileSdkVersion
+    buildToolsVersion stBuildToolsVersion
 
     // exoPlayer 2.9.0 以降は Java 8 compiler support を要求する
     compileOptions {
@@ -22,8 +22,8 @@ android {
     }
 
     defaultConfig {
-        targetSdkVersion target_sdk_version
-        minSdkVersion min_sdk_version
+        targetSdkVersion stTargetSdkVersion
+        minSdkVersion stMinSdkVersion
 
         versionCode 511
         versionName "5.511"
@@ -38,7 +38,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = jvm_target
+        jvmTarget = kotlinJvmTarget
         freeCompilerArgs += [
                 "-opt-in=kotlin.ExperimentalStdlibApi",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -128,39 +128,39 @@ kapt {
 dependencies {
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
     //noinspection GradleDependency
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar_lib_bersion"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarLibVersion"
 
     implementation(project(":base"))
     implementation project(':colorpicker')
     implementation project(':emoji')
     implementation project(':apng_android')
+    implementation project(':anko')
     implementation fileTree(include: ['*.aar'], dir: 'src/main/libs')
 
-    // App1 とサーバ情報カラムで使う
-    api "org.conscrypt:conscrypt-android:2.5.2"
+    implementation "org.conscrypt:conscrypt-openjdk-uber:$conscryptVersion"
 
-    kapt "androidx.annotation:annotation:1.5.0"
+    kapt "androidx.annotation:annotation:$androidxAnnotationVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
 
     testImplementation(project(":base"))
     androidTestImplementation(project(":base"))
 
-    androidTestApi "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestApi "androidx.test.espresso:espresso-core:$androidxTestEspressoCoreVersion"
     androidTestApi "androidx.test.ext:junit-ktx:1.1.5"
-    androidTestApi "androidx.test.ext:junit:1.1.5"
+    androidTestApi "androidx.test.ext:junit:$androidxTestExtJunitVersion"
     androidTestApi "androidx.test.ext:truth:1.5.0"
-    androidTestApi "androidx.test:core-ktx:1.5.0"
-    androidTestApi "androidx.test:core:$androidx_test_version"
+    androidTestApi "androidx.test:core-ktx:$testKtxVersion"
+    androidTestApi "androidx.test:core:$androidxTestVersion"
     androidTestApi "androidx.test:runner:1.5.2"
     androidTestApi "org.jetbrains.kotlin:kotlin-test"
-    androidTestApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
-    testApi "androidx.arch.core:core-testing:$arch_version"
-    testApi "junit:junit:$junit_version"
+    androidTestApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion"
+    testApi "androidx.arch.core:core-testing:$archVersion"
+    testApi "junit:junit:$junitVersion"
     testApi "org.jetbrains.kotlin:kotlin-test"
-    testApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
+    testApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion"
 
     // To use android test orchestrator
     androidTestUtil "androidx.test:orchestrator:1.4.2"
@@ -211,6 +211,7 @@ tasks.register("detektAll", Detekt) {
     }
 
     source = files(
+            "$rootDir/anko/src",
             "$rootDir/apng/src",
             "$rootDir/apng_android/src",
             "$rootDir/app/src",

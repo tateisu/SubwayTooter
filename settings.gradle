@@ -1,3 +1,4 @@
 include ':app', ':sample_apng', ':apng_android', ':apng', ':colorpicker', ':emoji'
 include ':icon_material_symbols'
 include ':base'
+include ':anko'

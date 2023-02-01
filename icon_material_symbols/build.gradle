@@ -5,10 +5,11 @@ plugins {
 
 android {
     namespace "jp.juggler.icon_material_symbols"
-    compileSdk compile_sdk_version
+    compileSdk stCompileSdkVersion
+    buildToolsVersion stBuildToolsVersion
     defaultConfig {
-        minSdk min_sdk_version
-        targetSdk target_sdk_version
+        minSdk stMinSdkVersion
+        targetSdk stTargetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -24,6 +25,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = kotlinJvmTarget
     }
 }

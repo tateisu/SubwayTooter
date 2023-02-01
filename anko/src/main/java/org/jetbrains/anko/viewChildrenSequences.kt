@@ -13,43 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:Suppress("unused")
-
 package org.jetbrains.anko
 
 import android.view.View
 import android.view.ViewGroup
-
-/**
- * Execute [action] for each child of the received [ViewGroup].
- *
- * @param action the action to execute.
- */
-@Deprecated(
-    message = "Use the Android KTX version",
-    replaceWith = ReplaceWith("forEach(action)", "androidx.core.view.forEach")
-)
-inline fun ViewGroup.forEachChild(action: (View) -> Unit) {
-    for (i in 0..childCount - 1) {
-        action(getChildAt(i))
-    }
-}
-
-/**
- * Execute [action] for each child of the received [ViewGroup].
- *
- * @param action the action to execute. The first index is 0.
- */
-@Deprecated(
-    message = "Use the Android KTX version",
-    replaceWith = ReplaceWith("forEachIndexed(action)", "androidx.core.view.forEachIndexed")
-)
-inline fun ViewGroup.forEachChildWithIndex(action: (Int, View) -> Unit) {
-    for (i in 0..childCount - 1) {
-        action(i, getChildAt(i))
-    }
-}
+import androidx.core.view.children
 
 /**
  * Return the first child [View] matching the given [predicate].
@@ -70,7 +38,7 @@ inline fun ViewGroup.firstChild(predicate: (View) -> Boolean): View {
  * @return the child [View] that matches [predicate], or null if no such child was found.
  */
 inline fun ViewGroup.firstChildOrNull(predicate: (View) -> Boolean): View? {
-    for (i in 0..childCount - 1) {
+    for (i in 0 until childCount) {
         val child = getChildAt(i)
         if (predicate(child)) {
             return child
@@ -78,18 +46,6 @@ inline fun ViewGroup.firstChildOrNull(predicate: (View) -> Boolean): View? {
     }
     return null
 }
-
-/**
- * Return the sequence of children of the received [View].
- * Note that the sequence is not thread-safe.
- *
- * @return the [Sequence] of children.
- */
-@Deprecated(
-    message = "Use the Android KTX version",
-    replaceWith = ReplaceWith("children", "androidx.core.view.children")
-)
-fun View.childrenSequence(): Sequence<View> = ViewChildrenSequence(this)
 
 /**
  * Return the [Sequence] of all children of the received [View], recursively.
@@ -132,14 +88,15 @@ private class ViewChildrenRecursiveSequence(private val view: View) : Sequence<V
     }
 
     private class RecursiveViewIterator(view: View) : Iterator<View> {
-        private val sequences = arrayListOf(view.childrenSequence())
+
+        private val sequences = arrayListOf((view as? ViewGroup)?.children ?: sequenceOf(view))
         private var current = sequences.removeLast().iterator()
 
         override fun next(): View {
             if (!hasNext()) throw NoSuchElementException()
             val view = current.next()
             if (view is ViewGroup && view.childCount > 0) {
-                sequences.add(view.childrenSequence())
+                sequences.add(view.children)
             }
             return view
         }

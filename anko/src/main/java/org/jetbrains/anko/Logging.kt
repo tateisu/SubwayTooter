@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused", "NOTHING_TO_INLINE", "MatchingDeclarationName", "NAME_SHADOWING")
+@file:Suppress("MatchingDeclarationName", "NAME_SHADOWING")
 @file:JvmName("Logging")
 
 package org.jetbrains.anko

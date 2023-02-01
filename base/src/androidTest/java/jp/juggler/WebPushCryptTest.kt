@@ -1,14 +1,17 @@
 package jp.juggler
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import jp.juggler.crypt.*
 import jp.juggler.util.data.decodeBase64
 import jp.juggler.util.data.decodeJsonObject
 import jp.juggler.util.log.AdbLog
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import java.security.interfaces.ECPrivateKey
 
 @Suppress("SpellCheckingInspection")
+@RunWith(AndroidJUnit4::class)
 class WebPushCryptTest {
 
     // https://developers.google.com/web/updates/2016/03/web-push-encryption

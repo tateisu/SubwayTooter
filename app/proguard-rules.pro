@@ -41,7 +41,7 @@
 -dontobfuscate
 
 -keepattributes *Annotation*, InnerClasses
--dontnote kotlinx.serialization.AnnotationsKt # core serialization annotations
+#-dontnote kotlinx.serialization.AnnotationsKt # core serialization annotations
 
 # kotlinx-serialization-json specific. Add this if you have java.lang.NoClassDefFoundError kotlinx.serialization.json.JsonObjectSerializer
 -keepclassmembers class kotlinx.serialization.json.** {
@@ -59,3 +59,7 @@
 -keepclasseswithmembers class jp.juggler.subwaytooter.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+# keep everything
+-keep class ** { *; }
+-keepclassmembers class ** { *** Companion; }

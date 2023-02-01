@@ -1,5 +1,3 @@
-@file:Suppress("NOTHING_TO_INLINE", "unused")
-
 package org.jetbrains.anko
 
 import android.content.Context
@@ -40,24 +38,24 @@ fun Context.dimenAttr(@AttrRes attribute: Int): Int =
 fun Context.colorAttr(@AttrRes attribute: Int): Int = theme.color(attribute)
 
 @Dimension(unit = Dimension.PX)
-inline fun AnkoContext<*>.dimenAttr(@AttrRes attribute: Int): Int = ctx.dimenAttr(attribute)
+fun AnkoContext<*>.dimenAttr(@AttrRes attribute: Int): Int = ctx.dimenAttr(attribute)
 
 @ColorInt
-inline fun AnkoContext<*>.colorAttr(@AttrRes attribute: Int): Int = ctx.colorAttr(attribute)
+fun AnkoContext<*>.colorAttr(@AttrRes attribute: Int): Int = ctx.colorAttr(attribute)
 
-inline fun AnkoContext<*>.attr(@AttrRes attribute: Int): TypedValue = ctx.attr(attribute)
+fun AnkoContext<*>.attr(@AttrRes attribute: Int): TypedValue = ctx.attr(attribute)
 
 @Dimension(unit = Dimension.PX)
-inline fun View.dimenAttr(@AttrRes attribute: Int): Int = context.dimenAttr(attribute)
+fun View.dimenAttr(@AttrRes attribute: Int): Int = context.dimenAttr(attribute)
 
 @ColorInt
-inline fun View.colorAttr(@AttrRes attribute: Int): Int = context.colorAttr(attribute)
+fun View.colorAttr(@AttrRes attribute: Int): Int = context.colorAttr(attribute)
 
-inline fun View.attr(@AttrRes attribute: Int): TypedValue = context.attr(attribute)
+fun View.attr(@AttrRes attribute: Int): TypedValue = context.attr(attribute)
 
 @Dimension(unit = Dimension.PX)
-inline fun Fragment.dimenAttr(@AttrRes attribute: Int): Int = requireContext().dimenAttr(attribute)
+fun Fragment.dimenAttr(@AttrRes attribute: Int): Int = requireContext().dimenAttr(attribute)
 
 @ColorInt
-inline fun Fragment.colorAttr(@AttrRes attribute: Int): Int = requireContext().colorAttr(attribute)
-inline fun Fragment.attr(@AttrRes attribute: Int): TypedValue = requireContext().attr(attribute)
+fun Fragment.colorAttr(@AttrRes attribute: Int): Int = requireContext().colorAttr(attribute)
+fun Fragment.attr(@AttrRes attribute: Int): TypedValue = requireContext().attr(attribute)

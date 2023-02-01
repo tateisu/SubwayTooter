@@ -94,7 +94,7 @@ dependencies {
     api "commons-codec:commons-codec:1.15"
     api "io.github.inflationx:calligraphy3:3.1.1"
     api "io.github.inflationx:viewpump:2.0.3"
-    api "org.bouncycastle:bcpkix-jdk15on:1.70"
+    api "org.bouncycastle:bcprov-jdk15on:1.70"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinxCoroutinesVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
@@ -151,6 +151,5 @@ dependencies {
     // conscrypt をUnitテストするための指定
     // https://github.com/google/conscrypt/issues/649
 
-    compileOnly "org.conscrypt:conscrypt-openjdk-uber:$conscryptVersion"
-    testImplementation "org.conscrypt:conscrypt-openjdk-uber:$conscryptVersion"
+    api "org.conscrypt:conscrypt-android:$conscryptVersion"
 }

@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:Suppress("NOTHING_TO_INLINE", "unused")
-
 package org.jetbrains.anko
 
 import android.annotation.SuppressLint
@@ -50,11 +47,10 @@ inline fun <reified T : Activity> Activity.startActivityForResult(
 inline fun <reified T : Activity> Fragment.startActivityForResult(
     requestCode: Int,
     vararg params: Pair<String, Any?>,
-) =
-    startActivityForResult(
-        AnkoInternals.createIntent(requireActivity(), T::class.java, params),
-        requestCode
-    )
+) = startActivityForResult(
+    AnkoInternals.createIntent(requireActivity(), T::class.java, params),
+    requestCode
+)
 
 inline fun <reified T : Service> Context.startService(vararg params: Pair<String, Any?>) =
     AnkoInternals.internalStartService(this, T::class.java, params)
@@ -88,14 +84,14 @@ inline fun <reified T : Any> Fragment.intentFor(vararg params: Pair<String, Any?
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.clearTask(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK) }
+fun Intent.clearTask(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK) }
 
 /**
  * Add the [Intent.FLAG_ACTIVITY_CLEAR_TOP] flag to the [Intent].
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.clearTop(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
+fun Intent.clearTop(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
 
 /**
  * Add the [Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET] flag to the [Intent].
@@ -106,7 +102,7 @@ inline fun Intent.clearTop(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_CLE
     message = "Deprecated in Android",
     replaceWith = ReplaceWith("org.jetbrains.anko.newDocument")
 )
-inline fun Intent.clearWhenTaskReset(): Intent = apply {
+fun Intent.clearWhenTaskReset(): Intent = apply {
     @Suppress("DEPRECATION")
     addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
 }
@@ -116,7 +112,7 @@ inline fun Intent.clearWhenTaskReset(): Intent = apply {
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.newDocument(): Intent = apply {
+fun Intent.newDocument(): Intent = apply {
     addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
 }
 
@@ -125,7 +121,7 @@ inline fun Intent.newDocument(): Intent = apply {
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.excludeFromRecents(): Intent =
+fun Intent.excludeFromRecents(): Intent =
     apply { addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS) }
 
 /**
@@ -133,39 +129,39 @@ inline fun Intent.excludeFromRecents(): Intent =
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.multipleTask(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK) }
+fun Intent.multipleTask(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK) }
 
 /**
  * Add the [Intent.FLAG_ACTIVITY_NEW_TASK] flag to the [Intent].
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.newTask(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+fun Intent.newTask(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
 
 /**
  * Add the [Intent.FLAG_ACTIVITY_NO_ANIMATION] flag to the [Intent].
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.noAnimation(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION) }
+fun Intent.noAnimation(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION) }
 
 /**
  * Add the [Intent.FLAG_ACTIVITY_NO_HISTORY] flag to the [Intent].
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.noHistory(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY) }
+fun Intent.noHistory(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY) }
 
 /**
  * Add the [Intent.FLAG_ACTIVITY_SINGLE_TOP] flag to the [Intent].
  *
  * @return the same intent with the flag applied.
  */
-inline fun Intent.singleTop(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP) }
+fun Intent.singleTop(): Intent = apply { addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP) }
 
-inline fun AnkoContext<*>.browse(url: String, newTask: Boolean = false) = ctx.browse(url, newTask)
+fun AnkoContext<*>.browse(url: String, newTask: Boolean = false) = ctx.browse(url, newTask)
 
-inline fun Fragment.browse(url: String, newTask: Boolean = false) =
+fun Fragment.browse(url: String, newTask: Boolean = false) =
     requireActivity().browse(url, newTask)
 
 fun Context.browse(url: String, newTask: Boolean = false) {
@@ -178,10 +174,10 @@ fun Context.browse(url: String, newTask: Boolean = false) {
     // ActivityNotFoundException
 }
 
-inline fun AnkoContext<*>.share(text: String, subject: String = "", title: String? = null) =
+fun AnkoContext<*>.share(text: String, subject: String = "", title: String? = null) =
     ctx.share(text, subject, title)
 
-inline fun Fragment.share(text: String, subject: String = "", title: String? = null) =
+fun Fragment.share(text: String, subject: String = "", title: String? = null) =
     requireActivity().share(text, subject, title)
 
 fun Context.share(text: String, subject: String = "", title: String? = null) {
@@ -193,10 +189,10 @@ fun Context.share(text: String, subject: String = "", title: String? = null) {
     // ActivityNotFoundException
 }
 
-inline fun AnkoContext<*>.email(email: String, subject: String = "", text: String = "") =
+fun AnkoContext<*>.email(email: String, subject: String = "", text: String = "") =
     ctx.email(email, subject, text)
 
-inline fun Fragment.email(email: String, subject: String = "", text: String = "") =
+fun Fragment.email(email: String, subject: String = "", text: String = "") =
     requireActivity().email(email, subject, text)
 
 @SuppressLint("QueryPermissionsNeeded")
@@ -215,9 +211,9 @@ fun Context.email(email: String, subject: String = "", text: String = ""): Boole
     return false
 }
 
-inline fun AnkoContext<*>.makeCall(number: String) = ctx.makeCall(number)
+fun AnkoContext<*>.makeCall(number: String) = ctx.makeCall(number)
 
-inline fun Fragment.makeCall(number: String) = requireActivity().makeCall(number)
+fun Fragment.makeCall(number: String) = requireActivity().makeCall(number)
 
 fun Context.makeCall(number: String) {
     val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$number"))
@@ -225,10 +221,10 @@ fun Context.makeCall(number: String) {
     // ActivityNotFoundException
 }
 
-inline fun AnkoContext<*>.sendSMS(number: String, text: String = "") =
+fun AnkoContext<*>.sendSMS(number: String, text: String = "") =
     ctx.sendSMS(number, text)
 
-inline fun Fragment.sendSMS(number: String, text: String = "") =
+fun Fragment.sendSMS(number: String, text: String = "") =
     requireActivity().sendSMS(number, text)
 
 fun Context.sendSMS(number: String, text: String = "") {

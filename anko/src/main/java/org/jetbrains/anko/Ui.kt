@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused", "NOTHING_TO_INLINE", "MatchingDeclarationName")
+@file:Suppress("MatchingDeclarationName")
 
 package org.jetbrains.anko
 
@@ -30,7 +30,7 @@ annotation class AnkoViewDslMarker
  *
  * @return the receiver.
  */
-inline fun <T : View> T.applyRecursively(noinline f: (View) -> Unit): T {
+fun <T : View> T.applyRecursively(f: (View) -> Unit): T {
     AnkoInternals.applyRecursively(this, f)
     return this
 }

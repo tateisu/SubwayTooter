@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.widget.Toolbar
 
 @Suppress("ClassNaming")
 open class _AppWidgetHostView(ctx: Context) : AppWidgetHostView(ctx) {
@@ -198,7 +199,7 @@ open class _AppWidgetHostView(ctx: Context) : AppWidgetHostView(ctx) {
 //}
 
 @Suppress("ClassNaming")
-open class _ActionMenuView(ctx: Context) : ActionMenuView(ctx) {
+open class _ActionMenuView(ctx: Context) : androidx.appcompat.widget.ActionMenuView(ctx) {
 
     inline fun <T : View> T.lparams(
         c: Context?,

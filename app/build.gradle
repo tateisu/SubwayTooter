@@ -58,13 +58,16 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
             lintOptions {
                 disable 'MissingTranslation'
             }
+        }
+        debug{
+
         }
     }
 
@@ -137,7 +140,8 @@ dependencies {
     implementation project(':anko')
     implementation fileTree(include: ['*.aar'], dir: 'src/main/libs')
 
-    implementation "org.conscrypt:conscrypt-openjdk-uber:$conscryptVersion"
+    // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
+    api "org.conscrypt:conscrypt-android:$conscryptVersion"
 
     kapt "androidx.annotation:annotation:$androidxAnnotationVersion"
     kapt "androidx.room:room-compiler:$roomVersion"

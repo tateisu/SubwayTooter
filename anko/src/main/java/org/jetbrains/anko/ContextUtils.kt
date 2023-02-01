@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:Suppress("unused", "NOTHING_TO_INLINE")
-
 package org.jetbrains.anko
 
 import android.app.Activity

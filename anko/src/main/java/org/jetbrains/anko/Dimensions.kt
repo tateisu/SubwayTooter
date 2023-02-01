@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:Suppress("NOTHING_TO_INLINE", "unused")
-
 package org.jetbrains.anko
 
 import android.content.Context
@@ -50,28 +47,28 @@ fun Context.px2sp(px: Int): Float = px.toFloat() / resources.displayMetrics.scal
 fun Context.dimen(@DimenRes resource: Int): Int = resources.getDimensionPixelSize(resource)
 
 //the same for nested DSL components
-inline fun AnkoContext<*>.dip(value: Int): Int = ctx.dip(value)
-inline fun AnkoContext<*>.dip(value: Float): Int = ctx.dip(value)
-inline fun AnkoContext<*>.sp(value: Int): Int = ctx.sp(value)
-inline fun AnkoContext<*>.sp(value: Float): Int = ctx.sp(value)
-inline fun AnkoContext<*>.px2dip(px: Int): Float = ctx.px2dip(px)
-inline fun AnkoContext<*>.px2sp(px: Int): Float = ctx.px2sp(px)
-inline fun AnkoContext<*>.dimen(@DimenRes resource: Int): Int = ctx.dimen(resource)
+fun AnkoContext<*>.dip(value: Int): Int = ctx.dip(value)
+fun AnkoContext<*>.dip(value: Float): Int = ctx.dip(value)
+fun AnkoContext<*>.sp(value: Int): Int = ctx.sp(value)
+fun AnkoContext<*>.sp(value: Float): Int = ctx.sp(value)
+fun AnkoContext<*>.px2dip(px: Int): Float = ctx.px2dip(px)
+fun AnkoContext<*>.px2sp(px: Int): Float = ctx.px2sp(px)
+fun AnkoContext<*>.dimen(@DimenRes resource: Int): Int = ctx.dimen(resource)
 
 //the same for the views
-inline fun View.dip(value: Int): Int = context.dip(value)
-inline fun View.dip(value: Float): Int = context.dip(value)
-inline fun View.sp(value: Int): Int = context.sp(value)
-inline fun View.sp(value: Float): Int = context.sp(value)
-inline fun View.px2dip(px: Int): Float = context.px2dip(px)
-inline fun View.px2sp(px: Int): Float = context.px2sp(px)
-inline fun View.dimen(@DimenRes resource: Int): Int = context.dimen(resource)
+fun View.dip(value: Int): Int = context.dip(value)
+fun View.dip(value: Float): Int = context.dip(value)
+fun View.sp(value: Int): Int = context.sp(value)
+fun View.sp(value: Float): Int = context.sp(value)
+fun View.px2dip(px: Int): Float = context.px2dip(px)
+fun View.px2sp(px: Int): Float = context.px2sp(px)
+fun View.dimen(@DimenRes resource: Int): Int = context.dimen(resource)
 
 //the same for Fragments
-inline fun Fragment.dip(value: Int): Int = requireContext().dip(value)
-inline fun Fragment.dip(value: Float): Int = requireContext().dip(value)
-inline fun Fragment.sp(value: Int): Int = requireContext().sp(value)
-inline fun Fragment.sp(value: Float): Int = requireContext().sp(value)
-inline fun Fragment.px2dip(px: Int): Float = requireContext().px2dip(px)
-inline fun Fragment.px2sp(px: Int): Float = requireContext().px2sp(px)
-inline fun Fragment.dimen(@DimenRes resource: Int): Int = requireContext().dimen(resource)
+fun Fragment.dip(value: Int): Int = requireContext().dip(value)
+fun Fragment.dip(value: Float): Int = requireContext().dip(value)
+fun Fragment.sp(value: Int): Int = requireContext().sp(value)
+fun Fragment.sp(value: Float): Int = requireContext().sp(value)
+fun Fragment.px2dip(px: Int): Float = requireContext().px2dip(px)
+fun Fragment.px2sp(px: Int): Float = requireContext().px2sp(px)
+fun Fragment.dimen(@DimenRes resource: Int): Int = requireContext().dimen(resource)

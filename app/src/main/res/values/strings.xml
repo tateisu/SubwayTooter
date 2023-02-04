@@ -96,7 +96,8 @@
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
     <string name="display_name_unfollowed_by">%1$s unfollowed you</string>
-    <string name="display_name_signed_up">%1$s signed up on your server.</string>
+    <string name="display_name_signed_up">%1$s signed up on your server</string>
+    <string name="display_name_report">%1$s reported.</string>
     <string name="account">Account</string>
     <string name="account_setting">Account settings</string>
     <string name="setting">Settings</string>
@@ -642,6 +643,7 @@
     <string name="notification_type_status_reference">post referenced</string>
     <string name="notification_type_status_reference_fedibird">post referenced (fedibird.com)</string>
     <string name="notification_type_signup">(admin)user signup</string>
+    <string name="notification_type_report">(admin)report</string>
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="dont_show_non_public_toot">Don\'t show non-public toot</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3+)</string>

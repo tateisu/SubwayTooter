@@ -37,6 +37,10 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
         TootNotification.TYPE_ADMIN_SIGNUP ->
             showNotificationSignup(n, nAccountRef)
 
+        TootNotification.TYPE_ADMIN_REPORT ->
+            showNotificationReport(n, nAccountRef)
+
+
         TootNotification.TYPE_MENTION,
         TootNotification.TYPE_REPLY,
         -> showNotificationMention(n, nAccountRef, nStatus)
@@ -123,6 +127,22 @@ private fun ItemViewHolder.showNotificationSignup(
             n.time_created_at,
             R.drawable.ic_add,
             R.string.display_name_signed_up
+        )
+        showAccount(it)
+    }
+}
+private fun ItemViewHolder.showNotificationReport(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+) {
+    val colorBg = PrefI.ipEventBgColorReport.value
+    colorBg.notZero()?.let { viewRoot.backgroundColor = it }
+    nAccountRef?.let {
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.ic_follow_wait,
+            R.string.display_name_report
         )
         showAccount(it)
     }

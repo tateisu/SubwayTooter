@@ -831,6 +831,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                 R.string.notification_type_status_reference
             )
             colorAlpha(PrefI.ipEventBgColorSignUp, R.string.notification_type_signup)
+            colorAlpha(PrefI.ipEventBgColorReport, R.string.notification_type_report)
 
             colorAlpha(
                 PrefI.ipConversationMainTootBgColor,

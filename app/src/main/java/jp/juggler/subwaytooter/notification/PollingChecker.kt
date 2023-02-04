@@ -139,6 +139,9 @@ class PollingChecker(
             TootNotification.TYPE_ADMIN_SIGNUP,
             -> context.getString(R.string.display_name_signed_up, name)
 
+            TootNotification.TYPE_ADMIN_REPORT,
+            -> context.getString(R.string.display_name_report, name)
+
             TootNotification.TYPE_FAVOURITE,
             -> context.getString(R.string.display_name_favourited_by, name)
 
@@ -433,7 +436,6 @@ class PollingChecker(
                 TootNotification.TYPE_FOLLOW,
                 TootNotification.TYPE_FOLLOW_REQUEST,
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_ADMIN_SIGNUP,
                 -> {
                     val who = notification.account
                     if (who != null && favMuteSet.contains(account.getFullAcct(who))) {

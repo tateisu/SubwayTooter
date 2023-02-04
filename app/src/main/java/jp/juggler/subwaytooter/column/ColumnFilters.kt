@@ -291,6 +291,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
                 TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
                 TootNotification.TYPE_ADMIN_SIGNUP,
+                TootNotification.TYPE_ADMIN_REPORT,
                 -> dontShowFollow
 
                 TootNotification.TYPE_MENTION,
@@ -328,6 +329,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
                 TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
                 TootNotification.TYPE_ADMIN_SIGNUP,
+                TootNotification.TYPE_ADMIN_REPORT,
                 -> quickFilter != Column.QUICK_FILTER_FOLLOW
 
                 TootNotification.TYPE_MENTION,
@@ -413,7 +415,6 @@ fun Column.isFiltered(item: TootNotification): Boolean {
         TootNotification.TYPE_FOLLOW_REQUEST,
         TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
         TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
-        TootNotification.TYPE_ADMIN_SIGNUP,
         -> {
             val who = item.account
             if (who != null && favMuteSet?.contains(accessInfo.getFullAcct(who)) == true) {

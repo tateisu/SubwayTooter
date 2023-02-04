@@ -869,6 +869,7 @@ class SavedAccount(
         TootNotification.TYPE_FOLLOW,
         TootNotification.TYPE_UNFOLLOW,
         TootNotification.TYPE_ADMIN_SIGNUP,
+        TootNotification.TYPE_ADMIN_REPORT,
         -> notification_follow
 
         TootNotification.TYPE_FOLLOW_REQUEST,

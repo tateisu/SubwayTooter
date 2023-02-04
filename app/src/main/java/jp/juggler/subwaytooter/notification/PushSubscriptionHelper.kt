@@ -597,7 +597,11 @@ class PushSubscriptionHelper(
 
                 "update",
                 TootNotification.TYPE_ADMIN_SIGNUP,
-                -> false // ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+                ->  ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+
+                TootNotification.TYPE_ADMIN_REPORT,
+                -> ti.versionGE(TootInstance.VERSION_4_0_0)
+
                 /*
                 2022年6月15日現在、admin.sign_up と update をalertsに指定しても意味がない
                 https://github.com/mastodon/mastodon/blob/main/app/controllers/api/v1/push/subscriptions_controller.rb#L55

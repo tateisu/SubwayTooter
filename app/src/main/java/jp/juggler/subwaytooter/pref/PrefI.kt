@@ -98,6 +98,7 @@ object PrefI {
     val ipEventBgColorUpdate = IntPref("EventBgColorUpdate", 0)
     val ipEventBgColorStatusReference = IntPref("EventBgColorStatusReference", 0)
     val ipEventBgColorSignUp = IntPref("EventBgColorSignUp", 0)
+    val ipEventBgColorReport = IntPref("EventBgColorReport", 0)
 
     val ipEventBgColorGap = IntPref("EventBgColorGap", 0)
 

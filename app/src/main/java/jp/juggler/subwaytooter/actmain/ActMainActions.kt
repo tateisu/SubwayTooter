@@ -5,6 +5,7 @@ import android.text.Spannable
 import android.view.View
 import android.widget.TextView
 import androidx.core.view.GravityCompat
+import androidx.work.WorkManager
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.openColumnList
@@ -17,86 +18,93 @@ import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.TabletColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.ViewHolderHeaderBase
 import jp.juggler.subwaytooter.columnviewholder.ViewHolderItem
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
 import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.push.PushWorker
+import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.util.checkPrivacyPolicy
 import jp.juggler.subwaytooter.util.openCustomTab
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.addTo
 import jp.juggler.util.data.cast
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.dismissSafe
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.concurrent.TimeUnit
 
 private val log = LogCategory("ActMainActions")
 
 fun ActMain.onBackPressedImpl() {
+    launchAndShowError {
 
-    // メニューが開いていたら閉じる
-    if (drawer.isDrawerOpen(GravityCompat.START)) {
-        drawer.closeDrawer(GravityCompat.START)
-        return
-    }
-
-    // カラムが0個ならアプリを終了する
-    if (appState.columnCount == 0) {
-        finish()
-        return
-    }
-
-    // カラム設定が開いているならカラム設定を閉じる
-    if (closeColumnSetting()) {
-        return
-    }
-
-    fun getClosableColumnList(): List<Column> {
-        val visibleColumnList = ArrayList<Column>()
-        phoneTab({ env ->
-            try {
-                appState.column(env.pager.currentItem)?.addTo(visibleColumnList)
-            } catch (ex: Throwable) {
-                log.e(ex, "getClosableColumnList failed.")
-            }
-        }, { env ->
-            visibleColumnList.addAll(env.visibleColumns)
-        })
-
-        return visibleColumnList.filter { !it.dontClose }
-    }
-
-    // カラムが1個以上ある場合は設定に合わせて挙動を変える
-    when (PrefI.ipBackButtonAction.invoke(pref)) {
-        PrefI.BACK_EXIT_APP -> finish()
-        PrefI.BACK_OPEN_COLUMN_LIST -> openColumnList()
-        PrefI.BACK_CLOSE_COLUMN -> {
-            val closeableColumnList = getClosableColumnList()
-            when (closeableColumnList.size) {
-                0 -> when {
-                    PrefB.bpExitAppWhenCloseProtectedColumn(pref) &&
-                            PrefB.bpDontConfirmBeforeCloseColumn.invoke(pref) ->
-                        finish()
-                    else -> showToast(false, R.string.missing_closeable_column)
-                }
-                1 -> closeColumn(closeableColumnList.first())
-                else -> showToast(
-                    false,
-                    R.string.cant_close_column_by_back_button_when_multiple_column_shown
-                )
-            }
+        // メニューが開いていたら閉じる
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START)
+            return@launchAndShowError
         }
-        else /* PrefI.BACK_ASK_ALWAYS */ -> {
-            val closeableColumnList = getClosableColumnList()
-            val dialog = ActionsDialog()
-            if (closeableColumnList.size == 1) {
-                val column = closeableColumnList.first()
-                dialog.addAction(getString(R.string.close_column)) {
-                    closeColumn(column, bConfirmed = true)
+
+        // カラムが0個ならアプリを終了する
+        if (appState.columnCount == 0) {
+            finish()
+            return@launchAndShowError
+        }
+
+        // カラム設定が開いているならカラム設定を閉じる
+        if (closeColumnSetting()) {
+            return@launchAndShowError
+        }
+
+        fun getClosableColumnList(): List<Column> {
+            val visibleColumnList = ArrayList<Column>()
+            phoneTab({ env ->
+                try {
+                    appState.column(env.pager.currentItem)?.addTo(visibleColumnList)
+                } catch (ex: Throwable) {
+                    log.e(ex, "getClosableColumnList failed.")
+                }
+            }, { env ->
+                visibleColumnList.addAll(env.visibleColumns)
+            })
+
+            return visibleColumnList.filter { !it.dontClose }
+        }
+
+        // カラムが1個以上ある場合は設定に合わせて挙動を変える
+        when (PrefI.ipBackButtonAction.value) {
+            PrefI.BACK_EXIT_APP -> finish()
+            PrefI.BACK_OPEN_COLUMN_LIST -> openColumnList()
+            PrefI.BACK_CLOSE_COLUMN -> {
+                val closeableColumnList = getClosableColumnList()
+                when (closeableColumnList.size) {
+                    0 -> when {
+                        PrefB.bpExitAppWhenCloseProtectedColumn.value &&
+                                PrefB.bpDontConfirmBeforeCloseColumn.value ->
+                            finish()
+                        else -> showToast(false, R.string.missing_closeable_column)
+                    }
+                    1 -> closeColumn(closeableColumnList.first())
+                    else -> showToast(
+                        false,
+                        R.string.cant_close_column_by_back_button_when_multiple_column_shown
+                    )
                 }
             }
-            dialog.addAction(getString(R.string.open_column_list)) { openColumnList() }
-            dialog.addAction(getString(R.string.app_exit)) { finish() }
-            dialog.show(this, null)
+            /* PrefI.BACK_ASK_ALWAYS */
+            else -> actionsDialog {
+                val closeableColumnList = getClosableColumnList()
+                if (closeableColumnList.size == 1) {
+                    val column = closeableColumnList.first()
+                    action(getString(R.string.close_column)) {
+                        closeColumn(column, bConfirmed = true)
+                    }
+                }
+                action(getString(R.string.open_column_list)) { openColumnList() }
+                action(getString(R.string.app_exit)) { finish() }
+            }
         }
     }
 }
@@ -178,23 +186,23 @@ fun ActMain.onMyClickableSpanClickedImpl(viewClicked: View, span: MyClickableSpa
     )
 }
 
-fun ActMain.themeDefaultChangedDialog() {
+suspend fun ActMain.themeDefaultChangedDialog() {
     val lpThemeDefaultChangedWarnTime = PrefL.lpThemeDefaultChangedWarnTime
     val ipUiTheme = PrefI.ipUiTheme
     val now = System.currentTimeMillis()
 
     // テーマが未定義でなければ警告しない
-    if (pref.getInt(ipUiTheme.key, -1) != -1) {
+    if (lazyPref.getInt(ipUiTheme.key, -1) != -1) {
         log.i("themeDefaultChangedDialog: theme was set.")
         return
     }
 
     // 頻繁には警告しない
-    if (now - lpThemeDefaultChangedWarnTime.invoke(pref) < TimeUnit.DAYS.toMillis(60L)) {
+    if (now - lpThemeDefaultChangedWarnTime.value < TimeUnit.DAYS.toMillis(60L)) {
         log.i("themeDefaultChangedDialog: avoid frequently check.")
         return
     }
-    pref.edit().put(lpThemeDefaultChangedWarnTime, now).apply()
+    lpThemeDefaultChangedWarnTime.value = now
 
     // 色がすべてデフォルトなら警告不要
     val customizedKeys = ArrayList<String>()
@@ -202,18 +210,50 @@ fun ActMain.themeDefaultChangedDialog() {
         item.pref?.let { p ->
             when {
                 p == PrefS.spBoostAlpha -> Unit
-                p.hasNonDefaultValue(pref) -> customizedKeys.add(p.key)
+                p.hasNonDefaultValue() -> customizedKeys.add(p.key)
             }
         }
     }
-    log.w("themeDefaultChangedDialog: customizedKeys=${customizedKeys.joinToString(",")}")
     if (customizedKeys.isEmpty()) {
-        pref.edit().put(ipUiTheme, ipUiTheme.defVal).apply()
+        ipUiTheme.value = ipUiTheme.defVal
         return
     }
+    log.w("themeDefaultChangedDialog: customizedKeys=${customizedKeys.joinToString(",")}")
+    suspendCancellableCoroutine { cont ->
+        val dialog = AlertDialog.Builder(this)
+            .setMessage(R.string.color_theme_changed)
+            .setPositiveButton(android.R.string.ok, null)
+            .setOnDismissListener {
+                if (cont.isActive) cont.resume(Unit) {}
+            }
+            .create()
+        cont.invokeOnCancellation { dialog.dismissSafe() }
+        dialog.show()
+    }
+}
 
-    AlertDialog.Builder(this)
-        .setMessage(R.string.color_theme_changed)
-        .setPositiveButton(android.R.string.ok, null)
-        .show()
+fun ActMain.launchDialogs() {
+    launchAndShowError {
+        // プライバシーポリシー
+        val agreed = try {
+            checkPrivacyPolicy()
+        } catch (ex: Throwable) {
+            log.e(ex, "checkPrivacyPolicy failed.")
+            return@launchAndShowError
+        }
+        // 同意がないなら残りの何かは表示しない
+        if (!agreed) return@launchAndShowError
+
+        // テーマ告知
+        themeDefaultChangedDialog()
+
+        // 通知権限の確認
+        if(!prNotification.checkOrLaunch()) return@launchAndShowError
+
+        // Workの掃除
+        WorkManager.getInstance(applicationContext).pruneWork()
+
+        // 定期的にendpointを再登録したい
+        PushWorker.enqueueRegisterEndpoint(applicationContext, keepAliveMode = true)
+    }
 }

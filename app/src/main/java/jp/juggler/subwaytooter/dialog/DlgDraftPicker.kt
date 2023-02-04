@@ -8,18 +8,20 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.ListView
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actpost.DRAFT_CONTENT
 import jp.juggler.subwaytooter.actpost.DRAFT_CONTENT_WARNING
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.databinding.LvDraftPickerBinding
 import jp.juggler.subwaytooter.table.PostDraft
+import jp.juggler.subwaytooter.table.daoPostDraft
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.AppDispatchers
-import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.cast
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.dismissSafe
@@ -41,7 +43,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
     private lateinit var adapter: MyAdapter
     private lateinit var dialog: AlertDialog
 
-    private var cursor: Cursor? = null
+    private var listCursor: Cursor? = null
     private var colIdx: PostDraft.ColIdx? = null
 
     private var task: Job? = null
@@ -60,25 +62,22 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
         position: Int,
         id: Long,
     ): Boolean {
-
-        val draft = getPostDraft(position)
-        if (draft != null) {
-            activity.showToast(false, R.string.draft_deleted)
-            draft.delete()
-            reload()
-            return true
+        activity.launchAndShowError {
+            getPostDraft(position)?.let {
+                daoPostDraft.delete(it)
+                reload()
+                activity.showToast(false, R.string.draft_deleted)
+            }
         }
-
-        return false
+        return true
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         task?.cancel()
         task = null
-
         lvDraft.adapter = null
-
-        cursor?.close()
+        listCursor?.close()
+        listCursor = null
     }
 
     @SuppressLint("InflateParams")
@@ -107,59 +106,53 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
         reload()
     }
 
-    private fun updateCursor(newCursor: Cursor?) {
-        if (!dialog.isShowing) {
-            // dialog is already closed.
-            newCursor?.close()
-        } else if (newCursor != null) {
-            val old = this.cursor
-            this.cursor = newCursor
-            colIdx = PostDraft.ColIdx(newCursor)
-            adapter.notifyDataSetChanged()
-            old?.close()
-        }
-    }
-
     private fun reload() {
 
         // cancel old task
         task?.cancel()
 
-        task = launchMain {
-            val cursor = try {
+        task = activity.launchAndShowError {
+            val newCursor = try {
                 withContext(AppDispatchers.IO) {
-                    PostDraft.createCursor()
-                } ?: error("cursor is null")
+                    daoPostDraft.createCursor()
+                }
             } catch (ignored: CancellationException) {
-                return@launchMain
+                return@launchAndShowError
             } catch (ex: Throwable) {
                 log.e(ex, "failed to loading drafts.")
                 activity.showToast(ex, "failed to loading drafts.")
-                return@launchMain
+                return@launchAndShowError
             }
-            updateCursor(cursor)
+
+            if (!dialog.isShowing) {
+                // dialog is already closed.
+                newCursor.close()
+            } else {
+                val old = listCursor
+                listCursor = newCursor
+                colIdx = PostDraft.ColIdx(newCursor)
+                adapter.notifyDataSetChanged()
+                old?.close()
+            }
         }
     }
 
-    private fun getPostDraft(position: Int): PostDraft? {
-        val cursor = this.cursor
-        return if (cursor == null) null else PostDraft.loadFromCursor(cursor, colIdx, position)
-    }
-
-    private inner class MyViewHolder(view: View) {
-
-        val tvTime: TextView
-        val tvText: TextView
-
-        init {
-            tvTime = view.findViewById(R.id.tvTime)
-            tvText = view.findViewById(R.id.tvText)
+    private fun getPostDraft(position: Int): PostDraft? =
+        listCursor?.let {
+            daoPostDraft.loadFromCursor(it, colIdx, position)
         }
 
-        fun bind(position: Int) {
-            val draft = getPostDraft(position) ?: return
+    private inner class MyViewHolder(
+        parent: ViewGroup?,
+    ) {
+        val views = LvDraftPickerBinding.inflate(activity.layoutInflater, parent, false)
+            .also { it.root.tag = this }
 
-            tvTime.text = TootStatus.formatTime(tvTime.context, draft.time_save, false)
+        fun bind(draft: PostDraft?) {
+            draft ?: return
+            val context = views.root.context
+            views.tvTime.text =
+                TootStatus.formatTime(context, draft.time_save, false)
 
             val json = draft.json
             if (json != null) {
@@ -173,38 +166,18 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
                     if (sb.isNotEmpty()) sb.append("\n")
                     sb.append(c)
                 }
-                tvText.text = sb
+                views.tvText.text = sb
             }
         }
     }
 
     private inner class MyAdapter : BaseAdapter() {
-
-        override fun getCount(): Int {
-            return cursor?.count ?: 0
-        }
-
-        override fun getItem(position: Int): Any? {
-            return getPostDraft(position)
-        }
-
-        override fun getItemId(position: Int): Long {
-            return 0
-        }
-
-        override fun getView(position: Int, viewOld: View?, parent: ViewGroup): View {
-            val view: View
-            val holder: MyViewHolder
-            if (viewOld == null) {
-                view = activity.layoutInflater.inflate(R.layout.lv_draft_picker, parent, false)
-                holder = MyViewHolder(view)
-                view.tag = holder
-            } else {
-                view = viewOld
-                holder = view.tag as MyViewHolder
-            }
-            holder.bind(position)
-            return view
-        }
+        override fun getCount() = listCursor?.count ?: 0
+        override fun getItemId(position: Int) = 0L
+        override fun getItem(position: Int) = getPostDraft(position)
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup) =
+            (convertView?.tag?.cast() ?: MyViewHolder(parent))
+                .also { it.bind(getItem(position)) }
+                .views.root
     }
 }

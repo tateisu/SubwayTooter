@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-import android.content.SharedPreferences
 import android.os.Handler
 import android.text.*
 import android.text.style.ForegroundColorSpan
@@ -9,21 +8,20 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootTag
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiBase
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
-import jp.juggler.subwaytooter.table.AcctSet
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.TagSet
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.subwaytooter.util.PopupAutoCompleteAcct
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.asciiRegex
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
@@ -33,7 +31,6 @@ import kotlin.math.min
 // 入力補完機能
 class CompletionHelper(
     private val activity: AppCompatActivity,
-    private val pref: SharedPreferences,
     private val handler: Handler,
 ) {
     companion object {
@@ -161,7 +158,7 @@ class CompletionHelper(
 
         val limit = 100
         val s = src.substring(start, end)
-        val acctList = AcctSet.searchPrefix(s, limit)
+        val acctList = daoAcctSet.searchPrefix(s, limit)
         log.d("search for $s, result=${acctList.size}")
         if (acctList.isEmpty()) {
             closeAcctPopup()
@@ -187,7 +184,7 @@ class CompletionHelper(
 
         val limit = 100
         val s = src.substring(lastSharp + 1, end)
-        val tagList = TagSet.searchPrefix(s, limit)
+        val tagList = daoTagHistory.searchPrefix(s, limit)
         log.d("search for $s, result=${tagList.size}")
         if (tagList.isEmpty()) {
             closeAcctPopup()
@@ -448,7 +445,7 @@ class CompletionHelper(
         launchEmojiPicker(
             activity,
             accessInfo,
-            closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected(pref)
+            closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected.value
         ) { emoji, bInstanceHasCustomEmoji ->
             val et = this@CompletionHelper.et ?: return@launchEmojiPicker
 
@@ -482,7 +479,7 @@ class CompletionHelper(
         launchEmojiPicker(
             activity,
             accessInfo,
-            closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected(pref)
+            closeOnSelected = PrefB.bpEmojiPickerCloseOnSelected.value
         ) { emoji, bInstanceHasCustomEmoji ->
             val et = this@CompletionHelper.et ?: return@launchEmojiPicker
 
@@ -514,49 +511,50 @@ class CompletionHelper(
     }
 
     fun openFeaturedTagList(list: List<TootTag>?) {
-        val ad = ActionsDialog()
-        list?.forEach { tag ->
-            ad.addAction("#${tag.name}") {
-                val et = this.et ?: return@addAction
+        val et = this@CompletionHelper.et ?: return
+        activity.run {
+            launchAndShowError {
+                actionsDialog(getString(R.string.featured_hashtags)) {
+                    list?.forEach { tag ->
+                        action("#${tag.name}") {
+                            val src = et.text ?: ""
+                            val srcLength = src.length
+                            val start = min(srcLength, et.selectionStart)
+                            val end = min(srcLength, et.selectionEnd)
 
-                val src = et.text ?: ""
-                val srcLength = src.length
-                val start = min(srcLength, et.selectionStart)
-                val end = min(srcLength, et.selectionEnd)
+                            val sb = SpannableStringBuilder()
+                                .append(src.subSequence(0, start))
+                                .appendHashTag(tag.name)
+                            val newSelection = sb.length
+                            if (end < srcLength) sb.append(src.subSequence(end, srcLength))
 
-                val sb = SpannableStringBuilder()
-                    .append(src.subSequence(0, start))
-                    .appendHashTag(tag.name)
-                val newSelection = sb.length
-                if (end < srcLength) sb.append(src.subSequence(end, srcLength))
+                            et.text = sb
+                            et.setSelection(newSelection)
 
-                et.text = sb
-                et.setSelection(newSelection)
+                            procTextChanged.run()
+                        }
+                    }
+                    action(activity.getString(R.string.input_sharp_itself)) {
+                        val src = et.text ?: ""
+                        val srcLength = src.length
+                        val start = min(srcLength, et.selectionStart)
+                        val end = min(srcLength, et.selectionEnd)
 
-                procTextChanged.run()
+                        val sb = SpannableStringBuilder()
+                        sb.append(src.subSequence(0, start))
+                        if (!EmojiDecoder.canStartHashtag(sb, sb.length)) sb.append(' ')
+                        sb.append('#')
+
+                        val newSelection = sb.length
+                        if (end < srcLength) sb.append(src.subSequence(end, srcLength))
+                        et.text = sb
+                        et.setSelection(newSelection)
+
+                        procTextChanged.run()
+                    }
+                }
             }
         }
-        ad.addAction(activity.getString(R.string.input_sharp_itself)) {
-            val et = this.et ?: return@addAction
-
-            val src = et.text ?: ""
-            val srcLength = src.length
-            val start = min(srcLength, et.selectionStart)
-            val end = min(srcLength, et.selectionEnd)
-
-            val sb = SpannableStringBuilder()
-            sb.append(src.subSequence(0, start))
-            if (!EmojiDecoder.canStartHashtag(sb, sb.length)) sb.append(' ')
-            sb.append('#')
-
-            val newSelection = sb.length
-            if (end < srcLength) sb.append(src.subSequence(end, srcLength))
-            et.text = sb
-            et.setSelection(newSelection)
-
-            procTextChanged.run()
-        }
-        ad.show(activity, activity.getString(R.string.featured_hashtags))
     }
 
     //	final ActionMode.Callback action_mode_callback = new ActionMode.Callback() {

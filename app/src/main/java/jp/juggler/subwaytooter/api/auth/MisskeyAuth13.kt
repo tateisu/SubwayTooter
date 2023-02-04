@@ -7,8 +7,8 @@ import jp.juggler.subwaytooter.api.auth.MisskeyAuth10.Companion.encodeScopeArray
 import jp.juggler.subwaytooter.api.auth.MisskeyAuth10.Companion.getScopeArrayMisskey
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.pref.PrefDevice
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
@@ -60,14 +60,11 @@ class MisskeyAuth13(override val client: TootApiClient) : AuthBase() {
 
         val sessionId = UUID.randomUUID().toString()
 
-        PrefDevice.from(client.context).edit().apply {
-            putString(PrefDevice.LAST_AUTH_INSTANCE, apiHost.ascii)
-            putString(PrefDevice.LAST_AUTH_SECRET, sessionId)
-            when (val account = account) {
-                null -> remove(PrefDevice.LAST_AUTH_DB_ID)
-                else -> putLong(PrefDevice.LAST_AUTH_DB_ID, account.db_id)
-            }
-        }.apply()
+        client.context.prefDevice.saveLastAuth(
+            host = apiHost.ascii,
+            secret = sessionId,
+            dbId = account?.db_id,
+        )
 
         return api13.createAuthUrl(
             apiHost = apiHost,
@@ -82,20 +79,20 @@ class MisskeyAuth13(override val client: TootApiClient) : AuthBase() {
     override suspend fun authStep2(uri: Uri): Auth2Result {
 
         // 認証開始時に保存した情報
-        val prefDevice = PrefDevice.from(client.context)
-        val savedSessionId = prefDevice.getString(PrefDevice.LAST_AUTH_SECRET, null)
+        val prefDevice = client.context.prefDevice
+        val savedSessionId = prefDevice.lastAuthSecret
 
-        val apiHost = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
+        val apiHost = prefDevice.lastAuthInstance
             ?.let { Host.parse(it) }
             ?: error("missing apiHost")
 
-        when (val dbId = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
+        when (val dbId = prefDevice.lastAuthDbId) {
             // new registration
-            -1L -> client.apiHost = apiHost
+            null -> client.apiHost = apiHost
 
             // update access token
             else -> {
-                val sa = SavedAccount.loadAccount(context, dbId)
+                val sa = daoSavedAccount.loadAccount(dbId)
                     ?: error("missing account db_id=$dbId")
                 client.account = sa
             }
@@ -131,7 +128,7 @@ class MisskeyAuth13(override val client: TootApiClient) : AuthBase() {
             .account(accountJson)
             ?: error("can't parse user json.")
 
-        prefDevice.edit().remove(PrefDevice.LAST_AUTH_SECRET).apply()
+        prefDevice.removeLastAuth()
 
         return Auth2Result(
             tootInstance = ti,

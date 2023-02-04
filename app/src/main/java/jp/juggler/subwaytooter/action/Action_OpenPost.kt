@@ -16,10 +16,13 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.accountListCanQuote
+import jp.juggler.subwaytooter.table.accountListNonPseudo
 import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
@@ -37,7 +40,7 @@ fun ActPost.saveWindowSize() {
         // WindowMetrics#getBounds() the window size including all system bar areas
         windowManager?.currentWindowMetrics?.bounds?.let { bounds ->
             log.d("API=${Build.VERSION.SDK_INT}, WindowMetrics#getBounds() $bounds")
-            PrefDevice.savePostWindowBound(this, bounds.width(), bounds.height())
+            prefDevice.savePostWindowBound(bounds.width(), bounds.height())
         }
     } else {
         @Suppress("DEPRECATION")
@@ -45,7 +48,7 @@ fun ActPost.saveWindowSize() {
             val dm = DisplayMetrics()
             display.getMetrics(dm)
             log.d("API=${Build.VERSION.SDK_INT}, displayMetrics=${dm.widthPixels},${dm.heightPixels}")
-            PrefDevice.savePostWindowBound(this, dm.widthPixels, dm.heightPixels)
+            prefDevice.savePostWindowBound(dm.widthPixels, dm.heightPixels)
         }
     }
 }
@@ -75,8 +78,8 @@ fun ActMain.openActPostImpl(
     scheduledStatus: TootScheduled? = null,
 ) {
 
-    val useManyWindow = PrefB.bpManyWindowPost(pref)
-    val useMultiWindow = useManyWindow || PrefB.bpMultiWindowPost(pref)
+    val useManyWindow = PrefB.bpManyWindowPost.value
+    val useMultiWindow = useManyWindow || PrefB.bpMultiWindowPost.value
 
     val intent = ActPost.createIntent(
         context = this,
@@ -99,7 +102,9 @@ fun ActMain.openActPostImpl(
             ActPost.refActPost?.get()
                 ?.takeIf { it.isLiveActivity }
                 ?.let {
-                    it.updateText(intent)
+                    launchAndShowError {
+                        it.updateText(intent)
+                    }
                     return
                 }
         }
@@ -108,11 +113,10 @@ fun ActMain.openActPostImpl(
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
 
         var options = ActivityOptionsCompat.makeBasic()
-        PrefDevice.loadPostWindowBound(this)
-            ?.let {
-                log.d("ActPost launchBounds $it")
-                options = options.setLaunchBounds(it)
-            }
+        prefDevice.loadPostWindowBound()?.let {
+            log.d("ActPost launchBounds $it")
+            options = options.setLaunchBounds(it)
+        }
 
         arActPost.launch(intent, options)
     }
@@ -254,7 +258,7 @@ fun ActMain.quoteFromAnotherAccount(
 fun ActMain.quoteName(who: TootAccount) {
     var sv = who.display_name
     try {
-        val fmt = PrefS.spQuoteNameFormat(pref)
+        val fmt = PrefS.spQuoteNameFormat.value
         if (fmt.contains("%1\$s")) {
             sv = String.format(Locale.getDefault(), fmt, sv)
         }

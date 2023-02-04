@@ -12,12 +12,15 @@ import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.ActKeywordFilterBinding
 import jp.juggler.subwaytooter.databinding.LvKeywordFilterBinding
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.int
@@ -96,59 +99,64 @@ class ActKeywordFilter : AppCompatActivity() {
 
     private val deleteIds = HashSet<String>()
 
+    val authRepo by lazy {
+        AuthRepo(this)
+    }
+
     ///////////////////////////////////////////////////
 
     override fun onCreate(savedInstanceState: Bundle?) {
         backPressed { confirmBack() }
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-
-        val intent = this.intent
-
-        // filter ID の有無はUIに影響するのでinitUIより先に初期化する
-        this.filterId = EntityId.from(intent, EXTRA_FILTER_ID)
-
-        val a = intent.long(EXTRA_ACCOUNT_DB_ID)
-            ?.let { SavedAccount.loadAccount(this, it) }
-        if (a == null) {
-            finish()
-            return
-        }
-        this.account = a
-
         initUI()
 
-        showAccount()
+        launchAndShowError {
 
-        if (savedInstanceState == null) {
-            if (filterId != null) {
-                startLoading()
-            } else {
-                views.spExpire.setSelection(1)
-                val initialText = intent.string(EXTRA_INITIAL_PHRASE)?.trim() ?: ""
-                views.etTitle.setText(initialText)
-                addKeywordArea(TootFilterKeyword(keyword = initialText))
+            // filter ID の有無はUIに影響するのでinitUIより先に初期化する
+            filterId = EntityId.from(intent, EXTRA_FILTER_ID)
+
+            val a = intent.long(EXTRA_ACCOUNT_DB_ID)
+                ?.let { daoSavedAccount.loadAccount(it) }
+            if (a == null) {
+                finish()
+                return@launchAndShowError
             }
-        } else {
+            account = a
 
-            savedInstanceState.getStringArrayList(STATE_DELETE_IDS)
-                ?.let { deleteIds.addAll(it) }
 
-            savedInstanceState.getStringArrayList(STATE_KEYWORDS)
-                ?.mapNotNull { it?.decodeJsonObject() }
-                ?.forEach {
-                    try {
-                        addKeywordArea(TootFilterKeyword(it))
-                    } catch (ex: Throwable) {
-                        log.e(ex, "can't decode TootFilterKeyword")
-                    }
+            showAccount()
+
+            if (savedInstanceState == null) {
+                if (filterId != null) {
+                    startLoading()
+                } else {
+                    views.spExpire.setSelection(1)
+                    val initialText = intent.string(EXTRA_INITIAL_PHRASE)?.trim() ?: ""
+                    views.etTitle.setText(initialText)
+                    addKeywordArea(TootFilterKeyword(keyword = initialText))
                 }
+            } else {
 
-            savedInstanceState.int(STATE_EXPIRE_SPINNER)
-                ?.let { views.spExpire.setSelection(it) }
+                savedInstanceState.getStringArrayList(STATE_DELETE_IDS)
+                    ?.let { deleteIds.addAll(it) }
 
-            savedInstanceState.long(STATE_EXPIRE_AT)
-                ?.let { filterExpire = it }
+                savedInstanceState.getStringArrayList(STATE_KEYWORDS)
+                    ?.mapNotNull { it?.decodeJsonObject() }
+                    ?.forEach {
+                        try {
+                            addKeywordArea(TootFilterKeyword(it))
+                        } catch (ex: Throwable) {
+                            log.e(ex, "can't decode TootFilterKeyword")
+                        }
+                    }
+
+                savedInstanceState.int(STATE_EXPIRE_SPINNER)
+                    ?.let { views.spExpire.setSelection(it) }
+
+                savedInstanceState.long(STATE_EXPIRE_AT)
+                    ?.let { filterExpire = it }
+            }
         }
     }
 
@@ -218,7 +226,7 @@ class ActKeywordFilter : AppCompatActivity() {
     }
 
     private fun showAccount() {
-        views.tvAccount.text = AcctColor.getNicknameWithColor(account.acct)
+        views.tvAccount.text = daoAcctColor.getNicknameWithColor(account.acct)
     }
 
     private fun startLoading() {

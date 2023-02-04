@@ -4,106 +4,114 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.data.ColumnMeta
 import jp.juggler.util.data.TableCompanion
 import jp.juggler.util.data.getBoolean
-import jp.juggler.util.data.put
 import jp.juggler.util.log.LogCategory
 
-object MediaShown : TableCompanion {
-    private val log = LogCategory("MediaShown")
+class MediaShown private constructor() {
+    companion object : TableCompanion {
+        private val log = LogCategory("MediaShown")
 
-    override val table = "media_shown_misskey"
+        override val table = "media_shown_misskey"
+        val COL_ID = BaseColumns._ID
+        private val COL_HOST = "h"
+        private val COL_STATUS_ID = "si"
+        private val COL_SHOWN = "sh"
+        private val COL_TIME_SAVE = "time_save"
 
-    val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
-        ColumnMeta(this, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
-        deleteBeforeCreate = true
-        createExtra = {
-            arrayOf(
-                "create unique index if not exists ${table}_status_id on $table($COL_HOST,$COL_STATUS_ID)",
-                "create index if not exists ${table}_time_save on $table($COL_TIME_SAVE)",
-            )
-        }
-    }
-    private val COL_HOST = ColumnMeta(columnList, 0, "h", "")
-    private val COL_STATUS_ID = ColumnMeta(columnList, 0, "si", "")
-    private val COL_SHOWN = ColumnMeta(columnList, 0, "sh", "")
-    private val COL_TIME_SAVE = ColumnMeta(columnList, 0, "time_save", "")
-
-    private val projection_shown = arrayOf(COL_SHOWN.name)
-
-    override fun onDBCreate(db: SQLiteDatabase) =
-        columnList.onDBCreate(db)
-
-    override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        columnList.onDBUpgrade(db, oldVersion, newVersion)
-
-        // 特定バージョンを交差したらテーブルを作り直す
-        if (oldVersion < 30 && newVersion >= 30) {
-            columnList.onDBCreate(db)
-        }
-    }
-
-    fun deleteOld(now: Long) {
-        try {
-            val expire = now - 86400000L * 365
-            appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
-        } catch (ex: Throwable) {
-            log.e(ex, "deleteOld failed.")
-        }
-
-        // 旧型式のテーブルも古い項目の削除だけ行う
-        try {
-            val table = "media_shown"
-            val COL_TIME_SAVE = "time_save"
-            val expire = now - 86400000L * 365
-            appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
-        } catch (ignored: Throwable) {
-        }
-    }
-
-    private fun saveImpl(host: String, id: String, isShown: Boolean) {
-        try {
-            ContentValues().apply {
-                put(COL_HOST, host)
-                put(COL_STATUS_ID, id)
-                put(COL_SHOWN, isShown)
-                put(COL_TIME_SAVE, System.currentTimeMillis())
-            }.let { appDatabase.replace(table, null, it) }
-        } catch (ex: Throwable) {
-            log.e(ex, "saveImpl failed.")
-        }
-    }
-
-    private fun isShownImpl(host: String, id: String, defaultValue: Boolean): Boolean {
-        try {
-            appDatabase.query(
-                table,
-                projection_shown,
-                "h=? and si=?",
-                arrayOf(host, id),
-                null,
-                null,
-                null
-            ).use { cursor ->
-                if (cursor.moveToFirst()) return cursor.getBoolean(COL_SHOWN)
+        val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
+            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
+            ColumnMeta(this, 0, COL_HOST, "")
+            ColumnMeta(this, 0, COL_STATUS_ID, "")
+            ColumnMeta(this, 0, COL_SHOWN, "")
+            ColumnMeta(this, 0, COL_TIME_SAVE, "")
+            deleteBeforeCreate = true
+            createExtra = {
+                arrayOf(
+                    "create unique index if not exists ${table}_status_id on $table($COL_HOST,$COL_STATUS_ID)",
+                    "create index if not exists ${table}_time_save on $table($COL_TIME_SAVE)",
+                )
             }
-        } catch (ex: Throwable) {
-            log.e(ex, "isShownImpl failed.")
         }
-        return defaultValue
+
+        override fun onDBCreate(db: SQLiteDatabase) =
+            columnList.onDBCreate(db)
+
+        override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            columnList.onDBUpgrade(db, oldVersion, newVersion)
+
+            // 特定バージョンを交差したらテーブルを作り直す
+            if (oldVersion < 30 && newVersion >= 30) {
+                columnList.onDBCreate(db)
+            }
+        }
+
+        private val projection_shown = arrayOf(COL_SHOWN)
     }
 
-    fun save(uri: String, isShown: Boolean) =
-        saveImpl(uri, uri, isShown)
+    class Access(val db: SQLiteDatabase) {
 
-    fun isShown(uri: String, defaultValue: Boolean) =
-        isShownImpl(uri, uri, defaultValue)
+        fun deleteOld(now: Long) {
+            try {
+                val expire = now - 86400000L * 365
+                db.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+            } catch (ex: Throwable) {
+                log.e(ex, "deleteOld failed.")
+            }
 
-    fun save(status: TootStatus, isShown: Boolean) =
-        saveImpl(status.hostAccessOrOriginal.ascii, status.id.toString(), isShown)
+            // 旧型式のテーブルも古い項目の削除だけ行う
+            try {
+                val table = "media_shown"
+                val COL_TIME_SAVE = "time_save"
+                val expire = now - 86400000L * 365
+                db.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+            } catch (ignored: Throwable) {
+            }
+        }
 
-    fun isShown(status: TootStatus, defaultValue: Boolean) =
-        isShownImpl(status.hostAccessOrOriginal.ascii, status.id.toString(), defaultValue)
+        private fun saveImpl(host: String, id: String, isShown: Boolean) {
+            try {
+                ContentValues().apply {
+                    put(COL_HOST, host)
+                    put(COL_STATUS_ID, id)
+                    put(COL_SHOWN, isShown)
+                    put(COL_TIME_SAVE, System.currentTimeMillis())
+                }.let { db.replace(table, null, it) }
+            } catch (ex: Throwable) {
+                log.e(ex, "saveImpl failed.")
+            }
+        }
+
+        private fun isShownImpl(host: String, id: String, defaultValue: Boolean): Boolean {
+            try {
+                db.query(
+                    table,
+                    projection_shown,
+                    "h=? and si=?",
+                    arrayOf(host, id),
+                    null,
+                    null,
+                    null
+                ).use { cursor ->
+                    if (cursor.moveToFirst()) return cursor.getBoolean(COL_SHOWN)
+                }
+            } catch (ex: Throwable) {
+                log.e(ex, "isShownImpl failed.")
+            }
+            return defaultValue
+        }
+
+        fun save(uri: String, isShown: Boolean) =
+            saveImpl(uri, uri, isShown)
+
+        fun isShown(uri: String, defaultValue: Boolean) =
+            isShownImpl(uri, uri, defaultValue)
+
+        fun save(status: TootStatus, isShown: Boolean) =
+            saveImpl(status.hostAccessOrOriginal.ascii, status.id.toString(), isShown)
+
+        fun isShown(status: TootStatus, defaultValue: Boolean) =
+            isShownImpl(status.hostAccessOrOriginal.ascii, status.id.toString(), defaultValue)
+    }
 }

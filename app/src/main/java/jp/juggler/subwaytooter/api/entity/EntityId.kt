@@ -29,7 +29,7 @@ class EntityId(val x: String) : Comparable<EntityId> {
 
         fun mayNull(x: String?) = if (x == null) null else EntityId(x)
 
-        fun String.decode(): EntityId? {
+        fun String.decodeEntityId(): EntityId? {
             if (this.isEmpty()) return null
             // first character is 'L' for EntityIdLong, 'S' for EntityIdString.
             // integer id is removed at https://source.joinmastodon.org/mastodon/docs/commit/e086d478afa140e7b0b9a60183655315966ad9ff
@@ -37,26 +37,24 @@ class EntityId(val x: String) : Comparable<EntityId> {
         }
 
         fun from(intent: Intent?, key: String) =
-            intent?.string(key)?.decode()
+            intent?.string(key)?.decodeEntityId()
 
         fun from(bundle: Bundle?, key: String) =
-            bundle?.string(key)?.decode()
+            bundle?.string(key)?.decodeEntityId()
 
         // 内部保存データのデコード用。APIレスポンスのパースに使ってはいけない
         fun from(data: JsonObject?, key: String): EntityId? {
             val o = data?.get(key)
             if (o is Long) return EntityId(o.toString())
-            return (o as? String)?.decode()
+            return (o as? String)?.decodeEntityId()
         }
 
         fun from(cursor: Cursor, key: String) =
-            cursor.getStringOrNull(key)?.decode()
+            cursor.getStringOrNull(key)?.decodeEntityId()
     }
 
-    private fun encode(): String {
-        val prefix = 'S'
-        return "$prefix$this"
-    }
+    // 昔は文字列とLong値を区別していたが、今はもうない
+    fun encode(): String = "S$this"
 
     fun putTo(data: Intent, key: String): Intent = data.putExtra(key, encode())
 

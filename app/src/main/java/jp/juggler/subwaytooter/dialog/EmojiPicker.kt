@@ -24,10 +24,8 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.EmojiPickerDialogBinding
 import jp.juggler.subwaytooter.emoji.*
-import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.minHeightCompat
 import jp.juggler.subwaytooter.util.minWidthCompat
@@ -103,7 +101,7 @@ private class EmojiPicker(
 
         private val recentsJsonList: List<JsonObject>?
             get() = try {
-                PrefS.spEmojiPickerRecent().decodeJsonArray().objectList()
+                PrefS.spEmojiPickerRecent.value.decodeJsonArray().objectList()
             } catch (ex: Throwable) {
                 log.w(ex, "can't load spEmojiPickerRecent")
                 null
@@ -176,8 +174,7 @@ private class EmojiPicker(
 
             // 保存する
             try {
-                val sv = list.toJsonArray().toString()
-                appPref.edit().put(PrefS.spEmojiPickerRecent, sv).apply()
+                PrefS.spEmojiPickerRecent.value = list.toJsonArray().toString()
             } catch (ex: Throwable) {
                 log.e(ex, "can't save spEmojiPickerRecent")
             }
@@ -396,8 +393,8 @@ private class EmojiPicker(
     private val gridSize = (0.5f + 48f * activity.resources.displayMetrics.density).toInt()
     private val matchParent = RecyclerView.LayoutParams.MATCH_PARENT
 
-    private val useTwemoji = PrefB.bpUseTwemoji()
-    private val disableAnimation = PrefB.bpDisableEmojiAnimation()
+    private val useTwemoji = PrefB.bpUseTwemoji.value
+    private val disableAnimation = PrefB.bpDisableEmojiAnimation.value
 
     private var selectedTone: SkinTone = (ibSkinTone[0].tag as SkinTone)
 
@@ -524,7 +521,7 @@ private class EmojiPicker(
             EmojiCategory.Symbols,
             EmojiCategory.Flags,
         )
-        if (PrefB.bpEmojiPickerCategoryOther(activity)) {
+        if (PrefB.bpEmojiPickerCategoryOther.value) {
             categories.add(EmojiCategory.Others)
         }
         for (category in categories) {

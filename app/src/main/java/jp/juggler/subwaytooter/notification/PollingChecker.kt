@@ -8,9 +8,9 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
-import jp.juggler.subwaytooter.notification.MessageNotification.getMessageNotifications
-import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
-import jp.juggler.subwaytooter.notification.MessageNotification.showMessageNotification
+import jp.juggler.subwaytooter.notification.PullNotification.getMessageNotifications
+import jp.juggler.subwaytooter.notification.PullNotification.removeMessageNotification
+import jp.juggler.subwaytooter.notification.PullNotification.showMessageNotification
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.coroutine.AppDispatchers
@@ -96,7 +96,7 @@ class PollingChecker(
 
     private fun NotificationData.getNotificationLine(): String {
 
-        val name = when (PrefB.bpShowAcctInSystemNotification()) {
+        val name = when (PrefB.bpShowAcctInSystemNotification.value) {
             false -> notification.accountRef?.decoded_display_name
 
             true -> {
@@ -175,7 +175,7 @@ class PollingChecker(
                 who == null -> true
                 account.isMe(who) -> true
 
-                else -> UserRelation.load(account.db_id, who.id).following
+                else -> daoUserRelation.load(account.db_id, who.id).following
             }
         }
 
@@ -188,7 +188,7 @@ class PollingChecker(
                 who == null -> true
                 account.isMe(who) -> true
 
-                else -> UserRelation.load(account.db_id, who.id).followed_by
+                else -> daoUserRelation.load(account.db_id, who.id).followed_by
             }
         }
 
@@ -199,7 +199,7 @@ class PollingChecker(
 
     suspend fun check(
         checkNetwork: Boolean = true,
-        onlySubscription: Boolean = false,
+        onlyEnqueue: Boolean = false,
         progress: suspend (SavedAccount, PollingState) -> Unit,
     ) {
         try {
@@ -217,7 +217,7 @@ class PollingChecker(
                     return@withContext
                 }
 
-                val account = SavedAccount.loadAccount(context, accountDbId)
+                val account = daoSavedAccount.loadAccount(accountDbId)
                 if (account == null || account.isPseudo || !account.isConfirmed) {
                     // 疑似アカウントはチェック対象外
                     // 未確認アカウントはチェック対象外
@@ -234,19 +234,19 @@ class PollingChecker(
                 commonMutex.withLock {
                     // グローバル変数の暖気
                     if (TootStatus.muted_app == null) {
-                        TootStatus.muted_app = MutedApp.nameSet
+                        TootStatus.muted_app = daoMutedApp.nameSet()
                     }
                     if (TootStatus.muted_word == null) {
-                        TootStatus.muted_word = MutedWord.nameSet
+                        TootStatus.muted_word = daoMutedWord.nameSet()
                     }
                 }
 
-                // installIdとデバイストークンの取得
-                val deviceToken = loadFirebaseMessagingToken(context)
-                loadInstallId(context, account, deviceToken, progress)
+//                // installIdとデバイストークンの取得
+//                val deviceToken = loadFirebaseMessagingToken(context)
+//                loadInstallId(context, account, deviceToken, progress)
 
                 val favMuteSet = commonMutex.withLock {
-                    FavMute.acctSet
+                    daoFavMute.acctSet()
                 }
 
                 accountMutex(accountDbId).withLock {
@@ -255,49 +255,58 @@ class PollingChecker(
                         progress(account, PollingState.CheckServerInformation)
                         val (instance, instanceResult) = TootInstance.get(client)
                         if (instance == null) {
-                            account.updateNotificationError("${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
+                            daoAccountNotificationStatus.updateNotificationError(
+                                account.acct,
+                                "${instanceResult?.error} ${instanceResult?.requestInfo}".trim()
+                            )
                             error("can't get server information. ${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
                         }
                     }
 
-                    wps.updateSubscription(client, progress = progress)
-                        ?: throw CancellationException()
-
-                    val wpsLog = wps.logString
-                    if (wpsLog.isNotEmpty()) {
-                        log.w("subsctiption warning: ${account.acct.pretty} $wpsLog")
-                    }
+//                    wps.updateSubscription(client, progress = progress)
+//                        ?: throw CancellationException()
+//
+//                    val wpsLog = wps.logString
+//                    if (wpsLog.isNotEmpty()) {
+//                        log.w("subsctiption warning: ${account.acct.pretty} $wpsLog")
+//                    }
 
                     if (wps.flags == 0) {
-                        if (account.lastNotificationError != null) {
-                            account.updateNotificationError(null)
-                        }
+                        // 通知表示のエラーをクリアする
+                        daoAccountNotificationStatus.updateNotificationError(
+                            account.acct,
+                            null
+                        )
                         log.i("notification check not required.")
                         return@withLock
                     }
                     progress(account, PollingState.CheckNotifications)
                     PollingWorker2.enqueuePolling(context)
-                    if (onlySubscription) {
-                        log.i("exit due to onlySubscription")
+                    if (onlyEnqueue) {
+                        log.i("exit due to onlyEnqueue")
                         return@withLock
                     }
 
                     injectData.notEmpty()?.let { list ->
                         log.d("processInjectedData ${account.acct} size=${list.size}")
-                        NotificationCache(accountDbId).apply {
-                            load()
-                            inject(account, list)
-                        }
+                        val nc = NotificationCache(accountDbId)
+                        daoNotificationCache.loadInto(nc)
+                        daoNotificationCache.inject(nc, account, list)
                     }
 
                     cache = NotificationCache(account.db_id).apply {
-                        load()
+                        daoNotificationCache.loadInto(this)
                         requestAsync(
+                            daoNotificationCache,
                             client,
                             account,
                             wps.flags,
                         ) { result ->
-                            account.updateNotificationError("${result.error} ${result.requestInfo}".trim())
+                            // 通知取得のエラーを保存する
+                            daoAccountNotificationStatus.updateNotificationError(
+                                account.acct,
+                                "${result.error} ${result.requestInfo}".trim()
+                            )
                             if (result.error?.contains("Timeout") == true &&
                                 !account.dont_show_timeout
                             ) {
@@ -306,12 +315,12 @@ class PollingChecker(
                         }
                     }
 
-                    if (PrefB.bpSeparateReplyNotificationGroup()) {
+                    if (PrefB.bpSeparateReplyNotificationGroup.value) {
                         var tr = TrackingRunner(
                             account = account,
                             favMuteSet = favMuteSet,
                             trackingType = TrackingType.NotReply,
-                            trackingName = MessageNotification.TRACKING_NAME_DEFAULT
+                            trackingName = PullNotification.TRACKING_NAME_DEFAULT
                         )
                         tr.checkAccount()
                         yield()
@@ -321,7 +330,7 @@ class PollingChecker(
                             account = account,
                             favMuteSet = favMuteSet,
                             trackingType = TrackingType.Reply,
-                            trackingName = MessageNotification.TRACKING_NAME_REPLY
+                            trackingName = PullNotification.TRACKING_NAME_REPLY
                         )
                         tr.checkAccount()
                         yield()
@@ -331,7 +340,7 @@ class PollingChecker(
                             account = account,
                             favMuteSet = favMuteSet,
                             trackingType = TrackingType.All,
-                            trackingName = MessageNotification.TRACKING_NAME_DEFAULT
+                            trackingName = PullNotification.TRACKING_NAME_DEFAULT
                         )
                         tr.checkAccount()
                         yield()
@@ -346,7 +355,7 @@ class PollingChecker(
 
     inner class TrackingRunner(
         val account: SavedAccount,
-        val favMuteSet: HashSet<Acct>,
+        val favMuteSet: Set<Acct>,
         var trackingType: TrackingType = TrackingType.All,
         var trackingName: String = "",
     ) {
@@ -361,9 +370,6 @@ class PollingChecker(
 
         suspend fun checkAccount() {
 
-            this.nr =
-                NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
-
             fun JsonObject.isMention() =
                 when (NotificationCache.parseNotificationType(account, this)) {
                     TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
@@ -375,6 +381,9 @@ class PollingChecker(
                 TrackingType.Reply -> cache.data.filter { it.isMention() }
                 TrackingType.NotReply -> cache.data.filter { !it.isMention() }
             }
+
+            this.nr = daoNotificationTracking
+                .load(account.acct, account.db_id, trackingName)
 
             // 新しい順に並んでいる。先頭から10件までを処理する。ただし処理順序は古い方から
             val size = min(10, jsonList.size)
@@ -395,7 +404,7 @@ class PollingChecker(
                 }
             }
             if (latestId != null) nr.nid_show = latestId
-            nr.save(account.acct.pretty)
+            daoNotificationTracking.save(account.acct, nr)
         }
 
         private fun updateSub(src: JsonObject) {
@@ -447,7 +456,8 @@ class PollingChecker(
                 else -> "${account.db_id}/$trackingName"
             }
 
-            val nt = NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
+            val nt = daoNotificationTracking
+                .load(account.acct, account.db_id, trackingName)
             when (val first = dstListData.firstOrNull()) {
                 null -> {
                     log.d("showNotification[${account.acct.pretty}/$notificationTag] cancel notification.")
@@ -460,19 +470,21 @@ class PollingChecker(
                         first.notification.time_created_at == nt.post_time && first.notification.id == nt.post_id ->
                             log.d("showNotification[${account.acct.pretty}] id=${first.notification.id} is already shown.")
 
-                        PrefB.bpDivideNotification() -> {
+                        PrefB.bpDivideNotification.value -> {
                             updateNotificationDivided(notificationTag, nt)
-                            nt.updatePost(
+                            daoNotificationTracking.updatePost(
                                 first.notification.id,
-                                first.notification.time_created_at
+                                first.notification.time_created_at,
+                                nt,
                             )
                         }
 
                         else -> {
                             updateNotificationMerged(notificationTag, first)
-                            nt.updatePost(
+                            daoNotificationTracking.updatePost(
                                 first.notification.id,
-                                first.notification.time_created_at
+                                first.notification.time_created_at,
+                                nt,
                             )
                         }
                     }
@@ -512,7 +524,6 @@ class PollingChecker(
                 notificationManager.showMessageNotification(
                     context,
                     account,
-                    trackingName,
                     trackingType,
                     itemTag,
                     notificationId = item.notification.id.toString()
@@ -543,7 +554,6 @@ class PollingChecker(
             notificationManager.showMessageNotification(
                 context,
                 account,
-                trackingName,
                 trackingType,
                 notificationTag
             ) { builder ->

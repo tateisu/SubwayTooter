@@ -12,7 +12,7 @@ import java.lang.ref.WeakReference
 
 // AutoCWの基準幅を計算する
 fun ActMain.resizeAutoCW(columnW: Int) {
-    val sv = PrefS.spAutoCWLines(pref)
+    val sv = PrefS.spAutoCWLines.value
     nAutoCwLines = sv.toIntOrNull() ?: -1
     if (nAutoCwLines > 0) {
         val lvPad = (0.5f + 12 * density).toInt()

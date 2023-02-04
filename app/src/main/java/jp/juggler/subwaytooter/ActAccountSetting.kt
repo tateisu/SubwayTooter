@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -15,24 +16,29 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.push.PushBase
+import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
 import jp.juggler.util.media.ResizeConfig
 import jp.juggler.util.media.ResizeType
 import jp.juggler.util.media.createResizedBitmap
@@ -122,6 +128,10 @@ class ActAccountSetting : AppCompatActivity(),
 
     private val views by lazy {
         ActAccountSettingBinding.inflate(layoutInflater, null, false)
+    }
+
+    private val authRepo by lazy {
+        AuthRepo(this)
     }
 
     private lateinit var nameInvalidator: NetworkEmojiInvalidator
@@ -218,20 +228,22 @@ class ActAccountSetting : AppCompatActivity(),
 
         initUI()
 
-        val a = intent.long(KEY_ACCOUNT_DB_ID)
-            ?.let { SavedAccount.loadAccount(this, it) }
-        if (a == null) {
-            finish()
-            return
+        launchAndShowError {
+            val a = intent.long(KEY_ACCOUNT_DB_ID)
+                ?.let { daoSavedAccount.loadAccount(it) }
+            if (a == null) {
+                finish()
+                return@launchAndShowError
+            }
+            supportActionBar?.subtitle = a.acct.pretty
+
+            loadUIFromData(a)
+
+            initializeProfile()
+
+            views.btnOpenBrowser.text =
+                getString(R.string.open_instance_website, account.apiHost.pretty)
         }
-        supportActionBar?.subtitle = a.acct.pretty
-
-        loadUIFromData(a)
-
-        initializeProfile()
-
-        views.btnOpenBrowser.text =
-            getString(R.string.open_instance_website, account.apiHost.pretty)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -336,7 +348,7 @@ class ActAccountSetting : AppCompatActivity(),
                 R.id.etFieldValue4
             ).map { findViewById(it) }
 
-            btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup.invoke())
+            btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup.value)
 
             nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
             noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -504,72 +516,76 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun showAcctColor() {
+
         val sa = this.account
-        val ac = AcctColor.load(sa)
+        val ac = daoAcctColor.load(sa)
         views.tvUserCustom.apply {
-            backgroundColor = ac.color_bg
+            backgroundColor = ac.colorBg
             text = ac.nickname
-            textColor = ac.color_fg.notZero() ?: attrColor(R.attr.colorTimeSmall)
+            textColor = ac.colorFg.notZero()
+                ?: attrColor(R.attr.colorTimeSmall)
         }
     }
 
     private fun saveUIToData() {
         if (!::account.isInitialized) return
         if (loadingBusy) return
-        account.visibility = visibility
+        launchAndShowError {
 
-        views.apply {
+            account.visibility = visibility
 
-            account.dont_hide_nsfw = swNSFWOpen.isChecked
-            account.dont_show_timeout = swDontShowTimeout.isChecked
-            account.expand_cw = swExpandCW.isChecked
-            account.default_sensitive = swMarkSensitive.isChecked
-            account.notification_mention = cbNotificationMention.isChecked
-            account.notification_boost = cbNotificationBoost.isChecked
-            account.notification_favourite = cbNotificationFavourite.isChecked
-            account.notification_follow = cbNotificationFollow.isChecked
-            account.notification_follow_request = cbNotificationFollowRequest.isChecked
-            account.notification_reaction = cbNotificationReaction.isChecked
-            account.notification_vote = cbNotificationVote.isChecked
-            account.notification_post = cbNotificationPost.isChecked
-            account.notification_update = cbNotificationUpdate.isChecked
-            account.notification_status_reference = cbNotificationStatusReference.isChecked
+            views.apply {
+                account.dont_hide_nsfw = swNSFWOpen.isChecked
+                account.dont_show_timeout = swDontShowTimeout.isChecked
+                account.expand_cw = swExpandCW.isChecked
+                account.default_sensitive = swMarkSensitive.isChecked
+                account.notification_mention = cbNotificationMention.isChecked
+                account.notification_boost = cbNotificationBoost.isChecked
+                account.notification_favourite = cbNotificationFavourite.isChecked
+                account.notification_follow = cbNotificationFollow.isChecked
+                account.notification_follow_request = cbNotificationFollowRequest.isChecked
+                account.notification_reaction = cbNotificationReaction.isChecked
+                account.notification_vote = cbNotificationVote.isChecked
+                account.notification_post = cbNotificationPost.isChecked
+                account.notification_update = cbNotificationUpdate.isChecked
+                account.notification_status_reference = cbNotificationStatusReference.isChecked
 
-            account.confirm_follow = cbConfirmFollow.isChecked
-            account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
-            account.confirm_unfollow = cbConfirmUnfollow.isChecked
-            account.confirm_boost = cbConfirmBoost.isChecked
-            account.confirm_favourite = cbConfirmFavourite.isChecked
-            account.confirm_unboost = cbConfirmUnboost.isChecked
-            account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
-            account.confirm_post = cbConfirmToot.isChecked
-            account.confirm_reaction = cbConfirmReaction.isChecked
-            account.confirm_unbookmark = cbConfirmUnbookmark.isChecked
+                account.confirm_follow = cbConfirmFollow.isChecked
+                account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
+                account.confirm_unfollow = cbConfirmUnfollow.isChecked
+                account.confirm_boost = cbConfirmBoost.isChecked
+                account.confirm_favourite = cbConfirmFavourite.isChecked
+                account.confirm_unboost = cbConfirmUnboost.isChecked
+                account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
+                account.confirm_post = cbConfirmToot.isChecked
+                account.confirm_reaction = cbConfirmReaction.isChecked
+                account.confirm_unbookmark = cbConfirmUnbookmark.isChecked
 
-            account.sound_uri = ""
-            account.default_text = etDefaultText.text.toString()
+                account.sound_uri = ""
+                account.default_text = etDefaultText.text.toString()
 
-            account.max_toot_chars = etMaxTootChars.parseInt()?.takeIf { it > 0 } ?: 0
+                account.max_toot_chars = etMaxTootChars.parseInt()?.takeIf { it > 0 } ?: 0
 
-            account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
-            account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
-            account.image_resize = (
-                    imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
-                        ?: SavedAccount.defaultResizeConfig
-                    ).spec
+                account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
+                account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
+                account.image_resize = (
+                        imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
+                            ?: SavedAccount.defaultResizeConfig
+                        ).spec
 
-            account.push_policy =
-                pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
+                account.push_policy =
+                    pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
 
-            account.movieTranscodeMode = spMovieTranscodeMode.selectedItemPosition
-            account.movieTranscodeBitrate = etMovieBitrate.text.toString()
-            account.movieTranscodeFramerate = etMovieFrameRate.text.toString()
-            account.movieTranscodeSquarePixels = etMovieSquarePixels.text.toString()
-            account.lang = languages.elementAtOrNull(spLanguageCode.selectedItemPosition)?.first
-                ?: SavedAccount.LANG_WEB
+                account.movieTranscodeMode = spMovieTranscodeMode.selectedItemPosition
+                account.movieTranscodeBitrate = etMovieBitrate.text.toString()
+                account.movieTranscodeFramerate = etMovieFrameRate.text.toString()
+                account.movieTranscodeSquarePixels = etMovieSquarePixels.text.toString()
+                account.lang = languages.elementAtOrNull(spLanguageCode.selectedItemPosition)?.first
+                    ?: SavedAccount.LANG_WEB
+            }
+
+            daoSavedAccount.saveSetting(account)
         }
-
-        account.saveSetting()
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
@@ -617,24 +633,20 @@ class ActAccountSetting : AppCompatActivity(),
             R.id.btnFields -> sendFields()
 
             R.id.btnNotificationStyleEdit ->
-                MessageNotification.openNotificationChannelSetting(
-                    this,
-                    account,
-                    MessageNotification.TRACKING_NAME_DEFAULT
+                PullNotification.openNotificationChannelSetting(
+                    this
                 )
 
             R.id.btnNotificationStyleEditReply ->
-                MessageNotification.openNotificationChannelSetting(
-                    this,
-                    account,
-                    MessageNotification.TRACKING_NAME_REPLY
+                PullNotification.openNotificationChannelSetting(
+                    this
                 )
         }
     }
 
     private fun showVisibility() {
         views.btnVisibility.text =
-            getVisibilityString(this, account.isMisskey, visibility)
+            visibility.getVisibilityString(account.isMisskey)
     }
 
     private fun performVisibility() {
@@ -734,10 +746,11 @@ class ActAccountSetting : AppCompatActivity(),
             .setMessage(R.string.confirm_account_remove)
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.ok) { _, _ ->
-                accountRemove(account)
-                finish()
-            }
-            .show()
+                launchAndShowError {
+                    authRepo.accountRemove(account)
+                    finish()
+                }
+            }.show()
     }
 
     ///////////////////////////////////////////////////
@@ -823,7 +836,7 @@ class ActAccountSetting : AppCompatActivity(),
                         result.jsonObject
                     } else {
                         // 承認待ち状態のチェック
-                        account.checkConfirmed(this, client)
+                        authRepo.checkConfirmed(account, client)
 
                         val result = client.request(
                             "/api/v1/accounts/verify_credentials"
@@ -1259,21 +1272,21 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun openPicker(permissionRequester: PermissionRequester) {
-        if (!permissionRequester.checkOrLaunch()) return
-
-        val propName = when (permissionRequester) {
-            prPickHeader -> "header"
-            else -> "avatar"
+        launchAndShowError {
+            if (!permissionRequester.checkOrLaunch()) return@launchAndShowError
+            val propName = when (permissionRequester) {
+                prPickHeader -> "header"
+                else -> "avatar"
+            }
+            actionsDialog {
+                action(getString(R.string.pick_image)) {
+                    performAttachment(propName)
+                }
+                action(getString(R.string.image_capture)) {
+                    performCamera(propName)
+                }
+            }
         }
-
-        val a = ActionsDialog()
-        a.addAction(getString(R.string.pick_image)) {
-            performAttachment(propName)
-        }
-        a.addAction(getString(R.string.image_capture)) {
-            performCamera(propName)
-        }
-        a.show(this, null)
     }
 
     private fun performAttachment(propName: String) {
@@ -1416,19 +1429,57 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun updatePushSubscription(force: Boolean) {
-        val wps = PushSubscriptionHelper(applicationContext, account, verbose = true)
-        launchMain {
-            runApiTask(account) { client ->
-                wps.updateSubscription(client, force = force)
-            }?.let {
-                val log = wps.logString
-                if (log.isNotEmpty()) {
-                    AlertDialog.Builder(this@ActAccountSetting)
-                        .setMessage(log)
-                        .setPositiveButton(R.string.close, null)
-                        .show()
+        val activity = this
+        launchAndShowError {
+            val anyNotificationWanted = account.notification_boost ||
+                    account.notification_favourite ||
+                    account.notification_follow ||
+                    account.notification_mention ||
+                    account.notification_reaction ||
+                    account.notification_vote ||
+                    account.notification_follow_request ||
+                    account.notification_post ||
+                    account.notification_update
+
+            val lines = ArrayList<String>()
+            val subLogger = object : PushBase.SubscriptionLogger {
+                override val context: Context
+                    get() = activity
+
+                override fun i(msg: String) {
+                    log.w(msg)
+                    synchronized(lines) {
+                        lines.add(msg)
+                    }
+                }
+
+                override fun e(msg: String) {
+                    log.e(msg)
+                    synchronized(lines) {
+                        lines.add(msg)
+                    }
+                }
+
+                override fun e(ex: Throwable, msg: String) {
+                    log.e(ex, msg)
+                    synchronized(lines) {
+                        lines.add(ex.withCaption(msg))
+                    }
                 }
             }
+            try {
+                pushRepo.updateSubscription(
+                    subLogger,
+                    account,
+                    willRemoveSubscription = !anyNotificationWanted,
+                )
+            } catch (ex: Throwable) {
+                subLogger.e(ex, "updateSubscription failed.")
+            }
+            AlertDialog.Builder(activity)
+                .setMessage("${account.acct}:\n${lines.joinToString("\n")}")
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
         }
     }
 }

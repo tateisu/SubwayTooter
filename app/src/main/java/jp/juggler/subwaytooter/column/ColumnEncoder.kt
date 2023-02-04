@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.column
 
 import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.data.JsonException
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.encodeBase64Url
@@ -248,11 +248,11 @@ object ColumnEncoder {
             }
 
             // 以下は保存には必要ないが、カラムリスト画面で使う
-            val ac = AcctColor.load(accessInfo)
+            val ac = daoAcctColor.load(accessInfo)
             dst[KEY_COLUMN_ACCESS_ACCT] = accessInfo.acct.ascii
             dst[KEY_COLUMN_ACCESS_STR] = ac.nickname
-            dst[KEY_COLUMN_ACCESS_COLOR] = ac.color_fg
-            dst[KEY_COLUMN_ACCESS_COLOR_BG] = ac.color_bg
+            dst[KEY_COLUMN_ACCESS_COLOR] = ac.colorFg
+            dst[KEY_COLUMN_ACCESS_COLOR_BG] = ac.colorBg
             dst[KEY_COLUMN_NAME] = getColumnName(true)
             dst[KEY_OLD_INDEX] = oldIndex
         }

@@ -9,11 +9,14 @@ import jp.juggler.subwaytooter.databinding.ActWordListBinding
 import jp.juggler.subwaytooter.databinding.LvMuteAppBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.MutedWord
+import jp.juggler.subwaytooter.table.daoMutedWord
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.setNavigationBack
+import kotlinx.coroutines.withContext
 
 class ActMutedWord : AppCompatActivity() {
 
@@ -47,48 +50,33 @@ class ActMutedWord : AppCompatActivity() {
     }
 
     private fun loadData() {
-        listAdapter.items = buildList {
-            try {
-                MutedWord.createCursor().use { cursor ->
-                    val idxId = cursor.getColumnIndex(MutedWord.COL_ID)
-                    val idxName = cursor.getColumnIndex(MutedWord.COL_NAME)
-                    while (cursor.moveToNext()) {
-                        val item = MyItem(
-                            id = cursor.getLong(idxId),
-                            name = cursor.getString(idxName)
-                        )
-                        add(item)
-                    }
-                }
-            } catch (ex: Throwable) {
-                log.e(ex, "loadData failed.")
+        launchAndShowError {
+            listAdapter.items = withContext(AppDispatchers.IO) {
+                daoMutedWord.listAll()
             }
         }
     }
 
-    private fun delete(item: MyItem?) {
+    private fun delete(item: MutedWord?) {
         item ?: return
         launchAndShowError {
             confirm(R.string.delete_confirm, item.name)
-            MutedWord.delete(item.name)
+            daoMutedWord.delete(item.name)
             listAdapter.remove(item)
         }
     }
 
-    // リスト要素のデータ
-    private class MyItem(val id: Long, val name: String)
-
     // リスト要素のViewHolder
     private inner class MyViewHolder(parent: ViewGroup?) {
         val views = LvMuteAppBinding.inflate(layoutInflater, parent, false)
-        private var lastItem: MyItem? = null
+        private var lastItem: MutedWord? = null
 
         init {
             views.root.tag = this
             views.btnDelete.setOnClickListener { delete(lastItem) }
         }
 
-        fun bind(item: MyItem?) {
+        fun bind(item: MutedWord?) {
             item ?: return
             lastItem = item
             views.tvName.text = item.name
@@ -96,13 +84,13 @@ class ActMutedWord : AppCompatActivity() {
     }
 
     private inner class MyListAdapter : BaseAdapter() {
-        var items: List<MyItem> = emptyList()
+        var items: List<MutedWord> = emptyList()
             set(value) {
                 field = value
                 notifyDataSetChanged()
             }
 
-        fun remove(item: MyItem?) {
+        fun remove(item: MutedWord?) {
             items = items.filter { it != item }
         }
 

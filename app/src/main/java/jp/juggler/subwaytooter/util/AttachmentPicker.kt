@@ -6,8 +6,9 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.kJson
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.GetContentResultEntry
 import jp.juggler.util.data.UriSerializer
 import jp.juggler.util.data.handleGetContentResult
@@ -132,34 +133,35 @@ class AttachmentPicker(
 
     fun openPicker() {
         if (!prPickAttachment.checkOrLaunch()) return
-
-        with(activity) {
-            val a = ActionsDialog()
-            a.addAction(getString(R.string.pick_images)) {
-                openAttachmentChooser(R.string.pick_images, "image/*", "video/*")
+        activity.run {
+            launchAndShowError {
+                actionsDialog {
+                    action(getString(R.string.pick_images)) {
+                        openAttachmentChooser(R.string.pick_images, "image/*", "video/*")
+                    }
+                    action(getString(R.string.pick_videos)) {
+                        openAttachmentChooser(R.string.pick_videos, "video/*")
+                    }
+                    action(getString(R.string.pick_audios)) {
+                        openAttachmentChooser(R.string.pick_audios, "audio/*")
+                    }
+                    action(getString(R.string.image_capture)) {
+                        performCamera()
+                    }
+                    action(getString(R.string.video_capture)) {
+                        performCapture(
+                            MediaStore.ACTION_VIDEO_CAPTURE,
+                            "can't open video capture app."
+                        )
+                    }
+                    action(getString(R.string.voice_capture)) {
+                        performCapture(
+                            MediaStore.Audio.Media.RECORD_SOUND_ACTION,
+                            "can't open voice capture app."
+                        )
+                    }
+                }
             }
-            a.addAction(getString(R.string.pick_videos)) {
-                openAttachmentChooser(R.string.pick_videos, "video/*")
-            }
-            a.addAction(getString(R.string.pick_audios)) {
-                openAttachmentChooser(R.string.pick_audios, "audio/*")
-            }
-            a.addAction(getString(R.string.image_capture)) {
-                performCamera()
-            }
-            a.addAction(getString(R.string.video_capture)) {
-                performCapture(
-                    MediaStore.ACTION_VIDEO_CAPTURE,
-                    "can't open video capture app."
-                )
-            }
-            a.addAction(getString(R.string.voice_capture)) {
-                performCapture(
-                    MediaStore.Audio.Media.RECORD_SOUND_ACTION,
-                    "can't open voice capture app."
-                )
-            }
-            a.show(this, null)
         }
     }
 

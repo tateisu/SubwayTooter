@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.filterNotEmpty
@@ -61,7 +60,7 @@ class TootCard(
             },
         image = src.media_attachments
             ?.firstOrNull()
-            ?.urlForThumbnail(parser.context.pref())
+            ?.urlForThumbnail()
             ?: src.account.avatar_static,
         type = "photo"
     )

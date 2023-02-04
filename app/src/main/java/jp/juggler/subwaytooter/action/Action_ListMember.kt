@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.api.syncAccountByAcct
 import jp.juggler.subwaytooter.column.onListMemberUpdated
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -71,7 +72,8 @@ fun ActMain.listMemberAdd(
                         "".toFormRequestBody().toPost()
                     ) ?: return@runApiTask null
 
-                    val relation = accessInfo.saveUserRelation(
+                    val relation = daoUserRelation.saveUserRelation(
+                        accessInfo,
                         parseItem(::TootRelationShip, parser, result.jsonObject)
                     ) ?: return@runApiTask TootApiResult("parse error.")
 

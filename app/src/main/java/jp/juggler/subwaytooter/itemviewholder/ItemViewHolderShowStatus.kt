@@ -12,8 +12,8 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.isConversation
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.table.ContentWarning
-import jp.juggler.subwaytooter.table.MediaShown
+import jp.juggler.subwaytooter.table.daoContentWarning
+import jp.juggler.subwaytooter.table.daoMediaShown
 import jp.juggler.subwaytooter.util.OpenSticker
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -38,12 +38,12 @@ fun ItemViewHolder.showStatusOrReply(
     when {
         reply != null -> {
             showReply(item.account, reply, R.drawable.ic_reply, R.string.reply_to)
-            if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention(activity.pref)
+            if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention.value
         }
 
         inReplyToId != null && inReplyToAccountId != null -> {
             showReply(null, item, inReplyToAccountId)
-            if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention(activity.pref)
+            if (colorBgArg == 0) colorBg = PrefI.ipEventBgColorMention.value
         }
     }
     showStatus(item, colorBg, fadeText = fadeText)
@@ -59,7 +59,7 @@ fun ItemViewHolder.showStatus(
     if (filteredWord != null) {
         showMessageHolder(
             TootMessageHolder(
-                if (PrefB.bpShowFilteredWord(activity.pref)) {
+                if (PrefB.bpShowFilteredWord.value) {
                     "${activity.getString(R.string.filtered)} / $filteredWord"
                 } else {
                     activity.getString(R.string.filtered)
@@ -73,11 +73,11 @@ fun ItemViewHolder.showStatus(
     llStatus.visibility = View.VISIBLE
 
     if (status.conversation_main) {
-        PrefI.ipConversationMainTootBgColor(activity.pref).notZero()
+        PrefI.ipConversationMainTootBgColor.value.notZero()
             ?: activity.attrColor(R.attr.colorConversationMainTootBg)
     } else {
         colorBg.notZero() ?: when (status.bookmarked) {
-            true -> PrefI.ipEventBgColorBookmark()
+            true -> PrefI.ipEventBgColorBookmark.value
             false -> 0
         }.notZero() ?: when (status.getBackgroundColorType(accessInfo)) {
             TootVisibility.UnlistedHome -> ItemViewHolder.toot_color_unlisted
@@ -183,7 +183,7 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
             llContentWarning.visibility = View.VISIBLE
             tvContentWarning.text = status.decoded_spoiler_text
             spoilerInvalidator.register(status.decoded_spoiler_text)
-            val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
+            val cwShown = daoContentWarning.isShown(status, accessInfo.expand_cw)
             setContentVisibility(cwShown)
         }
 
@@ -192,7 +192,7 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
             llContentWarning.visibility = View.VISIBLE
             tvContentWarning.text = r.decodedSpoilerText
             spoilerInvalidator.register(r.decodedSpoilerText)
-            val cwShown = ContentWarning.isShown(status, accessInfo.expand_cw)
+            val cwShown = daoContentWarning.isShown(status, accessInfo.expand_cw)
             setContentVisibility(cwShown)
         }
 
@@ -227,14 +227,14 @@ private fun ItemViewHolder.showApplicationAndLanguage(status: TootStatus) {
 
     val application = status.application
     if (application != null &&
-        (column.isConversation || PrefB.bpShowAppName(activity.pref))
+        (column.isConversation || PrefB.bpShowAppName.value)
     ) {
         prepareSb().append(activity.getString(R.string.application_is, application.name ?: ""))
     }
 
     val language = status.language
     if (language != null &&
-        (column.isConversation || PrefB.bpShowLanguage(activity.pref))
+        (column.isConversation || PrefB.bpShowLanguage.value)
     ) {
         prepareSb().append(activity.getString(R.string.language_is, language))
     }
@@ -304,7 +304,7 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
             accessInfo.dont_hide_nsfw -> true
             else -> !status.sensitive
         }
-        val isShown = MediaShown.isShown(status, defaultShown)
+        val isShown = daoMediaShown.isShown(status, defaultShown)
 
         btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
         llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
@@ -341,7 +341,7 @@ fun ItemViewHolder.setMedia(
 
     iv.setFocusPoint(ta.focusX, ta.focusY)
 
-    if (PrefB.bpDontCropMediaThumb()) {
+    if (PrefB.bpDontCropMediaThumb.value) {
         iv.scaleType = ImageView.ScaleType.FIT_CENTER
     } else {
         iv.setScaleTypeForMedia()
@@ -353,7 +353,7 @@ fun ItemViewHolder.setMedia(
         TootAttachmentType.Audio -> {
             iv.setMediaType(0)
             iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_music))
-            iv.setImageUrl(0f, ta.urlForThumbnail(activity.pref))
+            iv.setImageUrl(0f, ta.urlForThumbnail())
             showUrl = true
         }
 
@@ -364,7 +364,7 @@ fun ItemViewHolder.setMedia(
             showUrl = true
         }
 
-        else -> when (val urlThumbnail = ta.urlForThumbnail(activity.pref)) {
+        else -> when (val urlThumbnail = ta.urlForThumbnail()) {
             null, "" -> {
                 iv.setMediaType(0)
                 iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))

@@ -5,35 +5,16 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.*
-import jp.juggler.util.data.JsonObject
-import jp.juggler.util.data.TableCompanion
-import jp.juggler.util.data.decodeJsonObject
-import jp.juggler.util.data.digestSHA256Hex
+import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 
-class PostDraft {
-
-    var id: Long = 0
-    var time_save: Long = 0
-    var json: JsonObject? = null
-    var hash: String? = null
-
-    fun delete() {
-        try {
-            appDatabase.delete(table, "$COL_ID=?", arrayOf(id.toString()))
-        } catch (ex: Throwable) {
-            log.e(ex, "delete failed.")
-        }
-    }
-
-    class ColIdx(cursor: Cursor) {
-        val idx_id = cursor.getColumnIndex(COL_ID)
-        val idx_time_save = cursor.getColumnIndex(COL_TIME_SAVE)
-        val idx_json = cursor.getColumnIndex(COL_JSON)
-        val idx_hash = cursor.getColumnIndex(COL_HASH)
-    }
+class PostDraft(
+    var id: Long = 0,
+    var time_save: Long = 0,
+    var json: JsonObject? = null,
+    var hash: String? = null,
+) {
 
     companion object : TableCompanion {
 
@@ -64,12 +45,33 @@ class PostDraft {
                 onDBCreate(db)
             }
         }
+    }
+
+    class ColIdx(cursor: Cursor) {
+        private val idxId = cursor.getColumnIndex(COL_ID)
+        private val idxTimeSave = cursor.getColumnIndex(COL_TIME_SAVE)
+        private val idxJson = cursor.getColumnIndex(COL_JSON)
+        private val idxHash = cursor.getColumnIndex(COL_HASH)
+        fun readRow(cursor: Cursor) = PostDraft(
+            id = cursor.getLong(idxId),
+            time_save = cursor.getLong(idxTimeSave),
+            hash = cursor.getString(idxHash),
+            json = try {
+                cursor.getString(idxJson).decodeJsonObject()
+            } catch (ex: Throwable) {
+                log.e(ex, "loadFromCursor failed.")
+                JsonObject()
+            }
+        )
+    }
+
+    class Access(val db: SQLiteDatabase) {
 
         private fun deleteOld(now: Long) {
             try {
                 // 古いデータを掃除する
                 val expire = now - 86400000L * 30
-                appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+                db.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
             } catch (ex: Throwable) {
                 log.e(ex, "deleteOld failed.")
             }
@@ -90,7 +92,7 @@ class PostDraft {
                 }.toString().digestSHA256Hex()
 
                 // save to db
-                appDatabase.replace(table, null, ContentValues().apply {
+                db.replace(table, null, ContentValues().apply {
                     put(COL_TIME_SAVE, now)
                     put(COL_JSON, json.toString())
                     put(COL_HASH, hash)
@@ -100,9 +102,17 @@ class PostDraft {
             }
         }
 
+        fun delete(item: PostDraft) {
+            try {
+                db.deleteById(table, item.id.toString(), COL_ID)
+            } catch (ex: Throwable) {
+                log.e(ex, "delete failed.")
+            }
+        }
+
         fun hasDraft(): Boolean {
             try {
-                appDatabase.query(table, arrayOf("count(*)"), null, null, null, null, null)
+                db.query(table, arrayOf("count(*)"), null, null, null, null, null)
                     .use { cursor ->
                         if (cursor.moveToNext()) {
                             val count = cursor.getInt(0)
@@ -117,39 +127,19 @@ class PostDraft {
 
         // caller must close the cursor
         @SuppressLint("Recycle")
-        fun createCursor(): Cursor? =
-            try {
-                appDatabase.query(
-                    table,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "$COL_TIME_SAVE desc"
-                )
-            } catch (ex: Throwable) {
-                log.e(ex, "createCursor failed.")
-                null
-            }
+        fun createCursor(): Cursor =
+            db.queryAll(table, "$COL_TIME_SAVE desc")!!
 
-        fun loadFromCursor(cursor: Cursor, colIdxArg: ColIdx?, position: Int): PostDraft? {
-            return if (!cursor.moveToPosition(position)) {
+        fun loadFromCursor(
+            cursor: Cursor,
+            colIdxArg: ColIdx?,
+            position: Int,
+        ): PostDraft? = when {
+            cursor.moveToPosition(position) ->
+                (colIdxArg ?: ColIdx(cursor)).readRow(cursor)
+            else -> {
                 log.d("loadFromCursor: move failed. position=$position")
                 null
-            } else {
-                PostDraft().also { dst ->
-                    val colIdx = colIdxArg ?: ColIdx(cursor)
-                    dst.id = cursor.getLong(colIdx.idx_id)
-                    dst.time_save = cursor.getLong(colIdx.idx_time_save)
-                    dst.hash = cursor.getString(colIdx.idx_hash)
-                    dst.json = try {
-                        cursor.getString(colIdx.idx_json).decodeJsonObject()
-                    } catch (ex: Throwable) {
-                        log.e(ex, "loadFromCursor failed.")
-                        JsonObject()
-                    }
-                }
             }
         }
     }

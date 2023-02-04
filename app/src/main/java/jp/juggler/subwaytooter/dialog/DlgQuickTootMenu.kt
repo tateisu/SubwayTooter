@@ -11,7 +11,6 @@ import android.widget.EditText
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.pref.put
 import jp.juggler.util.ui.dismissSafe
 import java.lang.ref.WeakReference
 
@@ -125,17 +124,14 @@ class DlgQuickTootMenu(
     }
 
     private fun loadStrings() =
-        PrefS.spQuickTootMacro(activity.pref).split("\n")
+        PrefS.spQuickTootMacro.value.split("\n")
 
-    private fun saveStrings() = activity.pref
-        .edit()
-        .put(
-            PrefS.spQuickTootMacro,
+    private fun saveStrings() {
+        PrefS.spQuickTootMacro.value =
             etText.joinToString("\n") {
                 (it?.text?.toString() ?: "").replace("\n", " ")
             }
-        )
-        .apply()
+    }
 
     override fun onClick(v: View?) { // TODO
         when (v?.id) {

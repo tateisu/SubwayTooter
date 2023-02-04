@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.column
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.SparseArray
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.AppState
@@ -13,6 +12,7 @@ import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.streaming.StreamCallback
 import jp.juggler.subwaytooter.streaming.StreamStatus
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.data.*
@@ -64,10 +64,10 @@ class Column(
         internal const val QUICK_FILTER_VOTE = 6
         internal const val QUICK_FILTER_POST = 7
 
-        fun loadAccount(context: Context, src: JsonObject): SavedAccount {
+        fun loadAccount(src: JsonObject): SavedAccount {
             val account_db_id = src.long(ColumnEncoder.KEY_ACCOUNT_ROW_ID) ?: -1L
-            return if (account_db_id >= 0) {
-                SavedAccount.loadAccount(context, account_db_id)
+            return if (account_db_id > 0) {
+                daoSavedAccount.loadAccount(account_db_id)
                     ?: error("missing account")
             } else {
                 SavedAccount.na
@@ -91,24 +91,24 @@ class Column(
         var defaultColorContentAcct = 0
         var defaultColorContentText = 0
 
-        fun reloadDefaultColor(activity: AppCompatActivity, pref: SharedPreferences) {
+        fun reloadDefaultColor(activity: AppCompatActivity) {
 
-            defaultColorHeaderBg = PrefI.ipCcdHeaderBg(pref).notZero()
+            defaultColorHeaderBg = PrefI.ipCcdHeaderBg.value.notZero()
                 ?: activity.attrColor(R.attr.color_column_header)
 
-            defaultColorHeaderName = PrefI.ipCcdHeaderFg(pref).notZero()
+            defaultColorHeaderName = PrefI.ipCcdHeaderFg.value.notZero()
                 ?: activity.attrColor(R.attr.colorColumnHeaderName)
 
-            defaultColorHeaderPageNumber = PrefI.ipCcdHeaderFg(pref).notZero()
+            defaultColorHeaderPageNumber = PrefI.ipCcdHeaderFg.value.notZero()
                 ?: activity.attrColor(R.attr.colorColumnHeaderPageNumber)
 
-            defaultColorContentBg = PrefI.ipCcdContentBg(pref)
+            defaultColorContentBg = PrefI.ipCcdContentBg.value
             // may zero
 
-            defaultColorContentAcct = PrefI.ipCcdContentAcct(pref).notZero()
+            defaultColorContentAcct = PrefI.ipCcdContentAcct.value.notZero()
                 ?: activity.attrColor(R.attr.colorTimeSmall)
 
-            defaultColorContentText = PrefI.ipCcdContentText(pref).notZero()
+            defaultColorContentText = PrefI.ipCcdContentText.value.notZero()
                 ?: activity.attrColor(R.attr.colorTextContent)
         }
 
@@ -257,7 +257,7 @@ class Column(
     var keywordFilterTrees: FilterTrees? = null
 
     @Volatile
-    var favMuteSet: HashSet<Acct>? = null
+    var favMuteSet: Set<Acct>? = null
 
     @Volatile
     var highlightTrie: WordTrieTree? = null
@@ -341,7 +341,7 @@ class Column(
     internal constructor(appState: AppState, src: JsonObject) : this(
         appState,
         appState.context,
-        loadAccount(appState.context, src),
+        loadAccount(src),
         src.optInt(ColumnEncoder.KEY_TYPE),
         ColumnEncoder.decodeColumnId(src)
     ) {

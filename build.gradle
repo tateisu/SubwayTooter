@@ -17,7 +17,6 @@ buildscript {
     ext.kotlinxCoroutinesVersion = "1.6.4"
     ext.lifecycleVersion = "2.5.1"
     ext.okhttpVersion = "4.10.0"
-    ext.roomVersion = "2.5.0"
     ext.stBuildToolsVersion = "33.0.1"
     ext.stCompileSdkVersion = 33
     ext.stMinSdkVersion = 26

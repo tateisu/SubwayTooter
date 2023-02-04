@@ -14,13 +14,16 @@ import jp.juggler.subwaytooter.databinding.ActHighlightListBinding
 import jp.juggler.subwaytooter.databinding.LvHighlightWordBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.daoHighlightWord
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.data.mayUri
+import jp.juggler.util.data.notBlank
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.log.errorEx
 import jp.juggler.util.ui.*
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 class ActHighlightWordList : AppCompatActivity() {
@@ -40,7 +43,7 @@ class ActHighlightWordList : AppCompatActivity() {
             }
         }
 
-        fun tryRingTone(context: Context, uri: Uri?): Boolean {
+        private fun tryRingTone(context: Context, uri: Uri?): Boolean {
             try {
                 uri?.let { RingtoneManager.getRingtone(context, it) }
                     ?.let { ringtone ->
@@ -129,21 +132,10 @@ class ActHighlightWordList : AppCompatActivity() {
     }
 
     private fun loadData() {
-        try {
-            listAdapter.items = buildList {
-                HighlightWord.createCursor().use { cursor ->
-                    val colIdx = HighlightWord.ColIdx(cursor)
-                    while (cursor.moveToNext()) {
-                        try {
-                            add(HighlightWord(cursor, colIdx))
-                        } catch (ex: Throwable) {
-                            log.e(ex, "load error.")
-                        }
-                    }
-                }
+        launchAndShowError {
+            listAdapter.items = withContext(AppDispatchers.IO) {
+                daoHighlightWord.listAll()
             }
-        } catch (ex: Throwable) {
-            errorEx(ex, "query error.")
         }
     }
 
@@ -161,15 +153,17 @@ class ActHighlightWordList : AppCompatActivity() {
         val activity = this
         launchAndShowError {
             confirm(getString(R.string.delete_confirm, item.name))
-            item.delete(activity)
+            daoHighlightWord.delete(applicationContext, item)
             listAdapter.remove(item)
+            App1.getAppState(activity).enableSpeech()
         }
     }
 
     private fun speech(item: HighlightWord?) {
-        item ?: return
-        App1.getAppState(this@ActHighlightWordList)
-            .addSpeech(item.name, dedupMode = DedupMode.None)
+        item?.name?.notBlank()?.let {
+            App1.getAppState(this@ActHighlightWordList)
+                .addSpeech(it, dedupMode = DedupMode.None)
+        }
     }
 
     // リスト要素のViewHolder

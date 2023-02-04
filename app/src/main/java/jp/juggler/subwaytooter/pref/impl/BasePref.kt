@@ -1,9 +1,7 @@
 package jp.juggler.subwaytooter.pref.impl
 
-import android.content.Context
 import android.content.SharedPreferences
-import jp.juggler.subwaytooter.global.appPref
-import jp.juggler.subwaytooter.pref.pref
+import jp.juggler.subwaytooter.pref.lazyPref
 
 @Suppress("EqualsOrHashCode")
 abstract class BasePref<T>(val key: String, val defVal: T) {
@@ -24,28 +22,35 @@ abstract class BasePref<T>(val key: String, val defVal: T) {
     }
 
     abstract fun put(editor: SharedPreferences.Editor, v: T)
-    abstract operator fun invoke(pref: SharedPreferences): T
+    abstract fun readFrom(pref: SharedPreferences): T
+
+    var value : T
+        get()= readFrom(lazyPref)
+        set(value){
+            val e = lazyPref.edit()
+            put(e,value)
+            e.apply()
+        }
+
+    fun removeValue(pref:SharedPreferences = lazyPref){
+        pref.edit().remove(key).apply()
+    }
 
     override fun equals(other: Any?) =
         this === other
 
     override fun hashCode(): Int = key.hashCode()
 
-    open operator fun invoke(context: Context): T =
-        invoke(context.pref())
-
-    operator fun invoke(): T = invoke(appPref)
-
     fun remove(e: SharedPreferences.Editor): SharedPreferences.Editor =
         e.remove(key)
 
     fun removeDefault(pref: SharedPreferences, e: SharedPreferences.Editor) =
-        if (pref.contains(key) && this.invoke(pref) == defVal) {
+        if (pref.contains(key) && this.value == defVal) {
             e.remove(key)
             true
         } else {
             false
         }
 
-    abstract fun hasNonDefaultValue(pref: SharedPreferences): Boolean
+    abstract fun hasNonDefaultValue(pref: SharedPreferences= lazyPref): Boolean
 }

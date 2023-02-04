@@ -48,7 +48,7 @@ fun ColumnViewHolder.closeBitmaps() {
 
 fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
     try {
-        if (url == null || url.isEmpty() || PrefB.bpDontShowColumnBackgroundImage(activity.pref)) {
+        if (url == null || url.isEmpty() || PrefB.bpDontShowColumnBackgroundImage.value) {
             // 指定がないなら閉じる
             closeBitmaps()
             return
@@ -128,7 +128,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
 
         ColumnViewHolder.log.d("onPageCreate [$pageIdx] ${column.getColumnName(true)}")
 
-        val bSimpleList = !column.isConversation && PrefB.bpSimpleList(activity.pref)
+        val bSimpleList = !column.isConversation && PrefB.bpSimpleList.value
 
         tvColumnIndex.text = activity.getString(R.string.column_index, pageIdx + 1, pageCount)
         tvColumnStatus.text = "?"
@@ -221,7 +221,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
                 btnEmojiAdd.vg(false)
 
                 etSearch.vg(true)
-                btnSearchClear.vg(PrefB.bpShowSearchClear(activity.pref))
+                btnSearchClear.vg(PrefB.bpShowSearchClear.value)
                 cbResolve.vg(column.type == ColumnType.SEARCH)
             }
 
@@ -281,7 +281,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         fun dip(dp: Int): Int = (activity.density * dp + 0.5f).toInt()
         val context = activity
 
-        val announcementsBgColor = PrefI.ipAnnouncementsBgColor().notZero()
+        val announcementsBgColor = PrefI.ipAnnouncementsBgColor.value.notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
         btnAnnouncementsCutout.apply {
@@ -294,7 +294,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
             setPadding(0, padV, 0, padV)
         }
 
-        val searchBgColor = PrefI.ipSearchBgColor().notZero()
+        val searchBgColor = PrefI.ipSearchBgColor.value.notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
         llSearch.apply {

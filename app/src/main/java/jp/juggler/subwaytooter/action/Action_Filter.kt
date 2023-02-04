@@ -6,8 +6,8 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.onFilterDeleted
-import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.log.showToast
@@ -17,15 +17,17 @@ import okhttp3.Request
 
 fun ActMain.openFilterMenu(accessInfo: SavedAccount, item: TootFilter?) {
     item ?: return
-
-    val ad = ActionsDialog()
-    ad.addAction(getString(R.string.edit)) {
-        ActKeywordFilter.open(this, accessInfo, item.id)
+    val activity = this
+    launchAndShowError {
+        actionsDialog(getString(R.string.filter_of, item.displayString)) {
+            action(getString(R.string.edit)) {
+                ActKeywordFilter.open(activity, accessInfo, item.id)
+            }
+            action(getString(R.string.delete)) {
+                filterDelete(accessInfo, item)
+            }
+        }
     }
-    ad.addAction(getString(R.string.delete)) {
-        filterDelete(accessInfo, item)
-    }
-    ad.show(this, getString(R.string.filter_of, item.displayString))
 }
 
 fun ActMain.filterDelete(

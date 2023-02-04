@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Typeface
 import android.os.Build
@@ -19,6 +18,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import jp.juggler.subwaytooter.action.accessTokenPrompt
@@ -32,17 +32,15 @@ import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
-import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.pref.put
+import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyDrawerLayout
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
@@ -53,6 +51,9 @@ import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.internal.toHexString
 import java.lang.ref.WeakReference
 import java.util.*
@@ -152,7 +153,6 @@ class ActMain : AppCompatActivity(),
 
     lateinit var completionHelper: CompletionHelper
 
-    lateinit var pref: SharedPreferences
     lateinit var handler: Handler
     lateinit var appState: AppState
 
@@ -196,7 +196,7 @@ class ActMain : AppCompatActivity(),
         override fun run() {
             handler.removeCallbacks(this)
             if (!isStartedEx) return
-            if (PrefB.bpRelativeTimestamp(pref)) {
+            if (PrefB.bpRelativeTimestamp.value) {
                 appState.columnList.forEach { it.fireRelativeTime() }
                 handler.postDelayed(this, 10000L)
             }
@@ -209,7 +209,7 @@ class ActMain : AppCompatActivity(),
             set(value) {
                 if (value != quickPostVisibility) {
                     quickPostVisibility = value
-                    pref.edit().put(PrefS.spQuickTootVisibility, value.id.toString()).apply()
+                    PrefS.spQuickTootVisibility.value = value.id.toString()
                     showQuickPostVisibility()
                 }
             }
@@ -262,7 +262,7 @@ class ActMain : AppCompatActivity(),
     }
 
     val arAppSetting = ActivityResultHandler(log) { r ->
-        Column.reloadDefaultColor(this, pref)
+        Column.reloadDefaultColor(this)
         showFooterColor()
         updateColumnStrip()
         if (r.resultCode == RESULT_APP_DATA_IMPORT) {
@@ -282,15 +282,17 @@ class ActMain : AppCompatActivity(),
     }
 
     val arAccountSetting = ActivityResultHandler(log) { r ->
-        updateColumnStrip()
-        appState.columnList.forEach { it.fireShowColumnHeader() }
-        when (r.resultCode) {
-            RESULT_OK -> r.data?.data?.let { openBrowser(it) }
+        launchAndShowError {
+            updateColumnStrip()
+            appState.columnList.forEach { it.fireShowColumnHeader() }
+            when (r.resultCode) {
+                RESULT_OK -> r.data?.data?.let { openBrowser(it) }
 
-            ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
-                r.data?.long(ActAccountSetting.EXTRA_DB_ID)
-                    ?.let { SavedAccount.loadAccount(this, it) }
-                    ?.let { accessTokenPrompt(it.apiHost) }
+                ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
+                    r.data?.long(ActAccountSetting.EXTRA_DB_ID)
+                        ?.let { daoSavedAccount.loadAccount(it) }
+                        ?.let { accessTokenPrompt(it.apiHost) }
+            }
         }
     }
 
@@ -323,9 +325,11 @@ class ActMain : AppCompatActivity(),
         }
     }
 
-    private val prNotification = permissionSpecNotification.requester {
+    val prNotification = permissionSpecNotification.requester {
         // 特に何もしない
     }
+
+    private var startAfterJob: WeakReference<Job>? = null
 
     //////////////////////////////////////////////////////////////////
     // ライフサイクルイベント
@@ -352,11 +356,10 @@ class ActMain : AppCompatActivity(),
 
         appState = App1.getAppState(this)
         handler = appState.handler
-        pref = appState.pref
         density = appState.density
-        completionHelper = CompletionHelper(this, pref, appState.handler)
+        completionHelper = CompletionHelper(this, appState.handler)
 
-        EmojiDecoder.useTwemoji = PrefB.bpUseTwemoji(pref)
+        EmojiDecoder.useTwemoji = PrefB.bpUseTwemoji.value
 
         acctPadLr = (0.5f + 4f * density).toInt()
         reloadTextSize()
@@ -373,8 +376,6 @@ class ActMain : AppCompatActivity(),
         if (savedInstanceState != null) {
             sharedIntent2?.let { handleSharedIntent(it) }
         }
-
-        checkPrivacyPolicy()
     }
 
     override fun onDestroy() {
@@ -452,91 +453,94 @@ class ActMain : AppCompatActivity(),
 
             sideMenuAdapter.onActivityStart()
 
+            launchDialogs()
+
             // 残りの処理はActivityResultの処理より後回しにしたい
-            handler.postDelayed(onStartAfter, 1L)
-
-            prNotification.checkOrLaunch()
-            themeDefaultChangedDialog()
-        }
-    }
-
-    private val onStartAfter = Runnable {
-        benchmark("onStartAfter total") {
-
-            benchmark("sweepBuggieData") {
-                // バグいアカウントデータを消す
+            lifecycleScope.launch {
                 try {
-                    SavedAccount.sweepBuggieData()
-                } catch (ex: Throwable) {
-                    log.e(ex, "sweepBuggieData failed.")
-                }
-            }
+                    delay(1L)
+                    benchmark("onStartAfter total") {
 
-            val newAccounts = benchmark("loadAccountList") {
-                SavedAccount.loadAccountList(this)
-            }
-
-            benchmark("removeColumnByAccount") {
-                val setDbId = newAccounts.map { it.db_id }.toSet()
-                // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-                appState.columnList
-                    .mapIndexedNotNull { index, column ->
-                        when {
-                            column.accessInfo.isNA -> index
-                            setDbId.contains(column.accessInfo.db_id) -> index
-                            else -> null
+                        benchmark("sweepBuggieData") {
+                            // バグいアカウントデータを消す
+                            try {
+                                daoSavedAccount.sweepBuggieData()
+                            } catch (ex: Throwable) {
+                                log.e(ex, "sweepBuggieData failed.")
+                            }
                         }
-                    }.takeIf { it.size != appState.columnCount }
-                    ?.let { setColumnsOrder(it) }
-            }
 
-            benchmark("fireColumnColor") {
-                // 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
-                appState.columnList.forEach { column ->
-                    column.viewHolder?.lastAnnouncementShown = 0L
-                    column.fireColumnColor()
+                        val newAccounts = benchmark("loadAccountList") {
+                            daoSavedAccount.loadAccountList()
+                        }
+
+                        benchmark("removeColumnByAccount") {
+                            val setDbId = newAccounts.map { it.db_id }.toSet()
+                            // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
+                            appState.columnList
+                                .mapIndexedNotNull { index, column ->
+                                    when {
+                                        column.accessInfo.isNA -> index
+                                        setDbId.contains(column.accessInfo.db_id) -> index
+                                        else -> null
+                                    }
+                                }.takeIf { it.size != appState.columnCount }
+                                ?.let { setColumnsOrder(it) }
+                        }
+
+                        benchmark("fireColumnColor") {
+                            // 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
+                            appState.columnList.forEach { column ->
+                                column.viewHolder?.lastAnnouncementShown = 0L
+                                column.fireColumnColor()
+                            }
+                        }
+                        benchmark("reloadAccountSetting") {
+                            // 各カラムのアカウント設定を読み直す
+                            reloadAccountSetting(newAccounts)
+                        }
+                        benchmark("refreshAfterPost") {
+                            // 投稿直後ならカラムの再取得を行う
+                            refreshAfterPost()
+                        }
+                        benchmark("column.onActivityStart") {
+                            // 画面復帰時に再取得などを行う
+                            appState.columnList.forEach { it.onActivityStart() }
+                        }
+                        benchmark("streamManager.onScreenStart") {
+                            // 画面復帰時にストリーミング接続を開始する
+                            appState.streamManager.onScreenStart()
+                        }
+                        benchmark("updateColumnStripSelection") {
+                            // カラムの表示範囲インジケータを更新
+                            updateColumnStripSelection(-1, -1f)
+                        }
+                        benchmark("fireShowContent") {
+                            appState.columnList.forEach {
+                                it.fireShowContent(reason = "ActMain onStart", reset = true)
+                            }
+                        }
+                        benchmark("proc_updateRelativeTime") {
+                            // 相対時刻表示の更新
+                            procUpdateRelativeTime.run()
+                        }
+                        benchmark("enableSpeech") {
+                            // スピーチの開始
+                            appState.enableSpeech()
+                        }
+                    }
+                } catch (ex: Throwable) {
+                    log.e(ex, "startAfter failed.")
                 }
-            }
-            benchmark("reloadAccountSetting") {
-                // 各カラムのアカウント設定を読み直す
-                reloadAccountSetting(newAccounts)
-            }
-            benchmark("refreshAfterPost") {
-                // 投稿直後ならカラムの再取得を行う
-                refreshAfterPost()
-            }
-            benchmark("column.onActivityStart") {
-                // 画面復帰時に再取得などを行う
-                appState.columnList.forEach { it.onActivityStart() }
-            }
-            benchmark("streamManager.onScreenStart") {
-                // 画面復帰時にストリーミング接続を開始する
-                appState.streamManager.onScreenStart()
-            }
-            benchmark("updateColumnStripSelection") {
-                // カラムの表示範囲インジケータを更新
-                updateColumnStripSelection(-1, -1f)
-            }
-            benchmark("fireShowContent") {
-                appState.columnList.forEach {
-                    it.fireShowContent(reason = "ActMain onStart", reset = true)
-                }
-            }
-            benchmark("proc_updateRelativeTime") {
-                // 相対時刻表示の更新
-                procUpdateRelativeTime.run()
-            }
-            benchmark("enableSpeech") {
-                // スピーチの開始
-                appState.enableSpeech()
-            }
+            }.let { startAfterJob = WeakReference(it) }
         }
     }
 
     override fun onStop() {
         log.d("onStop")
         isStartedEx = false
-        handler.removeCallbacks(onStartAfter)
+        startAfterJob?.get()?.cancel()
+        startAfterJob = null
         handler.removeCallbacks(procUpdateRelativeTime)
 
         completionHelper.closeAcctPopup()
@@ -583,7 +587,7 @@ class ActMain : AppCompatActivity(),
         at android.os.Binder.execTransact (Binder.java:739)
         */
 
-        if (PrefB.bpDontScreenOff(pref)) {
+        if (PrefB.bpDontScreenOff.value) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -611,7 +615,7 @@ class ActMain : AppCompatActivity(),
             { env -> env.pager.currentItem },
             { env -> env.visibleColumnsIndices.first })
         log.d("ipLastColumnPos save $lastPos")
-        pref.edit().put(PrefI.ipLastColumnPos, lastPos).apply()
+        PrefI.ipLastColumnPos.value = lastPos
 
         appState.columnList.forEach { it.saveScrollPosition() }
 
@@ -701,10 +705,10 @@ class ActMain : AppCompatActivity(),
         setContentView(R.layout.act_main)
 
         quickPostVisibility =
-            TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility(pref))
+            TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility.value)
                 ?: quickPostVisibility
 
-        Column.reloadDefaultColor(this, pref)
+        Column.reloadDefaultColor(this)
 
         galaxyBackgroundWorkaround()
 

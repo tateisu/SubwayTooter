@@ -11,12 +11,15 @@ import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onTagFollowChanged
-import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.log.LogCategory
@@ -57,23 +60,21 @@ fun ActMain.tagDialog(
 ) {
     val activity = this
     val tagWithSharp = "#$tagWithoutSharp"
-    launchMain {
-        try {
-
-            val d = ActionsDialog()
-                .addAction(getString(R.string.open_hashtag_column)) {
-                    tagTimelineFromAccount(
-                        pos,
-                        url,
-                        host,
-                        tagWithoutSharp
-                    )
-                }
+    launchAndShowError {
+        actionsDialog(tagWithSharp) {
+            action(getString(R.string.open_hashtag_column)) {
+                tagTimelineFromAccount(
+                    pos,
+                    url,
+                    host,
+                    tagWithoutSharp
+                )
+            }
 
             // 投稿者別タグTL
             if (whoAcct != null) {
-                d.addAction(
-                    AcctColor.getStringWithNickname(
+                action(
+                    daoAcctColor.getStringWithNickname(
                         activity,
                         R.string.open_hashtag_from_account,
                         whoAcct
@@ -89,13 +90,13 @@ fun ActMain.tagDialog(
                 }
             }
 
-            d.addAction(getString(R.string.open_in_browser)) { openCustomTab(url) }
-                .addAction(
-                    getString(
-                        R.string.quote_hashtag_of,
-                        tagWithSharp
-                    )
-                ) { openPost("$tagWithSharp ") }
+            action(getString(R.string.open_in_browser)) {
+                openCustomTab(url)
+            }
+
+            action(getString(R.string.quote_hashtag_of, tagWithSharp)) {
+                openPost("$tagWithSharp ")
+            }
 
             if (tagList != null && tagList.size > 1) {
                 val sb = StringBuilder()
@@ -104,11 +105,8 @@ fun ActMain.tagDialog(
                     sb.append(s)
                 }
                 val tagAll = sb.toString()
-                d.addAction(
-                    getString(
-                        R.string.quote_all_hashtag_of,
-                        tagAll
-                    )
+                action(
+                    getString(R.string.quote_all_hashtag_of, tagAll)
                 ) { openPost("$tagAll ") }
             }
 
@@ -118,10 +116,12 @@ fun ActMain.tagDialog(
                 if (tag == null) {
                     val result = runApiTask(accessInfo) { client ->
                         client.request("/api/v1/tags/${tagWithoutSharp.encodePercent()}")
-                    } ?: return@launchMain //cancelled.
-                    TootParser(activity, accessInfo)
-                        .tag(result.jsonObject)
-                        ?.let { tag = it }
+                    }
+                    if (result != null) {
+                        TootParser(activity, accessInfo)
+                            .tag(result.jsonObject)
+                            ?.let { tag = it }
+                    }
                 }
 
                 val toggle = !(tag?.following ?: false)
@@ -129,14 +129,10 @@ fun ActMain.tagDialog(
                     true -> R.string.follow_hashtag_of
                     else -> R.string.unfollow_hashtag_of
                 }
-                d.addAction(getString(toggleCaption, tagWithSharp)) {
+                action(getString(toggleCaption, tagWithSharp)) {
                     followHashTag(accessInfo, tagWithoutSharp, toggle)
                 }
             }
-
-            d.show(activity, tagWithSharp)
-        } catch (ex: Throwable) {
-            log.e(ex, "tagDialog failed.")
         }
     }
 }
@@ -175,80 +171,80 @@ fun ActMain.tagTimelineFromAccount(
     // 「投稿者別タグTL」を開くなら、投稿者のacctを指定する
     acct: Acct? = null,
 ) {
+    val activity = this
+    launchAndShowError {
+        actionsDialog("#$tagWithoutSharp") {
 
-    val dialog = ActionsDialog()
+            val accountList = daoSavedAccount.loadAccountList().sortedByNickname()
 
-    val accountList = SavedAccount.loadAccountList(this)
-    SavedAccount.sort(accountList)
+            // 分類する
+            val listOriginal = ArrayList<SavedAccount>()
+            val listOriginalPseudo = ArrayList<SavedAccount>()
+            val listOther = ArrayList<SavedAccount>()
+            for (a in accountList) {
+                if (acct == null) {
+                    when {
+                        !a.matchHost(host) -> listOther.add(a)
+                        a.isPseudo -> listOriginalPseudo.add(a)
+                        else -> listOriginal.add(a)
+                    }
+                } else {
+                    when {
+                        // 疑似アカウントはacctからaccount idを取得できないので
+                        // アカウント別タグTLを開けない
+                        a.isPseudo -> Unit
 
-    // 分類する
-    val listOriginal = ArrayList<SavedAccount>()
-    val listOriginalPseudo = ArrayList<SavedAccount>()
-    val listOther = ArrayList<SavedAccount>()
-    for (a in accountList) {
-        if (acct == null) {
-            when {
-                !a.matchHost(host) -> listOther.add(a)
-                a.isPseudo -> listOriginalPseudo.add(a)
-                else -> listOriginal.add(a)
+                        // ミスキーはアカウント別タグTLがないので
+                        // アカウント別タグTLを開けない
+                        a.isMisskey -> Unit
+
+                        !a.matchHost(host) -> listOther.add(a)
+                        else -> listOriginal.add(a)
+                    }
+                }
             }
-        } else {
-            when {
-                // 疑似アカウントはacctからaccount idを取得できないので
-                // アカウント別タグTLを開けない
-                a.isPseudo -> Unit
 
-                // ミスキーはアカウント別タグTLがないので
-                // アカウント別タグTLを開けない
-                a.isMisskey -> Unit
+            // ブラウザで表示する
+            if (!url.isNullOrBlank()) {
+                action(getString(R.string.open_web_on_host, host)) {
+                    openCustomTab(url)
+                }
+            }
 
-                !a.matchHost(host) -> listOther.add(a)
-                else -> listOriginal.add(a)
+            // 同タンスのアカウントがない場合は疑似アカウントを作成して開く
+            // ただし疑似アカウントではアカウントの同期ができないため、特定ユーザのタグTLは読めない)
+            if (acct == null && listOriginal.isEmpty() && listOriginalPseudo.isEmpty()) {
+                action(getString(R.string.open_in_pseudo_account, "?@$host")) {
+                    launchMain {
+                        addPseudoAccount(host)?.let { tagTimeline(pos, it, tagWithoutSharp) }
+                    }
+                }
+            }
+
+            // 分類した順に選択肢を追加する
+            for (a in listOriginal) {
+                action(
+                    daoAcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)
+                ) {
+                    tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
+                }
+            }
+            for (a in listOriginalPseudo) {
+                action(
+                    daoAcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)
+                ) {
+                    tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
+                }
+            }
+            for (a in listOther) {
+                action(
+                    daoAcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)
+                ) {
+                    tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
+                }
             }
         }
     }
-
-    // ブラウザで表示する
-    if (!url.isNullOrBlank()) {
-        dialog.addAction(getString(R.string.open_web_on_host, host)) {
-            openCustomTab(url)
-        }
-    }
-
-    // 同タンスのアカウントがない場合は疑似アカウントを作成して開く
-    // ただし疑似アカウントではアカウントの同期ができないため、特定ユーザのタグTLは読めない)
-    if (acct == null && listOriginal.isEmpty() && listOriginalPseudo.isEmpty()) {
-        dialog.addAction(getString(R.string.open_in_pseudo_account, "?@$host")) {
-            launchMain {
-                addPseudoAccount(host)?.let { tagTimeline(pos, it, tagWithoutSharp) }
-            }
-        }
-    }
-
-    // 分類した順に選択肢を追加する
-    for (a in listOriginal) {
-        dialog.addAction(
-            AcctColor.getStringWithNickname(
-                this,
-                R.string.open_in_account,
-                a.acct
-            )
-        ) {
-            tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
-        }
-    }
-    for (a in listOriginalPseudo) {
-        dialog.addAction(AcctColor.getStringWithNickname(this, R.string.open_in_account, a.acct)) {
-            tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
-        }
-    }
-    for (a in listOther) {
-        dialog.addAction(AcctColor.getStringWithNickname(this, R.string.open_in_account, a.acct)) {
-            tagTimeline(pos, a, tagWithoutSharp, acct?.ascii)
-        }
-    }
-
-    dialog.show(this, "#$tagWithoutSharp")
 }
 
 fun ActMain.followHashTag(

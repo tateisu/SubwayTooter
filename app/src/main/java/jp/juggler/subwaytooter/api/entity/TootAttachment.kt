@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api.entity
 
-import android.content.SharedPreferences
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.*
@@ -191,26 +190,26 @@ class TootAttachment : TootAttachmentLike {
     private fun parseType(src: String?) =
         TootAttachmentType.values().find { it.id == src }
 
-    override fun urlForThumbnail(pref: SharedPreferences) =
-        if (PrefB.bpPriorLocalURL(pref)) {
+    override fun urlForThumbnail() =
+        if (PrefB.bpPriorLocalURL.value) {
             preview_url.notEmpty() ?: preview_remote_url.notEmpty()
         } else {
             preview_remote_url.notEmpty() ?: preview_url.notEmpty()
         } ?: when (type) {
-            TootAttachmentType.Image -> getLargeUrl(pref)
+            TootAttachmentType.Image -> getLargeUrl()
             else -> null
         }
 
-    fun getLargeUrl(pref: SharedPreferences) =
-        if (PrefB.bpPriorLocalURL(pref)) {
+    fun getLargeUrl() =
+        if (PrefB.bpPriorLocalURL.value) {
             url.notEmpty() ?: remote_url
         } else {
             remote_url.notEmpty() ?: url
         }
 
-    fun getLargeUrlList(pref: SharedPreferences) =
+    fun getLargeUrlList() =
         ArrayList<String>().apply {
-            if (PrefB.bpPriorLocalURL(pref)) {
+            if (PrefB.bpPriorLocalURL.value) {
                 url.notEmpty()?.addTo(this)
                 remote_url.notEmpty()?.addTo(this)
             } else {

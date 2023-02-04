@@ -141,7 +141,7 @@ class StreamConnection(
     }
 
     private fun fireDeleteId(id: EntityId) {
-        if (PrefB.bpDontRemoveDeletedToot.invoke(manager.appState.pref)) return
+        if (PrefB.bpDontRemoveDeletedToot.value) return
         val timelineHost = acctGroup.account.apiHost
         manager.appState.columnList.forEach {
             runOnMainLooper {

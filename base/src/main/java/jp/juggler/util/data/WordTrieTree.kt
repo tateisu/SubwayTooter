@@ -66,6 +66,9 @@ class WordTrieTree {
     val isEmpty: Boolean
         get() = nodeRoot.childNodes.size() == 0
 
+    val isNotEmpty: Boolean
+        get() = nodeRoot.childNodes.size() != 0
+
     // 単語の追加
     fun add(
         s: String,

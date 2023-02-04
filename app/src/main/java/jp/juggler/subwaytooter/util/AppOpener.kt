@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.util
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
@@ -19,7 +18,6 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.*
@@ -126,7 +124,7 @@ fun Activity.openBrowser(url: String?) =
     openBrowser(url.mayUri())
 
 // Chrome Custom Tab を開く
-fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
+fun Activity.openCustomTab(url: String?) {
     url ?: return
 
     if (url.isEmpty()) {
@@ -134,7 +132,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
         return
     }
 
-    if (PrefB.bpDontUseCustomTabs(pref)) {
+    if (PrefB.bpDontUseCustomTabs.value) {
         openBrowser(url)
         return
     }
@@ -160,7 +158,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
                     )
                 }
 
-        if (url.startsWith("http") && PrefB.bpPriorChrome(pref)) {
+        if (url.startsWith("http") && PrefB.bpPriorChrome.value) {
             try {
                 // 初回はChrome指定で試す
                 val cn = ComponentName(
@@ -184,7 +182,7 @@ fun Activity.openCustomTab(url: String?, pref: SharedPreferences = pref()) {
 }
 
 fun Activity.openCustomTab(ta: TootAttachment) =
-    openCustomTab(ta.getLargeUrl(pref()))
+    openCustomTab(ta.getLargeUrl())
 
 fun openCustomTab(
     activity: ActMain,

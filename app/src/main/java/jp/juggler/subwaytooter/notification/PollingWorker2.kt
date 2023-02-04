@@ -1,12 +1,15 @@
 package jp.juggler.subwaytooter.notification
 
+import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import androidx.work.*
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
@@ -27,8 +30,6 @@ class PollingWorker2(
         private val log = LogCategory("PollingWorker")
         private const val KEY_ACCOUNT_DB_ID = "accountDbId"
 
-        private const val NOTIFICATION_ID_POLLING_WORKER = 2
-
         private const val WORK_NAME = "PollingWorker2"
 
         suspend fun cancelPolling(context: Context) {
@@ -42,19 +43,20 @@ class PollingWorker2(
         ) {
             val workManager = WorkManager.getInstance(context)
 
-            val prefDevice = PrefDevice.from(context)
+            val prefDevice = context.prefDevice
 
             val newInterval = max(
                 PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS,
-                (PrefS.spPullNotificationCheckInterval().toLongOrNull() ?: 0L) * 60000L,
+                (PrefS.spPullNotificationCheckInterval.value.toLongOrNull() ?: 0L) * 60000L,
             )
 
-            // すでに同じインターバルのが存在するなら何もしない
-            if (workManager.getWorkInfosForUniqueWork(WORK_NAME).await().any {
-                    val oldInterval =
-                        prefDevice.getLong(PrefDevice.KEY_POLLING_WORKER2_INTERVAL, 0L)
-                    oldInterval == newInterval && !it.state.isFinished
-                }) {
+            // 未完了のジョブがあり、インターバルが同じなら何もしない
+            if (workManager.getWorkInfosForUniqueWork(WORK_NAME).await()
+                    .any {
+                        val oldInterval = prefDevice.pollingWorker2Interval ?: 0L
+                        oldInterval == newInterval && !it.state.isFinished
+                    }
+            ) {
                 return
             }
 
@@ -88,7 +90,7 @@ class PollingWorker2(
                 workRequest
             ).await()
 
-            prefDevice.edit().putLong(PrefDevice.KEY_POLLING_WORKER2_INTERVAL, newInterval).apply()
+            prefDevice.pollingWorker2Interval = newInterval
         }
     }
 
@@ -99,10 +101,17 @@ class PollingWorker2(
     }
 
     private suspend fun showMessage(text: String) =
-        CheckerNotification.showMessage(applicationContext, text) {
+        CheckerNotification.showMessage(applicationContext, text) { n, nc ->
             try {
-                setForegroundAsync(ForegroundInfo(NOTIFICATION_ID_POLLING_WORKER, it))
-                    .await()
+                if (ActivityCompat.checkSelfPermission(
+                        applicationContext,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    log.w("missing POST_NOTIFICATIONS. checker=$text")
+                } else {
+                    setForegroundAsync(ForegroundInfo(nc.notificationId, n)).await()
+                }
             } catch (ex: Throwable) {
                 log.e(ex, "showMessage failed.")
             }

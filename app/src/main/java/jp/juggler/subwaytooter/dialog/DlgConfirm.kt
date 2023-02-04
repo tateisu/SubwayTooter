@@ -64,13 +64,13 @@ object DlgConfirm {
 //    }
 
     @SuppressLint("InflateParams")
-    suspend fun AppCompatActivity.confirm(
+    suspend inline fun AppCompatActivity.confirm(
         message: String,
-        getConfirmEnabled: Boolean,
+        isConfirmEnabled: Boolean,
         setConfirmEnabled: (newConfirmEnabled: Boolean) -> Unit,
     ) {
-        if (!getConfirmEnabled) return
-        suspendCancellableCoroutine<Unit> { cont ->
+        if (!isConfirmEnabled) return
+        val skipNext = suspendCancellableCoroutine { cont ->
             try {
                 val views = DlgConfirmBinding.inflate(layoutInflater)
                 views.tvMessage.text = message
@@ -79,10 +79,7 @@ object DlgConfirm {
                     .setCancelable(true)
                     .setNegativeButton(R.string.cancel, null)
                     .setPositiveButton(R.string.ok) { _, _ ->
-                        if (views.cbSkipNext.isChecked) {
-                            setConfirmEnabled(false)
-                        }
-                        if (cont.isActive) cont.resume(Unit)
+                        if (cont.isActive) cont.resume(views.cbSkipNext.isChecked)
                     }
                 dialog.setOnDismissListener {
                     if (cont.isActive) cont.resumeWithException(CancellationException("dialog cancelled."))
@@ -92,6 +89,7 @@ object DlgConfirm {
                 cont.resumeWithException(ex)
             }
         }
+        if (skipNext) setConfirmEnabled(false)
     }
 
     suspend fun AppCompatActivity.confirm(@StringRes messageId: Int, vararg args: Any?) =

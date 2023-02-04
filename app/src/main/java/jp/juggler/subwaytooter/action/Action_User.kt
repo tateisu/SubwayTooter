@@ -14,10 +14,7 @@ import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.FavMute
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
@@ -72,9 +69,9 @@ fun ActMain.openAvatarImage(who: TootAccount) {
 fun ActMain.clickHideFavourite(
     accessInfo: SavedAccount,
     who: TootAccount,
-) {
+) = launchAndShowError {
     val acct = accessInfo.getFullAcct(who)
-    FavMute.save(acct)
+    daoFavMute.save(acct)
     showToast(false, R.string.changed)
     for (column in appState.columnList) {
         column.onHideFavouriteNotification(acct)
@@ -84,8 +81,8 @@ fun ActMain.clickHideFavourite(
 fun ActMain.clickShowFavourite(
     accessInfo: SavedAccount,
     who: TootAccount,
-) {
-    FavMute.delete(accessInfo.getFullAcct(who))
+) = launchAndShowError {
+    daoFavMute.delete(accessInfo.getFullAcct(who))
     showToast(false, R.string.changed)
 }
 
@@ -110,133 +107,134 @@ private fun ActMain.userMute(
     bMute: Boolean,
     bMuteNotification: Boolean,
     duration: Int?,
-) {
+) = launchAndShowError {
     val whoAcct = whoAccessInfo.getFullAcct(whoArg)
     if (accessInfo.isMe(whoAcct)) {
         showToast(false, R.string.it_is_you)
-        return
+        return@launchAndShowError
     }
 
-    launchMain {
-        var resultRelation: UserRelation? = null
-        var resultWhoId: EntityId? = null
-        runApiTask(accessInfo) { client ->
-            val parser = TootParser(this, accessInfo)
-            if (accessInfo.isPseudo) {
-                if (!whoAcct.isValidFull) {
-                    TootApiResult("can't mute pseudo acct ${whoAcct.pretty}")
-                } else {
-                    val relation = UserRelation.loadPseudo(whoAcct)
-                    relation.muting = bMute
-                    relation.savePseudo(whoAcct.ascii)
-                    resultRelation = relation
-                    resultWhoId = whoArg.id
-                    TootApiResult()
+    var resultRelation: UserRelation? = null
+    var resultWhoId: EntityId? = null
+    runApiTask(accessInfo) { client ->
+        val parser = TootParser(this, accessInfo)
+        if (accessInfo.isPseudo) {
+            if (!whoAcct.isValidFull) {
+                TootApiResult("can't mute pseudo acct ${whoAcct.pretty}")
+            } else {
+                val relation = daoUserRelation.loadPseudo(whoAcct)
+                relation.muting = bMute
+                daoUserRelation.savePseudo(whoAcct.ascii, relation)
+                resultRelation = relation
+                resultWhoId = whoArg.id
+                TootApiResult()
+            }
+        } else {
+            val whoId = if (accessInfo.matchHost(whoAccessInfo)) {
+                whoArg.id
+            } else {
+                val (result, accountRef) = client.syncAccountByAcct(accessInfo, whoAcct)
+                accountRef?.get()?.id ?: return@runApiTask result
+            }
+            resultWhoId = whoId
+
+            if (accessInfo.isMisskey) {
+                client.request(
+                    when (bMute) {
+                        true -> "/api/mute/create"
+                        else -> "/api/mute/delete"
+                    },
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("userId", whoId.toString())
+                    }.toPostRequestBuilder()
+                )?.apply {
+                    if (jsonObject != null) {
+                        // 204 no content
+
+                        // update user relation
+                        val ur = daoUserRelation.load(accessInfo.db_id, whoId)
+                        ur.muting = bMute
+                        daoUserRelation.saveUserRelationMisskey(
+                            accessInfo,
+                            whoId,
+                            parser
+                        )
+
+                        resultRelation = ur
+                    }
                 }
             } else {
-                val whoId = if (accessInfo.matchHost(whoAccessInfo)) {
-                    whoArg.id
-                } else {
-                    val (result, accountRef) = client.syncAccountByAcct(accessInfo, whoAcct)
-                    accountRef?.get()?.id ?: return@runApiTask result
-                }
-                resultWhoId = whoId
-
-                if (accessInfo.isMisskey) {
-                    client.request(
-                        when (bMute) {
-                            true -> "/api/mute/create"
-                            else -> "/api/mute/delete"
-                        },
-                        accessInfo.putMisskeyApiToken().apply {
-                            put("userId", whoId.toString())
-                        }.toPostRequestBuilder()
-                    )?.apply {
-                        if (jsonObject != null) {
-                            // 204 no content
-
-                            // update user relation
-                            val ur = UserRelation.load(accessInfo.db_id, whoId)
-                            ur.muting = bMute
-                            accessInfo.saveUserRelationMisskey(
-                                whoId,
-                                parser
-                            )
-                            resultRelation = ur
-                        }
-                    }
-                } else {
-                    client.request(
-                        "/api/v1/accounts/$whoId/${if (bMute) "mute" else "unmute"}",
-                        when {
-                            !bMute -> "".toFormRequestBody()
-                            else ->
-                                buildJsonObject {
-                                    put("notifications", bMuteNotification)
-                                    if (duration != null) put("duration", duration)
-                                }.toRequestBody()
-                        }.toPost()
-                    )?.apply {
-                        val jsonObject = jsonObject
-                        if (jsonObject != null) {
-                            resultRelation = accessInfo.saveUserRelation(
-                                parseItem(::TootRelationShip, parser, jsonObject)
-                            )
-                        }
+                client.request(
+                    "/api/v1/accounts/$whoId/${if (bMute) "mute" else "unmute"}",
+                    when {
+                        !bMute -> "".toFormRequestBody()
+                        else ->
+                            buildJsonObject {
+                                put("notifications", bMuteNotification)
+                                if (duration != null) put("duration", duration)
+                            }.toRequestBody()
+                    }.toPost()
+                )?.apply {
+                    val jsonObject = jsonObject
+                    if (jsonObject != null) {
+                        resultRelation = daoUserRelation.saveUserRelation(
+                            accessInfo,
+                            parseItem(::TootRelationShip, parser, jsonObject)
+                        )
                     }
                 }
             }
-        }?.let { result ->
-            val relation = resultRelation
-            val whoId = resultWhoId
-            if (relation == null || whoId == null) {
-                showToast(false, result.error)
-            } else {
-                // 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
-                if (bMute && !relation.muting) {
-                    showToast(false, R.string.not_muted)
-                    return@launchMain
-                }
+        }
+    }?.let { result ->
+        val relation = resultRelation
+        val whoId = resultWhoId
+        if (relation == null || whoId == null) {
+            showToast(false, result.error)
+        } else {
+            // 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
+            if (bMute && !relation.muting) {
+                showToast(false, R.string.not_muted)
+                return@launchAndShowError
+            }
 
-                for (column in appState.columnList) {
-                    if (column.accessInfo.isPseudo) {
-                        if (relation.muting && column.type != ColumnType.PROFILE) {
-                            // ミュートしたユーザの情報はTLから消える
-                            column.removeAccountInTimelinePseudo(whoAcct)
-                        }
-                        // フォローアイコンの表示更新が走る
-                        column.updateFollowIcons(accessInfo)
-                    } else if (column.accessInfo == accessInfo) {
-                        when {
-                            !relation.muting -> {
-                                if (column.type == ColumnType.MUTES) {
-                                    // ミュート解除したら「ミュートしたユーザ」カラムから消える
-                                    column.removeUser(accessInfo, ColumnType.MUTES, whoId)
-                                } else {
-                                    // 他のカラムではフォローアイコンの表示更新が走る
-                                    column.updateFollowIcons(accessInfo)
-                                }
-                            }
-
-                            column.type == ColumnType.PROFILE && column.profileId == whoId -> {
-                                // 該当ユーザのプロフページのトゥートはミュートしてても見れる
-                                // しかしフォローアイコンの表示更新は必要
+            for (column in appState.columnList) {
+                if (column.accessInfo.isPseudo) {
+                    if (relation.muting && column.type != ColumnType.PROFILE) {
+                        // ミュートしたユーザの情報はTLから消える
+                        column.removeAccountInTimelinePseudo(whoAcct)
+                    }
+                    // フォローアイコンの表示更新が走る
+                    column.updateFollowIcons(accessInfo)
+                } else if (column.accessInfo == accessInfo) {
+                    when {
+                        !relation.muting -> {
+                            if (column.type == ColumnType.MUTES) {
+                                // ミュート解除したら「ミュートしたユーザ」カラムから消える
+                                column.removeUser(accessInfo, ColumnType.MUTES, whoId)
+                            } else {
+                                // 他のカラムではフォローアイコンの表示更新が走る
                                 column.updateFollowIcons(accessInfo)
                             }
+                        }
 
-                            else -> {
-                                // ミュートしたユーザの情報はTLから消える
-                                column.removeAccountInTimeline(accessInfo, whoId)
-                            }
+                        column.type == ColumnType.PROFILE && column.profileId == whoId -> {
+                            // 該当ユーザのプロフページのトゥートはミュートしてても見れる
+                            // しかしフォローアイコンの表示更新は必要
+                            column.updateFollowIcons(accessInfo)
+                        }
+
+                        else -> {
+                            // ミュートしたユーザの情報はTLから消える
+                            column.removeAccountInTimeline(accessInfo, whoId)
                         }
                     }
                 }
-
-                showToast(
-                    false,
-                    if (relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded
-                )
             }
+
+            showToast(
+                false,
+                if (relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded
+            )
         }
     }
 }
@@ -258,7 +256,7 @@ fun ActMain.userMuteConfirm(
     accessInfo: SavedAccount,
     who: TootAccount,
     whoAccessInfo: SavedAccount,
-) {
+) = launchAndShowError {
     val activity = this@userMuteConfirm
 
     // Mastodon 3.3から時限ミュート設定ができる
@@ -288,59 +286,56 @@ fun ActMain.userMuteConfirm(
     cbMuteNotification.vg(hasMuteNotification)
         ?.setText(R.string.confirm_mute_notification_for_user)
 
-    launchMain {
-        val spMuteDuration: Spinner = view.findViewById(R.id.spMuteDuration)
-        val hasMuteDuration = try {
-            when {
-                accessInfo.isMisskey || accessInfo.isPseudo -> false
-                else -> {
-                    var resultBoolean = false
-                    runApiTask(accessInfo) { client ->
-                        val (ti, ri) = TootInstance.get(client)
-                        resultBoolean = ti?.versionGE(TootInstance.VERSION_3_3_0_rc1) == true
-                        ri
-                    }
-                    resultBoolean
+    val spMuteDuration: Spinner = view.findViewById(R.id.spMuteDuration)
+    val hasMuteDuration = try {
+        when {
+            accessInfo.isMisskey || accessInfo.isPseudo -> false
+            else -> {
+                var resultBoolean = false
+                runApiTask(accessInfo) { client ->
+                    val (ti, ri) = TootInstance.get(client)
+                    resultBoolean = ti?.versionGE(TootInstance.VERSION_3_3_0_rc1) == true
+                    ri
                 }
-            }
-        } catch (ignored: CancellationException) {
-            // not show error
-            return@launchMain
-        } catch (ex: RuntimeException) {
-            showToast(true, ex.message)
-            return@launchMain
-        }
-
-        if (hasMuteDuration) {
-            view.findViewById<View>(R.id.llMuteDuration).vg(true)
-            spMuteDuration.apply {
-                adapter = ArrayAdapter(
-                    activity,
-                    android.R.layout.simple_spinner_item,
-                    choiceList.map { it.second }.toTypedArray(),
-                ).apply {
-                    setDropDownViewResource(R.layout.lv_spinner_dropdown)
-                }
+                resultBoolean
             }
         }
-
-        AlertDialog.Builder(activity)
-            .setView(view)
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                userMute(
-                    accessInfo,
-                    who,
-                    whoAccessInfo,
-                    bMute = true,
-                    bMuteNotification = cbMuteNotification.isChecked,
-                    duration = spMuteDuration.selectedItemPosition
-                        .takeIf { hasMuteDuration && it in choiceList.indices }
-                        ?.let { choiceList[it].first }
-                )
-            }
-            .show()
+    } catch (ignored: CancellationException) {
+        // not show error
+        return@launchAndShowError
+    } catch (ex: RuntimeException) {
+        showToast(true, ex.message)
+        return@launchAndShowError
     }
+
+    if (hasMuteDuration) {
+        view.findViewById<View>(R.id.llMuteDuration).vg(true)
+        spMuteDuration.apply {
+            adapter = ArrayAdapter(
+                activity,
+                android.R.layout.simple_spinner_item,
+                choiceList.map { it.second }.toTypedArray(),
+            ).apply {
+                setDropDownViewResource(R.layout.lv_spinner_dropdown)
+            }
+        }
+    }
+
+    AlertDialog.Builder(activity)
+        .setView(view)
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.ok) { _, _ ->
+            userMute(
+                accessInfo,
+                who,
+                whoAccessInfo,
+                bMute = true,
+                bMuteNotification = cbMuteNotification.isChecked,
+                duration = spMuteDuration.selectedItemPosition
+                    .takeIf { hasMuteDuration && it in choiceList.indices }
+                    ?.let { choiceList[it].first }
+            )
+        }.show()
 }
 
 fun ActMain.userMuteFromAnotherAccount(
@@ -381,9 +376,9 @@ fun ActMain.userBlock(
                 if (whoAcct.ascii.contains('?')) {
                     TootApiResult("can't block pseudo account ${whoAcct.pretty}")
                 } else {
-                    val relation = UserRelation.loadPseudo(whoAcct)
+                    val relation = daoUserRelation.loadPseudo(whoAcct)
                     relation.blocking = bBlock
-                    relation.savePseudo(whoAcct.ascii)
+                    daoUserRelation.savePseudo(whoAcct.ascii, relation)
                     relationResult = relation
                     TootApiResult()
                 }
@@ -397,11 +392,10 @@ fun ActMain.userBlock(
                 whoIdResult = whoId
 
                 if (accessInfo.isMisskey) {
-
                     fun saveBlock(v: Boolean) {
-                        val ur = UserRelation.load(accessInfo.db_id, whoId)
+                        val ur = daoUserRelation.load(accessInfo.db_id, whoId)
                         ur.blocking = v
-                        UserRelation.save1Misskey(
+                        daoUserRelation.save1Misskey(
                             System.currentTimeMillis(),
                             accessInfo.db_id,
                             whoId.toString(),
@@ -434,7 +428,8 @@ fun ActMain.userBlock(
                         "".toFormRequestBody().toPost()
                     )?.also { result ->
                         val parser = TootParser(this, accessInfo)
-                        relationResult = accessInfo.saveUserRelation(
+                        relationResult = daoUserRelation.saveUserRelation(
+                            accessInfo,
                             parseItem(::TootRelationShip, parser, result.jsonObject)
                         )
                     }
@@ -597,7 +592,7 @@ fun ActMain.userProfileFromAnotherAccount(
             bAuto = false,
             message = getString(
                 R.string.account_picker_open_user_who,
-                AcctColor.getNickname(accessInfo, who)
+                daoAcctColor.getNickname(accessInfo, who)
             ),
             accountListArg = accountListNonPseudo(who.apDomain)
         )?.let { ai ->
@@ -630,7 +625,7 @@ fun ActMain.userProfile(
     acct: Acct,
     userUrl: String,
     originalUrl: String = userUrl,
-) {
+) = launchAndShowError {
     if (accessInfo?.isPseudo == false) {
         // 文脈のアカウントがあり、疑似アカウントではない
 
@@ -655,51 +650,49 @@ fun ActMain.userProfile(
                 }
             }
         }
-        return
+        return@launchAndShowError
     }
 
     // 文脈がない、もしくは疑似アカウントだった
     // 疑似アカウントでは検索APIを使えないため、IDが分からない
 
-    if (!SavedAccount.hasRealAccount()) {
+    if (!daoSavedAccount.hasRealAccount()) {
         // 疑似アカウントしか登録されていない
         // chrome tab で開く
         openCustomTab(originalUrl)
-        return
+        return@launchAndShowError
     }
-    launchMain {
-        val activity = this@userProfile
-        pickAccount(
-            bAllowPseudo = false,
-            bAuto = false,
-            message = getString(
-                R.string.account_picker_open_user_who,
-                AcctColor.getNickname(acct)
-            ),
-            accountListArg = accountListNonPseudo(acct.host),
-            extraCallback = { ll, pad_se, pad_tb ->
-                // chrome tab で開くアクションを追加
-                val lp = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                val b = AppCompatButton(activity)
-                b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)
-                b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                b.isAllCaps = false
-                b.layoutParams = lp
-                b.minHeight = (0.5f + 32f * activity.density).toInt()
-                b.text = getString(R.string.open_in_browser)
-                b.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
+    val activity = this@userProfile
+    pickAccount(
+        bAllowPseudo = false,
+        bAuto = false,
+        message = getString(
+            R.string.account_picker_open_user_who,
+            daoAcctColor.getNickname(acct)
+        ),
+        accountListArg = accountListNonPseudo(acct.host),
+        extraCallback = { ll, pad_se, pad_tb ->
+            // chrome tab で開くアクションを追加
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            val b = AppCompatButton(activity)
+            b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)
+            b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            b.isAllCaps = false
+            b.layoutParams = lp
+            b.minHeight = (0.5f + 32f * activity.density).toInt()
+            b.text = getString(R.string.open_in_browser)
+            b.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 
-                b.setOnClickListener {
-                    openCustomTab(originalUrl)
-                }
-                ll.addView(b, 0)
+            b.setOnClickListener {
+                openCustomTab(originalUrl)
             }
-        )?.let {
-            userProfileFromUrlOrAcct(pos, it, acct, userUrl)
+            ll.addView(b, 0)
         }
+    )?.let {
+        userProfileFromUrlOrAcct(pos, it, acct, userUrl)
     }
 }
 
@@ -798,12 +791,9 @@ fun ActMain.userSetShowBoosts(
                 jsonObjectOf("reblogs" to bShow).toPostRequestBuilder()
             )?.also { result ->
                 val parser = TootParser(this, accessInfo)
-                resultRelation = accessInfo.saveUserRelation(
-                    parseItem(
-                        ::TootRelationShip,
-                        parser,
-                        result.jsonObject
-                    )
+                resultRelation = daoUserRelation.saveUserRelation(
+                    accessInfo,
+                    parseItem(::TootRelationShip, parser, result.jsonObject)
                 )
             }
         }?.let { result ->
@@ -860,7 +850,7 @@ fun ActMain.userSetStatusNotification(
                     result.jsonObject
                 )
                 if (relation != null) {
-                    UserRelation.save1Mastodon(
+                    daoUserRelation.save1Mastodon(
                         System.currentTimeMillis(),
                         accessInfo.db_id,
                         relation
@@ -901,7 +891,8 @@ fun ActMain.userEndorsement(
             )
                 ?.also { result ->
                     val parser = TootParser(this, accessInfo)
-                    resultRelation = accessInfo.saveUserRelation(
+                    resultRelation = daoUserRelation.saveUserRelation(
+                        accessInfo,
                         parseItem(::TootRelationShip, parser, result.jsonObject)
                     )
                 }

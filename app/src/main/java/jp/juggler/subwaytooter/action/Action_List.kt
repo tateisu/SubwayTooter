@@ -13,9 +13,9 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onListListUpdated
 import jp.juggler.subwaytooter.column.onListNameUpdated
-import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -36,26 +36,28 @@ fun ActMain.clickListTl(pos: Int, accessInfo: SavedAccount, item: TimelineItem?)
 fun ActMain.clickListMoreButton(pos: Int, accessInfo: SavedAccount, item: TimelineItem?) {
     when (item) {
         is TootList -> {
-            ActionsDialog()
-                .addAction(getString(R.string.list_timeline)) {
-                    addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
+            launchAndShowError {
+                actionsDialog(item.title) {
+                    action(getString(R.string.list_timeline)) {
+                        addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
+                    }
+                    action(getString(R.string.list_member)) {
+                        addColumn(
+                            false,
+                            pos,
+                            accessInfo,
+                            ColumnType.LIST_MEMBER,
+                            item.id
+                        )
+                    }
+                    action(getString(R.string.rename)) {
+                        listRename(accessInfo, item)
+                    }
+                    action(getString(R.string.delete)) {
+                        listDelete(accessInfo, item)
+                    }
                 }
-                .addAction(getString(R.string.list_member)) {
-                    addColumn(
-                        false,
-                        pos,
-                        accessInfo,
-                        ColumnType.LIST_MEMBER,
-                        item.id
-                    )
-                }
-                .addAction(getString(R.string.rename)) {
-                    listRename(accessInfo, item)
-                }
-                .addAction(getString(R.string.delete)) {
-                    listDelete(accessInfo, item)
-                }
-                .show(this, item.title)
+            }
         }
 
         is MisskeyAntenna -> {

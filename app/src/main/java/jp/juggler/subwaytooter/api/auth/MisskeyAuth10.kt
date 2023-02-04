@@ -8,9 +8,9 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.pref.PrefDevice
-import jp.juggler.subwaytooter.table.ClientInfo
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.table.daoClientInfo
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -96,14 +96,12 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
      * {"token":"0ba88e2d-4b7d-4599-8d90-dc341a005637","url":"https://misskey.xyz/auth/0ba88e2d-4b7d-4599-8d90-dc341a005637"}
      */
     private suspend fun createAuthUri(apiHost: Host, appSecret: String): Uri {
-        PrefDevice.from(context).edit().apply {
-            putString(PrefDevice.LAST_AUTH_INSTANCE, apiHost.ascii)
-            putString(PrefDevice.LAST_AUTH_SECRET, appSecret)
-            when (val account = account) {
-                null -> remove(PrefDevice.LAST_AUTH_DB_ID)
-                else -> putLong(PrefDevice.LAST_AUTH_DB_ID, account.db_id)
-            }
-        }.apply()
+        context.prefDevice.saveLastAuth(
+            host = apiHost.ascii,
+            secret = appSecret,
+            dbId = account?.db_id, //nullable
+        )
+
         return api.authSessionGenerate(apiHost, appSecret)
             .string("url").notEmpty()?.toUri()
             ?: error("missing 'url' in session/generate.")
@@ -122,7 +120,7 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
     ): Uri {
         val apiHost = apiHost ?: error("missing apiHost")
 
-        val clientInfo = ClientInfo.load(apiHost, clientName)
+        val clientInfo = daoClientInfo.load(apiHost, clientName)
 
         // スコープ一覧を取得する
         val scopeArray = getScopeArrayMisskey(ti)
@@ -173,7 +171,7 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
         val appSecret = appJson.string(KEY_MISSKEY_APP_SECRET)
             .notBlank() ?: error(context.getString(R.string.cant_get_misskey_app_secret))
 
-        ClientInfo.save(apiHost, clientName, appJson.toString())
+        daoClientInfo.save(apiHost, clientName, appJson.toString())
 
         return createAuthUri(apiHost, appSecret)
     }
@@ -183,20 +181,21 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
      */
     override suspend fun authStep2(uri: Uri): Auth2Result {
 
-        val prefDevice = PrefDevice.from(context)
+        val prefDevice = context.prefDevice
 
         val token = uri.getQueryParameter("token")
             ?.notBlank() ?: error("missing token in callback URL")
 
-        val hostStr = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
+        val hostStr = prefDevice.lastAuthInstance
             ?.notBlank() ?: error("missing instance name.")
+
         val apiHost = Host.parse(hostStr)
 
-        when (val dbId = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
+        when (val dbId = prefDevice.lastAuthDbId) {
             // new registration
-            -1L -> client.apiHost = apiHost
+            null -> client.apiHost = apiHost
             // update access token
-            else -> SavedAccount.loadAccount(context, dbId)?.also {
+            else -> daoSavedAccount.loadAccount(dbId)?.also {
                 client.account = it
             } ?: error("missing account db_id=$dbId")
         }
@@ -209,7 +208,7 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
         )
 
         @Suppress("UNUSED_VARIABLE")
-        val clientInfo = ClientInfo.load(apiHost, clientName)
+        val clientInfo = daoClientInfo.load(apiHost, clientName)
             ?.notEmpty() ?: error("missing client id")
 
         val appSecret = clientInfo.string(KEY_MISSKEY_APP_SECRET)

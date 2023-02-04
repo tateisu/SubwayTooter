@@ -6,7 +6,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.isConversation
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.table.MediaShown
+import jp.juggler.subwaytooter.table.daoMediaShown
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
 import jp.juggler.util.data.ellipsize
@@ -48,7 +48,7 @@ private fun addLinkAndCaption(
 
 fun ItemViewHolder.showPreviewCard(status: TootStatus) {
 
-    if (PrefB.bpDontShowPreviewCard(activity.pref)) return
+    if (PrefB.bpDontShowPreviewCard.value) return
 
     val card = status.card ?: return
 
@@ -112,7 +112,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
         if (description != null && description.isNotEmpty()) {
             if (sb.isNotEmpty()) sb.append("<br>")
 
-            val limit = PrefS.spCardDescriptionLength.toInt(activity.pref)
+            val limit = PrefS.spCardDescriptionLength.toInt()
 
             sb.append(
                 HTMLDecoder.encodeEntity(
@@ -150,7 +150,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
                 accessInfo.dont_hide_nsfw -> true
                 else -> !status.sensitive
             }
-            val isShown = MediaShown.isShown(status, defaultShown)
+            val isShown = daoMediaShown.isShown(status, defaultShown)
             llCardImage.vg(isShown)
             btnCardImageShow.vg(!isShown)
         }

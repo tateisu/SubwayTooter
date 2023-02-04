@@ -34,7 +34,7 @@ abstract class AuthBase {
         val clientName
             get() = arrayOf(
                 testClientName,
-                PrefS.spClientName.invoke(),
+                PrefS.spClientName.value,
             ).firstNotNullOfOrNull { it.notBlank() }
                 ?: DEFAULT_CLIENT_NAME
 

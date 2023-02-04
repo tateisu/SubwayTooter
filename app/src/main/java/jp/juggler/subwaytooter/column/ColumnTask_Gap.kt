@@ -128,7 +128,7 @@ class ColumnTask_Gap(
             val iv = when {
                 isHead -> PrefI.ipGapHeadScrollPosition
                 else -> PrefI.ipGapTailScrollPosition
-            }.invoke(pref)
+            }.value
             val scrollHead = iv == PrefI.GSP_HEAD
 
             if (scrollHead) {

@@ -25,15 +25,14 @@ import com.google.android.exoplayer2.util.RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
-import jp.juggler.subwaytooter.global.appPref
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.pref.put
 import jp.juggler.subwaytooter.util.permissionSpecMediaDownload
 import jp.juggler.subwaytooter.util.requester
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -304,7 +303,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         views.pbvImage.background = MediaBackgroundDrawable(
             context = views.root.context,
             tileStep = tileStep,
-            kind = MediaBackgroundDrawable.Kind.fromIndex(PrefI.ipMediaBackground(this))
+            kind = MediaBackgroundDrawable.Kind.fromIndex(PrefI.ipMediaBackground.value)
         )
 
         val enablePaging = mediaList.size > 1
@@ -444,7 +443,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         val url = when {
             forceLocalUrl -> ta.url
-            else -> ta.getLargeUrl(appPref)
+            else -> ta.getLargeUrl()
         }
         if (url == null) {
             showError("missing media attachment url.")
@@ -573,7 +572,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             pbvImage.visible().setBitmap(null)
         }
 
-        val urlList = ta.getLargeUrlList(appPref)
+        val urlList = ta.getLargeUrlList()
         if (urlList.isEmpty()) {
             showError("missing media attachment url.")
             return
@@ -650,7 +649,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             ?: error("missing DownloadManager system service")
 
         val url = if (ta is TootAttachment) {
-            ta.getLargeUrl(appPref)
+            ta.getLargeUrl()
         } else {
             null
         } ?: return
@@ -781,65 +780,80 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun more(ta: TootAttachmentLike) {
-        val ad = ActionsDialog()
-        if (ta is TootAttachment) {
-            val url = ta.getLargeUrl(appPref) ?: return
-            ad.addAction(getString(R.string.open_in_browser)) { share(Intent.ACTION_VIEW, url) }
-            ad.addAction(getString(R.string.share_url)) { share(Intent.ACTION_SEND, url) }
-            ad.addAction(getString(R.string.copy_url)) { copy(url) }
-            addMoreMenu(ad, "url", ta.url, Intent.ACTION_VIEW)
-            addMoreMenu(ad, "remote_url", ta.remote_url, Intent.ACTION_VIEW)
-            addMoreMenu(ad, "preview_url", ta.preview_url, Intent.ACTION_VIEW)
-            addMoreMenu(ad, "preview_remote_url", ta.preview_remote_url, Intent.ACTION_VIEW)
-            addMoreMenu(ad, "text_url", ta.text_url, Intent.ACTION_VIEW)
-        } else if (ta is TootAttachmentMSP) {
-            val url = ta.preview_url
-            ad.addAction(getString(R.string.open_in_browser)) { share(Intent.ACTION_VIEW, url) }
-            ad.addAction(getString(R.string.share_url)) { share(Intent.ACTION_SEND, url) }
-            ad.addAction(getString(R.string.copy_url)) { copy(url) }
-        }
+        launchAndShowError {
+            actionsDialog {
+                fun addMoreMenu(
+                    captionPrefix: String,
+                    url: String?,
+                    @Suppress("SameParameterValue") action: String,
+                ) {
+                    val uri = url.mayUri() ?: return
+                    val caption = getString(R.string.open_browser_of, captionPrefix)
+                    action(caption) {
+                        try {
+                            val intent = Intent(action, uri)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                        } catch (ex: Throwable) {
+                            showToast(ex, "can't open app.")
+                        }
+                    }
+                }
+                if (ta is TootAttachment) {
+                    val url = ta.getLargeUrl()
+                    if (url != null) {
+                        action(getString(R.string.open_in_browser)) {
+                            share(Intent.ACTION_VIEW, url)
+                        }
+                        action(getString(R.string.share_url)) {
+                            share(Intent.ACTION_SEND, url)
+                        }
+                        action(getString(R.string.copy_url)) {
+                            copy(url)
+                        }
+                    }
+                    addMoreMenu("url", ta.url, Intent.ACTION_VIEW)
+                    addMoreMenu("remote_url", ta.remote_url, Intent.ACTION_VIEW)
+                    addMoreMenu("preview_url", ta.preview_url, Intent.ACTION_VIEW)
+                    addMoreMenu("preview_remote_url", ta.preview_remote_url, Intent.ACTION_VIEW)
+                    addMoreMenu("text_url", ta.text_url, Intent.ACTION_VIEW)
+                } else if (ta is TootAttachmentMSP) {
+                    val url = ta.preview_url
+                    action(getString(R.string.open_in_browser)) {
+                        share(Intent.ACTION_VIEW, url)
+                    }
+                    action(getString(R.string.share_url)) {
+                        share(Intent.ACTION_SEND, url)
+                    }
+                    action(getString(R.string.copy_url)) {
+                        copy(url)
+                    }
+                }
 
-        if (TootAttachmentType.Image == mediaList.elementAtOrNull(idx)?.type) {
-            ad.addAction(getString(R.string.background_pattern)) { mediaBackgroundDialog() }
-        }
-
-        ad.show(this, null)
-    }
-
-    private fun addMoreMenu(
-        ad: ActionsDialog,
-        captionPrefix: String,
-        url: String?,
-        @Suppress("SameParameterValue") action: String,
-    ) {
-        val uri = url.mayUri() ?: return
-        val caption = getString(R.string.open_browser_of, captionPrefix)
-        ad.addAction(caption) {
-            try {
-                val intent = Intent(action, uri)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            } catch (ex: Throwable) {
-                showToast(ex, "can't open app.")
+                if (TootAttachmentType.Image == mediaList.elementAtOrNull(idx)?.type) {
+                    action(getString(R.string.background_pattern)) { mediaBackgroundDialog() }
+                }
             }
         }
     }
 
     private fun mediaBackgroundDialog() {
-        val ad = ActionsDialog()
-        for (k in MediaBackgroundDrawable.Kind.values()) {
-            if (!k.isMediaBackground) continue
-            ad.addAction(k.name) {
-                val idx = k.toIndex()
-                appPref.edit().put(PrefI.ipMediaBackground, idx).apply()
-                views.pbvImage.background = MediaBackgroundDrawable(
-                    context = views.root.context,
-                    tileStep = tileStep,
-                    kind = k
-                )
+        launchAndShowError {
+            actionsDialog(getString(R.string.background_pattern)) {
+                for (k in MediaBackgroundDrawable.Kind.values()) {
+                    if (!k.isMediaBackground) continue
+                    action(k.name) {
+                        val idx = k.toIndex()
+                        PrefI.ipMediaBackground.value = idx
+                        views.pbvImage.background = MediaBackgroundDrawable(
+                            context = views.root.context,
+                            tileStep = tileStep,
+                            kind = k
+                        )
+                    }
+                }
             }
         }
-        ad.show(this, getString(R.string.background_pattern))
     }
 
     /**

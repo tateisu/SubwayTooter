@@ -9,15 +9,18 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.databinding.ActTextBinding
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoMutedWord
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.subwaytooter.util.copyToClipboard
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -114,28 +117,34 @@ class ActText : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    private val authRepo by lazy {
+        AuthRepo(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
 
-        account = intent.long(EXTRA_ACCOUNT_DB_ID)
-            ?.let { SavedAccount.loadAccount(this, it) }
-
         initUI()
 
-        if (savedInstanceState == null) {
-            val sv = intent.string(EXTRA_TEXT) ?: ""
-            val contentStart = intent.int(EXTRA_CONTENT_START) ?: 0
-            val contentEnd = intent.int(EXTRA_CONTENT_END) ?: sv.length
-            views.etText.setText(sv)
+        launchAndShowError {
+            account = intent.long(EXTRA_ACCOUNT_DB_ID)
+                ?.let { daoSavedAccount.loadAccount(it) }
 
-            // Android 9 以降ではフォーカスがないとsetSelectionできない
-            if (Build.VERSION.SDK_INT >= 28) {
-                views.etText.requestFocus()
-                views.etText.hideKeyboard()
+            if (savedInstanceState == null) {
+                val sv = intent.string(EXTRA_TEXT) ?: ""
+                val contentStart = intent.int(EXTRA_CONTENT_START) ?: 0
+                val contentEnd = intent.int(EXTRA_CONTENT_END) ?: sv.length
+                views.etText.setText(sv)
+
+                // Android 9 以降ではフォーカスがないとsetSelectionできない
+                if (Build.VERSION.SDK_INT >= 28) {
+                    views.etText.requestFocus()
+                    views.etText.hideKeyboard()
+                }
+
+                views.etText.setSelection(contentStart, contentEnd)
             }
-
-            views.etText.setSelection(contentStart, contentEnd)
         }
     }
 
@@ -192,14 +201,11 @@ class ActText : AppCompatActivity() {
     }
 
     private fun muteWord() {
-        selection.trim().notEmpty()?.let {
-            try {
-                MutedWord.save(it)
-                App1.getAppState(this).onMuteUpdated()
+        launchAndShowError {
+            selection.trim().notEmpty()?.let {
+                daoMutedWord.save(it)
+                App1.getAppState(this@ActText).onMuteUpdated()
                 showToast(false, R.string.word_was_muted)
-            } catch (ex: Throwable) {
-                log.e(ex, "muteWord failed.")
-                showToast(ex, "muteWord failed.")
             }
         }
     }

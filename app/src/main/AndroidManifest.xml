@@ -84,16 +84,17 @@
     <application
         android:name=".App1"
         android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_spec"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
+        android:localeConfig="@xml/locales_config"
         android:maxAspectRatio="100"
         android:resizeableActivity="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Light"
         tools:ignore="DataExtractionRules,UnusedAttribute">
-        <!-- android:localeConfig="@xml/locales_config" -->
 
         <activity
             android:name=".ActMain"
@@ -362,23 +363,38 @@
             </intent-filter>
         </receiver>
 
-        <service
-            android:name=".MyFirebaseMessagingService"
-            android:exported="true"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
             <meta-data
-                android:name="jp.juggler.subwaytooter.global.GlobalInitializer"
+                android:name="jp.juggler.subwaytooter.pref.LazyContextInitializer"
+                android:value="androidx.startup" />
+            <meta-data
+                android:name="jp.juggler.subwaytooter.push.FcmHandlerInitializer"
+                android:value="androidx.startup" />
+            <meta-data
+                android:name="jp.juggler.subwaytooter.pref.PrefDeviceInitializer"
+                android:value="androidx.startup" />
+            <meta-data
+                android:name="jp.juggler.subwaytooter.notification.NotificationChannelsInitializer"
+                android:value="androidx.startup" />
+            <meta-data
+                android:name="jp.juggler.subwaytooter.table.AppDatabaseHolderIniitalizer"
                 android:value="androidx.startup" />
         </provider>
+
+        <receiver
+            android:name=".push.UpMessageReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.connector.MESSAGE" />
+                <action android:name="org.unifiedpush.android.connector.UNREGISTERED" />
+                <action android:name="org.unifiedpush.android.connector.NEW_ENDPOINT" />
+                <action android:name="org.unifiedpush.android.connector.REGISTRATION_REFUSED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

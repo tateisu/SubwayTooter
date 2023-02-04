@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Handler
 import android.util.Log
@@ -19,8 +20,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.emoji.EmojiMap
-import jp.juggler.subwaytooter.global.Global
-import jp.juggler.subwaytooter.global.appPref
+import jp.juggler.subwaytooter.pref.LazyContextHolder
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -30,10 +30,12 @@ import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.util.*
 import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.initializeToastUtils
 import jp.juggler.util.network.MySslSocketFactory
 import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.os.applicationContextSafe
 import jp.juggler.util.ui.*
 import okhttp3.*
 import okhttp3.OkHttpClient
@@ -55,9 +57,15 @@ class App1 : Application() {
 
     override fun onCreate() {
         log.d("onCreate")
+        LazyContextHolder.init(applicationContextSafe)
         super.onCreate()
         initializeToastUtils(this)
         prepare(applicationContext, "App1.onCreate")
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        LazyContextHolder.init(applicationContextSafe)
     }
 
     override fun onTerminate() {
@@ -134,7 +142,7 @@ class App1 : Application() {
             "SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
 
         private fun getUserAgent(): String {
-            val userAgentCustom = PrefS.spUserAgent(appPref)
+            val userAgentCustom = PrefS.spUserAgent.value
             return when {
                 userAgentCustom.isNotEmpty() && !reNotAllowedInUserAgent.matcher(userAgentCustom)
                     .find() -> userAgentCustom
@@ -142,13 +150,14 @@ class App1 : Application() {
             }
         }
 
-        private val user_agent_interceptor = Interceptor { chain ->
-            chain.proceed(
-                chain.request().newBuilder()
-                    .header("User-Agent", getUserAgent())
-                    .build()
-            )
-        }
+        private fun userAgentInterceptor() =
+            Interceptor { chain ->
+                chain.proceed(
+                    chain.request().newBuilder()
+                        .header("User-Agent", getUserAgent())
+                        .build()
+                )
+            }
 
         private var cookieManager: CookieManager? = null
         private var cookieJar: CookieJar? = null
@@ -185,7 +194,7 @@ class App1 : Application() {
                 .connectionSpecs(Collections.singletonList(spec))
                 .sslSocketFactory(MySslSocketFactory, MySslSocketFactory.trustManager)
                 .addInterceptor(ProgressResponseBody.makeInterceptor())
-                .addInterceptor(user_agent_interceptor)
+                .addInterceptor(userAgentInterceptor())
 
             // クッキーの導入は検討中。とりあえずmstdn.jpではクッキー有効でも改善しなかったので現時点では追加しない
             //	.cookieJar(cookieJar)
@@ -227,8 +236,6 @@ class App1 : Application() {
             )
 
             initializeFont()
-
-            Global.prepare(appContext, "App1.prepare($caller)")
 
             // We want at least 2 threads and at most 4 threads in the core pool,
             // preferring to have 1 less than the CPU count to avoid saturating
@@ -278,7 +285,7 @@ class App1 : Application() {
 
                 Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
 
-                val apiReadTimeout = max(3, PrefS.spApiReadTimeout.toInt(appPref))
+                val apiReadTimeout = max(3, PrefS.spApiReadTimeout.toInt())
 
                 // API用のHTTP設定はキャッシュを使わない
                 ok_http_client = prepareOkHttp(apiReadTimeout, apiReadTimeout)
@@ -294,10 +301,11 @@ class App1 : Application() {
                     .build()
 
                 // 内蔵メディアビューア用のHTTP設定はタイムアウトを調整可能
-                val mediaReadTimeout = max(3, PrefS.spMediaReadTimeout.toInt(appPref))
-                ok_http_client_media_viewer = prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
-                    .cache(cache)
-                    .build()
+                val mediaReadTimeout = max(3, PrefS.spMediaReadTimeout.toInt())
+                ok_http_client_media_viewer =
+                    prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
+                        .cache(cache)
+                        .build()
             }
 
             val handler = Handler(appContext.mainLooper)
@@ -310,7 +318,7 @@ class App1 : Application() {
 
             log.d("create  AppState.")
 
-            state = AppState(appContext, handler, appPref)
+            state = AppState(appContext, handler)
             appStateX = state
 
             // getAppState()を使える状態にしてからカラム一覧をロードする
@@ -421,7 +429,7 @@ class App1 : Application() {
         ) {
             prepare(activity.applicationContext, "setActivityTheme")
 
-            var nTheme = PrefI.ipUiTheme(appPref)
+            var nTheme = PrefI.ipUiTheme.value
             if (forceDark && nTheme == 0) nTheme = 1
             activity.setTheme(
                 when (nTheme) {
@@ -484,9 +492,8 @@ class App1 : Application() {
                             .url(url)
                             .cacheControl(CACHE_CONTROL)
                             .also {
-                                val access_token = accessInfo?.getAccessToken()
-                                if (access_token?.isNotEmpty() == true) {
-                                    it.header("Authorization", "Bearer $access_token")
+                                accessInfo?.bearerAccessToken?.notEmpty()?.let { a ->
+                                    it.header("Authorization", "Bearer $a")
                                 }
                             }
                 }

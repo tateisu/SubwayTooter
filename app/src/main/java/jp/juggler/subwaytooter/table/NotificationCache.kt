@@ -9,13 +9,13 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.global.appDatabase
-import jp.juggler.util.*
 import jp.juggler.util.data.*
-import jp.juggler.util.log.*
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.network.toPostRequestBuilder
 
-class NotificationCache(private val account_db_id: Long) {
+class NotificationCache(
+    private val account_db_id: Long,
+) {
 
     private var id = -1L
 
@@ -74,26 +74,6 @@ class NotificationCache(private val account_db_id: Long) {
 
         private const val KEY_TIME_CREATED_AT = "<>KEY_TIME_CREATED_AT"
 
-        fun resetLastLoad(dbId: Long) {
-            try {
-                val cv = ContentValues()
-                cv.put(COL_LAST_LOAD, 0L)
-                appDatabase.update(table, cv, WHERE_AID, arrayOf(dbId.toString()))
-            } catch (ex: Throwable) {
-                log.e(ex, "resetLastLoad(db_id) failed.")
-            }
-        }
-
-        fun resetLastLoad() {
-            try {
-                val cv = ContentValues()
-                cv.put(COL_LAST_LOAD, 0L)
-                appDatabase.update(table, cv, null, null)
-            } catch (ex: Throwable) {
-                log.e(ex, "resetLastLoad() failed.")
-            }
-        }
-
         fun getEntityOrderId(account: SavedAccount, src: JsonObject): EntityId =
             if (account.isMisskey) {
                 // 今のMisskeyはIDをIDとして使っても問題ないのだが、
@@ -105,6 +85,12 @@ class NotificationCache(private val account_db_id: Long) {
             } else {
                 EntityId.mayDefault(src.string("id"))
             }
+
+        fun parseNotificationType(accessInfo: SavedAccount, src: JsonObject): String =
+            when {
+                accessInfo.isMisskey -> src.string("type")
+                else -> src.string("type")
+            } ?: "?"
 
         private fun makeNotificationUrlMastodon(
             flags: Int,
@@ -128,12 +114,29 @@ class NotificationCache(private val account_db_id: Long) {
                 accessInfo.isMisskey -> TootStatus.parseTime(src.string("createdAt"))
                 else -> TootStatus.parseTime(src.string("created_at"))
             }
+    }
 
-        fun parseNotificationType(accessInfo: SavedAccount, src: JsonObject): String =
-            when {
-                accessInfo.isMisskey -> src.string("type")
-                else -> src.string("type")
-            } ?: "?"
+    class Access(val db: SQLiteDatabase) {
+
+        fun resetLastLoad(dbId: Long) {
+            try {
+                val cv = ContentValues()
+                cv.put(COL_LAST_LOAD, 0L)
+                db.update(table, cv, WHERE_AID, arrayOf(dbId.toString()))
+            } catch (ex: Throwable) {
+                log.e(ex, "resetLastLoad(db_id) failed.")
+            }
+        }
+
+        fun resetLastLoad() {
+            try {
+                val cv = ContentValues()
+                cv.put(COL_LAST_LOAD, 0L)
+                db.update(table, cv, null, null)
+            } catch (ex: Throwable) {
+                log.e(ex, "resetLastLoad() failed.")
+            }
+        }
 
         fun deleteCache(dbId: Long) {
             try {
@@ -141,56 +144,79 @@ class NotificationCache(private val account_db_id: Long) {
                 cv.put(COL_ACCOUNT_DB_ID, dbId)
                 cv.put(COL_LAST_LOAD, 0L)
                 cv.putNull(COL_DATA)
-                appDatabase.replaceOrThrow(table, null, cv)
+                db.replaceOrThrow(table, null, cv)
             } catch (ex: Throwable) {
                 log.e(ex, "deleteCache failed.")
             }
         }
-    }
 
-    // load into this object
-    fun load() {
-        try {
-            (appDatabase.query(
-                table,
-                null,
-                WHERE_AID,
-                arrayOf(account_db_id.toString()),
-                null,
-                null,
-                null
-            ) ?: error("null cursor")).use { cursor ->
-                if (!cursor.moveToFirst()) error("load: empty cursor.")
-                // 先にIDとlast_loadを読む
-                this.id = cursor.getLong(COL_ID)
-                this.last_load = cursor.getLong(COL_LAST_LOAD)
-                // データを読む箇所は失敗するかもしれない
-                cursor.getStringOrNull(COL_DATA)
-                    ?.decodeJsonArray()
-                    ?.objectList()
-                    ?.let { data.addAll(it) }
-            }
-        } catch (ex: Throwable) {
-            if (ex.message?.contains("empty cursor") == true) {
-                // アカウント追加直後に起きるはず
-                log.w(ex, "empty cursor. (maybe first loading)")
-            } else {
-                log.e(ex, "load failed.")
+        fun save(item: NotificationCache) {
+            try {
+                item.run {
+                    val cv = ContentValues()
+                    cv.put(COL_ACCOUNT_DB_ID, account_db_id)
+                    cv.put(COL_LAST_LOAD, last_load)
+                    cv.put(COL_DATA, data.toJsonArray().toString())
+
+                    val rv = db.replaceOrThrow(table, null, cv)
+                    if (rv != -1L && id == -1L) id = rv
+                }
+            } catch (ex: Throwable) {
+                log.e(ex, "save failed.")
             }
         }
-    }
 
-    fun save() {
-        try {
-            val cv = ContentValues()
-            cv.put(COL_ACCOUNT_DB_ID, account_db_id)
-            cv.put(COL_LAST_LOAD, last_load)
-            cv.put(COL_DATA, data.toJsonArray().toString())
+        // load into item
+        fun loadInto(item: NotificationCache) {
+            try {
+                item.run {
+                    (db.query(
+                        table,
+                        null,
+                        WHERE_AID,
+                        arrayOf(account_db_id.toString()),
+                        null,
+                        null,
+                        null
+                    ) ?: error("null cursor")).use { cursor ->
+                        if (!cursor.moveToFirst()) error("load: empty cursor.")
+                        // 先にIDとlast_loadを読む
+                        this.id = cursor.getLong(COL_ID)
+                        this.last_load = cursor.getLong(COL_LAST_LOAD)
+                        // データを読む箇所は失敗するかもしれない
+                        cursor.getStringOrNull(COL_DATA)
+                            ?.decodeJsonArray()
+                            ?.objectList()
+                            ?.let { data.addAll(it) }
+                    }
+                }
+            } catch (ex: Throwable) {
+                if (ex.message?.contains("empty cursor") == true) {
+                    // アカウント追加直後に起きるはず
+                    log.w(ex, "empty cursor. (maybe first loading)")
+                } else {
+                    log.e(ex, "load failed.")
+                }
+            }
+        }
 
-            val rv = appDatabase.replaceOrThrow(table, null, cv)
-            if (rv != -1L && id == -1L) id = rv
-        } catch (ex: Throwable) {
-            log.e(ex, "save failed.")
+        fun inject(
+            nc: NotificationCache,
+            account: SavedAccount,
+            list: List<TootNotification>,
+        ) {
+            try {
+                val jsonList = list.map { it.json }
+                jsonList.forEach { item ->
+                    item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
+                }
+                nc.data.addAll(jsonList)
+                nc.normalize(account)
+            } catch (ex: Throwable) {
+                log.e(ex, "inject failed.")
+            } finally {
+                save(nc)
+            }
         }
     }
 
@@ -245,6 +271,7 @@ class NotificationCache(private val account_db_id: Long) {
     }
 
     suspend fun requestAsync(
+        dao: Access,
         client: TootApiClient,
         account: SavedAccount,
         flags: Int,
@@ -289,7 +316,10 @@ class NotificationCache(private val account_db_id: Long) {
 
             val array = result.jsonArray
             if (array != null) {
-                account.updateNotificationError(null)
+                daoAccountNotificationStatus.updateNotificationError(
+                    account.acct,
+                    null,
+                )
 
                 // データをマージする
                 array.objectList().forEach { item ->
@@ -310,7 +340,7 @@ class NotificationCache(private val account_db_id: Long) {
         } catch (ex: Throwable) {
             log.e(ex, "${account.acct} requestAsync failed.")
         } finally {
-            save()
+            dao.save(this)
         }
     }
 
@@ -319,21 +349,6 @@ class NotificationCache(private val account_db_id: Long) {
             .filter { predicate(it) }
             .mapNotNull { getEntityOrderId(account, it).takeIf { id -> !id.isDefault } }
             .reduceOrNull { a, b -> maxComparable(a, b) }
-
-    fun inject(account: SavedAccount, list: List<TootNotification>) {
-        try {
-            val jsonList = list.map { it.json }
-            jsonList.forEach { item ->
-                item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
-            }
-            data.addAll(jsonList)
-            normalize(account)
-        } catch (ex: Throwable) {
-            log.e(ex, "inject failed.")
-        } finally {
-            save()
-        }
-    }
 
     //
     //
@@ -345,7 +360,7 @@ class NotificationCache(private val account_db_id: Long) {
     //			val cv = ContentValues()
     //			post_id.putTo(cv, COL_POST_ID)
     //			cv.put(COL_POST_TIME, post_time)
-    //			val rows = appDatabase.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString()))
+    //			val rows = db.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString()))
     //			log.d(
     //				"updatePost account_db_id=%s,post=%s,%s last_data=%s,update_rows=%s"
     //				, account_db_id

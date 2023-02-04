@@ -9,11 +9,14 @@ import jp.juggler.subwaytooter.databinding.ActWordListBinding
 import jp.juggler.subwaytooter.databinding.LvMuteAppBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.setNavigationBack
+import kotlinx.coroutines.withContext
 
 class ActMutedPseudoAccount : AppCompatActivity() {
 
@@ -47,62 +50,47 @@ class ActMutedPseudoAccount : AppCompatActivity() {
     }
 
     private fun loadData() {
-        listAdapter.items = buildList {
-            try {
-                UserRelation.createCursorPseudoMuted().use { cursor ->
-                    val idxId = UserRelation.COL_ID.getIndex(cursor)
-                    val idxName = UserRelation.COL_WHO_ID.getIndex(cursor)
-                    while (cursor.moveToNext()) {
-                        val item = MyItem(
-                            id = cursor.getLong(idxId),
-                            name = cursor.getString(idxName)
-                        )
-                        add(item)
-                    }
-                }
-            } catch (ex: Throwable) {
-                log.e(ex, "loadData failed.")
+        launchAndShowError {
+            listAdapter.items = withContext(AppDispatchers.IO) {
+                daoUserRelation.listPseudoMuted()
             }
         }
     }
 
-    private fun delete(item: MyItem?) {
+    private fun delete(item: UserRelation?) {
         item ?: return
         launchAndShowError {
-            confirm(R.string.delete_confirm, item.name)
-            UserRelation.deletePseudo(item.id)
+            confirm(R.string.delete_confirm, item.whoId)
+            daoUserRelation.deletePseudo(item.id)
             listAdapter.remove(item)
         }
     }
 
-    // リスト要素のデータ
-    private class MyItem(val id: Long, val name: String)
-
     // リスト要素のViewHolder
     private inner class MyViewHolder(parent: ViewGroup?) {
         val views = LvMuteAppBinding.inflate(layoutInflater, parent, false)
-        private var lastItem: MyItem? = null
+        private var lastItem: UserRelation? = null
 
         init {
             views.root.tag = this
             views.btnDelete.setOnClickListener { delete(lastItem) }
         }
 
-        fun bind(item: MyItem?) {
+        fun bind(item: UserRelation?) {
             item ?: return
             lastItem = item
-            views.tvName.text = item.name
+            views.tvName.text = item.whoId
         }
     }
 
     private inner class MyListAdapter : BaseAdapter() {
-        var items: List<MyItem> = emptyList()
+        var items: List<UserRelation> = emptyList()
             set(value) {
                 field = value
                 notifyDataSetChanged()
             }
 
-        fun remove(item: MyItem) {
+        fun remove(item: UserRelation) {
             items = items.filter { it != item }
         }
 

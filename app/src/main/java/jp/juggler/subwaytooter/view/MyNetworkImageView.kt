@@ -81,7 +81,7 @@ class MyNetworkImageView : AppCompatImageView {
 
         mCornerRadius = r
 
-        val gifUrl = if (PrefB.bpEnableGifAnimation()) gifUrlArg else null
+        val gifUrl = if (PrefB.bpEnableGifAnimation.value) gifUrlArg else null
 
         if (gifUrl?.isNotEmpty() == true) {
             mUrl = gifUrl

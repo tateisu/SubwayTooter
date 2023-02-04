@@ -5,8 +5,10 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
@@ -33,17 +35,17 @@ fun ActPost.selectAccount(a: SavedAccount?) {
 
         views.spLanguage.setSelection(max(0, languages.indexOfFirst { it.first == a.lang }))
 
-        val ac = AcctColor.load(a)
+        val ac = daoAcctColor.load(a)
         views.btnAccount.text = ac.nickname
 
-        if (AcctColor.hasColorBackground(ac)) {
+        if (daoAcctColor.hasColorBackground(ac)) {
             views.btnAccount.background =
-                getAdaptiveRippleDrawableRound(this, ac.color_bg, ac.color_fg)
+                getAdaptiveRippleDrawableRound(this, ac.colorBg, ac.colorFg)
         } else {
             views.btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
         }
 
-        views.btnAccount.textColor = ac.color_fg.notZero()
+        views.btnAccount.textColor = ac.colorFg.notZero()
             ?: attrColor(android.R.attr.textColorPrimary)
     }
     updateTextCount()
@@ -75,8 +77,7 @@ fun ActPost.performAccountChooser() {
     if (!canSwitchAccount()) return
 
     if (isMultiWindowPost) {
-        accountList = SavedAccount.loadAccountList(this)
-        SavedAccount.sort(accountList)
+        accountList = daoSavedAccount.loadAccountList().sortedByNickname()
     }
 
     launchMain {

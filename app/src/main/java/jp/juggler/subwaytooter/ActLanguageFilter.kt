@@ -17,8 +17,9 @@ import androidx.core.content.FileProvider
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.databinding.ActLanguageFilterBinding
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -263,15 +264,17 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             R.id.btnAdd -> edit(null)
 
             R.id.btnMore -> {
-                ActionsDialog()
-                    .addAction(getString(R.string.clear_all)) {
-                        languageList.clear()
-                        languageList.add(MyItem(TootStatus.LANGUAGE_CODE_DEFAULT, true))
-                        adapter.notifyDataSetChanged()
+                launchAndShowError {
+                    actionsDialog {
+                        action(getString(R.string.clear_all)) {
+                            languageList.clear()
+                            languageList.add(MyItem(TootStatus.LANGUAGE_CODE_DEFAULT, true))
+                            adapter.notifyDataSetChanged()
+                        }
+                        action(getString(R.string.export)) { export() }
+                        action(getString(R.string.import_)) { import() }
                     }
-                    .addAction(getString(R.string.export)) { export() }
-                    .addAction(getString(R.string.import_)) { import() }
-                    .show(this)
+                }
             }
         }
     }
@@ -338,14 +341,18 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             val languageList =
                 activity.languageNameMap.map { MyItem(it.key, true) }.sortedWith(languageComparator)
             btnPresets.setOnClickListener {
-                val ad = ActionsDialog()
-                for (a in languageList) {
-                    ad.addAction("${a.code} ${activity.getDesc(a)}") {
-                        etLanguage.setText(a.code)
-                        updateDesc()
+                activity.run {
+                    launchAndShowError {
+                        actionsDialog(getString(R.string.presets)) {
+                            for (a in languageList) {
+                                action("${a.code} ${activity.getDesc(a)}") {
+                                    etLanguage.setText(a.code)
+                                    updateDesc()
+                                }
+                            }
+                        }
                     }
                 }
-                ad.show(activity, activity.getString(R.string.presets))
             }
 
             etLanguage.setText(item?.code ?: "")

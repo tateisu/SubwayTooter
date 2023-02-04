@@ -73,8 +73,6 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycleVersion"
     api "androidx.recyclerview:recyclerview:1.2.1"
-    api "androidx.room:room-ktx:$roomVersion"
-    api "androidx.room:room-runtime:$roomVersion"
     api "androidx.startup:startup-runtime:$startupVersion"
     api "androidx.work:work-runtime-ktx:$workVersion"
     api "androidx.work:work-runtime:$workVersion"
@@ -99,6 +97,7 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinxCoroutinesVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinxCoroutinesVersion"
+    api "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
     api "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"
 

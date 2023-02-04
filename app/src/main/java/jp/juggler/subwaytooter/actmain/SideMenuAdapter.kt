@@ -28,11 +28,12 @@ import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.accountListCanSeeMyReactions
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchIO
-import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.decodeJsonObject
 import jp.juggler.util.data.decodeUTF8
@@ -120,7 +121,7 @@ class SideMenuAdapter(
                 )
             )
             val newRelease = releaseInfo?.jsonObject(
-                if (PrefB.bpCheckBetaVersion()) "beta" else "stable"
+                if (PrefB.bpCheckBetaVersion.value) "beta" else "stable"
             )
 
             // 使用中のアプリバージョンより新しいリリースがある？
@@ -327,7 +328,7 @@ class SideMenuAdapter(
             timeline(defaultInsertPosition, ColumnType.BOOKMARKS)
         },
         Item(icon = R.drawable.ic_face, title = R.string.reactioned_posts) {
-            launchMain {
+            launchAndShowError {
                 accountListCanSeeMyReactions()?.let { list ->
                     if (list.isEmpty()) {
                         showToast(false, R.string.not_available_for_current_accounts)
@@ -518,7 +519,7 @@ class SideMenuAdapter(
     private fun getTimeZoneString(context: Context): String {
         try {
             var tz = TimeZone.getDefault()
-            val tzId = PrefS.spTimeZone()
+            val tzId = PrefS.spTimeZone.value
             if (tzId.isBlank()) {
                 return tz.displayName + "(" + context.getString(R.string.device_timezone) + ")"
             }

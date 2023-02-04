@@ -79,7 +79,7 @@ internal class PopupAutoCompleteAcct(
         et: MyEditText,
         selStart: Int,
         selEnd: Int,
-        acctList: ArrayList<CharSequence>?,
+        acctList: List<CharSequence>?,
         pickerCaption: String?,
         pickerCallback: Runnable?,
     ) {

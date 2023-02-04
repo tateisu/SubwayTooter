@@ -7,10 +7,7 @@ import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
-import jp.juggler.subwaytooter.table.FavMute
-import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.WordTrieTree
@@ -171,8 +168,8 @@ fun Column.initFilter() {
         }
     }
 
-    favMuteSet = FavMute.acctSet
-    highlightTrie = HighlightWord.nameSet
+    favMuteSet = daoFavMute.acctSet()
+    highlightTrie = daoHighlightWord.nameSet()
 }
 
 private fun Column.isFilteredByAttachment(status: TootStatus): Boolean {
@@ -252,10 +249,10 @@ fun Column.isFiltered(status: TootStatus): Boolean {
     if (checkLanguageFilter(status)) return true
 
     if (accessInfo.isPseudo) {
-        var r = UserRelation.loadPseudo(accessInfo.getFullAcct(status.account))
+        var r = daoUserRelation.loadPseudo(accessInfo.getFullAcct(status.account))
         if (r.muting || r.blocking) return true
         if (reblog != null) {
-            r = UserRelation.loadPseudo(accessInfo.getFullAcct(reblog.account))
+            r = daoUserRelation.loadPseudo(accessInfo.getFullAcct(reblog.account))
             if (r.muting || r.blocking) return true
         }
     }

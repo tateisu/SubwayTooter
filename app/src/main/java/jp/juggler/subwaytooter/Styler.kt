@@ -23,7 +23,7 @@ import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.pref.pref
+import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation
@@ -43,14 +43,14 @@ fun defaultColorIcon(context: Context, iconId: Int): Drawable? =
         it.setTintMode(PorterDuff.Mode.SRC_IN)
     }
 
-fun getVisibilityIconId(isMisskeyData: Boolean, visibility: TootVisibility): Int {
-    val isMisskey = when (PrefI.ipVisibilityStyle()) {
+fun TootVisibility.getVisibilityIconId(isMisskeyData: Boolean): Int {
+    val isMisskey = when (PrefI.ipVisibilityStyle.value) {
         PrefI.VS_MASTODON -> false
         PrefI.VS_MISSKEY -> true
         else -> isMisskeyData
     }
     return when {
-        isMisskey -> when (visibility) {
+        isMisskey -> when (this) {
             TootVisibility.Public -> R.drawable.ic_public
             TootVisibility.UnlistedHome -> R.drawable.ic_home
             TootVisibility.PrivateFollowers -> R.drawable.ic_lock_open
@@ -67,7 +67,7 @@ fun getVisibilityIconId(isMisskeyData: Boolean, visibility: TootVisibility): Int
             TootVisibility.Limited -> R.drawable.ic_account_circle
             TootVisibility.Mutual -> R.drawable.ic_bidirectional
         }
-        else -> when (visibility) {
+        else -> when (this) {
             TootVisibility.Public -> R.drawable.ic_public
             TootVisibility.UnlistedHome -> R.drawable.ic_lock_open
             TootVisibility.PrivateFollowers -> R.drawable.ic_lock
@@ -87,19 +87,15 @@ fun getVisibilityIconId(isMisskeyData: Boolean, visibility: TootVisibility): Int
     }
 }
 
-fun getVisibilityString(
-    context: Context,
-    isMisskeyData: Boolean,
-    visibility: TootVisibility,
-): String {
-    val isMisskey = when (PrefI.ipVisibilityStyle()) {
+fun TootVisibility.getVisibilityString(isMisskeyData: Boolean): String {
+    val isMisskey = when (PrefI.ipVisibilityStyle.value) {
         PrefI.VS_MASTODON -> false
         PrefI.VS_MISSKEY -> true
         else -> isMisskeyData
     }
-    return context.getString(
+    return lazyContext.getString(
         when {
-            isMisskey -> when (visibility) {
+            isMisskey -> when (this) {
                 TootVisibility.Public -> R.string.visibility_public
                 TootVisibility.UnlistedHome -> R.string.visibility_home
                 TootVisibility.PrivateFollowers -> R.string.visibility_followers
@@ -116,7 +112,7 @@ fun getVisibilityString(
                 TootVisibility.Limited -> R.string.visibility_limited
                 TootVisibility.Mutual -> R.string.visibility_mutual
             }
-            else -> when (visibility) {
+            else -> when (this) {
                 TootVisibility.Public -> R.string.visibility_public
                 TootVisibility.UnlistedHome -> R.string.visibility_unlisted
                 TootVisibility.PrivateFollowers -> R.string.visibility_followers
@@ -144,8 +140,8 @@ fun getVisibilityCaption(
     visibility: TootVisibility,
 ): CharSequence {
 
-    val iconId = getVisibilityIconId(isMisskeyData, visibility)
-    val sv = getVisibilityString(context, isMisskeyData, visibility)
+    val iconId = visibility.getVisibilityIconId(isMisskeyData)
+    val sv = visibility.getVisibilityString(isMisskeyData)
     val color = context.attrColor(R.attr.colorTextContent)
     val sb = SpannableStringBuilder()
 
@@ -182,11 +178,11 @@ fun setFollowIcon(
     alphaMultiplier: Float,
 ) {
     val colorFollowed =
-        PrefI.ipButtonFollowingColor(context.pref()).notZero()
+        PrefI.ipButtonFollowingColor.value.notZero()
             ?: context.attrColor(R.attr.colorButtonAccentFollow)
 
     val colorFollowRequest =
-        PrefI.ipButtonFollowRequestColor(context.pref()).notZero()
+        PrefI.ipButtonFollowRequestColor.value.notZero()
             ?: context.attrColor(R.attr.colorButtonAccentFollowRequest)
 
     val colorError = context.attrColor(R.attr.colorRegexFilterError)
@@ -309,7 +305,7 @@ fun fixHorizontalPadding(v: View, dpDelta: Float = 12f) {
     val widthDp = dm.widthPixels / dm.density
     if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
         val padLr = (0.5f + dpDelta * dm.density).toInt()
-        when (PrefI.ipJustifyWindowContentPortrait()) {
+        when (PrefI.ipJustifyWindowContentPortrait.value) {
             PrefI.JWCP_START -> {
                 v.setPaddingRelative(padLr, padT, padLr + dm.widthPixels / 2, padB)
                 return
@@ -338,7 +334,7 @@ fun fixHorizontalMargin(v: View) {
         log.d("fixHorizontalMargin: orientation=$orientationString, w=${widthDp}dp, h=${dm.heightPixels / dm.density}")
 
         if (widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            when (PrefI.ipJustifyWindowContentPortrait()) {
+            when (PrefI.ipJustifyWindowContentPortrait.value) {
                 PrefI.JWCP_START -> {
                     lp.marginStart = 0
                     lp.marginEnd = dm.widthPixels / 2
@@ -397,7 +393,7 @@ fun SpannableStringBuilder.appendMisskeyReaction(
         emoji == null ->
             append("text")
 
-        PrefB.bpUseTwemoji(context) -> {
+        PrefB.bpUseTwemoji.value -> {
             val start = this.length
             append(text)
             val end = this.length
@@ -414,9 +410,10 @@ fun SpannableStringBuilder.appendMisskeyReaction(
 }
 
 fun Context.setSwitchColor(root: View?) {
+    root ?: return
     val colorBg = attrColor(R.attr.colorWindowBackground)
     val colorOff = attrColor(R.attr.colorSwitchOff)
-    val colorOn = PrefI.ipSwitchOnColor()
+    val colorOn = PrefI.ipSwitchOnColor.value
 
     val colorDisabled = mixColor(colorBg, colorOff)
 
@@ -451,7 +448,7 @@ fun Context.setSwitchColor(root: View?) {
         )
     )
 
-    root?.scan {
+    root.scan {
         (it as? SwitchCompat)?.apply {
             thumbTintList = thumbStates
             trackTintList = trackStates
@@ -487,13 +484,14 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
 
         var c = when {
             forceDark -> Color.BLACK
-            else -> PrefI.ipStatusBarColor.invoke().notZero() ?: attrColor(R.attr.colorPrimaryDark)
+            else -> PrefI.ipStatusBarColor.value.notZero()
+                ?: attrColor(R.attr.colorPrimaryDark)
         }
         setStatusBarColorCompat(c)
 
         c = when {
             forceDark -> Color.BLACK
-            else -> PrefI.ipNavigationBarColor()
+            else -> PrefI.ipNavigationBarColor.value
         }
         setNavigationBarColorCompat(c)
     }

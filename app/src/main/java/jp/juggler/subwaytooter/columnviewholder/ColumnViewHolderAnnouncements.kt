@@ -337,7 +337,7 @@ private fun ColumnViewHolder.showReactions(
     )
 
     val actMain = activity
-    val disableEmojiAnimation = PrefB.bpDisableEmojiAnimation(actMain.pref)
+    val disableEmojiAnimation = PrefB.bpDisableEmojiAnimation.value
 
     for (reaction in reactions) {
 

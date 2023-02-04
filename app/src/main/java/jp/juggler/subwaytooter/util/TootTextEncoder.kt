@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.ActText
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.pref.PrefB
@@ -184,37 +183,34 @@ object TootTextEncoder {
     ) {
 
         val text = when (enquete.pollType) {
-            TootPollsType.Misskey -> {
-                val sb2 = StringBuilder().append(item.decoded_text)
+            TootPollsType.Misskey -> StringBuilder().apply {
+                append(item.decoded_text)
                 if (enquete.ownVoted) {
-                    sb2.append(" / ")
-                    sb2.append(context.getString(R.string.vote_count_text, item.votes))
-                    if (item.isVoted) sb2.append(' ').append(0x2713.toChar())
+                    append(" / ")
+                    append(context.getString(R.string.vote_count_text, item.votes))
+                    if (item.isVoted) {
+                        append(' ')
+                        append(0x2713.toChar())
+                    }
                 }
-                sb2
             }
-
             TootPollsType.FriendsNico -> {
                 item.decoded_text
             }
-
-            TootPollsType.Mastodon, TootPollsType.Notestock -> if (canVote) {
-                item.decoded_text
-            } else {
-                val sb2 = StringBuilder().append(item.decoded_text)
-                if (!canVote) {
-                    sb2.append(" / ")
-                    sb2.append(
+            TootPollsType.Mastodon, TootPollsType.Notestock -> when {
+                canVote -> item.decoded_text
+                else -> StringBuilder().apply {
+                    append(item.decoded_text)
+                    append(" / ")
+                    append(
                         when (val v = item.votes) {
                             null -> context.getString(R.string.vote_count_unavailable)
                             else -> context.getString(R.string.vote_count_text, v)
                         }
                     )
                 }
-                sb2
             }
         }
-
         sb.addAfterLine(text)
     }
 
@@ -302,7 +298,7 @@ object TootTextEncoder {
         addHeader(context, sb, R.string.send_header_account_created_at, who.created_at)
         addHeader(context, sb, R.string.send_header_account_statuses_count, who.statuses_count)
 
-        if (!PrefB.bpHideFollowCount(App1.getAppState(context).pref)) {
+        if (!PrefB.bpHideFollowCount.value) {
             addHeader(
                 context,
                 sb,

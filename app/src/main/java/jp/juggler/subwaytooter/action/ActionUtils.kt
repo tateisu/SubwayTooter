@@ -1,12 +1,13 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.buildJsonObject
@@ -22,7 +23,6 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
     host: Host,
     instanceInfoArg: TootInstance? = null,
 ): SavedAccount? {
-
     try {
         suspend fun AppCompatActivity.getInstanceInfo(): TootInstance? {
             return try {
@@ -35,7 +35,7 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
 
         val acct = Acct.parse("?", host)
 
-        var account = SavedAccount.loadAccountByAcct(this, acct.ascii)
+        var account = daoSavedAccount.loadAccountByAcct(acct)
         if (account != null) return account
 
         val instanceInfo = instanceInfoArg
@@ -47,7 +47,7 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
             put("acct", acct.username) // ローカルから参照した場合なのでshort acct
         }
 
-        val rowId = SavedAccount.insert(
+        val rowId = daoSavedAccount.saveNew(
             acct = acct.ascii,
             host = host.ascii,
             domain = instanceInfo.apDomain.ascii,
@@ -56,7 +56,7 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
             misskeyVersion = instanceInfo.misskeyVersionMajor
         )
 
-        account = SavedAccount.loadAccount(applicationContext, rowId)
+        account = daoSavedAccount.loadAccount(rowId)
             ?: error("loadAccount returns null.")
 
         account.notification_follow = false
@@ -68,29 +68,13 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
         account.notification_vote = false
         account.notification_post = false
         account.notification_update = false
-        account.saveSetting()
+        daoSavedAccount.saveSetting(account)
         return account
     } catch (ex: Throwable) {
         log.e(ex, "addPseudoAccount failed.")
         showToast(ex, "addPseudoAccount failed.")
         return null
     }
-}
-
-internal fun SavedAccount.saveUserRelation(src: TootRelationShip?): UserRelation? {
-    src ?: return null
-    val now = System.currentTimeMillis()
-    return UserRelation.save1Mastodon(now, db_id, src)
-}
-
-internal fun SavedAccount.saveUserRelationMisskey(
-    whoId: EntityId,
-    parser: TootParser,
-): UserRelation? {
-    val now = System.currentTimeMillis()
-    val relation = parser.getMisskeyUserRelation(whoId)
-    UserRelation.save1Misskey(now, db_id, whoId.toString(), relation)
-    return relation
 }
 
 //// relationshipを取得

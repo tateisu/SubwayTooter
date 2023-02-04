@@ -6,7 +6,6 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.data.*
@@ -56,7 +55,6 @@ class TootApiClient(
     }
 
     // 認証に関する設定を保存する
-    internal val pref = context.pref()
 
     // インスタンスのホスト名
     var apiHost: Host? = null
@@ -407,8 +405,9 @@ class TootApiClient(
 
                     requestBuilder.url(url)
 
-                    (forceAccessToken ?: account?.getAccessToken())
-                        ?.notEmpty()?.let { requestBuilder.header("Authorization", "Bearer $it") }
+                    (forceAccessToken ?: account?.bearerAccessToken)?.notEmpty()?.let {
+                        requestBuilder.header("Authorization", "Bearer $it")
+                    }
 
                     requestBuilder.build()
                         .also { log.d("request: ${it.method} $url") }
@@ -503,10 +502,9 @@ class TootApiClient(
                     url = "$url${delm}i=${accessToken.encodePercent()}"
                 }
             } else {
-                val accessToken = account.getAccessToken()
-                if (accessToken?.isNotEmpty() == true) {
-                    val delm = if (-1 != url.indexOf('?')) '&' else '?'
-                    url = "$url${delm}access_token=${accessToken.encodePercent()}"
+                account.bearerAccessToken.notEmpty()?.let {
+                    val delm = if (url.contains('?')) '&' else '?'
+                    url = "$url${delm}access_token=${it.encodePercent()}"
                 }
             }
 

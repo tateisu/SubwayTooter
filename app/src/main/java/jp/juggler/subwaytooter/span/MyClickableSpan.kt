@@ -37,8 +37,8 @@ class MyClickableSpan(val linkInfo: LinkInfo) : ClickableSpan() {
     init {
         val ac = linkInfo.ac
         if (ac != null) {
-            this.colorFg = ac.color_fg
-            this.colorBg = ac.color_bg
+            this.colorFg = ac.colorFg
+            this.colorBg = ac.colorBg
         } else {
             this.colorFg = 0
             this.colorBg = 0

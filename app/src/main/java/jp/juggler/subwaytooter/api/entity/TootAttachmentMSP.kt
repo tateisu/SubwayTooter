@@ -14,7 +14,7 @@ class TootAttachmentMSP(
     override val description: String?
         get() = null
 
-    override fun urlForThumbnail(pref: SharedPreferences) = preview_url
+    override fun urlForThumbnail() = preview_url
 
     override val urlForDescription: String
         get() = preview_url

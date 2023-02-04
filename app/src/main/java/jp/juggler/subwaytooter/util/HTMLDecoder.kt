@@ -10,6 +10,7 @@ import android.text.style.RelativeSizeSpan
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootMention
@@ -17,8 +18,9 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.*
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoHighlightWord
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.fontSpan
@@ -746,7 +748,7 @@ object HTMLDecoder {
                     val list = options.highlightTrie?.matchList(sb, start, end)
                     if (list != null) {
                         for (range in list) {
-                            val word = HighlightWord.load(range.word) ?: continue
+                            val word = daoHighlightWord.load(range.word) ?: continue
                             sb.setSpan(
                                 HighlightSpan(word.color_fg, word.color_bg),
                                 range.start,
@@ -970,9 +972,10 @@ object HTMLDecoder {
     }
 
     fun decodeMentions(
-        linkHelper: LinkHelper,
+        parser: TootParser,
         status: TootStatus,
     ): Spannable? {
+        val linkHelper = parser.linkHelper
         val mentionList: List<TootMention>? = status.mentions
         val link_tag: Any = status
 
@@ -992,8 +995,8 @@ object HTMLDecoder {
             val linkInfo = if (fullAcct != null) {
                 LinkInfo(
                     url = item.url,
-                    caption = "@${(if (PrefB.bpMentionFullAcct()) fullAcct else item.acct).pretty}",
-                    ac = AcctColor.load(fullAcct),
+                    caption = "@${(if (PrefB.bpMentionFullAcct.value) fullAcct else item.acct).pretty}",
+                    ac = daoAcctColor.load(fullAcct),
                     mention = item,
                     tag = link_tag
                 )
@@ -1081,8 +1084,8 @@ object HTMLDecoder {
             '@' -> {
 
                 fun afterFullAcctResolved(fullAcct: Acct) {
-                    linkInfo.ac = AcctColor.load(fullAcct)
-                    if (options.mentionFullAcct || PrefB.bpMentionFullAcct()) {
+                    linkInfo.ac = daoAcctColor.load(fullAcct)
+                    if (options.mentionFullAcct || PrefB.bpMentionFullAcct.value) {
                         linkInfo.caption = "@${fullAcct.pretty}"
                     }
                 }

@@ -28,11 +28,11 @@ val ActMain.quickPostText: String
 fun ActMain.initUIQuickPost() {
     etQuickPost.typeface = ActMain.timelineFont
 
-    if (!PrefB.bpQuickPostBar.invoke(pref)) {
+    if (!PrefB.bpQuickPostBar.value) {
         llQuickPostBar.visibility = View.GONE
     }
 
-    if (PrefB.bpDontUseActionButtonWithQuickPostBar(pref)) {
+    if (PrefB.bpDontUseActionButtonWithQuickPostBar.value) {
         etQuickPost.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         etQuickPost.imeOptions = EditorInfo.IME_ACTION_NONE
         // 最後に指定する必要がある？
@@ -70,7 +70,7 @@ fun ActMain.initUIQuickPost() {
 
 fun ActMain.showQuickPostVisibility() {
     btnQuickPostMenu.imageResource =
-        when (val resId = getVisibilityIconId(false, quickPostVisibility)) {
+        when (val resId = quickPostVisibility.getVisibilityIconId(false)) {
             R.drawable.ic_question -> R.drawable.ic_description
             else -> resId
         }
@@ -82,7 +82,7 @@ fun ActMain.toggleQuickPostMenu() {
 
 fun ActMain.performQuickPost(account: SavedAccount?) {
     if (account == null) {
-        val a = if (tabletViews != null && !PrefB.bpQuickTootOmitAccountSelection(pref)) {
+        val a = if (tabletViews != null && !PrefB.bpQuickTootOmitAccountSelection.value) {
             // タブレットモードでオプションが無効なら
             // 簡易投稿は常にアカウント選択する
             null

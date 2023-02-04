@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 
 class FloatPref(key: String, defVal: Float) : BasePref<Float>(key, defVal) {
 
-    override operator fun invoke(pref: SharedPreferences): Float =
+    override fun readFrom(pref: SharedPreferences): Float =
         pref.getFloat(key, defVal)
 
     override fun put(editor: SharedPreferences.Editor, v: Float) {

@@ -11,9 +11,9 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.auth.Auth2Result
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
+import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -33,7 +33,7 @@ class SavedAccount(
     apDomainArg: String? = null,
     var token_info: JsonObject? = null,
     var loginAccount: TootAccount? = null, // 疑似アカウントではnull
-    override val misskeyVersion: Int = 0,
+    override var misskeyVersion: Int = 0,
 ) : LinkHelper {
 
     // SavedAccountのロード時にhostを供給する必要があった
@@ -84,9 +84,9 @@ class SavedAccount(
 
     var max_toot_chars = 0
 
-    var lastNotificationError: String? = null
-    var last_subscription_error: String? = null
-    var last_push_endpoint: String? = null
+    private var lastNotificationError: String? = null
+    private var last_subscription_error: String? = null
+    private var last_push_endpoint: String? = null
 
     var image_resize: String? = null
     var image_max_megabytes: String? = null
@@ -94,9 +94,9 @@ class SavedAccount(
 
     var push_policy: String? = null
 
-    private val extraJson = JsonObject()
+    private var extraJson = JsonObject()
 
-    private val jsonDelegates = JsonDelegates(extraJson)
+    private val jsonDelegates = JsonDelegates { extraJson }
 
     @JsonPropInt("movieTranscodeMode", 0)
     var movieTranscodeMode by jsonDelegates.int
@@ -117,7 +117,7 @@ class SavedAccount(
     var notification_status_reference by jsonDelegates.boolean
 
     init {
-        log.i("afterAccountVerify sa.ctor acctArg=$acctArg")
+        log.i("ctor acctArg $acctArg")
 
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
@@ -207,14 +207,8 @@ class SavedAccount(
         image_max_megabytes = cursor.getStringOrNull(COL_IMAGE_MAX_MEGABYTES)
         movie_max_megabytes = cursor.getStringOrNull(COL_MOVIE_MAX_MEGABYTES)
         push_policy = cursor.getStringOrNull(COL_PUSH_POLICY)
-        try {
-            cursor.getStringOrNull(COL_EXTRA_JSON)
-                ?.decodeJsonObject()
-                ?.entries
-                ?.forEach { extraJson[it.key] = it.value }
-        } catch (ex: Throwable) {
-            log.e(ex, "ctor failed.")
-        }
+        cursor.getStringOrNull(COL_EXTRA_JSON)?.decodeJsonObject()
+            ?.let { extraJson = it }
     }
 
     val isNA: Boolean
@@ -222,127 +216,6 @@ class SavedAccount(
 
     val isPseudo: Boolean
         get() = username == "?"
-
-    fun delete() {
-        try {
-            appDatabase.delete(table, "$COL_ID=?", arrayOf(db_id.toString()))
-        } catch (ex: Throwable) {
-            log.e(ex, "SavedAccount.delete failed.")
-            errorEx(ex, "SavedAccount.delete failed.")
-        }
-    }
-
-    fun updateTokenInfo(auth2Result: Auth2Result) {
-        if (db_id == INVALID_DB_ID) error("updateTokenInfo: missing db_id")
-
-        this.token_info = auth2Result.tokenJson
-        this.loginAccount = auth2Result.tootAccount
-
-        ContentValues().apply {
-            put(COL_TOKEN, auth2Result.tokenJson.toString())
-            put(COL_ACCOUNT, auth2Result.accountJson.toString())
-            put(COL_MISSKEY_VERSION, auth2Result.tootInstance.misskeyVersionMajor)
-        }.let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
-    }
-
-    fun saveSetting() {
-
-        if (db_id == INVALID_DB_ID) error("saveSetting: missing db_id")
-
-        ContentValues().apply {
-            put(COL_VISIBILITY, visibility.id.toString())
-
-            put(COL_DONT_HIDE_NSFW, dont_hide_nsfw)
-            put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout)
-            put(COL_NOTIFICATION_MENTION, notification_mention)
-            put(COL_NOTIFICATION_BOOST, notification_boost)
-            put(COL_NOTIFICATION_FAVOURITE, notification_favourite)
-            put(COL_NOTIFICATION_FOLLOW, notification_follow)
-            put(COL_NOTIFICATION_FOLLOW_REQUEST, notification_follow_request)
-            put(COL_NOTIFICATION_REACTION, notification_reaction)
-            put(COL_NOTIFICATION_VOTE, notification_vote)
-            put(COL_NOTIFICATION_POST, notification_post)
-            put(COL_NOTIFICATION_UPDATE, notification_update)
-
-            put(COL_CONFIRM_BOOST, confirm_boost)
-            put(COL_CONFIRM_FAVOURITE, confirm_favourite)
-            put(COL_CONFIRM_UNBOOST, confirm_unboost)
-            put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite)
-            put(COL_CONFIRM_FOLLOW, confirm_follow)
-            put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked)
-            put(COL_CONFIRM_UNFOLLOW, confirm_unfollow)
-            put(COL_CONFIRM_POST, confirm_post)
-            put(COL_CONFIRM_REACTION, confirm_reaction)
-            put(COL_CONFIRM_UNBOOKMARK, confirm_unbookmark)
-
-            put(COL_SOUND_URI, sound_uri)
-            put(COL_DEFAULT_TEXT, default_text)
-
-            put(COL_DEFAULT_SENSITIVE, default_sensitive)
-            put(COL_EXPAND_CW, expand_cw)
-            put(COL_MAX_TOOT_CHARS, max_toot_chars)
-
-            put(COL_IMAGE_RESIZE, image_resize)
-            put(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
-            put(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
-            put(COL_PUSH_POLICY, push_policy)
-            put(COL_EXTRA_JSON, extraJson.toString())
-
-            // 以下のデータはUIからは更新しない
-            // notification_tag
-            // register_key
-        }.let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
-    }
-
-    // onResumeの時に設定を読み直す
-    fun reloadSetting(context: Context, newData: SavedAccount? = null) {
-
-        if (db_id == INVALID_DB_ID) error("SavedAccount.reloadSetting missing db_id")
-
-        // DBから削除されてるかもしれない
-        val b = newData ?: loadAccount(context, db_id) ?: return
-
-        this.visibility = b.visibility
-        this.confirm_boost = b.confirm_boost
-        this.confirm_favourite = b.confirm_favourite
-        this.confirm_unboost = b.confirm_unboost
-        this.confirm_unfavourite = b.confirm_unfavourite
-        this.confirm_post = b.confirm_post
-        this.confirm_reaction = b.confirm_reaction
-        this.confirm_unbookmark = b.confirm_unbookmark
-
-        this.dont_hide_nsfw = b.dont_hide_nsfw
-        this.dont_show_timeout = b.dont_show_timeout
-        this.token_info = b.token_info
-        this.notification_mention = b.notification_mention
-        this.notification_boost = b.notification_boost
-        this.notification_favourite = b.notification_favourite
-        this.notification_follow = b.notification_follow
-        this.notification_follow_request = b.notification_follow_request
-        this.notification_reaction = b.notification_reaction
-        this.notification_vote = b.notification_vote
-        this.notification_post = b.notification_post
-        this.notification_update = b.notification_update
-        this.notification_status_reference = b.notification_status_reference
-
-        this.notification_tag = b.notification_tag
-        this.default_text = b.default_text
-        this.default_sensitive = b.default_sensitive
-        this.expand_cw = b.expand_cw
-
-        this.sound_uri = b.sound_uri
-
-        this.image_resize = b.image_resize
-        this.image_max_megabytes = b.image_max_megabytes
-        this.movie_max_megabytes = b.movie_max_megabytes
-        this.push_policy = b.push_policy
-
-        this.movieTranscodeMode = b.movieTranscodeMode
-        this.movieTranscodeBitrate = b.movieTranscodeBitrate
-        this.movieTranscodeFramerate = b.movieTranscodeFramerate
-        this.movieTranscodeSquarePixels = b.movieTranscodeSquarePixels
-        this.lang = b.lang
-    }
 
     fun getFullAcct(who: TootAccount?) = getFullAcct(who?.acct)
 
@@ -381,8 +254,105 @@ class SavedAccount(
         private val log = LogCategory("SavedAccount")
 
         override val table = "access_info"
+        private const val COL_ID = BaseColumns._ID
+        private const val COL_HOST = "h"
+        private const val COL_DOMAIN = "d"
+        private const val COL_USER = "u"
+        private const val COL_ACCOUNT = "a"
+        private const val COL_TOKEN = "t"
+        private const val COL_VISIBILITY = "visibility"
+        private const val COL_CONFIRM_BOOST = "confirm_boost"
+        private const val COL_DONT_HIDE_NSFW = "dont_hide_nsfw"
+        private const val COL_NOTIFICATION_MENTION = "notification_mention"
+        private const val COL_NOTIFICATION_BOOST = "notification_boost"
+        private const val COL_NOTIFICATION_FAVOURITE = "notification_favourite"
+        private const val COL_NOTIFICATION_FOLLOW = "notification_follow"
+        private const val COL_NOTIFICATION_FOLLOW_REQUEST = "notification_follow_request"
+        private const val COL_NOTIFICATION_REACTION = "notification_reaction"
+        private const val COL_NOTIFICATION_VOTE = "notification_vote"
+        private const val COL_NOTIFICATION_POST = "notification_post"
+        private const val COL_NOTIFICATION_UPDATE = "notification_update"
+        private const val COL_CONFIRM_FOLLOW = "confirm_follow"
+        private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked"
+        private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow"
+        private const val COL_CONFIRM_POST = "confirm_post"
+        private const val COL_CONFIRM_FAVOURITE = "confirm_favourite"
+        private const val COL_CONFIRM_UNBOOST = "confirm_unboost"
+        private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite"
+        private const val COL_CONFIRM_REACTION = "confirm_reaction"
+        private const val COL_CONFIRM_UNBOOKMARK = "confirm_unbookmark"
+
+        // スキーマ13から
+        const val COL_NOTIFICATION_TAG = "notification_server"
+        const val COL_REGISTER_KEY = "register_key"
+        const val COL_REGISTER_TIME = "register_time"
+        private const val COL_SOUND_URI = "sound_uri"
+        private const val COL_DONT_SHOW_TIMEOUT = "dont_show_timeout"
+        private const val COL_DEFAULT_TEXT = "default_text"
+        private const val COL_MISSKEY_VERSION = "is_misskey"
+        private const val COL_DEFAULT_SENSITIVE = "default_sensitive"
+        private const val COL_EXPAND_CW = "expand_cw"
+        private const val COL_MAX_TOOT_CHARS = "max_toot_chars"
+        private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error"
+        private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error"
+        private const val COL_LAST_PUSH_ENDPOINT = "last_push_endpoint"
+        private const val COL_IMAGE_RESIZE = "image_resize"
+        private const val COL_IMAGE_MAX_MEGABYTES = "image_max_megabytes"
+        private const val COL_MOVIE_MAX_MEGABYTES = "movie_max_megabytes"
+        private const val COL_PUSH_POLICY = "push_policy"
+        private const val COL_EXTRA_JSON = "extra_json"
+
+        // COL_MISSKEY_VERSIONのカラム名がおかしいのは、昔はboolean扱いだったから
+        // 0: not misskey
+        // 1: old(v10) misskey
+        // 11: misskey v11
 
         val columnList = ColumnMeta.List(table, 0).apply {
+            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
+            ColumnMeta(this, 0, COL_HOST, "text not null")
+            ColumnMeta(this, 56, COL_DOMAIN, "text")
+            ColumnMeta(this, 0, COL_USER, "text not null")
+            ColumnMeta(this, 0, COL_ACCOUNT, "text not null")
+            ColumnMeta(this, 0, COL_TOKEN, "text not null")
+            ColumnMeta(this, 0, COL_VISIBILITY, "text")
+            ColumnMeta(this, 0, COL_CONFIRM_BOOST, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 0, COL_DONT_HIDE_NSFW, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 2, COL_NOTIFICATION_MENTION, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 2, COL_NOTIFICATION_BOOST, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 2, COL_NOTIFICATION_FAVOURITE, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 2, COL_NOTIFICATION_FOLLOW, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 44, COL_NOTIFICATION_FOLLOW_REQUEST, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 33, COL_NOTIFICATION_REACTION, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 33, COL_NOTIFICATION_VOTE, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 57, COL_NOTIFICATION_POST, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 64, COL_NOTIFICATION_UPDATE, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 10, COL_CONFIRM_FOLLOW, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 10, COL_CONFIRM_FOLLOW_LOCKED, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 10, COL_CONFIRM_UNFOLLOW, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 10, COL_CONFIRM_POST, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 23, COL_CONFIRM_FAVOURITE, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 24, COL_CONFIRM_UNBOOST, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 24, COL_CONFIRM_UNFAVOURITE, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 61, COL_CONFIRM_REACTION, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 62, COL_CONFIRM_UNBOOKMARK, ColumnMeta.TS_TRUE)
+            ColumnMeta(this, 13, COL_NOTIFICATION_TAG, ColumnMeta.TS_EMPTY)
+            ColumnMeta(this, 14, COL_REGISTER_KEY, ColumnMeta.TS_EMPTY)
+            ColumnMeta(this, 14, COL_REGISTER_TIME, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 16, COL_SOUND_URI, ColumnMeta.TS_EMPTY)
+            ColumnMeta(this, 18, COL_DONT_SHOW_TIMEOUT, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 27, COL_DEFAULT_TEXT, ColumnMeta.TS_EMPTY)
+            ColumnMeta(this, 28, COL_MISSKEY_VERSION, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 38, COL_DEFAULT_SENSITIVE, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 38, COL_EXPAND_CW, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 39, COL_MAX_TOOT_CHARS, ColumnMeta.TS_ZERO)
+            ColumnMeta(this, 42, COL_LAST_NOTIFICATION_ERROR, "text")
+            ColumnMeta(this, 45, COL_LAST_SUBSCRIPTION_ERROR, "text")
+            ColumnMeta(this, 46, COL_LAST_PUSH_ENDPOINT, "text")
+            ColumnMeta(this, 59, COL_IMAGE_RESIZE, "text default null")
+            ColumnMeta(this, 59, COL_IMAGE_MAX_MEGABYTES, "text default null")
+            ColumnMeta(this, 59, COL_MOVIE_MAX_MEGABYTES, "text default null")
+            ColumnMeta(this, 60, COL_PUSH_POLICY, "text default null")
+            ColumnMeta(this, 63, COL_EXTRA_JSON, "text default null")
             createExtra = {
                 arrayOf(
                     "create index if not exists ${table}_user on $table(u)",
@@ -390,113 +360,6 @@ class SavedAccount(
                 )
             }
         }
-
-        private val COL_ID =
-            ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
-        private val COL_HOST = ColumnMeta(columnList, 0, "h", "text not null")
-        private val COL_DOMAIN = ColumnMeta(columnList, 56, "d", "text")
-        private val COL_USER = ColumnMeta(columnList, 0, "u", "text not null")
-        private val COL_ACCOUNT = ColumnMeta(columnList, 0, "a", "text not null")
-        private val COL_TOKEN = ColumnMeta(columnList, 0, "t", "text not null")
-
-        private val COL_VISIBILITY = ColumnMeta(columnList, 0, "visibility", "text")
-        private val COL_CONFIRM_BOOST =
-            ColumnMeta(columnList, 0, "confirm_boost", ColumnMeta.TS_TRUE)
-        private val COL_DONT_HIDE_NSFW =
-            ColumnMeta(columnList, 0, "dont_hide_nsfw", ColumnMeta.TS_ZERO)
-
-        private val COL_NOTIFICATION_MENTION =
-            ColumnMeta(columnList, 2, "notification_mention", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_BOOST =
-            ColumnMeta(columnList, 2, "notification_boost", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_FAVOURITE =
-            ColumnMeta(columnList, 2, "notification_favourite", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_FOLLOW =
-            ColumnMeta(columnList, 2, "notification_follow", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_FOLLOW_REQUEST =
-            ColumnMeta(columnList, 44, "notification_follow_request", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_REACTION =
-            ColumnMeta(columnList, 33, "notification_reaction", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_VOTE =
-            ColumnMeta(columnList, 33, "notification_vote", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_POST =
-            ColumnMeta(columnList, 57, "notification_post", ColumnMeta.TS_TRUE)
-        private val COL_NOTIFICATION_UPDATE =
-            ColumnMeta(columnList, 64, "notification_update", ColumnMeta.TS_TRUE)
-
-        private val COL_CONFIRM_FOLLOW =
-            ColumnMeta(columnList, 10, "confirm_follow", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_FOLLOW_LOCKED =
-            ColumnMeta(columnList, 10, "confirm_follow_locked", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNFOLLOW =
-            ColumnMeta(columnList, 10, "confirm_unfollow", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_POST =
-            ColumnMeta(columnList, 10, "confirm_post", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_FAVOURITE =
-            ColumnMeta(columnList, 23, "confirm_favourite", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNBOOST =
-            ColumnMeta(columnList, 24, "confirm_unboost", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNFAVOURITE =
-            ColumnMeta(columnList, 24, "confirm_unfavourite", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_REACTION =
-            ColumnMeta(columnList, 61, "confirm_reaction", ColumnMeta.TS_TRUE)
-        private val COL_CONFIRM_UNBOOKMARK =
-            ColumnMeta(columnList, 62, "confirm_unbookmark", ColumnMeta.TS_TRUE)
-
-        // スキーマ13から
-        val COL_NOTIFICATION_TAG =
-            ColumnMeta(columnList, 13, "notification_server", ColumnMeta.TS_EMPTY)
-
-        // スキーマ14から
-        val COL_REGISTER_KEY = ColumnMeta(columnList, 14, "register_key", ColumnMeta.TS_EMPTY)
-        val COL_REGISTER_TIME = ColumnMeta(columnList, 14, "register_time", ColumnMeta.TS_ZERO)
-
-        // スキーマ16から
-        private val COL_SOUND_URI = ColumnMeta(columnList, 16, "sound_uri", ColumnMeta.TS_EMPTY)
-
-        // スキーマ18から
-        private val COL_DONT_SHOW_TIMEOUT =
-            ColumnMeta(columnList, 18, "dont_show_timeout", ColumnMeta.TS_ZERO)
-
-        // スキーマ27から
-        private val COL_DEFAULT_TEXT =
-            ColumnMeta(columnList, 27, "default_text", ColumnMeta.TS_EMPTY)
-
-        // スキーマ28から
-        private val COL_MISSKEY_VERSION =
-            ColumnMeta(columnList, 28, "is_misskey", ColumnMeta.TS_ZERO)
-        // カラム名がおかしいのは、昔はboolean扱いだったから
-        // 0: not misskey
-        // 1: old(v10) misskey
-        // 11: misskey v11
-
-        private val COL_DEFAULT_SENSITIVE =
-            ColumnMeta(columnList, 38, "default_sensitive", ColumnMeta.TS_ZERO)
-        private val COL_EXPAND_CW = ColumnMeta(columnList, 38, "expand_cw", ColumnMeta.TS_ZERO)
-        private val COL_MAX_TOOT_CHARS =
-            ColumnMeta(columnList, 39, "max_toot_chars", ColumnMeta.TS_ZERO)
-
-        private val COL_LAST_NOTIFICATION_ERROR =
-            ColumnMeta(columnList, 42, "last_notification_error", "text")
-        private val COL_LAST_SUBSCRIPTION_ERROR =
-            ColumnMeta(columnList, 45, "last_subscription_error", "text")
-        private val COL_LAST_PUSH_ENDPOINT =
-            ColumnMeta(columnList, 46, "last_push_endpoint", "text")
-
-        private val COL_IMAGE_RESIZE =
-            ColumnMeta(columnList, 59, "image_resize", "text default null")
-        private val COL_IMAGE_MAX_MEGABYTES =
-            ColumnMeta(columnList, 59, "image_max_megabytes", "text default null")
-        private val COL_MOVIE_MAX_MEGABYTES =
-            ColumnMeta(columnList, 59, "movie_max_megabytes", "text default null")
-
-        private val COL_PUSH_POLICY = ColumnMeta(columnList, 60, "push_policy", "text default null")
-
-        private val COL_EXTRA_JSON = ColumnMeta(columnList, 63, "extra_json", "text default null")
-
-        /////////////////////////////////
-        // login information
-        const val INVALID_DB_ID = -1L
 
         // アプリデータのインポート時に呼ばれる
         fun onDBDelete(db: SQLiteDatabase) {
@@ -512,6 +375,10 @@ class SavedAccount(
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
             columnList.onDBUpgrade(db, oldVersion, newVersion)
+
+        /////////////////////////////////
+
+        const val INVALID_DB_ID = -1L
 
         val defaultResizeConfig = ResizeConfig(ResizeType.LongSide, 1280)
 
@@ -559,10 +426,20 @@ class SavedAccount(
             }
         }
 
-        fun insert(
+        const val LANG_WEB = "(web)"
+        const val LANG_DEVICE = "(device)"
+
+        private const val REGISTER_KEY_UNREGISTERED = "unregistered"
+    }
+
+    class Access(
+        val db: SQLiteDatabase,
+        val context: Context,
+    ) {
+        fun saveNew(
             acct: String,
             host: String,
-            domain: String?,
+            domain: String,
             account: JsonObject,
             token: JsonObject,
             misskeyVersion: Int = 0,
@@ -575,28 +452,192 @@ class SavedAccount(
                     put(COL_ACCOUNT, account.toString())
                     put(COL_TOKEN, token.toString())
                     put(COL_MISSKEY_VERSION, misskeyVersion)
-                }.let { appDatabase.insert(table, null, it) }
+                }.let { db.insert(table, null, it) }
             } catch (ex: Throwable) {
                 log.e(ex, "SavedAccount.insert failed.")
                 errorEx(ex, "SavedAccount.insert failed.")
             }
         }
 
-        const val LANG_WEB = "(web)"
-        const val LANG_DEVICE = "(device)"
+        fun updateTokenInfo(item: SavedAccount, auth2Result: Auth2Result) {
+            item.run {
+                if (db_id == INVALID_DB_ID) error("updateTokenInfo: missing db_id")
 
-        private const val REGISTER_KEY_UNREGISTERED = "unregistered"
+                this.token_info = auth2Result.tokenJson
+                this.loginAccount = auth2Result.tootAccount
+
+                ContentValues().apply {
+                    put(COL_TOKEN, auth2Result.tokenJson.toString())
+                    put(COL_ACCOUNT, auth2Result.accountJson.toString())
+                    put(COL_MISSKEY_VERSION, auth2Result.tootInstance.misskeyVersionMajor)
+                }.let { db.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
+            }
+        }
+
+        /**
+         * ユーザ登録の確認手順が完了しているかどうか
+         *
+         * - マストドン以外だと何もしないはず
+         */
+        suspend fun checkConfirmed(item: SavedAccount, client: TootApiClient) {
+            item.run {
+                // 承認待ち状態ではないならチェックしない
+                if (loginAccount?.id != EntityId.CONFIRMING) return
+
+                // DBに保存されていないならチェックしない
+                if (db_id == INVALID_DB_ID) return
+
+                // アクセストークンがないならチェックしない
+                val accessToken = bearerAccessToken ?: return
+
+                // ユーザ情報を取得してみる。承認済みなら読めるはず
+                // 読めなければ例外が出る
+                val userJson = client.verifyAccount(
+                    accessToken = accessToken,
+                    outTokenInfo = null,
+                    misskeyVersion = 0, // Mastodon only
+                )
+                // 読めたらアプリ内の記録を更新する
+                TootParser(context, this).account(userJson)?.let { ta ->
+                    this.loginAccount = ta
+                    db.update(
+                        table,
+                        ContentValues().apply {
+                            put(COL_ACCOUNT, userJson.toString())
+                        },
+                        "$COL_ID=?",
+                        arrayOf(db_id.toString())
+                    )
+                    checkNotificationImmediateAll(context, onlySubscription = true)
+                    checkNotificationImmediate(context, db_id)
+                }
+            }
+        }
+
+        fun saveSetting(item: SavedAccount) {
+            item.run {
+
+                if (db_id == INVALID_DB_ID) error("saveSetting: missing db_id")
+
+                ContentValues().apply {
+                    put(COL_VISIBILITY, visibility.id.toString())
+
+                    put(COL_DONT_HIDE_NSFW, dont_hide_nsfw)
+                    put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout)
+                    put(COL_NOTIFICATION_MENTION, notification_mention)
+                    put(COL_NOTIFICATION_BOOST, notification_boost)
+                    put(COL_NOTIFICATION_FAVOURITE, notification_favourite)
+                    put(COL_NOTIFICATION_FOLLOW, notification_follow)
+                    put(COL_NOTIFICATION_FOLLOW_REQUEST, notification_follow_request)
+                    put(COL_NOTIFICATION_REACTION, notification_reaction)
+                    put(COL_NOTIFICATION_VOTE, notification_vote)
+                    put(COL_NOTIFICATION_POST, notification_post)
+                    put(COL_NOTIFICATION_UPDATE, notification_update)
+
+                    put(COL_CONFIRM_BOOST, confirm_boost)
+                    put(COL_CONFIRM_FAVOURITE, confirm_favourite)
+                    put(COL_CONFIRM_UNBOOST, confirm_unboost)
+                    put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite)
+                    put(COL_CONFIRM_FOLLOW, confirm_follow)
+                    put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked)
+                    put(COL_CONFIRM_UNFOLLOW, confirm_unfollow)
+                    put(COL_CONFIRM_POST, confirm_post)
+                    put(COL_CONFIRM_REACTION, confirm_reaction)
+                    put(COL_CONFIRM_UNBOOKMARK, confirm_unbookmark)
+
+                    put(COL_SOUND_URI, sound_uri)
+                    put(COL_DEFAULT_TEXT, default_text)
+
+                    put(COL_DEFAULT_SENSITIVE, default_sensitive)
+                    put(COL_EXPAND_CW, expand_cw)
+                    put(COL_MAX_TOOT_CHARS, max_toot_chars)
+
+                    put(COL_IMAGE_RESIZE, image_resize)
+                    put(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
+                    put(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
+                    put(COL_PUSH_POLICY, push_policy)
+                    put(COL_EXTRA_JSON, extraJson.toString())
+
+                    // 以下のデータはUIからは更新しない
+                    // notification_tag
+                    // register_key
+                }.let { db.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
+            }
+        }
+
+        // onResumeの時に設定を読み直す
+        fun reloadSetting(item: SavedAccount, newData: SavedAccount? = null) {
+            item.run {
+
+                if (db_id == INVALID_DB_ID) error("SavedAccount.reloadSetting missing db_id")
+
+                // DBから削除されてるかもしれない
+                val b = newData ?: loadAccount(db_id) ?: return
+
+                this.visibility = b.visibility
+                this.confirm_boost = b.confirm_boost
+                this.confirm_favourite = b.confirm_favourite
+                this.confirm_unboost = b.confirm_unboost
+                this.confirm_unfavourite = b.confirm_unfavourite
+                this.confirm_post = b.confirm_post
+                this.confirm_reaction = b.confirm_reaction
+                this.confirm_unbookmark = b.confirm_unbookmark
+
+                this.dont_hide_nsfw = b.dont_hide_nsfw
+                this.dont_show_timeout = b.dont_show_timeout
+                this.token_info = b.token_info
+                this.notification_mention = b.notification_mention
+                this.notification_boost = b.notification_boost
+                this.notification_favourite = b.notification_favourite
+                this.notification_follow = b.notification_follow
+                this.notification_follow_request = b.notification_follow_request
+                this.notification_reaction = b.notification_reaction
+                this.notification_vote = b.notification_vote
+                this.notification_post = b.notification_post
+                this.notification_update = b.notification_update
+                this.notification_status_reference = b.notification_status_reference
+
+                this.notification_tag = b.notification_tag
+                this.default_text = b.default_text
+                this.default_sensitive = b.default_sensitive
+                this.expand_cw = b.expand_cw
+
+                this.sound_uri = b.sound_uri
+
+                this.image_resize = b.image_resize
+                this.image_max_megabytes = b.image_max_megabytes
+                this.movie_max_megabytes = b.movie_max_megabytes
+                this.push_policy = b.push_policy
+
+                this.movieTranscodeMode = b.movieTranscodeMode
+                this.movieTranscodeBitrate = b.movieTranscodeBitrate
+                this.movieTranscodeFramerate = b.movieTranscodeFramerate
+                this.movieTranscodeSquarePixels = b.movieTranscodeSquarePixels
+                this.lang = b.lang
+            }
+        }
+
+
+
+        fun delete(dbId: Long) {
+            try {
+                db.deleteById(table, dbId.toString(), COL_ID)
+            } catch (ex: Throwable) {
+                log.e(ex, "SavedAccount.delete failed.")
+                errorEx(ex, "SavedAccount.delete failed.")
+            }
+        }
 
         fun clearRegistrationCache() {
             ContentValues().apply {
                 put(COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED)
                 put(COL_REGISTER_TIME, 0L)
-            }.let { appDatabase.update(table, it, null, null) }
+            }.let { db.update(table, it, null, null) }
         }
 
-        fun loadAccount(context: Context, dbId: Long): SavedAccount? {
+        fun loadAccount(dbId: Long): SavedAccount? =
             try {
-                appDatabase.query(
+                db.query(
                     table,
                     null,
                     "$COL_ID=?",
@@ -604,24 +645,24 @@ class SavedAccount(
                     null,
                     null,
                     null
-                )
-                    .use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            return parse(context, cursor)
+                )?.use { cursor ->
+                    when {
+                        cursor.moveToFirst() -> parse(lazyContext, cursor)
+                        else -> {
+                            log.e("moveToFirst failed. db_id=$dbId")
+                            null
                         }
-                        log.e("moveToFirst failed. db_id=$dbId")
                     }
+                }
             } catch (ex: Throwable) {
                 log.e(ex, "loadAccount failed.")
+                null
             }
 
-            return null
-        }
-
-        fun loadAccountList(context: Context) =
+        fun loadAccountList() =
             ArrayList<SavedAccount>().also { result ->
                 try {
-                    appDatabase.query(
+                    db.query(
                         table,
                         null,
                         null,
@@ -631,22 +672,22 @@ class SavedAccount(
                         null
                     ).use { cursor ->
                         while (cursor.moveToNext()) {
-                            parse(context, cursor)?.let { result.add(it) }
+                            parse(lazyContext, cursor)?.let { result.add(it) }
                         }
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "loadAccountList failed.")
-                    context.showToast(
+                    lazyContext.showToast(
                         true,
                         ex.withCaption("(SubwayTooter) broken in-app database?")
                     )
                 }
             }
 
-        fun loadByTag(context: Context, tag: String): ArrayList<SavedAccount> {
+        fun loadByTag(tag: String): ArrayList<SavedAccount> {
             val result = ArrayList<SavedAccount>()
             try {
-                appDatabase.query(
+                db.query(
                     table,
                     null,
                     "$COL_NOTIFICATION_TAG=?",
@@ -672,13 +713,13 @@ class SavedAccount(
         /**
          * acctを指定してアカウントを取得する
          */
-        fun loadAccountByAcct(context: Context, fullAcct: String) =
+        fun loadAccountByAcct(fullAcct: Acct) =
             try {
-                appDatabase.query(
+                db.query(
                     table,
                     null,
                     "$COL_USER=?",
-                    arrayOf(fullAcct),
+                    arrayOf(fullAcct.ascii),
                     null,
                     null,
                     null
@@ -692,7 +733,7 @@ class SavedAccount(
 
         fun hasRealAccount(): Boolean {
             try {
-                appDatabase.query(
+                db.query(
                     table,
                     null,
                     "$COL_USER NOT LIKE '?@%'",
@@ -714,21 +755,17 @@ class SavedAccount(
             return false
         }
 
-        val count: Int
-            get() {
-                try {
-                    appDatabase.query(table, arrayOf("count(*)"), null, null, null, null, null)
-                        .use { cursor ->
-                            if (cursor.moveToNext()) {
-                                return cursor.getInt(0)
-                            }
-                        }
-                } catch (ex: Throwable) {
-                    log.e(ex, "getCount failed.")
-                    errorEx(ex, "SavedAccount.getCount failed.")
-                }
-
-                return 0
+        fun isSingleAccount(): Boolean =
+            try {
+                db.rawQuery(
+                    "select count(*) from $table where $COL_USER NOT LIKE '?@%' limit 1",
+                    emptyArray()
+                )?.use {
+                    it.moveToNext() && it.getInt(0) == 1
+                } ?: false
+            } catch (ex: Throwable) {
+                log.e(ex, "getCount failed.")
+                errorEx(ex, "SavedAccount.getCount failed.")
             }
 
         //		private fun charAtLower(src : CharSequence, pos : Int) : Char {
@@ -769,33 +806,13 @@ class SavedAccount(
         //			return true
         //		}
 
-        private val account_comparator = Comparator<SavedAccount> { a, b ->
-            var i: Int
-
-            // NA > !NA
-            i = a.isNA.b2i() - b.isNA.b2i()
-            if (i != 0) return@Comparator i
-
-            // pseudo > real
-            i = a.isPseudo.b2i() - b.isPseudo.b2i()
-            if (i != 0) return@Comparator i
-
-            val sa = AcctColor.getNickname(a)
-            val sb = AcctColor.getNickname(b)
-            sa.compareTo(sb, ignoreCase = true)
-        }
-
-        fun sort(accountList: MutableList<SavedAccount>) {
-            accountList.sortWith(account_comparator)
-        }
-
         fun sweepBuggieData() {
             // https://github.com/tateisu/SubwayTooter/issues/107
             // COL_ACCOUNTの内容がおかしければ削除する
 
             val list = ArrayList<Long>()
             try {
-                appDatabase.query(
+                db.query(
                     table,
                     null,
                     "$COL_ACCOUNT like ?",
@@ -804,8 +821,9 @@ class SavedAccount(
                     null,
                     null
                 ).use { cursor ->
+                    val idxId = cursor.getColumnIndexOrThrow(COL_ID)
                     while (cursor.moveToNext()) {
-                        list.add(COL_ID.getLong(cursor))
+                        list.add(cursor.getLong(idxId))
                     }
                 }
             } catch (ex: Throwable) {
@@ -814,17 +832,17 @@ class SavedAccount(
 
             list.forEach {
                 try {
-                    appDatabase.delete(table, "$COL_ID=?", arrayOf(it.toString()))
+                    db.delete(table, "$COL_ID=?", arrayOf(it.toString()))
                 } catch (ex: Throwable) {
                     log.e(ex, "sweepBuggieData failed.")
                 }
             }
         }
+
     }
 
-    fun getAccessToken(): String? {
-        return token_info?.string("access_token")
-    }
+    val bearerAccessToken
+        get() = token_info?.string("access_token")
 
     val misskeyApiToken: String?
         get() = token_info?.string(AuthBase.KEY_API_KEY_MISSKEY)
@@ -882,68 +900,6 @@ class SavedAccount(
             val myId = this.loginAccount?.id
             return myId != EntityId.CONFIRMING
         }
-
-    /**
-     * ユーザ登録の確認手順が完了しているかどうか
-     *
-     * - マストドン以外だと何もしないはず
-     */
-    suspend fun checkConfirmed(context: Context, client: TootApiClient) {
-        // 承認待ち状態ではないならチェックしない
-        if (loginAccount?.id != EntityId.CONFIRMING) return
-
-        // DBに保存されていないならチェックしない
-        if (db_id == INVALID_DB_ID) return
-
-        // アクセストークンがないならチェックしない
-        val accessToken = getAccessToken()
-            ?: return
-
-        // ユーザ情報を取得してみる。承認済みなら読めるはず
-        // 読めなければ例外が出る
-        val userJson = client.verifyAccount(
-            accessToken = accessToken,
-            outTokenInfo = null,
-            misskeyVersion = 0, // Mastodon only
-        )
-        // 読めたらアプリ内の記録を更新する
-        TootParser(context, this).account(userJson)?.let { ta ->
-            this.loginAccount = ta
-            appDatabase.update(
-                table,
-                ContentValues().apply {
-                    put(COL_ACCOUNT, userJson.toString())
-                },
-                "$COL_ID=?",
-                arrayOf(db_id.toString())
-            )
-            checkNotificationImmediateAll(context, onlySubscription = true)
-            checkNotificationImmediate(context, db_id)
-        }
-    }
-
-    private fun updateSingleString(col: ColumnMeta, value: String?) {
-        if (db_id != INVALID_DB_ID) {
-            ContentValues()
-                .apply { put(col, value) }
-                .let { appDatabase.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
-        }
-    }
-
-    fun updateNotificationError(text: String?) {
-        this.lastNotificationError = text
-        updateSingleString(COL_LAST_NOTIFICATION_ERROR, text)
-    }
-
-    fun updateSubscriptionError(text: String?) {
-        this.last_subscription_error = text
-        updateSingleString(COL_LAST_SUBSCRIPTION_ERROR, text)
-    }
-
-    fun updateLastPushEndpoint(text: String?) {
-        this.last_push_endpoint = text
-        updateSingleString(COL_LAST_PUSH_ENDPOINT, text)
-    }
 
     override fun equals(other: Any?): Boolean =
         when (other) {

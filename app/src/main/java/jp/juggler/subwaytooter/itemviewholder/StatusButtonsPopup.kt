@@ -93,7 +93,7 @@ internal class StatusButtonsPopup(
         buttonsForStatus.bind(status, notification)
         buttonsForStatus.closeWindow = window
 
-        val bgColor = PrefI.ipPopupBgColor.invoke(activity.pref)
+        val bgColor = PrefI.ipPopupBgColor.value
             .notZero() ?: activity.attrColor(R.attr.colorStatusButtonsPopupBg)
         val bgColorState = ColorStateList.valueOf(bgColor)
         views.ivTriangleTop.backgroundTintList = bgColorState

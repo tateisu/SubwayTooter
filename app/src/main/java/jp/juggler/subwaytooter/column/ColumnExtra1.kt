@@ -197,7 +197,7 @@ fun Column.onActivityStart() {
 
     if (!bRefreshLoading &&
         canAutoRefresh() &&
-        !PrefB.bpDontRefreshOnResume(appState.pref) &&
+        !PrefB.bpDontRefreshOnResume.value &&
         !dontAutoRefresh
     ) {
         // リフレッシュしてからストリーミング開始
@@ -237,7 +237,7 @@ fun Column.startLoading() {
 
     initFilter()
 
-    Column.showOpenSticker = PrefB.bpOpenSticker(appState.pref)
+    Column.showOpenSticker = PrefB.bpOpenSticker.value
 
     mRefreshLoadingErrorPopupState = 0
     mRefreshLoadingError = ""

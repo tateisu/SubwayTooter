@@ -192,7 +192,7 @@ fun Column.removeNotifications() {
     listData.clear()
     duplicateMap.clear()
     fireShowContent(reason = "removeNotifications", reset = true)
-    onNotificationCleared(context, accessInfo.db_id)
+    onNotificationCleared(accessInfo.db_id)
 }
 
 // 通知を削除した後に呼ばれる

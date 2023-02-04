@@ -12,6 +12,9 @@ import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.sortInplaceByNickname
+import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.log.showToast
@@ -102,7 +105,7 @@ fun ActMain.timelineLocal(
     launchMain {
         // 指定タンスのアカウントを持ってるか？
         val accountList = ArrayList<SavedAccount>()
-        for (a in SavedAccount.loadAccountList(applicationContext)) {
+        for (a in daoSavedAccount.loadAccountList()) {
             if (a.matchHost(host)) accountList.add(a)
         }
 
@@ -113,12 +116,11 @@ fun ActMain.timelineLocal(
             }
         } else {
             // 持ってるならアカウントを選んで開く
-            SavedAccount.sort(accountList)
             pickAccount(
                 bAllowPseudo = true,
                 bAuto = false,
                 message = getString(R.string.account_picker_add_timeline_of, host),
-                accountListArg = accountList
+                accountListArg = accountList.sortedByNickname()
             )?.let { addColumn(pos, it, ColumnType.LOCAL) }
         }
     }
@@ -168,7 +170,7 @@ fun ActMain.timelineAroundByStatusAnotherAccount(
     // 利用可能なアカウントを列挙する
     val accountList1 = ArrayList<SavedAccount>() // 閲覧アカウントとホストが同じ
     val accountList2 = ArrayList<SavedAccount>() // その他実アカウント
-    label@ for (a in SavedAccount.loadAccountList(this)) {
+    label@ for (a in daoSavedAccount.loadAccountList()) {
         // Misskeyアカウントはステータスの同期が出来ないので選択させない
         if (a.isNA || a.isMisskey) continue
         when {
@@ -179,8 +181,8 @@ fun ActMain.timelineAroundByStatusAnotherAccount(
             !a.isPseudo -> accountList2.add(a)
         }
     }
-    SavedAccount.sort(accountList1)
-    SavedAccount.sort(accountList2)
+    accountList1.sortInplaceByNickname()
+    accountList2.sortInplaceByNickname()
     accountList1.addAll(accountList2)
 
     if (accountList1.isEmpty()) {

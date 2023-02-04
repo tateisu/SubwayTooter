@@ -36,22 +36,22 @@ object CustomShare {
         val defaultComponentName: String?
         when (target) {
             CustomShareTarget.Translate -> {
-                src = PrefS.spTranslateAppComponent()
+                src = PrefS.spTranslateAppComponent.value
                 defaultComponentName = translate_app_component_default
             }
 
             CustomShareTarget.CustomShare1 -> {
-                src = PrefS.spCustomShare1()
+                src = PrefS.spCustomShare1.value
                 defaultComponentName = null
             }
 
             CustomShareTarget.CustomShare2 -> {
-                src = PrefS.spCustomShare2()
+                src = PrefS.spCustomShare2.value
                 defaultComponentName = null
             }
 
             CustomShareTarget.CustomShare3 -> {
-                src = PrefS.spCustomShare3()
+                src = PrefS.spCustomShare3.value
                 defaultComponentName = null
             }
         }

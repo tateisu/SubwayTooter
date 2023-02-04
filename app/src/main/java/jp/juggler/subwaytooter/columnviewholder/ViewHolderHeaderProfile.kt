@@ -28,9 +28,7 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.createSpan
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.openCustomTab
@@ -356,7 +354,7 @@ internal class ViewHolderHeaderProfile(
                 whoDetail?.statuses_count ?: who.statuses_count
             }"
 
-        val hideFollowCount = PrefB.bpHideFollowCount(activity.pref)
+        val hideFollowCount = PrefB.bpHideFollowCount.value
 
         var caption = activity.getString(R.string.following)
         btnFollowing.text = when {
@@ -370,7 +368,7 @@ internal class ViewHolderHeaderProfile(
             else -> "${caption}\n${whoDetail?.followers_count ?: who.followers_count}"
         }
 
-        val relation = UserRelation.load(accessInfo.db_id, who.id)
+        val relation = daoUserRelation.load(accessInfo.db_id, who.id)
         this.relation = relation
         setFollowIcon(
             activity,
@@ -414,7 +412,7 @@ internal class ViewHolderHeaderProfile(
 
         setAcct(tvMovedAcct, accessInfo, moved)
 
-        val relation = UserRelation.load(accessInfo.db_id, moved.id)
+        val relation = daoUserRelation.load(accessInfo.db_id, moved.id)
         setFollowIcon(
             activity,
             btnMoved,
@@ -482,7 +480,11 @@ internal class ViewHolderHeaderProfile(
                 val lastColumn = column
                 DlgTextInput.show(
                     activity,
-                    AcctColor.getStringWithNickname(activity, R.string.personal_notes_of, who.acct),
+                    daoAcctColor.getStringWithNickname(
+                        activity,
+                        R.string.personal_notes_of,
+                        who.acct
+                    ),
                     relation?.note ?: "",
                     allowEmpty = true,
                     callback = object : DlgTextInput.Callback {
@@ -551,16 +553,16 @@ internal class ViewHolderHeaderProfile(
     }
 
     private fun setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAccount) {
-        val ac = AcctColor.load(accessInfo, who)
+        val ac = daoAcctColor.load(accessInfo, who)
         tv.text = when {
-            AcctColor.hasNickname(ac) -> ac.nickname
-            PrefB.bpShortAcctLocalUser() -> "@${who.acct.pretty}"
+            daoAcctColor.hasNickname(ac) -> ac.nickname
+            PrefB.bpShortAcctLocalUser.value -> "@${who.acct.pretty}"
             else -> "@${ac.nickname}"
         }
 
-        tv.textColor = ac.color_fg.notZero() ?: column.getAcctColor()
+        tv.textColor = ac.colorFg.notZero() ?: column.getAcctColor()
 
-        tv.setBackgroundColor(ac.color_bg) // may 0
+        tv.setBackgroundColor(ac.colorBg) // may 0
         tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
     }
 
@@ -594,7 +596,7 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("locked")
-                    PrefB.bpUseTwemoji() ->
+                    PrefB.bpUseTwemoji.value ->
                         appendSpan("locked", emoji.createSpan(activity))
                     else ->
                         append(emoji.unifiedCode)
@@ -607,7 +609,7 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("bot")
-                    PrefB.bpUseTwemoji() ->
+                    PrefB.bpUseTwemoji.value ->
                         appendSpan("bot", emoji.createSpan(activity))
                     else ->
                         append(emoji.unifiedCode)
@@ -620,7 +622,7 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("suspended")
-                    PrefB.bpUseTwemoji() ->
+                    PrefB.bpUseTwemoji.value ->
                         appendSpan("suspended", emoji.createSpan(activity))
                     else ->
                         append(emoji.unifiedCode)
@@ -715,7 +717,7 @@ internal class ViewHolderHeaderProfile(
                 valueText.append(TootStatus.formatTime(activity, item.verified_at, false))
                 val end = valueText.length
 
-                val linkFgColor = PrefI.ipVerifiedLinkFgColor(activity.pref).notZero()
+                val linkFgColor = PrefI.ipVerifiedLinkFgColor.value.notZero()
                     ?: (Color.BLACK or 0x7fbc99)
 
                 valueText.setSpan(
@@ -737,7 +739,7 @@ internal class ViewHolderHeaderProfile(
             valueView.movementMethod = MyLinkMovementMethod
 
             if (item.verified_at > 0L) {
-                val linkBgColor = PrefI.ipVerifiedLinkBgColor(activity.pref).notZero()
+                val linkBgColor = PrefI.ipVerifiedLinkBgColor.value.notZero()
                     ?: (0x337fbc99)
 
                 valueView.setBackgroundColor(linkBgColor)

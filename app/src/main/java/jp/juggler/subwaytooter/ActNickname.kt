@@ -14,8 +14,10 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActNicknameBinding
 import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.backPressed
 import jp.juggler.util.boolean
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.mayUri
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
@@ -134,11 +136,11 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 
         views.tvAcct.text = acctPretty
 
-        val ac = AcctColor.load(acctAscii, acctPretty)
-        colorBg = ac.color_bg
-        colorFg = ac.color_fg
+        val ac = daoAcctColor.load(acctAscii)
+        colorBg = ac.colorBg
+        colorFg = ac.colorFg
         views.etNickname.setText(ac.nickname)
-        notificationSoundUri = ac.notification_sound
+        notificationSoundUri = ac.notificationSound
 
         loadingBusy = false
         show()
@@ -146,14 +148,17 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 
     private fun save() {
         if (loadingBusy) return
-        AcctColor(
-            acctAscii,
-            acctPretty,
-            views.etNickname.text.toString().trim { it <= ' ' },
-            colorFg,
-            colorBg,
-            notificationSoundUri
-        ).save(System.currentTimeMillis())
+        launchAndShowError {
+            daoAcctColor.save(
+                System.currentTimeMillis(),
+                AcctColor(
+                    nicknameSave = views.etNickname.text.toString().trim { it <= ' ' },
+                    colorFg = colorFg,
+                    colorBg = colorBg,
+                    notificationSoundSaved = notificationSoundUri ?: "",
+                )
+            )
+        }
     }
 
     private fun show() {

@@ -12,13 +12,14 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.defaultColorIcon
-import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgFocusPoint
 import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -169,7 +170,7 @@ fun ActPost.onPostAttachmentCompleteImpl(pa: PostAttachment) {
                     log.i("onPostAttachmentComplete: upload complete.")
 
                     // 投稿欄の末尾に追記する
-                    if (PrefB.bpAppendAttachmentUrlToContent.invoke(pref)) {
+                    if (PrefB.bpAppendAttachmentUrlToContent.value) {
                         appendArrachmentUrl(a)
                     }
                 }
@@ -215,35 +216,33 @@ fun ActPost.performAttachmentClick(idx: Int) {
         showToast(false, ex.withCaption("can't get attachment item[$idx]."))
         return
     }
-
-    val a = ActionsDialog()
-        .addAction(getString(R.string.set_description)) {
-            editAttachmentDescription(pa)
-        }
-
-    if (pa.attachment?.canFocus == true) {
-        a.addAction(getString(R.string.set_focus_point)) {
-            openFocusPoint(pa)
-        }
-    }
-    if (account?.isMastodon == true) {
-        when (pa.attachment?.type) {
-            TootAttachmentType.Audio,
-            TootAttachmentType.GIFV,
-            TootAttachmentType.Video,
-            -> a.addAction(getString(R.string.custom_thumbnail)) {
-                attachmentPicker.openCustomThumbnail(pa)
+    launchAndShowError {
+        actionsDialog(getString(R.string.media_attachment)) {
+            action(getString(R.string.set_description)) {
+                editAttachmentDescription(pa)
             }
+            if (pa.attachment?.canFocus == true) {
+                action(getString(R.string.set_focus_point)) {
+                    openFocusPoint(pa)
+                }
+            }
+            if (account?.isMastodon == true) {
+                when (pa.attachment?.type) {
+                    TootAttachmentType.Audio,
+                    TootAttachmentType.GIFV,
+                    TootAttachmentType.Video,
+                    -> action(getString(R.string.custom_thumbnail)) {
+                        attachmentPicker.openCustomThumbnail(pa)
+                    }
 
-            else -> Unit
+                    else -> Unit
+                }
+            }
+            action(getString(R.string.delete)) {
+                deleteAttachment(pa)
+            }
         }
     }
-
-    a.addAction(getString(R.string.delete)) {
-        deleteAttachment(pa)
-    }
-
-    a.show(this, title = getString(R.string.media_attachment))
 }
 
 fun ActPost.deleteAttachment(pa: PostAttachment) {

@@ -18,8 +18,10 @@ import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.accountListCanReaction
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -122,11 +124,15 @@ fun ActMain.reactionAdd(
             )
             val emojiSpan = TootReaction.toSpannableStringBuilder(options, code, urlArg)
             confirm(
-                getString(R.string.confirm_reaction, emojiSpan, AcctColor.getNickname(accessInfo)),
+                getString(
+                    R.string.confirm_reaction,
+                    emojiSpan,
+                    daoAcctColor.getNickname(accessInfo)
+                ),
                 accessInfo.confirm_reaction,
             ) { newConfirmEnabled ->
                 accessInfo.confirm_reaction = newConfirmEnabled
-                accessInfo.saveSetting()
+                daoSavedAccount.saveSetting(accessInfo)
             }
         }
 
@@ -336,16 +342,20 @@ private fun ActMain.reactionWithoutUi(
             isCustomEmoji && url?.likePleromaStatusUrl() == true -> confirm(
                 R.string.confirm_reaction_to_pleroma,
                 emojiSpan,
-                AcctColor.getNickname(accessInfo),
+                daoAcctColor.getNickname(accessInfo),
                 resolvedStatus.account.acct.host?.pretty ?: "(null)"
             )
 
             else -> confirm(
-                getString(R.string.confirm_reaction, emojiSpan, AcctColor.getNickname(accessInfo)),
+                getString(
+                    R.string.confirm_reaction,
+                    emojiSpan,
+                    daoAcctColor.getNickname(accessInfo)
+                ),
                 accessInfo.confirm_reaction,
             ) { newConfirmEnabled ->
                 accessInfo.confirm_reaction = newConfirmEnabled
-                accessInfo.saveSetting()
+                daoSavedAccount.saveSetting(accessInfo)
             }
         }
 

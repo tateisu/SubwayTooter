@@ -39,7 +39,7 @@ class ByteRange(
         encodeBase64String(toByteArray())
 
     fun decodeUTF8() =
-        java.lang.String(ba, start, size, UTF8)
+        String(ba, start, size, StandardCharsets.UTF_8)
 
     fun copyElements(
         dst: ByteArray,

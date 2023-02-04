@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.Typeface
@@ -33,6 +32,7 @@ import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.appsetting.AppSettingItem
 import jp.juggler.subwaytooter.appsetting.SettingType
 import jp.juggler.subwaytooter.appsetting.appSettingRoot
+import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.databinding.ActAppSettingBinding
 import jp.juggler.subwaytooter.databinding.LvSettingItemBinding
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
@@ -41,11 +41,9 @@ import jp.juggler.subwaytooter.pref.impl.BooleanPref
 import jp.juggler.subwaytooter.pref.impl.FloatPref
 import jp.juggler.subwaytooter.pref.impl.IntPref
 import jp.juggler.subwaytooter.pref.impl.StringPref
-import jp.juggler.subwaytooter.pref.pref
-import jp.juggler.subwaytooter.pref.put
-import jp.juggler.subwaytooter.pref.remove
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.pref.lazyPref
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
@@ -92,7 +90,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private var customShareTarget: CustomShareTarget? = null
 
-    lateinit var pref: SharedPreferences
     lateinit var handler: Handler
 
     val views by lazy {
@@ -101,6 +98,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private val adapter by lazy {
         MyAdapter()
+    }
+
+    val authRepo by lazy {
+        AuthRepo(this)
     }
 
     private val arNoop = ActivityResultHandler(log) { }
@@ -159,7 +160,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         App1.setActivityTheme(this)
 
         this.handler = App1.getAppState(this).handler
-        this.pref = pref()
 
         //		val intent = this.intent
         //		val layoutId = intent.getIntExtra(EXTRA_LAYOUT_ID, 0)
@@ -218,12 +218,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     }
 
     private fun removeDefaultPref() {
-        val e = pref.edit()
+        val e = lazyPref.edit()
         var changed = false
         appSettingRoot.scan {
             when {
                 (it.pref as? IntPref)?.noRemove == true -> Unit
-                it.pref?.removeDefault(pref, e) == true -> changed = true
+                it.pref?.removeDefault(lazyPref, e) == true -> changed = true
             }
         }
         if (changed) e.apply()
@@ -371,7 +371,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             SettingType.ColorAlpha -> newColor.notZero() ?: 1
             else -> newColor or Color.BLACK
         }
-        pref.edit().put(ip, c).apply()
+        ip.value = c
         findItemViewHolder(colorTarget)?.showColor()
         colorTarget.changed(this)
     }
@@ -512,8 +512,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         private val tvDesc = views.tvDesc
         private val tvError = views.tvError
 
-        private val pref = actAppSetting.pref
-
         var item: AppSettingItem? = null
 
         private var bindingBusy = false
@@ -575,7 +573,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         vg(false) // skip animation
                         text = name
                         isEnabledAlpha = item.enabled
-                        isChecked = bp(pref)
+                        isChecked = bp.value
                         vg(true)
                     }
 
@@ -586,7 +584,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         vg(false) // skip animation
                         actAppSetting.setSwitchColor(views.swSwitch)
                         isEnabledAlpha = item.enabled
-                        isChecked = bp(pref)
+                        isChecked = bp.value
                         vg(true)
                     }
 
@@ -608,12 +606,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         showCaption(name)
                         views.llButtonBar.vg(true)
                         views.vColor.vg(true)
-                        views.vColor.setBackgroundColor(ip(pref))
+                        views.vColor.setBackgroundColor(ip.value)
                         views.btnEdit.isEnabledAlpha = item.enabled
                         views.btnReset.isEnabledAlpha = item.enabled
                         views.btnEdit.setOnClickListener {
                             actAppSetting.colorTarget = item
-                            val color = ip(pref)
+                            val color = ip.value
                             val builder = ColorPickerDialog.newBuilder()
                                 .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
                                 .setAllowPresets(true)
@@ -623,7 +621,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             builder.show(actAppSetting)
                         }
                         views.btnReset.setOnClickListener {
-                            pref.edit().remove(ip).apply()
+                            ip.removeValue()
                             showColor()
                             item.changed.invoke(actAppSetting)
                         }
@@ -644,7 +642,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                                 argsInt?.map { actAppSetting.getString(it) }
                                     ?: item.spinnerArgsProc(actAppSetting)
                             )
-                            views.spSpinner.setSelection(pi.invoke(pref))
+                            views.spSpinner.setSelection(pi.value)
                         } else {
                             item.spinnerInitializer.invoke(actAppSetting, views.spSpinner)
                         }
@@ -655,9 +653,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         views.etEditText.vg(true)?.let { etEditText ->
                             val text = when (val pi = item.pref) {
                                 is FloatPref ->
-                                    item.fromFloat.invoke(actAppSetting, pi(pref))
+                                    item.fromFloat.invoke(actAppSetting, pi.value)
                                 is StringPref ->
-                                    pi(pref)
+                                    pi.value
                                 else -> error("EditText has incorrect pref $pi")
                             }
 
@@ -736,7 +734,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         fun showColor() {
             val item = item ?: return
             val ip = item.pref.cast<IntPref>() ?: return
-            val c = ip(pref)
+            val c = ip.value
             views.vColor.setBackgroundColor(c)
         }
 
@@ -753,15 +751,14 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             val sv = item.filter.invoke(p0?.toString() ?: "")
 
             when (val pi = item.pref) {
-                is StringPref ->
-                    pref.edit().put(pi, sv).apply()
+                is StringPref -> pi.value = sv
 
                 is FloatPref -> {
                     val fv = item.toFloat.invoke(actAppSetting, sv)
                     if (fv.isFinite()) {
-                        pref.edit().put(pi, fv).apply()
+                        pi.value = fv
                     } else {
-                        pref.edit().remove(pi.key).apply()
+                        pi.removeValue()
                     }
                 }
 
@@ -785,7 +782,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             if (bindingBusy) return
             val item = item ?: return
             when (val pi = item.pref) {
-                is IntPref -> pref.edit().put(pi, views.spSpinner.selectedItemPosition).apply()
+                is IntPref -> pi.value = views.spSpinner.selectedItemPosition
                 else -> item.spinnerOnSelected.invoke(actAppSetting, views.spSpinner, position)
             }
             item.changed.invoke(actAppSetting)
@@ -795,7 +792,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             if (bindingBusy) return
             val item = item ?: return
             when (val pi = item.pref) {
-                is BooleanPref -> pref.edit().put(pi, isChecked).apply()
+                is BooleanPref -> pi.value = isChecked
                 else -> error("CompoundButton has no booleanPref $pi")
             }
             item.changed.invoke(actAppSetting)
@@ -946,7 +943,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
             val file = saveTimelineFont(it, fileName)
             if (file != null) {
-                pref.edit().put(item.pref.cast()!!, file.absolutePath).apply()
+                (item.pref as? StringPref)?.value = file.absolutePath
                 showTimelineFont(item)
             }
         }
@@ -959,19 +956,17 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     }
 
     fun showTimelineFont(item: AppSettingItem, tv: TextView) {
-        val fontUrl = item.pref.cast<StringPref>()!!.invoke(this)
         try {
-            if (fontUrl.isNotEmpty()) {
+            item.pref.cast<StringPref>()?.value.notEmpty()?.let { url ->
                 tv.typeface = Typeface.DEFAULT
-                val face = Typeface.createFromFile(fontUrl)
+                val face = Typeface.createFromFile(url)
                 tv.typeface = face
-                tv.text = fontUrl
+                tv.text = url
                 return
             }
         } catch (ex: Throwable) {
             log.e(ex, "showTimelineFont failed.")
         }
-
         // fallback
         tv.text = getString(R.string.not_selected)
         tv.typeface = Typeface.DEFAULT
@@ -1026,17 +1021,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     //////////////////////////////////////////////////////
 
-    inner class AccountAdapter internal constructor() : BaseAdapter() {
-
-        internal val list = ArrayList<SavedAccount>()
-
-        init {
-            for (a in SavedAccount.loadAccountList(this@ActAppSetting)) {
-                if (a.isPseudo) continue
-                list.add(a)
-            }
-            SavedAccount.sort(list)
-        }
+    inner class AccountAdapter(val list: List<SavedAccount>) : BaseAdapter() {
 
         override fun getCount(): Int {
             return 1 + list.size
@@ -1058,7 +1043,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             )
             view.findViewById<TextView>(android.R.id.text1).text = when (position) {
                 0 -> getString(R.string.ask_always)
-                else -> AcctColor.getNickname(list[position - 1])
+                else -> daoAcctColor.getNickname(list[position - 1])
             }
             return view
         }
@@ -1068,7 +1053,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
             view.findViewById<TextView>(android.R.id.text1).text = when (position) {
                 0 -> getString(R.string.ask_always)
-                else -> AcctColor.getNickname(list[position - 1])
+                else -> daoAcctColor.getNickname(list[position - 1])
             }
             return view
         }
@@ -1201,7 +1186,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     fun setCustomShare(appSettingItem: AppSettingItem, target: CustomShareTarget, value: String) {
         val sp: StringPref = appSettingItem.pref.cast() ?: error("$target: not StringPref")
-        pref.edit().put(sp, value).apply()
+        sp.value = value
 
         showCustomShareIcon(findItemViewHolder(appSettingItem)?.views?.textView1, target)
     }
@@ -1238,7 +1223,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private fun setWebBrowser(appSettingItem: AppSettingItem, value: String) {
         val sp: StringPref = appSettingItem.pref.cast()
             ?: error("${getString(appSettingItem.caption)}: not StringPref")
-        pref.edit().put(sp, value).apply()
+        sp.value = value
 
         showWebBrowser(findItemViewHolder(appSettingItem)?.views?.textView1, value)
     }

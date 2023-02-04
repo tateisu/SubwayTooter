@@ -5,7 +5,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.provider.BaseColumns
 import android.util.JsonReader
@@ -17,10 +16,9 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnEncoder
 import jp.juggler.subwaytooter.column.getBackgroundImageDir
-import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.pref.impl.*
-import jp.juggler.subwaytooter.pref.put
+import jp.juggler.subwaytooter.pref.lazyPref
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
 import jp.juggler.util.data.*
@@ -117,50 +115,49 @@ object AppDataExporter {
         writer.name(jsonKey)
         writer.beginArray()
 
-        appDatabase.query(table, null, null, null, null, null, null)
-            ?.use { cursor ->
-                val names = ArrayList<String>()
-                val column_count = cursor.columnCount
-                for (i in 0 until column_count) {
-                    names.add(cursor.getColumnName(i))
-                }
-                while (cursor.moveToNext()) {
-                    writer.beginObject()
-
-                    for (i in 0 until column_count) {
-                        when (cursor.getType(i)) {
-                            Cursor.FIELD_TYPE_NULL -> {
-                                writer.name(names[i])
-                                writer.nullValue()
-                            }
-
-                            Cursor.FIELD_TYPE_INTEGER -> {
-                                writer.name(names[i])
-                                writer.value(cursor.getLong(i))
-                            }
-
-                            Cursor.FIELD_TYPE_STRING -> {
-                                writer.name(names[i])
-                                writer.value(cursor.getString(i))
-                            }
-
-                            Cursor.FIELD_TYPE_FLOAT -> {
-                                val d = cursor.getDouble(i)
-                                if (d.isNaN() || d.isInfinite()) {
-                                    log.w("column ${names[i]} is nan or infinite value.")
-                                } else {
-                                    writer.name(names[i])
-                                    writer.value(d)
-                                }
-                            }
-
-                            Cursor.FIELD_TYPE_BLOB -> log.w("column ${names[i]} is blob.")
-                        }
-                    }
-
-                    writer.endObject()
-                }
+        appDatabase.rawQuery("select from $table", emptyArray()).use { cursor ->
+            val names = ArrayList<String>()
+            val column_count = cursor.columnCount
+            for (i in 0 until column_count) {
+                names.add(cursor.getColumnName(i))
             }
+            while (cursor.moveToNext()) {
+                writer.beginObject()
+
+                for (i in 0 until column_count) {
+                    when (cursor.getType(i)) {
+                        Cursor.FIELD_TYPE_NULL -> {
+                            writer.name(names[i])
+                            writer.nullValue()
+                        }
+
+                        Cursor.FIELD_TYPE_INTEGER -> {
+                            writer.name(names[i])
+                            writer.value(cursor.getLong(i))
+                        }
+
+                        Cursor.FIELD_TYPE_STRING -> {
+                            writer.name(names[i])
+                            writer.value(cursor.getString(i))
+                        }
+
+                        Cursor.FIELD_TYPE_FLOAT -> {
+                            val d = cursor.getDouble(i)
+                            if (d.isNaN() || d.isInfinite()) {
+                                log.w("column ${names[i]} is nan or infinite value.")
+                            } else {
+                                writer.name(names[i])
+                                writer.value(d)
+                            }
+                        }
+
+                        Cursor.FIELD_TYPE_BLOB -> log.w("column ${names[i]} is blob.")
+                    }
+                }
+
+                writer.endObject()
+            }
+        }
         writer.endArray()
     }
 
@@ -198,19 +195,21 @@ object AppDataExporter {
                     }
 
                     if (SavedAccount.table == table) {
-                        // 一時的に存在したが現在のDBスキーマにはない項目は読み飛ばす
-                        if ("nickname" == name || "color" == name) {
-                            reader.skipValue()
-                            continue
-                        }
-
-                        // リアルタイム通知に関連する項目は読み飛ばす
-                        if (SavedAccount.COL_NOTIFICATION_TAG.name == name ||
-                            SavedAccount.COL_REGISTER_KEY.name == name ||
-                            SavedAccount.COL_REGISTER_TIME.name == name
-                        ) {
-                            reader.skipValue()
-                            continue
+                        when (name) {
+                            // 一時的に存在したが現在のDBスキーマにはない項目は読み飛ばす
+                            "nickname",
+                            "color",
+                            "notification_server",
+                            "register_key",
+                            "register_time",
+                            "last_notification_error",
+                            "last_subscription_error",
+                            "last_push_endpoint",
+                            -> {
+                                reader.skipValue()
+                                continue
+                            }
+                            else -> Unit
                         }
                     }
 
@@ -230,8 +229,7 @@ object AppDataExporter {
                     }
                 }
                 reader.endObject()
-                val new_id =
-                    db.insertWithOnConflict(table, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
+                val new_id = db.replace(table, null, cv)
                 if (new_id == -1L) error("importTable: invalid row_id")
                 idMap?.put(old_id, new_id)
             }
@@ -359,7 +357,7 @@ object AppDataExporter {
 
         val app_state = App1.getAppState(context)
 
-        writePref(writer, app_state.pref)
+        writePref(writer, lazyPref)
 
         writeFromTable(writer, KEY_ACCOUNT, SavedAccount.table)
         writeFromTable(writer, KEY_ACCT_COLOR, AcctColor.table)
@@ -386,12 +384,12 @@ object AppDataExporter {
 
         while (reader.hasNext()) {
             when (reader.nextName()) {
-                KEY_PREF -> importPref(reader, app_state.pref)
+                KEY_PREF -> importPref(reader, lazyPref)
                 KEY_ACCOUNT -> importTable(reader, SavedAccount.table, account_id_map)
 
                 KEY_ACCT_COLOR -> {
                     importTable(reader, AcctColor.table, null)
-                    AcctColor.clearMemoryCache()
+                    daoAcctColor.clearMemoryCache()
                 }
 
                 KEY_MUTED_APP -> importTable(reader, MutedApp.table, null)
@@ -408,10 +406,10 @@ object AppDataExporter {
         }
 
         run {
-            val old_id = PrefL.lpTabletTootDefaultAccount(app_state.pref)
+            val old_id = PrefL.lpTabletTootDefaultAccount.value
             if (old_id != -1L) {
                 val new_id = account_id_map[old_id]
-                app_state.pref.edit().put(PrefL.lpTabletTootDefaultAccount, new_id ?: -1L).apply()
+                PrefL.lpTabletTootDefaultAccount.value = new_id ?: -1L
             }
         }
 

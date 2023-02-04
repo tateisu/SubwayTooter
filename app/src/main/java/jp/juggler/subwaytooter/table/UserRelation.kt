@@ -9,24 +9,38 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 
-class UserRelation {
-
-    var following = false   // 認証ユーザからのフォロー状態にある
-    var followed_by = false // 認証ユーザは被フォロー状態にある
-    var blocking = false // 認証ユーザからブロックした
-    var blocked_by = false // 認証ユーザからブロックされた(Misskeyのみ。Mastodonでは常にfalse)
-    var muting = false
-    var requested = false  // 認証ユーザからのフォローは申請中である
-    var requested_by = false  // 相手から認証ユーザへのフォローリクエスト申請中(Misskeyのみ。Mastodonでは常にfalse)
-    var following_reblogs = 0 // このユーザからのブーストをTLに表示する
-    var endorsed = false // ユーザをプロフィールで紹介する
-    var notifying = false // ユーザの投稿を通知する
-    var note: String? = null
-
+class UserRelation(
+    var id: Long = 0L,
+    var timeSave: Long = 0L,
+    // SavedAccount のDB_ID。 疑似アカウント用のエントリは -2L
+    var dbId: Long = 0L,
+    // ターゲットアカウントのID
+    var whoId: String = "",
+    // 認証ユーザからのフォロー状態にある
+    var following: Boolean = false,
+    // 認証ユーザは被フォロー状態にある
+    var followed_by: Boolean = false,
+    // 認証ユーザからブロックした
+    var blocking: Boolean = false,
+    // 認証ユーザからブロックされた(Misskeyのみ。Mastodonでは常にfalse)
+    var blocked_by: Boolean = false,
+    var muting: Boolean = false,
+    // 認証ユーザからのフォローは申請中である
+    var requested: Boolean = false,
+    // 相手から認証ユーザへのフォローリクエスト申請中(Misskeyのみ。Mastodonでは常にfalse)
+    var requested_by: Boolean = false,
+    // このユーザからのブーストをTLに表示する
+    var following_reblogs: Int = 0,
+    // ユーザをプロフィールで紹介する
+    var endorsed: Boolean = false,
+    // ログインユーザが該当ユーザに対して何かメモができる
+    var note: String? = null,
+    // ユーザの投稿を通知する
+    var notifying: Boolean = false,
+) {
     // 認証ユーザからのフォロー状態
     fun getFollowing(who: TootAccount?): Boolean {
         return if (requested && !following && who != null && !who.locked) true else following
@@ -38,20 +52,41 @@ class UserRelation {
     }
 
     companion object : TableCompanion {
-
-        const val REBLOG_HIDE =
-            0 // don't show the boosts from target account will be shown on authorized user's home TL.
-        const val REBLOG_SHOW =
-            1 // show the boosts from target account will be shown on authorized user's home TL.
-        const val REBLOG_UNKNOWN = 2 // not following, or instance don't support hide reblog.
-
-        private val mMemoryCache = androidx.collection.LruCache<String, UserRelation>(2048)
-
-        private val log = LogCategory("UserRelationMisskey")
-
+        private val log = LogCategory("UserRelation")
         override val table = "user_relation_misskey"
 
+        private const val COL_ID = BaseColumns._ID
+        private const val COL_TIME_SAVE = "time_save"
+        private const val COL_DB_ID = "db_id"
+        private const val COL_WHO_ID = "who_id"
+        private const val COL_FOLLOWING = "following"
+        private const val COL_FOLLOWED_BY = "followed_by"
+        private const val COL_BLOCKING = "blocking"
+        private const val COL_MUTING = "muting"
+        private const val COL_REQUESTED = "requested"
+        private const val COL_FOLLOWING_REBLOGS = "following_reblogs"
+        private const val COL_ENDORSED = "endorsed"
+        private const val COL_BLOCKED_BY = "blocked_by"
+        private const val COL_REQUESTED_BY = "requested_by"
+        private const val COL_NOTE = "note"
+        private const val COL_NOTIFYING = "notifying"
+
         val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
+            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
+            ColumnMeta(this, 0, COL_TIME_SAVE, "integer not null")
+            ColumnMeta(this, 0, COL_DB_ID, "integer not null")
+            ColumnMeta(this, 0, COL_WHO_ID, "text not null")
+            ColumnMeta(this, 0, COL_FOLLOWING, "integer not null")
+            ColumnMeta(this, 0, COL_FOLLOWED_BY, "integer not null")
+            ColumnMeta(this, 0, COL_BLOCKING, "integer not null")
+            ColumnMeta(this, 0, COL_MUTING, "integer not null")
+            ColumnMeta(this, 0, COL_REQUESTED, "integer not null")
+            ColumnMeta(this, 0, COL_FOLLOWING_REBLOGS, "integer not null")
+            ColumnMeta(this, 32, COL_ENDORSED, "integer default 0")
+            ColumnMeta(this, 34, COL_BLOCKED_BY, "integer default 0")
+            ColumnMeta(this, 35, COL_REQUESTED_BY, "integer default 0")
+            ColumnMeta(this, 55, COL_NOTE, "text default null")
+            ColumnMeta(this, 58, COL_NOTIFYING, "integer default 0")
             createExtra = {
                 arrayOf(
                     "create unique index if not exists ${table}_id on $table($COL_DB_ID,$COL_WHO_ID)",
@@ -61,41 +96,76 @@ class UserRelation {
             deleteBeforeCreate = true
         }
 
-        val COL_ID =
-            ColumnMeta(columnList, 0, BaseColumns._ID, "INTEGER PRIMARY KEY", primary = true)
-        private val COL_TIME_SAVE = ColumnMeta(columnList, 0, "time_save", "integer not null")
-
-        // SavedAccount のDB_ID。 疑似アカウント用のエントリは -2L
-        private val COL_DB_ID = ColumnMeta(columnList, 0, "db_id", "integer not null")
-
-        // ターゲットアカウントのID
-        val COL_WHO_ID = ColumnMeta(columnList, 0, "who_id", "text not null")
-        private val COL_FOLLOWING = ColumnMeta(columnList, 0, "following", "integer not null")
-        private val COL_FOLLOWED_BY = ColumnMeta(columnList, 0, "followed_by", "integer not null")
-        private val COL_BLOCKING = ColumnMeta(columnList, 0, "blocking", "integer not null")
-        private val COL_MUTING = ColumnMeta(columnList, 0, "muting", "integer not null")
-        private val COL_REQUESTED = ColumnMeta(columnList, 0, "requested", "integer not null")
-        private val COL_FOLLOWING_REBLOGS =
-            ColumnMeta(columnList, 0, "following_reblogs", "integer not null")
-        private val COL_ENDORSED = ColumnMeta(columnList, 32, "endorsed", "integer default 0")
-        private val COL_BLOCKED_BY = ColumnMeta(columnList, 34, "blocked_by", "integer default 0")
-        private val COL_REQUESTED_BY =
-            ColumnMeta(columnList, 35, "requested_by", "integer default 0")
-        private val COL_NOTE = ColumnMeta(columnList, 55, "note", "text default null")
-        private val COL_NOTIFYING = ColumnMeta(columnList, 58, "notifying", "integer default 0")
-
-        private const val DB_ID_PSEUDO = -2L
-
         override fun onDBCreate(db: SQLiteDatabase) =
             columnList.onDBCreate(db)
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
             columnList.onDBUpgrade(db, oldVersion, newVersion)
 
+        const val DB_ID_PSEUDO = -2L
+
+        const val REBLOG_HIDE =
+            0 // don't show the boosts from target account will be shown on authorized user's home TL.
+        const val REBLOG_SHOW =
+            1 // show the boosts from target account will be shown on authorized user's home TL.
+        const val REBLOG_UNKNOWN = 2 // not following, or instance don't support hide reblog.
+
+        private val mMemoryCache = androidx.collection.LruCache<String, UserRelation>(2048)
+    }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    class ColIdx(cursor: Cursor) {
+        val idxId = cursor.getColumnIndexOrThrow(COL_ID)
+        val idxTimeSave = cursor.getColumnIndexOrThrow(COL_TIME_SAVE)
+        val idxDbId = cursor.getColumnIndexOrThrow(COL_DB_ID)
+        val idxWhoId = cursor.getColumnIndexOrThrow(COL_WHO_ID)
+        val idxFollowing = cursor.getColumnIndexOrThrow(COL_FOLLOWING)
+        val idxFollowedBy = cursor.getColumnIndexOrThrow(COL_FOLLOWED_BY)
+        val idxBlocking = cursor.getColumnIndexOrThrow(COL_BLOCKING)
+        val idxMuting = cursor.getColumnIndexOrThrow(COL_MUTING)
+        val idxRequested = cursor.getColumnIndexOrThrow(COL_REQUESTED)
+        val idxFollowingReblogs = cursor.getColumnIndexOrThrow(COL_FOLLOWING_REBLOGS)
+        val idxEndorsed = cursor.getColumnIndexOrThrow(COL_ENDORSED)
+        val idxBlockedBy = cursor.getColumnIndexOrThrow(COL_BLOCKED_BY)
+        val idxRequestedBy = cursor.getColumnIndexOrThrow(COL_REQUESTED_BY)
+        val idxNote = cursor.getColumnIndexOrThrow(COL_NOTE)
+        val idxNotifying = cursor.getColumnIndexOrThrow(COL_NOTIFYING)
+        fun readRow(cursor: Cursor) = UserRelation(
+            id = cursor.getLong(idxId),
+            timeSave = cursor.getLong(idxTimeSave),
+            dbId = cursor.getLong(idxDbId),
+            whoId = cursor.getString(idxWhoId),
+            following = cursor.getBoolean(idxFollowing),
+            followed_by = cursor.getBoolean(idxFollowedBy),
+            blocking = cursor.getBoolean(idxBlocking),
+            muting = cursor.getBoolean(idxMuting),
+            requested = cursor.getBoolean(idxRequested),
+            following_reblogs = cursor.getInt(idxFollowingReblogs),
+            endorsed = cursor.getBoolean(idxEndorsed),
+            blocked_by = cursor.getBoolean(idxBlockedBy),
+            requested_by = cursor.getBoolean(idxRequestedBy),
+            note = cursor.getStringOrNull(idxNote),
+            notifying = cursor.getBoolean(idxNotifying),
+        )
+
+        fun readOne(cursor: Cursor) =
+            when {
+                cursor.moveToNext() -> readRow(cursor)
+                else -> null
+            }
+
+        fun readAll(cursor: Cursor) = buildList {
+            while (cursor.moveToNext()) {
+                add(readRow(cursor))
+            }
+        }
+    }
+
+    class Access(val db: SQLiteDatabase) {
         fun deleteOld(now: Long) {
             try {
                 val expire = now - 86400000L * 365
-                appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+                db.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
             } catch (ex: Throwable) {
                 log.e(ex, "deleteOld failed.")
             }
@@ -105,13 +175,10 @@ class UserRelation {
                 val table = "user_relation"
                 val COL_TIME_SAVE = "time_save"
                 val expire = now - 86400000L * 365
-                appDatabase.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+                db.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
             } catch (_: Throwable) {
             }
         }
-
-        private fun key(dbId: Long, whoId: String) = "$dbId:$whoId"
-        private fun key(dbId: Long, whoId: EntityId) = key(dbId, whoId.toString())
 
         private fun ContentValues.fromUserRelation(src: UserRelation) {
             put(COL_FOLLOWING, src.following)
@@ -141,44 +208,42 @@ class UserRelation {
             put(COL_NOTE, src.note) // may null
         }
 
-        // マストドン用
+        private fun key(dbId: Long, whoId: String) = "$dbId:$whoId"
+        private fun key(dbId: Long, whoId: EntityId) = key(dbId, whoId.toString())
+
         fun save1Mastodon(now: Long, dbId: Long, src: TootRelationShip): UserRelation {
-            val id: String = src.id.toString()
+            val whoIdString: String = src.id.toString()
             try {
                 ContentValues().apply {
+                    fromTootRelationShip(src)
                     put(COL_TIME_SAVE, now)
                     put(COL_DB_ID, dbId)
-                    put(COL_WHO_ID, id)
-                    fromTootRelationShip(src)
-                }.let { appDatabase.replaceOrThrow(table, null, it) }
-                mMemoryCache.remove(key(dbId, id))
+                    put(COL_WHO_ID, whoIdString)
+                }.replaceTo(db, table)
+                mMemoryCache.remove(key(dbId, whoIdString))
             } catch (ex: Throwable) {
                 log.e(ex, "save failed.")
             }
-            return load(dbId, id)
+            return load(dbId, whoIdString)
         }
 
-        // マストドン用
         fun saveListMastodon(now: Long, dbId: Long, srcList: Iterable<TootRelationShip>) {
-            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
-
             val bOK = try {
-                val cv = ContentValues()
-                cv.put(COL_TIME_SAVE, now)
-                cv.put(COL_DB_ID, dbId)
+                val cv = ContentValues().apply {
+                    put(COL_TIME_SAVE, now)
+                    put(COL_DB_ID, dbId)
+                }
                 for (src in srcList) {
-                    val id = src.id.toString()
-                    cv.put(COL_WHO_ID, id)
                     cv.fromTootRelationShip(src)
-                    db.replaceOrThrow(table, null, cv)
+                    cv.put(COL_WHO_ID, src.id.toString())
+                    cv.replaceTo(db, table)
                 }
                 true
             } catch (ex: Throwable) {
                 log.e(ex, "saveList failed.")
                 false
             }
-
             when {
                 !bOK -> db.execSQL("ROLLBACK TRANSACTION")
                 else -> {
@@ -194,11 +259,11 @@ class UserRelation {
             src ?: return
             try {
                 ContentValues().apply {
+                    fromUserRelation(src)
                     put(COL_TIME_SAVE, now)
                     put(COL_DB_ID, dbId)
                     put(COL_WHO_ID, whoId)
-                    fromUserRelation(src)
-                }.let { appDatabase.replaceOrThrow(table, null, it) }
+                }.replaceTo(db, table)
                 mMemoryCache.remove(key(dbId, whoId))
             } catch (ex: Throwable) {
                 log.e(ex, "save failed.")
@@ -212,26 +277,25 @@ class UserRelation {
             start: Int,
             end: Int,
         ) {
-            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
             val bOK = try {
-                val cv = ContentValues()
-                cv.put(COL_TIME_SAVE, now)
-                cv.put(COL_DB_ID, dbId)
+                val cv = ContentValues().apply {
+                    put(COL_TIME_SAVE, now)
+                    put(COL_DB_ID, dbId)
+                }
                 for (i in start until end) {
                     val entry = srcList[i]
-                    val id = entry.key
+                    val whoId = entry.key.toString()
                     val src = entry.value
-                    cv.put(COL_WHO_ID, id.toString())
                     cv.fromUserRelation(src)
-                    db.replaceOrThrow(table, null, cv)
+                    cv.put(COL_WHO_ID, whoId)
+                    cv.replaceTo(db, table)
                 }
                 true
             } catch (ex: Throwable) {
                 log.e(ex, "saveList failed.")
                 false
             }
-
             when {
                 !bOK -> db.execSQL("ROLLBACK TRANSACTION")
                 else -> {
@@ -247,17 +311,16 @@ class UserRelation {
 
         // Misskeyのリレーション取得APIから
         fun saveListMisskeyRelationApi(now: Long, dbId: Long, list: ArrayList<TootRelationShip>) {
-            val db = appDatabase
             db.execSQL("BEGIN TRANSACTION")
             val bOK = try {
-                val cv = ContentValues()
-                cv.put(COL_TIME_SAVE, now)
-                cv.put(COL_DB_ID, dbId)
+                val cv = ContentValues().apply {
+                    put(COL_TIME_SAVE, now)
+                    put(COL_DB_ID, dbId)
+                }
                 for (src in list) {
-                    val id = src.id.toString()
-                    cv.put(COL_WHO_ID, id)
                     cv.fromTootRelationShip(src)
-                    db.replace(table, null, cv)
+                    cv.put(COL_WHO_ID, src.id.toString())
+                    cv.replaceTo(db, table)
                 }
                 true
             } catch (ex: Throwable) {
@@ -275,10 +338,21 @@ class UserRelation {
             }
         }
 
-        private val loadWhere = "$COL_DB_ID=? and $COL_WHO_ID=?"
+        fun saveUserRelation(a: SavedAccount, src: TootRelationShip?): UserRelation? {
+            src ?: return null
+            val now = System.currentTimeMillis()
+            return save1Mastodon(now, a.db_id, src)
+        }
 
-        private val loadWhereArg = object : ThreadLocal<Array<String?>>() {
-            override fun initialValue(): Array<String?> = Array(2) { null }
+        fun saveUserRelationMisskey(
+            a: SavedAccount,
+            whoId: EntityId,
+            parser: TootParser,
+        ): UserRelation? {
+            val now = System.currentTimeMillis()
+            val relation = parser.getMisskeyUserRelation(whoId)
+            save1Misskey(now, a.db_id, whoId.toString(), relation)
+            return relation
         }
 
         fun load(dbId: Long, whoId: EntityId): UserRelation {
@@ -294,37 +368,22 @@ class UserRelation {
         }
 
         fun load(dbId: Long, whoId: String): UserRelation {
-
             try {
-                val where_arg = loadWhereArg.get() ?: arrayOfNulls<String?>(2)
-                where_arg[0] = dbId.toString()
-                where_arg[1] = whoId
-                appDatabase.query(table, null, loadWhere, where_arg, null, null, null)
-                    .use { cursor ->
-                        if (cursor.moveToNext()) {
-                            val dst = UserRelation()
-                            dst.following = cursor.getBoolean(COL_FOLLOWING)
-                            dst.followed_by = cursor.getBoolean(COL_FOLLOWED_BY)
-                            dst.blocking = cursor.getBoolean(COL_BLOCKING)
-                            dst.muting = cursor.getBoolean(COL_MUTING)
-                            dst.requested = cursor.getBoolean(COL_REQUESTED)
-                            dst.following_reblogs = cursor.getInt(COL_FOLLOWING_REBLOGS)
-                            dst.endorsed = cursor.getBoolean(COL_ENDORSED)
-                            dst.blocked_by = cursor.getBoolean(COL_BLOCKED_BY)
-                            dst.requested_by = cursor.getBoolean(COL_REQUESTED_BY)
-                            dst.notifying = cursor.getBoolean(COL_NOTIFYING)
-
-                            dst.note = cursor.getStringOrNull(COL_NOTE)
-                            return dst
-                        }
-                    }
+                db.rawQuery(
+                    "select * from $table where $COL_DB_ID=? and $COL_WHO_ID=?",
+                    arrayOf(dbId.toString(), whoId)
+                )?.use { ColIdx(it).readOne(it) }
+                    ?.let { return it }
             } catch (ex: Throwable) {
                 log.e(ex, "load failed.")
             }
             return UserRelation()
         }
 
-        // MisskeyはUserエンティティにユーザリレーションが含まれたり含まれなかったりする
+        /**
+         * srcの情報をparser内部のmisskeyUserRelationMapに追加する
+         * - MisskeyはUserエンティティにユーザリレーションが含まれたり含まれなかったりする
+         */
         fun fromAccount(parser: TootParser, src: JsonObject, id: EntityId) {
 
             // アカウントのjsonがユーザリレーションを含まないなら何もしない
@@ -336,7 +395,6 @@ class UserRelation {
 
             val map = parser.misskeyUserRelationMap
             if (map.containsKey(id)) return
-
             map[id] = UserRelation().apply {
                 following = src.optBoolean("isFollowing")
                 followed_by = src.optBoolean("isFollowed")
@@ -349,28 +407,25 @@ class UserRelation {
             }
         }
 
-        fun loadPseudo(acct: Acct) = load(DB_ID_PSEUDO, acct.ascii)
-
-        fun createCursorPseudoMuted(): Cursor =
-            appDatabase.query(
-                table,
-                arrayOf(COL_ID.name, COL_WHO_ID.name),
-                "$COL_DB_ID=$DB_ID_PSEUDO and ( $COL_MUTING=1 or $COL_BLOCKING=1 )",
-                null,
-                null,
-                null,
-                "$COL_WHO_ID asc"
-            )
+        fun savePseudo(acct: String, src: UserRelation) =
+            save1Misskey(System.currentTimeMillis(), DB_ID_PSEUDO, acct, src)
 
         fun deletePseudo(rowId: Long) {
             try {
-                appDatabase.delete(table, "$COL_ID=$rowId", null)
+                db.deleteById(table, rowId.toString(), COL_ID)
             } catch (ex: Throwable) {
                 log.e(ex, "deletePseudo failed. rowId=$rowId")
             }
         }
-    }
 
-    fun savePseudo(acct: String) =
-        save1Misskey(System.currentTimeMillis(), DB_ID_PSEUDO, acct, this)
+        fun loadPseudo(acct: Acct) = load(DB_ID_PSEUDO, acct.ascii)
+
+        fun listPseudoMuted() =
+            db.rawQuery(
+                "select $COL_ID,$COL_WHO_ID from $table where $COL_DB_ID=$DB_ID_PSEUDO and ($COL_MUTING=1 or $COL_BLOCKING=1) order by $COL_WHO_ID asc",
+                emptyArray()
+            )?.use {
+                ColIdx(it).readAll(it)
+            } ?: emptyList()
+    }
 }

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
@@ -18,20 +19,35 @@ import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromU
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.api.showApiError
+import jp.juggler.subwaytooter.auth.authRepo
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.startLoading
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.pickAccount
+import jp.juggler.subwaytooter.dialog.runInProgress
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.notification.recycleClickedNotification
+import jp.juggler.subwaytooter.pref.PrefDevice
+import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.push.PushWorker
+import jp.juggler.subwaytooter.push.fcmHandler
+import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.decodePercent
 import jp.juggler.util.data.groupEx
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.queryIntentActivitiesCompat
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
+import org.unifiedpush.android.connector.UnifiedPush
+import java.util.ArrayList
 
 private val log = LogCategory("ActMainIntent")
 
@@ -154,21 +170,22 @@ fun ActMain.handleOtherUri(uri: Uri): Boolean {
     return false
 }
 
-private fun ActMain.handleCustomSchemaUri(uri: Uri) {
+private fun ActMain.handleCustomSchemaUri(uri: Uri) = launchAndShowError {
     val dataIdString = uri.getQueryParameter("db_id")
-    if (dataIdString != null) {
-        // subwaytooter://notification_click/?db_id=(db_id)
-        handleNotificationClick(uri, dataIdString)
-    } else {
+    if (dataIdString == null) {
         // OAuth2 認証コールバック
         // subwaytooter://oauth(\d*)/?...
         handleOAuth2Callback(uri)
+    } else {
+        // subwaytooter://notification_click/?db_id=(db_id)
+        handleNotificationClick(uri, dataIdString)
     }
 }
 
 private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
     try {
-        val account = dataIdString.toLongOrNull()?.let { SavedAccount.loadAccount(this, it) }
+        val account = dataIdString.toLongOrNull()
+            ?.let { daoSavedAccount.loadAccount(it) }
         if (account == null) {
             showToast(true, "handleNotificationClick: missing SavedAccount. id=$dataIdString")
             return
@@ -227,7 +244,7 @@ fun ActMain.afterAccountVerify(auth2Result: Auth2Result): Boolean = auth2Result.
     // 「アカウント追加のハズが既存アカウントで認証していた」
     // 「アクセストークン更新のハズが別アカウントで認証していた」
     // などを防止するため、full acctでアプリ内DBを検索
-    when (val sa = SavedAccount.loadAccountByAcct(this@afterAccountVerify, newAcct.ascii)) {
+    when (val sa = daoSavedAccount.loadAccountByAcct(newAcct)) {
         null -> afterAccountAdd(newAcct, auth2Result)
         else -> afterAccessTokenUpdate(auth2Result, sa)
     }
@@ -238,10 +255,10 @@ private fun ActMain.afterAccessTokenUpdate(
     sa: SavedAccount,
 ): Boolean {
     // DBの情報を更新する
-    sa.updateTokenInfo(auth2Result)
+    authRepo.updateTokenInfo(sa, auth2Result)
 
     // 各カラムの持つアカウント情報をリロードする
-    reloadAccountSetting()
+    reloadAccountSetting(daoSavedAccount.loadAccountList())
 
     // 自動でリロードする
     appState.columnList
@@ -252,6 +269,7 @@ private fun ActMain.afterAccessTokenUpdate(
     PushSubscriptionHelper.clearLastCheck(sa)
     checkNotificationImmediateAll(this, onlySubscription = true)
     checkNotificationImmediate(this, sa.db_id)
+    updatePushDistributer()
 
     showToast(false, R.string.access_token_updated_for, sa.acct.pretty)
     return true
@@ -263,7 +281,7 @@ private fun ActMain.afterAccountAdd(
 ): Boolean {
     val ta = auth2Result.tootAccount
 
-    val rowId = SavedAccount.insert(
+    val rowId = daoSavedAccount.saveNew(
         acct = newAcct.ascii,
         host = auth2Result.apiHost.ascii,
         domain = auth2Result.apDomain.ascii,
@@ -271,7 +289,7 @@ private fun ActMain.afterAccountAdd(
         token = auth2Result.tokenJson,
         misskeyVersion = auth2Result.tootInstance.misskeyVersionMajor,
     )
-    val account = SavedAccount.loadAccount(applicationContext, rowId)
+    val account = daoSavedAccount.loadAccount(rowId)
     if (account == null) {
         showToast(false, "loadAccount failed.")
         return false
@@ -298,13 +316,13 @@ private fun ActMain.afterAccountAdd(
         }
 
         if (bModified) {
-            account.saveSetting()
+            daoSavedAccount.saveSetting(account)
         }
     }
 
     // 適当にカラムを追加する
     addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
-    if (SavedAccount.count == 1) {
+    if (daoSavedAccount.isSingleAccount()) {
         addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
         addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
         addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
@@ -313,6 +331,7 @@ private fun ActMain.afterAccountAdd(
     // 通知の更新が必要かもしれない
     checkNotificationImmediateAll(this, onlySubscription = true)
     checkNotificationImmediate(this, account.db_id)
+    updatePushDistributer()
     showToast(false, R.string.account_confirmed)
     return true
 }
@@ -327,5 +346,81 @@ fun ActMain.handleSharedIntent(intent: Intent) {
         )
         ActMain.sharedIntent2 = null
         ai?.let { openActPostImpl(it.db_id, sharedIntent = intent) }
+    }
+}
+
+// アカウントを追加/更新したらappServerHashの取得をやりなおす
+fun ActMain.updatePushDistributer(){
+    when {
+        fcmHandler.noFcm && prefDevice.pushDistributor.isNullOrEmpty() -> {
+            try {
+                selectPushDistributor()
+                // 選択したら
+            } catch (_: CancellationException) {
+                // 選択しなかった場合は購読の更新を行わない
+            }
+        }
+        else ->  PushWorker.enqueueRegisterEndpoint(this)
+    }
+}
+
+fun AppCompatActivity.selectPushDistributor() {
+    val context = this
+    launchAndShowError {
+        val prefDevice = prefDevice
+        val lastDistributor = prefDevice.pushDistributor
+
+        fun String.appendChecked(checked: Boolean) = when (checked) {
+            true -> "$this ✅"
+            else -> this
+        }
+
+        actionsDialog(getString(R.string.select_push_delivery_service)) {
+            if (fcmHandler.hasFcm) {
+                action(
+                    getString(R.string.firebase_cloud_messaging)
+                        .appendChecked(lastDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM)
+                ) {
+                    runInProgress(cancellable = false) { reporter ->
+                        withContext(AppDispatchers.DEFAULT) {
+                            pushRepo.switchDistributor(
+                                PrefDevice.PUSH_DISTRIBUTOR_FCM,
+                                reporter = reporter
+                            )
+                        }
+                    }
+                }
+            }
+            for (packageName in UnifiedPush.getDistributors(
+                context,
+                features = ArrayList(listOf(UnifiedPush.FEATURE_BYTES_MESSAGE))
+            )) {
+                action(
+                    packageName.appendChecked(lastDistributor == packageName)
+                ) {
+                    runInProgress(cancellable = false) { reporter ->
+                        withContext(AppDispatchers.DEFAULT) {
+                            pushRepo.switchDistributor(
+                                packageName,
+                                reporter = reporter
+                            )
+                        }
+                    }
+                }
+            }
+            action(
+                getString(R.string.none)
+                    .appendChecked(lastDistributor == PrefDevice.PUSH_DISTRIBUTOR_NONE)
+            ) {
+                runInProgress(cancellable = false) { reporter ->
+                    withContext(AppDispatchers.DEFAULT) {
+                        pushRepo.switchDistributor(
+                            PrefDevice.PUSH_DISTRIBUTOR_NONE,
+                            reporter = reporter
+                        )
+                    }
+                }
+            }
+        }
     }
 }

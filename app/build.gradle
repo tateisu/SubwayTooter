@@ -1,14 +1,17 @@
 import io.gitlab.arturbosch.detekt.Detekt
 
 import java.text.SimpleDateFormat
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: "io.gitlab.arturbosch.detekt"
-
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.devtools.ksp").version("1.8.0-1.0.9")
+    id("io.gitlab.arturbosch.detekt")
+}
 
 android {
     compileSdkVersion stCompileSdkVersion
@@ -58,25 +61,30 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
 
             lintOptions {
-                disable 'MissingTranslation'
+                disable "MissingTranslation"
             }
         }
-        debug{
+        debug {
 
         }
     }
 
     // Specifies comma-separated list of flavor dimensions.
-    flavorDimensions "rcOrDev"
+    flavorDimensions "fcmType"
 
     productFlavors {
-        rc {
-            dimension "rcOrDev"
+        nofcm {
+            dimension "fcmType"
+            versionNameSuffix "-noFcm"
+        }
+        fcm {
+            dimension "fcmType"
+            versionNameSuffix "-play"
         }
     }
 
@@ -97,18 +105,18 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ['/META-INF/{AL2.0,LGPL2.1}', 'META-INF/DEPENDENCIES']
+            excludes += ["/META-INF/{AL2.0,LGPL2.1}", "META-INF/DEPENDENCIES"]
             // https://github.com/Kotlin/kotlinx.coroutines/issues/1064
-            pickFirsts += ['META-INF/atomicfu.kotlin_module']
+            pickFirsts += ["META-INF/atomicfu.kotlin_module"]
         }
     }
 
-    useLibrary 'android.test.base'
-    useLibrary 'android.test.mock'
+    useLibrary "android.test.base"
+    useLibrary "android.test.mock"
     lint {
-        warning 'DuplicatePlatformClasses'
+        warning "DuplicatePlatformClasses"
     }
-    namespace 'jp.juggler.subwaytooter'
+    namespace "jp.juggler.subwaytooter"
 
 }
 
@@ -134,18 +142,20 @@ dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarLibVersion"
 
     implementation(project(":base"))
-    implementation project(':colorpicker')
-    implementation project(':emoji')
-    implementation project(':apng_android')
-    implementation project(':anko')
-    implementation fileTree(include: ['*.aar'], dir: 'src/main/libs')
+    implementation project(":colorpicker")
+    implementation project(":emoji")
+    implementation project(":apng_android")
+    implementation project(":anko")
+    implementation fileTree(include: ["*.aar"], dir: "src/main/libs")
 
     // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
     api "org.conscrypt:conscrypt-android:$conscryptVersion"
+    implementation "com.github.UnifiedPush:android-connector:2.1.1"
 
     kapt "androidx.annotation:annotation:$androidxAnnotationVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
-    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+
+    //kapt "com.github.bumptech.glide:compiler:$glideVersion"
+    ksp "com.github.bumptech.glide:ksp:$glideVersion"
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
 
@@ -188,6 +198,29 @@ dependencies {
 repositories {
     mavenCentral()
 }
+
+def willApplyGoogleService() {
+    Gradle gradle = getGradle()
+    String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
+    Matcher matcher
+
+    matcher = Pattern.compile("assemble|generate", Pattern.CASE_INSENSITIVE).matcher(tskReqStr)
+    if (!matcher.find()) {
+        // not assemble or generate task.
+        return false
+    }
+
+    matcher = Pattern.compile("(?:assemble|generate)fcm\\w+", Pattern.CASE_INSENSITIVE).matcher(tskReqStr)
+    if (!matcher.find()) {
+        println "willApplyGoogleService=false. $tskReqStr"
+        return false
+    } else {
+        println "willApplyGoogleService=true. $tskReqStr"
+        return true
+    }
+}
+
+if (willApplyGoogleService()) apply plugin: "com.google.gms.google-services"
 
 
 tasks.register("detektAll", Detekt) {
@@ -247,3 +280,4 @@ tasks.register("detektAll", Detekt) {
         sarif.outputLocation = file("$buildDir/reports/detekt/st-${name}.sarif")
     }
 }
+

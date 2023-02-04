@@ -74,7 +74,7 @@ class CustomEmoji(
         get() = shortcode
 
     fun chooseUrl() = when {
-        PrefB.bpDisableEmojiAnimation() -> staticUrl
+        PrefB.bpDisableEmojiAnimation.value -> staticUrl
         else -> url
     }
 

@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
@@ -215,7 +216,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
 
                 this.fields = parseMisskeyFields(src)
 
-                UserRelation.fromAccount(parser, src, id)
+                daoUserRelation.fromAccount(parser, src, id)
 
                 @Suppress("LeakingThis")
                 MisskeyAccountDetailMap.fromAccount(parser, this, id)
@@ -504,7 +505,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                 .append(suggestionSource)
         }
 
-        if (PrefB.bpDirectoryLastActive() && last_status_at > 0L) {
+        if (PrefB.bpDirectoryLastActive.value && last_status_at > 0L) {
             prepareSb()
                 .append(context.getString(R.string.last_active))
                 .append(delm)
@@ -519,7 +520,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         }
 
         if (!fromProfileHeader) {
-            if (PrefB.bpDirectoryTootCount() &&
+            if (PrefB.bpDirectoryTootCount.value &&
                 (statuses_count ?: 0L) > 0L
             ) {
                 prepareSb()
@@ -528,8 +529,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     .append(statuses_count.toString())
             }
 
-            if (PrefB.bpDirectoryFollowers() &&
-                !PrefB.bpHideFollowCount() &&
+            if (PrefB.bpDirectoryFollowers.value &&
+                !PrefB.bpHideFollowCount.value &&
                 (followers_count ?: 0L) > 0L
             ) {
                 prepareSb()
@@ -538,7 +539,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
                     .append(followers_count.toString())
             }
 
-            if (PrefB.bpDirectoryNote() && note?.isNotEmpty() == true) {
+            if (PrefB.bpDirectoryNote.value && note?.isNotEmpty() == true) {
                 val decodedNote = DecodeOptions(
                     context,
                     accessInfo,

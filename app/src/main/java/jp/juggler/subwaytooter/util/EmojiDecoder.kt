@@ -11,12 +11,12 @@ import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.pref.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.daoHighlightWord
 import jp.juggler.util.data.asciiPattern
 import jp.juggler.util.data.codePointBefore
 import jp.juggler.util.log.LogCategory
@@ -34,7 +34,7 @@ object EmojiDecoder {
     var useTwemoji = true
 
     fun customEmojiSeparator() =
-        if (PrefB.bpCustomEmojiSeparatorZwsp()) {
+        if (PrefB.bpCustomEmojiSeparatorZwsp.value) {
             '\u200B'
         } else {
             ' '
@@ -116,7 +116,8 @@ object EmojiDecoder {
         private fun applyHighlight(start: Int, end: Int) {
             val list = options.highlightTrie?.matchList(sb, start, end) ?: return
             for (range in list) {
-                val word = HighlightWord.load(range.word) ?: continue
+                val word = daoHighlightWord.load(range.word)
+                    ?: continue
                 sb.setSpan(
                     HighlightSpan(word.color_fg, word.color_bg),
                     range.start,
@@ -175,7 +176,7 @@ object EmojiDecoder {
                     openNormalText()
                     sb.append(text)
                 }
-                PrefB.bpUseTwemoji(context) -> {
+                PrefB.bpUseTwemoji.value -> {
                     closeNormalText()
                     val start = sb.length
                     sb.append(text)
@@ -358,10 +359,8 @@ object EmojiDecoder {
         val emojiMapCustom = options.emojiMapCustom
         val emojiMapProfile = options.emojiMapProfile
 
-        val useEmojioneShortcode = when (val context = options.context) {
-            null -> false
-            else -> PrefB.bpEmojioneShortcode(context.pref())
-        }
+        val useEmojioneShortcode = PrefB.bpEmojioneShortcode.value
+        val disableEmojiAnimation = PrefB.bpDisableEmojiAnimation.value
 
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
             override fun onString(part: String) {
@@ -383,7 +382,7 @@ object EmojiDecoder {
 
                 // カスタム絵文字
                 fun CustomEmoji.customEmojiToUrl(): String = when {
-                    PrefB.bpDisableEmojiAnimation() && staticUrl?.isNotEmpty() == true ->
+                    disableEmojiAnimation && staticUrl?.isNotEmpty() == true ->
                         this.staticUrl
                     else ->
                         this.url
@@ -466,7 +465,7 @@ object EmojiDecoder {
         s: String,
         emojiMapCustom: HashMap<String, CustomEmoji>? = null,
     ): String {
-        val decodeEmojioneShortcode = PrefB.bpEmojioneShortcode()
+        val decodeEmojioneShortcode = PrefB.bpEmojioneShortcode.value
 
         val sb = StringBuilder()
 
@@ -506,7 +505,7 @@ object EmojiDecoder {
 
             val sb = SpannableStringBuilder()
 
-            if (PrefB.bpUseTwemoji(context)) {
+            if (PrefB.bpUseTwemoji.value) {
                 val start = 0
                 sb.append(' ')
                 val end = sb.length

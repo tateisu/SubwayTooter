@@ -81,7 +81,7 @@ private fun ItemViewHolder.showNotificationFollow(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
 ) {
-    val colorBg = PrefI.ipEventBgColorFollow(activity.pref)
+    val colorBg = PrefI.ipEventBgColorFollow.value
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
         showBoost(
@@ -98,7 +98,7 @@ private fun ItemViewHolder.showNotificationUnfollow(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
 ) {
-    val colorBg = PrefI.ipEventBgColorUnfollow(activity.pref)
+    val colorBg = PrefI.ipEventBgColorUnfollow.value
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
         showBoost(
@@ -115,7 +115,7 @@ private fun ItemViewHolder.showNotificationSignup(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
 ) {
-    val colorBg = PrefI.ipEventBgColorSignUp(activity.pref)
+    val colorBg = PrefI.ipEventBgColorSignUp.value
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
         showBoost(
@@ -132,7 +132,7 @@ private fun ItemViewHolder.showNotificationFollowRequest(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
 ) {
-    val colorBg = PrefI.ipEventBgColorFollowRequest(activity.pref)
+    val colorBg = PrefI.ipEventBgColorFollowRequest.value
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
         showBoost(
@@ -152,7 +152,7 @@ private fun ItemViewHolder.showNotificationFollowRequestAccepted(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
 ) {
-    val colorBg = PrefI.ipEventBgColorFollow(activity.pref)
+    val colorBg = PrefI.ipEventBgColorFollow.value
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
     nAccountRef?.let {
         showBoost(
@@ -170,10 +170,10 @@ private fun ItemViewHolder.showNotificationPost(
     nAccountRef: TootAccountRef?,
     nStatus: TootStatus?,
 ) {
-    val colorBg = PrefI.ipEventBgColorStatus(activity.pref)
+    val colorBg = PrefI.ipEventBgColorStatus.value
     val iconId = when (nStatus) {
         null -> R.drawable.ic_question
-        else -> getVisibilityIconId(accessInfo.isMisskey, nStatus.visibility)
+        else -> nStatus.visibility.getVisibilityIconId(accessInfo.isMisskey)
     }
     nAccountRef?.let { showBoost(it, n.time_created_at, iconId, R.string.display_name_posted_by) }
     nStatus?.let { showNotificationStatus(it, colorBg) }
@@ -184,7 +184,7 @@ private fun ItemViewHolder.showNotificationUpdate(
     nAccountRef: TootAccountRef?,
     nStatus: TootStatus?,
 ) {
-    val colorBg = PrefI.ipEventBgColorUpdate(activity.pref)
+    val colorBg = PrefI.ipEventBgColorUpdate.value
     val iconId = R.drawable.ic_history
     nAccountRef?.let {
         showBoost(
@@ -202,7 +202,7 @@ private fun ItemViewHolder.showNotificationStatusReference(
     nAccountRef: TootAccountRef?,
     nStatus: TootStatus?,
 ) {
-    val colorBg = PrefI.ipEventBgColorStatusReference(activity.pref)
+    val colorBg = PrefI.ipEventBgColorStatusReference.value
     val iconId = R.drawable.ic_link_variant
     nAccountRef?.let {
         showBoost(
@@ -220,7 +220,7 @@ private fun ItemViewHolder.showNotificationReaction(
     nAccountRef: TootAccountRef?,
     nStatus: TootStatus?,
 ) {
-    val colorBg = PrefI.ipEventBgColorReaction(activity.pref)
+    val colorBg = PrefI.ipEventBgColorReaction.value
     nAccountRef?.let {
         showBoost(
             it, n.time_created_at,
@@ -242,7 +242,7 @@ private fun ItemViewHolder.showNotificationFavourite(
         val iconId = R.drawable.ic_star_outline
         showBoost(it, n.time_created_at, iconId, R.string.display_name_favourited_by)
     }
-    val colorBg = PrefI.ipEventBgColorFavourite(activity.pref)
+    val colorBg = PrefI.ipEventBgColorFavourite.value
     nStatus?.let { showNotificationStatus(it, colorBg, fadeText = true) }
 }
 
@@ -261,7 +261,7 @@ private fun ItemViewHolder.showNotificationReblog(
             reblogVisibility = n.reblog_visibility
         )
     }
-    val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
+    val colorBg = PrefI.ipEventBgColorBoost.value
     nStatus?.let { showNotificationStatus(it, colorBg, fadeText = true) }
 }
 
@@ -280,7 +280,7 @@ private fun ItemViewHolder.showNotificationRenote(
             boostStatus = nStatus
         )
     }
-    val colorBg = PrefI.ipEventBgColorBoost(activity.pref)
+    val colorBg = PrefI.ipEventBgColorBoost.value
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
@@ -310,7 +310,7 @@ private fun ItemViewHolder.showNotificationMention(
         }
     }
 
-    val colorBg = PrefI.ipEventBgColorMention(activity.pref)
+    val colorBg = PrefI.ipEventBgColorMention.value
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
@@ -328,7 +328,7 @@ private fun ItemViewHolder.showNotificationQuote(
         )
     }
 
-    val colorBg = PrefI.ipEventBgColorQuote(activity.pref)
+    val colorBg = PrefI.ipEventBgColorQuote.value
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
@@ -345,7 +345,7 @@ private fun ItemViewHolder.showNotificationVote(
             R.string.display_name_voted_by
         )
     }
-    val colorBg = PrefI.ipEventBgColorVote(activity.pref)
+    val colorBg = PrefI.ipEventBgColorVote.value
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
@@ -399,13 +399,13 @@ private fun ItemViewHolder.showNotificationStatus(
         item.isQuoteToot -> {
             // 引用Renote
             showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
-            showStatus(item, PrefI.ipEventBgColorQuote(activity.pref), fadeText = fadeText)
+            showStatus(item, PrefI.ipEventBgColorQuote.value, fadeText = fadeText)
         }
 
         else -> {
             // 通常のブースト。引用なしブースト。
             // ブースト表示は通知イベントと被るのでしない
-            showStatusOrReply(reblog, PrefI.ipEventBgColorBoost(activity.pref), fadeText = fadeText)
+            showStatusOrReply(reblog, PrefI.ipEventBgColorBoost.value, fadeText = fadeText)
         }
     }
 }

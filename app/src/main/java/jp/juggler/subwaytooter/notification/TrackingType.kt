@@ -4,9 +4,9 @@ enum class TrackingType(
     val str: String,
     val typeName: String,
 ) {
-    All("all", MessageNotification.TRACKING_NAME_DEFAULT),
-    Reply("reply", MessageNotification.TRACKING_NAME_REPLY),
-    NotReply("notReply", MessageNotification.TRACKING_NAME_DEFAULT);
+    All("all", PullNotification.TRACKING_NAME_DEFAULT),
+    Reply("reply", PullNotification.TRACKING_NAME_REPLY),
+    NotReply("notReply", PullNotification.TRACKING_NAME_DEFAULT);
 
     companion object {
         private val valuesCache = values()

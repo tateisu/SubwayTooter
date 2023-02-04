@@ -12,9 +12,7 @@ import jp.juggler.subwaytooter.column.fireRebindAdapterItems
 import jp.juggler.subwaytooter.column.removeUser
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.log.showToast
@@ -81,7 +79,7 @@ fun ActMain.clickFollowRequestAccept(
                 accept -> R.string.follow_accept_confirm
                 else -> R.string.follow_deny_confirm
             },
-            AcctColor.getNickname(accessInfo, who)
+            daoAcctColor.getNickname(accessInfo, who)
         )
         followRequestAuthorize(accessInfo, whoRef, accept)
     }
@@ -152,12 +150,12 @@ fun ActMain.follow(
                     getString(
                         R.string.confirm_follow_request_who_from,
                         whoRef.decoded_display_name,
-                        AcctColor.getNickname(accessInfo)
+                        daoAcctColor.getNickname(accessInfo)
                     ),
                     accessInfo.confirm_follow_locked,
                 ) { newConfirmEnabled ->
                     accessInfo.confirm_follow_locked = newConfirmEnabled
-                    accessInfo.saveSetting()
+                    daoSavedAccount.saveSetting(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             } else if (bFollow) {
@@ -165,12 +163,12 @@ fun ActMain.follow(
                     getString(
                         R.string.confirm_follow_who_from,
                         whoRef.decoded_display_name,
-                        AcctColor.getNickname(accessInfo)
+                        daoAcctColor.getNickname(accessInfo)
                     ),
                     accessInfo.confirm_follow
                 ) { newConfirmEnabled ->
                     accessInfo.confirm_follow = newConfirmEnabled
-                    accessInfo.saveSetting()
+                    daoSavedAccount.saveSetting(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             } else {
@@ -178,12 +176,12 @@ fun ActMain.follow(
                     getString(
                         R.string.confirm_unfollow_who_from,
                         whoRef.decoded_display_name,
-                        AcctColor.getNickname(accessInfo)
+                        daoAcctColor.getNickname(accessInfo)
                     ),
                     accessInfo.confirm_unfollow
                 ) { newConfirmEnabled ->
                     accessInfo.confirm_unfollow = newConfirmEnabled
-                    accessInfo.saveSetting()
+                    daoSavedAccount.saveSetting(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             }
@@ -235,9 +233,9 @@ fun ActMain.follow(
                 )?.also { result ->
 
                     fun saveFollow(f: Boolean) {
-                        val ur = UserRelation.load(accessInfo.db_id, userId)
+                        val ur = daoUserRelation.load(accessInfo.db_id, userId)
                         ur.following = f
-                        UserRelation.save1Misskey(
+                        daoUserRelation.save1Misskey(
                             System.currentTimeMillis(),
                             accessInfo.db_id,
                             userId.toString(),
@@ -264,7 +262,7 @@ fun ActMain.follow(
                     "".toFormRequestBody().toPost()
                 )?.also { result ->
                     val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
-                    resultRelation = accessInfo.saveUserRelation(newRelation)
+                    resultRelation = daoUserRelation.saveUserRelation(accessInfo, newRelation)
                 }
             }
         }?.let { result ->
@@ -313,26 +311,26 @@ private fun ActMain.followRemote(
                 confirm(
                     getString(
                         R.string.confirm_follow_request_who_from,
-                        AcctColor.getNickname(acct),
-                        AcctColor.getNickname(accessInfo)
+                        daoAcctColor.getNickname(acct),
+                        daoAcctColor.getNickname(accessInfo)
                     ),
                     accessInfo.confirm_follow_locked,
                 ) { newConfirmEnabled ->
                     accessInfo.confirm_follow_locked = newConfirmEnabled
-                    accessInfo.saveSetting()
+                    daoSavedAccount.saveSetting(accessInfo)
                     reloadAccountSetting(accessInfo)
                 }
             } else {
                 confirm(
                     getString(
                         R.string.confirm_follow_who_from,
-                        AcctColor.getNickname(acct),
-                        AcctColor.getNickname(accessInfo)
+                        daoAcctColor.getNickname(acct),
+                        daoAcctColor.getNickname(accessInfo)
                     ),
                     accessInfo.confirm_follow
                 ) { newConfirmEnabled ->
                     accessInfo.confirm_follow = newConfirmEnabled
-                    accessInfo.saveSetting()
+                    daoSavedAccount.saveSetting(accessInfo)
                     reloadAccountSetting(accessInfo)
                 }
             }
@@ -357,12 +355,16 @@ private fun ActMain.followRemote(
                         result?.error?.contains("already not following") == true
                     ) {
                         // DBから読み直して値を変更する
-                        resultRelation = UserRelation.load(accessInfo.db_id, userId)
+                        resultRelation = daoUserRelation.load(accessInfo.db_id, userId)
                             .apply { following = true }
                     } else {
                         // parserに残ってるRelationをDBに保存する
                         parser.account(result?.jsonObject)?.let {
-                            resultRelation = accessInfo.saveUserRelationMisskey(it.id, parser)
+                            resultRelation = daoUserRelation.saveUserRelationMisskey(
+                                accessInfo,
+                                it.id,
+                                parser
+                            )
                         }
                     }
                 }
@@ -372,7 +374,7 @@ private fun ActMain.followRemote(
                     "".toFormRequestBody().toPost()
                 )?.also { result ->
                     parseItem(::TootRelationShip, parser, result.jsonObject)?.let {
-                        resultRelation = accessInfo.saveUserRelation(it)
+                        resultRelation = daoUserRelation.saveUserRelation(accessInfo, it)
                     }
                 }
             }
@@ -469,7 +471,11 @@ fun ActMain.followRequestAuthorize(
                     val user = parser.account(result?.jsonObject)
                     if (user != null) {
                         // parserに残ってるRelationをDBに保存する
-                        accessInfo.saveUserRelationMisskey(user.id, parser)
+                        daoUserRelation.saveUserRelationMisskey(
+                            accessInfo,
+                            user.id,
+                            parser
+                        )
                     }
                     // 読めなくてもエラー処理は行わない
                 }
@@ -481,7 +487,7 @@ fun ActMain.followRequestAuthorize(
                     // Mastodon 3.0.0 から更新されたリレーションを返す
                     // https//github.com/tootsuite/mastodon/pull/11800
                     val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
-                    accessInfo.saveUserRelation(newRelation)
+                    daoUserRelation.saveUserRelation(accessInfo, newRelation)
                     // 読めなくてもエラー処理は行わない
                 }
             }
@@ -543,7 +549,7 @@ fun ActMain.followRequestDelete(
             confirm(
                 R.string.confirm_cancel_follow_request_who_from,
                 whoRef.decoded_display_name,
-                AcctColor.getNickname(accessInfo)
+                daoAcctColor.getNickname(accessInfo)
             )
         }
 
@@ -572,7 +578,12 @@ fun ActMain.followRequestDelete(
                 )?.also { result ->
                     parser.account(result.jsonObject)?.let {
                         // parserに残ってるRelationをDBに保存する
-                        resultRelation = accessInfo.saveUserRelationMisskey(it.id, parser)
+                        resultRelation = daoUserRelation.saveUserRelationMisskey(
+                            accessInfo,
+                            it.id,
+                            parser
+                        )
+
                     }
                 }
             }

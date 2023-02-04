@@ -9,7 +9,7 @@ annotation class JsonPropBoolean(val key: String, val defVal: Boolean)
 
 class JsonDelegate<T>(val parent: JsonDelegates)
 
-class JsonDelegates(val src: JsonObject) {
+class JsonDelegates(val jsonGetter: () -> JsonObject) {
     val int = JsonDelegate<Int>(this)
     val string = JsonDelegate<String>(this)
     val boolean = JsonDelegate<Boolean>(this)
@@ -20,10 +20,10 @@ private fun getMetaString(property: KProperty<*>) =
         ?: error("${property.name}, required=String, defined=(missing)")
 
 operator fun JsonDelegate<String>.getValue(thisRef: Any?, property: KProperty<*>): String =
-    getMetaString(property).let { parent.src.string(it.key) ?: it.defVal }
+    getMetaString(property).let { parent.jsonGetter().string(it.key) ?: it.defVal }
 
 operator fun JsonDelegate<String>.setValue(thisRef: Any?, property: KProperty<*>, value: String) {
-    getMetaString(property).let { parent.src[it.key] = value }
+    getMetaString(property).let { parent.jsonGetter()[it.key] = value }
 }
 
 private fun getMetaInt(property: KProperty<*>) =
@@ -31,10 +31,10 @@ private fun getMetaInt(property: KProperty<*>) =
         ?: error("${property.name}, required=Int, defined=(missing)")
 
 operator fun JsonDelegate<Int>.getValue(thisRef: Any?, property: KProperty<*>): Int =
-    getMetaInt(property).let { parent.src.int(it.key) ?: it.defVal }
+    getMetaInt(property).let { parent.jsonGetter().int(it.key) ?: it.defVal }
 
 operator fun JsonDelegate<Int>.setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
-    getMetaInt(property).let { parent.src[it.key] = value }
+    getMetaInt(property).let { parent.jsonGetter()[it.key] = value }
 }
 
 private fun getMetaBoolean(property: KProperty<*>) =
@@ -42,8 +42,8 @@ private fun getMetaBoolean(property: KProperty<*>) =
         ?: error("${property.name}, required=Boolean, defined=(missing)")
 
 operator fun JsonDelegate<Boolean>.getValue(thisRef: Any?, property: KProperty<*>): Boolean =
-    getMetaBoolean(property).let { parent.src.boolean(it.key) ?: it.defVal }
+    getMetaBoolean(property).let { parent.jsonGetter().boolean(it.key) ?: it.defVal }
 
 operator fun JsonDelegate<Boolean>.setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
-    getMetaBoolean(property).let { parent.src[it.key] = value }
+    getMetaBoolean(property).let { parent.jsonGetter()[it.key] = value }
 }

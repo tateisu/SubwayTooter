@@ -16,8 +16,8 @@ import jp.juggler.subwaytooter.columnviewholder.showColumnSetting
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.*
 import jp.juggler.util.data.clip
 import jp.juggler.util.log.LogCategory
@@ -103,7 +103,7 @@ fun ActMain.addColumn(
     vararg params: Any,
 ): Column {
     return addColumn(
-        PrefB.bpAllowColumnDuplication(pref),
+        PrefB.bpAllowColumnDuplication.value,
         indexArg,
         ai,
         type,
@@ -175,7 +175,7 @@ fun ActMain.updateColumnStrip() {
         viewRoot.tag = index
         viewRoot.setOnClickListener { v ->
             val idx = v.tag as Int
-            if (PrefB.bpScrollTopFromColumnStrip(pref) && isVisibleColumn(idx)) {
+            if (PrefB.bpScrollTopFromColumnStrip.value && isVisibleColumn(idx)) {
                 column.viewHolder?.scrollToTop2()
                 return@setOnClickListener
             }
@@ -193,9 +193,9 @@ fun ActMain.updateColumnStrip() {
         ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
 
         //
-        val ac = AcctColor.load(column.accessInfo)
-        if (AcctColor.hasColorForeground(ac)) {
-            vAcctColor.setBackgroundColor(ac.color_fg)
+        val ac = daoAcctColor.load(column.accessInfo)
+        if (daoAcctColor.hasColorForeground(ac)) {
+            vAcctColor.setBackgroundColor(ac.colorFg)
         } else {
             vAcctColor.visibility = View.INVISIBLE
         }
@@ -214,7 +214,7 @@ fun ActMain.closeColumn(column: Column, bConfirmed: Boolean = false) {
         return
     }
 
-    if (!bConfirmed && !PrefB.bpDontConfirmBeforeCloseColumn(pref)) {
+    if (!bConfirmed && !PrefB.bpDontConfirmBeforeCloseColumn.value) {
         AlertDialog.Builder(this)
             .setMessage(R.string.confirm_close_column)
             .setNegativeButton(R.string.cancel, null)
@@ -366,7 +366,7 @@ fun ActMain.scrollToColumn(index: Int, smoothScroll: Boolean = true) {
 fun ActMain.scrollToLastColumn() {
     if (appState.columnCount <= 0) return
 
-    val columnPos = PrefI.ipLastColumnPos(pref)
+    val columnPos = PrefI.ipLastColumnPos.value
     log.d("ipLastColumnPos load $columnPos")
 
     // 前回最後に表示していたカラムの位置にスクロールする
@@ -385,7 +385,7 @@ fun ActMain.scrollToLastColumn() {
 fun ActMain.resizeColumnWidth(views: ActMainTabletViews) {
 
     var columnWMinDp = ActMain.COLUMN_WIDTH_MIN_DP
-    val sv = PrefS.spColumnWidth(pref)
+    val sv = PrefS.spColumnWidth.value
     if (sv.isNotEmpty()) {
         try {
             val iv = Integer.parseInt(sv)

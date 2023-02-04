@@ -9,7 +9,6 @@ import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.util.*
 import jp.juggler.util.data.*
 import java.util.*
 
@@ -162,7 +161,7 @@ class TootReaction(
     }
 
     private fun chooseUrl() = when {
-        PrefB.bpDisableEmojiAnimation() -> staticUrl
+        PrefB.bpDisableEmojiAnimation.value -> staticUrl
         else -> url
     }
 

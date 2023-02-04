@@ -9,8 +9,9 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker
-import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoPostDraft
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.coroutine.launchProgress
@@ -129,7 +130,7 @@ fun ActPost.saveDraft() {
         states.visibility?.id?.toString()?.let { json.put(DRAFT_VISIBILITY, it) }
         states.inReplyToId?.putTo(json, DRAFT_REPLY_ID)
 
-        PostDraft.save(System.currentTimeMillis(), json)
+        daoPostDraft.save(System.currentTimeMillis(), json)
     } catch (ex: Throwable) {
         log.e(ex, "saveDraft failed.")
     }
@@ -152,7 +153,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                 draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
 
             val accountDbId = draft.long(DRAFT_ACCOUNT_DB_ID) ?: -1L
-            val account = SavedAccount.loadAccount(this@restoreDraft, accountDbId)
+            val account = daoSavedAccount.loadAccount(accountDbId)
             if (account == null) {
                 listWarning.add(getString(R.string.account_in_draft_is_lost))
                 try {

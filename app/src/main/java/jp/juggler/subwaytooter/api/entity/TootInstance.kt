@@ -310,8 +310,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             if (sendRequest(result) {
                     val builder = Request.Builder().url("https://${apiHost?.ascii}/api/v1/instance")
 
-                    (forceAccessToken ?: account?.getAccessToken())
-                        ?.notEmpty()?.let { builder.header("Authorization", "Bearer $it") }
+                    (forceAccessToken ?: account?.bearerAccessToken)?.notEmpty()?.let {
+                        builder.header("Authorization", "Bearer $it")
+                    }
                     builder.build()
                 }
             ) {
@@ -428,7 +429,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 when {
                     qrr.first?.instanceType == InstanceType.Pixelfed &&
-                            !PrefB.bpEnablePixelfed() &&
+                            !PrefB.bpEnablePixelfed.value &&
                             !req.allowPixelfed ->
                         tiError("currently Pixelfed instance is not supported.")
                     else -> qrr

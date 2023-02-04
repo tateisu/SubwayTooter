@@ -10,12 +10,17 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.actmain.selectPushDistributor
+import jp.juggler.subwaytooter.dialog.runInProgress
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.pref.impl.*
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.data.intentOpenDocument
 import jp.juggler.util.data.notZero
@@ -24,6 +29,7 @@ import jp.juggler.util.ui.InputTypeEx
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.getAdaptiveRippleDrawable
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
+import kotlinx.coroutines.delay
 import org.jetbrains.anko.backgroundDrawable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -227,6 +233,10 @@ class AppSettingItem(
 val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_setting).apply {
 
     section(R.string.notifications) {
+        action(R.string.push_distributor) {
+            action = { selectPushDistributor() }
+            desc = R.string.push_distributor_desc
+        }
 
         text(
             PrefS.spPullNotificationCheckInterval,
@@ -447,14 +457,18 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         ) {
             val lp = pref.cast<LongPref>()!!
             spinnerInitializer = { spinner ->
-                val adapter = AccountAdapter()
-                spinner.adapter = adapter
-                spinner.setSelection(adapter.getIndexFromId(lp(pref)))
+                launchAndShowError {
+                    val list = daoSavedAccount.loadAccountList()
+                        .sortedByNickname()
+                    val adapter = AccountAdapter(list)
+                    spinner.adapter = adapter
+                    spinner.setSelection(adapter.getIndexFromId(lp.value))
+                }
             }
             spinnerOnSelected = { spinner, index ->
-                val adapter = spinner.adapter.cast<ActAppSetting.AccountAdapter>()
-                    ?: error("spinnerOnSelected: missing AccountAdapter")
-                pref.edit().put(lp, adapter.getIdFromIndex(index)).apply()
+                spinner.adapter.cast<ActAppSetting.AccountAdapter>()
+                    ?.getIdFromIndex(index)
+                    ?.let { lp.value = it }
             }
         }
 
@@ -522,12 +536,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             spinnerInitializer = { spinner ->
                 val adapter = TimeZoneAdapter()
                 spinner.adapter = adapter
-                spinner.setSelection(adapter.getIndexFromId(sp(pref)))
+                spinner.setSelection(adapter.getIndexFromId(sp.value))
             }
             spinnerOnSelected = { spinner, index ->
                 val adapter = spinner.adapter.cast<ActAppSetting.TimeZoneAdapter>()
                     ?: error("spinnerOnSelected: missing TimeZoneAdapter")
-                pref.edit().put(sp, adapter.getIdFromIndex(index)).apply()
+                sp.value = adapter.getIdFromIndex(index)
             }
         }
 
@@ -581,7 +595,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                 }
             }
             onClickReset = {
-                pref.edit().remove(item.pref?.key).apply()
+                item.pref?.removeValue()
                 showTimelineFont(item)
             }
             showTextView = { showTimelineFont(item, it) }
@@ -602,7 +616,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                 }
             }
             onClickReset = {
-                pref.edit().remove(item.pref?.key).apply()
+                item.pref?.removeValue()
                 showTimelineFont(AppSettingItem.TIMELINE_FONT_BOLD)
             }
             showTextView = { showTimelineFont(item, it) }
@@ -621,7 +635,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             fromFloat = { formatFontSize(it) }
 
             captionFontSize = {
-                val fv = fp(pref)
+                val fv = fp.value
                 when {
                     !fv.isFinite() -> PrefF.default_timeline_font_size
                     fv < 1f -> 1f
@@ -629,7 +643,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                 }
             }
             captionSpacing = {
-                PrefS.spTimelineSpacing(pref).toFloatOrNull()
+                PrefS.spTimelineSpacing.value.toFloatOrNull()
             }
             changed = {
                 findItemViewHolder(item)?.updateCaption()
@@ -644,7 +658,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             fromFloat = { formatFontSize(it) }
 
             captionFontSize = {
-                val fv = fp(pref)
+                val fv = fp.value
                 when {
                     !fv.isFinite() -> PrefF.default_acct_font_size
                     fv < 1f -> 1f
@@ -667,7 +681,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             fromFloat = { formatFontSize(it) }
 
             captionFontSize = {
-                val fv = fp(pref)
+                val fv = fp.value
                 when {
                     !fv.isFinite() -> PrefF.default_notification_tl_font_size
                     fv < 1f -> 1f
@@ -675,7 +689,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                 }
             }
             captionSpacing = {
-                PrefS.spTimelineSpacing(pref).toFloatOrNull()
+                PrefS.spTimelineSpacing.value.toFloatOrNull()
             }
             changed = {
                 findItemViewHolder(item)?.updateCaption()
@@ -718,7 +732,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             fromFloat = { formatFontSize(it) }
 
             captionFontSize = {
-                val fv = fp(pref)
+                val fv = fp.value
                 when {
                     !fv.isFinite() -> PrefF.default_header_font_size
                     fv < 1f -> 1f
@@ -843,8 +857,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val ivColumnHeader: ImageView = viewRoot.findViewById(R.id.ivColumnHeader)
                     val tvColumnName: TextView = viewRoot.findViewById(R.id.tvColumnName)
 
-                    val colorColumnHeaderBg = PrefI.ipCcdHeaderBg(activity.pref)
-                    val colorColumnHeaderFg = PrefI.ipCcdHeaderFg(activity.pref)
+                    val colorColumnHeaderBg = PrefI.ipCcdHeaderBg.value
+                    val colorColumnHeaderFg = PrefI.ipCcdHeaderFg.value
 
                     val headerBg = when {
                         colorColumnHeaderBg != 0 -> colorColumnHeaderBg
@@ -876,9 +890,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val tvSampleAcct: TextView = viewRoot.findViewById(R.id.tvSampleAcct)
                     val tvSampleContent: TextView = viewRoot.findViewById(R.id.tvSampleContent)
 
-                    val colorColumnBg = PrefI.ipCcdContentBg(activity.pref)
-                    val colorColumnAcct = PrefI.ipCcdContentAcct(activity.pref)
-                    val colorColumnText = PrefI.ipCcdContentText(activity.pref)
+                    val colorColumnBg = PrefI.ipCcdContentBg.value
+                    val colorColumnAcct = PrefI.ipCcdContentAcct.value
+                    val colorColumnText = PrefI.ipCcdContentText.value
 
                     flColumnBackground.setBackgroundColor(colorColumnBg) // may 0
 
@@ -909,7 +923,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         group(R.string.footer_color) {
             AppSettingItem.SAMPLE_FOOTER =
                 sample(R.layout.setting_sample_footer) { activity, viewRoot ->
-                    val pref = activity.pref
                     val ivFooterToot: AppCompatImageView = viewRoot.findViewById(R.id.ivFooterToot)
                     val ivFooterMenu: AppCompatImageView = viewRoot.findViewById(R.id.ivFooterMenu)
                     val llFooterBG: View = viewRoot.findViewById(R.id.llFooterBG)
@@ -917,11 +930,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val vFooterDivider2: View = viewRoot.findViewById(R.id.vFooterDivider2)
                     val vIndicator: View = viewRoot.findViewById(R.id.vIndicator)
 
-                    val footerButtonBgColor = PrefI.ipFooterButtonBgColor(pref)
-                    val footerButtonFgColor = PrefI.ipFooterButtonFgColor(pref)
-                    val footerTabBgColor = PrefI.ipFooterTabBgColor(pref)
-                    val footerTabDividerColor = PrefI.ipFooterTabDividerColor(pref)
-                    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor(pref)
+                    val footerButtonBgColor = PrefI.ipFooterButtonBgColor.value
+                    val footerButtonFgColor = PrefI.ipFooterButtonFgColor.value
+                    val footerTabBgColor = PrefI.ipFooterTabBgColor.value
+                    val footerTabDividerColor = PrefI.ipFooterTabDividerColor.value
+                    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor.value
 
                     val colorColumnStripBackground = footerTabBgColor.notZero()
                         ?: activity.attrColor(R.attr.colorColumnStripBackground)
@@ -1020,6 +1033,21 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     startActivity(Intent(this, ActExitReasons::class.java))
                 } else {
                     showToast(false, "this feature requires Android 11")
+                }
+            }
+        }
+
+        action(R.string.test_progress_dialog){
+            action={
+                launchAndShowError {
+                    runInProgress(cancellable=true) {
+                        it.setMessage("message")
+                        it.setTitle("title")
+                        delay(2000L)
+                        it.setMessage("message ".repeat(30))
+                        it.setTitle("title ".repeat(30))
+                        delay(2000L)
+                    }
                 }
             }
         }

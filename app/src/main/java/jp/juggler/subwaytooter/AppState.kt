@@ -17,10 +17,7 @@ import jp.juggler.subwaytooter.column.getBackgroundImageDir
 import jp.juggler.subwaytooter.column.onMuteUpdated
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.streaming.StreamManager
-import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.table.MutedWord
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
@@ -49,7 +46,6 @@ class DedupItem(
 class AppState(
     internal val context: Context,
     internal val handler: Handler,
-    internal val pref: SharedPreferences,
 ) {
 
     companion object {
@@ -190,7 +186,7 @@ class AppState(
     // TextToSpeech
 
     private val isTextToSpeechRequired: Boolean
-        get() = columnList.any { it.enableSpeech } || HighlightWord.hasTextToSpeechHighlightWord()
+        get() = columnList.any { it.enableSpeech } || daoHighlightWord.hasTextToSpeechHighlightWord()
 
     private val ttsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
@@ -303,8 +299,8 @@ class AppState(
         if (list != null) editColumnList(save = false) { it.addAll(list) }
 
         // ミュートデータのロード
-        TootStatus.muted_app = MutedApp.nameSet
-        TootStatus.muted_word = MutedWord.nameSet
+        TootStatus.muted_app = daoMutedApp.nameSet()
+        TootStatus.muted_word = daoMutedWord.nameSet()
 
         // 背景フォルダの掃除
         try {
@@ -599,8 +595,8 @@ class AppState(
     }
 
     fun onMuteUpdated() {
-        TootStatus.muted_app = MutedApp.nameSet
-        TootStatus.muted_word = MutedWord.nameSet
+        TootStatus.muted_app = daoMutedApp.nameSet()
+        TootStatus.muted_word = daoMutedWord.nameSet()
         columnList.forEach { it.onMuteUpdated() }
     }
 }

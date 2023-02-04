@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -29,11 +28,14 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.GetContentResultEntry
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.isNotOk
 import kotlinx.coroutines.Job
@@ -111,7 +113,6 @@ class ActPost : AppCompatActivity(),
     lateinit var etChoices: List<MyEditText>
 
     lateinit var handler: Handler
-    lateinit var pref: SharedPreferences
     lateinit var appState: AppState
     lateinit var attachmentUploader: AttachmentUploader
     lateinit var attachmentPicker: AttachmentPicker
@@ -138,7 +139,7 @@ class ActPost : AppCompatActivity(),
 
     var states = ActPostStates()
 
-    var accountList: ArrayList<SavedAccount> = ArrayList()
+    var accountList: List<SavedAccount> = emptyList()
     var account: SavedAccount? = null
     var attachmentList = ArrayList<PostAttachment>()
     var isPostComplete: Boolean = false
@@ -169,16 +170,17 @@ class ActPost : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         backPressed {
-            finish()
-            // 戻るボタンを押したときとonPauseで2回保存することになるが、
-            // 同じ内容はDB上は重複しないはず…
-            saveDraft()
+            launchAndShowError {
+                finish()
+                // 戻るボタンを押したときとonPauseで2回保存することになるが、
+                // 同じ内容はDB上は重複しないはず…
+                saveDraft()
+            }
         }
         if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
         App1.setActivityTheme(this)
         appState = App1.getAppState(this)
         handler = appState.handler
-        pref = appState.pref
         attachmentUploader = AttachmentUploader(this, handler)
         attachmentPicker = AttachmentPicker(this, this)
         density = resources.displayMetrics.density
@@ -202,9 +204,11 @@ class ActPost : AppCompatActivity(),
 
         initUI()
 
-        when (savedInstanceState) {
-            null -> updateText(intent, confirmed = true, saveDraft = false)
-            else -> restoreState(savedInstanceState)
+        launchAndShowError {
+            when (savedInstanceState) {
+                null -> updateText(intent, saveDraft = false)
+                else -> restoreState(savedInstanceState)
+            }
         }
     }
 
@@ -242,11 +246,18 @@ class ActPost : AppCompatActivity(),
 
     override fun onPause() {
         super.onPause()
-        // 編集中にホーム画面を押したり他アプリに移動する場合は下書きを保存する
-        // やや過剰な気がするが、自アプリに戻ってくるときにランチャーからアイコンタップされると
-        // メイン画面より上にあるアクティビティはすべて消されてしまうので
-        // このタイミングで保存するしかない
-        if (!isPostComplete) saveDraft()
+        if (!isPostComplete) launchMain {
+            try {
+                // 編集中にホーム画面を押したり他アプリに移動する場合は下書きを保存する
+                // やや過剰な気がするが、自アプリに戻ってくるときにランチャーからアイコンタップされると
+                // メイン画面より上にあるアクティビティはすべて消されてしまうので
+                // このタイミングで保存するしかない
+                saveDraft()
+            } catch (ex: Throwable) {
+                log.e(ex, "can't save draft.")
+                showToast(ex, "can't save draft.")
+            }
+        }
     }
 
     override fun onClick(v: View) {
@@ -317,7 +328,7 @@ class ActPost : AppCompatActivity(),
     fun initUI() {
         setContentView(views.root)
 
-        if (PrefB.bpPostButtonBarTop(pref)) {
+        if (PrefB.bpPostButtonBarTop.value) {
             val bar = findViewById<View>(R.id.llFooterBar)
             val parent = bar.parent as ViewGroup
             parent.removeView(bar)
@@ -401,7 +412,7 @@ class ActPost : AppCompatActivity(),
 
         views.cbContentWarning.setOnCheckedChangeListener { _, _ -> showContentWarningEnabled() }
 
-        completionHelper = CompletionHelper(this, pref, appState.handler)
+        completionHelper = CompletionHelper(this, appState.handler)
         completionHelper.attachEditText(
             views.root,
             views.etContent,

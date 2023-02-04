@@ -34,14 +34,14 @@ inline val AnkoContext<*>.resources: Resources
 inline val AnkoContext<*>.assets: AssetManager
     get() = ctx.assets
 
-inline val AnkoContext<*>.defaultSharedPreferences: SharedPreferences
-    get() = PreferenceManager.getDefaultSharedPreferences(ctx)
-
-inline val Context.defaultSharedPreferences: SharedPreferences
-    get() = PreferenceManager.getDefaultSharedPreferences(this)
-
-inline val Fragment.defaultSharedPreferences: SharedPreferences
-    get() = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//inline val AnkoContext<*>.defaultSharedPreferences: SharedPreferences
+//    get() = PreferenceManager.getDefaultSharedPreferences(ctx)
+//
+//inline val Context.defaultSharedPreferences: SharedPreferences
+//    get() = PreferenceManager.getDefaultSharedPreferences(this)
+//
+//inline val Fragment.defaultSharedPreferences: SharedPreferences
+//    get() = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
 inline val Fragment.act: Activity?
     get() = activity

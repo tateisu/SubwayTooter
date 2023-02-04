@@ -1189,6 +1189,37 @@
     <string name="next_step">次へ</string>
     <string name="user_creation_not_supported">[%1$s, %2$s] サーバ種別はアプリからのユーザ登録に対応していません。</string>
     <string name="confirm_remove_column_mark_as_dont_close">保護されたカラムですが、削除しますか?</string>
+    <string name="post_reset_confirm">下書きに退避して、新しい投稿を編集しますか?</string>
+
+    <!-- 通知チャネル -->
+    <string name="alert">注意</string>
+    <string name="alert_notification_desc">アプリの動作に関する注意を表示します。</string>
+    <string name="push_message">プッシュ通知</string>
+    <string name="push_message_desc">SNSサーバから送られたプッシュ通知を表示します。</string>
+    <string name="push_worker">プッシュ通知関連の処理中</string>
+    <string name="push_worker_desc">プッシュの購読や画像データのロード等、関連する処理の間は表示されます。</string>
+    <string name="polling_foregrounder">通知チェック中</string>
+    <string name="polling_foregrounder_desc">バックグラウンドでプル通知チェックを行っている間は表示されます。</string>
+    <string name="server_timeout">サーバータイムアウト</string>
+    <string name="server_timeout_desc">SNSの通知をチェックする際にサーバとの通信がタイムアウトすると表示されます。</string>
+    <string name="pull_notification">SNS通知</string>
+    <string name="pull_notification_desc">プル通知チェックでSNSサーバから取得した情報を表示します。</string>
+
+    <!-- アプリ設定 -->
+    <string name="push_distributor">プッシュ配送サービス</string>
+    <string name="push_distributor_desc">SNSサーバからのプッシュデータを中継するのに使うプッシュ配送サービスを選択します。</string>
+
+    <!-- プッシュサービス選択 -->
+    <string name="select_push_delivery_service">プッシュサービスの選択</string>
+    <string name="firebase_cloud_messaging">Google FCM(Firebase Cloud Messaging)</string>
+    <string name="none">なし</string>
+    <string name="push_subscription_keep_using">現在の購読をそのまま利用可能です</string>
+    <string name="push_subscription_off_unread_notification">現在の購読を利用できますが、既読通知はオフにしました。</string>
+    <string name="push_subscription_delete_current">現在の購読がありましたが、指示により削除しました。</string>
+    <string name="push_subscription_app_server_hash_missing_but_ok">プッシュ配送サービスをアプリサーバに登録できていませんが、購読が不要な状況なので問題ありません。</string>
+    <string name="push_subscription_app_server_hash_missing_error">プッシュ配送サービスをアプリサーバに登録できていません。プッシュ配送サービスを再度選択すると改善する場合があります。</string>
+    <string name="removing_old_distributer">プッシュサービスの古い情報を削除しています。</string>
+    <string name="test_progress_dialog">プログレスダイアログのテスト</string>
 
 </resources>
 

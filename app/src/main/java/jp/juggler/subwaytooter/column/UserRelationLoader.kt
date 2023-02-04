@@ -3,12 +3,13 @@ package jp.juggler.subwaytooter.column
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.table.AcctSet
-import jp.juggler.subwaytooter.table.TagSet
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.daoAcctSet
+import jp.juggler.subwaytooter.table.daoTagHistory
+import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.util.data.toJsonArray
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.network.toPostRequestBuilder
+import kotlin.math.min
 
 class UserRelationLoader(val column: Column) {
     companion object {
@@ -63,7 +64,13 @@ class UserRelationLoader(val column: Column) {
                 while (start < end) {
                     var step = end - start
                     if (step > Column.RELATIONSHIP_LOAD_STEP) step = Column.RELATIONSHIP_LOAD_STEP
-                    UserRelation.saveListMisskey(now, column.accessInfo.db_id, whoList, start, step)
+                    daoUserRelation.saveListMisskey(
+                        now,
+                        column.accessInfo.db_id,
+                        whoList,
+                        start,
+                        step
+                    )
                     start += step
                 }
                 log.d("updateRelation: update $end relations.")
@@ -108,7 +115,11 @@ class UserRelationLoader(val column: Column) {
                         for (i in 0 until list.size) {
                             list[i].id = userIdList[i]
                         }
-                        UserRelation.saveListMisskeyRelationApi(now, column.accessInfo.db_id, list)
+                        daoUserRelation.saveListMisskeyRelationApi(
+                            now,
+                            column.accessInfo.db_id,
+                            list
+                        )
                     }
                 }
                 log.d("updateRelation: update $n relations.")
@@ -134,7 +145,7 @@ class UserRelationLoader(val column: Column) {
                     }
                     val result = client.request(sb.toString()) ?: break // cancelled.
                     val list = parseList(::TootRelationShip, parser, result.jsonArray)
-                    if (list.size > 0) UserRelation.saveListMastodon(
+                    if (list.size > 0) daoUserRelation.saveListMastodon(
                         now,
                         column.accessInfo.db_id,
                         list
@@ -156,7 +167,7 @@ class UserRelationLoader(val column: Column) {
             while (n < acctList.size) {
                 var length = size - n
                 if (length > Column.ACCT_DB_STEP) length = Column.ACCT_DB_STEP
-                AcctSet.saveList(now, acctList, n, length)
+                daoAcctSet.saveList(now, acctList, n, length)
                 n += length
             }
             log.d("updateRelation: update $n acct.")
@@ -171,11 +182,10 @@ class UserRelationLoader(val column: Column) {
             val now = System.currentTimeMillis()
 
             n = 0
-            while (n < tagList.size) {
-                var length = size - n
-                if (length > Column.ACCT_DB_STEP) length = Column.ACCT_DB_STEP
-                TagSet.saveList(now, tagList, n, length)
-                n += length
+            while (n < size) {
+                val step = min(Column.ACCT_DB_STEP, size - n)
+                daoTagHistory.saveList(now, tagList, n, step)
+                n += step
             }
             log.d("updateRelation: update $n tag.")
         }

@@ -9,12 +9,14 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActWordListBinding
 import jp.juggler.subwaytooter.databinding.LvMuteAppBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
-import jp.juggler.subwaytooter.table.FavMute
+import jp.juggler.subwaytooter.table.daoFavMute
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.setNavigationBack
+import kotlinx.coroutines.withContext
 
 class ActFavMute : AppCompatActivity() {
 
@@ -52,27 +54,20 @@ class ActFavMute : AppCompatActivity() {
         item ?: return
         launchAndShowError {
             confirm(R.string.delete_confirm, item.acct.pretty)
-            FavMute.delete(item.acct)
+            daoFavMute.delete(item.acct)
             listAdapter.remove(item)
         }
     }
 
     private fun loadData() {
-        listAdapter.items = buildList {
-            try {
-                FavMute.createCursor().use { cursor ->
-                    val idxId = cursor.getColumnIndex(FavMute.COL_ID)
-                    val idxName = cursor.getColumnIndex(FavMute.COL_ACCT)
-                    while (cursor.moveToNext()) {
-                        val item = MyItem(
-                            id = cursor.getLong(idxId),
-                            acct = Acct.parse(cursor.getString(idxName)),
-                        )
-                        add(item)
-                    }
+        launchAndShowError {
+            listAdapter.items = withContext(AppDispatchers.IO) {
+                daoFavMute.listAll().map {
+                    MyItem(
+                        id = it.id,
+                        acct = Acct.parse(it.acct),
+                    )
                 }
-            } catch (ex: Throwable) {
-                log.e(ex, "loadData failed.")
             }
         }
     }

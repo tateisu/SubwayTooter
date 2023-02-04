@@ -8,8 +8,8 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.table.ClientInfo
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoClientInfo
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.buildJsonObject
@@ -84,7 +84,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
             }
         }
         clientInfo[KEY_CLIENT_CREDENTIAL] = clientCredential
-        ClientInfo.save(apiHost, clientName, clientInfo.toString())
+        daoClientInfo.save(apiHost, clientName, clientInfo.toString())
         return clientCredential
     }
 
@@ -95,7 +95,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
         tootInstance: TootInstance?,
         forceUpdateClient: Boolean,
     ): JsonObject {
-        var clientInfo = ClientInfo.load(apiHost, clientName)
+        var clientInfo = daoClientInfo.load(apiHost, clientName)
 
         // スコープ一覧を取得する
         val scopeString = mastodonScope(tootInstance)
@@ -126,7 +126,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
                         else -> try {
                             // マストドン2.4でスコープが追加された
                             // 取得時のスコープ指定がマッチしない(もしくは記録されていない)ならクライアント情報を再利用してはいけない
-                            ClientInfo.delete(apiHost, clientName)
+                            daoClientInfo.delete(apiHost, clientName)
 
                             // クライアントアプリ情報そのものはまだサーバに残っているが、明示的に消す方法は現状存在しない
                             // client credential だけは消せる
@@ -254,7 +254,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
             when {
                 param.startsWith("db:") -> try {
                     val dataId = param.substring(3).toLong(10)
-                    val sa = SavedAccount.loadAccount(context, dataId)
+                    val sa = daoSavedAccount.loadAccount(dataId)
                         ?: error("missing account db_id=$dataId")
                     client.account = sa
                 } catch (ex: Throwable) {
@@ -272,7 +272,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
         val apiHost = client.apiHost
             ?: error("can't get apiHost from callback parameter.")
 
-        val clientInfo = ClientInfo.load(apiHost, clientName)
+        val clientInfo = daoClientInfo.load(apiHost, clientName)
             ?: error("can't find client info for apiHost=$apiHost, clientName=$clientName")
 
         val tokenInfo = api.authStep2(

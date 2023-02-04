@@ -11,16 +11,19 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.startGap
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.table.ContentWarning
-import jp.juggler.subwaytooter.table.MediaShown
+import jp.juggler.subwaytooter.table.daoContentWarning
+import jp.juggler.subwaytooter.table.daoMediaShown
 import jp.juggler.subwaytooter.util.copyToClipboard
 import jp.juggler.subwaytooter.util.openCustomTab
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.data.ellipsizeDot3
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.vg
+import kotlinx.coroutines.withContext
 
 private val log = LogCategory("ItemViewHolderActions")
 
@@ -221,7 +224,7 @@ private fun ItemViewHolder.clickMedia(i: Int) {
                 }
 
                 // 内蔵メディアビューアを使う
-                PrefB.bpUseInternalMediaViewer() ->
+                PrefB.bpUseInternalMediaViewer.value ->
                     ActMediaViewer.open(
                         activity,
                         column.showMediaDescription,
@@ -260,16 +263,36 @@ private fun ItemViewHolder.showHideMediaViews(show: Boolean) {
     llCardImage.vg(show)
     btnShowMedia.vg(!show)
     btnCardImageShow.vg(!show)
-    statusShowing?.let { MediaShown.save(it, show) }
-    item.cast<TootScheduled>()?.let { MediaShown.save(it.uri, show) }
+    val statusShowing = this.statusShowing
+    val item = this.item
+    activity.launchAndShowError {
+        withContext(AppDispatchers.IO) {
+            statusShowing?.let {
+                daoMediaShown.save(it, show)
+            }
+            item.cast<TootScheduled>()?.let {
+                daoMediaShown.save(it.uri, show)
+            }
+        }
+    }
 }
 
 private fun ItemViewHolder.toggleContentWarning() {
     // トグル動作
     val show = llContents.visibility == View.GONE
 
-    statusShowing?.let { ContentWarning.save(it, show) }
-    item.cast<TootScheduled>()?.let { ContentWarning.save(it.uri, show) }
+    val statusShowing = statusShowing
+    val item = item
+    activity.launchAndShowError {
+        withContext(AppDispatchers.IO) {
+            statusShowing?.let {
+                daoContentWarning.save(it, show)
+            }
+            item.cast<TootScheduled>()?.let {
+                daoContentWarning.save(it.uri, show)
+            }
+        }
+    }
 
     // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
     listAdapter.notifyChange(reason = "ContentWarning onClick", reset = true)

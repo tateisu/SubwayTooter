@@ -10,11 +10,14 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.findStatus
 import jp.juggler.subwaytooter.columnviewholder.ItemListAdapter
-import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
@@ -244,122 +247,126 @@ fun ActMain.conversationOtherInstance(
     statusIdAccess: EntityId? = null,
     isReference: Boolean = false,
 ) {
-
     val activity = this
+    launchAndShowError {
+        actionsDialog(getString(R.string.open_status_from)) {
 
-    val dialog = ActionsDialog()
+            val hostOriginal = Host.parse(urlArg.toUri().authority ?: "")
 
-    val hostOriginal = Host.parse(urlArg.toUri().authority ?: "")
+            // 選択肢：ブラウザで表示する
+            action(getString(R.string.open_web_on_host, hostOriginal.pretty)) {
+                openCustomTab(urlArg)
+            }
 
-    // 選択肢：ブラウザで表示する
-    dialog.addAction(
-        getString(
-            R.string.open_web_on_host,
-            hostOriginal.pretty
-        )
-    ) { openCustomTab(urlArg) }
+            // トゥートの投稿元タンスにあるアカウント
+            val localAccountList = ArrayList<SavedAccount>()
 
-    // トゥートの投稿元タンスにあるアカウント
-    val localAccountList = ArrayList<SavedAccount>()
+            // TLを読んだタンスにあるアカウント
+            val accessAccountList = ArrayList<SavedAccount>()
 
-    // TLを読んだタンスにあるアカウント
-    val accessAccountList = ArrayList<SavedAccount>()
+            // その他のタンスにあるアカウント
+            val otherAccountList = ArrayList<SavedAccount>()
 
-    // その他のタンスにあるアカウント
-    val otherAccountList = ArrayList<SavedAccount>()
+            for (a in daoSavedAccount.loadAccountList()) {
 
-    for (a in SavedAccount.loadAccountList(applicationContext)) {
+                // 疑似アカウントは後でまとめて処理する
+                if (a.isPseudo) continue
 
-        // 疑似アカウントは後でまとめて処理する
-        if (a.isPseudo) continue
+                if (isReference && TootInstance.getCached(a)?.canUseReference != true) continue
 
-        if (isReference && TootInstance.getCached(a)?.canUseReference != true) continue
+                if (statusIdOriginal != null && a.matchHost(hostOriginal)) {
+                    // アクセス情報＋ステータスID でアクセスできるなら
+                    // 同タンスのアカウントならステータスIDの変換なしに表示できる
+                    localAccountList.add(a)
+                } else if (statusIdAccess != null && a.matchHost(hostAccess)) {
+                    // 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
+                    accessAccountList.add(a)
+                } else {
+                    // 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
+                    otherAccountList.add(a)
+                }
+            }
 
-        if (statusIdOriginal != null && a.matchHost(hostOriginal)) {
-            // アクセス情報＋ステータスID でアクセスできるなら
-            // 同タンスのアカウントならステータスIDの変換なしに表示できる
-            localAccountList.add(a)
-        } else if (statusIdAccess != null && a.matchHost(hostAccess)) {
-            // 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
-            accessAccountList.add(a)
-        } else {
-            // 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
-            otherAccountList.add(a)
-        }
-    }
+            // 参照の場合、status URLから/references を除去しないとURLでの検索ができない
+            val url = when {
+                isReference -> """/references\z""".toRegex().replace(urlArg, "")
+                else -> urlArg
+            }
 
-    // 参照の場合、status URLから/references を除去しないとURLでの検索ができない
-    val url = when {
-        isReference -> """/references\z""".toRegex().replace(urlArg, "")
-        else -> urlArg
-    }
-
-    // 同タンスのアカウントがないなら、疑似アカウントで開く選択肢
-    if (localAccountList.isEmpty()) {
-        if (statusIdOriginal != null) {
-            dialog.addAction(
-                getString(R.string.open_in_pseudo_account, "?@${hostOriginal.pretty}")
-            ) {
-                launchMain {
-                    addPseudoAccount(hostOriginal)?.let { sa ->
-                        conversationLocal(pos, sa, statusIdOriginal, isReference = isReference)
+            // 同タンスのアカウントがないなら、疑似アカウントで開く選択肢
+            if (localAccountList.isEmpty()) {
+                if (statusIdOriginal != null) {
+                    action(
+                        getString(R.string.open_in_pseudo_account, "?@${hostOriginal.pretty}")
+                    ) {
+                        launchMain {
+                            addPseudoAccount(hostOriginal)?.let { sa ->
+                                conversationLocal(
+                                    pos,
+                                    sa,
+                                    statusIdOriginal,
+                                    isReference = isReference
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    action(
+                        getString(R.string.open_in_pseudo_account, "?@${hostOriginal.pretty}")
+                    ) {
+                        launchMain {
+                            addPseudoAccount(hostOriginal)?.let { sa ->
+                                conversationRemote(pos, sa, url)
+                            }
+                        }
                     }
                 }
             }
-        } else {
-            dialog.addAction(
-                getString(R.string.open_in_pseudo_account, "?@${hostOriginal.pretty}")
-            ) {
-                launchMain {
-                    addPseudoAccount(hostOriginal)?.let { sa ->
-                        conversationRemote(pos, sa, url)
+
+            // ローカルアカウント
+            if (statusIdOriginal != null) {
+                for (a in localAccountList.sortedByNickname()) {
+                    action(
+                        daoAcctColor.getStringWithNickname(
+                            activity,
+                            R.string.open_in_account,
+                            a.acct
+                        )
+                    ) {
+                        conversationLocal(pos, a, statusIdOriginal, isReference = isReference)
                     }
+                }
+            }
+
+            // アクセスしたアカウント
+            if (statusIdAccess != null) {
+                for (a in accessAccountList.sortedByNickname()) {
+                    action(
+                        daoAcctColor.getStringWithNickname(
+                            activity,
+                            R.string.open_in_account,
+                            a.acct
+                        )
+                    ) {
+                        conversationLocal(pos, a, statusIdAccess, isReference = isReference)
+                    }
+                }
+            }
+
+            // その他の実アカウント
+            for (a in otherAccountList.sortedByNickname()) {
+                action(
+                    daoAcctColor.getStringWithNickname(
+                        activity,
+                        R.string.open_in_account,
+                        a.acct
+                    )
+                ) {
+                    conversationRemote(pos, a, url)
                 }
             }
         }
     }
-
-    // ローカルアカウント
-    if (statusIdOriginal != null) {
-        SavedAccount.sort(localAccountList)
-        for (a in localAccountList) {
-            dialog.addAction(
-                AcctColor.getStringWithNickname(
-                    activity,
-                    R.string.open_in_account,
-                    a.acct
-                )
-            ) { conversationLocal(pos, a, statusIdOriginal, isReference = isReference) }
-        }
-    }
-
-    // アクセスしたアカウント
-    if (statusIdAccess != null) {
-        SavedAccount.sort(accessAccountList)
-        for (a in accessAccountList) {
-            dialog.addAction(
-                AcctColor.getStringWithNickname(
-                    activity,
-                    R.string.open_in_account,
-                    a.acct
-                )
-            ) { conversationLocal(pos, a, statusIdAccess, isReference = isReference) }
-        }
-    }
-
-    // その他の実アカウント
-    SavedAccount.sort(otherAccountList)
-    for (a in otherAccountList) {
-        dialog.addAction(
-            AcctColor.getStringWithNickname(
-                activity,
-                R.string.open_in_account,
-                a.acct
-            )
-        ) { conversationRemote(pos, a, url) }
-    }
-
-    dialog.show(activity, activity.getString(R.string.open_status_from))
 }
 
 // リモートかもしれない会話の流れを表示する
@@ -466,65 +473,59 @@ fun ActMain.conversationFromTootsearch(
 ) {
     statusArg ?: return
 
-    // step2: 選択したアカウントで投稿を検索して返信元の投稿のIDを調べる
-    fun step2(a: SavedAccount) = launchMain {
-        var tmp: TootStatus? = null
-        runApiTask(a) { client ->
-            val (result, status) = client.syncStatus(a, statusArg)
-            tmp = status
-            result
-        }?.let { result ->
-            val status = tmp
-            val replyId = status?.in_reply_to_id
-            when {
-                status == null -> showToast(true, result.error ?: "?")
-                replyId == null -> showToast(true, "showReplyTootsearch: in_reply_to_id is null")
-                else -> conversationLocal(pos, a, replyId)
-            }
-        }
-    }
-
     // step 1: choose account
-
     val host = statusArg.account.apDomain
     val localAccountList = ArrayList<SavedAccount>()
     val otherAccountList = ArrayList<SavedAccount>()
-
-    for (a in SavedAccount.loadAccountList(this)) {
-
-        // 検索APIはログイン必須なので疑似アカウントは使えない
-        if (a.isPseudo) continue
-
-        if (a.matchHost(host)) {
-            localAccountList.add(a)
-        } else {
-            otherAccountList.add(a)
+    for (a in daoSavedAccount.loadAccountList()) {
+        when {
+            // 検索APIはログイン必須なので疑似アカウントは使えない
+            a.isPseudo -> continue
+            a.matchHost(host) -> localAccountList.add(a)
+            else -> otherAccountList.add(a)
         }
     }
 
-    val dialog = ActionsDialog()
+    val activity = this
+    launchAndShowError {
 
-    SavedAccount.sort(localAccountList)
-    for (a in localAccountList) {
-        dialog.addAction(
-            AcctColor.getStringWithNickname(
-                this,
-                R.string.open_in_account,
-                a.acct
-            )
-        ) { step2(a) }
+        // step2: 選択したアカウントで投稿を検索して返信元の投稿のIDを調べる
+        suspend fun step2(a: SavedAccount) {
+            var tmp: TootStatus? = null
+            runApiTask(a) { client ->
+                val (result, status) = client.syncStatus(a, statusArg)
+                tmp = status
+                result
+            }?.let { result ->
+                val status = tmp
+                val replyId = status?.in_reply_to_id
+                when {
+                    status == null -> showToast(true, result.error ?: "?")
+                    replyId == null -> showToast(true, "showReplyTootsearch: in_reply_to_id is null")
+                    else -> conversationLocal(pos, a, replyId)
+                }
+            }
+        }
+        actionsDialog(getString(R.string.open_status_from)) {
+            for (a in localAccountList.sortedByNickname()) {
+                action(
+                    daoAcctColor.getStringWithNickname(
+                        activity,
+                        R.string.open_in_account,
+                        a.acct
+                    )
+                ) { step2(a) }
+            }
+
+            for (a in otherAccountList.sortedByNickname()) {
+                action(
+                    daoAcctColor.getStringWithNickname(
+                        activity,
+                        R.string.open_in_account,
+                        a.acct
+                    )
+                ) { step2(a) }
+            }
+        }
     }
-
-    SavedAccount.sort(otherAccountList)
-    for (a in otherAccountList) {
-        dialog.addAction(
-            AcctColor.getStringWithNickname(
-                this,
-                R.string.open_in_account,
-                a.acct
-            )
-        ) { step2(a) }
-    }
-
-    dialog.show(this, getString(R.string.open_status_from))
 }

@@ -1,10 +1,17 @@
-package jp.juggler.subwaytooter.global
+package jp.juggler.subwaytooter.table
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import jp.juggler.subwaytooter.table.*
+import androidx.startup.AppInitializer
+import androidx.startup.Initializer
+import jp.juggler.subwaytooter.pref.LazyContextInitializer
+import jp.juggler.subwaytooter.pref.lazyContext
+import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.os.applicationContextSafe
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 // 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 // 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -61,46 +68,46 @@ import jp.juggler.util.log.LogCategory
 // 2021/11/21 61=>62 SavedAccountテーブルに項目追加
 // 2022/1/5 62=>63 SavedAccountテーブルに項目追加
 // 2022/3/15 63=>64 SavedAccountテーブルに項目追加
+// 2023/2/2 64 => 65 PushMessage, AccountNotificationStatus テーブルの追加。
 
-const val DB_VERSION = 64
+const val DB_VERSION = 65
 const val DB_NAME = "app_db"
 
+// テーブルのリスト
+// kotlin は配列を Compile-time Constant で作れないのでリストを2回書かないといけない
 val TABLE_LIST = arrayOf(
-    LogData,
-    SavedAccount,
-    ClientInfo,
-    MediaShown,
-    ContentWarning,
-    NotificationTracking,
-    NotificationCache,
-    MutedApp,
-    UserRelation,
-    AcctSet,
-    AcctColor,
-    MutedWord,
-    PostDraft,
-    TagSet,
-    HighlightWord,
-    FavMute,
-    SubscriptionServerKey
+    AcctColor.Companion,
+    AcctSet.Companion,
+    ClientInfo.Companion,
+    ContentWarning.Companion,
+    FavMute.Companion,
+    HighlightWord.Companion,
+    LogData.Companion,
+    MediaShown.Companion,
+    MutedApp.Companion,
+    MutedWord.Companion,
+    NotificationCache.Companion,
+    NotificationTracking.Companion,
+    PostDraft.Companion,
+    SavedAccount.Companion,
+    SubscriptionServerKey.Companion,
+    TagHistory.Companion,
+    UserRelation.Companion,
+    PushMessage.Companion, // v65
+    AccountNotificationStatus.Companion // v65,
 )
 
-interface AppDatabaseHolder {
-    val database: SQLiteDatabase
-
-    fun afterGlobalPrepare()
-}
-
-class AppDatabaseHolderImpl(context: Context) : AppDatabaseHolder {
+class AppDatabaseHolder(
+    val context: Context,
+    val dbFileName: String,
+    val dbSchemaVersion: Int,
+) {
     companion object {
-        private val log = LogCategory("AppDatabaseHolderImpl")
+        private val log = LogCategory("AppDatabaseHolder")
     }
 
-    private class DBOpenHelper(context: Context) :
-        SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
-        companion object {
-            private val log = LogCategory("DBOpenHelper")
-        }
+    private inner class DBOpenHelper(context: Context) :
+        SQLiteOpenHelper(context, dbFileName, null, dbSchemaVersion) {
 
         override fun onCreate(db: SQLiteDatabase) {
             log.d("onCreate")
@@ -118,17 +125,94 @@ class AppDatabaseHolderImpl(context: Context) : AppDatabaseHolder {
         }
     }
 
-    private val openHelper = DBOpenHelper(context.applicationContext)
+    private val openHelper = DBOpenHelper(context)
 
-    override val database: SQLiteDatabase
+    val database: SQLiteDatabase
         get() = openHelper.writableDatabase
 
-    override fun afterGlobalPrepare() {
+    init {
         log.d("call deleteOld…")
         val now = System.currentTimeMillis()
-        AcctSet.deleteOld(now)
-        UserRelation.deleteOld(now)
-        ContentWarning.deleteOld(now)
-        MediaShown.deleteOld(now)
+        AcctSet.Access(database).deleteOld(now)
+        UserRelation.Access(database).deleteOld(now)
+        ContentWarning.Access(database).deleteOld(now)
+        MediaShown.Access(database).deleteOld(now)
+        PushMessage.Access(database).sweepOld(now)
+
     }
+}
+
+class AppDatabaseHolderIniitalizer : Initializer<AppDatabaseHolder> {
+    override fun dependencies(): List<Class<out Initializer<*>>> =
+        listOf(LazyContextInitializer::class.java)
+
+    override fun create(context: Context): AppDatabaseHolder {
+        return AppDatabaseHolder(
+            context.applicationContextSafe,
+            DB_NAME,
+            DB_VERSION,
+        )
+    }
+}
+
+var appDatabaseHolderOverride =
+    AtomicReference<AppDatabaseHolder>(null)
+
+val appDatabaseHolder
+    get() = appDatabaseHolderOverride.get() ?: AppInitializer.getInstance(lazyContext)
+        .initializeComponent(AppDatabaseHolderIniitalizer::class.java)
+
+val appDatabase
+    get() = appDatabaseHolder.database
+
+val daoUserRelation by lazy {
+    UserRelation.Access(appDatabase)
+}
+val daoMutedWord by lazy {
+    MutedWord.Access(appDatabase)
+}
+val daoMutedApp by lazy {
+    MutedApp.Access(appDatabase)
+}
+val daoAcctColor by lazy {
+    AcctColor.Access(appDatabase)
+}
+val daoNotificationTracking by lazy {
+    NotificationTracking.Access(appDatabase)
+}
+val daoSavedAccount by lazy {
+    SavedAccount.Access(appDatabase, lazyContext)
+}
+val daoFavMute by lazy {
+    FavMute.Access(appDatabase)
+}
+val daoTagHistory by lazy {
+    TagHistory.Access(appDatabase)
+}
+val daoHighlightWord by lazy {
+    HighlightWord.Access(appDatabase)
+}
+val daoSubscriptionServerKey by lazy {
+    SubscriptionServerKey.Access(appDatabase)
+}
+val daoAcctSet by lazy {
+    AcctSet.Access(appDatabase)
+}
+val daoClientInfo by lazy {
+    ClientInfo.Access(appDatabase)
+}
+val daoPostDraft by lazy {
+    PostDraft.Access(appDatabase)
+}
+val daoMediaShown by lazy {
+    MediaShown.Access(appDatabase)
+}
+val daoContentWarning by lazy {
+    ContentWarning.Access(appDatabase)
+}
+val daoNotificationCache by lazy {
+    NotificationCache.Access(appDatabase)
+}
+val daoAccountNotificationStatus by lazy{
+    AccountNotificationStatus.Access(appDatabase)
 }

@@ -5,14 +5,16 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.getVisibilityString
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.TagSet
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.daoTagHistory
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.*
@@ -88,6 +90,10 @@ class PostImpl(
         else -> 40 // TootPollsType.Mastodon
     }
 
+    private val authRepo by lazy {
+        AuthRepo(activity)
+    }
+
     private fun preCheckPollItemOne(list: List<String>, idx: Int, item: String) {
 
         // 選択肢が長すぎる
@@ -142,7 +148,7 @@ class PostImpl(
         checkFun: (TootInstance) -> Boolean,
     ) {
         if (actual != extra || checkFun(instance)) return
-        val strVisibility = getVisibilityString(activity, account.isMisskey, extra)
+        val strVisibility = extra.getVisibilityString(account.isMisskey)
         errorApiResult(
             activity.getString(
                 R.string.server_has_no_support_of_visibility,
@@ -380,7 +386,7 @@ class PostImpl(
             }
             val count = tagList.size
             if (count > 0) {
-                TagSet.saveList(System.currentTimeMillis(), tagList, 0, count)
+                daoTagHistory.saveList(System.currentTimeMillis(), tagList, 0, count)
             }
         }
     }
@@ -419,7 +425,7 @@ class PostImpl(
             error("misskey has no scheduled status API")
         }
 
-        if (PrefB.bpWarnHashtagAsciiAndNonAscii()) {
+        if (PrefB.bpWarnHashtagAsciiAndNonAscii.value) {
             TootTag.findHashtags(content, account.isMisskey)
                 ?.filter {
                     val hasAscii = reAscii.matcher(it).find()
@@ -456,11 +462,14 @@ class PostImpl(
         }
 
         activity.confirm(
-            activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account)),
+            activity.getString(
+                R.string.confirm_post_from,
+                daoAcctColor.getNickname(account)
+            ),
             account.confirm_post
         ) { newConfirmEnabled ->
             account.confirm_post = newConfirmEnabled
-            account.saveSetting()
+            daoSavedAccount.saveSetting(account)
         }
 
         // ボタン連打判定
@@ -538,7 +547,7 @@ class PostImpl(
                             isPut -> Request.Builder().put(requestBody)
                             else -> Request.Builder().post(requestBody)
                         }.also {
-                            if (!PrefB.bpDontDuplicationCheck()) {
+                            if (!PrefB.bpDontDuplicationCheck.value) {
                                 val digest = (bodyString + account.acct.ascii).digestSHA256Hex()
                                 it.header("Idempotency-Key", digest)
                             }

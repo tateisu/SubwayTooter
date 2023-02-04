@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 
 class BooleanPref(key: String, defVal: Boolean) : BasePref<Boolean>(key, defVal) {
 
-    override operator fun invoke(pref: SharedPreferences): Boolean =
+    override fun readFrom(pref: SharedPreferences): Boolean =
         pref.getBoolean(key, defVal)
 
     // put if value is not default, remove if value is same to default

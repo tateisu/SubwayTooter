@@ -3,8 +3,11 @@ package jp.juggler.util.data
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
 import androidx.annotation.IntRange
 import jp.juggler.util.log.LogCategory
+
+private val log = LogCategory("ColumnMeta")
 
 /////////////////////////////////////////////////////////////
 // SQLite にBooleanをそのまま保存することはできないのでInt型との変換が必要になる
@@ -75,14 +78,18 @@ class ColumnMeta(
     val version: Int,
     val name: String,
     val typeSpec: String,
-    val primary: Boolean = false,
 ) : Comparable<ColumnMeta> {
     companion object {
-        private val log = LogCategory("ColumnMeta")
+        const val TS_INT_PRIMARY_KEY = "INTEGER PRIMARY KEY"
+        const val TS_INT_PRIMARY_KEY_NOT_NULL = "INTEGER NOT NULL PRIMARY KEY"
 
         const val TS_EMPTY = "text default ''"
+        const val TS_EMPTY_NOT_NULL = "text not null default ''"
         const val TS_ZERO = "integer default 0"
+        const val TS_ZERO_NOT_NULL = "integer not null default 0"
         const val TS_TRUE = "integer default 1"
+        const val TS_TEXT_NULL = "blob default null"
+        const val TS_BLOB_NULL = "blob default null"
     }
 
     class List(
@@ -126,6 +133,8 @@ class ColumnMeta(
         }
     }
 
+    val primary = typeSpec.contains("primary", ignoreCase = true)
+
     // テーブル作成時のソート
     override fun compareTo(other: ColumnMeta): Int {
         // プライマリキーを先頭にする
@@ -150,20 +159,49 @@ class ColumnMeta(
     fun getLong(cursor: Cursor) = cursor.getLong(getIndex(cursor))
 }
 
-fun ContentValues.putNull(key: ColumnMeta) = putNull(key.name)
-fun ContentValues.put(key: ColumnMeta, v: Boolean?) = put(key.name, v?.b2i())
-fun ContentValues.put(key: ColumnMeta, v: String?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: Byte?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: Short?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: Int?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: Long?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: Float?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: Double?) = put(key.name, v)
-fun ContentValues.put(key: ColumnMeta, v: ByteArray?) = put(key.name, v)
+//fun ContentValues.putNull(key: ColumnMeta) = putNull(key.name)
+//fun ContentValues.put(key: ColumnMeta, v: Boolean?) = put(key.name, v?.b2i())
+//fun ContentValues.put(key: ColumnMeta, v: String?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: Byte?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: Short?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: Int?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: Long?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: Float?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: Double?) = put(key.name, v)
+//fun ContentValues.put(key: ColumnMeta, v: ByteArray?) = put(key.name, v)
 
 fun Cursor.getInt(key: ColumnMeta) = getInt(key.name)
-fun Cursor.getBoolean(key: ColumnMeta) = getInt(key.name).i2b()
+fun Cursor.getBoolean(key: ColumnMeta,defVal:Boolean = false) =
+    getIntOrNull(key.name)?.i2b()?:defVal
+fun Cursor.getBoolean(key: String,defVal:Boolean = false) =
+    getIntOrNull(key)?.i2b()?:defVal
+fun Cursor.getBoolean(idx:Int,defVal:Boolean = false) =
+    getIntOrNull(idx)?.i2b()?:defVal
 fun Cursor.getLong(key: ColumnMeta) = getLong(key.name)
 fun Cursor.getIntOrNull(key: ColumnMeta) = getIntOrNull(key.name)
 fun Cursor.getString(key: ColumnMeta): String = getString(key.name)
 fun Cursor.getStringOrNull(key: ColumnMeta): String? = getStringOrNull(key.name)
+
+fun ContentValues.replaceTo(db: SQLiteDatabase, table: String) =
+    db.replace(table, null, this)
+
+fun ContentValues.updateTo(
+    db: SQLiteDatabase,
+    table: String,
+    id: String,
+    colName: String = BaseColumns._ID,
+) = db.update(table, this, "$colName=?", arrayOf(id))
+
+fun SQLiteDatabase.deleteById(table: String, id: String, colName: String = BaseColumns._ID) =
+    delete(table, "$colName=?", arrayOf(id))
+
+fun SQLiteDatabase.queryById(
+    table: String,
+    id: String,
+    colName: String = BaseColumns._ID,
+): Cursor? = rawQuery("select * from $table where $colName=?", arrayOf(id))
+
+fun SQLiteDatabase.queryAll(
+    table: String,
+    orderPhrase: String,
+): Cursor? = rawQuery("select * from $table order by $orderPhrase", emptyArray())

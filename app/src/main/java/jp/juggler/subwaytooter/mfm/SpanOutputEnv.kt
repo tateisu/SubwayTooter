@@ -12,8 +12,9 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.SvgEmojiSpan
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoHighlightWord
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -26,8 +27,8 @@ class SpanOutputEnv(
 ) {
     val context: Context = options.context ?: error("missing context")
 
-    val decorationEnabled = PrefB.bpMfmDecorationEnabled(context)
-    val showUnsupportedMarkup = PrefB.bpMfmDecorationShowUnsupportedMarkup(context)
+    val decorationEnabled = PrefB.bpMfmDecorationEnabled.value
+    val showUnsupportedMarkup = PrefB.bpMfmDecorationShowUnsupportedMarkup.value
 
     val fontBold = ActMain.timelineFontBold
     val linkHelper: LinkHelper? = options.linkHelper
@@ -74,7 +75,7 @@ class SpanOutputEnv(
         val list = options.highlightTrie?.matchList(sb, start, end)
         if (list != null) {
             for (range in list) {
-                val word = HighlightWord.load(range.word) ?: continue
+                val word = daoHighlightWord.load(range.word) ?: continue
                 spanList.addLast(
                     range.start,
                     range.end,
@@ -167,11 +168,7 @@ class SpanOutputEnv(
         val linkInfo = LinkInfo(
             caption = text,
             url = url,
-            ac = fullAcct?.let {
-                AcctColor.load(
-                    fullAcct
-                )
-            },
+            ac = fullAcct?.let { daoAcctColor.load(fullAcct) },
             tag = options.linkTag,
             mention = mention
         )
@@ -221,7 +218,7 @@ class SpanOutputEnv(
         // リンク表記はユーザの記述やアプリ設定の影響を受ける
         val caption = "@${
             when {
-                PrefB.bpMentionFullAcct() -> fullAcct
+                PrefB.bpMentionFullAcct.value -> fullAcct
                 else -> rawAcct
             }.pretty
         }"

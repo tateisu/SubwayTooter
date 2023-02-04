@@ -15,7 +15,7 @@ import jp.juggler.subwaytooter.search.NotestockHelper.refreshNotestock
 import jp.juggler.subwaytooter.search.TootsearchHelper.loadingTootsearch
 import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
 import jp.juggler.subwaytooter.streaming.StreamSpec
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -685,7 +685,7 @@ enum class ColumnType(
                 R.string.profile_of,
                 when (who) {
                     null -> profileId.toString()
-                    else -> AcctColor.getNickname(accessInfo, who)
+                    else -> daoAcctColor.getNickname(accessInfo, who)
                 }
             )
         },

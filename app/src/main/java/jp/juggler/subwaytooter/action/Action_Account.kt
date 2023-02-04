@@ -1,9 +1,7 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
-import android.content.Context
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.afterAccountVerify
@@ -16,13 +14,11 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.dialog.DlgCreateAccount.Companion.showUserCreateDialog
 import jp.juggler.subwaytooter.dialog.LoginForm.Companion.showLoginForm
-import jp.juggler.subwaytooter.notification.APP_SERVER
 import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
-import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.encodePercent
@@ -32,7 +28,6 @@ import jp.juggler.util.network.toFormRequestBody
 import jp.juggler.util.network.toPost
 import jp.juggler.util.ui.dismissSafe
 import kotlinx.coroutines.*
-import ru.gildor.coroutines.okhttp.await
 
 private val log = LogCategory("Action_Account")
 
@@ -195,53 +190,6 @@ fun ActMain.accessTokenPrompt(
     )
 }
 
-fun AppCompatActivity.accountRemove(account: SavedAccount) {
-    // if account is default account of tablet mode,
-    // reset default.
-    val pref = pref()
-    if (account.db_id == PrefL.lpTabletTootDefaultAccount(pref)) {
-        pref.edit().put(PrefL.lpTabletTootDefaultAccount, -1L).apply()
-    }
-
-    account.delete()
-    appServerUnregister(applicationContext, account)
-}
-
-private fun appServerUnregister(context: Context, account: SavedAccount) {
-    launchIO {
-        try {
-            val installId = PrefDevice.from(context).getString(PrefDevice.KEY_INSTALL_ID, null)
-            if (installId?.isEmpty() != false) {
-                error("missing install_id")
-            }
-
-            val tag = account.notification_tag
-            if (tag?.isEmpty() != false) {
-                error("missing notification_tag")
-            }
-
-            val call = App1.ok_http_client.newCall(
-                "instance_url=${
-                    "https://${account.apiHost.ascii}".encodePercent()
-                }&app_id=${
-                    context.packageName.encodePercent()
-                }&tag=$tag"
-                    .toFormRequestBody()
-                    .toPost()
-                    .url("$APP_SERVER/unregister")
-                    .build()
-            )
-
-            val response = call.await()
-            if (!response.isSuccessful) {
-                log.e("appServerUnregister: $response")
-            }
-        } catch (ex: Throwable) {
-            log.e(ex, "appServerUnregister failed.")
-        }
-    }
-}
-
 // アカウント設定
 fun ActMain.accountOpenSetting() {
     launchMain {
@@ -284,105 +232,3 @@ fun ActMain.accountResendConfirmMail(accessInfo: SavedAccount) {
     }.show()
 }
 
-//
-fun accountListReorder(
-    src: List<SavedAccount>,
-    pickupHost: Host?,
-    filter: (SavedAccount) -> Boolean = { true },
-): MutableList<SavedAccount> {
-    val listSameHost = java.util.ArrayList<SavedAccount>()
-    val listOtherHost = java.util.ArrayList<SavedAccount>()
-    for (a in src) {
-        if (!filter(a)) continue
-        when (pickupHost) {
-            null, a.apDomain, a.apiHost -> listSameHost
-            else -> listOtherHost
-        }.add(a)
-    }
-    SavedAccount.sort(listSameHost)
-    SavedAccount.sort(listOtherHost)
-    listSameHost.addAll(listOtherHost)
-    return listSameHost
-}
-
-// 疑似アカ以外のアカウントのリスト
-fun Context.accountListNonPseudo(
-    pickupHost: Host?,
-) = accountListReorder(
-    SavedAccount.loadAccountList(this),
-    pickupHost
-) { !it.isPseudo }
-
-// 条件でフィルタする。サーバ情報を読む場合がある。
-suspend fun Context.accountListWithFilter(
-    pickupHost: Host?,
-    check: suspend (TootApiClient, SavedAccount) -> Boolean,
-): MutableList<SavedAccount>? {
-    var resultList: MutableList<SavedAccount>? = null
-    runApiTask { client ->
-        supervisorScope {
-            resultList = SavedAccount.loadAccountList(this@accountListWithFilter)
-                .map {
-                    async {
-                        try {
-                            if (check(client, it)) it else null
-                        } catch (ex: Throwable) {
-                            log.e(ex, "accountListWithFilter failed.")
-                            null
-                        }
-                    }
-                }
-                .mapNotNull { it.await() }
-                .let { accountListReorder(it, pickupHost) }
-        }
-        if (client.isApiCancelled()) null else TootApiResult()
-    }
-    return resultList
-}
-
-suspend fun ActMain.accountListCanQuote(pickupHost: Host? = null) =
-    accountListWithFilter(pickupHost) { client, a ->
-        when {
-            client.isApiCancelled() -> false
-            a.isPseudo -> false
-            a.isMisskey -> true
-            else -> {
-                val (ti, ri) = TootInstance.getEx(client.copy(), account = a)
-                if (ti == null) {
-                    ri?.error?.let { log.w(it) }
-                    false
-                } else InstanceCapability.quote(ti)
-            }
-        }
-    }
-
-suspend fun ActMain.accountListCanReaction(pickupHost: Host? = null) =
-    accountListWithFilter(pickupHost) { client, a ->
-        when {
-            client.isApiCancelled() -> false
-            a.isPseudo -> false
-            a.isMisskey -> true
-            else -> {
-                val (ti, ri) = TootInstance.getEx(client.copy(), account = a)
-                if (ti == null) {
-                    ri?.error?.let { log.w(it) }
-                    false
-                } else InstanceCapability.emojiReaction(a, ti)
-            }
-        }
-    }
-
-suspend fun ActMain.accountListCanSeeMyReactions(pickupHost: Host? = null) =
-    accountListWithFilter(pickupHost) { client, a ->
-        when {
-            client.isApiCancelled() -> false
-            a.isPseudo -> false
-            else -> {
-                val (ti, ri) = TootInstance.getEx(client.copy(), account = a)
-                if (ti == null) {
-                    ri?.error?.let { log.w(it) }
-                    false
-                } else InstanceCapability.listMyReactions(a, ti)
-            }
-        }
-    }

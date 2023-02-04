@@ -575,7 +575,7 @@ class ItemViewHolder(
                     ivCardImage = myNetworkImageView {
                         contentDescription = context.getString(R.string.thumbnail)
                         scaleType = when {
-                            PrefB.bpDontCropMediaThumb() -> ImageView.ScaleType.FIT_CENTER
+                            PrefB.bpDontCropMediaThumb.value -> ImageView.ScaleType.FIT_CENTER
                             else -> ImageView.ScaleType.CENTER_CROP
                         }
                     }.lparams(0, matchParent) {
@@ -682,7 +682,7 @@ class ItemViewHolder(
             }
 
             val thumbnailHeight = actMain.appState.mediaThumbHeight
-            flMedia = when (PrefB.bpVerticalArrangeThumbnails(actMain.pref)) {
+            flMedia = when (PrefB.bpVerticalArrangeThumbnails.value) {
                 true -> inflateVerticalMedia(thumbnailHeight)
                 else -> inflateHorizontalMedia(thumbnailHeight)
             }
@@ -719,7 +719,7 @@ class ItemViewHolder(
             actMain,
             matchParent,
             3f,
-            justifyContent = when (PrefI.ipBoostButtonJustify()) {
+            justifyContent = when (PrefI.ipBoostButtonJustify.value) {
                 0 -> JustifyContent.FLEX_START
                 1 -> JustifyContent.CENTER
                 else -> JustifyContent.FLEX_END

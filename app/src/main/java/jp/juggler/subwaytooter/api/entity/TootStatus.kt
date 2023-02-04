@@ -5,7 +5,6 @@ import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import androidx.annotation.StringRes
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootParser
@@ -365,7 +364,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 this.mentions = mergeMentions(mentions1, mentions2)
                 this.decoded_mentions =
-                    HTMLDecoder.decodeMentions(parser.linkHelper, this)
+                    HTMLDecoder.decodeMentions(parser, this)
                         ?: EMPTY_SPANNABLE
 
                 // contentを読んだ後にアンケートのデコード
@@ -484,7 +483,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.muted = false
                 this.language = null
                 this.decoded_mentions =
-                    HTMLDecoder.decodeMentions(parser.linkHelper, this)
+                    HTMLDecoder.decodeMentions(parser, this)
                         ?: EMPTY_SPANNABLE
 
                 val quote = when {
@@ -696,7 +695,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.muted = src.optBoolean("muted")
                 this.language = src.string("language")?.notEmpty()
                 this.decoded_mentions =
-                    HTMLDecoder.decodeMentions(parser.linkHelper, this)
+                    HTMLDecoder.decodeMentions(parser, this)
                         ?: EMPTY_SPANNABLE
 
                 val quote = when {
@@ -1100,7 +1099,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     fun markDeleted(context: Context, deletedAt: Long?): Boolean {
 
-        if (PrefB.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return false
+        if (PrefB.bpDontRemoveDeletedToot.value) return false
 
         var sv = if (deletedAt != null) {
             context.getString(R.string.status_deleted_at, formatTime(context, deletedAt, false))
@@ -1131,7 +1130,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         internal val log = LogCategory("TootStatus")
 
         @Volatile
-        internal var muted_app: HashSet<String>? = null
+        internal var muted_app: Set<String>? = null
 
         @Volatile
         internal var muted_word: WordTrieTree? = null
@@ -1419,7 +1418,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
             }
 
-            if (bAllowRelative && PrefB.bpRelativeTimestamp()) {
+            if (bAllowRelative && PrefB.bpRelativeTimestamp.value) {
 
                 delta = abs(delta)
 

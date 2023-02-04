@@ -167,8 +167,8 @@ fun Column.mergeStreamingMessage() {
                     App1.sound(it)
                 }
             }
-            o.highlightSpeech?.let {
-                appState.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+            o.highlightSpeech?.name?.notEmpty()?.let {
+                appState.addSpeech(it, dedupMode = DedupMode.RecentExpire)
             }
         }
     }

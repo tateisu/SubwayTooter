@@ -65,7 +65,7 @@ fun ActMain.refreshAfterPost() {
             this.postedRedraftId = null
         }
 
-        val refreshAfterToot = PrefI.ipRefreshAfterToot(pref)
+        val refreshAfterToot = PrefI.ipRefreshAfterToot.value
         if (refreshAfterToot != PrefI.RAT_DONT_REFRESH) {
             appState.columnList
                 .filter { it.accessInfo.acct == postedAcct }

@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.actpost
 
 import android.content.Intent
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActPost
@@ -11,16 +10,20 @@ import jp.juggler.subwaytooter.actmain.onCompleteActPost
 import jp.juggler.subwaytooter.api.entity.TootPollsType
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
-import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoPostDraft
+import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.subwaytooter.util.PostResult
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.CharacterGroup
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
@@ -104,27 +107,27 @@ fun ActPost.hasContent(): Boolean {
 }
 
 fun ActPost.resetText() {
-    isPostComplete = false
+    launchMain {
+        isPostComplete = false
 
-    resetReply()
+        resetReply()
 
-    resetMushroom()
-    states.redraftStatusId = null
-    states.editStatusId = null
-    states.timeSchedule = 0L
-    attachmentPicker.reset()
-    scheduledStatus = null
-    attachmentList.clear()
-    views.cbQuote.isChecked = false
-    views.etContent.setText("")
-    views.spPollType.setSelection(0, false)
-    etChoices.forEach { it.setText("") }
-    accountList = SavedAccount.loadAccountList(this)
-    SavedAccount.sort(accountList)
-    if (accountList.isEmpty()) {
-        showToast(true, R.string.please_add_account)
-        finish()
-        return
+        resetMushroom()
+        states.redraftStatusId = null
+        states.editStatusId = null
+        states.timeSchedule = 0L
+        attachmentPicker.reset()
+        scheduledStatus = null
+        attachmentList.clear()
+        views.cbQuote.isChecked = false
+        views.etContent.setText("")
+        views.spPollType.setSelection(0, false)
+        etChoices.forEach { it.setText("") }
+        accountList = daoSavedAccount.loadAccountList().sortedByNickname()
+        if (accountList.isEmpty()) {
+            showToast(true, R.string.please_add_account)
+            finish()
+        }
     }
 }
 
@@ -148,27 +151,17 @@ fun ActPost.afterUpdateText() {
 }
 
 // 初期化時と投稿完了時とリセット確認後に呼ばれる
-fun ActPost.updateText(
+suspend fun ActPost.updateText(
     intent: Intent,
-    confirmed: Boolean = false,
     saveDraft: Boolean = true,
     resetAccount: Boolean = true,
 ) {
     if (!canSwitchAccount()) return
 
-    if (!confirmed && hasContent()) {
-        AlertDialog.Builder(this)
-            .setMessage("編集中のテキストや文脈を下書きに退避して、新しい投稿を編集しますか？ ")
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                updateText(intent, confirmed = true)
-            }
-            .setCancelable(true)
-            .show()
-        return
+    if (saveDraft && hasContent()) {
+        confirm(R.string.post_reset_confirm)
+        saveDraft()
     }
-
-    if (saveDraft) saveDraft()
 
     resetText()
 
@@ -262,7 +255,7 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
             else -> false
         }
 
-        if (!hasUri || !PrefB.bpIgnoreTextInSharedMedia(pref)) {
+        if (!hasUri || !PrefB.bpIgnoreTextInSharedMedia.value) {
             appendContentText(sharedIntent)
         }
     } catch (ex: Throwable) {
@@ -271,33 +264,33 @@ fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
 }
 
 fun ActPost.performMore() {
-    val dialog = ActionsDialog()
+    launchAndShowError {
+        actionsDialog {
+            action(getString(R.string.open_picker_emoji)) {
+                completionHelper.openEmojiPickerFromMore()
+            }
 
-    dialog.addAction(getString(R.string.open_picker_emoji)) {
-        completionHelper.openEmojiPickerFromMore()
+            action(getString(R.string.clear_text)) {
+                views.etContent.setText("")
+                views.etContentWarning.setText("")
+            }
+
+            action(getString(R.string.clear_text_and_media)) {
+                views.etContent.setText("")
+                views.etContentWarning.setText("")
+                attachmentList.clear()
+                showMediaAttachment()
+            }
+
+            if (daoPostDraft.hasDraft()) action(getString(R.string.restore_draft)) {
+                openDraftPicker()
+            }
+
+            action(getString(R.string.recommended_plugin)) {
+                showRecommendedPlugin(null)
+            }
+        }
     }
-
-    dialog.addAction(getString(R.string.clear_text)) {
-        views.etContent.setText("")
-        views.etContentWarning.setText("")
-    }
-
-    dialog.addAction(getString(R.string.clear_text_and_media)) {
-        views.etContent.setText("")
-        views.etContentWarning.setText("")
-        attachmentList.clear()
-        showMediaAttachment()
-    }
-
-    if (PostDraft.hasDraft()) dialog.addAction(getString(R.string.restore_draft)) {
-        openDraftPicker()
-    }
-
-    dialog.addAction(getString(R.string.recommended_plugin)) {
-        showRecommendedPlugin(null)
-    }
-
-    dialog.show(this, null)
 }
 
 fun ActPost.performPost() {
@@ -366,7 +359,7 @@ fun ActPost.performPost() {
 
                 if (isMultiWindowPost) {
                     resetText()
-                    updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
+                    updateText(Intent(), saveDraft = false, resetAccount = false)
                     afterUpdateText()
                 } else {
                     // ActMainの復元が必要な場合に備えてintentのdataでも渡す
@@ -382,7 +375,7 @@ fun ActPost.performPost() {
 
                 if (isMultiWindowPost) {
                     resetText()
-                    updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
+                    updateText(Intent(), saveDraft = false, resetAccount = false)
                     afterUpdateText()
                     ActMain.refActMain?.get()?.onCompleteActPost(data)
                 } else {

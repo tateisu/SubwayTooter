@@ -4,9 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import jp.juggler.subwaytooter.pref.impl.*
 
-fun Context.pref(): SharedPreferences =
-    this.getSharedPreferences(this.packageName + "_preferences", Context.MODE_PRIVATE)
-
 fun SharedPreferences.Editor.remove(item: BasePref<*>): SharedPreferences.Editor {
     item.remove(this)
     return this

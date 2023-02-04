@@ -7,8 +7,8 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoHighlightWord
 import jp.juggler.util.coroutine.launchDefault
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.channels.Channel
@@ -69,7 +69,7 @@ class StreamManager(val appState: AppState) {
             return acctGroup
         }
 
-        if (isScreenOn && !PrefB.bpDontUseStreaming(appState.pref)) {
+        if (isScreenOn && !PrefB.bpDontUseStreaming.value) {
             for (column in appState.columnList) {
                 val accessInfo = column.accessInfo
                 if (column.isDispose.get() || column.dontStreaming || accessInfo.isNA) continue
@@ -101,7 +101,7 @@ class StreamManager(val appState: AppState) {
         }
 
         // ハイライトツリーを読み直す
-        val highlightTrie = HighlightWord.nameSet
+        val highlightTrie = daoHighlightWord.nameSet()
 
         acctGroups.values.forEach {
             // パーサーを更新する

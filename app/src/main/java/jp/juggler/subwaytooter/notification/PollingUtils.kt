@@ -7,33 +7,26 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkQuery
 import androidx.work.await
-import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.notification.MessageNotification.removeMessageNotification
+import jp.juggler.subwaytooter.notification.PullNotification.removeMessageNotification
 import jp.juggler.subwaytooter.notification.ServerTimeoutNotification.createServerTimeoutNotification
-import jp.juggler.subwaytooter.pref.PrefDevice
-import jp.juggler.subwaytooter.table.NotificationCache
-import jp.juggler.subwaytooter.table.NotificationTracking
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.PrivacyPolicyChecker
-import jp.juggler.util.*
+import jp.juggler.subwaytooter.table.daoNotificationCache
+import jp.juggler.subwaytooter.table.daoNotificationTracking
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.EmptyScope
 import jp.juggler.util.coroutine.launchDefault
-import jp.juggler.util.data.*
-import jp.juggler.util.log.*
-import jp.juggler.util.ui.*
+import jp.juggler.util.data.ellipsizeDot3
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.systemService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.tasks.await
-import okhttp3.Request
-import ru.gildor.coroutines.okhttp.await
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = LogCategory("PollingUtils")
@@ -63,75 +56,6 @@ suspend fun setImportProtector(context: Context, newProtect: Boolean) {
     }
 }
 
-suspend fun loadFirebaseMessagingToken(context: Context): String =
-    PollingChecker.commonMutex.withLock {
-        val prefDevice = PrefDevice.from(context)
-
-        // 設定ファイルに保持されていたらそれを使う
-        prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-            ?.notEmpty()?.let { return it }
-
-        // 古い形式
-        // return FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID, FCM_SCOPE)
-
-        // com.google.firebase:firebase-messaging.20.3.0 以降
-        // implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
-        val sv = FirebaseMessaging.getInstance().token.await()
-        if (sv.isNullOrBlank()) {
-            error("loadFirebaseMessagingToken: device token is null or empty.")
-        }
-        return sv.also {
-            prefDevice.edit()
-                .putString(PrefDevice.KEY_DEVICE_TOKEN, it)
-                .apply()
-        }
-    }
-
-// インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
-// トークンがまだ生成されていない場合、このメソッドは null を返します。
-@Suppress("BlockingMethodInNonBlockingContext")
-suspend fun loadInstallId(
-    context: Context,
-    account: SavedAccount,
-    deviceToken: String,
-    progress: suspend (SavedAccount, PollingState) -> Unit,
-): String = PollingChecker.commonMutex.withLock {
-    // インストールIDを生成する
-    // インストールID生成時にSavedAccountテーブルを操作することがあるので
-    // アカウントリストの取得より先に行う
-    if (!PrivacyPolicyChecker(context).agreed) {
-        cancelAllWorkAndJoin(context)
-        throw InstallIdException(
-            null,
-            "the user not agreed to privacy policy."
-        )
-    }
-
-    val prefDevice = PrefDevice.from(context)
-
-    prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
-        ?.notEmpty()?.let { return it }
-
-    progress(account, PollingState.PrepareInstallId)
-
-    SavedAccount.clearRegistrationCache()
-
-    val request = Request.Builder()
-        .url("$APP_SERVER/counter")
-        .build()
-
-    val response = App1.ok_http_client.newCall(request).await()
-    val body = response.body?.string()
-    if (!response.isSuccessful || body?.isEmpty() != false) {
-        TootApiClient.formatResponse(
-            response,
-            "loadInstallId: get/counter failed."
-        ).let { throw InstallIdException(null, it) }
-    }
-    (deviceToken + UUID.randomUUID() + body).digestSHA256Base64Url()
-        .also { prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, it).apply() }
-}
-
 fun resetNotificationTracking(account: SavedAccount) {
     if (importProtector.get()) {
         log.w("resetNotificationTracking: abort by importProtector.")
@@ -139,7 +63,7 @@ fun resetNotificationTracking(account: SavedAccount) {
     }
     launchDefault {
         PollingChecker.accountMutex(account.db_id).withLock {
-            NotificationTracking.resetTrackingState(account.db_id)
+            daoNotificationTracking.resetTrackingState(account.db_id)
         }
     }
 }
@@ -181,7 +105,7 @@ fun restartAllWorker(context: Context) {
                 log.w("restartAllWorker: abort by importProtector.")
                 return@launch
             }
-            NotificationTracking.resetPostAll()
+            daoNotificationTracking.resetPostAll()
             App1.prepare(context, "restartAllWorker")
             PollingWorker2.enqueuePolling(context)
         } catch (ex: Throwable) {
@@ -190,7 +114,7 @@ fun restartAllWorker(context: Context) {
     }
 }
 
-fun onNotificationCleared(context: Context, accountDbId: Long) {
+fun onNotificationCleared(accountDbId: Long) {
     EmptyScope.launch {
         try {
             if (importProtector.get()) {
@@ -199,8 +123,8 @@ fun onNotificationCleared(context: Context, accountDbId: Long) {
             }
             PollingChecker.accountMutex(accountDbId).withLock {
                 log.d("deleteCacheData: db_id=$accountDbId")
-                SavedAccount.loadAccount(context, accountDbId) ?: return@withLock
-                NotificationCache.deleteCache(accountDbId)
+                daoSavedAccount.loadAccount(accountDbId) ?: return@withLock
+                daoNotificationCache.deleteCache(accountDbId)
             }
         } catch (ex: Throwable) {
             log.e(ex, "onNotificationCleared failed.")
@@ -214,7 +138,9 @@ suspend fun onNotificationDeleted(dbId: Long, typeName: String) {
         return
     }
     PollingChecker.accountMutex(dbId).withLock {
-        NotificationTracking.updateRead(dbId, typeName)
+        daoSavedAccount.loadAccount(dbId)?.let {
+            daoNotificationTracking.updateRead(dbId, typeName)
+        }
     }
 }
 
@@ -307,7 +233,7 @@ suspend fun checkNoticifationAll(
         }
     }
 
-    SavedAccount.loadAccountList(context).mapNotNull { sa ->
+    daoSavedAccount.loadAccountList().mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
             else -> EmptyScope.launch(AppDispatchers.DEFAULT) {
@@ -317,7 +243,7 @@ suspend fun checkNoticifationAll(
                         accountDbId = sa.db_id,
                     ).check(
                         checkNetwork = false,
-                        onlySubscription = onlySubscription,
+                        onlyEnqueue = onlySubscription,
                     ) { a, s -> updateStatus(a, s) }
                     updateStatus(sa, PollingState.Complete)
                 } catch (ex: Throwable) {
@@ -407,8 +333,13 @@ fun recycleClickedNotification(context: Context, uri: Uri) {
                 log.w("recycleClickedNotification: abort by importProtector.")
                 return@launchDefault
             }
+
+            // アカウントの存在確認
+            daoSavedAccount.loadAccount(dbId)?.acct
+                ?: error("missing account. dbId=$dbId")
+
             PollingChecker.accountMutex(dbId).withLock {
-                NotificationTracking.updateRead(dbId, typeName)
+                daoNotificationTracking.updateRead(dbId, typeName)
             }
         } catch (ex: Throwable) {
             log.e(ex, "recycleClickedNotification failed.")

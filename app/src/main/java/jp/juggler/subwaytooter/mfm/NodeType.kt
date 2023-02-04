@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.mfm
 
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.ui.fontSpan
@@ -224,7 +225,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
                         url = url,
                         tag = options.linkTag,
                         ac = jp.juggler.subwaytooter.api.entity.TootAccount.getAcctFromUrl(url)
-                            ?.let { acct -> jp.juggler.subwaytooter.table.AcctColor.load(acct) },
+                            ?.let { acct -> daoAcctColor.load(acct) },
                         caption = sb.substring(start, sb.length)
                     )
                     spanList.addFirst(

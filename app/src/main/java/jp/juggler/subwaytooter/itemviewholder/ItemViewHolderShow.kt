@@ -204,14 +204,14 @@ fun ItemViewHolder.bind(
 
                 item.isQuoteToot -> {
                     // 引用Renote
-                    val colorBg = PrefI.ipEventBgColorBoost.invoke(activity.pref)
+                    val colorBg = PrefI.ipEventBgColorBoost.value
                     showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
                     showStatus(item, colorBg)
                 }
 
                 else -> {
                     // 引用なしブースト
-                    val colorBg = PrefI.ipEventBgColorBoost.invoke(activity.pref)
+                    val colorBg = PrefI.ipEventBgColorBoost.value
                     showBoost(
                         item.accountRef,
                         item.time_created_at,
@@ -284,7 +284,7 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
         }
     )
 
-    val relation = UserRelation.load(accessInfo.db_id, who.id)
+    val relation = daoUserRelation.load(accessInfo.db_id, who.id)
     setFollowIcon(
         activity,
         btnFollow,
@@ -457,7 +457,7 @@ fun ItemViewHolder.showGap() {
     btnGapTail.vg(column.type.gapDirection(column, false))
         ?.imageTintList = contentColorCsl
 
-    val c = PrefI.ipEventBgColorGap()
+    val c = PrefI.ipEventBgColorGap.value
     if (c != 0) this.viewRoot.backgroundColor = c
 }
 
@@ -515,11 +515,11 @@ fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, iconId: I
 fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, accountId: EntityId) {
     val name = if (accountId == reply.account.id) {
         // 自己レスなら
-        AcctColor.getNicknameWithColor(accessInfo, reply.account)
+        daoAcctColor.getNicknameWithColor(accessInfo, reply.account)
     } else {
         val m = reply.mentions?.find { it.id == accountId }
         if (m != null) {
-            AcctColor.getNicknameWithColor(accessInfo.getFullAcct(m.acct))
+            daoAcctColor.getNicknameWithColor(accessInfo.getFullAcct(m.acct))
         } else {
             SpannableString("ID($accountId)")
         }
@@ -589,17 +589,13 @@ fun ItemViewHolder.showStatusTime(
         }
 
         // visibility
-        val visIconId = getVisibilityIconId(accessInfo.isMisskey, status.visibility)
+        val visIconId = status.visibility.getVisibilityIconId(accessInfo.isMisskey)
         if (R.drawable.ic_public != visIconId) {
             if (sb.isNotEmpty()) sb.append('\u200B')
             sb.appendColorShadeIcon(
                 activity,
                 visIconId,
-                getVisibilityString(
-                    activity,
-                    accessInfo.isMisskey,
-                    status.visibility
-                )
+                status.visibility.getVisibilityString(accessInfo.isMisskey)
             )
         }
 
@@ -651,17 +647,13 @@ fun ItemViewHolder.showStatusTime(
         }
     } else {
         reblogVisibility?.takeIf { it != TootVisibility.Unknown }?.let { visibility ->
-            val visIconId = getVisibilityIconId(accessInfo.isMisskey, visibility)
+            val visIconId = visibility.getVisibilityIconId(accessInfo.isMisskey)
             if (R.drawable.ic_public != visIconId) {
                 if (sb.isNotEmpty()) sb.append('\u200B')
                 sb.appendColorShadeIcon(
                     activity,
                     visIconId,
-                    getVisibilityString(
-                        activity,
-                        accessInfo.isMisskey,
-                        visibility
-                    )
+                    visibility.getVisibilityString(accessInfo.isMisskey)
                 )
             }
         }
@@ -692,17 +684,13 @@ fun ItemViewHolder.showStatusTimeScheduled(
     }
 
     // visibility
-    val visIconId = getVisibilityIconId(accessInfo.isMisskey, item.visibility)
+    val visIconId = item.visibility.getVisibilityIconId(accessInfo.isMisskey)
     if (R.drawable.ic_public != visIconId) {
         if (sb.isNotEmpty()) sb.append('\u200B')
         sb.appendColorShadeIcon(
             activity,
             visIconId,
-            getVisibilityString(
-                activity,
-                accessInfo.isMisskey,
-                item.visibility
-            )
+            item.visibility.getVisibilityString(accessInfo.isMisskey)
         )
     }
 
@@ -771,7 +759,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 llContentWarning.visibility = View.VISIBLE
                 tvContentWarning.text = decodedSpoilerText
                 spoilerInvalidator.register(decodedSpoilerText)
-                val cwShown = ContentWarning.isShown(item.uri, accessInfo.expand_cw)
+                val cwShown = daoContentWarning.isShown(item.uri, accessInfo.expand_cw)
                 setContentVisibility(cwShown)
             }
 
@@ -796,7 +784,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 accessInfo.dont_hide_nsfw -> true
                 else -> !item.sensitive
             }
-            val isShown = MediaShown.isShown(item.uri, defaultShown)
+            val isShown = daoMediaShown.isShown(item.uri, defaultShown)
 
             btnShowMedia.visibility = if (!isShown) View.VISIBLE else View.GONE
             llMedia.visibility = if (!isShown) View.GONE else View.VISIBLE
@@ -870,14 +858,14 @@ fun ItemViewHolder.showConversationIcons(cs: TootConversationSummary) {
 }
 
 fun ItemViewHolder.setAcct(tv: TextView, accessInfo: SavedAccount, who: TootAccount) {
-    val ac = AcctColor.load(accessInfo, who)
+    val ac = daoAcctColor.load(accessInfo, who)
     tv.text = when {
-        AcctColor.hasNickname(ac) -> ac.nickname
-        PrefB.bpShortAcctLocalUser() -> "@${who.acct.pretty}"
+        daoAcctColor.hasNickname(ac) -> ac.nickname
+        PrefB.bpShortAcctLocalUser.value -> "@${who.acct.pretty}"
         else -> "@${ac.nickname}"
     }
-    tv.textColor = ac.color_fg.notZero() ?: this.acctColor
+    tv.textColor = ac.colorFg.notZero() ?: this.acctColor
 
-    tv.setBackgroundColor(ac.color_bg) // may 0
+    tv.setBackgroundColor(ac.colorBg) // may 0
     tv.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
 }

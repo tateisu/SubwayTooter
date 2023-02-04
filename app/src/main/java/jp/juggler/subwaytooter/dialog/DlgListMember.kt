@@ -13,8 +13,9 @@ import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.calcIconRound
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.accountListNonPseudo
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -48,7 +49,7 @@ class DlgListMember(
     private val adapter: MyListAdapter
 
     init {
-        this.accountList = activity.accountListNonPseudo(null)
+        this.accountList = accountListNonPseudo(null)
         this.targetUserFullAcct = listOwnerArg.getFullAcct(who)
 
         this.listOwner = if (listOwnerArg.isPseudo) {
@@ -135,15 +136,15 @@ class DlgListMember(
             btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
             //
         } else {
-            val ac = AcctColor.load(a)
+            val ac = daoAcctColor.load(a)
             btnListOwner.text = ac.nickname
 
-            if (AcctColor.hasColorBackground(ac)) {
-                btnListOwner.setBackgroundColor(ac.color_bg)
+            if (daoAcctColor.hasColorBackground(ac)) {
+                btnListOwner.setBackgroundColor(ac.colorBg)
             } else {
                 btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
             }
-            btnListOwner.textColor = ac.color_fg.notZero()
+            btnListOwner.textColor = ac.colorFg.notZero()
                 ?: activity.attrColor(android.R.attr.textColorPrimary)
         }
 

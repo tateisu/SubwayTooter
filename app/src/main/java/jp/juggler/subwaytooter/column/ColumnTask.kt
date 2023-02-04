@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.column
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -71,9 +70,6 @@ abstract class ColumnTask(
 
     val misskeyVersion: Int
         get() = accessInfo.misskeyVersion
-
-    val pref: SharedPreferences
-        get() = column.appState.pref
 
     internal fun JsonObject.addMisskeyNotificationFilter() = addMisskeyNotificationFilter(column)
     internal fun JsonObject.addRangeMisskey(bBottom: Boolean) = addRangeMisskey(column, bBottom)

@@ -17,8 +17,10 @@ import jp.juggler.subwaytooter.column.findStatus
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.getVisibilityCaption
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.accountListNonPseudo
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.emptyCallback
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -212,7 +214,7 @@ private class BoostImpl(
                             visibility == TootVisibility.PrivateFollowers -> R.string.confirm_private_boost_from
                             else -> R.string.confirm_boost_from
                         },
-                        AcctColor.getNickname(accessInfo)
+                        daoAcctColor.getNickname(accessInfo)
                     ),
                     when (bSet) {
                         true -> accessInfo.confirm_boost
@@ -223,7 +225,7 @@ private class BoostImpl(
                         true -> accessInfo.confirm_boost = newConfirmEnabled
                         else -> accessInfo.confirm_unboost = newConfirmEnabled
                     }
-                    accessInfo.saveSetting()
+                    daoSavedAccount.saveSetting(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             }
@@ -288,7 +290,7 @@ fun ActMain.boostFromAnotherAccount(
 
         if (isPrivateToot) {
             val list = ArrayList<SavedAccount>()
-            for (a in SavedAccount.loadAccountList(applicationContext)) {
+            for (a in daoSavedAccount.loadAccountList()) {
                 if (a.acct == statusOwner) list.add(a)
             }
             if (list.isEmpty()) {

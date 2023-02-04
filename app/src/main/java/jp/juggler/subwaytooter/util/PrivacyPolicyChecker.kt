@@ -1,27 +1,25 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.pref.pref
-import jp.juggler.subwaytooter.pref.put
 import jp.juggler.util.data.decodeUTF8
 import jp.juggler.util.data.digestSHA256
 import jp.juggler.util.data.encodeBase64Url
 import jp.juggler.util.data.loadRawResource
+import jp.juggler.util.ui.dismissSafe
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.ref.WeakReference
+import kotlin.coroutines.resumeWithException
 
 // 利用規約
 // 同意済みかどうか調べる
 // 関連データを提供する
-class PrivacyPolicyChecker(
-    val context: Context,
-    val pref: SharedPreferences = context.pref(),
-) {
+class PrivacyPolicyChecker(val context: Context) {
     val bytes by lazy {
         @RawRes val resId = when (context.getString(R.string.language_code)) {
             "ja" -> R.raw.privacy_policy_ja
@@ -37,29 +35,39 @@ class PrivacyPolicyChecker(
     val agreed: Boolean
         get() = when {
             bytes.isEmpty() -> true
-            else -> digest == PrefS.spAgreedPrivacyPolicyDigest(pref)
+            else -> digest == PrefS.spAgreedPrivacyPolicyDigest.value
         }
 }
 
-fun ActMain.checkPrivacyPolicy() {
-
+suspend fun ActMain.checkPrivacyPolicy() :Boolean {
     // 既に表示中かもしれない
-    if (dlgPrivacyPolicy?.get()?.isShowing == true) return
-
-    val checker = PrivacyPolicyChecker(this, pref)
+    if (dlgPrivacyPolicy?.get()?.isShowing == true){
+        throw CancellationException()
+    }
 
     // 同意ずみなら表示しない
-    if (checker.agreed) return
+    val checker = PrivacyPolicyChecker(this)
+    if (checker.agreed) return true
 
-    AlertDialog.Builder(this)
-        .setTitle(R.string.privacy_policy)
-        .setMessage(checker.text)
-        .setOnCancelListener { finish() }
-        .setNegativeButton(R.string.cancel) { _, _ -> finish() }
-        .setPositiveButton(R.string.agree) { _, _ ->
-            pref.edit().put(PrefS.spAgreedPrivacyPolicyDigest, checker.digest).apply()
-        }
-        .create()
-        .also { dlgPrivacyPolicy = WeakReference(it) }
-        .show()
+    return suspendCancellableCoroutine {cont->
+        val dialog =  AlertDialog.Builder(this)
+            .setTitle(R.string.privacy_policy)
+            .setMessage(checker.text)
+            .setOnCancelListener { finish() }
+            .setNegativeButton(R.string.cancel) { _, _ ->
+                finish()
+                if(cont.isActive) cont.resume(false){}
+            }
+            .setPositiveButton(R.string.agree) { _, _ ->
+                PrefS.spAgreedPrivacyPolicyDigest.value = checker.digest
+                if(cont.isActive) cont.resume(true){}
+            }
+            .setOnDismissListener {
+                if(cont.isActive) cont.resumeWithException(CancellationException())
+            }
+            .create()
+        dlgPrivacyPolicy = WeakReference(dialog)
+        cont.invokeOnCancellation { dialog.dismissSafe() }
+        dialog.show()
+    }
 }

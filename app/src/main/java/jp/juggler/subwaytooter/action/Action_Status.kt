@@ -12,11 +12,13 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootScheduled
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.*
-import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.pickAccount
-import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.accountListNonPseudo
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.emptyCallback
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -85,18 +87,20 @@ fun ActMain.clickFavourite(accessInfo: SavedAccount, status: TootStatus, willToa
 }
 
 fun ActMain.clickScheduledToot(accessInfo: SavedAccount, item: TootScheduled, column: Column) {
-    ActionsDialog()
-        .addAction(getString(R.string.edit)) {
-            scheduledPostEdit(accessInfo, item)
-        }
-        .addAction(getString(R.string.delete)) {
-            launchAndShowError {
-                scheduledPostDelete(accessInfo, item)
-                column.onScheduleDeleted(item)
-                showToast(false, R.string.scheduled_post_deleted)
+    launchAndShowError {
+        actionsDialog {
+            action(getString(R.string.edit)) {
+                scheduledPostEdit(accessInfo, item)
+            }
+            action(getString(R.string.delete)) {
+                launchAndShowError {
+                    scheduledPostDelete(accessInfo, item)
+                    column.onScheduleDeleted(item)
+                    showToast(false, R.string.scheduled_post_deleted)
+                }
             }
         }
-        .show(this)
+    }
 }
 
 fun ActMain.launchActText(intent: Intent) = arActText.launch(intent)
@@ -125,7 +129,7 @@ fun ActMain.favourite(
                         true -> R.string.confirm_favourite_from
                         else -> R.string.confirm_unfavourite_from
                     },
-                    AcctColor.getNickname(accessInfo)
+                    daoAcctColor.getNickname(accessInfo)
                 ),
                 when (bSet) {
                     true -> accessInfo.confirm_favourite
@@ -136,7 +140,7 @@ fun ActMain.favourite(
                     true -> accessInfo.confirm_favourite = newConfirmEnabled
                     else -> accessInfo.confirm_unfavourite = newConfirmEnabled
                 }
-                accessInfo.saveSetting()
+                daoSavedAccount.saveSetting(accessInfo)
                 reloadAccountSetting(accessInfo)
             }
         }
@@ -294,12 +298,12 @@ fun ActMain.bookmark(
             confirm(
                 getString(
                     R.string.confirm_unbookmark_from,
-                    AcctColor.getNickname(accessInfo)
+                    daoAcctColor.getNickname(accessInfo)
                 ),
                 accessInfo.confirm_unbookmark
             ) { newConfirmEnabled ->
                 accessInfo.confirm_unbookmark = newConfirmEnabled
-                accessInfo.saveSetting()
+                daoSavedAccount.saveSetting(accessInfo)
                 reloadAccountSetting(accessInfo)
             }
         }

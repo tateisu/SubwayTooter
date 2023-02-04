@@ -24,7 +24,7 @@ import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.streaming.*
-import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyTextView
@@ -219,15 +219,15 @@ class ColumnViewHolder(
         val column = this.column
         if (column == null || column.isDispose.get()) return@Runnable
 
-        val ac = AcctColor.load(column.accessInfo)
+        val ac = daoAcctColor.load(column.accessInfo)
 
         tvColumnContext.text = ac.nickname
         tvColumnContext.setTextColor(
-            ac.color_fg.notZero()
+            ac.colorFg.notZero()
                 ?: activity.attrColor(R.attr.colorTimeSmall)
         )
 
-        tvColumnContext.setBackgroundColor(ac.color_bg)
+        tvColumnContext.setBackgroundColor(ac.colorBg)
         tvColumnContext.setPaddingRelative(activity.acctPadLr, 0, activity.acctPadLr, 0)
 
         tvColumnName.text = column.getColumnName(false)
@@ -358,7 +358,7 @@ class ColumnViewHolder(
             }
         }
 
-        if (PrefB.bpShareViewPool(activity.pref)) {
+        if (PrefB.bpShareViewPool.value) {
             listView.setRecycledViewPool(activity.viewPool)
         }
         listView.itemAnimator = null
@@ -432,7 +432,7 @@ class ColumnViewHolder(
             cbWithHighlight,
         ).forEach { it.setOnCheckedChangeListener(this) }
 
-        if (PrefB.bpMoveNotificationsQuickFilter(activity.pref)) {
+        if (PrefB.bpMoveNotificationsQuickFilter.value) {
             (svQuickFilter.parent as? ViewGroup)?.removeView(svQuickFilter)
             llColumnSettingInside.addView(svQuickFilter, 0)
 

@@ -8,7 +8,7 @@ class StringPref(
     val skipImport: Boolean = false,
 ) : BasePref<String>(key, defVal) {
 
-    override operator fun invoke(pref: SharedPreferences): String =
+    override fun readFrom(pref: SharedPreferences): String =
         pref.getString(key, defVal) ?: defVal
 
     override fun put(editor: SharedPreferences.Editor, v: String) {
@@ -18,5 +18,5 @@ class StringPref(
     override fun hasNonDefaultValue(pref: SharedPreferences) =
         defVal != pref.getString(key, defVal)
 
-    fun toInt(pref: SharedPreferences) = invoke(pref).toIntOrNull() ?: defVal.toInt()
+    fun toInt() = value.toIntOrNull() ?: defVal.toInt()
 }

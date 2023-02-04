@@ -27,9 +27,7 @@ import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.table.FavMute
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import jp.juggler.util.data.*
@@ -83,8 +81,8 @@ internal class DlgContextMenu(
 
         this.relation = when {
             who == null -> UserRelation()
-            accessInfo.isPseudo -> UserRelation.loadPseudo(accessInfo.getFullAcct(who))
-            else -> UserRelation.load(accessInfo.db_id, who.id)
+            accessInfo.isPseudo -> daoUserRelation.loadPseudo(accessInfo.getFullAcct(who))
+            else -> daoUserRelation.load(accessInfo.db_id, who.id)
         }
 
         this.dialog = Dialog(activity)
@@ -109,7 +107,7 @@ internal class DlgContextMenu(
             views.btnSendMessage,
         ).forEach { it.setOnLongClickListener(this) }
 
-        val accountList = SavedAccount.loadAccountList(activity)
+        val accountList = daoSavedAccount.loadAccountList()
 
         val accountListNonPseudo = ArrayList<SavedAccount>()
         for (a in accountList) {
@@ -127,7 +125,7 @@ internal class DlgContextMenu(
         } else {
             val statusByMe = accessInfo.isMe(status.account)
 
-            if (PrefB.bpLinksInContextMenu(activity.pref) && contentTextView != null) {
+            if (PrefB.bpLinksInContextMenu.value && contentTextView != null) {
 
                 var insPos = 0
 
@@ -229,11 +227,11 @@ internal class DlgContextMenu(
         views.llNotification.vg(notification != null)
 
         val colorButtonAccent =
-            PrefI.ipButtonFollowingColor(activity.pref).notZero()
+            PrefI.ipButtonFollowingColor.value.notZero()
                 ?: activity.attrColor(R.attr.colorButtonAccentFollow)
 
         val colorButtonFollowRequest =
-            PrefI.ipButtonFollowRequestColor.invoke(activity.pref).notZero()
+            PrefI.ipButtonFollowRequestColor.value.notZero()
                 ?: activity.attrColor(R.attr.colorButtonAccentFollowRequest)
 
         val colorButtonNormal =
@@ -320,7 +318,7 @@ internal class DlgContextMenu(
                 )
 
                 views.btnDomainTimeline.vg(
-                    PrefB.bpEnableDomainTimeline.invoke(activity.pref) &&
+                    PrefB.bpEnableDomainTimeline.value &&
                             !accessInfo.isPseudo &&
                             !accessInfo.isMisskey
                 )
@@ -396,7 +394,7 @@ internal class DlgContextMenu(
                 views.btnShowFavourite.visibility = View.GONE
             }
 
-            FavMute.contains(accessInfo.getFullAcct(who)) -> {
+            daoFavMute.contains(accessInfo.getFullAcct(who)) -> {
                 views.btnHideFavourite.visibility = View.GONE
                 views.btnShowFavourite.visibility = View.VISIBLE
             }
@@ -450,7 +448,7 @@ internal class DlgContextMenu(
         }
 
         when {
-            PrefB.bpAlwaysExpandContextMenuItems(activity.pref) -> {
+            PrefB.bpAlwaysExpandContextMenuItems.value -> {
                 group.vg(true)
                 btn.background = null
             }

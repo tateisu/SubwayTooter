@@ -3,9 +3,7 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.style.RelativeSizeSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
@@ -13,8 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
@@ -30,7 +27,7 @@ suspend fun AppCompatActivity.pickAccount(
     bAllowMastodon: Boolean = true,
     bAuto: Boolean = false,
     message: String? = null,
-    accountListArg: MutableList<SavedAccount>? = null,
+    accountListArg: List<SavedAccount>? = null,
     dismissCallback: (dialog: DialogInterface) -> Unit = {},
     extraCallback: (LinearLayout, Int, Int) -> Unit = { _, _, _ -> },
 ): SavedAccount? {
@@ -54,11 +51,10 @@ suspend fun AppCompatActivity.pickAccount(
         else -> 0
     }
 
-    val accountList: MutableList<SavedAccount> = accountListArg
-        ?: SavedAccount.loadAccountList(activity)
+    val accountList = accountListArg
+        ?: daoSavedAccount.loadAccountList()
             .filter { 0 == it.checkMastodon() + it.checkMisskey() + it.checkPseudo() }
-            .toMutableList()
-            .also { SavedAccount.sort(it) }
+            .sortedByNickname()
 
     if (accountList.isEmpty()) {
 
@@ -127,17 +123,21 @@ suspend fun AppCompatActivity.pickAccount(
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
 
-            val ac = AcctColor.load(a)
+            val ac = daoAcctColor.load(a)
 
             val b = AppCompatButton(activity)
 
-            if (AcctColor.hasColorBackground(ac)) {
-                b.background = getAdaptiveRippleDrawableRound(activity, ac.color_bg, ac.color_fg)
+            if (daoAcctColor.hasColorBackground(ac)) {
+                b.background = getAdaptiveRippleDrawableRound(
+                    activity,
+                    ac.colorBg,
+                    ac.colorFg
+                )
             } else {
                 b.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
             }
-            if (AcctColor.hasColorForeground(ac)) {
-                b.textColor = ac.color_fg
+            if (daoAcctColor.hasColorForeground(ac)) {
+                b.textColor = ac.colorFg
             }
 
             b.setPaddingRelative(padX, padY, padX, padY)
@@ -147,19 +147,20 @@ suspend fun AppCompatActivity.pickAccount(
             b.minHeight = (0.5f + 32f * density).toInt()
 
             val sb = SpannableStringBuilder(ac.nickname)
-            if (a.lastNotificationError?.isNotEmpty() == true) {
-                sb.append("\n")
-                val start = sb.length
-                sb.append(a.lastNotificationError)
-                val end = sb.length
-                sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            } else if (a.last_subscription_error?.isNotEmpty() == true) {
-                sb.append("\n")
-                val start = sb.length
-                sb.append(a.last_subscription_error)
-                val end = sb.length
-                sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
+// TODO エラー状態を表示する
+//            if (a.lastNotificationError?.isNotEmpty() == true) {
+//                sb.append("\n")
+//                val start = sb.length
+//                sb.append(a.lastNotificationError)
+//                val end = sb.length
+//                sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+//            } else if (a.last_subscription_error?.isNotEmpty() == true) {
+//                sb.append("\n")
+//                val start = sb.length
+//                sb.append(a.last_subscription_error)
+//                val end = sb.length
+//                sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+//            }
             b.text = sb
 
             b.setOnClickListener {

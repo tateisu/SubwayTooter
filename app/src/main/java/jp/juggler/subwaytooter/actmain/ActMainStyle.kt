@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.actmain
 
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.view.View
@@ -8,15 +9,15 @@ import android.widget.LinearLayout
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.stylerBoostAlpha
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefF
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.pref.impl.StringPref
-import jp.juggler.subwaytooter.stylerRoundRatio
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.stylerBoostAlpha
+import jp.juggler.subwaytooter.stylerRoundRatio
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.view.ListDivider
 import jp.juggler.util.data.clip
@@ -31,12 +32,12 @@ import kotlin.math.max
 
 private val log = LogCategory("ActMainStyle")
 
-private fun ActMain.dpToPx(dp: Float) =
-    (dp * density + 0.5f).toInt()
+private fun Float.dpToPx(context: Context) =
+    (this * context.resources.displayMetrics.density + 0.5f).toInt()
 
 // initUIから呼ばれる
-fun ActMain.reloadFonts() {
-    ActMain.timelineFont = PrefS.spTimelineFont(pref).notEmpty()?.let {
+fun reloadFonts() {
+    ActMain.timelineFont = PrefS.spTimelineFont.value.notEmpty()?.let {
         try {
             Typeface.createFromFile(it)
         } catch (ex: Throwable) {
@@ -45,7 +46,7 @@ fun ActMain.reloadFonts() {
         }
     } ?: Typeface.DEFAULT
 
-    ActMain.timelineFontBold = PrefS.spTimelineFontBold(pref).notEmpty()?.let {
+    ActMain.timelineFontBold = PrefS.spTimelineFontBold.value.notEmpty()?.let {
         try {
             Typeface.createFromFile(it)
         } catch (ex: Throwable) {
@@ -61,16 +62,14 @@ fun ActMain.reloadFonts() {
 }
 
 private fun ActMain.parseIconSize(stringPref: StringPref, minDp: Float = 1f) =
-    dpToPx(
-        try {
-            stringPref(pref)
-                .toFloatOrNull()
-                ?.takeIf { it.isFinite() && it >= minDp }
-        } catch (ex: Throwable) {
-            log.e(ex, "parseIconSize failed.")
-            null
-        } ?: stringPref.defVal.toFloat()
-    )
+    (try {
+        stringPref.value
+            .toFloatOrNull()
+            ?.takeIf { it.isFinite() && it >= minDp }
+    } catch (ex: Throwable) {
+        log.e(ex, "parseIconSize failed.")
+        null
+    } ?: stringPref.defVal.toFloat()).dpToPx(this)
 
 // initUIから呼ばれる
 fun ActMain.reloadIconSize() {
@@ -82,7 +81,7 @@ fun ActMain.reloadIconSize() {
     ActMain.stripIconSize = parseIconSize(PrefS.spStripIconSize)
     ActMain.screenBottomPadding = parseIconSize(PrefS.spScreenBottomPadding, minDp = 0f)
 
-    ActMain.eventFadeAlpha = PrefS.spEventTextAlpha()
+    ActMain.eventFadeAlpha = PrefS.spEventTextAlpha.value
         .toFloatOrNull()
         ?.takeIf { it.isFinite() }
         ?.clip(0f, 1f)
@@ -90,10 +89,10 @@ fun ActMain.reloadIconSize() {
 }
 
 // initUIから呼ばれる
-fun ActMain.reloadRoundRatio() {
+fun reloadRoundRatio() {
     val sizeDp = when {
-        PrefB.bpDontRound(pref) -> 0f
-        else -> PrefS.spRoundRatio(pref)
+        PrefB.bpDontRound.value -> 0f
+        else -> PrefS.spRoundRatio.value
             .toFloatOrNull()
             ?.takeIf { it.isFinite() }
             ?: 33f
@@ -102,8 +101,8 @@ fun ActMain.reloadRoundRatio() {
 }
 
 // initUI から呼ばれる
-fun ActMain.reloadBoostAlpha() {
-    stylerBoostAlpha = PrefS.spBoostAlpha(pref)
+fun reloadBoostAlpha() {
+    stylerBoostAlpha = PrefS.spBoostAlpha.value
         .toIntOrNull()
         ?.toFloat()
         ?.let { (it + 0.5f) / 100f }
@@ -112,36 +111,35 @@ fun ActMain.reloadBoostAlpha() {
 }
 
 fun ActMain.reloadMediaHeight() {
-    appState.mediaThumbHeight = dpToPx(
-        PrefS.spMediaThumbHeight(pref)
-            .toFloatOrNull()
-            ?.takeIf { it >= 32f }
-            ?: 64f
-    )
+    appState.mediaThumbHeight = (
+            PrefS.spMediaThumbHeight.value
+                .toFloatOrNull()
+                ?.takeIf { it >= 32f }
+                ?: 64f
+            ).dpToPx(this)
 }
 
 private fun Float.clipFontSize(): Float =
     if (isNaN()) this else max(1f, this)
 
 fun ActMain.reloadTextSize() {
-    timelineFontSizeSp = PrefF.fpTimelineFontSize.invoke(pref).clipFontSize()
-    acctFontSizeSp = PrefF.fpAcctFontSize(pref).clipFontSize()
-    notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize(pref).clipFontSize()
-    headerTextSizeSp = PrefF.fpHeaderTextSize(pref).clipFontSize()
-    val fv = PrefS.spTimelineSpacing(pref).toFloatOrNull()
+    timelineFontSizeSp = PrefF.fpTimelineFontSize.value.clipFontSize()
+    acctFontSizeSp = PrefF.fpAcctFontSize.value.clipFontSize()
+    notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize.value.clipFontSize()
+    headerTextSizeSp = PrefF.fpHeaderTextSize.value.clipFontSize()
+    val fv = PrefS.spTimelineSpacing.value.toFloatOrNull()
     timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
 }
 
 fun ActMain.loadColumnMin() =
-    dpToPx(
-        PrefS.spColumnWidth(pref)
-            .toFloatOrNull()
-            ?.takeIf { it.isFinite() && it >= 100f }
-            ?: ActMain.COLUMN_WIDTH_MIN_DP.toFloat()
-    )
+    (PrefS.spColumnWidth.value
+        .toFloatOrNull()
+        ?.takeIf { it.isFinite() && it >= 100f }
+        ?: ActMain.COLUMN_WIDTH_MIN_DP.toFloat()
+            ).dpToPx(this)
 
 fun ActMain.justifyWindowContentPortrait() {
-    when (PrefI.ipJustifyWindowContentPortrait(pref)) {
+    when (PrefI.ipJustifyWindowContentPortrait.value) {
         PrefI.JWCP_START -> {
             val iconW = (ActMain.stripIconSize * 1.5f + 0.5f).toInt()
             val padding = resources.displayMetrics.widthPixels / 2 - iconW
@@ -161,7 +159,7 @@ fun ActMain.justifyWindowContentPortrait() {
 
         PrefI.JWCP_END -> {
             val iconW = (ActMain.stripIconSize * 1.5f + 0.5f).toInt()
-            val borderWidth = dpToPx(1f)
+            val borderWidth = 1f.dpToPx(this)
             val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
 
             fun ViewGroup.addViewAfterFirst(v: View) = addView(v, 1)
@@ -182,10 +180,10 @@ fun ActMain.justifyWindowContentPortrait() {
 //////////////////////////////////////////////////////
 
 // onStart時に呼ばれる
-fun ActMain.reloadTimeZone() {
+fun reloadTimeZone() {
     try {
         var tz = TimeZone.getDefault()
-        val tzId = PrefS.spTimeZone(pref)
+        val tzId = PrefS.spTimeZone.value
         if (tzId.isNotEmpty()) {
             tz = TimeZone.getTimeZone(tzId)
         }
@@ -199,25 +197,25 @@ fun ActMain.reloadTimeZone() {
 // onStart時に呼ばれる
 // カラーカスタマイズを読み直す
 fun ActMain.reloadColors() {
-    ListDivider.color = PrefI.ipListDividerColor(pref)
-    TabletColumnDivider.color = PrefI.ipListDividerColor(pref)
-    ItemViewHolder.toot_color_unlisted = PrefI.ipTootColorUnlisted(pref)
-    ItemViewHolder.toot_color_follower = PrefI.ipTootColorFollower(pref)
-    ItemViewHolder.toot_color_direct_user = PrefI.ipTootColorDirectUser(pref)
-    ItemViewHolder.toot_color_direct_me = PrefI.ipTootColorDirectMe(pref)
-    MyClickableSpan.showLinkUnderline = PrefB.bpShowLinkUnderline(pref)
-    MyClickableSpan.defaultLinkColor = PrefI.ipLinkColor(pref).notZero()
+    ListDivider.color = PrefI.ipListDividerColor.value
+    TabletColumnDivider.color = PrefI.ipListDividerColor.value
+    ItemViewHolder.toot_color_unlisted = PrefI.ipTootColorUnlisted.value
+    ItemViewHolder.toot_color_follower = PrefI.ipTootColorFollower.value
+    ItemViewHolder.toot_color_direct_user = PrefI.ipTootColorDirectUser.value
+    ItemViewHolder.toot_color_direct_me = PrefI.ipTootColorDirectMe.value
+    MyClickableSpan.showLinkUnderline = PrefB.bpShowLinkUnderline.value
+    MyClickableSpan.defaultLinkColor = PrefI.ipLinkColor.value.notZero()
         ?: attrColor(R.attr.colorLink)
 
     CustomShare.reloadCache(this)
 }
 
 fun ActMain.showFooterColor() {
-    val footerButtonBgColor = PrefI.ipFooterButtonBgColor(pref)
-    val footerButtonFgColor = PrefI.ipFooterButtonFgColor(pref)
-    val footerTabBgColor = PrefI.ipFooterTabBgColor(pref)
-    val footerTabDividerColor = PrefI.ipFooterTabDividerColor(pref)
-    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor(pref)
+    val footerButtonBgColor = PrefI.ipFooterButtonBgColor.value
+    val footerButtonFgColor = PrefI.ipFooterButtonFgColor.value
+    val footerTabBgColor = PrefI.ipFooterTabBgColor.value
+    val footerTabDividerColor = PrefI.ipFooterTabDividerColor.value
+    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor.value
 
     val colorColumnStripBackground = footerTabBgColor.notZero()
         ?: attrColor(R.attr.colorColumnStripBackground)

@@ -16,14 +16,15 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.stylerBoostAlpha
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.setFollowIcon
+import jp.juggler.subwaytooter.stylerBoostAlpha
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.startMargin
@@ -170,7 +171,7 @@ class StatusButtons(
             R.drawable.ic_reply,
             when (val repliesCount = status.replies_count) {
                 null -> ""
-                else -> when (PrefI.ipRepliesCount(activity.pref)) {
+                else -> when (PrefI.ipRepliesCount.value) {
                     PrefI.RC_SIMPLE -> when {
                         repliesCount >= 2L -> "1+"
                         repliesCount == 1L -> "1"
@@ -191,7 +192,7 @@ class StatusButtons(
                 setButton(
                     btnBoost,
                     false,
-                    PrefI.ipButtonBoostedColor.invoke(activity.pref).notZero()
+                    PrefI.ipButtonBoostedColor.value.notZero()
                         ?: activity.attrColor(R.attr.colorButtonAccentBoost),
                     R.drawable.ic_mail,
                     "",
@@ -213,7 +214,7 @@ class StatusButtons(
                 true,
                 when {
                     status.reblogged ->
-                        PrefI.ipButtonBoostedColor(activity.pref).notZero()
+                        PrefI.ipButtonBoostedColor.value.notZero()
                             ?: activity.attrColor(R.attr.colorButtonAccentBoost)
                     else ->
                         colorTextContent
@@ -221,7 +222,7 @@ class StatusButtons(
                 R.drawable.ic_repeat,
                 when (val boostsCount = status.reblogs_count) {
                     null -> ""
-                    else -> when (PrefI.ipBoostsCount(activity.pref)) {
+                    else -> when (PrefI.ipBoostsCount.value) {
                         PrefI.RC_SIMPLE -> when {
                             boostsCount >= 2L -> "1+"
                             boostsCount == 1L -> "1"
@@ -283,7 +284,7 @@ class StatusButtons(
                     true,
                     when {
                         status.favourited ->
-                            PrefI.ipButtonFavoritedColor(activity.pref).notZero()
+                            PrefI.ipButtonFavoritedColor.value.notZero()
                                 ?: activity.attrColor(R.attr.colorButtonAccentFavourite)
                         else -> colorTextContent
                     },
@@ -293,7 +294,7 @@ class StatusButtons(
                     },
                     when (val favouritesCount = status.favourites_count) {
                         null -> ""
-                        else -> when (PrefI.ipFavouritesCount(activity.pref)) {
+                        else -> when (PrefI.ipFavouritesCount.value) {
                             PrefI.RC_SIMPLE -> when {
                                 favouritesCount >= 2L -> "1+"
                                 favouritesCount == 1L -> "1"
@@ -309,7 +310,7 @@ class StatusButtons(
     }
 
     private fun bindBookmarkButton(status: TootStatus) {
-        btnBookmark.vg(PrefB.bpShowBookmarkButton())
+        btnBookmark.vg(PrefB.bpShowBookmarkButton.value)
             ?.let { btn ->
                 when {
                     activity.appState.isBusyBookmark(accessInfo, status) ->
@@ -327,7 +328,7 @@ class StatusButtons(
                             true,
                             when {
                                 status.bookmarked ->
-                                    PrefI.ipButtonBookmarkedColor(activity.pref).notZero()
+                                    PrefI.ipButtonBookmarkedColor.value.notZero()
                                         ?: activity.attrColor(R.attr.colorButtonAccentBookmark)
                                 else ->
                                     colorTextContent
@@ -344,12 +345,12 @@ class StatusButtons(
 
     private fun bindFollowButton(status: TootStatus) {
         val account = status.account
-        this.relation = if (!PrefB.bpShowFollowButtonInButtonBar(activity.pref)) {
+        this.relation = if (!PrefB.bpShowFollowButtonInButtonBar.value) {
             llFollow2.visibility = View.GONE
             null
         } else {
             llFollow2.visibility = View.VISIBLE
-            val relation = UserRelation.load(accessInfo.db_id, account.id)
+            val relation = daoUserRelation.load(accessInfo.db_id, account.id)
             setFollowIcon(
                 activity,
                 btnFollow2,
@@ -367,7 +368,7 @@ class StatusButtons(
         optionalButtonFirst = null
         optionalButtonCount = 0
 
-        btnTranslate.vg(PrefB.bpShowTranslateButton(activity.pref))
+        btnTranslate.vg(PrefB.bpShowTranslateButton.value)
             ?.showCustomShare(CustomShareTarget.Translate)
         btnCustomShare1.showCustomShare(CustomShareTarget.CustomShare1)
         btnCustomShare2.showCustomShare(CustomShareTarget.CustomShare2)
@@ -409,7 +410,7 @@ class StatusButtons(
         optionalButtonFirst: View?,
     ): (btn: ImageButton) -> Unit {
         val lpConversation = btnConversation.layoutParams as? FlexboxLayout.LayoutParams
-        return when (AdditionalButtonsPosition.fromIndex(PrefI.ipAdditionalButtonsPosition(activity.pref))) {
+        return when (AdditionalButtonsPosition.fromIndex(PrefI.ipAdditionalButtonsPosition.value)) {
             AdditionalButtonsPosition.Top -> {
                 // 1行目に追加ボタンが並ぶ
                 // 2行目は通常ボタンが並ぶ
@@ -828,7 +829,9 @@ class StatusButtonsViewHolder(
                 }
                 flexWrap = FlexWrap.WRAP
                 this.justifyContent = justifyContent
-                when (AdditionalButtonsPosition.fromIndex(PrefI.ipAdditionalButtonsPosition(activity.pref))) {
+                when (AdditionalButtonsPosition.fromIndex(
+                    PrefI.ipAdditionalButtonsPosition.value
+                )) {
                     AdditionalButtonsPosition.Top, AdditionalButtonsPosition.Start -> {
                         additionalButtons()
                         normalButtons()

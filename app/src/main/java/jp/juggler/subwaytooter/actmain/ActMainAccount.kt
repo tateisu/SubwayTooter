@@ -4,6 +4,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.fireShowColumnHeader
 import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoSavedAccount
 
 // デフォルトの投稿先アカウントを探す。アカウント選択が必要な状況ならnull
 val ActMain.currentPostTarget: SavedAccount?
@@ -17,9 +18,9 @@ val ActMain.currentPostTarget: SavedAccount?
         },
         { env ->
 
-            val dbId = PrefL.lpTabletTootDefaultAccount()
+            val dbId = PrefL.lpTabletTootDefaultAccount.value
             if (dbId != -1L) {
-                val a = SavedAccount.loadAccount(this@currentPostTarget, dbId)
+                val a = daoSavedAccount.loadAccount(dbId)
                 if (a != null && !a.isPseudo) return a
             }
 
@@ -47,24 +48,23 @@ val ActMain.currentPostTarget: SavedAccount?
         })
 
 fun ActMain.reloadAccountSetting(
-    newAccounts: ArrayList<SavedAccount> = SavedAccount.loadAccountList(
-        this
-    ),
+    newAccounts: List<SavedAccount>,
 ) {
     for (column in appState.columnList) {
         val a = column.accessInfo
-        if (!a.isNA) a.reloadSetting(this, newAccounts.find { it.acct == a.acct })
+        val b = newAccounts.find { it.acct == a.acct }
+        if (!a.isNA && b != null) daoSavedAccount.reloadSetting(a, b)
         column.fireShowColumnHeader()
     }
 }
 
 fun ActMain.reloadAccountSetting(account: SavedAccount) {
-    val newData = SavedAccount.loadAccount(this, account.db_id)
+    val newData = daoSavedAccount.loadAccount(account.db_id)
         ?: return
     for (column in appState.columnList) {
         val a = column.accessInfo
         if (a.acct != newData.acct) continue
-        if (!a.isNA) a.reloadSetting(this, newData)
+        if (!a.isNA) daoSavedAccount.reloadSetting(a, newData)
         column.fireShowColumnHeader()
     }
 }

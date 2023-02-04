@@ -6,20 +6,92 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.global.appDatabase
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
-import java.util.concurrent.atomic.AtomicReference
 
-class HighlightWord {
+class HighlightWord(
+    var id: Long = -1L,
+    var name: String? = null,
+    var color_bg: Int = 0,
+    var color_fg: Int = 0,
+    var sound_type: Int = 0,
+    var sound_uri: String? = null,
+    var speech: Int = 0,
+) {
+    constructor(name: String) : this(
+        name = name,
+        sound_type = SOUND_TYPE_DEFAULT,
+        color_fg = -0x10000,
+    )
+
+    constructor(src: JsonObject) : this(
+        id = src.long(COL_ID) ?: -1L,
+        name = src.stringOrThrow(COL_NAME),
+        color_bg = src.optInt(COL_COLOR_BG),
+        color_fg = src.optInt(COL_COLOR_FG),
+        sound_type = src.optInt(COL_SOUND_TYPE),
+        sound_uri = src.string(COL_SOUND_URI),
+        speech = src.optInt(COL_SPEECH),
+    )
+
+    fun encodeJson(): JsonObject {
+        val dst = JsonObject()
+        dst[COL_ID] = id
+        dst[COL_NAME] = name
+        dst[COL_COLOR_BG] = color_bg
+        dst[COL_COLOR_FG] = color_fg
+        dst[COL_SOUND_TYPE] = sound_type
+        dst[COL_SPEECH] = speech
+        sound_uri?.let { dst[COL_SOUND_URI] = it }
+        return dst
+    }
+
+    // ID以外のカラムをContentValuesに格納する
+    fun toContentValues() = ContentValues().apply {
+        if (name.isNullOrBlank()) error("HighlightWord.save(): name is empty")
+        put(COL_NAME, name)
+        put(COL_TIME_SAVE, System.currentTimeMillis())
+        put(COL_COLOR_BG, color_bg)
+        put(COL_COLOR_FG, color_fg)
+        put(COL_SOUND_TYPE, sound_type)
+        put(COL_SOUND_URI, sound_uri.notEmpty())
+        put(COL_SPEECH, speech)
+    }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    class ColIdx(cursor: Cursor) {
+        val idxId = cursor.columnIndexOrThrow(COL_ID)
+        val idxName = cursor.columnIndexOrThrow(COL_NAME)
+        val idxColorBg = cursor.columnIndexOrThrow(COL_COLOR_BG)
+        val idxColorFg = cursor.columnIndexOrThrow(COL_COLOR_FG)
+        val idxSountType = cursor.columnIndexOrThrow(COL_SOUND_TYPE)
+        val idxSoundUri = cursor.columnIndexOrThrow(COL_SOUND_URI)
+        val idxSpeech = cursor.columnIndexOrThrow(COL_SPEECH)
+
+        fun readRow(cursor: Cursor) = HighlightWord(
+            id = cursor.getLong(idxId),
+            name = cursor.getString(idxName),
+            color_bg = cursor.getInt(idxColorBg),
+            color_fg = cursor.getInt(idxColorFg),
+            sound_type = cursor.getInt(idxSountType),
+            sound_uri = cursor.getStringOrNull(idxSoundUri),
+            speech = cursor.getInt(idxSpeech),
+        )
+
+        fun readAll(cursor: Cursor) = buildList {
+            while (cursor.moveToNext()) {
+                add(readRow(cursor))
+            }
+        }
+
+        fun readOne(cursor: Cursor) = when {
+            cursor.moveToNext() -> readRow(cursor)
+            else -> null
+        }
+    }
 
     companion object : TableCompanion {
-
         private val log = LogCategory("HighlightWord")
-
-        const val SOUND_TYPE_NONE = 0
-        const val SOUND_TYPE_DEFAULT = 1
-        const val SOUND_TYPE_CUSTOM = 2
 
         override val table = "highlight_word"
         const val COL_ID = BaseColumns._ID
@@ -30,12 +102,6 @@ class HighlightWord {
         private const val COL_SOUND_TYPE = "sound_type"
         private const val COL_SOUND_URI = "sound_uri"
         private const val COL_SPEECH = "speech"
-
-        private const val selection_name = "$COL_NAME=?"
-        private const val selection_speech = "$COL_SPEECH<>0"
-        private const val selection_id = "$COL_ID=?"
-
-        private val columns_name = arrayOf(COL_NAME)
 
         override fun onDBCreate(db: SQLiteDatabase) {
             log.d("onDBCreate!")
@@ -69,196 +135,82 @@ class HighlightWord {
             }
         }
 
-        fun load(name: String): HighlightWord? {
-            try {
-                appDatabase.query(table, null, selection_name, arrayOf(name), null, null, null)
-                    .use { cursor ->
-                        if (cursor.moveToNext()) {
-                            return HighlightWord(cursor, ColIdx(cursor))
-                        }
-                    }
-            } catch (ex: Throwable) {
-                log.e(ex, "load failed.")
-            }
-            return null
+        const val SOUND_TYPE_NONE = 0
+        const val SOUND_TYPE_DEFAULT = 1
+        const val SOUND_TYPE_CUSTOM = 2
+    }
+
+    class Access(val db: SQLiteDatabase) {
+
+        fun load(name: String) = try {
+            db.queryById(table, name, COL_NAME)
+                ?.use { ColIdx(it).readOne(it) }
+        } catch (ex: Throwable) {
+            log.e(ex, "load failed. name=$name")
+            null
         }
 
-        fun load(id: Long): HighlightWord? {
-            try {
-                appDatabase.query(
-                    table,
-                    null,
-                    selection_id,
-                    arrayOf(id.toString()),
-                    null,
-                    null,
-                    null
-                ).use { cursor ->
-                    if (cursor.moveToNext()) {
-                        return HighlightWord(cursor, ColIdx(cursor))
-                    }
-                }
-            } catch (ex: Throwable) {
-                log.e(ex, "load failed. id=$id")
-            }
-
-            return null
+        fun load(id: Long) = try {
+            db.queryById(table, id.toString(), COL_ID)
+                ?.use { ColIdx(it).readOne(it) }
+        } catch (ex: Throwable) {
+            log.e(ex, "load failed. id=$id")
+            null
         }
 
-        fun createCursor(): Cursor {
-            return appDatabase.query(table, null, null, null, null, null, "$COL_NAME asc")
-        }
+        fun listAll() =
+            db.queryAll(table, "$COL_NAME asc")
+                ?.use { ColIdx(it).readAll(it) }
+                ?: emptyList()
 
-        val nameSet: WordTrieTree?
-            get() {
-                val dst = WordTrieTree()
+        fun nameSet(): WordTrieTree? =
+            WordTrieTree().also { dst ->
                 try {
-                    appDatabase.query(table, columns_name, null, null, null, null, null)
-                        .use { cursor ->
-                            val idx_name = cursor.getColumnIndex(COL_NAME)
+                    db.rawQuery("select $COL_NAME from $table", emptyArray())
+                        ?.use { cursor ->
+                            val idxName = cursor.getColumnIndex(COL_NAME)
                             while (cursor.moveToNext()) {
-                                val s = cursor.getString(idx_name)
-                                dst.add(s)
+                                dst.add(cursor.getString(idxName))
                             }
                         }
                 } catch (ex: Throwable) {
                     log.e(ex, "nameSet failed.")
                 }
+            }.takeIf{ it.isNotEmpty }
 
-                return if (dst.isEmpty) null else dst
-            }
+        fun hasTextToSpeechHighlightWord(): Boolean = try {
+            (db.rawQuery(
+                "select $COL_NAME from $table where $COL_SPEECH<>0 limit 1",
+                emptyArray()
+            )?.use { it.count } ?: 0) > 0
+        } catch (ex: Throwable) {
+            log.e(ex, "hasTextToSpeechHighlightWord failed.")
+            false
+        }
 
-        private val hasTextToSpeechHighlightWordCache = AtomicReference<Boolean>(null)
-
-        fun hasTextToSpeechHighlightWord(): Boolean {
-            synchronized(this) {
-                var cached = hasTextToSpeechHighlightWordCache.get()
-                if (cached == null) {
-                    cached = false
-                    try {
-                        appDatabase.query(
-                            table,
-                            columns_name,
-                            selection_speech,
-                            null,
-                            null,
-                            null,
-                            null
-                        )
-                            .use { cursor ->
-                                while (cursor.moveToNext()) {
-                                    cached = true
-                                }
-                            }
-                    } catch (ex: Throwable) {
-                        log.e(ex, "hasTextToSpeechHighlightWord failed.")
-                    }
-                    hasTextToSpeechHighlightWordCache.set(cached)
+        fun save(context: Context, item: HighlightWord) {
+            try {
+                when (val id = item.id) {
+                    -1L -> item.toContentValues().replaceTo(db, table)
+                        .also { item.id = it }
+                    else -> item.toContentValues().updateTo(db, table, id.toString())
                 }
-                return cached
+            } catch (ex: Throwable) {
+                log.e(ex, "save failed.")
             }
+            App1.getAppState(context).enableSpeech()
         }
-    }
 
-    var id = -1L
-    var name: String
-    var color_bg = 0
-    var color_fg = 0
-    var sound_type = 0
-    var sound_uri: String? = null
-    var speech = 0
-
-    fun encodeJson(): JsonObject {
-        val dst = JsonObject()
-        dst[COL_ID] = id
-        dst[COL_NAME] = name
-        dst[COL_COLOR_BG] = color_bg
-        dst[COL_COLOR_FG] = color_fg
-        dst[COL_SOUND_TYPE] = sound_type
-        dst[COL_SPEECH] = speech
-        sound_uri?.let { dst[COL_SOUND_URI] = it }
-        return dst
-    }
-
-    constructor(src: JsonObject) {
-        this.id = src.long(COL_ID) ?: -1L
-        this.name = src.stringOrThrow(COL_NAME)
-        this.color_bg = src.optInt(COL_COLOR_BG)
-        this.color_fg = src.optInt(COL_COLOR_FG)
-        this.sound_type = src.optInt(COL_SOUND_TYPE)
-        this.sound_uri = src.string(COL_SOUND_URI)
-        this.speech = src.optInt(COL_SPEECH)
-    }
-
-    constructor(name: String) {
-        this.name = name
-        this.sound_type = SOUND_TYPE_DEFAULT
-        this.color_fg = -0x10000
-    }
-
-    class ColIdx(cursor: Cursor) {
-        val idxId = cursor.columnIndexOrThrow(COL_ID)
-        val idxName = cursor.columnIndexOrThrow(COL_NAME)
-        val idxColorBg = cursor.columnIndexOrThrow(COL_COLOR_BG)
-        val idxColorFg = cursor.columnIndexOrThrow(COL_COLOR_FG)
-        val idxSountType = cursor.columnIndexOrThrow(COL_SOUND_TYPE)
-        val idxSoundUri = cursor.columnIndexOrThrow(COL_SOUND_URI)
-        val idxSpeech = cursor.columnIndexOrThrow(COL_SPEECH)
-    }
-
-    constructor(cursor: Cursor, colIdx: ColIdx) {
-        id = cursor.getLong(colIdx.idxId)
-        name = cursor.getString(colIdx.idxName)
-        color_bg = cursor.getInt(colIdx.idxColorBg)
-        color_fg = cursor.getInt(colIdx.idxColorFg)
-        sound_type = cursor.getInt(colIdx.idxSountType)
-        sound_uri = cursor.getStringOrNull(colIdx.idxSoundUri)
-        speech = cursor.getInt(colIdx.idxSpeech)
-    }
-
-    fun save(context: Context) {
-        if (name.isEmpty()) error("HighlightWord.save(): name is empty")
-
-        try {
-            val cv = ContentValues()
-            cv.put(COL_NAME, name)
-            cv.put(COL_TIME_SAVE, System.currentTimeMillis())
-            cv.put(COL_COLOR_BG, color_bg)
-            cv.put(COL_COLOR_FG, color_fg)
-            cv.put(COL_SOUND_TYPE, sound_type)
-
-            val sound_uri = this.sound_uri
-            if (sound_uri?.isEmpty() != false) {
-                cv.putNull(COL_SOUND_URI)
-            } else {
-                cv.put(COL_SOUND_URI, sound_uri)
+        fun delete(context: Context, item: HighlightWord) {
+            try {
+                db.execSQL(
+                    "delete from $table where $COL_ID=?",
+                    arrayOf(item.id.toString())
+                )
+            } catch (ex: Throwable) {
+                log.e(ex, "delete failed.")
             }
-            cv.put(COL_SPEECH, speech)
-
-            if (id == -1L) {
-                id = appDatabase.replace(table, null, cv)
-            } else {
-                appDatabase.update(table, cv, selection_id, arrayOf(id.toString()))
-            }
-        } catch (ex: Throwable) {
-            log.e(ex, "save failed.")
+            App1.getAppState(context).enableSpeech()
         }
-
-        synchronized(Companion) {
-            hasTextToSpeechHighlightWordCache.set(null)
-        }
-        App1.getAppState(context).enableSpeech()
-    }
-
-    fun delete(context: Context) {
-        try {
-            appDatabase.delete(table, selection_id, arrayOf(id.toString()))
-        } catch (ex: Throwable) {
-            log.e(ex, "delete failed.")
-        }
-        synchronized(Companion) {
-            hasTextToSpeechHighlightWordCache.set(null)
-        }
-        App1.getAppState(context).enableSpeech()
     }
 }

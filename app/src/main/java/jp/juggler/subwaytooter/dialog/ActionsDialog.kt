@@ -1,35 +1,50 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.content.Context
-import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.R
 import jp.juggler.util.data.notEmpty
+import jp.juggler.util.ui.dismissSafe
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
+import kotlin.coroutines.resumeWithException
 
-class ActionsDialog {
+class ActionsDialogInitializer(
+    val title: CharSequence? = null,
+) {
+    class Action(val caption: CharSequence, val action: suspend () -> Unit)
 
-    private val actionList = ArrayList<Action>()
+    val list = ArrayList<Action>()
 
-    private class Action(val caption: CharSequence, val action: () -> Unit)
-
-    fun addAction(caption: CharSequence, action: () -> Unit): ActionsDialog {
-
-        actionList.add(Action(caption, action))
-
-        return this
+    fun action(caption: CharSequence, action: suspend () -> Unit) {
+        list.add(Action(caption, action))
     }
 
-    fun show(context: Context, title: CharSequence? = null): ActionsDialog {
-        AlertDialog.Builder(context).apply {
-            setNegativeButton(R.string.cancel, null)
-            setItems(actionList.map { it.caption }.toTypedArray()) { _, which ->
-                if (which >= 0 && which < actionList.size) {
-                    actionList[which].action()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun showSuspend(context: Context): Action =
+        suspendCancellableCoroutine { cont ->
+            val dialog = android.app.AlertDialog.Builder(context).apply {
+                title?.notEmpty()?.let { setTitle(it) }
+                setNegativeButton(android.R.string.cancel, null)
+                setItems(list.map { it.caption }.toTypedArray()) { d, i ->
+                    if (cont.isActive) cont.resume(list[i]) {}
+                    d.dismissSafe()
                 }
-            }
-            title?.notEmpty()?.let { setTitle(it) }
-        }.show()
+                setOnDismissListener {
+                    if (cont.isActive) cont.resumeWithException(CancellationException())
+                }
+            }.create()
+            cont.invokeOnCancellation { dialog.dismissSafe() }
+            dialog.show()
+        }
+}
 
-        return this
-    }
+suspend fun Context.actionsDialog(
+    title: String? = null,
+    init: suspend ActionsDialogInitializer.() -> Unit,
+) {
+    ActionsDialogInitializer(title)
+        .apply { init() }
+        .showSuspend(this)
+        .action.invoke()
 }

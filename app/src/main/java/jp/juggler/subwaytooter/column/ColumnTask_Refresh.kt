@@ -16,6 +16,7 @@ import jp.juggler.util.coroutine.runOnMainLooper
 import jp.juggler.util.coroutine.runOnMainLooperDelayed
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPostRequestBuilder
@@ -157,8 +158,8 @@ class ColumnTask_Refresh(
                                 App1.sound(it)
                             }
                         }
-                        o.highlightSpeech?.let {
-                            column.appState.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+                        o.highlightSpeech?.name.notEmpty()?.let {
+                            column.appState.addSpeech(it, dedupMode = DedupMode.RecentExpire)
                         }
                     }
                 }
@@ -306,7 +307,7 @@ class ColumnTask_Refresh(
             isCancelled -> false
             listTmp?.isNotEmpty() != true -> false
             willAddGap -> true
-            else -> PrefB.bpForceGap()
+            else -> PrefB.bpForceGap.value
         }
 
         if (doesAddGap()) {
@@ -495,7 +496,7 @@ class ColumnTask_Refresh(
 
         if (!isCancelled &&
             listTmp?.isNotEmpty() == true &&
-            (willAddGap || PrefB.bpForceGap(context))
+            (willAddGap || PrefB.bpForceGap.value)
         ) {
             addOne(listTmp, TootGap.mayNull(maxId, lastSinceId), head = addToHead)
         }
@@ -582,7 +583,7 @@ class ColumnTask_Refresh(
 
         if (!isCancelled &&
             listTmp?.isNotEmpty() == true &&
-            (willAddGap || PrefB.bpForceGap(context))
+            (willAddGap || PrefB.bpForceGap.value)
         ) {
             addOne(listTmp, TootGap.mayNull(maxId, lastSinceId), head = addToHead)
         }
@@ -690,16 +691,14 @@ class ColumnTask_Refresh(
         params.apply {
             if (!bBottom) {
                 if (first) {
-
-                    addRangeMisskey(bBottom)
+                    addRangeMisskey(bBottom = false)
                 } else {
                     putMisskeySince(column.idRecent)
                 }
             } else {
                 if (first) {
-
                     when (column.pagingType) {
-                        ColumnPagingType.Default -> addRangeMisskey(bBottom)
+                        ColumnPagingType.Default -> addRangeMisskey(bBottom = true)
                         ColumnPagingType.Offset -> put("offset", column.offsetNext)
                         ColumnPagingType.Cursor -> put("cursor", column.idOld)
 

@@ -12,7 +12,9 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.databinding.ActHighlightEditBinding
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.daoHighlightWord
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.decodeJsonObject
 import jp.juggler.util.data.mayUri
 import jp.juggler.util.data.notEmpty
@@ -83,32 +85,34 @@ class ActHighlightWordEdit
 
         setResult(RESULT_CANCELED)
 
-        fun loadData(): HighlightWord? {
-            savedInstanceState?.getString(STATE_ITEM)
-                ?.decodeJsonObject()
-                ?.let { return HighlightWord(it) }
+        launchAndShowError {
+            fun loadData(): HighlightWord? {
+                savedInstanceState?.getString(STATE_ITEM)
+                    ?.decodeJsonObject()
+                    ?.let { return HighlightWord(it) }
 
-            intent?.string(EXTRA_INITIAL_TEXT)
-                ?.let { return HighlightWord(it) }
+                intent?.string(EXTRA_INITIAL_TEXT)
+                    ?.let { return HighlightWord(it) }
 
-            intent?.long(EXTRA_ITEM_ID)
-                ?.let { return HighlightWord.load(it) }
+                intent?.long(EXTRA_ITEM_ID)
+                    ?.let { return daoHighlightWord.load(it) }
 
-            return null
+                return null
+            }
+
+            val item = loadData()
+            if (item == null) {
+                log.d("missing source data")
+                finish()
+                return@launchAndShowError
+            }
+
+            this@ActHighlightWordEdit.item = item
+
+            views.etName.setText(item.name)
+            showSound()
+            showColor()
         }
-
-        val item = loadData()
-        if (item == null) {
-            log.d("missing source data")
-            finish()
-            return
-        }
-
-        this.item = item
-
-        views.etName.setText(item.name)
-        showSound()
-        showColor()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -254,22 +258,26 @@ class ActHighlightWordEdit
     }
 
     private fun save() {
-        uiToData()
+        launchAndShowError {
+            uiToData()
+            val name = item.name
 
-        if (item.name.isEmpty()) {
-            showToast(true, R.string.cant_leave_empty_keyword)
-            return
+            if (name.isNullOrBlank()) {
+                showToast(true, R.string.cant_leave_empty_keyword)
+                return@launchAndShowError
+            }
+
+            val other = daoHighlightWord.load(name)
+            if (other != null && other.id != item.id) {
+                showToast(true, R.string.cant_save_duplicated_keyword)
+                return@launchAndShowError
+            }
+
+            daoHighlightWord.save(applicationContext, item)
+            App1.getAppState(applicationContext).enableSpeech()
+            showToast(false, R.string.saved)
+            setResult(RESULT_OK)
+            finish()
         }
-
-        val other = HighlightWord.load(item.name)
-        if (other != null && other.id != item.id) {
-            showToast(true, R.string.cant_save_duplicated_keyword)
-            return
-        }
-
-        item.save(this)
-        showToast(false, R.string.saved)
-        setResult(RESULT_OK)
-        finish()
     }
 }

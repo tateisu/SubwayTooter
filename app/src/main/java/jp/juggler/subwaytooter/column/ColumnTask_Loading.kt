@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
+import jp.juggler.subwaytooter.auth.authRepo
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop
 import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefB
@@ -33,7 +34,7 @@ class ColumnTask_Loading(
     override suspend fun background(): TootApiResult? {
         ctStarted.set(true)
 
-        if (PrefB.bpOpenSticker(pref)) {
+        if (PrefB.bpOpenSticker.value) {
             OpenSticker.loadAndWait()
         }
 
@@ -52,7 +53,7 @@ class ColumnTask_Loading(
         client.account = accessInfo
 
         try {
-            accessInfo.checkConfirmed(context, client)
+            context.authRepo.checkConfirmed(accessInfo, client)
 
             column.keywordFilterTrees = column.encodeFilterTree(column.loadFilter2(client))
 

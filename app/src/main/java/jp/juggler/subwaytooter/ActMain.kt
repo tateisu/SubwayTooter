@@ -156,7 +156,7 @@ class ActMain : AppCompatActivity(),
     lateinit var handler: Handler
     lateinit var appState: AppState
 
-    private lateinit var sideMenuAdapter: SideMenuAdapter
+    lateinit var sideMenuAdapter: SideMenuAdapter
 
     //////////////////////////////////////////////////////////////////
     // 読み取り専用のプロパティ
@@ -326,7 +326,9 @@ class ActMain : AppCompatActivity(),
     }
 
     val prNotification = permissionSpecNotification.requester {
-        // 特に何もしない
+        launchAndShowError {
+            afterNotificationGranted()
+        }
     }
 
     private var startAfterJob: WeakReference<Job>? = null

@@ -1,10 +1,12 @@
 package jp.juggler.subwaytooter.util
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.StringRes
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 
@@ -28,6 +30,16 @@ class PermissionSpec(
         permissions.filter {
             ContextCompat.checkSelfPermission(context, it) !=
                     PackageManager.PERMISSION_GRANTED
+        }
+
+    /**
+     * - 権限のどれかが不足している
+     * - 不足した権限のどれかが shouldShowRequestPermissionRationale == trueである
+     */
+    fun shouldShowRational(activity: Activity) =
+        permissions.any {
+            ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
         }
 }
 

@@ -1246,4 +1246,5 @@
     <string name="alert_test">test alert notification</string>
     <string name="saved_to">Saved to %1$s</string>
     <string name="view">View</string>
+    <string name="notification_permission_not_granted">notification permission not granted</string>
 </resources>

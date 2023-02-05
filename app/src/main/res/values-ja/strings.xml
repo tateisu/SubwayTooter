@@ -1232,4 +1232,5 @@
     <string name="push_message_save_to_download_folder_with_secret_key">Downloadフォルダに保存 (秘密鍵つき。データ安全に注意。これは危険です!)</string>
     <string name="saved_to">保存しました。 %1$s</string>
     <string name="view">見る</string>
+    <string name="notification_permission_not_granted">通知表示権限がありません</string>
 </resources>

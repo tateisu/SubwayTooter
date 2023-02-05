@@ -27,7 +27,7 @@ class PermissionRequester(
     /**
      * 権限の詳細
      */
-    private val spec: PermissionSpec,
+    val spec: PermissionSpec,
     /**
      * 権限が与えられた際に処理を再開するラムダ
      * - ラムダの引数にこのPermissionRequester自身が渡される

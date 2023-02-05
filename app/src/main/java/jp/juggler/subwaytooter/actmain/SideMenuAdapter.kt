@@ -214,7 +214,8 @@ class SideMenuAdapter(
         IT_GROUP_HEADER(1),
         IT_DIVIDER(2),
         IT_VERSION(3),
-        IT_TIMEZONE(4)
+        IT_TIMEZONE(4),
+        IT_NOTIFICATION_PERMISSION(5),
     }
 
     private class Item(
@@ -229,6 +230,7 @@ class SideMenuAdapter(
                 title == 0 -> ItemType.IT_DIVIDER
                 title == 1 -> ItemType.IT_VERSION
                 title == 2 -> ItemType.IT_TIMEZONE
+                title == 3 -> ItemType.IT_NOTIFICATION_PERMISSION
                 icon == 0 -> ItemType.IT_GROUP_HEADER
                 else -> ItemType.IT_NORMAL
             }
@@ -239,11 +241,11 @@ class SideMenuAdapter(
         else no icon => section header with title
         else => menu item with icon and title
     */
-
-    private val list = arrayOf(
+    private val originalList = listOf(
 
         Item(icon = R.drawable.ic_info_outline, title = 1),
         Item(icon = R.drawable.ic_info_outline, title = 2),
+        Item(icon = R.drawable.ic_info_outline, title = 3),
 
         Item(),
         Item(title = R.string.account),
@@ -453,6 +455,8 @@ class SideMenuAdapter(
         }
     )
 
+    private var list = originalList
+
     private val iconColor = actMain.attrColor(R.attr.colorTimeSmall)
 
     override fun getCount(): Int = list.size
@@ -517,6 +521,24 @@ class SideMenuAdapter(
                         background = null
                         text = getTimeZoneString(context)
                     }
+                ItemType.IT_NOTIFICATION_PERMISSION ->
+                    viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
+                        isAllCaps = false
+                        text = actMain.getString(R.string.notification_permission_not_granted)
+                        val drawable = createColoredDrawable(actMain, icon, iconColor, 1f)
+                        setCompoundDrawablesRelativeWithIntrinsicBounds(
+                            drawable,
+                            null,
+                            null,
+                            null
+                        )
+                        setOnClickListener {
+                            drawer.closeDrawer(GravityCompat.START)
+                            if (actMain.prNotification.checkOrLaunch()) {
+                                filterListItems()
+                            }
+                        }
+                    }
             }
         }
 
@@ -557,8 +579,20 @@ class SideMenuAdapter(
         this.notifyDataSetChanged()
     }
 
+    fun filterListItems() {
+        list = originalList.filter {
+            when (it.itemType) {
+                ItemType.IT_NOTIFICATION_PERMISSION ->
+                    actMain.prNotification.spec.listNotGranded(actMain).isNotEmpty()
+                else -> true
+            }
+        }
+        notifyDataSetChanged()
+    }
+
     init {
         actMain.applicationContext.checkVersion()
+        filterListItems()
 
         ListView(actMain).apply {
             adapter = this@SideMenuAdapter

@@ -22,7 +22,6 @@ import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.itemviewholder.ItemViewHolder
 import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.push.PushWorker
-import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.checkPrivacyPolicy
 import jp.juggler.subwaytooter.util.openCustomTab
@@ -247,13 +246,22 @@ fun ActMain.launchDialogs() {
         // テーマ告知
         themeDefaultChangedDialog()
 
-        // 通知権限の確認
-        if(!prNotification.checkOrLaunch()) return@launchAndShowError
+        // 通知権限の確認を一度だけ行う
+        if (!prefDevice.supressRequestNotificationPermission) {
+            prefDevice.supressRequestNotificationPermission = true
+            if (!prNotification.checkOrLaunch()) return@launchAndShowError
+        }
 
-        // Workの掃除
-        WorkManager.getInstance(applicationContext).pruneWork()
-
-        // 定期的にendpointを再登録したい
-        PushWorker.enqueueRegisterEndpoint(applicationContext, keepAliveMode = true)
+        afterNotificationGranted()
     }
+}
+
+fun ActMain.afterNotificationGranted() {
+    sideMenuAdapter.filterListItems()
+
+    // Workの掃除
+    WorkManager.getInstance(applicationContext).pruneWork()
+
+    // 定期的にendpointを再登録したい
+    PushWorker.enqueueRegisterEndpoint(applicationContext, keepAliveMode = true)
 }

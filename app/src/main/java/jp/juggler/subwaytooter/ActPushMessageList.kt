@@ -140,7 +140,7 @@ class ActPushMessageList : AppCompatActivity() {
         println("to: ${pm.loginAcct}")
         println("type: ${pm.notificationType}")
         println("id: ${pm.notificationId}")
-        println("text: ${pm.rawBody?.size}")
+        println("text: ${pm.textExpand}")
         println("dataSize: ${pm.rawBody?.size}")
         println("messageJson=${pm.messageJson?.toString(1, sort = true)}")
 
@@ -207,7 +207,7 @@ class ActPushMessageList : AppCompatActivity() {
                 "type: ${pm.notificationType}",
                 "id: ${pm.notificationId}",
                 "dataSize: ${pm.rawBody?.size}",
-                pm.text
+                pm.textExpand
             ).mapNotNull { it.notBlank() }.joinToString("\n")
         }
     }

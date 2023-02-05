@@ -161,6 +161,10 @@ class PushMastodon(
         pm.text = arrayOf(
             // あなたのトゥートが tateisu 🤹 さんにお気に入り登録されました
             json.string("title"),
+        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n")
+        pm.textExpand = arrayOf(
+            // あなたのトゥートが tateisu 🤹 さんにお気に入り登録されました
+            json.string("title"),
             // 対象の投稿の本文？
             json.string("body"),
             // 対象の投稿の本文？ (古い

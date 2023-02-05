@@ -71,8 +71,8 @@ object PullNotification {
 
         val params = listOf(
             "db_id" to account.db_id.toString(),
-            "type" to trackingType.str,
-            "notificationId" to notificationId
+            "type" to trackingType.str, // URIをユニークにするため。参照されない
+            "notificationId" to notificationId, // URIをユニークにするため。参照されない
         ).mapNotNull {
             when (val second = it.second) {
                 null -> null

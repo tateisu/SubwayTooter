@@ -191,6 +191,8 @@ private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
             return
         }
 
+        pushRepo.onTapNotification(account)
+
         recycleClickedNotification(this, uri)
 
         val columnList = appState.columnList

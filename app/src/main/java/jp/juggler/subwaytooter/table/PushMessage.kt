@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import androidx.room.*
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -26,8 +27,10 @@ data class PushMessage(
     var notificationId: String? = null,
     // 通知の種別。小アイコン、アクセント色、Misskeyの文言に影響する
     var notificationType: String? = null,
-    // 通知表示の本文。
+    // 通知表示の本文
     var text: String? = null,
+    // 展開表示した本文
+    var textExpand: String? = null,
     // 小アイコンURL。昔のMastodonはバッジ画像が提供されていた。
     var iconSmall: String? = null,
     // 大アイコンURL。通知の原因となったユーザのアイコン画像。
@@ -51,6 +54,7 @@ data class PushMessage(
         private const val COL_NOTIFICATION_ID = "notification_id"
         private const val COL_NOTIFICATION_TYPE = "notification_type"
         private const val COL_TEXT = "text"
+        private const val COL_TEXT_EXPAND = "text_expand"
         private const val COL_ICON_SMALL = "icon_small"
         private const val COL_ICON_LARGE = "icon_large"
         private const val COL_MESSAGE_JSON = "message_json"
@@ -61,17 +65,24 @@ data class PushMessage(
             deleteBeforeCreate = true
             column(0, COL_ID, MetaColumns.TS_INT_PRIMARY_KEY_NOT_NULL)
             column(0, COL_LOGIN_ACCT, MetaColumns.TS_TEXT_NULL)
-            column(0, COL_TIMESTAMP, MetaColumns.TS_ZERO)
-            column(0, COL_TIME_SAVE, MetaColumns.TS_ZERO)
-            column(0, COL_TIME_DISMISS, MetaColumns.TS_ZERO)
+            column(0, COL_TIMESTAMP, MetaColumns.TS_ZERO_NOT_NULL)
+            column(0, COL_TIME_SAVE, MetaColumns.TS_ZERO_NOT_NULL)
+            column(0, COL_TIME_DISMISS, MetaColumns.TS_ZERO_NOT_NULL)
             column(0, COL_NOTIFICATION_ID, MetaColumns.TS_TEXT_NULL)
             column(0, COL_NOTIFICATION_TYPE, MetaColumns.TS_TEXT_NULL)
             column(0, COL_TEXT, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_TEXT_EXPAND, MetaColumns.TS_TEXT_NULL)
             column(0, COL_ICON_SMALL, MetaColumns.TS_TEXT_NULL)
             column(0, COL_ICON_LARGE, MetaColumns.TS_TEXT_NULL)
             column(0, COL_MESSAGE_JSON, MetaColumns.TS_TEXT_NULL)
             column(0, COL_HEADER_JSON, MetaColumns.TS_TEXT_NULL)
             column(0, COL_RAW_BODY, MetaColumns.TS_BLOB_NULL)
+            createExtra={
+                arrayOf(
+                    "create index if not exists ${TABLE}_save on $TABLE($COL_TIME_SAVE)",
+                    "create index if not exists ${TABLE}_acct_dismiss on $TABLE($COL_LOGIN_ACCT,$COL_TIME_DISMISS)",
+                )
+            }
         }
 
         override fun onDBCreate(db: SQLiteDatabase) {
@@ -103,6 +114,7 @@ data class PushMessage(
         val idxNotificationId = cursor.getColumnIndex(COL_NOTIFICATION_ID)
         val idxNotificationType = cursor.getColumnIndex(COL_NOTIFICATION_TYPE)
         val idxText = cursor.getColumnIndex(COL_TEXT)
+        val idxTextExpand = cursor.getColumnIndex(COL_TEXT_EXPAND)
         val idxIconSmall = cursor.getColumnIndex(COL_ICON_SMALL)
         val idxIconLarge = cursor.getColumnIndex(COL_ICON_LARGE)
         val idxMessageJson = cursor.getColumnIndex(COL_MESSAGE_JSON)
@@ -119,6 +131,7 @@ data class PushMessage(
                 notificationId = cursor.getStringOrNull(idxNotificationId),
                 notificationType = cursor.getStringOrNull(idxNotificationType),
                 text = cursor.getStringOrNull(idxText),
+                textExpand = cursor.getStringOrNull(idxTextExpand),
                 iconSmall = cursor.getStringOrNull(idxIconSmall),
                 iconLarge = cursor.getStringOrNull(idxIconLarge),
                 messageJson = cursor.getStringOrNull(idxMessageJson)?.decodeJsonObject(),
@@ -148,6 +161,7 @@ data class PushMessage(
         put(COL_NOTIFICATION_ID, notificationId)
         put(COL_NOTIFICATION_TYPE, notificationType)
         put(COL_TEXT, text)
+        put(COL_TEXT_EXPAND, textExpand)
         put(COL_ICON_SMALL, iconSmall)
         put(COL_ICON_LARGE, iconLarge)
         put(COL_MESSAGE_JSON, messageJson?.toString())
@@ -192,6 +206,13 @@ data class PushMessage(
             }
         }
 
+        fun dismissByAcct(acct: Acct) {
+            db.execSQL(
+                "update $table set $COL_TIME_DISMISS=? where $COL_LOGIN_ACCT=? and $COL_TIME_DISMISS=0",
+                arrayOf(System.currentTimeMillis().toString(), acct.ascii),
+            )
+        }
+
         fun deleteOld(now: Long) {
             try {
                 val expire = now - TimeUnit.DAYS.toMillis(30)
@@ -202,7 +223,7 @@ data class PushMessage(
             }
         }
 
-        suspend fun listAll(): List<PushMessage> =
+        fun listAll(): List<PushMessage> =
             db.queryAll(TABLE, "$COL_TIME_SAVE desc")
                 ?.use { ColIdx(it).readAll(it) }
                 ?: emptyList()

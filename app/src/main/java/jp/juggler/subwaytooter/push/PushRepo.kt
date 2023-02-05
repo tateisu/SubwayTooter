@@ -2,11 +2,14 @@ package jp.juggler.subwaytooter.push
 
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import androidx.work.WorkManager
 import androidx.work.await
 import jp.juggler.crypt.*
+import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
@@ -25,6 +28,7 @@ import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueueRegisterEndpoint
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.loadIcon
 import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.EmptyScope
 import jp.juggler.util.data.*
 import jp.juggler.util.data.Base128.decodeBase128
 import jp.juggler.util.log.LogCategory
@@ -32,6 +36,7 @@ import jp.juggler.util.log.withCaption
 import jp.juggler.util.os.applicationContextSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.unifiedpush.android.connector.UnifiedPush
@@ -526,7 +531,7 @@ class PushRepo(
         }
 
         // 解読できた(例外が出なかった)なら通知を出す
-        showPushNotification(pm)
+        showPushNotification(pm,account,notificationId)
     }
 
     /**
@@ -608,7 +613,11 @@ class PushRepo(
     /**
      * SNSからの通知を表示する
      */
-    private suspend fun showPushNotification(pm: PushMessage) {
+    private suspend fun showPushNotification(
+        pm: PushMessage,
+        account: SavedAccount,
+        notificationId:String,
+    ) {
         if (ncPushMessage.isDissabled(context)) {
             log.w("ncPushMessage isDissabled.")
             return
@@ -628,8 +637,26 @@ class PushRepo(
         val iconSmall = pm.loadSmallIcon(context)
         val iconBitmapLarge = context.loadIcon(pm.iconLarge, (48f * density + 0.5f).toInt())
 
-        val urlTap = "subwaytooter://pushMessage/${pm.id}"
-        val iTap = context.intentNotificationDelete(urlTap.toUri())
+
+        val params = listOf(
+            "db_id" to account.db_id.toString(),
+            // URIをユニークにするため。参照されない
+            "type" to "v2push", // "type" to trackingType.str,
+            // URIをユニークにするため。参照されない
+            "notificationId" to notificationId,
+        ).mapNotNull {
+            when (val second = it.second) {
+                null -> null
+                else -> "${it.first.encodePercent()}=${second.encodePercent()}"
+            }
+        }.joinToString("&")
+
+        val iTap = Intent(context, ActCallback::class.java).apply {
+            data = "subwaytooter://notification_click/?$params".toUri()
+            // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
         val piTap = PendingIntent.getActivity(
             context,
             ncPushMessage.pircTap,
@@ -660,6 +687,9 @@ class PushRepo(
             setContentIntent(piTap)
             setDeleteIntent(piDelete)
             setAutoCancel(true)
+            pm.textExpand.notEmpty()?.let {
+                setStyle(NotificationCompat.BigTextStyle().bigText(it))
+            }
         }
     }
 
@@ -686,5 +716,19 @@ class PushRepo(
             ?.toLongOrNull()
             ?: error("missing messageDbId in $uri")
         daoPushMessage.dismiss(messageDbId)
+    }
+
+    /**
+     * 通知タップのインテントをメイン画面が受け取った
+     */
+
+    fun onTapNotification(account: SavedAccount) {
+       EmptyScope.launch(AppDispatchers.IO) {
+           try{
+               daoPushMessage.dismissByAcct(account.acct)
+           }catch(ex:Throwable){
+               log.e(ex,"onTapNotification failed.")
+           }
+       }
     }
 }

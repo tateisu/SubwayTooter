@@ -1211,7 +1211,7 @@
     <string name="pull_notification">拉取通知</string>
     <string name="pull_notification_desc">从 SNS 拉取的通知</string>
     <string name="push_worker">推送通知处理程序</string>
-    <string name="push_worker_desc">处理有关推送通知的任务</string>
+    <string name="push_worker_desc">正在处理有关推送通知的任务</string>
     <string name="server_timeout">实例超时</string>
     <string name="push_distributor">推送分发器</string>
     <string name="push_distributor_desc">选择用于发送推送通知的推送器，</string>
@@ -1227,7 +1227,7 @@
     <string name="alert">警告</string>
     <string name="push_message">推送消息</string>
     <string name="polling_foregrounder">实时消息通知程序</string>
-    <string name="polling_foregrounder_desc">检查来自 SNS 的新通知</string>
+    <string name="polling_foregrounder_desc">论询来自 SNS 的新通知</string>
     <string name="firebase_cloud_messaging">谷歌FCM(Firebase Cloud Messaging)</string>
     <string name="select_push_delivery_service">选择推送服务</string>
     <string name="push_subscription_off_unread_notification">继续当前订阅。 （sendReadMessage 已关闭。）</string>
@@ -1235,4 +1235,18 @@
     <string name="test_progress_dialog">进度对话框测试</string>
     <string name="push_subscription_app_server_hash_missing_but_ok">推送服务尚未在应用服务器上注册，但由于不需要订阅，因此没有问题。</string>
     <string name="push_subscription_app_server_hash_missing_error">推送服务无法在应用服务器上注册。重新选择推送服务可能会改善这种情况。</string>
+    <string name="push_subscription_is_not_required_delete_secret_keys">密钥不再使用，已被删除。</string>
+    <string name="push_subscription_creating_new_secret_key">正在创建密钥…</string>
+    <string name="push_subscription_creating">正在创建新的推送订阅…</string>
+    <string name="push_subscription_server_key_saved">实例密钥已保存。</string>
+    <string name="push_subscription_completed">推送订阅已完成。</string>
+    <string name="push_message_re_decode">正在重新处理</string>
+    <string name="push_message_save_to_download_folder">保存到下载文件夹</string>
+    <string name="push_message_save_to_download_folder_with_secret_key">保存到下载文件夹（包含密钥。注意数据安全，这很危险！）</string>
+    <string name="push_message_history">推送消息历史</string>
+    <string name="alert_test">测试警告通知</string>
+    <string name="saved_to">已保存到 %1$s</string>
+    <string name="view">查看</string>
+    <string name="push_subscription_is_not_required">不需要推送订阅，因为未启用通知，或未启用推送分发器。</string>
+    <string name="push_subscription_exists_but_not_created_by_this_device">已找到推送订阅，但不是由此设备创建的。</string>
 </resources>

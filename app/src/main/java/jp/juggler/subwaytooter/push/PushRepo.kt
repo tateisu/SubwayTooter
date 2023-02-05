@@ -501,7 +501,10 @@ class PushRepo(
             }
             error("can't decode WebPush message to JSON.")
         }
-        log.i("${status.acct} ${pm.messageJson}")
+        // Mastodonはなぜかアクセストークンが書いてあるので危険…
+        val censored = pm.messageJson.toString()
+            .replace(""""access_token":"[^"]+"""".toRegex(), """"access_token":"***"""")
+        log.i("${status.acct} $censored")
 
         // messageJsonを解釈して通知に出す内容を決める
         try {
@@ -531,7 +534,7 @@ class PushRepo(
         }
 
         // 解読できた(例外が出なかった)なら通知を出す
-        showPushNotification(pm,account,notificationId)
+        showPushNotification(pm, account, notificationId)
     }
 
     /**
@@ -616,7 +619,7 @@ class PushRepo(
     private suspend fun showPushNotification(
         pm: PushMessage,
         account: SavedAccount,
-        notificationId:String,
+        notificationId: String,
     ) {
         if (ncPushMessage.isDissabled(context)) {
             log.w("ncPushMessage isDissabled.")
@@ -636,7 +639,6 @@ class PushRepo(
 
         val iconSmall = pm.loadSmallIcon(context)
         val iconBitmapLarge = context.loadIcon(pm.iconLarge, (48f * density + 0.5f).toInt())
-
 
         val params = listOf(
             "db_id" to account.db_id.toString(),
@@ -723,12 +725,12 @@ class PushRepo(
      */
 
     fun onTapNotification(account: SavedAccount) {
-       EmptyScope.launch(AppDispatchers.IO) {
-           try{
-               daoPushMessage.dismissByAcct(account.acct)
-           }catch(ex:Throwable){
-               log.e(ex,"onTapNotification failed.")
-           }
-       }
+        EmptyScope.launch(AppDispatchers.IO) {
+            try {
+                daoPushMessage.dismissByAcct(account.acct)
+            } catch (ex: Throwable) {
+                log.e(ex, "onTapNotification failed.")
+            }
+        }
     }
 }

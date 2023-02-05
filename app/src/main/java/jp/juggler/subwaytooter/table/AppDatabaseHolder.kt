@@ -7,10 +7,10 @@ import androidx.startup.AppInitializer
 import androidx.startup.Initializer
 import jp.juggler.subwaytooter.pref.LazyContextInitializer
 import jp.juggler.subwaytooter.pref.lazyContext
-import jp.juggler.util.data.*
+import jp.juggler.util.coroutine.EmptyScope
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.os.applicationContextSafe
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 
 // 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
@@ -68,7 +68,7 @@ import java.util.concurrent.atomic.AtomicReference
 // 2021/11/21 61=>62 SavedAccountテーブルに項目追加
 // 2022/1/5 62=>63 SavedAccountテーブルに項目追加
 // 2022/3/15 63=>64 SavedAccountテーブルに項目追加
-// 2023/2/2 64 => 65 PushMessage, AccountNotificationStatus テーブルの追加。
+// 2023/2/2 64 => 65 PushMessage, AccountNotificationStatus,NotificationShown テーブルの追加。
 
 const val DB_VERSION = 65
 const val DB_NAME = "app_db"
@@ -94,24 +94,22 @@ val TABLE_LIST = arrayOf(
     TagHistory.Companion,
     UserRelation.Companion,
     PushMessage.Companion, // v65
-    AccountNotificationStatus.Companion // v65,
+    AccountNotificationStatus.Companion, // v65,
+    NotificationShown.Companion, // v65
 )
+
+private val log = LogCategory("AppDatabaseHolder")
 
 class AppDatabaseHolder(
     val context: Context,
     val dbFileName: String,
     val dbSchemaVersion: Int,
-) {
-    companion object {
-        private val log = LogCategory("AppDatabaseHolder")
-    }
-
+) : AutoCloseable {
     private inner class DBOpenHelper(context: Context) :
         SQLiteOpenHelper(context, dbFileName, null, dbSchemaVersion) {
 
         override fun onCreate(db: SQLiteDatabase) {
             log.d("onCreate")
-
             for (ti in TABLE_LIST) {
                 ti.onDBCreate(db)
             }
@@ -130,15 +128,20 @@ class AppDatabaseHolder(
     val database: SQLiteDatabase
         get() = openHelper.writableDatabase
 
-    init {
-        log.d("call deleteOld…")
-        val now = System.currentTimeMillis()
-        AcctSet.Access(database).deleteOld(now)
-        UserRelation.Access(database).deleteOld(now)
-        ContentWarning.Access(database).deleteOld(now)
-        MediaShown.Access(database).deleteOld(now)
-        PushMessage.Access(database).sweepOld(now)
+    override fun close() {
+        openHelper.close()
+    }
 
+    fun deleteOld() {
+        val db = database
+        log.i("deleteOld: db.version=${db.version}")
+        val now = System.currentTimeMillis()
+        AcctSet.Access(db).deleteOld(now)
+        UserRelation.Access(db).deleteOld(now)
+        ContentWarning.Access(db).deleteOld(now)
+        MediaShown.Access(db).deleteOld(now)
+        PushMessage.Access(db).deleteOld(now)
+        NotificationShown.Access(db).deleteOld()
     }
 }
 
@@ -147,11 +150,19 @@ class AppDatabaseHolderIniitalizer : Initializer<AppDatabaseHolder> {
         listOf(LazyContextInitializer::class.java)
 
     override fun create(context: Context): AppDatabaseHolder {
-        return AppDatabaseHolder(
+        val holder = AppDatabaseHolder(
             context.applicationContextSafe,
             DB_NAME,
             DB_VERSION,
         )
+        EmptyScope.launch {
+            try {
+                holder.deleteOld()
+            } catch (ex: Throwable) {
+                log.e(ex, "deleteOld failed.")
+            }
+        }
+        return holder
     }
 }
 
@@ -159,60 +170,29 @@ var appDatabaseHolderOverride =
     AtomicReference<AppDatabaseHolder>(null)
 
 val appDatabaseHolder
-    get() = appDatabaseHolderOverride.get() ?: AppInitializer.getInstance(lazyContext)
-        .initializeComponent(AppDatabaseHolderIniitalizer::class.java)
+    get() = appDatabaseHolderOverride.get()
+        ?: AppInitializer.getInstance(lazyContext)
+            .initializeComponent(AppDatabaseHolderIniitalizer::class.java)
 
 val appDatabase
     get() = appDatabaseHolder.database
 
-val daoUserRelation by lazy {
-    UserRelation.Access(appDatabase)
-}
-val daoMutedWord by lazy {
-    MutedWord.Access(appDatabase)
-}
-val daoMutedApp by lazy {
-    MutedApp.Access(appDatabase)
-}
-val daoAcctColor by lazy {
-    AcctColor.Access(appDatabase)
-}
-val daoNotificationTracking by lazy {
-    NotificationTracking.Access(appDatabase)
-}
-val daoSavedAccount by lazy {
-    SavedAccount.Access(appDatabase, lazyContext)
-}
-val daoFavMute by lazy {
-    FavMute.Access(appDatabase)
-}
-val daoTagHistory by lazy {
-    TagHistory.Access(appDatabase)
-}
-val daoHighlightWord by lazy {
-    HighlightWord.Access(appDatabase)
-}
-val daoSubscriptionServerKey by lazy {
-    SubscriptionServerKey.Access(appDatabase)
-}
-val daoAcctSet by lazy {
-    AcctSet.Access(appDatabase)
-}
-val daoClientInfo by lazy {
-    ClientInfo.Access(appDatabase)
-}
-val daoPostDraft by lazy {
-    PostDraft.Access(appDatabase)
-}
-val daoMediaShown by lazy {
-    MediaShown.Access(appDatabase)
-}
-val daoContentWarning by lazy {
-    ContentWarning.Access(appDatabase)
-}
-val daoNotificationCache by lazy {
-    NotificationCache.Access(appDatabase)
-}
-val daoAccountNotificationStatus by lazy{
-    AccountNotificationStatus.Access(appDatabase)
-}
+val daoAccountNotificationStatus get() = AccountNotificationStatus.Access(appDatabase)
+val daoAcctColor get() = AcctColor.Access(appDatabase)
+val daoAcctSet get() = AcctSet.Access(appDatabase)
+val daoClientInfo get() = ClientInfo.Access(appDatabase)
+val daoContentWarning get() = ContentWarning.Access(appDatabase)
+val daoFavMute get() = FavMute.Access(appDatabase)
+val daoHighlightWord get() = HighlightWord.Access(appDatabase)
+val daoMediaShown get() = MediaShown.Access(appDatabase)
+val daoMutedApp get() = MutedApp.Access(appDatabase)
+val daoMutedWord get() = MutedWord.Access(appDatabase)
+val daoNotificationCache get() = NotificationCache.Access(appDatabase)
+val daoNotificationShown get() = NotificationShown.Access(appDatabase)
+val daoNotificationTracking get() = NotificationTracking.Access(appDatabase)
+val daoPostDraft get() = PostDraft.Access(appDatabase)
+val daoSavedAccount get() = SavedAccount.Access(appDatabase, lazyContext)
+val daoSubscriptionServerKey get() = SubscriptionServerKey.Access(appDatabase)
+val daoTagHistory get() = TagHistory.Access(appDatabase)
+val daoUserRelation get() = UserRelation.Access(appDatabase)
+val daoPushMessage get() = PushMessage.Access(appDatabase)

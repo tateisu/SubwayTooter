@@ -1,9 +1,7 @@
 package jp.juggler.subwaytooter.push
 
 import android.content.Context
-import androidx.core.app.NotificationCompat
 import androidx.work.*
-import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.notification.NotificationChannels
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.notEmpty
@@ -70,7 +68,9 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
     }
 
     override suspend fun doWork(): Result = try {
-        setForegroundAsync(createForegroundInfo())
+        NotificationChannels.PushWorker.createForegroundInfo(
+            applicationContext,
+        )?.let{setForegroundAsync(it)}
         withContext(AppDispatchers.IO) {
             val pushRepo = applicationContext.pushRepo
             when (val action = inputData.getString(KEY_ACTION)) {
@@ -105,20 +105,5 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
     } catch (ex: Throwable) {
         log.e(ex, "doWork failed.")
         Result.failure()
-    }
-
-    // Creates an instance of ForegroundInfo which can be used to update the
-    // ongoing notification.
-    private fun createForegroundInfo() = applicationContext.run {
-        val nc = NotificationChannels.PushMessageWorker
-        val builder = NotificationCompat.Builder(this, nc.id).apply {
-            priority = nc.priority
-            setSmallIcon(R.drawable.ic_refresh)
-            setContentTitle(getString(nc.titleId))
-            setContentText(getString(nc.descId))
-            setWhen(System.currentTimeMillis())
-            setOngoing(true)
-        }
-        ForegroundInfo(nc.notificationId, builder.build())
     }
 }

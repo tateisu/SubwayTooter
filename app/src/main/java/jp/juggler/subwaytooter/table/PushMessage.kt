@@ -8,6 +8,7 @@ import androidx.room.*
 import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.TimeUnit
 
 data class PushMessage(
@@ -56,21 +57,21 @@ data class PushMessage(
         private const val COL_HEADER_JSON = "header_json"
         private const val COL_RAW_BODY = "raw_body"
 
-        val columnList = ColumnMeta.List(TABLE, initialVersion = 65).apply {
+        val columnList = MetaColumns(TABLE, initialVersion = 65).apply {
             deleteBeforeCreate = true
-            ColumnMeta(this, 0, COL_ID, ColumnMeta.TS_INT_PRIMARY_KEY_NOT_NULL)
-            ColumnMeta(this, 0, COL_LOGIN_ACCT, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_TIMESTAMP, ColumnMeta.TS_ZERO)
-            ColumnMeta(this, 0, COL_TIME_SAVE, ColumnMeta.TS_ZERO)
-            ColumnMeta(this, 0, COL_TIME_DISMISS, ColumnMeta.TS_ZERO)
-            ColumnMeta(this, 0, COL_NOTIFICATION_ID, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_NOTIFICATION_TYPE, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_TEXT, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_ICON_SMALL, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_ICON_LARGE, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_MESSAGE_JSON, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_HEADER_JSON, ColumnMeta.TS_TEXT_NULL)
-            ColumnMeta(this, 0, COL_RAW_BODY, ColumnMeta.TS_BLOB_NULL)
+            column(0, COL_ID, MetaColumns.TS_INT_PRIMARY_KEY_NOT_NULL)
+            column(0, COL_LOGIN_ACCT, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_TIMESTAMP, MetaColumns.TS_ZERO)
+            column(0, COL_TIME_SAVE, MetaColumns.TS_ZERO)
+            column(0, COL_TIME_DISMISS, MetaColumns.TS_ZERO)
+            column(0, COL_NOTIFICATION_ID, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_NOTIFICATION_TYPE, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_TEXT, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_ICON_SMALL, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_ICON_LARGE, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_MESSAGE_JSON, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_HEADER_JSON, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_RAW_BODY, MetaColumns.TS_BLOB_NULL)
         }
 
         override fun onDBCreate(db: SQLiteDatabase) {
@@ -82,6 +83,13 @@ data class PushMessage(
                 onDBCreate(db)
             }
             columnList.onDBUpgrade(db, oldVersion, newVersion)
+        }
+
+        @Suppress("MemberVisibilityCanBePrivate")
+        val flowDataChanged = MutableStateFlow(0L)
+
+        private fun fireDataChanged() {
+            flowDataChanged.value = System.currentTimeMillis()
         }
     }
 
@@ -102,26 +110,33 @@ data class PushMessage(
         val idxRawBody = cursor.getColumnIndex(COL_RAW_BODY)
 
         fun readRow(cursor: Cursor) =
-            try {
-                PushMessage(
-                    id = cursor.getLong(idxId),
-                    loginAcct = cursor.getStringOrNull(idxLoginAcct),
-                    timestamp = cursor.getLong(idxTimestamp),
-                    timeSave = cursor.getLong(idxTimeSave),
-                    timeDismiss = cursor.getLong(idxTimeDismiss),
-                    notificationId = cursor.getStringOrNull(idxNotificationId),
-                    notificationType = cursor.getStringOrNull(idxNotificationType),
-                    text = cursor.getStringOrNull(idxText),
-                    iconSmall = cursor.getStringOrNull(idxIconSmall),
-                    iconLarge = cursor.getStringOrNull(idxIconLarge),
-                    messageJson = cursor.getStringOrNull(idxMessageJson)?.decodeJsonObject(),
-                    headerJson = cursor.getStringOrNull(idxHeaderJson)?.decodeJsonObject(),
-                    rawBody = cursor.getBlobOrNull(idxRawBody),
-                )
-            } catch (ex: Throwable) {
-                log.e("readRow failed.")
-                null
+            PushMessage(
+                id = cursor.getLong(idxId),
+                loginAcct = cursor.getStringOrNull(idxLoginAcct),
+                timestamp = cursor.getLong(idxTimestamp),
+                timeSave = cursor.getLong(idxTimeSave),
+                timeDismiss = cursor.getLong(idxTimeDismiss),
+                notificationId = cursor.getStringOrNull(idxNotificationId),
+                notificationType = cursor.getStringOrNull(idxNotificationType),
+                text = cursor.getStringOrNull(idxText),
+                iconSmall = cursor.getStringOrNull(idxIconSmall),
+                iconLarge = cursor.getStringOrNull(idxIconLarge),
+                messageJson = cursor.getStringOrNull(idxMessageJson)?.decodeJsonObject(),
+                headerJson = cursor.getStringOrNull(idxHeaderJson)?.decodeJsonObject(),
+                rawBody = cursor.getBlobOrNull(idxRawBody),
+            )
+
+        fun readOne(cursor: Cursor) =
+            when (cursor.moveToNext()) {
+                true -> readRow(cursor)
+                else -> null
             }
+
+        fun readAll(cursor: Cursor) = buildList {
+            while (cursor.moveToNext()) {
+                add(readRow(cursor))
+            }
+        }
     }
 
     // ID以外のカラムをContentValuesに変換する
@@ -143,31 +158,31 @@ data class PushMessage(
     class Access(val db: SQLiteDatabase) {
         // return id of new row
         fun replace(item: PushMessage) =
-            item.toContentValues().replaceTo(db, TABLE).also { item.id = it }
+            item.toContentValues().replaceTo(db, TABLE)
+                .also { item.id = it }
+                .also { fireDataChanged() }
 
         fun update(vararg items: PushMessage) =
             items.sumOf { it.toContentValues().updateTo(db, TABLE, it.id.toString()) }
+                .also { fireDataChanged() }
 
         fun delete(id: Long) = db.deleteById(TABLE, id.toString())
+            .also { fireDataChanged() }
 
         fun save(a: PushMessage): Long {
             when (a.id) {
                 0L -> a.id = replace(a)
                 else -> update(a)
             }
+            fireDataChanged()
             return a.id
-        }
-
-        private fun Cursor.readOne() = when (moveToNext()) {
-            true -> ColIdx(this).readRow(this)
-            else -> null
         }
 
         fun find(messageId: Long): PushMessage? =
             db.rawQuery(
                 "select * from $TABLE where $COL_ID=?",
                 arrayOf(messageId.toString())
-            )?.use { it.readOne() }
+            )?.use { ColIdx(it).readOne(it) }
 
         fun dismiss(messageId: Long) {
             val pm = find(messageId) ?: return
@@ -177,19 +192,20 @@ data class PushMessage(
             }
         }
 
-        fun sweepOld(now: Long) {
+        fun deleteOld(now: Long) {
             try {
                 val expire = now - TimeUnit.DAYS.toMillis(30)
                 db.execSQL("delete from $TABLE where $COL_TIME_SAVE < $expire")
+                fireDataChanged()
             } catch (ex: Throwable) {
                 log.e(ex, "sweep failed.")
             }
         }
-        //        @Query("select * from $TABLE where $COL_MESSAGE_DB_ID=:messageId")
-        //        abstract fun findFlow(messageId: Long): Flow<PushMessage?>
-        //
-        //        @Query("select * from $TABLE order by $COL_MESSAGE_DB_ID desc")
-        //        abstract fun listFlow(): List<PushMessage>
+
+        suspend fun listAll(): List<PushMessage> =
+            db.queryAll(TABLE, "$COL_TIME_SAVE desc")
+                ?.use { ColIdx(it).readAll(it) }
+                ?: emptyList()
     }
 
     override fun hashCode() = if (id == 0L) super.hashCode() else id.hashCode()

@@ -73,65 +73,12 @@ interface TableCompanion {
     fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int)
 }
 
-class ColumnMeta(
-    list: List,
+private class ColumnMeta(
     val version: Int,
     val name: String,
     val typeSpec: String,
 ) : Comparable<ColumnMeta> {
-    companion object {
-        const val TS_INT_PRIMARY_KEY = "INTEGER PRIMARY KEY"
-        const val TS_INT_PRIMARY_KEY_NOT_NULL = "INTEGER NOT NULL PRIMARY KEY"
 
-        const val TS_EMPTY = "text default ''"
-        const val TS_EMPTY_NOT_NULL = "text not null default ''"
-        const val TS_ZERO = "integer default 0"
-        const val TS_ZERO_NOT_NULL = "integer not null default 0"
-        const val TS_TRUE = "integer default 1"
-        const val TS_TEXT_NULL = "blob default null"
-        const val TS_BLOB_NULL = "blob default null"
-    }
-
-    class List(
-        val table: String,
-        private val initialVersion: Int,
-        var createExtra: () -> Array<String> = { emptyArray() },
-        var deleteBeforeCreate: Boolean = false,
-    ) : ArrayList<ColumnMeta>() {
-        val maxVersion: Int
-            get() = this.maxOfOrNull { it.version } ?: 0
-
-        fun createTableSql() =
-            listOf(
-                "create table if not exists $table (${sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }})",
-                *(createExtra())
-            )
-
-        fun addColumnsSql(oldVersion: Int, newVersion: Int) =
-            sorted()
-                .filter { oldVersion < it.version && newVersion >= it.version }
-                .map { "alter table $table add column ${it.name} ${it.typeSpec}" }
-
-        fun onDBCreate(db: SQLiteDatabase) {
-            log.d("onDBCreate table=$table")
-            if (deleteBeforeCreate) db.execSQL("drop table if exists $table")
-            createTableSql().forEach { db.execSQL(it) }
-        }
-
-        fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion < initialVersion && newVersion >= initialVersion) {
-                onDBCreate(db)
-                return
-            }
-            addColumnsSql(oldVersion, newVersion).forEach {
-                try {
-                    db.execSQL(it)
-                } catch (ex: Throwable) {
-                    log.e(ex, "execSQL failed. $it")
-                }
-            }
-        }
-    }
 
     val primary = typeSpec.contains("primary", ignoreCase = true)
 
@@ -145,42 +92,110 @@ class ColumnMeta(
 
     override fun toString(): String = name
     override fun hashCode(): Int = name.hashCode()
-
     override fun equals(other: Any?): Boolean = when (other) {
         is ColumnMeta -> name == other.name
         else -> name == other
     }
-
-    init {
-        list.add(this)
-    }
-
-    fun getIndex(cursor: Cursor) = cursor.getColumnIndex(name)
-    fun getLong(cursor: Cursor) = cursor.getLong(getIndex(cursor))
 }
 
-//fun ContentValues.putNull(key: ColumnMeta) = putNull(key.name)
-//fun ContentValues.put(key: ColumnMeta, v: Boolean?) = put(key.name, v?.b2i())
-//fun ContentValues.put(key: ColumnMeta, v: String?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: Byte?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: Short?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: Int?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: Long?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: Float?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: Double?) = put(key.name, v)
-//fun ContentValues.put(key: ColumnMeta, v: ByteArray?) = put(key.name, v)
+class MetaColumns(
+    val table: String,
+    private val initialVersion: Int,
+    var createExtra: () -> Array<String> = { emptyArray() },
+    var deleteBeforeCreate: Boolean = false,
+) {
+    companion object {
+        const val TS_INT_PRIMARY_KEY = "INTEGER PRIMARY KEY"
+        const val TS_INT_PRIMARY_KEY_NOT_NULL = "INTEGER NOT NULL PRIMARY KEY"
 
-fun Cursor.getInt(key: ColumnMeta) = getInt(key.name)
-fun Cursor.getBoolean(key: ColumnMeta,defVal:Boolean = false) =
-    getIntOrNull(key.name)?.i2b()?:defVal
-fun Cursor.getBoolean(key: String,defVal:Boolean = false) =
-    getIntOrNull(key)?.i2b()?:defVal
-fun Cursor.getBoolean(idx:Int,defVal:Boolean = false) =
-    getIntOrNull(idx)?.i2b()?:defVal
-fun Cursor.getLong(key: ColumnMeta) = getLong(key.name)
-fun Cursor.getIntOrNull(key: ColumnMeta) = getIntOrNull(key.name)
-fun Cursor.getString(key: ColumnMeta): String = getString(key.name)
-fun Cursor.getStringOrNull(key: ColumnMeta): String? = getStringOrNull(key.name)
+        const val TS_EMPTY = "text default ''"
+        const val TS_EMPTY_NOT_NULL = "text not null default ''"
+        const val TS_ZERO = "integer default 0"
+        const val TS_ZERO_NOT_NULL = "integer not null default 0"
+        const val TS_TRUE = "integer default 1"
+        const val TS_TEXT_NULL = "blob default null"
+        const val TS_BLOB_NULL = "blob default null"
+    }
+    private val columns = ArrayList<ColumnMeta>()
+
+    val maxVersion: Int
+        get() = columns.maxOfOrNull { it.version } ?: 0
+
+    fun createTableSql() =
+        listOf(
+            "create table if not exists $table (${
+                columns.sorted().joinToString(",") { "${it.name} ${it.typeSpec}" }
+            })",
+            *(createExtra())
+        )
+
+    private fun columnAddSql(c: ColumnMeta) =
+        "alter table $table add column ${c.name} ${c.typeSpec}"
+
+    private fun filterColumns(oldVersion: Int, newVersion: Int) =
+        columns.sorted().filter { oldVersion < it.version && newVersion >= it.version }
+
+    // alter add のSQLのリストを返す。dbが非nullなら既存カラムの存在チェックを行う。
+    fun upgradeSql(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int): List<String> {
+        val columnNames = buildSet {
+            db?.rawQuery(
+                "PRAGMA table_info('$table')",
+                emptyArray(),
+            )?.use { cursor ->
+                val idxName = cursor.getColumnIndex("name")
+                while (cursor.moveToNext()) {
+                    add(cursor.getString(idxName))
+                }
+            }
+        }
+        return filterColumns(oldVersion, newVersion).mapNotNull { c ->
+            if (columnNames.contains(c.name)) {
+                log.w("[${table}.${c.name}] skip alter add because column already exists.")
+                null
+            } else {
+                columnAddSql(c)
+            }
+        }
+    }
+
+    fun onDBCreate(db: SQLiteDatabase) {
+        log.d("onDBCreate table=$table")
+        if (deleteBeforeCreate) db.execSQL("drop table if exists $table")
+        createTableSql().forEach { db.execSQL(it) }
+    }
+
+    fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < initialVersion && newVersion >= initialVersion) {
+            onDBCreate(db)
+            return
+        }
+        upgradeSql(db, oldVersion, newVersion).forEach {
+            try {
+                db.execSQL(it)
+            } catch (ex: Throwable) {
+                log.e(ex, "execSQL failed. $it")
+            }
+        }
+    }
+
+    fun column(version: Int, name: String, typeSpec: String) =
+        columns.add(ColumnMeta(version = version, name = name, typeSpec = typeSpec))
+}
+
+//fun Cursor.getInt(key: ColumnMeta) = getInt(key.name)
+//fun Cursor.getBoolean(key: ColumnMeta, defVal: Boolean = false) =
+//    getIntOrNull(key.name)?.i2b() ?: defVal
+
+fun Cursor.getBoolean(key: String, defVal: Boolean = false) =
+    getIntOrNull(key)?.i2b() ?: defVal
+
+fun Cursor.getBoolean(idx: Int, defVal: Boolean = false) =
+    getIntOrNull(idx)?.i2b() ?: defVal
+
+//fun Cursor.getLong(key: ColumnMeta) = getLong(key.name)
+//fun Cursor.getIntOrNull(key: ColumnMeta) = getIntOrNull(key.name)
+//fun Cursor.getString(key: ColumnMeta): String = getString(key.name)
+//fun Cursor.getStringOrNull(key: ColumnMeta): String? = getStringOrNull(key.name)
 
 fun ContentValues.replaceTo(db: SQLiteDatabase, table: String) =
     db.replace(table, null, this)

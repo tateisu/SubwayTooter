@@ -1208,9 +1208,8 @@
     <string name="pull_notification">Pull notification</string>
     <string name="pull_notification_desc">notifications pulled from SNS</string>
     <string name="push_worker">Push notification handler</string>
-    <string name="push_worker_desc">Handling tasks about push notification</string>
-    <string name="polling_foregrounder">real-time message notifier</string>
-    <string name="polling_foregrounder_desc">checking new notifications from SNS</string>
+    <string name="push_worker_desc">proceccing tasks about push notification</string>
+    <string name="polling_foregrounder_desc">polling new notifications from SNS</string>
     <string name="server_timeout">Server timeout</string>
     <string name="server_timeout_desc">showing errors about checking notifications from SNS</string>
 
@@ -1233,4 +1232,18 @@
     <string name="post_reset_confirm">Save to drafts and edit new post?</string>
     <string name="removing_old_distributer">Removing old distributer…</string>
     <string name="test_progress_dialog">progress dialog test</string>
+    <string name="push_subscription_is_not_required">Push subscription is not required because notifications not enabled, or push distributer is not enabled.</string>
+    <string name="push_subscription_is_not_required_delete_secret_keys">Secret key is no longer used, and it has been deleted.</string>
+    <string name="push_subscription_exists_but_not_created_by_this_device">Push subscription is found, but not created by this device.</string>
+    <string name="push_subscription_creating_new_secret_key">Creating secret key…</string>
+    <string name="push_subscription_creating">Creating new push subscription…</string>
+    <string name="push_subscription_server_key_saved">Server key has been saved.</string>
+    <string name="push_subscription_completed">Push subscription completed.</string>
+    <string name="push_message_re_decode">Reprocessing</string>
+    <string name="push_message_save_to_download_folder">Save to download folder</string>
+    <string name="push_message_save_to_download_folder_with_secret_key">Save to download folder (with secret key. Be careful with data security, This is dangerous!)</string>
+    <string name="push_message_history">Push message history</string>
+    <string name="alert_test">test alert notification</string>
+    <string name="saved_to">Saved to %1$s</string>
+    <string name="view">View</string>
 </resources>

@@ -16,11 +16,11 @@ class ClientInfo private constructor() {
         private const val COL_CLIENT_NAME = "cn"
         private const val COL_RESULT = "r"
 
-        val columnList: ColumnMeta.List = ColumnMeta.List(table, 19).apply {
-            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
-            ColumnMeta(this, 0, COL_HOST, "text not null")
-            ColumnMeta(this, 0, COL_CLIENT_NAME, "text not null")
-            ColumnMeta(this, 0, COL_RESULT, "text not null")
+        val columnList = MetaColumns(table, 19).apply {
+            column( 0, COL_ID, "INTEGER PRIMARY KEY")
+            column( 0, COL_HOST, "text not null")
+            column( 0, COL_CLIENT_NAME, "text not null")
+            column( 0, COL_RESULT, "text not null")
             createExtra = {
                 arrayOf(
                     "create unique index if not exists ${table}_host_client_name on $table($COL_HOST,$COL_CLIENT_NAME)"

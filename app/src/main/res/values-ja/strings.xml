@@ -1198,12 +1198,11 @@
     <string name="push_message_desc">SNSサーバから送られたプッシュ通知を表示します。</string>
     <string name="push_worker">プッシュ通知関連の処理中</string>
     <string name="push_worker_desc">プッシュの購読や画像データのロード等、関連する処理の間は表示されます。</string>
-    <string name="polling_foregrounder">通知チェック中</string>
     <string name="polling_foregrounder_desc">バックグラウンドでプル通知チェックを行っている間は表示されます。</string>
     <string name="server_timeout">サーバータイムアウト</string>
     <string name="server_timeout_desc">SNSの通知をチェックする際にサーバとの通信がタイムアウトすると表示されます。</string>
-    <string name="pull_notification">SNS通知</string>
-    <string name="pull_notification_desc">プル通知チェックでSNSサーバから取得した情報を表示します。</string>
+    <string name="pull_notification">SNS通知(Pull)</string>
+    <string name="pull_notification_desc">定期的な通知チェックを行いSNSサーバから取得した情報を表示します。</string>
 
     <!-- アプリ設定 -->
     <string name="push_distributor">プッシュ配送サービス</string>
@@ -1220,6 +1219,17 @@
     <string name="push_subscription_app_server_hash_missing_error">プッシュ配送サービスをアプリサーバに登録できていません。プッシュ配送サービスを再度選択すると改善する場合があります。</string>
     <string name="removing_old_distributer">プッシュサービスの古い情報を削除しています。</string>
     <string name="test_progress_dialog">プログレスダイアログのテスト</string>
-
+    <string name="push_subscription_is_not_required">購読は不要な状態です</string>
+    <string name="push_subscription_is_not_required_delete_secret_keys">購読が不要なので解読用キーを削除しました</string>
+    <string name="push_subscription_exists_but_not_created_by_this_device">プッシュ購読が存在しますが、この端末で作成したものではありません。アクセストークンを更新することで新しいプッシュ購読を作成できます。</string>
+    <string name="push_subscription_creating_new_secret_key">秘密鍵を生成します…</string>
+    <string name="push_subscription_creating">プッシュ購読を作成します…</string>
+    <string name="push_subscription_server_key_saved">サーバ秘密鍵を保存しました</string>
+    <string name="push_subscription_completed">プッシュ購読処理が完了しました</string>
+    <string name="push_message_history">プッシュメッセージ履歴</string>
+    <string name="push_message_re_decode">再処理</string>
+    <string name="push_message_save_to_download_folder">Downloadフォルダに保存</string>
+    <string name="push_message_save_to_download_folder_with_secret_key">Downloadフォルダに保存 (秘密鍵つき。データ安全に注意。これは危険です!)</string>
+    <string name="saved_to">保存しました。 %1$s</string>
+    <string name="view">見る</string>
 </resources>
-

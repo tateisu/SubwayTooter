@@ -312,6 +312,14 @@
             android:exported="false"
             android:label="@string/exit_reasons"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name="jp.juggler.subwaytooter.ActPushMessageList"
+            android:exported="false"
+            android:label="@string/push_message_history" />
+        <activity
+            android:name="jp.juggler.subwaytooter.ActAlert"
+            android:exported="false"
+            android:label="@string/alert" />
 
         <meta-data
             android:name="android.max_aspect"
@@ -396,5 +404,6 @@
                 <action android:name="org.unifiedpush.android.connector.REGISTRATION_REFUSED" />
             </intent-filter>
         </receiver>
+        <receiver android:name="jp.juggler.subwaytooter.notification.NotificationDeleteReceiver" />
     </application>
 </manifest>

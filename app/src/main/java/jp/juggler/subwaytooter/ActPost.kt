@@ -187,11 +187,15 @@ class ActPost : AppCompatActivity(),
         arMushroom.register(this)
 
         progressChannel = Channel(capacity = Channel.CONFLATED)
-        launchMain {
+
+        initUI()
+
+        // 進捗表示チャネルの回収コルーチン
+        launchAndShowError {
             try {
                 while (true) {
                     progressChannel.receive()
-                    showMedisAttachmentProgress()
+                    showMediaAttachmentProgress()
                     delay(1000L)
                 }
             } catch (ex: Throwable) {
@@ -202,8 +206,7 @@ class ActPost : AppCompatActivity(),
             }
         }
 
-        initUI()
-
+        // 初期化の続きをコルーチンでやる
         launchAndShowError {
             when (savedInstanceState) {
                 null -> updateText(intent, saveDraft = false)

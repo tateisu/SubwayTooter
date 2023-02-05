@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.util.data.ColumnMeta
+import jp.juggler.util.data.MetaColumns
 import jp.juggler.util.data.TableCompanion
 import jp.juggler.util.data.getBoolean
 import jp.juggler.util.log.LogCategory
@@ -19,11 +19,11 @@ class ContentWarning private constructor() {
         private const val COL_SHOWN = "sh"
         private const val COL_TIME_SAVE = "time_save"
 
-        val columnList: ColumnMeta.List = ColumnMeta.List(table, 0).apply {
-            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
-            ColumnMeta(this, 0, COL_STATUS_URI, "text not null")
-            ColumnMeta(this, 0, COL_SHOWN, "integer not null")
-            ColumnMeta(this, 0, COL_TIME_SAVE, "integer default 0")
+        val columnList = MetaColumns(table, 0).apply {
+            column(0, COL_ID, "INTEGER PRIMARY KEY")
+            column(0, COL_STATUS_URI, "text not null")
+            column(0, COL_SHOWN, "integer not null")
+            column(0, COL_TIME_SAVE, "integer default 0")
             deleteBeforeCreate = true
             createExtra = {
                 arrayOf(

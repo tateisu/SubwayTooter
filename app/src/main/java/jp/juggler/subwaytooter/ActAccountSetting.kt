@@ -1472,6 +1472,7 @@ class ActAccountSetting : AppCompatActivity(),
                     subLogger,
                     account,
                     willRemoveSubscription = !anyNotificationWanted,
+                    forceUpdate = force,
                 )
             } catch (ex: Throwable) {
                 subLogger.e(ex, "updateSubscription failed.")

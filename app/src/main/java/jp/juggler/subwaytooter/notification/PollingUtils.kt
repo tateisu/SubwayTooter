@@ -10,7 +10,6 @@ import androidx.work.await
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.notification.PullNotification.removeMessageNotification
-import jp.juggler.subwaytooter.notification.ServerTimeoutNotification.createServerTimeoutNotification
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoNotificationCache
 import jp.juggler.subwaytooter.table.daoNotificationTracking

@@ -70,7 +70,7 @@ fun ActPost.saveState(outState: Bundle) {
 }
 
 // 画面状態の復元
-fun ActPost.restoreState(savedInstanceState: Bundle) {
+suspend fun ActPost.restoreState(savedInstanceState: Bundle) {
 
     resetText() // also load account list
 

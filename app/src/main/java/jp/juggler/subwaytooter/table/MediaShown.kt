@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.util.data.ColumnMeta
+import jp.juggler.util.data.MetaColumns
 import jp.juggler.util.data.TableCompanion
 import jp.juggler.util.data.getBoolean
 import jp.juggler.util.log.LogCategory
@@ -14,18 +14,18 @@ class MediaShown private constructor() {
         private val log = LogCategory("MediaShown")
 
         override val table = "media_shown_misskey"
-        val COL_ID = BaseColumns._ID
-        private val COL_HOST = "h"
-        private val COL_STATUS_ID = "si"
-        private val COL_SHOWN = "sh"
-        private val COL_TIME_SAVE = "time_save"
+        private const val COL_ID = BaseColumns._ID
+        private const val COL_HOST = "h"
+        private const val COL_STATUS_ID = "si"
+        private const val COL_SHOWN = "sh"
+        private const val COL_TIME_SAVE = "time_save"
 
-        val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
-            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
-            ColumnMeta(this, 0, COL_HOST, "")
-            ColumnMeta(this, 0, COL_STATUS_ID, "")
-            ColumnMeta(this, 0, COL_SHOWN, "")
-            ColumnMeta(this, 0, COL_TIME_SAVE, "")
+        val columnList = MetaColumns(table, 30).apply {
+            column(0, COL_ID, "INTEGER PRIMARY KEY")
+            column(0, COL_HOST, "")
+            column(0, COL_STATUS_ID, "")
+            column(0, COL_SHOWN, "")
+            column(0, COL_TIME_SAVE, "")
             deleteBeforeCreate = true
             createExtra = {
                 arrayOf(

@@ -23,7 +23,6 @@ import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.subwaytooter.util.PostResult
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
-import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.CharacterGroup
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
@@ -106,28 +105,26 @@ fun ActPost.hasContent(): Boolean {
     }
 }
 
-fun ActPost.resetText() {
-    launchMain {
-        isPostComplete = false
+suspend fun ActPost.resetText() {
+    isPostComplete = false
 
-        resetReply()
+    resetReply()
 
-        resetMushroom()
-        states.redraftStatusId = null
-        states.editStatusId = null
-        states.timeSchedule = 0L
-        attachmentPicker.reset()
-        scheduledStatus = null
-        attachmentList.clear()
-        views.cbQuote.isChecked = false
-        views.etContent.setText("")
-        views.spPollType.setSelection(0, false)
-        etChoices.forEach { it.setText("") }
-        accountList = daoSavedAccount.loadAccountList().sortedByNickname()
-        if (accountList.isEmpty()) {
-            showToast(true, R.string.please_add_account)
-            finish()
-        }
+    resetMushroom()
+    states.redraftStatusId = null
+    states.editStatusId = null
+    states.timeSchedule = 0L
+    attachmentPicker.reset()
+    scheduledStatus = null
+    attachmentList.clear()
+    views.cbQuote.isChecked = false
+    views.etContent.setText("")
+    views.spPollType.setSelection(0, false)
+    etChoices.forEach { it.setText("") }
+    accountList = daoSavedAccount.loadAccountList().sortedByNickname()
+    if (accountList.isEmpty()) {
+        showToast(true, R.string.please_add_account)
+        finish()
     }
 }
 

@@ -36,6 +36,7 @@ class PushMastodon(
         subLog: SubscriptionLogger,
         a: SavedAccount,
         willRemoveSubscription: Boolean,
+        forceUpdate: Boolean,
     ) {
         val deviceHash = deviceHash(a)
         val newUrl = snsCallbackUrl(a) // appServerHashを参照する
@@ -86,7 +87,8 @@ class PushMastodon(
                 }
                 if (params["dh"] != deviceHash) {
                     // この端末で作成した購読ではない。
-                    subLog.e("subscription deviceHash not match. keep it for other devices. ${a.acct} $oldEndpointUrl")
+                    log.w("deviceHash not match. keep it for other devices. ${a.acct} $oldEndpointUrl")
+                    subLog.e(R.string.push_subscription_exists_but_not_created_by_this_device)
                     return
                 }
             }
@@ -95,10 +97,10 @@ class PushMastodon(
         if (willRemoveSubscription) {
             when (oldSubscription) {
                 null -> {
-                    subLog.i("subscription is not exist, not required. nothing to do.")
+                    subLog.i(R.string.push_subscription_is_not_required)
                 }
                 else -> {
-                    subLog.i("removing unnecessary subscription.")
+                    subLog.i(R.string.push_subscription_delete_current)
                     api.deletePushSubscription(a)
                 }
             }
@@ -106,45 +108,45 @@ class PushMastodon(
         }
 
         val alerts = ApiPushMastodon.alertTypes.associateWith { true }
-        if (newUrl != oldEndpointUrl) {
-            val keyPair = provider.generateKeyPair()
-            val auth = ByteArray(16).also { SecureRandom().nextBytes(it) }
-            val p256dh = encodeP256Dh(keyPair.public as ECPublicKey)
 
-            subLog.i("api.createPushSubscription")
-            val response = api.createPushSubscription(
-                a = a,
-                endpointUrl = newUrl,
-                p256dh = p256dh.encodeBase64Url(),
-                auth = auth.encodeBase64Url(),
-                alerts = alerts,
-                policy = "all",
-            )
-            val serverKeyStr = response.string("server_key")
-                ?: error("missing server_key.")
-
-            val serverKey = serverKeyStr.decodeBase64()
-
-            // p256dhは65バイトのはず
-            // authは16バイトのはず
-            // serverKeyは65バイトのはず
-
-            // 登録できたらアカウントに覚える
-            daoStatus.savePushKey(
-                acct = a.acct,
-                pushKeyPrivate = keyPair.private.encoded,
-                pushKeyPublic = p256dh,
-                pushAuthSecret = auth,
-                pushServerKey = serverKey,
-                lastPushEndpoint = newUrl,
-            )
-            subLog.i("Push subscription has been updated.")
-        } else {
+        if (newUrl == oldEndpointUrl && !forceUpdate) {
             // エンドポイントURLに変化なし
-            // Alertの更新はしたいかもしれない
-            // XXX
-            subLog.i("Push subscription endpoint URL is not changed. keep..")
+            // TODO: Alert種別による変更
+            subLog.i(R.string.push_subscription_keep_using)
+            return
         }
+
+        subLog.i(R.string.push_subscription_creating)
+        val keyPair = provider.generateKeyPair()
+        val auth = ByteArray(16).also { SecureRandom().nextBytes(it) }
+        val p256dh = encodeP256Dh(keyPair.public as ECPublicKey)
+        val response = api.createPushSubscription(
+            a = a,
+            endpointUrl = newUrl,
+            p256dh = p256dh.encodeBase64Url(),
+            auth = auth.encodeBase64Url(),
+            alerts = alerts,
+            policy = "all",
+        )
+        val serverKeyStr = response.string("server_key")
+            ?: error("missing server_key.")
+
+        val serverKey = serverKeyStr.decodeBase64()
+
+        // p256dhは65バイトのはず
+        // authは16バイトのはず
+        // serverKeyは65バイトのはず
+
+        // 登録できたらアカウントに覚える
+        daoStatus.savePushKey(
+            acct = a.acct,
+            pushKeyPrivate = keyPair.private.encoded,
+            pushKeyPublic = p256dh,
+            pushAuthSecret = auth,
+            pushServerKey = serverKey,
+            lastPushEndpoint = newUrl,
+        )
+        subLog.i(R.string.push_subscription_completed)
     }
 
     override suspend fun formatPushMessage(

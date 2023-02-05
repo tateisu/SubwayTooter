@@ -34,6 +34,7 @@ class PushMisskey(
         subLog: SubscriptionLogger,
         a: SavedAccount,
         willRemoveSubscription: Boolean,
+        forceUpdate:Boolean,
     ) {
         val newUrl = snsCallbackUrl(a)
 
@@ -66,7 +67,7 @@ class PushMisskey(
                     // 購読がないと空レスポンスになり、アプリ側で空オブジェクトに変換される
                     @Suppress("UNUSED_VALUE")
                     hasEmptySubscription = true
-                } else if (lastEndpointUrl == newUrl && !willRemoveSubscription) {
+                } else if (lastEndpointUrl == newUrl && !willRemoveSubscription && !forceUpdate) {
                     when (lastSubscription.boolean("sendReadMessage")) {
                         false -> subLog.i(R.string.push_subscription_keep_using)
                         else -> {
@@ -99,10 +100,10 @@ class PushMisskey(
             // hasEmptySubscription が真なら購読はないが、
             // とりあえず何か届いても確実に読めないようにする
             when (status?.pushKeyPrivate) {
-                null -> subLog.i("購読は不要な状態です")
+                null -> subLog.i(R.string.push_subscription_is_not_required)
                 else -> {
                     daoStatus.deletePushKey(a.acct)
-                    subLog.i("購読が不要なので解読用キーを削除しました")
+                    subLog.i(R.string.push_subscription_is_not_required_delete_secret_keys)
                 }
             }
             return
@@ -113,7 +114,7 @@ class PushMisskey(
             status.pushKeyPublic == null ||
             status.pushAuthSecret == null
         ) {
-            subLog.i("秘密鍵を生成します…")
+            subLog.i(R.string.push_subscription_creating_new_secret_key)
             val keyPair = provider.generateKeyPair()
             val auth = ByteArray(16).also { SecureRandom().nextBytes(it) }
             val p256dh = encodeP256Dh(keyPair.public as ECPublicKey)
@@ -127,6 +128,7 @@ class PushMisskey(
         }
 
         // 購読する
+        subLog.i(R.string.push_subscription_creating)
         status!!
         val json = api.createPushSubscription(
             a = a,
@@ -147,9 +149,9 @@ class PushMisskey(
                 lastPushEndpoint = newUrl,
                 pushServerKey = serverKey,
             )
-            subLog.i("server key has been changed.")
+            subLog.i(R.string.push_subscription_server_key_saved)
         }
-        subLog.i("subscription complete.")
+        subLog.i(R.string.push_subscription_completed)
     }
 
     /*

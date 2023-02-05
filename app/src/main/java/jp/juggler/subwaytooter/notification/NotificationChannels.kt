@@ -1,12 +1,22 @@
 package jp.juggler.subwaytooter.notification
 
+import android.Manifest
 import android.app.NotificationChannel
+import android.app.PendingIntent
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.annotation.ColorInt
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.startup.Initializer
+import androidx.work.ForegroundInfo
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.pref.LazyContextInitializer
 import jp.juggler.util.*
 import jp.juggler.util.log.LogCategory
 
@@ -39,9 +49,9 @@ enum class NotificationChannels(
         pircDelete = 1, // uriでtapとdeleteを区別している
         uriPrefixDelete = "subwaytooter://sns-notification",
     ),
-    Checker(
+    PullWorker(
         id = "PollingForegrounder",
-        titleId = R.string.polling_foregrounder,
+        titleId = R.string.loading_notification_title,
         descId = R.string.polling_foregrounder_desc,
         importance = NotificationManagerCompat.IMPORTANCE_LOW,
         priority = NotificationCompat.PRIORITY_MIN,
@@ -58,7 +68,7 @@ enum class NotificationChannels(
         priority = NotificationCompat.PRIORITY_LOW,
         notificationId = 3,
         pircTap = 3,
-        pircDelete = -1,
+        pircDelete = 4,
         uriPrefixDelete = "subwaytooter://server-timeout",
     ),
     PushMessage(
@@ -67,10 +77,10 @@ enum class NotificationChannels(
         descId = R.string.push_message_desc,
         importance = NotificationManagerCompat.IMPORTANCE_HIGH,
         priority = NotificationCompat.PRIORITY_HIGH,
-        notificationId = 4,
-        pircTap = 4,
-        pircDelete = 5,
-        uriPrefixDelete = "pushreceiverapp://pushMessage",
+        notificationId = 5,
+        pircTap = 5,
+        pircDelete = 6,
+        uriPrefixDelete = "subwaytooter://pushMessage",
     ),
     Alert(
         id = "Alert",
@@ -78,21 +88,21 @@ enum class NotificationChannels(
         descId = R.string.alert_notification_desc,
         importance = NotificationManagerCompat.IMPORTANCE_HIGH,
         priority = NotificationCompat.PRIORITY_HIGH,
-        notificationId = 6,
-        pircTap = 6,
-        pircDelete = -1,
-        uriPrefixDelete = "pushreceiverapp://alert",
+        notificationId = 7,
+        pircTap = 7,
+        pircDelete = 8,
+        uriPrefixDelete = "subwaytooter://alert",
     ),
-    PushMessageWorker(
+    PushWorker(
         id = "PushMessageWorker",
         titleId = R.string.push_worker,
         descId = R.string.push_worker_desc,
         importance = NotificationManagerCompat.IMPORTANCE_LOW,
         priority = NotificationCompat.PRIORITY_LOW,
-        notificationId = 7,
-        pircTap = 7,
-        pircDelete = 8,
-        uriPrefixDelete = "pushreceiverapp://PushMessageWorker",
+        notificationId = 9,
+        pircTap = 9,
+        pircDelete = 10,
+        uriPrefixDelete = "subwaytooter://pushWorker",
     ),
     /////////////////////////////
     // 以下、通知IDやpirc を吟味していない
@@ -108,6 +118,108 @@ enum class NotificationChannels(
 //        pircDelete = 5,
 //        uriPrefixDelete = "pushreceiverapp://subscriptionUpdate",
 //    ),
+
+    ;
+
+    fun isDissabled(context: Context) = !isEnabled(context)
+
+    fun isEnabled(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                log.w("[$name] missing POST_NOTIFICATIONS.")
+                return false
+            }
+        }
+        return NotificationManagerCompat.from(context).isChannelEnabled(id)
+    }
+
+    fun notify(
+        context: Context,
+        tag: String? = null,
+        iniitalizer: NotificationCompat.Builder.() -> Unit,
+    ) {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                log.w("[$name] missing POST_NOTIFICATIONS.")
+                return
+            }
+        }
+        val nc = this
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (!notificationManager.isChannelEnabled(nc.id)) {
+            log.w("[$name] notification channel is disabled.")
+            return
+        }
+        val builder = NotificationCompat.Builder(context, nc.id).apply {
+            priority = nc.priority
+            iniitalizer()
+        }
+        notificationManager.notify(tag, notificationId, builder.build())
+    }
+
+    fun createForegroundInfo(
+        context: Context,
+        @DrawableRes iconId: Int =
+            R.drawable.ic_refresh,
+        @ColorInt color: Int =
+            ContextCompat.getColor(context, R.color.colorOsNotificationAccent),
+        title: String? = context.getString(titleId),
+        text: String? = context.getString(descId),
+        piTap: PendingIntent? = null,
+        piDelete: PendingIntent? = null,
+    ): ForegroundInfo? {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                log.w("[$id] missing POST_NOTIFICATIONS.")
+                return null
+            }
+        }
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (!notificationManager.isChannelEnabled(id)) {
+            log.w("[$id] notification channel is disabled.")
+            return null
+        }
+        val nc = this
+        val builder = NotificationCompat.Builder(context, nc.id).apply {
+            priority = nc.priority
+            setSmallIcon(iconId)
+            setColor(color)
+            title?.let { setContentTitle(it) }
+            text?.let { setContentText(it) }
+            piTap?.let { setContentIntent(piTap) }
+            piDelete?.let { setDeleteIntent(piDelete) }
+            setWhen(System.currentTimeMillis())
+            setOngoing(true)
+        }
+        return ForegroundInfo(nc.notificationId, builder.build())
+    }
+
+    fun cancel(context: Context, tag: String? = null) {
+        NotificationManagerCompat.from(context).cancel(tag, notificationId)
+    }
+
+    companion object {
+        fun NotificationManagerCompat.isChannelEnabled(channelId: String): Boolean {
+            val importance = getNotificationChannel(channelId)?.importance
+            log.i("isChannelEnabled: importance=$importance")
+            return when (importance) {
+                null, NotificationManagerCompat.IMPORTANCE_NONE -> false
+                else -> true
+            }
+        }
+    }
 }
 
 /**
@@ -117,23 +229,22 @@ enum class NotificationChannels(
 @Suppress("unused")
 class NotificationChannelsInitializer : Initializer<Boolean> {
     override fun dependencies(): List<Class<out Initializer<*>>> =
-        emptyList()
+        listOf(LazyContextInitializer::class.java)
 
     override fun create(context: Context): Boolean {
         context.run {
             val list = NotificationChannels.values()
             log.i("createNotificationChannel(s) size=${list.size}")
             val notificationManager = NotificationManagerCompat.from(this)
-            list.map {
-                NotificationChannel(
-                    it.id,
-                    getString(it.titleId),
-                    it.importance,
+            for (nc in list) {
+                val channel = NotificationChannel(
+                    nc.id,
+                    getString(nc.titleId),
+                    nc.importance,
                 ).apply {
-                    description = getString(it.descId)
+                    description = getString(nc.descId)
                 }
-            }.forEach {
-                notificationManager.createNotificationChannel(it)
+                notificationManager.createNotificationChannel(channel)
             }
         }
         return true

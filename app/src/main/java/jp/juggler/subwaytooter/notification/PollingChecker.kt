@@ -523,7 +523,7 @@ class PollingChecker(
                     continue
                 }
 
-                notificationManager.showMessageNotification(
+                showMessageNotification(
                     context,
                     account,
                     trackingType,
@@ -553,7 +553,7 @@ class PollingChecker(
             first: NotificationData,
         ) {
             log.d("updateNotificationMerged[${account.acct.pretty}] creating notification(1)")
-            notificationManager.showMessageNotification(
+            showMessageNotification(
                 context,
                 account,
                 trackingType,

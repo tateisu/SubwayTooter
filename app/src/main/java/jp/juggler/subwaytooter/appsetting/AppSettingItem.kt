@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.actmain.selectPushDistributor
 import jp.juggler.subwaytooter.dialog.runInProgress
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
+import jp.juggler.subwaytooter.notification.showAlertNotification
 import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.pref.impl.*
 import jp.juggler.subwaytooter.table.daoSavedAccount
@@ -1038,10 +1039,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             }
         }
 
-        action(R.string.test_progress_dialog){
-            action={
+        action(R.string.test_progress_dialog) {
+            action = {
                 launchAndShowError {
-                    runInProgress(cancellable=true) {
+                    runInProgress(cancellable = true) {
                         it.setMessage("message")
                         it.setTitle("title")
                         delay(2000L)
@@ -1051,6 +1052,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     }
                 }
             }
+        }
+
+        action(R.string.alert_test) {
+            action = { showAlertNotification("this is a test.") }
         }
     }
 

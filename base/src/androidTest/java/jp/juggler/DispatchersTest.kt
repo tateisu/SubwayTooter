@@ -1,8 +1,9 @@
-package jp.juggler.base
+package jp.juggler
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import jp.juggler.base.TestDispatcherRule
 import jp.juggler.util.coroutine.AppDispatchers
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow

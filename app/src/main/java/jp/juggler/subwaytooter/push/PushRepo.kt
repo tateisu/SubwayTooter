@@ -1,6 +1,9 @@
 package jp.juggler.subwaytooter.push
 
+import android.app.PendingIntent
 import android.content.Context
+import androidx.core.graphics.drawable.IconCompat
+import androidx.core.net.toUri
 import androidx.work.WorkManager
 import androidx.work.await
 import jp.juggler.crypt.*
@@ -11,13 +14,16 @@ import jp.juggler.subwaytooter.api.push.ApiPushAppServer
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
 import jp.juggler.subwaytooter.api.push.ApiPushMisskey
 import jp.juggler.subwaytooter.dialog.SuspendProgress
-import jp.juggler.subwaytooter.notification.showPushNotification
+import jp.juggler.subwaytooter.notification.NotificationChannels
+import jp.juggler.subwaytooter.notification.NotificationDeleteReceiver.Companion.intentNotificationDelete
+import jp.juggler.subwaytooter.notification.notificationIconAndColor
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.*
 import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueuePushMessage
 import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueueRegisterEndpoint
 import jp.juggler.subwaytooter.table.*
+import jp.juggler.subwaytooter.util.loadIcon
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.*
 import jp.juggler.util.data.Base128.decodeBase128
@@ -80,6 +86,8 @@ class PushRepo(
         const val CAME_FROM_FCM = "fcm"
 
         var refReporter: WeakReference<SuspendProgress.Reporter>? = null
+
+        val ncPushMessage = NotificationChannels.PushMessage
 
         fun String?.followDomain(apiHost: Host) = when {
             isNullOrEmpty() -> null
@@ -237,7 +245,7 @@ class PushRepo(
         }
 
         val realAccounts = daoSavedAccount.loadAccountList()
-            .filter { !it.isNA }
+            .filter { !it.isPseudo }
 
         val accts = realAccounts.map { it.acct }
 
@@ -329,7 +337,8 @@ class PushRepo(
                 pushBase(a).updateSubscription(
                     subLog = subLog,
                     a = a,
-                    willRemoveSubscription = willRemoveSubscription
+                    willRemoveSubscription = willRemoveSubscription,
+                    forceUpdate = false,
                 )
             } catch (ex: Throwable) {
                 subLog.e(ex, "updateSubscription failed.")
@@ -380,11 +389,13 @@ class PushRepo(
         subLog: PushBase.SubscriptionLogger,
         a: SavedAccount,
         willRemoveSubscription: Boolean,
+        forceUpdate: Boolean = false,
     ) {
         pushBase(a).updateSubscription(
             subLog = subLog,
             a = a,
-            willRemoveSubscription = willRemoveSubscription
+            willRemoveSubscription = willRemoveSubscription,
+            forceUpdate = forceUpdate,
         )
     }
 
@@ -426,7 +437,7 @@ class PushRepo(
      */
     suspend fun reDecode(pm: PushMessage) {
         withContext(AppDispatchers.IO) {
-            updateMessage(pm.id)
+            updateMessage(pm.id, allowDupilicateNotification = true)
         }
     }
 
@@ -434,7 +445,10 @@ class PushRepo(
      * UpWorkerから呼ばれる。
      * 保存データを解釈して通知を出す。
      */
-    suspend fun updateMessage(messageId: Long) {
+    suspend fun updateMessage(
+        messageId: Long,
+        allowDupilicateNotification: Boolean = false,
+    ) {
         // DBからロード
         val pm = daoPushMessage.find(messageId)
             ?: error("missing pushMessage")
@@ -475,7 +489,7 @@ class PushRepo(
             // 古い鍵で行った購読だろう。
             // メッセージに含まれるappServerHashを指定してendpoint登録を削除する
             // するとアプリサーバはSNSサーバに対してgoneを返すようになり掃除が適切に行われるはず
-            map.string("c").notEmpty()?.let{
+            map.string("c").notEmpty()?.let {
                 val count = apiPushAppServer.endpointRemove(hashId = it)
                     .int("count")
                 log.w("endpointRemove $count hashId=$it")
@@ -487,15 +501,32 @@ class PushRepo(
         // messageJsonを解釈して通知に出す内容を決める
         try {
             pushBase(account).formatPushMessage(account, pm)
-        }catch(ex:Throwable){
-            log.e(ex,"formatPushMessage failed.")
+        } catch (ex: Throwable) {
+            log.e(ex, "formatPushMessage failed.")
             return
         }
 
         daoPushMessage.save(pm)
 
+        val acct = pm.loginAcct
+        if (acct.isNullOrEmpty()) {
+            log.e("can't show notification. missing acct.")
+            return
+        }
+        val notificationId = pm.notificationId
+        if (notificationId.isNullOrEmpty()) {
+            log.e("can't show notification. missing notificationId.")
+            return
+        }
+        if (!allowDupilicateNotification &&
+            daoNotificationShown.duplicateOrPut(acct, notificationId)
+        ) {
+            log.w("can't show notification. it's duplicate. $acct $notificationId")
+            return
+        }
+
         // 解読できた(例外が出なかった)なら通知を出す
-        context.showPushNotification(pm)
+        showPushNotification(pm)
     }
 
     /**
@@ -571,6 +602,77 @@ class PushRepo(
         }?.decodeUTF8()?.decodeJsonObject()?.let {
             pm.messageJson = it
             daoPushMessage.save(pm)
+        }
+    }
+
+    /**
+     * SNSからの通知を表示する
+     */
+    private suspend fun showPushNotification(pm: PushMessage) {
+        if (ncPushMessage.isDissabled(context)) {
+            log.w("ncPushMessage isDissabled.")
+            return
+        }
+
+        val density = context.resources.displayMetrics.density
+        val iconAndColor = pm.notificationIconAndColor()
+
+        suspend fun PushMessage.loadSmallIcon(context: Context): IconCompat {
+            iconSmall?.notEmpty()
+                ?.let { context.loadIcon(pm.iconSmall, (24f * density + 0.5f).toInt()) }
+                ?.let { return IconCompat.createWithBitmap(it) }
+            val iconId = iconAndColor.iconId
+            return IconCompat.createWithResource(context, iconId)
+        }
+
+        val iconSmall = pm.loadSmallIcon(context)
+        val iconBitmapLarge = context.loadIcon(pm.iconLarge, (48f * density + 0.5f).toInt())
+
+        val urlTap = "subwaytooter://pushMessage/${pm.id}"
+        val iTap = context.intentNotificationDelete(urlTap.toUri())
+        val piTap = PendingIntent.getActivity(
+            context,
+            ncPushMessage.pircTap,
+            iTap,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val urlDelete = "${ncPushMessage.uriPrefixDelete}/${pm.id}"
+        val iDelete = context.intentNotificationDelete(urlDelete.toUri())
+        val piDelete =
+            PendingIntent.getBroadcast(
+                context,
+                ncPushMessage.pircDelete,
+                iDelete,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+
+        //  val iTap = intentActMessage(pm.messageDbId)
+        // val piTap = PendingIntent.getActivity(this, nc.pircTap, iTap, PendingIntent.FLAG_IMMUTABLE)
+
+        ncPushMessage.notify(context, urlDelete) {
+            color = iconAndColor.color
+            setSmallIcon(iconSmall)
+            iconBitmapLarge?.let { setLargeIcon(it) }
+            setContentTitle(pm.loginAcct)
+            setContentText(pm.text)
+            setWhen(pm.timestamp)
+            setContentIntent(piTap)
+            setDeleteIntent(piDelete)
+            setAutoCancel(true)
+        }
+    }
+
+    /**
+     * 通知を消す
+     *
+     * - 試験アプリなのであまり積極的に消さない…
+     */
+    fun deleteSnsNotification(messageDbId: Long) {
+        try {
+            ncPushMessage.cancel(context, "${ncPushMessage.uriPrefixDelete}/${messageDbId}")
+        } catch (ex: Throwable) {
+            log.e(ex, "deleteSnsNotification failed. messageDbId=$messageDbId")
         }
     }
 

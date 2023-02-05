@@ -57,7 +57,7 @@ fun ActPost.showMediaAttachment() {
     ivMedia.forEachIndexed { i, v -> showMediaAttachmentOne(v, i) }
 }
 
-fun ActPost.showMedisAttachmentProgress() {
+fun ActPost.showMediaAttachmentProgress() {
     val mergedProgress = attachmentList
         .mapNotNull { it.progress.notEmpty() }
         .joinToString("\n")

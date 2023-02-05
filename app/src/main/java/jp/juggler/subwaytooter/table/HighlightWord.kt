@@ -94,8 +94,8 @@ class HighlightWord(
         private val log = LogCategory("HighlightWord")
 
         override val table = "highlight_word"
-        const val COL_ID = BaseColumns._ID
-        const val COL_NAME = "name"
+        private const val COL_ID = BaseColumns._ID
+        private const val COL_NAME = "name"
         private const val COL_TIME_SAVE = "time_save"
         private const val COL_COLOR_BG = "color_bg"
         private const val COL_COLOR_FG = "color_fg"
@@ -103,36 +103,30 @@ class HighlightWord(
         private const val COL_SOUND_URI = "sound_uri"
         private const val COL_SPEECH = "speech"
 
+        private val metaColumns = MetaColumns(table, initialVersion = 21).apply {
+            column(0, COL_ID, "INTEGER PRIMARY KEY")
+            column(0, COL_NAME, "text not null")
+            column(0, COL_TIME_SAVE, "integer not null")
+            column(0, COL_COLOR_BG, "integer not null default 0")
+            column(0, COL_COLOR_FG, "integer not null default 0")
+            column(0, COL_SOUND_TYPE, "integer not null default 1")
+            column(0, COL_SOUND_URI, "text default null")
+            column(43, COL_SPEECH, "integer default 0")
+            createExtra = {
+                arrayOf(
+                    "create unique index if not exists ${table}_name on ${table}(name)"
+                )
+            }
+        }
+
         override fun onDBCreate(db: SQLiteDatabase) {
             log.d("onDBCreate!")
-            db.execSQL(
-                """create table if not exists $table
-					($COL_ID INTEGER PRIMARY KEY
-					,$COL_NAME text not null
-					,$COL_TIME_SAVE integer not null
-					,$COL_COLOR_BG integer not null default 0
-					,$COL_COLOR_FG integer not null default 0
-					,$COL_SOUND_TYPE integer not null default 1
-					,$COL_SOUND_URI text default null
-					,$COL_SPEECH integer default 0
-					)"""
-            )
-            db.execSQL(
-                "create unique index if not exists ${table}_name on $table(name)"
-            )
+            metaColumns.onDBCreate(db)
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion < 21 && newVersion >= 21) {
-                onDBCreate(db)
-            }
-            if (oldVersion < 43 && newVersion >= 43) {
-                try {
-                    db.execSQL("alter table $table add column $COL_SPEECH integer default 0")
-                } catch (ex: Throwable) {
-                    log.e(ex, "can't add $COL_SPEECH")
-                }
-            }
+            log.d("onDBUpgrade!")
+            metaColumns.onDBUpgrade(db, oldVersion, newVersion)
         }
 
         const val SOUND_TYPE_NONE = 0
@@ -176,7 +170,7 @@ class HighlightWord(
                 } catch (ex: Throwable) {
                     log.e(ex, "nameSet failed.")
                 }
-            }.takeIf{ it.isNotEmpty }
+            }.takeIf { it.isNotEmpty }
 
         fun hasTextToSpeechHighlightWord(): Boolean = try {
             (db.rawQuery(

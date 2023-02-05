@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoClientInfo
 import jp.juggler.subwaytooter.testutil.TestDispatcherRule
 import jp.juggler.subwaytooter.testutil.assertThrowsSuspend
 import jp.juggler.subwaytooter.util.SimpleHttpClient
@@ -1082,14 +1083,14 @@ class TestTootApiClient {
             AuthBase.KEY_CLIENT_SCOPE to "scope",
         )
 
-        ClientInfo.save(testHost, AuthBase.clientName, clientInfo.toString())
+        daoClientInfo.save(testHost, AuthBase.clientName, clientInfo.toString())
 
         // コールバックのエラーケース
         arrayOf(
             // handle error message
             Triple("?error=e1", IllegalStateException::class.java, "e1"),
             Triple("?error_description=e1", IllegalStateException::class.java, "e1"),
-            Triple("?error=e1&error_description=e2", IllegalStateException::class.java, "e1 e2"),
+            Triple("?error=e1&error_description=e2", IllegalStateException::class.java, "e2\ne1"),
             // missing 'code'
             Triple("", IllegalStateException::class.java, "missing code in callback url."),
             Triple("?", IllegalStateException::class.java, "missing code in callback url."),

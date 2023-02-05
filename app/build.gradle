@@ -204,17 +204,13 @@ def willApplyGoogleService() {
     String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
     Matcher matcher
 
-    matcher = Pattern.compile("assemble|generate", Pattern.CASE_INSENSITIVE).matcher(tskReqStr)
-    if (!matcher.find()) {
-        // not assemble or generate task.
-        return false
-    }
-
-    matcher = Pattern.compile("(?:assemble|generate)fcm\\w+", Pattern.CASE_INSENSITIVE).matcher(tskReqStr)
+    matcher = Pattern.compile(
+            "(assemble|generate|connected)Fcm",
+    ).matcher(tskReqStr)
     if (!matcher.find()) {
         println "willApplyGoogleService=false. $tskReqStr"
         return false
-    } else {
+    }else{
         println "willApplyGoogleService=true. $tskReqStr"
         return true
     }

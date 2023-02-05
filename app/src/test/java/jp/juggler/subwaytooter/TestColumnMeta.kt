@@ -44,7 +44,8 @@ class TestColumnMeta {
             61 to "alter table access_info add column confirm_reaction integer default 1",
         )
         for (newVersion in 1..expectMap.maxOf { it.key }) {
-            val actualSql = columnList.addColumnsSql(newVersion - 1, newVersion).joinToString(";")
+            val actualSql = columnList.upgradeSql(db = null, newVersion - 1, newVersion)
+                .joinToString(";")
             val expectSql = expectMap[newVersion] ?: ""
             assertEquals("SavedAccount v$newVersion", expectSql, actualSql)
         }

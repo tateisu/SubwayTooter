@@ -24,8 +24,8 @@ class SuspendProgress(val activity: AppCompatActivity) {
         message: String,
         title: String,
         cancellable: Boolean,
-        block: suspend (Reporter) -> T?,
-    ): T? = Reporter().use { reporter ->
+        block: suspend (Reporter) -> T,
+    ): T = Reporter().use { reporter ->
         try {
             dialog.setContentView(views.root)
             reporter.setMessage(message)
@@ -87,8 +87,8 @@ suspend fun <T : Any?> AppCompatActivity.runInProgress(
     message: String = "please wait…",
     title: String = "",
     cancellable: Boolean = true,
-    block: suspend (SuspendProgress.Reporter) -> T?,
-): T? = SuspendProgress(this).run(
+    block: suspend (SuspendProgress.Reporter) -> T,
+): T = SuspendProgress(this).run(
     message = message,
     title = title,
     cancellable = cancellable,

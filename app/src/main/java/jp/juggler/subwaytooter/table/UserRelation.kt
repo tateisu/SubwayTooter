@@ -71,22 +71,22 @@ class UserRelation(
         private const val COL_NOTE = "note"
         private const val COL_NOTIFYING = "notifying"
 
-        val columnList: ColumnMeta.List = ColumnMeta.List(table, 30).apply {
-            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
-            ColumnMeta(this, 0, COL_TIME_SAVE, "integer not null")
-            ColumnMeta(this, 0, COL_DB_ID, "integer not null")
-            ColumnMeta(this, 0, COL_WHO_ID, "text not null")
-            ColumnMeta(this, 0, COL_FOLLOWING, "integer not null")
-            ColumnMeta(this, 0, COL_FOLLOWED_BY, "integer not null")
-            ColumnMeta(this, 0, COL_BLOCKING, "integer not null")
-            ColumnMeta(this, 0, COL_MUTING, "integer not null")
-            ColumnMeta(this, 0, COL_REQUESTED, "integer not null")
-            ColumnMeta(this, 0, COL_FOLLOWING_REBLOGS, "integer not null")
-            ColumnMeta(this, 32, COL_ENDORSED, "integer default 0")
-            ColumnMeta(this, 34, COL_BLOCKED_BY, "integer default 0")
-            ColumnMeta(this, 35, COL_REQUESTED_BY, "integer default 0")
-            ColumnMeta(this, 55, COL_NOTE, "text default null")
-            ColumnMeta(this, 58, COL_NOTIFYING, "integer default 0")
+        val columnList= MetaColumns(table, 30).apply {
+            column( 0, COL_ID, "INTEGER PRIMARY KEY")
+            column( 0, COL_TIME_SAVE, "integer not null")
+            column( 0, COL_DB_ID, "integer not null")
+            column( 0, COL_WHO_ID, "text not null")
+            column( 0, COL_FOLLOWING, "integer not null")
+            column( 0, COL_FOLLOWED_BY, "integer not null")
+            column( 0, COL_BLOCKING, "integer not null")
+            column( 0, COL_MUTING, "integer not null")
+            column( 0, COL_REQUESTED, "integer not null")
+            column( 0, COL_FOLLOWING_REBLOGS, "integer not null")
+            column( 32, COL_ENDORSED, "integer default 0")
+            column( 34, COL_BLOCKED_BY, "integer default 0")
+            column( 35, COL_REQUESTED_BY, "integer default 0")
+            column( 55, COL_NOTE, "text default null")
+            column( 58, COL_NOTIFYING, "integer default 0")
             createExtra = {
                 arrayOf(
                     "create unique index if not exists ${table}_id on $table($COL_DB_ID,$COL_WHO_ID)",

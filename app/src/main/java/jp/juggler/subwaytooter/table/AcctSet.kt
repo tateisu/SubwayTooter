@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import jp.juggler.util.data.ColumnMeta
+import jp.juggler.util.data.MetaColumns
 import jp.juggler.util.data.TableCompanion
 import jp.juggler.util.log.LogCategory
 
@@ -17,10 +17,10 @@ class AcctSet private constructor() {
         private const val COL_TIME_SAVE = "time_save"
         private const val COL_ACCT = "acct"
 
-        val columnList: ColumnMeta.List = ColumnMeta.List(table, 7).apply {
-            ColumnMeta(this, 0, COL_ID, "INTEGER PRIMARY KEY")
-            ColumnMeta(this, 0, COL_TIME_SAVE, "integer not null")
-            ColumnMeta(this, 0, COL_ACCT, "text not null")
+        val columnList = MetaColumns(table, 7).apply {
+            column(0, COL_ID, "INTEGER PRIMARY KEY")
+            column(0, COL_TIME_SAVE, "integer not null")
+            column(0, COL_ACCT, "text not null")
 
             createExtra = {
                 arrayOf(

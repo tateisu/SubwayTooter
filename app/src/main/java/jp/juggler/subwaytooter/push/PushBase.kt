@@ -37,6 +37,7 @@ abstract class PushBase {
         subLog: SubscriptionLogger,
         a: SavedAccount,
         willRemoveSubscription: Boolean,
+        forceUpdate:Boolean,
     )
 
     // プッシュメッセージのJSONデータを通知用に整形

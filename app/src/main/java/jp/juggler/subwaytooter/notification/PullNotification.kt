@@ -59,7 +59,7 @@ object PullNotification {
             it.id == nc.notificationId && it.tag.startsWith("$tag/")
         }?.map { Pair(it.tag, it) }?.toMutableMap() ?: mutableMapOf()
 
-    fun NotificationManager.showMessageNotification(
+    fun showMessageNotification(
         context: Context,
         account: SavedAccount,
         trackingType: TrackingType,
@@ -103,9 +103,7 @@ object PullNotification {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val builder = NotificationCompat.Builder(context, nc.id).apply {
-            priority = nc.priority
-
+        nc.notify(context, notificationTag) {
             setContentIntent(piTap)
             setDeleteIntent(piDelete)
             setAutoCancel(true)
@@ -120,17 +118,10 @@ object PullNotification {
             // 束ねられた通知をタップしても pi_click が実行されないので困るため、
             // アカウント別にグループキーを設定する
             setGroup(context.packageName + ":" + account.acct.ascii)
+
+            log.d("showNotification[${account.acct.pretty}] creating notification(3)")
+            setContent(this)
         }
-
-        log.d("showNotification[${account.acct.pretty}] creating notification(3)")
-        setContent(builder)
-
-        log.d("showNotification[${account.acct.pretty}] set notification...")
-        notify(
-            notificationTag,
-            nc.notificationId,
-            builder.build()
-        )
     }
 
     fun openNotificationChannelSetting(context: Context) {

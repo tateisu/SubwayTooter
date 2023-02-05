@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.push
 
 import android.content.Context
 import androidx.work.workDataOf
+import jp.juggler.subwaytooter.notification.dialogOrAlert
 import jp.juggler.subwaytooter.notification.showAlertNotification
 import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueueUpEndpoint
 import jp.juggler.subwaytooter.push.PushWorker.Companion.launchPushWorker
@@ -39,7 +40,7 @@ class UpMessageReceiver : MessagingReceiver() {
      */
     override fun onRegistrationFailed(context: Context, instance: String) {
         checkAppForeground("UpMessageReceiver.onRegistrationFailed")
-        context.showAlertNotification("onRegistrationFailed: instance=$instance, thread=${Thread.currentThread().name}")
+        context.dialogOrAlert("onRegistrationFailed: instance=$instance, thread=${Thread.currentThread().name}")
     }
 
     /**

@@ -3,7 +3,9 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.style.RelativeSizeSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
@@ -12,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.*
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
@@ -19,6 +23,8 @@ import org.jetbrains.anko.textColor
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
+private val log = LogCategory("pickAccount")
 
 @SuppressLint("InflateParams")
 suspend fun AppCompatActivity.pickAccount(
@@ -147,20 +153,25 @@ suspend fun AppCompatActivity.pickAccount(
             b.minHeight = (0.5f + 32f * density).toInt()
 
             val sb = SpannableStringBuilder(ac.nickname)
-// TODO エラー状態を表示する
-//            if (a.lastNotificationError?.isNotEmpty() == true) {
-//                sb.append("\n")
-//                val start = sb.length
-//                sb.append(a.lastNotificationError)
-//                val end = sb.length
-//                sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-//            } else if (a.last_subscription_error?.isNotEmpty() == true) {
-//                sb.append("\n")
-//                val start = sb.length
-//                sb.append(a.last_subscription_error)
-//                val end = sb.length
-//                sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-//            }
+            try {
+                val status = daoAccountNotificationStatus.load(a.acct)
+                val lastNotificationError = status?.lastNotificationError?.notEmpty()
+                val lastSubscriptionError = status?.lastSubscriptionError?.notEmpty()
+                (lastNotificationError ?: lastSubscriptionError)?.let { message ->
+                    sb.append("\n")
+                    val start = sb.length
+                    sb.append(message)
+                    val end = sb.length
+                    sb.setSpan(
+                        RelativeSizeSpan(0.7f),
+                        start,
+                        end,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+            } catch (ex: Throwable) {
+                log.e(ex, "can't get notification status for ${a.acct}")
+            }
             b.text = sb
 
             b.setOnClickListener {

@@ -1,11 +1,11 @@
 package jp.juggler.subwaytooter.notification
 
-import android.Manifest
 import android.app.ActivityManager
+import android.app.PendingIntent
 import android.content.Context
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
+import android.content.Intent
 import androidx.work.*
+import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefS
@@ -29,8 +29,10 @@ class PollingWorker2(
     companion object {
         private val log = LogCategory("PollingWorker")
         private const val KEY_ACCOUNT_DB_ID = "accountDbId"
-
         private const val WORK_NAME = "PollingWorker2"
+
+        private val nc = NotificationChannels.PullWorker
+        private var lastMessage: String? = null
 
         suspend fun cancelPolling(context: Context) {
             val isOk = WorkManager.getInstance(context)
@@ -100,22 +102,14 @@ class PollingWorker2(
         return processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
     }
 
-    private suspend fun showMessage(text: String) =
-        CheckerNotification.showMessage(applicationContext, text) { n, nc ->
-            try {
-                if (ActivityCompat.checkSelfPermission(
-                        applicationContext,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    log.w("missing POST_NOTIFICATIONS. checker=$text")
-                } else {
-                    setForegroundAsync(ForegroundInfo(nc.notificationId, n)).await()
-                }
-            } catch (ex: Throwable) {
-                log.e(ex, "showMessage failed.")
-            }
+    private suspend fun showMessage(text: String) {
+        try {
+            messageToForegroundInfo(text)
+                ?.let { setForegroundAsync(it).await() }
+        } catch (ex: Throwable) {
+            log.e(ex, "showMessage failed.")
         }
+    }
 
     private fun stateMapToString(map: Map<PollingState, List<String>>) =
         StringBuilder().apply {
@@ -159,5 +153,33 @@ class PollingWorker2(
             }
         }
         return Result.success()
+    }
+
+    private fun messageToForegroundInfo(
+        text: String,
+    ): ForegroundInfo? {
+        // テキストが変化していないなら更新しない
+        if (text.isEmpty() || text == lastMessage) return null
+
+        lastMessage = text
+        log.i(text)
+
+        val context = applicationContext
+
+        // 通知タップ時のPendingIntent
+        val iTap = Intent(context, ActMain::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val piTap = PendingIntent.getActivity(
+            context,
+            nc.pircTap,
+            iTap,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        return nc.createForegroundInfo(
+            context,
+            text = text,
+            piTap = piTap,
+        )
     }
 }

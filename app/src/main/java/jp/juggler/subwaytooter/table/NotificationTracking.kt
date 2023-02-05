@@ -6,10 +6,7 @@ import android.provider.BaseColumns
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.putMayNull
-import jp.juggler.util.data.TableCompanion
-import jp.juggler.util.data.getLong
-import jp.juggler.util.data.minComparable
-import jp.juggler.util.data.replaceTo
+import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,80 +19,71 @@ class NotificationTracking {
             dirty = true; field = value
         }
 
+    // アカウントDBの行ID。 サーバ側のIDではない
     private var accountDbId: Long = 0
         set(value) {
             dirty = true; field = value
         }
 
+    // 返信だけ通知グループを分ける
     private var notificationType: String = ""
         set(value) {
             dirty = true; field = value
         }
 
+    // 通知ID。ここまで既読
     var nid_read: EntityId? = null
         set(value) {
             dirty = true; field = value
         }
 
+    // 通知ID。もっとも最近取得したもの
     var nid_show: EntityId? = null
         set(value) {
             dirty = true; field = value
         }
 
+    // 最後に表示した通知のID
     var post_id: EntityId? = null
         set(value) {
             dirty = true; field = value
         }
 
+    // 最後に表示した通知の作成時刻
     var post_time: Long = 0
         set(value) {
             dirty = true; field = value
         }
 
     companion object : TableCompanion {
-
         private val log = LogCategory("NotificationTracking")
-
         override val table = "noti_trac"
-
         private const val COL_ID = BaseColumns._ID
-
-        // アカウントDBの行ID。 サーバ側のIDではない
         private const val COL_ACCOUNT_DB_ID = "a"
-
-        // 通知ID。ここまで既読
         private const val COL_NID_READ = "nr"
-
-        // 通知ID。もっとも最近取得したもの
         private const val COL_NID_SHOW = "ns"
-
-        // 最後に表示した通知のID
         private const val COL_POST_ID = "pi"
-
-        // 最後に表示した通知の作成時刻
         private const val COL_POST_TIME = "pt"
-
-        // 返信だけ通知グループを分ける
         private const val COL_NOTIFICATION_TYPE = "nt"
 
-        override fun onDBCreate(db: SQLiteDatabase) {
+        private val metaColumns = MetaColumns(table, initialVersion = 0).apply {
+            column(0, COL_ID, "INTEGER PRIMARY KEY")
+            column(0, COL_ACCOUNT_DB_ID, "integer not null")
+            column(0, COL_NID_READ, "text")
+            column(0, COL_NID_SHOW, "text")
+            column(0, COL_POST_ID, "text")
+            column(0, COL_POST_TIME, "integer default 0")
+            column(40, COL_NOTIFICATION_TYPE, "text default ''")
+            deleteBeforeCreate = true
+            createExtra = {
+                arrayOf(
+                    "create unique index if not exists ${table}_b on $table($COL_ACCOUNT_DB_ID,$COL_NOTIFICATION_TYPE)"
+                )
+            }
+        }
 
-            db.execSQL(
-                """
-				create table if not exists $table
-				($COL_ID INTEGER PRIMARY KEY
-				,$COL_ACCOUNT_DB_ID integer not null
-				,$COL_NID_READ text
-				,$COL_NID_SHOW text
-				,$COL_POST_ID text
-				,$COL_POST_TIME integer default 0
-				,$COL_NOTIFICATION_TYPE text default ''
-				)
-				"""
-            )
-            db.execSQL(
-                "create unique index if not exists ${table}_b on $table ($COL_ACCOUNT_DB_ID,$COL_NOTIFICATION_TYPE)"
-            )
+        override fun onDBCreate(db: SQLiteDatabase) {
+            metaColumns.onDBCreate(db)
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -106,12 +94,12 @@ class NotificationTracking {
                 } catch (ex: Throwable) {
                     log.e(ex, "delete DB failed.")
                 }
-                onDBCreate(db)
+                metaColumns.onDBCreate(db)
                 return
             }
 
             if (oldVersion < 2 && newVersion >= 2) {
-                onDBCreate(db)
+                metaColumns.onDBCreate(db)
                 return
             }
 
@@ -121,11 +109,9 @@ class NotificationTracking {
                 } catch (ex: Throwable) {
                     log.e(ex, "drop index failed.")
                 }
-                try {
-                    db.execSQL("alter table $table add column $COL_NOTIFICATION_TYPE text default ''")
-                } catch (ex: Throwable) {
-                    log.e(ex, "can't add $COL_NOTIFICATION_TYPE")
-                }
+            }
+            metaColumns.onDBUpgrade(db, oldVersion, newVersion)
+            if (oldVersion < 40 && newVersion >= 40) {
                 try {
                     db.execSQL(
                         "create unique index if not exists ${table}_b on $table ($COL_ACCOUNT_DB_ID,$COL_NOTIFICATION_TYPE)"

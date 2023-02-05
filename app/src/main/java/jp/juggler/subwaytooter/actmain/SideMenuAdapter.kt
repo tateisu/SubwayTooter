@@ -256,6 +256,10 @@ class SideMenuAdapter(
             accountOpenSetting()
         },
 
+        Item(icon = R.drawable.outline_delivery_dining_24, title = R.string.push_message_history) {
+            startActivity(Intent(this, ActPushMessageList::class.java))
+        },
+
         Item(),
         Item(title = R.string.column),
 

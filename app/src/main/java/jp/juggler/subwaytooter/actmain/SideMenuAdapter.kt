@@ -534,7 +534,9 @@ class SideMenuAdapter(
                         )
                         setOnClickListener {
                             drawer.closeDrawer(GravityCompat.START)
-                            if (actMain.prNotification.checkOrLaunch()) {
+                            if (actMain.prNotification.spec.listNotGranded(actMain).isNotEmpty()) {
+                                actMain.prNotification.openAppSetting(actMain)
+                            } else {
                                 filterListItems()
                             }
                         }

@@ -136,7 +136,7 @@ class PermissionRequester(
         }
     }
 
-    private fun openAppSetting(activity: FragmentActivity) {
+    fun openAppSetting(activity: FragmentActivity) {
         try {
             Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,

@@ -27,14 +27,8 @@ data class PushMessage(
     var notificationId: String? = null,
     // 通知の種別。小アイコン、アクセント色、Misskeyの文言に影響する
     var notificationType: String? = null,
-    // 通知表示の本文
-    var text: String? = null,
-    // 展開表示した本文
-    var textExpand: String? = null,
-    // 小アイコンURL。昔のMastodonはバッジ画像が提供されていた。
-    var iconSmall: String? = null,
-    // 大アイコンURL。通知の原因となったユーザのアイコン画像。
-    var iconLarge: String? = null,
+    // 通知に表示するための情報をまとめたJSONデータ。
+    var formatJson: JsonObject = JsonObject(),
     // WebPushで送られたJSONデータ
     var messageJson: JsonObject? = null,
     // WebPushのデコードに使うJSONデータ
@@ -42,6 +36,34 @@ data class PushMessage(
     // アプリサーバから送られてきたバイナリデータ
     var rawBody: ByteArray? = null,
 ) {
+    // 通知表示の本文
+    var text: String?
+        get() = formatJson.string(JSON_TEXT)
+        set(value) {
+            formatJson[JSON_TEXT] = value
+        }
+
+    // 展開表示した本文
+    var textExpand: String?
+        get() = formatJson.string(JSON_TEXT_EXPAND)
+        set(value) {
+            formatJson[JSON_TEXT_EXPAND] = value
+        }
+
+    // 小アイコンURL。昔のMastodonはバッジ画像が提供されていた。
+    var iconSmall: String?
+        get() = formatJson.string(JSON_ICON_SMALL)
+        set(value) {
+            formatJson[JSON_ICON_SMALL] = value
+        }
+
+    // 大アイコンURL。通知の原因となったユーザのアイコン画像。
+    var iconLarge: String?
+        get() = formatJson.string(JSON_ICON_LARGE)
+        set(value) {
+            formatJson[JSON_ICON_LARGE] = value
+        }
+
     companion object : TableCompanion {
         private val log = LogCategory("PushMessage")
         const val TABLE = "push_message"
@@ -53,13 +75,16 @@ data class PushMessage(
         private const val COL_TIME_DISMISS = "time_dismiss"
         private const val COL_NOTIFICATION_ID = "notification_id"
         private const val COL_NOTIFICATION_TYPE = "notification_type"
-        private const val COL_TEXT = "text"
-        private const val COL_TEXT_EXPAND = "text_expand"
-        private const val COL_ICON_SMALL = "icon_small"
-        private const val COL_ICON_LARGE = "icon_large"
+        private const val COL_FORMAT_JSON = "format_json"
         private const val COL_MESSAGE_JSON = "message_json"
         private const val COL_HEADER_JSON = "header_json"
         private const val COL_RAW_BODY = "raw_body"
+
+        //
+        private const val JSON_TEXT = "text"
+        private const val JSON_TEXT_EXPAND = "text_expand"
+        private const val JSON_ICON_SMALL = "icon_small"
+        private const val JSON_ICON_LARGE = "icon_large"
 
         val columnList = MetaColumns(TABLE, initialVersion = 65).apply {
             deleteBeforeCreate = true
@@ -70,14 +95,11 @@ data class PushMessage(
             column(0, COL_TIME_DISMISS, MetaColumns.TS_ZERO_NOT_NULL)
             column(0, COL_NOTIFICATION_ID, MetaColumns.TS_TEXT_NULL)
             column(0, COL_NOTIFICATION_TYPE, MetaColumns.TS_TEXT_NULL)
-            column(0, COL_TEXT, MetaColumns.TS_TEXT_NULL)
-            column(0, COL_TEXT_EXPAND, MetaColumns.TS_TEXT_NULL)
-            column(0, COL_ICON_SMALL, MetaColumns.TS_TEXT_NULL)
-            column(0, COL_ICON_LARGE, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_FORMAT_JSON, MetaColumns.TS_TEXT_NULL)
             column(0, COL_MESSAGE_JSON, MetaColumns.TS_TEXT_NULL)
             column(0, COL_HEADER_JSON, MetaColumns.TS_TEXT_NULL)
             column(0, COL_RAW_BODY, MetaColumns.TS_BLOB_NULL)
-            createExtra={
+            createExtra = {
                 arrayOf(
                     "create index if not exists ${TABLE}_save on $TABLE($COL_TIME_SAVE)",
                     "create index if not exists ${TABLE}_acct_dismiss on $TABLE($COL_LOGIN_ACCT,$COL_TIME_DISMISS)",
@@ -113,10 +135,7 @@ data class PushMessage(
         val idxTimeDismiss = cursor.getColumnIndex(COL_TIME_DISMISS)
         val idxNotificationId = cursor.getColumnIndex(COL_NOTIFICATION_ID)
         val idxNotificationType = cursor.getColumnIndex(COL_NOTIFICATION_TYPE)
-        val idxText = cursor.getColumnIndex(COL_TEXT)
-        val idxTextExpand = cursor.getColumnIndex(COL_TEXT_EXPAND)
-        val idxIconSmall = cursor.getColumnIndex(COL_ICON_SMALL)
-        val idxIconLarge = cursor.getColumnIndex(COL_ICON_LARGE)
+        val idxFormatJson = cursor.getColumnIndex(COL_FORMAT_JSON)
         val idxMessageJson = cursor.getColumnIndex(COL_MESSAGE_JSON)
         val idxHeaderJson = cursor.getColumnIndex(COL_HEADER_JSON)
         val idxRawBody = cursor.getColumnIndex(COL_RAW_BODY)
@@ -130,10 +149,12 @@ data class PushMessage(
                 timeDismiss = cursor.getLong(idxTimeDismiss),
                 notificationId = cursor.getStringOrNull(idxNotificationId),
                 notificationType = cursor.getStringOrNull(idxNotificationType),
-                text = cursor.getStringOrNull(idxText),
-                textExpand = cursor.getStringOrNull(idxTextExpand),
-                iconSmall = cursor.getStringOrNull(idxIconSmall),
-                iconLarge = cursor.getStringOrNull(idxIconLarge),
+                formatJson = try {
+                    cursor.getStringOrNull(idxFormatJson)?.decodeJsonObject()
+                } catch (ex: Throwable) {
+                    log.e(ex, "can't decode formatJson.")
+                    null
+                } ?: JsonObject(),
                 messageJson = cursor.getStringOrNull(idxMessageJson)?.decodeJsonObject(),
                 headerJson = cursor.getStringOrNull(idxHeaderJson)?.decodeJsonObject(),
                 rawBody = cursor.getBlobOrNull(idxRawBody),
@@ -160,10 +181,7 @@ data class PushMessage(
         put(COL_TIME_DISMISS, timeDismiss)
         put(COL_NOTIFICATION_ID, notificationId)
         put(COL_NOTIFICATION_TYPE, notificationType)
-        put(COL_TEXT, text)
-        put(COL_TEXT_EXPAND, textExpand)
-        put(COL_ICON_SMALL, iconSmall)
-        put(COL_ICON_LARGE, iconLarge)
+        put(COL_FORMAT_JSON, formatJson.toString())
         put(COL_MESSAGE_JSON, messageJson?.toString())
         put(COL_HEADER_JSON, headerJson?.toString())
         put(COL_RAW_BODY, rawBody)

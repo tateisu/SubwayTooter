@@ -11,10 +11,7 @@ import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.PushRepo.Companion.followDomain
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.util.data.decodeBase64
-import jp.juggler.util.data.encodeBase64Url
-import jp.juggler.util.data.notBlank
-import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.time.parseTimeIso8601
 import java.security.Provider
@@ -161,7 +158,7 @@ class PushMastodon(
         pm.text = arrayOf(
             // あなたのトゥートが tateisu 🤹 さんにお気に入り登録されました
             json.string("title"),
-        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n")
+        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(400)
         pm.textExpand = arrayOf(
             // あなたのトゥートが tateisu 🤹 さんにお気に入り登録されました
             json.string("title"),
@@ -169,7 +166,7 @@ class PushMastodon(
             json.string("body"),
             // 対象の投稿の本文？ (古い
             json.jsonObject("data")?.string("content"),
-        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n")
+        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(400)
         when {
             pm.notificationType.isNullOrEmpty() -> {
                 // old mastodon

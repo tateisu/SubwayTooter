@@ -11,10 +11,7 @@ import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.PushRepo.Companion.followDomain
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.util.data.decodeBase64
-import jp.juggler.util.data.encodeBase64Url
-import jp.juggler.util.data.notBlank
-import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.*
 
 import java.security.Provider
 import java.security.SecureRandom
@@ -34,7 +31,7 @@ class PushMisskey(
         subLog: SubscriptionLogger,
         a: SavedAccount,
         willRemoveSubscription: Boolean,
-        forceUpdate:Boolean,
+        forceUpdate: Boolean,
     ) {
         val newUrl = snsCallbackUrl(a)
 
@@ -194,7 +191,17 @@ class PushMisskey(
                             else -> false
                         }
                     }
-                ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n")
+                ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(128)
+                pm.textExpand = arrayOf(
+                    user?.string("username"),
+                    notificationType,
+                    body?.string("text")?.takeIf {
+                        when (notificationType) {
+                            "mention", "quote" -> true
+                            else -> false
+                        }
+                    }
+                ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(400)
             }
             // 通知以外のイベントは全部無視したい
             else -> error("謎のイベント $eventType user=${user?.string("username")}")

@@ -152,10 +152,10 @@ fun ActMain.follow(
                         whoRef.decoded_display_name,
                         daoAcctColor.getNickname(accessInfo)
                     ),
-                    accessInfo.confirm_follow_locked,
+                    accessInfo.confirmFollowLocked,
                 ) { newConfirmEnabled ->
-                    accessInfo.confirm_follow_locked = newConfirmEnabled
-                    daoSavedAccount.saveSetting(accessInfo)
+                    accessInfo.confirmFollowLocked = newConfirmEnabled
+                    daoSavedAccount.save(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             } else if (bFollow) {
@@ -165,10 +165,10 @@ fun ActMain.follow(
                         whoRef.decoded_display_name,
                         daoAcctColor.getNickname(accessInfo)
                     ),
-                    accessInfo.confirm_follow
+                    accessInfo.confirmFollow
                 ) { newConfirmEnabled ->
-                    accessInfo.confirm_follow = newConfirmEnabled
-                    daoSavedAccount.saveSetting(accessInfo)
+                    accessInfo.confirmFollow = newConfirmEnabled
+                    daoSavedAccount.save(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             } else {
@@ -178,10 +178,10 @@ fun ActMain.follow(
                         whoRef.decoded_display_name,
                         daoAcctColor.getNickname(accessInfo)
                     ),
-                    accessInfo.confirm_unfollow
+                    accessInfo.confirmUnfollow
                 ) { newConfirmEnabled ->
-                    accessInfo.confirm_unfollow = newConfirmEnabled
-                    daoSavedAccount.saveSetting(accessInfo)
+                    accessInfo.confirmUnfollow = newConfirmEnabled
+                    daoSavedAccount.save(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             }
@@ -314,10 +314,10 @@ private fun ActMain.followRemote(
                         daoAcctColor.getNickname(acct),
                         daoAcctColor.getNickname(accessInfo)
                     ),
-                    accessInfo.confirm_follow_locked,
+                    accessInfo.confirmFollowLocked,
                 ) { newConfirmEnabled ->
-                    accessInfo.confirm_follow_locked = newConfirmEnabled
-                    daoSavedAccount.saveSetting(accessInfo)
+                    accessInfo.confirmFollowLocked = newConfirmEnabled
+                    daoSavedAccount.save(accessInfo)
                     reloadAccountSetting(accessInfo)
                 }
             } else {
@@ -327,10 +327,10 @@ private fun ActMain.followRemote(
                         daoAcctColor.getNickname(acct),
                         daoAcctColor.getNickname(accessInfo)
                     ),
-                    accessInfo.confirm_follow
+                    accessInfo.confirmFollow
                 ) { newConfirmEnabled ->
-                    accessInfo.confirm_follow = newConfirmEnabled
-                    daoSavedAccount.saveSetting(accessInfo)
+                    accessInfo.confirmFollow = newConfirmEnabled
+                    daoSavedAccount.save(accessInfo)
                     reloadAccountSetting(accessInfo)
                 }
             }

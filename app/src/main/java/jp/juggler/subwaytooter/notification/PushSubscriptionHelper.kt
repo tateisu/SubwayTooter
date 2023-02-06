@@ -48,15 +48,15 @@ class PushSubscriptionHelper(
             }
     }
 
-    val flags = account.notification_boost.booleanToInt(1) +
-            account.notification_favourite.booleanToInt(2) +
-            account.notification_follow.booleanToInt(4) +
-            account.notification_mention.booleanToInt(8) +
-            account.notification_reaction.booleanToInt(16) +
-            account.notification_vote.booleanToInt(32) +
-            account.notification_follow_request.booleanToInt(64) +
-            account.notification_post.booleanToInt(128) +
-            account.notification_update.booleanToInt(256)
+    val flags = account.notificationBoost.booleanToInt(1) +
+            account.notificationFavourite.booleanToInt(2) +
+            account.notificationFollow.booleanToInt(4) +
+            account.notificationMention.booleanToInt(8) +
+            account.notificationReaction.booleanToInt(16) +
+            account.notificationVote.booleanToInt(32) +
+            account.notificationFollowRequest.booleanToInt(64) +
+            account.notificationPost.booleanToInt(128) +
+            account.notificationUpdate.booleanToInt(256)
 
     private val logBuffer = StringBuilder()
 
@@ -683,7 +683,7 @@ class PushSubscriptionHelper(
             })
             put("data", JsonObject().apply {
                 put("alerts", newAlerts)
-                account.push_policy?.let { put("policy", it) }
+                account.pushPolicy?.let { put("policy", it) }
             })
         }
 

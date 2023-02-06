@@ -183,7 +183,7 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
             llContentWarning.visibility = View.VISIBLE
             tvContentWarning.text = status.decoded_spoiler_text
             spoilerInvalidator.register(status.decoded_spoiler_text)
-            val cwShown = daoContentWarning.isShown(status, accessInfo.expand_cw)
+            val cwShown = daoContentWarning.isShown(status, accessInfo.expandCw)
             setContentVisibility(cwShown)
         }
 
@@ -192,7 +192,7 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
             llContentWarning.visibility = View.VISIBLE
             tvContentWarning.text = r.decodedSpoilerText
             spoilerInvalidator.register(r.decodedSpoilerText)
-            val cwShown = daoContentWarning.isShown(status, accessInfo.expand_cw)
+            val cwShown = daoContentWarning.isShown(status, accessInfo.expandCw)
             setContentVisibility(cwShown)
         }
 
@@ -301,7 +301,7 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
         // hide sensitive media
         val defaultShown = when {
             column.hideMediaDefault -> false
-            accessInfo.dont_hide_nsfw -> true
+            accessInfo.dontHideNsfw -> true
             else -> !status.sensitive
         }
         val isShown = daoMediaShown.isShown(status, defaultShown)

@@ -374,7 +374,7 @@ class AttachmentUploader(
                 val multipartBuilder = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
 
-                val apiKey = account.token_info?.string(AuthBase.KEY_API_KEY_MISSKEY)
+                val apiKey = account.tokenJson?.string(AuthBase.KEY_API_KEY_MISSKEY)
                 if (apiKey?.isNotEmpty() == true) {
                     multipartBuilder.addFormDataPart("i", apiKey)
                 }

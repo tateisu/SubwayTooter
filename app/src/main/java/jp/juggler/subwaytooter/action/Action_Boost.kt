@@ -217,15 +217,15 @@ private class BoostImpl(
                         daoAcctColor.getNickname(accessInfo)
                     ),
                     when (bSet) {
-                        true -> accessInfo.confirm_boost
-                        else -> accessInfo.confirm_unboost
+                        true -> accessInfo.confirmBoost
+                        else -> accessInfo.confirmUnboost
                     }
                 ) { newConfirmEnabled ->
                     when (bSet) {
-                        true -> accessInfo.confirm_boost = newConfirmEnabled
-                        else -> accessInfo.confirm_unboost = newConfirmEnabled
+                        true -> accessInfo.confirmBoost = newConfirmEnabled
+                        else -> accessInfo.confirmUnboost = newConfirmEnabled
                     }
-                    daoSavedAccount.saveSetting(accessInfo)
+                    daoSavedAccount.save(accessInfo)
                     activity.reloadAccountSetting(accessInfo)
                 }
             }

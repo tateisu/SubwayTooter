@@ -170,7 +170,7 @@ class PollingChecker(
 
     private fun createPolicyFilter(
         account: SavedAccount,
-    ): (TootNotification) -> Boolean = when (account.push_policy) {
+    ): (TootNotification) -> Boolean = when (account.pushPolicy) {
 
         "followed" -> { it ->
             val who = it.account
@@ -311,7 +311,7 @@ class PollingChecker(
                                 "${result.error} ${result.requestInfo}".trim()
                             )
                             if (result.error?.contains("Timeout") == true &&
-                                !account.dont_show_timeout
+                                !account.dontShowTimeout
                             ) {
                                 progress(account, PollingState.Timeout)
                             }

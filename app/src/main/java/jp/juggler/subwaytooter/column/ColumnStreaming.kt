@@ -374,7 +374,7 @@ fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {
     // userId が自分かどうか調べる
     // アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
     // （でないとリアクションの2重カウントなどが発生してしまう)
-    val myId = EntityId.from(accessInfo.token_info, AuthBase.KEY_USER_ID)
+    val myId = EntityId.from(accessInfo.tokenJson, AuthBase.KEY_USER_ID)
     if (myId == null) {
         log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
     }

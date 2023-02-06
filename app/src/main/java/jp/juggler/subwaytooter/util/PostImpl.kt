@@ -466,10 +466,10 @@ class PostImpl(
                 R.string.confirm_post_from,
                 daoAcctColor.getNickname(account)
             ),
-            account.confirm_post
+            account.confirmPost
         ) { newConfirmEnabled ->
-            account.confirm_post = newConfirmEnabled
-            daoSavedAccount.saveSetting(account)
+            account.confirmPost = newConfirmEnabled
+            daoSavedAccount.save(account)
         }
 
         // ボタン連打判定

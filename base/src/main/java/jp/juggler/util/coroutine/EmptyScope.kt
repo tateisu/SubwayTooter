@@ -66,7 +66,7 @@ fun AppCompatActivity.launchAndShowError(
     } catch (ex: Throwable) {
         when (ex) {
             is CancellationException -> {
-                log.w(ex, errorCaption ?: "launchAndShowError cancelled.")
+                log.w(errorCaption ?: "launchAndShowError cancelled.")
             }
             else -> {
                 log.e(ex, errorCaption ?: "launchAndShowError failed.")

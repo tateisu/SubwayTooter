@@ -1,13 +1,6 @@
 plugins {
     id "com.android.library"
     id "org.jetbrains.kotlin.android"
-
-//    apply plugin: "kotlin-android"
-//    apply plugin: "kotlin-kapt"
-//    import java.text.SimpleDateFormat
-//    apply plugin: "com.android.application"
-//    apply plugin: "org.jetbrains.kotlin.plugin.serialization"
-//    apply plugin: "com.google.gms.google-services"
 }
 
 android {
@@ -85,7 +78,6 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer:2.18.2"
     api "com.google.android.flexbox:flexbox:3.0.0"
     api "com.google.android.material:material:$materialVersion"
-    api "com.google.firebase:firebase-messaging:23.1.1"
     api "com.otaliastudios:transcoder:0.10.4"
     api "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"

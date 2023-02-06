@@ -147,7 +147,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             // show about image content
             val defaultShown = when {
                 column.hideMediaDefault -> false
-                accessInfo.dont_hide_nsfw -> true
+                accessInfo.dontHideNsfw -> true
                 else -> !status.sensitive
             }
             val isShown = daoMediaShown.isShown(status, defaultShown)

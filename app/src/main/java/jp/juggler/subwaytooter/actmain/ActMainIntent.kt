@@ -318,7 +318,7 @@ private fun ActMain.afterAccountAdd(
         }
 
         if (bModified) {
-            daoSavedAccount.saveSetting(account)
+            daoSavedAccount.save(account)
         }
     }
 

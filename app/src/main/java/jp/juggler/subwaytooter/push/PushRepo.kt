@@ -646,12 +646,9 @@ class PushRepo(
             "type" to "v2push", // "type" to trackingType.str,
             // URIをユニークにするため。参照されない
             "notificationId" to notificationId,
-        ).mapNotNull {
-            when (val second = it.second) {
-                null -> null
-                else -> "${it.first.encodePercent()}=${second.encodePercent()}"
-            }
-        }.joinToString("&")
+        ).joinToString("&") {
+            "${it.first.encodePercent()}=${it.second.encodePercent()}"
+        }
 
         val iTap = Intent(context, ActCallback::class.java).apply {
             data = "subwaytooter://notification_click/?$params".toUri()

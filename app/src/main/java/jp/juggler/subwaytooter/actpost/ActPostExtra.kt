@@ -191,8 +191,8 @@ suspend fun ActPost.updateText(
             ?.let { initializeFromReplyStatus(account, it) }
     }
 
-    appendContentText(account?.default_text, selectBefore = true)
-    views.cbNSFW.isChecked = account?.default_sensitive ?: false
+    appendContentText(account?.defaultText, selectBefore = true)
+    views.cbNSFW.isChecked = account?.defaultSensitive ?: false
 
     if (account != null) {
         // 再編集

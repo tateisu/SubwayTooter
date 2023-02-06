@@ -129,10 +129,10 @@ fun ActMain.reactionAdd(
                     emojiSpan,
                     daoAcctColor.getNickname(accessInfo)
                 ),
-                accessInfo.confirm_reaction,
+                accessInfo.confirmReaction,
             ) { newConfirmEnabled ->
-                accessInfo.confirm_reaction = newConfirmEnabled
-                daoSavedAccount.saveSetting(accessInfo)
+                accessInfo.confirmReaction = newConfirmEnabled
+                daoSavedAccount.save(accessInfo)
             }
         }
 
@@ -352,10 +352,10 @@ private fun ActMain.reactionWithoutUi(
                     emojiSpan,
                     daoAcctColor.getNickname(accessInfo)
                 ),
-                accessInfo.confirm_reaction,
+                accessInfo.confirmReaction,
             ) { newConfirmEnabled ->
-                accessInfo.confirm_reaction = newConfirmEnabled
-                daoSavedAccount.saveSetting(accessInfo)
+                accessInfo.confirmReaction = newConfirmEnabled
+                daoSavedAccount.save(accessInfo)
             }
         }
 

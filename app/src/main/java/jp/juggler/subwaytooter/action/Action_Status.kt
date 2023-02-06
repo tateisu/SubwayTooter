@@ -132,15 +132,15 @@ fun ActMain.favourite(
                     daoAcctColor.getNickname(accessInfo)
                 ),
                 when (bSet) {
-                    true -> accessInfo.confirm_favourite
-                    else -> accessInfo.confirm_unfavourite
+                    true -> accessInfo.confirmFavourite
+                    else -> accessInfo.confirmUnfavourite
                 }
             ) { newConfirmEnabled ->
                 when (bSet) {
-                    true -> accessInfo.confirm_favourite = newConfirmEnabled
-                    else -> accessInfo.confirm_unfavourite = newConfirmEnabled
+                    true -> accessInfo.confirmFavourite = newConfirmEnabled
+                    else -> accessInfo.confirmUnfavourite = newConfirmEnabled
                 }
-                daoSavedAccount.saveSetting(accessInfo)
+                daoSavedAccount.save(accessInfo)
                 reloadAccountSetting(accessInfo)
             }
         }
@@ -300,10 +300,10 @@ fun ActMain.bookmark(
                     R.string.confirm_unbookmark_from,
                     daoAcctColor.getNickname(accessInfo)
                 ),
-                accessInfo.confirm_unbookmark
+                accessInfo.confirmUnbookmark
             ) { newConfirmEnabled ->
-                accessInfo.confirm_unbookmark = newConfirmEnabled
-                daoSavedAccount.saveSetting(accessInfo)
+                accessInfo.confirmUnbookmark = newConfirmEnabled
+                daoSavedAccount.save(accessInfo)
                 reloadAccountSetting(accessInfo)
             }
         }

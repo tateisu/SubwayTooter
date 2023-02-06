@@ -405,46 +405,46 @@ class ActAccountSetting : AppCompatActivity(),
 
                 tvInstance.text = a.apiHost.pretty
                 tvUser.text = a.acct.pretty
-                swNSFWOpen.isChecked = a.dont_hide_nsfw
-                swDontShowTimeout.isChecked = a.dont_show_timeout
-                swExpandCW.isChecked = a.expand_cw
-                swMarkSensitive.isChecked = a.default_sensitive
-                cbNotificationMention.isChecked = a.notification_mention
-                cbNotificationBoost.isChecked = a.notification_boost
-                cbNotificationFavourite.isChecked = a.notification_favourite
-                cbNotificationFollow.isChecked = a.notification_follow
-                cbNotificationFollowRequest.isChecked = a.notification_follow_request
-                cbNotificationReaction.isChecked = a.notification_reaction
-                cbNotificationVote.isChecked = a.notification_vote
-                cbNotificationPost.isChecked = a.notification_post
-                cbNotificationUpdate.isChecked = a.notification_update
-                cbNotificationStatusReference.isChecked = a.notification_status_reference
+                swNSFWOpen.isChecked = a.dontHideNsfw
+                swDontShowTimeout.isChecked = a.dontShowTimeout
+                swExpandCW.isChecked = a.expandCw
+                swMarkSensitive.isChecked = a.defaultSensitive
+                cbNotificationMention.isChecked = a.notificationMention
+                cbNotificationBoost.isChecked = a.notificationBoost
+                cbNotificationFavourite.isChecked = a.notificationFavourite
+                cbNotificationFollow.isChecked = a.notificationFollow
+                cbNotificationFollowRequest.isChecked = a.notificationFollowRequest
+                cbNotificationReaction.isChecked = a.notificationReaction
+                cbNotificationVote.isChecked = a.notificationVote
+                cbNotificationPost.isChecked = a.notificationPost
+                cbNotificationUpdate.isChecked = a.notificationUpdate
+                cbNotificationStatusReference.isChecked = a.notificationStatusReference
 
-                cbConfirmFollow.isChecked = a.confirm_follow
-                cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
-                cbConfirmUnfollow.isChecked = a.confirm_unfollow
-                cbConfirmBoost.isChecked = a.confirm_boost
-                cbConfirmFavourite.isChecked = a.confirm_favourite
-                cbConfirmUnboost.isChecked = a.confirm_unboost
-                cbConfirmUnfavourite.isChecked = a.confirm_unfavourite
-                cbConfirmToot.isChecked = a.confirm_post
-                cbConfirmReaction.isChecked = a.confirm_reaction
-                cbConfirmUnbookmark.isChecked = a.confirm_unbookmark
+                cbConfirmFollow.isChecked = a.confirmFollow
+                cbConfirmFollowLockedUser.isChecked = a.confirmFollowLocked
+                cbConfirmUnfollow.isChecked = a.confirmUnfollow
+                cbConfirmBoost.isChecked = a.confirmBoost
+                cbConfirmFavourite.isChecked = a.confirmFavourite
+                cbConfirmUnboost.isChecked = a.confirmUnboost
+                cbConfirmUnfavourite.isChecked = a.confirmUnfavourite
+                cbConfirmToot.isChecked = a.confirmPost
+                cbConfirmReaction.isChecked = a.confirmReaction
+                cbConfirmUnbookmark.isChecked = a.confirmUnbookmark
 
-                etDefaultText.setText(a.default_text)
-                etMaxTootChars.setText(a.max_toot_chars.toString())
+                etDefaultText.setText(a.defaultText)
+                etMaxTootChars.setText(a.maxTootChars.toString())
 
                 val ti = TootInstance.getCached(a)
                 if (ti == null) {
-                    etMediaSizeMax.setText(a.image_max_megabytes ?: "")
-                    etMovieSizeMax.setText(a.movie_max_megabytes ?: "")
+                    etMediaSizeMax.setText(a.imageMaxMegabytes ?: "")
+                    etMovieSizeMax.setText(a.movieMaxMegabytes ?: "")
                 } else {
                     etMediaSizeMax.setText(
-                        a.image_max_megabytes
+                        a.imageMaxMegabytes
                             ?: a.getImageMaxBytes(ti).div(1000000).toString()
                     )
                     etMovieSizeMax.setText(
-                        a.movie_max_megabytes
+                        a.movieMaxMegabytes
                             ?: a.getMovieMaxBytes(ti).div(1000000).toString()
                     )
                 }
@@ -457,7 +457,7 @@ class ActAccountSetting : AppCompatActivity(),
                     imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
                 spResizeImage.setSelection(index, false)
 
-                val currentPushPolicy = a.push_policy
+                val currentPushPolicy = a.pushPolicy
                 index = pushPolicyItems.indexOfFirst { it.id == currentPushPolicy }
                 if (index == -1) index = 0
                 spPushPolicy.setSelection(index, false)
@@ -535,45 +535,45 @@ class ActAccountSetting : AppCompatActivity(),
             account.visibility = visibility
 
             views.apply {
-                account.dont_hide_nsfw = swNSFWOpen.isChecked
-                account.dont_show_timeout = swDontShowTimeout.isChecked
-                account.expand_cw = swExpandCW.isChecked
-                account.default_sensitive = swMarkSensitive.isChecked
-                account.notification_mention = cbNotificationMention.isChecked
-                account.notification_boost = cbNotificationBoost.isChecked
-                account.notification_favourite = cbNotificationFavourite.isChecked
-                account.notification_follow = cbNotificationFollow.isChecked
-                account.notification_follow_request = cbNotificationFollowRequest.isChecked
-                account.notification_reaction = cbNotificationReaction.isChecked
-                account.notification_vote = cbNotificationVote.isChecked
-                account.notification_post = cbNotificationPost.isChecked
-                account.notification_update = cbNotificationUpdate.isChecked
-                account.notification_status_reference = cbNotificationStatusReference.isChecked
+                account.dontHideNsfw = swNSFWOpen.isChecked
+                account.dontShowTimeout = swDontShowTimeout.isChecked
+                account.expandCw = swExpandCW.isChecked
+                account.defaultSensitive = swMarkSensitive.isChecked
+                account.notificationMention = cbNotificationMention.isChecked
+                account.notificationBoost = cbNotificationBoost.isChecked
+                account.notificationFavourite = cbNotificationFavourite.isChecked
+                account.notificationFollow = cbNotificationFollow.isChecked
+                account.notificationFollowRequest = cbNotificationFollowRequest.isChecked
+                account.notificationReaction = cbNotificationReaction.isChecked
+                account.notificationVote = cbNotificationVote.isChecked
+                account.notificationPost = cbNotificationPost.isChecked
+                account.notificationUpdate = cbNotificationUpdate.isChecked
+                account.notificationStatusReference = cbNotificationStatusReference.isChecked
 
-                account.confirm_follow = cbConfirmFollow.isChecked
-                account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
-                account.confirm_unfollow = cbConfirmUnfollow.isChecked
-                account.confirm_boost = cbConfirmBoost.isChecked
-                account.confirm_favourite = cbConfirmFavourite.isChecked
-                account.confirm_unboost = cbConfirmUnboost.isChecked
-                account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
-                account.confirm_post = cbConfirmToot.isChecked
-                account.confirm_reaction = cbConfirmReaction.isChecked
-                account.confirm_unbookmark = cbConfirmUnbookmark.isChecked
+                account.confirmFollow = cbConfirmFollow.isChecked
+                account.confirmFollowLocked = cbConfirmFollowLockedUser.isChecked
+                account.confirmUnfollow = cbConfirmUnfollow.isChecked
+                account.confirmBoost = cbConfirmBoost.isChecked
+                account.confirmFavourite = cbConfirmFavourite.isChecked
+                account.confirmUnboost = cbConfirmUnboost.isChecked
+                account.confirmUnfavourite = cbConfirmUnfavourite.isChecked
+                account.confirmPost = cbConfirmToot.isChecked
+                account.confirmReaction = cbConfirmReaction.isChecked
+                account.confirmUnbookmark = cbConfirmUnbookmark.isChecked
 
-                account.sound_uri = ""
-                account.default_text = etDefaultText.text.toString()
+                account.soundUri = ""
+                account.defaultText = etDefaultText.text.toString()
 
-                account.max_toot_chars = etMaxTootChars.parseInt()?.takeIf { it > 0 } ?: 0
+                account.maxTootChars = etMaxTootChars.parseInt()?.takeIf { it > 0 } ?: 0
 
-                account.movie_max_megabytes = etMovieSizeMax.text.toString().trim()
-                account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
-                account.image_resize = (
+                account.movieMaxMegabytes = etMovieSizeMax.text.toString().trim()
+                account.imageMaxMegabytes = etMediaSizeMax.text.toString().trim()
+                account.imageResize = (
                         imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
                             ?: SavedAccount.defaultResizeConfig
                         ).spec
 
-                account.push_policy =
+                account.pushPolicy =
                     pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
 
                 account.movieTranscodeMode = spMovieTranscodeMode.selectedItemPosition
@@ -584,7 +584,7 @@ class ActAccountSetting : AppCompatActivity(),
                     ?: SavedAccount.LANG_WEB
             }
 
-            daoSavedAccount.saveSetting(account)
+            daoSavedAccount.save(account)
         }
     }
 
@@ -1009,7 +1009,7 @@ class ActAccountSetting : AppCompatActivity(),
             .setType(MultipartBody.FORM)
 
         val apiKey =
-            account.token_info?.string(AuthBase.KEY_API_KEY_MISSKEY)
+            account.tokenJson?.string(AuthBase.KEY_API_KEY_MISSKEY)
         if (apiKey?.isNotEmpty() == true) {
             multipartBuilder.addFormDataPart("i", apiKey)
         }
@@ -1431,15 +1431,15 @@ class ActAccountSetting : AppCompatActivity(),
     private fun updatePushSubscription(force: Boolean) {
         val activity = this
         launchAndShowError {
-            val anyNotificationWanted = account.notification_boost ||
-                    account.notification_favourite ||
-                    account.notification_follow ||
-                    account.notification_mention ||
-                    account.notification_reaction ||
-                    account.notification_vote ||
-                    account.notification_follow_request ||
-                    account.notification_post ||
-                    account.notification_update
+            val anyNotificationWanted = account.notificationBoost ||
+                    account.notificationFavourite ||
+                    account.notificationFollow ||
+                    account.notificationMention ||
+                    account.notificationReaction ||
+                    account.notificationVote ||
+                    account.notificationFollowRequest ||
+                    account.notificationPost ||
+                    account.notificationUpdate
 
             val lines = ArrayList<String>()
             val subLogger = object : PushBase.SubscriptionLogger {

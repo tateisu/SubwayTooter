@@ -42,7 +42,7 @@ class AuthRepo(
         if (item.loginAccount?.id != EntityId.CONFIRMING) return
 
         // DBに保存されていないならチェックしない
-        if (item.db_id == SavedAccount.INVALID_DB_ID) return
+        if (item.isInvalidId) return
 
         // アクセストークンがないならチェックしない
         val accessToken = item.bearerAccessToken ?: return
@@ -57,7 +57,7 @@ class AuthRepo(
         // 読めたらアプリ内の記録を更新する
         TootParser(context, item).account(userJson)?.let { ta ->
             item.loginAccount = ta
-            daoSavedAccount.saveSetting(item)
+            daoSavedAccount.save(item)
             checkNotificationImmediateAll(context, onlySubscription = true)
             checkNotificationImmediate(context, item.db_id)
         }
@@ -74,10 +74,10 @@ class AuthRepo(
     }
 
     fun updateTokenInfo(item: SavedAccount, auth2Result: Auth2Result) {
-        item.token_info = auth2Result.tokenJson
+        item.tokenJson = auth2Result.tokenJson
         item.loginAccount = auth2Result.tootAccount
         item.misskeyVersion = auth2Result.tootInstance.misskeyVersionMajor
-        daoSavedAccount.saveSetting(item)
+        daoSavedAccount.save(item)
     }
 
     // notification_tagがもう使われてない

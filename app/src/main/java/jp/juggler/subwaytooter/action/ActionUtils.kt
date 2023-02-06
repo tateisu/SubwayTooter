@@ -59,16 +59,16 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
         account = daoSavedAccount.loadAccount(rowId)
             ?: error("loadAccount returns null.")
 
-        account.notification_follow = false
-        account.notification_follow_request = false
-        account.notification_favourite = false
-        account.notification_boost = false
-        account.notification_mention = false
-        account.notification_reaction = false
-        account.notification_vote = false
-        account.notification_post = false
-        account.notification_update = false
-        daoSavedAccount.saveSetting(account)
+        account.notificationFollow = false
+        account.notificationFollowRequest = false
+        account.notificationFavourite = false
+        account.notificationBoost = false
+        account.notificationMention = false
+        account.notificationReaction = false
+        account.notificationVote = false
+        account.notificationPost = false
+        account.notificationUpdate = false
+        daoSavedAccount.save(account)
         return account
     } catch (ex: Throwable) {
         log.e(ex, "addPseudoAccount failed.")

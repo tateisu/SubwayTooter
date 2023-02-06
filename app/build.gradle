@@ -148,6 +148,8 @@ dependencies {
     implementation project(":anko")
     implementation fileTree(include: ["*.aar"], dir: "src/main/libs")
 
+    fcmImplementation "com.google.firebase:firebase-messaging:23.1.1"
+
     // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
     api "org.conscrypt:conscrypt-android:$conscryptVersion"
     implementation "com.github.UnifiedPush:android-connector:2.1.1"
@@ -210,7 +212,7 @@ def willApplyGoogleService() {
     if (!matcher.find()) {
         println "willApplyGoogleService=false. $tskReqStr"
         return false
-    }else{
+    } else {
         println "willApplyGoogleService=true. $tskReqStr"
         return true
     }

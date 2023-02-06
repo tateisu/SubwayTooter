@@ -759,7 +759,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
                 llContentWarning.visibility = View.VISIBLE
                 tvContentWarning.text = decodedSpoilerText
                 spoilerInvalidator.register(decodedSpoilerText)
-                val cwShown = daoContentWarning.isShown(item.uri, accessInfo.expand_cw)
+                val cwShown = daoContentWarning.isShown(item.uri, accessInfo.expandCw)
                 setContentVisibility(cwShown)
             }
 
@@ -781,7 +781,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
             // hide sensitive media
             val defaultShown = when {
                 column.hideMediaDefault -> false
-                accessInfo.dont_hide_nsfw -> true
+                accessInfo.dontHideNsfw -> true
                 else -> !item.sensitive
             }
             val isShown = daoMediaShown.isShown(item.uri, defaultShown)

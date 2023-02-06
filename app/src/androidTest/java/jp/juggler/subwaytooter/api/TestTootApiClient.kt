@@ -9,7 +9,6 @@ import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.auth.MastodonAuth
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoClientInfo
 import jp.juggler.subwaytooter.testutil.TestDispatcherRule
@@ -1229,7 +1228,7 @@ class TestTootApiClient {
             db_id = 1,
             acctArg = "user1@host1",
             apiHostArg = null,
-            token_info = tokenInfo
+            tokenJson = tokenInfo
         )
         val callback = ProgressRecordTootApiCallback()
         val client = TootApiClient(
@@ -1256,7 +1255,7 @@ class TestTootApiClient {
             db_id = 1,
             acctArg = "user1@host1",
             apiHostArg = null,
-            token_info = tokenInfo
+            tokenJson = tokenInfo
         )
         val callback = ProgressRecordTootApiCallback()
         val client = TootApiClient(

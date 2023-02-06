@@ -141,7 +141,7 @@ class ActPushMessageList : AppCompatActivity() {
         println("type: ${pm.notificationType}")
         println("id: ${pm.notificationId}")
         println("text: ${pm.textExpand}")
-        println("formatJson=${pm.formatJson?.toString(1, sort = true)}")
+        println("formatJson=${pm.formatJson.toString(1, sort = true)}")
         println("messageJson=${pm.messageJson?.toString(1, sort = true)}")
         println("dataSize: ${pm.rawBody?.size}")
         if (exportKeys) {

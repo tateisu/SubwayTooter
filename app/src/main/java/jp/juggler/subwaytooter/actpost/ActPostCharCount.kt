@@ -54,7 +54,7 @@ private fun ActPost.getMaxCharCount(): Int {
     }
 
     // アカウント設定で指定した値があるならそれを使う
-    val forceMaxTootChars = account?.max_toot_chars
+    val forceMaxTootChars = account?.maxTootChars
     return when {
         forceMaxTootChars != null && forceMaxTootChars > 0 -> forceMaxTootChars
         else -> 500

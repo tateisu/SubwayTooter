@@ -1,7 +1,6 @@
-package jp.juggler.subwaytooter.notification
+package jp.juggler.subwaytooter.push
 
-import android.graphics.Color
-import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.PushMessage
@@ -9,86 +8,84 @@ import jp.juggler.util.log.LogCategory
 
 private val log = LogCategory("NotificationIconAndColor")
 
-enum class NotificationIconAndColor(
-    @ColorInt colorArg: Int,
+enum class PushMessageIconColor(
+    @ColorRes val colorRes: Int,
     @DrawableRes val iconId: Int,
     val keys: Array<String>,
 ) {
     Favourite(
-        0xe5e825,
+        R.color.colorNotificationAccentFavourite,
         R.drawable.ic_star_outline,
         arrayOf("favourite"),
     ),
     Mention(
-        0x60f516,
+        R.color.colorNotificationAccentMention,
         R.drawable.outline_alternate_email_24,
         arrayOf("mention"),
     ),
     Reply(
-        0xff3dbb,
+        R.color.colorNotificationAccentReply,
         R.drawable.ic_reply,
         arrayOf("reply")
     ),
     Reblog(
-        0x39e3d5,
+        R.color.colorNotificationAccentReblog,
         R.drawable.ic_repeat,
         arrayOf("reblog", "renote"),
     ),
     Quote(
-        0x40a9ff,
+        R.color.colorNotificationAccentQuote,
         R.drawable.ic_quote,
         arrayOf("quote"),
     ),
     Follow(
-        0xf57a33,
+        R.color.colorNotificationAccentFollow,
         R.drawable.ic_person_add,
         arrayOf("follow", "followRequestAccepted")
     ),
     Unfollow(
-        0x9433f5,
+        R.color.colorNotificationAccentUnfollow,
         R.drawable.ic_follow_cross,
         arrayOf("unfollow")
     ),
     Reaction(
-        0xf5f233,
+        R.color.colorNotificationAccentReaction,
         R.drawable.outline_add_reaction_24,
         arrayOf("reaction", "emoji_reaction", "pleroma:emoji_reaction")
     ),
     FollowRequest(
-        0xf53333,
+        R.color.colorNotificationAccentFollowRequest,
         R.drawable.ic_follow_wait,
         arrayOf("follow_request", "receiveFollowRequest"),
     ),
     Poll(
-        0x33f59b,
+        R.color.colorNotificationAccentPoll,
         R.drawable.outline_poll_24,
         arrayOf("pollVote", "poll_vote", "poll"),
     ),
     Status(
-        0x33f597,
+        R.color.colorNotificationAccentStatus,
         R.drawable.ic_edit,
         arrayOf("status", "update", "status_reference")
     ),
     SignUp(
-        0xf56a33,
+        R.color.colorNotificationAccentSignUp,
         R.drawable.outline_group_add_24,
         arrayOf("admin.sign_up"),
     ),
 
     Unknown(
-        0xae1aed,
+        R.color.colorNotificationAccentUnknown,
         R.drawable.ic_question,
-        arrayOf("unknown"),
+        arrayOf("unknown", "admin.sign_up"),
     )
     ;
-
-    val color = Color.BLACK or colorArg
 
     companion object {
         val map = buildMap {
             values().forEach {
                 for (k in it.keys) {
-                    val old: NotificationIconAndColor? = get(k)
+                    val old: PushMessageIconColor? = get(k)
                     if (old != null) {
                         error("NotificationIconAndColor: $k is duplicate: ${it.name} and ${old.name}")
                     } else {
@@ -100,20 +97,6 @@ enum class NotificationIconAndColor(
     }
 }
 
-fun String.findNotificationIconAndColor() =
-    NotificationIconAndColor.map[this]
-
-fun PushMessage.notificationIconAndColor(): NotificationIconAndColor {
-    // mastodon
-    messageJson?.string("notification_type")
-        ?.findNotificationIconAndColor()?.let { return it }
-
-    // misskey
-    when (messageJson?.string("type")) {
-        "notification" ->
-            messageJson?.jsonObject("body")?.string("type")
-                ?.findNotificationIconAndColor()?.let { return it }
-    }
-
-    return NotificationIconAndColor.Unknown
-}
+fun PushMessage.iconColor() =
+    notificationType?.let { PushMessageIconColor.map[it] }
+        ?: PushMessageIconColor.Unknown

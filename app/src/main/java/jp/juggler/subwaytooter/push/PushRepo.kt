@@ -4,11 +4,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import androidx.work.WorkManager
 import androidx.work.await
-import jp.juggler.anko.BuildConfig
 import jp.juggler.crypt.*
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
@@ -20,7 +20,7 @@ import jp.juggler.subwaytooter.api.push.ApiPushMisskey
 import jp.juggler.subwaytooter.dialog.SuspendProgress
 import jp.juggler.subwaytooter.notification.NotificationChannels
 import jp.juggler.subwaytooter.notification.NotificationDeleteReceiver.Companion.intentNotificationDelete
-import jp.juggler.subwaytooter.notification.notificationIconAndColor
+import jp.juggler.subwaytooter.notification.iconColor
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.*
@@ -637,7 +637,7 @@ class PushRepo(
         }
 
         val density = context.resources.displayMetrics.density
-        val iconAndColor = pm.notificationIconAndColor()
+        val iconAndColor = pm.iconColor()
 
         suspend fun PushMessage.loadSmallIcon(context: Context): IconCompat {
             iconSmall?.notEmpty()
@@ -687,7 +687,7 @@ class PushRepo(
         // val piTap = PendingIntent.getActivity(this, nc.pircTap, iTap, PendingIntent.FLAG_IMMUTABLE)
 
         ncPushMessage.notify(context, urlDelete) {
-            color = iconAndColor.color
+            color = ContextCompat.getColor(context,iconAndColor.colorRes)
             setSmallIcon(iconSmall)
             iconBitmapLarge?.let { setLargeIcon(it) }
             setContentTitle(pm.loginAcct)

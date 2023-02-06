@@ -21,8 +21,8 @@ import jp.juggler.subwaytooter.databinding.ActPushMessageListBinding
 import jp.juggler.subwaytooter.databinding.LvPushMessageBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.runInProgress
-import jp.juggler.subwaytooter.notification.NotificationIconAndColor
-import jp.juggler.subwaytooter.notification.notificationIconAndColor
+import jp.juggler.subwaytooter.notification.PushMessageIconColor
+import jp.juggler.subwaytooter.notification.iconColor
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.subwaytooter.table.daoAccountNotificationStatus
@@ -165,11 +165,13 @@ class ActPushMessageList : AppCompatActivity() {
     }
 
     private val tintIconMap = HashMap<String, Drawable>()
-    fun tintIcon(ic: NotificationIconAndColor) =
+
+    fun tintIcon(ic: PushMessageIconColor) =
         tintIconMap.getOrPut(ic.name) {
-            val src = ContextCompat.getDrawable(this@ActPushMessageList, ic.iconId)!!
+            val context = this
+            val src = ContextCompat.getDrawable(context, ic.iconId)!!
             DrawableCompat.wrap(src).also {
-                DrawableCompat.setTint(it, ic.color)
+                DrawableCompat.setTint(it, ContextCompat.getColor(context, ic.colorRes))
             }
         }
 
@@ -190,7 +192,7 @@ class ActPushMessageList : AppCompatActivity() {
             pm ?: return
             lastItem = pm
 
-            val iconAndColor = pm.notificationIconAndColor()
+            val iconAndColor = pm.iconColor()
             Glide.with(views.ivSmall)
                 .load(pm.iconSmall)
                 .error(tintIcon(iconAndColor))

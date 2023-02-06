@@ -25,7 +25,6 @@ import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.dialog.runInProgress
-import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.notification.recycleClickedNotification
@@ -47,7 +46,6 @@ import jp.juggler.util.queryIntentActivitiesCompat
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import org.unifiedpush.android.connector.UnifiedPush
-import java.util.ArrayList
 
 private val log = LogCategory("ActMainIntent")
 
@@ -351,7 +349,7 @@ fun ActMain.handleSharedIntent(intent: Intent) {
 }
 
 // アカウントを追加/更新したらappServerHashの取得をやりなおす
-fun ActMain.updatePushDistributer(){
+fun ActMain.updatePushDistributer() {
     when {
         fcmHandler.noFcm && prefDevice.pushDistributor.isNullOrEmpty() -> {
             try {
@@ -361,7 +359,7 @@ fun ActMain.updatePushDistributer(){
                 // 選択しなかった場合は購読の更新を行わない
             }
         }
-        else ->  PushWorker.enqueueRegisterEndpoint(this)
+        else -> PushWorker.enqueueRegisterEndpoint(this)
     }
 }
 

@@ -156,4 +156,20 @@
     <!-- 白テーマのナビゲーションバーは白ではない -->
     <color name="colorNavigationBarWorkaround">#707070</color>
 
+    <!-- 通知のアクセント色 Pushメッセージ用 -->
+    <color name="colorNotificationAccentFavourite">#e5e825</color>
+    <color name="colorNotificationAccentFollow">#f57a33</color>
+    <color name="colorNotificationAccentFollowRequest">#f53333</color>
+    <color name="colorNotificationAccentMention">#60f516</color>
+    <color name="colorNotificationAccentPoll">#33f59b</color>
+    <color name="colorNotificationAccentQuote">#40a9ff</color>
+    <color name="colorNotificationAccentReaction">#f5f233</color>
+    <color name="colorNotificationAccentReblog">#39e3d5</color>
+    <color name="colorNotificationAccentReply">#ff3dbb</color>
+    <color name="colorNotificationAccentSignUp">#f56a33</color>
+    <color name="colorNotificationAccentStatus">#33f597</color>
+    <color name="colorNotificationAccentUnfollow">#9433f5</color>
+    <color name="colorNotificationAccentUnknown">#ae1aed</color>
+
+
 </resources>

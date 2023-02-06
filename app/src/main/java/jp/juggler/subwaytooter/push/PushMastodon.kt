@@ -1,10 +1,17 @@
 package jp.juggler.subwaytooter.push
 
+import android.content.Context
 import jp.juggler.crypt.defaultSecurityProvider
 import jp.juggler.crypt.encodeP256Dh
 import jp.juggler.crypt.generateKeyPair
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiError
+import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootPushSubscription
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.lazyContext
@@ -14,13 +21,16 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.time.parseTimeIso8601
+import kotlinx.coroutines.isActive
 import java.security.Provider
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
+import kotlin.coroutines.coroutineContext
 
 private val log = LogCategory("PushMastodon")
 
 class PushMastodon(
+    private val context: Context,
     private val api: ApiPushMastodon,
     private val provider: Provider =
         defaultSecurityProvider,
@@ -31,12 +41,12 @@ class PushMastodon(
 ) : PushBase() {
     override suspend fun updateSubscription(
         subLog: SubscriptionLogger,
-        a: SavedAccount,
+        account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate: Boolean,
     ) {
-        val deviceHash = deviceHash(a)
-        val newUrl = snsCallbackUrl(a) // appServerHashを参照する
+        val deviceHash = deviceHash(account)
+        val newUrl = snsCallbackUrl(account) // appServerHashを参照する
         if (newUrl.isNullOrEmpty()) {
             if (willRemoveSubscription) {
                 val msg =
@@ -47,7 +57,7 @@ class PushMastodon(
                     lazyContext.getString(R.string.push_subscription_app_server_hash_missing_error)
                 subLog.e(msg)
                 daoAccountNotificationStatus.updateSubscriptionError(
-                    a.acct,
+                    account.acct,
                     msg
                 )
             }
@@ -55,7 +65,7 @@ class PushMastodon(
         }
 
         val oldSubscription = try {
-            api.getPushSubscription(a)
+            api.getPushSubscription(account)
         } catch (ex: Throwable) {
             if ((ex as? ApiError)?.response?.code == 404) {
                 null
@@ -63,7 +73,7 @@ class PushMastodon(
                 throw ex
             }
         }
-        log.i("${a.acct} oldSubscription=${oldSubscription}")
+        log.i("${account.acct} oldSubscription=${oldSubscription}")
 
         val oldEndpointUrl = oldSubscription?.string("endpoint")
         when (oldEndpointUrl) {
@@ -84,7 +94,8 @@ class PushMastodon(
                 }
                 if (params["dh"] != deviceHash) {
                     // この端末で作成した購読ではない。
-                    log.w("deviceHash not match. keep it for other devices. ${a.acct} $oldEndpointUrl")
+                    // TODO: 古い形式のURLを移行できないか？
+                    log.w("deviceHash not match. keep it for other devices. ${account.acct} $oldEndpointUrl")
                     subLog.e(R.string.push_subscription_exists_but_not_created_by_this_device)
                     return
                 }
@@ -98,52 +109,181 @@ class PushMastodon(
                 }
                 else -> {
                     subLog.i(R.string.push_subscription_delete_current)
-                    api.deletePushSubscription(a)
+                    api.deletePushSubscription(account)
                 }
             }
             return
         }
 
-        val alerts = ApiPushMastodon.alertTypes.associateWith { true }
+        val newAlerts = account.alerts()
 
-        if (newUrl == oldEndpointUrl && !forceUpdate) {
-            // エンドポイントURLに変化なし
-            // TODO: Alert種別による変更
+        val isSameAlert = isSameAlerts(
+            subLog = subLog,
+            account = account,
+            oldSubscriptionJson = oldSubscription,
+            newAlerts = newAlerts,
+        )
+
+        // https://github.com/mastodon/mastodon/pull/23210
+        // ポリシーの変更をチェックできるようになるのは4.1くらい？
+        val isSamePolicy = true // account.pushPolicy == oldSubscription.
+
+        if (!forceUpdate && isSameAlert && isSamePolicy &&
+            newUrl == oldEndpointUrl
+        ) {
+            // 現在の更新を使い続ける
             subLog.i(R.string.push_subscription_keep_using)
             return
         }
 
-        subLog.i(R.string.push_subscription_creating)
-        val keyPair = provider.generateKeyPair()
-        val auth = ByteArray(16).also { SecureRandom().nextBytes(it) }
-        val p256dh = encodeP256Dh(keyPair.public as ECPublicKey)
-        val response = api.createPushSubscription(
-            a = a,
-            endpointUrl = newUrl,
-            p256dh = p256dh.encodeBase64Url(),
-            auth = auth.encodeBase64Url(),
-            alerts = alerts,
-            policy = "all",
-        )
-        val serverKeyStr = response.string("server_key")
-            ?: error("missing server_key.")
+        if (newUrl == oldEndpointUrl) {
+            subLog.i(R.string.push_subscription_exists_updateing)
+            api.updatePushSubscriptionData(
+                a = account,
+                alerts = newAlerts,
+                policy = account.pushPolicy ?: "all",
+            )
+            subLog.i(R.string.push_subscription_updated)
+        } else {
+            subLog.i(R.string.push_subscription_creating)
+            val keyPair = provider.generateKeyPair()
+            val auth = ByteArray(16).also { SecureRandom().nextBytes(it) }
+            val p256dh = encodeP256Dh(keyPair.public as ECPublicKey)
+            val response = api.createPushSubscription(
+                a = account,
+                endpointUrl = newUrl,
+                p256dh = p256dh.encodeBase64Url(),
+                auth = auth.encodeBase64Url(),
+                alerts = newAlerts,
+                policy = account.pushPolicy ?: "all",
+            )
+            val serverKeyStr = response.string("server_key")
+                ?: error("missing server_key.")
 
-        val serverKey = serverKeyStr.decodeBase64()
+            val serverKey = serverKeyStr.decodeBase64()
 
-        // p256dhは65バイトのはず
-        // authは16バイトのはず
-        // serverKeyは65バイトのはず
+            // p256dhは65バイトのはず
+            // authは16バイトのはず
+            // serverKeyは65バイトのはず
 
-        // 登録できたらアカウントに覚える
-        daoStatus.savePushKey(
-            acct = a.acct,
-            pushKeyPrivate = keyPair.private.encoded,
-            pushKeyPublic = p256dh,
-            pushAuthSecret = auth,
-            pushServerKey = serverKey,
-            lastPushEndpoint = newUrl,
-        )
-        subLog.i(R.string.push_subscription_completed)
+            // 登録できたらアカウントに覚える
+            daoStatus.savePushKey(
+                acct = account.acct,
+                pushKeyPrivate = keyPair.private.encoded,
+                pushKeyPublic = p256dh,
+                pushAuthSecret = auth,
+                pushServerKey = serverKey,
+                lastPushEndpoint = newUrl,
+            )
+            subLog.i(R.string.push_subscription_completed)
+        }
+    }
+
+    private suspend fun isSameAlerts(
+        subLog: SubscriptionLogger,
+        account: SavedAccount,
+        oldSubscriptionJson: JsonObject?,
+        newAlerts: JsonObject,
+    ): Boolean {
+        oldSubscriptionJson ?: return false
+        val oldSubscription = TootPushSubscription(oldSubscriptionJson)
+
+        // STがstatus通知に対応した時期に古いサーバでここを通ると
+        // flagsの値が変わりendpoint URLも変わった状態で購読を自動更新してしまう
+        // しかしそのタイミングではサーバは古いのでサーバ側の購読内容は変化しなかった。
+
+        // サーバ上の購読アラートのリスト
+        var alertsOld = oldSubscription.alerts.entries
+            .mapNotNull { if (it.value) it.key else null }
+            .sorted()
+
+        // 期待する購読アラートのリスト
+        var alertsNew = newAlerts.entries
+            .mapNotNull { pair -> pair.key.takeIf { pair.value == true } }
+            .sorted()
+
+        // 両方に共通するアラートは除去する
+        val bothHave = alertsOld.filter { alertsNew.contains(it) }
+        alertsOld = alertsOld.filter { !bothHave.contains(it) }
+        alertsNew = alertsNew.filter { !bothHave.contains(it) }
+
+        // サーバのバージョンを調べる前に、この時点でalertsが一致するか確認する
+        if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
+            return true
+        }
+
+        // サーバのバージョンを見て、サーバの知らないalertを無視して比較する
+        val client = TootApiClient(context, callback = object : TootApiCallback {
+            override suspend fun isApiCancelled(): Boolean = !coroutineContext.isActive
+        })
+        client.account = account
+        val ti = TootInstance.getExOrThrow(client)
+
+        alertsOld = alertsOld.knownOnly(account, ti)
+        alertsNew = alertsNew.knownOnly(account, ti)
+        return if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
+            log.i("${account.acct}: same alerts(2)")
+            true
+        }else {
+            log.i("${account.acct}: changed. old=${alertsOld.sorted()}, new=${alertsNew.sorted()}")
+            subLog.i("notification type set changed.")
+            false
+        }
+    }
+
+    private fun SavedAccount.alerts() = JsonObject().apply {
+        // Mastodon's Notification::TYPES in
+        // in https://github.com/mastodon/mastodon/blob/main/app/models/notification.rb#L30
+        put(TootNotification.TYPE_ADMIN_REPORT, notificationFollow)
+        put(TootNotification.TYPE_ADMIN_SIGNUP, notificationFollow) // 設定項目不足
+        put(TootNotification.TYPE_FAVOURITE, notificationFavourite)
+        put(TootNotification.TYPE_FOLLOW, notificationFollow)
+        put(TootNotification.TYPE_FOLLOW_REQUEST, notificationFollowRequest)
+        put(TootNotification.TYPE_MENTION, notificationMention)
+        put(TootNotification.TYPE_POLL, notificationVote)
+        put(TootNotification.TYPE_REBLOG, notificationBoost)
+        put(TootNotification.TYPE_STATUS, notificationPost)
+        put(TootNotification.TYPE_UPDATE, notificationUpdate)
+        // fedibird拡張
+        // https://github.com/fedibird/mastodon/blob/fedibird/app/controllers/api/v1/push/subscriptions_controller.rb#L55
+        // https://github.com/fedibird/mastodon/blob/fedibird/app/models/notification.rb
+        put(TootNotification.TYPE_EMOJI_REACTION, notificationReaction)
+        put(TootNotification.TYPE_SCHEDULED_STATUS, notificationPost) // 設定項目不足
+        put(TootNotification.TYPE_STATUS_REFERENCE, notificationStatusReference)
+    }
+
+    // サーバが知らないアラート種別は比較対象から除去する
+    private fun Iterable<String>.knownOnly(account: SavedAccount, ti: TootInstance) = filter {
+        when (it) {
+            TootNotification.TYPE_ADMIN_REPORT -> ti.versionGE(TootInstance.VERSION_4_0_0)
+            TootNotification.TYPE_ADMIN_SIGNUP -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+            TootNotification.TYPE_FAVOURITE -> true
+            TootNotification.TYPE_FOLLOW -> true
+            TootNotification.TYPE_FOLLOW_REQUEST -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
+            TootNotification.TYPE_MENTION -> true
+            TootNotification.TYPE_POLL -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
+            TootNotification.TYPE_REBLOG -> true
+            TootNotification.TYPE_STATUS -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
+            TootNotification.TYPE_UPDATE -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+
+            //////////////////////
+            // Fedibird拡張
+
+            TootNotification.TYPE_EMOJI_REACTION,
+            TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
+            -> InstanceCapability.emojiReaction(account, ti)
+
+            TootNotification.TYPE_SCHEDULED_STATUS,
+            -> InstanceCapability.scheduledStatus(account, ti)
+
+            TootNotification.TYPE_STATUS_REFERENCE,
+            -> InstanceCapability.statusReference(account, ti)
+
+            else -> {
+                log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")
+                false // 未知のアラートの差異は比較しない。でないと購読を何度も繰り返すことになる
+            }
+        }
     }
 
     override suspend fun formatPushMessage(

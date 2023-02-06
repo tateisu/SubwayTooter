@@ -23,7 +23,6 @@ import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
-import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.push.PushBase
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -206,11 +205,7 @@ class ActAccountSetting : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        backPressed {
-            checkNotificationImmediateAll(this, onlySubscription = true)
-            checkNotificationImmediate(this, account.db_id)
-            finish()
-        }
+        backPressed {handleBackPressed()}
 
         prPickAvater.register(this)
         prPickHeader.register(this)
@@ -348,7 +343,7 @@ class ActAccountSetting : AppCompatActivity(),
                 R.id.etFieldValue4
             ).map { findViewById(it) }
 
-            btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup.value)
+            // btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup.value)
 
             nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
             noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -405,31 +400,33 @@ class ActAccountSetting : AppCompatActivity(),
 
                 tvInstance.text = a.apiHost.pretty
                 tvUser.text = a.acct.pretty
-                swNSFWOpen.isChecked = a.dontHideNsfw
-                swDontShowTimeout.isChecked = a.dontShowTimeout
-                swExpandCW.isChecked = a.expandCw
-                swMarkSensitive.isChecked = a.defaultSensitive
-                cbNotificationMention.isChecked = a.notificationMention
+
+                cbConfirmBoost.isChecked = a.confirmBoost
+                cbConfirmFavourite.isChecked = a.confirmFavourite
+                cbConfirmFollow.isChecked = a.confirmFollow
+                cbConfirmFollowLockedUser.isChecked = a.confirmFollowLocked
+                cbConfirmReaction.isChecked = a.confirmReaction
+                cbConfirmToot.isChecked = a.confirmPost
+                cbConfirmUnbookmark.isChecked = a.confirmUnbookmark
+                cbConfirmUnboost.isChecked = a.confirmUnboost
+                cbConfirmUnfavourite.isChecked = a.confirmUnfavourite
+                cbConfirmUnfollow.isChecked = a.confirmUnfollow
                 cbNotificationBoost.isChecked = a.notificationBoost
                 cbNotificationFavourite.isChecked = a.notificationFavourite
                 cbNotificationFollow.isChecked = a.notificationFollow
                 cbNotificationFollowRequest.isChecked = a.notificationFollowRequest
-                cbNotificationReaction.isChecked = a.notificationReaction
-                cbNotificationVote.isChecked = a.notificationVote
+                cbNotificationMention.isChecked = a.notificationMention
                 cbNotificationPost.isChecked = a.notificationPost
-                cbNotificationUpdate.isChecked = a.notificationUpdate
+                cbNotificationReaction.isChecked = a.notificationReaction
                 cbNotificationStatusReference.isChecked = a.notificationStatusReference
-
-                cbConfirmFollow.isChecked = a.confirmFollow
-                cbConfirmFollowLockedUser.isChecked = a.confirmFollowLocked
-                cbConfirmUnfollow.isChecked = a.confirmUnfollow
-                cbConfirmBoost.isChecked = a.confirmBoost
-                cbConfirmFavourite.isChecked = a.confirmFavourite
-                cbConfirmUnboost.isChecked = a.confirmUnboost
-                cbConfirmUnfavourite.isChecked = a.confirmUnfavourite
-                cbConfirmToot.isChecked = a.confirmPost
-                cbConfirmReaction.isChecked = a.confirmReaction
-                cbConfirmUnbookmark.isChecked = a.confirmUnbookmark
+                cbNotificationUpdate.isChecked = a.notificationUpdate
+                cbNotificationVote.isChecked = a.notificationVote
+                swDontShowTimeout.isChecked = a.dontShowTimeout
+                swExpandCW.isChecked = a.expandCw
+                swMarkSensitive.isChecked = a.defaultSensitive
+                swNSFWOpen.isChecked = a.dontHideNsfw
+                swNotificationPullEnabled.isChecked = a.notificationPullEnable
+                swNotificationPushEnabled.isChecked = a.notificationPushEnable
 
                 etDefaultText.setText(a.defaultText)
                 etMaxTootChars.setText(a.maxTootChars.toString())
@@ -476,40 +473,57 @@ class ActAccountSetting : AppCompatActivity(),
 
                 arrayOf(
                     btnAccessToken,
+                    btnFields,
                     btnInputAccessToken,
-                    btnVisibility,
+                    btnLoadPreference,
                     btnPushSubscription,
                     btnPushSubscriptionNotForce,
                     btnResetNotificationTracking,
-                    cbNotificationMention,
+                    btnVisibility,
+                    cbConfirmBoost,
+                    cbConfirmFavourite,
+                    cbConfirmFollow,
+                    cbConfirmFollowLockedUser,
+                    cbConfirmReaction,
+                    cbConfirmToot,
+                    cbConfirmUnbookmark,
+                    cbConfirmUnboost,
+                    cbConfirmUnfavourite,
+                    cbConfirmUnfollow,
                     cbNotificationBoost,
                     cbNotificationFavourite,
                     cbNotificationFollow,
                     cbNotificationFollowRequest,
-                    cbNotificationReaction,
-                    cbNotificationVote,
+                    cbNotificationMention,
                     cbNotificationPost,
-                    cbNotificationUpdate,
+                    cbNotificationReaction,
                     cbNotificationStatusReference,
-                    cbConfirmFollow,
-                    cbConfirmFollowLockedUser,
-                    cbConfirmUnfollow,
-                    cbConfirmBoost,
-                    cbConfirmFavourite,
-                    cbConfirmUnboost,
-                    cbConfirmUnfavourite,
-                    cbConfirmToot,
-                    cbConfirmReaction,
+                    cbNotificationUpdate,
+                    cbNotificationVote,
+                    etDefaultText,
+                    etMaxTootChars,
+                    etMediaSizeMax,
+                    etMovieBitrate,
+                    etMovieFrameRate,
+                    etMovieSizeMax,
+                    etMovieSquarePixels,
+                    spLanguageCode,
+                    spMovieTranscodeMode,
+                    spPushPolicy,
+                    spResizeImage,
+                    swNotificationPullEnabled,
+                    swNotificationPushEnabled,
                 ).forEach { it.isEnabledAlpha = enabled }
 
-                arrayOf(
-                    btnNotificationStyleEdit,
-                    btnNotificationStyleEditReply,
-                ).forEach { it.isEnabledAlpha = enabled }
+//                arrayOf(
+//                    btnNotificationStyleEdit,
+//                    btnNotificationStyleEditReply,
+//                ).forEach { it.isEnabledAlpha = enabled }
             }
 
             showVisibility()
             showAcctColor()
+            showPushSetting()
         } finally {
             loadingBusy = false
         }
@@ -527,6 +541,27 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
+    private fun showPushSetting() {
+        views.run {
+            run{
+                val usePush = swNotificationPushEnabled.isChecked
+                tvPushPolicyDesc.vg(usePush)
+                spPushPolicy.vg(usePush)
+                tvPushActions.vg(usePush)
+                btnPushSubscription.vg(usePush)
+                btnPushSubscriptionNotForce.vg(usePush)
+            }
+
+            run{
+                val usePull = swNotificationPullEnabled.isChecked
+                tvDontShowTimeout.vg(usePull)
+                swDontShowTimeout.vg(usePull)
+                tvPullActions.vg(usePull)
+                btnResetNotificationTracking.vg(usePull)
+            }
+        }
+    }
+
     private fun saveUIToData() {
         if (!::account.isInitialized) return
         if (loadingBusy) return
@@ -535,33 +570,35 @@ class ActAccountSetting : AppCompatActivity(),
             account.visibility = visibility
 
             views.apply {
+
+                account.confirmBoost = cbConfirmBoost.isChecked
+                account.confirmFavourite = cbConfirmFavourite.isChecked
+                account.confirmFollow = cbConfirmFollow.isChecked
+                account.confirmFollowLocked = cbConfirmFollowLockedUser.isChecked
+                account.confirmPost = cbConfirmToot.isChecked
+                account.confirmReaction = cbConfirmReaction.isChecked
+                account.confirmUnbookmark = cbConfirmUnbookmark.isChecked
+                account.confirmUnboost = cbConfirmUnboost.isChecked
+                account.confirmUnfavourite = cbConfirmUnfavourite.isChecked
+                account.confirmUnfollow = cbConfirmUnfollow.isChecked
+                account.defaultSensitive = swMarkSensitive.isChecked
                 account.dontHideNsfw = swNSFWOpen.isChecked
                 account.dontShowTimeout = swDontShowTimeout.isChecked
                 account.expandCw = swExpandCW.isChecked
-                account.defaultSensitive = swMarkSensitive.isChecked
-                account.notificationMention = cbNotificationMention.isChecked
                 account.notificationBoost = cbNotificationBoost.isChecked
                 account.notificationFavourite = cbNotificationFavourite.isChecked
                 account.notificationFollow = cbNotificationFollow.isChecked
                 account.notificationFollowRequest = cbNotificationFollowRequest.isChecked
-                account.notificationReaction = cbNotificationReaction.isChecked
-                account.notificationVote = cbNotificationVote.isChecked
+                account.notificationMention = cbNotificationMention.isChecked
                 account.notificationPost = cbNotificationPost.isChecked
-                account.notificationUpdate = cbNotificationUpdate.isChecked
+                account.notificationPullEnable = swNotificationPullEnabled.isChecked
+                account.notificationPushEnable = swNotificationPushEnabled.isChecked
+                account.notificationReaction = cbNotificationReaction.isChecked
                 account.notificationStatusReference = cbNotificationStatusReference.isChecked
+                account.notificationUpdate = cbNotificationUpdate.isChecked
+                account.notificationVote = cbNotificationVote.isChecked
 
-                account.confirmFollow = cbConfirmFollow.isChecked
-                account.confirmFollowLocked = cbConfirmFollowLockedUser.isChecked
-                account.confirmUnfollow = cbConfirmUnfollow.isChecked
-                account.confirmBoost = cbConfirmBoost.isChecked
-                account.confirmFavourite = cbConfirmFavourite.isChecked
-                account.confirmUnboost = cbConfirmUnboost.isChecked
-                account.confirmUnfavourite = cbConfirmUnfavourite.isChecked
-                account.confirmPost = cbConfirmToot.isChecked
-                account.confirmReaction = cbConfirmReaction.isChecked
-                account.confirmUnbookmark = cbConfirmUnbookmark.isChecked
-
-                account.soundUri = ""
+//                account.soundUri = ""
                 account.defaultText = etDefaultText.text.toString()
 
                 account.maxTootChars = etMaxTootChars.parseInt()?.takeIf { it > 0 } ?: 0
@@ -588,11 +625,25 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
+    private fun handleBackPressed(){
+        checkNotificationImmediateAll(this, onlyEnqueue = true)
+        checkNotificationImmediate(this, account.db_id)
+        finish()
+    }
+
+
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-        if (buttonView == views.cbLocked) {
-            if (!profileBusy) sendLocked(isChecked)
-        } else {
-            saveUIToData()
+        when (buttonView) {
+            views.cbLocked -> {
+                if (!profileBusy) sendLocked(isChecked)
+            }
+            views.swNotificationPullEnabled,
+            views.swNotificationPushEnabled,
+            -> {
+                saveUIToData()
+                showPushSetting()
+            }
+            else -> saveUIToData()
         }
     }
 
@@ -632,15 +683,15 @@ class ActAccountSetting : AppCompatActivity(),
 
             R.id.btnFields -> sendFields()
 
-            R.id.btnNotificationStyleEdit ->
-                PullNotification.openNotificationChannelSetting(
-                    this
-                )
-
-            R.id.btnNotificationStyleEditReply ->
-                PullNotification.openNotificationChannelSetting(
-                    this
-                )
+//            R.id.btnNotificationStyleEdit ->
+//                PullNotification.openNotificationChannelSetting(
+//                    this
+//                )
+//
+//            R.id.btnNotificationStyleEditReply ->
+//                PullNotification.openNotificationChannelSetting(
+//                    this
+//                )
         }
     }
 
@@ -738,7 +789,7 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
-    ///////////////////////////////////////////////////
+///////////////////////////////////////////////////
 
     private fun performAccountRemove() {
         AlertDialog.Builder(this)
@@ -779,7 +830,7 @@ class ActAccountSetting : AppCompatActivity(),
         finish()
     }
 
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
     private fun initializeProfile() {
         // 初期状態

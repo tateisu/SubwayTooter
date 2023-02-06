@@ -11,14 +11,13 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.scan
 
-abstract class ViewHolderHeaderBase(
-    val activity: ActMain,
-    val viewRoot: View,
-) : RecyclerView.ViewHolder(viewRoot) {
+abstract class ViewHolderHeaderBase(viewRoot: View) : RecyclerView.ViewHolder(viewRoot) {
 
     companion object {
         private val log = LogCategory("HeaderViewHolderBase")
     }
+
+    abstract val activity: ActMain
 
     internal lateinit var column: Column
     internal lateinit var accessInfo: SavedAccount

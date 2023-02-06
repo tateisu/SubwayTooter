@@ -656,7 +656,7 @@
     <string name="available_mastodon_2_4_later">(마스토돈 2.4 이상에서 이용 가능)</string>
     <string name="confirm_boost_private_from">%1$s에서 비공개 툿을 부스트하겠습니까\? 모든 팔로워에게 보여집니다.</string>
     <string name="boost_private_toot_not_allowed">다른 사람의 비공개 툿을 부스트할 수 없습니다.</string>
-    <string name="update_push_subscription">푸시 구독 갱신 (마스토돈 2.4 이상)</string>
+    <string name="update_push_subscription">푸시 구독 갱신</string>
     <string name="pseudo_account_not_supported">의사 계정은 알림을 사용할 수 없습니다.</string>
     <string name="instance_does_not_support_push_api">푸시 구독은 이 서버(버전 %1$s)에서는 지원되지 않습니다.</string>
     <string name="missing_fcm_device_id">FCM 기기 ID를 마련할 수 없음. 나중에 다시 시도하세요.</string>

@@ -7,7 +7,9 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.view.View
-import android.widget.*
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.action.followFromAnotherAccount
 import jp.juggler.subwaytooter.action.userProfileLocal
@@ -19,6 +21,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.databinding.LvHeaderProfileBinding
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.itemviewholder.DlgContextMenu
@@ -28,13 +31,15 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.createSpan
-import jp.juggler.subwaytooter.table.*
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
-import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.buildJsonObject
@@ -50,9 +55,11 @@ import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
-    activity: ActMain,
-    viewRoot: View,
-) : ViewHolderHeaderBase(activity, viewRoot), View.OnClickListener, View.OnLongClickListener {
+    override val activity: ActMain,
+    parent: ViewGroup,
+    val views: LvHeaderProfileBinding =
+        LvHeaderProfileBinding.inflate(activity.layoutInflater, parent, false),
+) : ViewHolderHeaderBase(views.root), View.OnClickListener, View.OnLongClickListener {
 
     companion object {
         private fun SpannableStringBuilder.appendSpan(text: String, span: Any) {
@@ -67,111 +74,60 @@ internal class ViewHolderHeaderProfile(
         }
     }
 
-    private val ivBackground: MyNetworkImageView
-    private val tvCreated: TextView
-    private val tvLastStatusAt: TextView
-    private val tvFeaturedTags: TextView
-
-    private val ivAvatar: MyNetworkImageView
-    private val tvDisplayName: TextView
-    private val tvAcct: TextView
-    private val btnFollowing: Button
-    private val btnFollowers: Button
-    private val btnStatusCount: Button
-    private val tvNote: TextView
-    private val tvMisskeyExtra: TextView
-
-    private val btnFollow: ImageButton
-    private val ivFollowedBy: ImageView
-    private val llProfile: View
-    private val tvRemoteProfileWarning: TextView
-    private val nameInvalidator1: NetworkEmojiInvalidator
-    private val noteInvalidator: NetworkEmojiInvalidator
-    private val llFields: LinearLayout
-
     private var whoRef: TootAccountRef? = null
 
     private var movedRef: TootAccountRef? = null
 
-    private val llMoved: View
-    private val tvMoved: TextView
-    private val ivMoved: MyNetworkImageView
-    private val tvMovedName: TextView
-    private val tvMovedAcct: TextView
-    private val btnMoved: ImageButton
-    private val ivMovedBy: ImageView
-    private val movedCaptionInvalidator: NetworkEmojiInvalidator
-    private val movedNameInvalidator: NetworkEmojiInvalidator
-    private val density: Float
-    private val btnMore: ImageButton
+    private val nameInvalidator1 =
+        NetworkEmojiInvalidator(activity.handler, views.tvDisplayName)
 
-    private val tvPersonalNotes: TextView
-    private val btnPersonalNotesEdit: ImageButton
+    private val noteInvalidator =
+        NetworkEmojiInvalidator(activity.handler, views.tvNote)
+
+    private val movedCaptionInvalidator =
+        NetworkEmojiInvalidator(activity.handler, views.tvMoved)
+
+    private val movedNameInvalidator =
+        NetworkEmojiInvalidator(activity.handler, views.tvMovedName)
+
+    private val density: Float
 
     private var colorTextContent = 0
+
     private var relation: UserRelation? = null
 
     init {
-        ivBackground = viewRoot.findViewById(R.id.ivBackground)
-        llProfile = viewRoot.findViewById(R.id.llProfile)
-        tvCreated = viewRoot.findViewById(R.id.tvCreated)
-        tvLastStatusAt = viewRoot.findViewById(R.id.tvLastStatusAt)
-        tvFeaturedTags = viewRoot.findViewById(R.id.tvFeaturedTags)
-        ivAvatar = viewRoot.findViewById(R.id.ivAvatar)
-        tvDisplayName = viewRoot.findViewById(R.id.tvDisplayName)
-        tvAcct = viewRoot.findViewById(R.id.tvAcct)
-        btnFollowing = viewRoot.findViewById(R.id.btnFollowing)
-        btnFollowers = viewRoot.findViewById(R.id.btnFollowers)
-        btnStatusCount = viewRoot.findViewById(R.id.btnStatusCount)
-        tvNote = viewRoot.findViewById(R.id.tvNote)
-        tvMisskeyExtra = viewRoot.findViewById(R.id.tvMisskeyExtra)
-        btnMore = viewRoot.findViewById(R.id.btnMore)
-        btnFollow = viewRoot.findViewById(R.id.btnFollow)
-        ivFollowedBy = viewRoot.findViewById(R.id.ivFollowedBy)
-        tvRemoteProfileWarning = viewRoot.findViewById(R.id.tvRemoteProfileWarning)
+        views.root.tag = this
+        val holder = this
+        views.run {
 
-        llMoved = viewRoot.findViewById(R.id.llMoved)
-        tvMoved = viewRoot.findViewById(R.id.tvMoved)
-        ivMoved = viewRoot.findViewById(R.id.ivMoved)
-        tvMovedName = viewRoot.findViewById(R.id.tvMovedName)
-        tvMovedAcct = viewRoot.findViewById(R.id.tvMovedAcct)
-        btnMoved = viewRoot.findViewById(R.id.btnMoved)
-        ivMovedBy = viewRoot.findViewById(R.id.ivMovedBy)
-        llFields = viewRoot.findViewById(R.id.llFields)
+            density = tvDisplayName.resources.displayMetrics.density
 
-        tvPersonalNotes = viewRoot.findViewById(R.id.tvPersonalNotes)
-        btnPersonalNotesEdit = viewRoot.findViewById(R.id.btnPersonalNotesEdit)
+            for (v in arrayOf(
+                ivBackground,
+                btnFollowing,
+                btnFollowers,
+                btnStatusCount,
+                btnMore,
+                btnFollow,
+                tvRemoteProfileWarning,
+                btnPersonalNotesEdit,
 
-        density = tvDisplayName.resources.displayMetrics.density
+                btnMoved,
+                llMoved,
+                btnPersonalNotesEdit
+            )) {
+                v.setOnClickListener(holder)
+            }
 
-        for (v in arrayOf(
-            ivBackground,
-            btnFollowing,
-            btnFollowers,
-            btnStatusCount,
-            btnMore,
-            btnFollow,
-            tvRemoteProfileWarning,
-            btnPersonalNotesEdit,
+            btnMoved.setOnLongClickListener(holder)
+            btnFollow.setOnLongClickListener(holder)
 
-            btnMoved,
-            llMoved,
-            btnPersonalNotesEdit
-        )) {
-            v.setOnClickListener(this)
+            tvNote.movementMethod = MyLinkMovementMethod
+
+
+            ivBackground.measureProfileBg = true
         }
-
-        btnMoved.setOnLongClickListener(this)
-        btnFollow.setOnLongClickListener(this)
-
-        tvNote.movementMethod = MyLinkMovementMethod
-
-        nameInvalidator1 = NetworkEmojiInvalidator(activity.handler, tvDisplayName)
-        noteInvalidator = NetworkEmojiInvalidator(activity.handler, tvNote)
-        movedCaptionInvalidator = NetworkEmojiInvalidator(activity.handler, tvMoved)
-        movedNameInvalidator = NetworkEmojiInvalidator(activity.handler, tvMovedName)
-
-        ivBackground.measureProfileBg = true
     }
 
     override fun getAccount(): TootAccountRef? = whoRef
@@ -188,15 +144,14 @@ internal class ViewHolderHeaderProfile(
 
     override fun bindData(column: Column) {
         super.bindData(column)
-
         bindFonts()
         bindColors()
-
-        llMoved.visibility = View.GONE
-        tvMoved.visibility = View.GONE
-        llFields.visibility = View.GONE
-        llFields.removeAllViews()
-
+        views.run {
+            llMoved.visibility = View.GONE
+            tvMoved.visibility = View.GONE
+            llFields.visibility = View.GONE
+            llFields.removeAllViews()
+        }
         val whoRef = column.whoAccount
         this.whoRef = whoRef
         when (val who = whoRef?.get()) {
@@ -207,7 +162,7 @@ internal class ViewHolderHeaderProfile(
 
     // カラム設定から戻った際に呼ばれる
     override fun showColor() {
-        llProfile.setBackgroundColor(
+        views.llProfile.setBackgroundColor(
             when (val c = column.columnBgColor) {
                 0 -> activity.attrColor(R.attr.colorProfileBackgroundMask)
                 else -> -0x40000000 or (0x00ffffff and c)
@@ -220,171 +175,179 @@ internal class ViewHolderHeaderProfile(
         val contentColor = column.getContentColor()
         this.colorTextContent = contentColor
 
-        tvPersonalNotes.textColor = contentColor
-        tvMoved.textColor = contentColor
-        tvMovedName.textColor = contentColor
-        tvDisplayName.textColor = contentColor
-        tvNote.textColor = contentColor
-        tvRemoteProfileWarning.textColor = contentColor
-        btnStatusCount.textColor = contentColor
-        btnFollowing.textColor = contentColor
-        btnFollowers.textColor = contentColor
-        tvFeaturedTags.textColor = contentColor
+        views.run {
 
-        setIconDrawableId(
-            activity,
-            btnMore,
-            R.drawable.ic_more,
-            color = contentColor,
-            alphaMultiplier = stylerBoostAlpha
-        )
+            tvPersonalNotes.textColor = contentColor
+            tvMoved.textColor = contentColor
+            tvMovedName.textColor = contentColor
+            tvDisplayName.textColor = contentColor
+            tvNote.textColor = contentColor
+            tvRemoteProfileWarning.textColor = contentColor
+            btnStatusCount.textColor = contentColor
+            btnFollowing.textColor = contentColor
+            btnFollowers.textColor = contentColor
+            tvFeaturedTags.textColor = contentColor
 
-        setIconDrawableId(
-            activity,
-            btnPersonalNotesEdit,
-            R.drawable.ic_edit,
-            color = contentColor,
-            alphaMultiplier = stylerBoostAlpha
-        )
+            setIconDrawableId(
+                activity,
+                btnMore,
+                R.drawable.ic_more,
+                color = contentColor,
+                alphaMultiplier = stylerBoostAlpha
+            )
 
-        val acctColor = column.getAcctColor()
-        tvCreated.textColor = acctColor
-        tvMovedAcct.textColor = acctColor
-        tvLastStatusAt.textColor = acctColor
+            setIconDrawableId(
+                activity,
+                btnPersonalNotesEdit,
+                R.drawable.ic_edit,
+                color = contentColor,
+                alphaMultiplier = stylerBoostAlpha
+            )
 
-        showColor()
+            val acctColor = column.getAcctColor()
+            tvCreated.textColor = acctColor
+            tvMovedAcct.textColor = acctColor
+            tvLastStatusAt.textColor = acctColor
+
+            showColor()
+        }
     }
 
     private fun bindFonts() {
-        var f: Float
+        views.run {
+            var f: Float
 
-        f = activity.timelineFontSizeSp
-        if (!f.isNaN()) {
-            tvMovedName.textSize = f
-            tvMoved.textSize = f
-            tvPersonalNotes.textSize = f
-            tvFeaturedTags.textSize = f
-        }
+            f = activity.timelineFontSizeSp
+            if (!f.isNaN()) {
+                tvMovedName.textSize = f
+                tvMoved.textSize = f
+                tvPersonalNotes.textSize = f
+                tvFeaturedTags.textSize = f
+            }
 
-        f = activity.acctFontSizeSp
-        if (!f.isNaN()) {
-            tvMovedAcct.textSize = f
-            tvCreated.textSize = f
-            tvLastStatusAt.textSize = f
-        }
+            f = activity.acctFontSizeSp
+            if (!f.isNaN()) {
+                tvMovedAcct.textSize = f
+                tvCreated.textSize = f
+                tvLastStatusAt.textSize = f
+            }
 
-        val spacing = activity.timelineSpacing
-        if (spacing != null) {
-            tvMovedName.setLineSpacing(0f, spacing)
-            tvMoved.setLineSpacing(0f, spacing)
+            val spacing = activity.timelineSpacing
+            if (spacing != null) {
+                tvMovedName.setLineSpacing(0f, spacing)
+                tvMoved.setLineSpacing(0f, spacing)
+            }
         }
     }
 
     private fun bindAccountNull() {
         relation = null
-        tvCreated.text = ""
-        tvLastStatusAt.vg(false)
-        tvFeaturedTags.vg(false)
-        ivBackground.setImageDrawable(null)
-        ivAvatar.setImageDrawable(null)
-
-        tvAcct.text = "@"
-
-        tvDisplayName.text = ""
         nameInvalidator1.register(null)
-
-        tvNote.text = ""
-        tvMisskeyExtra.text = ""
         noteInvalidator.register(null)
+        views.run {
+            tvCreated.text = ""
+            tvLastStatusAt.vg(false)
+            tvFeaturedTags.vg(false)
+            ivBackground.setImageDrawable(null)
+            ivAvatar.setImageDrawable(null)
 
-        btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
-        btnFollowing.text = activity.getString(R.string.following) + "\n" + "?"
-        btnFollowers.text = activity.getString(R.string.followers) + "\n" + "?"
+            tvAcct.text = "@"
 
-        btnFollow.setImageDrawable(null)
-        tvRemoteProfileWarning.visibility = View.GONE
+            tvDisplayName.text = ""
+
+            tvNote.text = ""
+            tvMisskeyExtra.text = ""
+
+            btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
+            btnFollowing.text = activity.getString(R.string.following) + "\n" + "?"
+            btnFollowers.text = activity.getString(R.string.followers) + "\n" + "?"
+
+            btnFollow.setImageDrawable(null)
+            tvRemoteProfileWarning.visibility = View.GONE
+        }
     }
 
     private fun bindAccount(who: TootAccount, whoRef: TootAccountRef) {
-
         // Misskeyの場合はNote中のUserエンティティと /api/users/show の情報量がかなり異なる
         val whoDetail = MisskeyAccountDetailMap.get(accessInfo, who.id)
-
-        tvCreated.text =
-            TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
-
-        who.setAccountExtra(
-            accessInfo,
-            tvLastStatusAt,
-            invalidator = null,
-            fromProfileHeader = true
-        )
-
-        val featuredTagsText = formatFeaturedTags()
-        tvFeaturedTags.vg(featuredTagsText != null)?.let {
-            it.text = featuredTagsText!!
-            it.movementMethod = MyLinkMovementMethod
-        }
-
-        ivBackground.setImageUrl(0f, accessInfo.supplyBaseUrl(who.header_static))
-
-        ivAvatar.setImageUrl(
-            calcIconRound(ivAvatar.layoutParams),
-            accessInfo.supplyBaseUrl(who.avatar_static),
-            accessInfo.supplyBaseUrl(who.avatar)
-        )
-
-        val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
-        tvDisplayName.text = name
-        nameInvalidator1.register(name)
-
-        tvRemoteProfileWarning.vg(column.accessInfo.isRemoteUser(who))
-
-        tvAcct.text = encodeAcctText(who, whoDetail)
-
-        val note = whoRef.decoded_note
-        tvNote.text = note
-        noteInvalidator.register(note)
-
-        tvMisskeyExtra.text = encodeMisskeyExtra(whoDetail)
-        tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
-
-        btnStatusCount.text =
-            "${activity.getString(R.string.statuses)}\n${
-                whoDetail?.statuses_count ?: who.statuses_count
-            }"
-
-        val hideFollowCount = PrefB.bpHideFollowCount.value
-
-        var caption = activity.getString(R.string.following)
-        btnFollowing.text = when {
-            hideFollowCount -> caption
-            else -> "${caption}\n${whoDetail?.following_count ?: who.following_count}"
-        }
-
-        caption = activity.getString(R.string.followers)
-        btnFollowers.text = when {
-            hideFollowCount -> caption
-            else -> "${caption}\n${whoDetail?.followers_count ?: who.followers_count}"
-        }
-
         val relation = daoUserRelation.load(accessInfo.db_id, who.id)
         this.relation = relation
-        setFollowIcon(
-            activity,
-            btnFollow,
-            ivFollowedBy,
-            relation,
-            who,
-            colorTextContent,
-            alphaMultiplier = stylerBoostAlpha
-        )
+        views.run {
+            tvCreated.text =
+                TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
 
-        tvPersonalNotes.text = relation.note ?: ""
+            who.setAccountExtra(
+                accessInfo,
+                tvLastStatusAt,
+                invalidator = null,
+                fromProfileHeader = true
+            )
 
-        showMoved(who, who.movedRef)
+            val featuredTagsText = formatFeaturedTags()
+            tvFeaturedTags.vg(featuredTagsText != null)?.let {
+                it.text = featuredTagsText!!
+                it.movementMethod = MyLinkMovementMethod
+            }
 
-        (whoDetail?.fields ?: who.fields)?.notEmpty()?.let { showFields(who, it) }
+            ivBackground.setImageUrl(0f, accessInfo.supplyBaseUrl(who.header_static))
+
+            ivAvatar.setImageUrl(
+                calcIconRound(ivAvatar.layoutParams),
+                accessInfo.supplyBaseUrl(who.avatar_static),
+                accessInfo.supplyBaseUrl(who.avatar)
+            )
+
+            val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
+            tvDisplayName.text = name
+            nameInvalidator1.register(name)
+
+            tvRemoteProfileWarning.vg(column.accessInfo.isRemoteUser(who))
+
+            tvAcct.text = encodeAcctText(who, whoDetail)
+
+            val note = whoRef.decoded_note
+            tvNote.text = note
+            noteInvalidator.register(note)
+
+            tvMisskeyExtra.text = encodeMisskeyExtra(whoDetail)
+            tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
+
+            btnStatusCount.text =
+                "${activity.getString(R.string.statuses)}\n${
+                    whoDetail?.statuses_count ?: who.statuses_count
+                }"
+
+            val hideFollowCount = PrefB.bpHideFollowCount.value
+
+            var caption = activity.getString(R.string.following)
+            btnFollowing.text = when {
+                hideFollowCount -> caption
+                else -> "${caption}\n${whoDetail?.following_count ?: who.following_count}"
+            }
+
+            caption = activity.getString(R.string.followers)
+            btnFollowers.text = when {
+                hideFollowCount -> caption
+                else -> "${caption}\n${whoDetail?.followers_count ?: who.followers_count}"
+            }
+
+
+            setFollowIcon(
+                activity,
+                btnFollow,
+                ivFollowedBy,
+                relation,
+                who,
+                colorTextContent,
+                alphaMultiplier = stylerBoostAlpha
+            )
+
+            tvPersonalNotes.text = relation.note ?: ""
+
+            showMoved(who, who.movedRef)
+
+            (whoDetail?.fields ?: who.fields)?.notEmpty()?.let { showFields(who, it) }
+        }
     }
 
     private fun showMoved(who: TootAccount, movedRef: TootAccountRef?) {
@@ -392,36 +355,39 @@ internal class ViewHolderHeaderProfile(
         this.movedRef = movedRef
         val moved = movedRef.get()
 
-        llMoved.visibility = View.VISIBLE
-        tvMoved.visibility = View.VISIBLE
+        views.run {
 
-        val caption = who.decodeDisplayName(activity)
-            .intoStringResource(activity, R.string.account_moved_to)
+            llMoved.visibility = View.VISIBLE
+            tvMoved.visibility = View.VISIBLE
 
-        tvMoved.text = caption
-        movedCaptionInvalidator.register(caption)
+            val caption = who.decodeDisplayName(activity)
+                .intoStringResource(activity, R.string.account_moved_to)
 
-        ivMoved.layoutParams.width = activity.avatarIconSize
-        ivMoved.setImageUrl(
-            calcIconRound(ivMoved.layoutParams),
-            accessInfo.supplyBaseUrl(moved.avatar_static)
-        )
+            tvMoved.text = caption
+            movedCaptionInvalidator.register(caption)
 
-        tvMovedName.text = movedRef.decoded_display_name
-        movedNameInvalidator.register(movedRef.decoded_display_name)
+            ivMoved.layoutParams.width = activity.avatarIconSize
+            ivMoved.setImageUrl(
+                calcIconRound(ivMoved.layoutParams),
+                accessInfo.supplyBaseUrl(moved.avatar_static)
+            )
 
-        setAcct(tvMovedAcct, accessInfo, moved)
+            tvMovedName.text = movedRef.decoded_display_name
+            movedNameInvalidator.register(movedRef.decoded_display_name)
 
-        val relation = daoUserRelation.load(accessInfo.db_id, moved.id)
-        setFollowIcon(
-            activity,
-            btnMoved,
-            ivMovedBy,
-            relation,
-            moved,
-            colorTextContent,
-            alphaMultiplier = stylerBoostAlpha
-        )
+            setAcct(tvMovedAcct, accessInfo, moved)
+
+            val relation = daoUserRelation.load(accessInfo.db_id, moved.id)
+            setFollowIcon(
+                activity,
+                btnMoved,
+                ivMovedBy,
+                relation,
+                moved,
+                colorTextContent,
+                alphaMultiplier = stylerBoostAlpha
+            )
+        }
     }
 
     override fun onClick(v: View) {
@@ -662,7 +628,7 @@ internal class ViewHolderHeaderProfile(
     }
 
     private fun showFields(who: TootAccount, fields: List<TootAccount.Field>) {
-        llFields.visibility = View.VISIBLE
+        views.llFields.visibility = View.VISIBLE
 
         // fieldsのnameにはカスタム絵文字が適用されるようになった
         // https://github.com/tootsuite/mastodon/pull/11350
@@ -698,7 +664,7 @@ internal class ViewHolderHeaderProfile(
             nameView.setTextColor(colorTextContent)
             nameView.typeface = nameTypeface
             nameView.movementMethod = MyLinkMovementMethod
-            llFields.addView(nameView)
+            views.llFields.addView(nameView)
 
             // 値の方はHTMLエンコードされている
             val valueView = MyTextView(activity)
@@ -745,7 +711,7 @@ internal class ViewHolderHeaderProfile(
                 valueView.setBackgroundColor(linkBgColor)
             }
 
-            llFields.addView(valueView)
+            views.llFields.addView(valueView)
         }
     }
 }

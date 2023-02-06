@@ -200,6 +200,10 @@ class PollingChecker(
         else -> { _ -> true }
     }
 
+    /**
+     *
+     * @param onlyEnqueue Workerの定期実行ON/OFFの更新だけを行う
+     */
     suspend fun check(
         checkNetwork: Boolean = true,
         onlyEnqueue: Boolean = false,
@@ -253,28 +257,8 @@ class PollingChecker(
                 }
 
                 accountMutex(accountDbId).withLock {
-                    val wps = PushSubscriptionHelper(context, account)
-                    if (wps.flags != 0) {
-                        progress(account, PollingState.CheckServerInformation)
-                        val (instance, instanceResult) = TootInstance.get(client)
-                        if (instance == null) {
-                            daoAccountNotificationStatus.updateNotificationError(
-                                account.acct,
-                                "${instanceResult?.error} ${instanceResult?.requestInfo}".trim()
-                            )
-                            error("can't get server information. ${instanceResult?.error} ${instanceResult?.requestInfo}".trim())
-                        }
-                    }
-
-//                    wps.updateSubscription(client, progress = progress)
-//                        ?: throw CancellationException()
-//
-//                    val wpsLog = wps.logString
-//                    if (wpsLog.isNotEmpty()) {
-//                        log.w("subsctiption warning: ${account.acct.pretty} $wpsLog")
-//                    }
-
-                    if (wps.flags == 0) {
+                    if (!account.isRequiredPullCheck()) {
+                        // 通知チェックの定期実行が不要なら
                         // 通知表示のエラーをクリアする
                         daoAccountNotificationStatus.updateNotificationError(
                             account.acct,
@@ -283,9 +267,12 @@ class PollingChecker(
                         log.i("notification check not required.")
                         return@withLock
                     }
+
                     progress(account, PollingState.CheckNotifications)
+
                     PollingWorker2.enqueuePolling(context)
                     if (onlyEnqueue) {
+                        // 定期実行状態の更新だけを行うフラグ
                         log.i("exit due to onlyEnqueue")
                         return@withLock
                     }
@@ -303,7 +290,7 @@ class PollingChecker(
                             daoNotificationCache,
                             client,
                             account,
-                            wps.flags,
+                            account.notificationFlags(),
                         ) { result ->
                             // 通知取得のエラーを保存する
                             daoAccountNotificationStatus.updateNotificationError(

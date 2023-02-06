@@ -816,7 +816,7 @@
     <string name="missing_install_id">无法准备 FCM 安装 ID，请稍后再试.</string>
     <string name="instance_does_not_support_push_api">不支持此服务器(版本%1$s)的推送订阅.</string>
     <string name="pseudo_account_not_supported">假冒账号无法使用通知.</string>
-    <string name="update_push_subscription">更新推送订阅(Mastodon 2.4+)</string>
+    <string name="update_push_subscription">更新推送订阅</string>
     <string name="boost_private_toot_not_allowed">你不能让别人帮你转嘟隐私状态.</string>
     <string name="confirm_boost_private_from">从%1$s转嘟隐私状态吗？它将显示给所有关注者.</string>
     <string name="available_mastodon_2_4_later">(Mastodon 2.4+中可用)</string>
@@ -1145,7 +1145,7 @@
     <string name="option_deprecated_mastodon342">(这个选项在Mastodon 3.4.2以上版本中已经废弃。应用程序使用来自服务器的信息。）</string>
     <string name="movie_transcode_max_square_pixels">最大方形像素(默认=2304000。也可以通过服务器配置减少。)</string>
     <string name="always">总是</string>
-    <string name="push_notification_filter">推送通知过滤（Mastodon 3.4.0+，需更新推送订阅）</string>
+    <string name="push_notification_filter">推送通知过滤</string>
     <string name="not_available_for_current_accounts">不支持当前用户</string>
     <string name="confirm_mail_description">重新请求发送验证邮件后，
 \n- 请在收件箱里检查邮件。

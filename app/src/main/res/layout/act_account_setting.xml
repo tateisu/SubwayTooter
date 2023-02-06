@@ -211,9 +211,30 @@
 
             <View style="@style/setting_divider" />
 
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/profile_metadata" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                >
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/profile_metadata" />
+
+                <ImageButton
+                    android:id="@+id/btnFields"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
+                    android:contentDescription="@string/post"
+                    android:src="@drawable/ic_send"
+                    app:tint="?attr/colorTextContent" />
+            </LinearLayout>
 
             <LinearLayout style="@style/setting_row_form_fields">
 
@@ -318,25 +339,6 @@
                     style="@style/setting_horizontal_stretch"
                     android:inputType="textMultiLine" />
 
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form_fields">
-
-                <TextView
-                    style="@style/setting_horizontal_stretch"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="end"
-                    android:text="@string/available_mastodon_2_4_later" />
-
-                <ImageButton
-                    android:id="@+id/btnFields"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/btn_bg_transparent_round6dp"
-                    android:contentDescription="@string/post"
-                    android:src="@drawable/ic_send"
-                    app:tint="?attr/colorTextContent" />
             </LinearLayout>
 
             <View style="@style/setting_divider" />
@@ -466,24 +468,6 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/dont_show_timeout" />
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swDontShowTimeout"
-                    style="@style/setting_wrap" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
                 android:text="@string/confirmation" />
 
             <CheckBox
@@ -592,9 +576,27 @@
                 style="@style/setting_row_form"
                 android:text="@string/notification_type_status_reference_fedibird" />
 
+            <View style="@style/setting_divider" />
+
             <TextView
-                style="@style/setting_row_form"
-                android:layout_marginTop="12dp"
+                style="@style/setting_row_label"
+                android:text="@string/push_notification_use" />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swNotificationPushEnabled"
+                    style="@style/setting_wrap" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvPushPolicyDesc"
+                style="@style/setting_row_label"
                 android:text="@string/push_notification_filter" />
 
             <Spinner
@@ -603,6 +605,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="40dp" />
+
+            <TextView
+                android:id="@+id/tvPushActions"
+                style="@style/setting_row_label"
+                android:text="@string/actions" />
 
             <Button
                 android:id="@+id/btnPushSubscription"
@@ -620,6 +627,44 @@
                 android:textAllCaps="false"
                 android:visibility="gone" />
 
+            <View style="@style/setting_divider" />
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/push_notification_use" />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swNotificationPullEnabled"
+                    style="@style/setting_wrap" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvDontShowTimeout"
+                style="@style/setting_row_label"
+                android:text="@string/dont_show_timeout" />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swDontShowTimeout"
+                    style="@style/setting_wrap" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/tvPullActions"
+                style="@style/setting_row_label"
+                android:text="@string/actions" />
             <Button
                 android:id="@+id/btnResetNotificationTracking"
                 style="@style/setting_row_button"
@@ -627,29 +672,24 @@
                 android:text="@string/reset_notification_tracking_status"
                 android:textAllCaps="false" />
 
-            <View style="@style/setting_divider" />
-
-            <View style="@style/setting_divider" />
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/notification_style_after_oreo" />
-
-            <Button
-                android:id="@+id/btnNotificationStyleEdit"
-                style="@style/setting_row_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/default_"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btnNotificationStyleEditReply"
-                style="@style/setting_row_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reply"
-                android:textAllCaps="false" />
+            <!--            <View style="@style/setting_divider" />-->
+            <!--            <TextView-->
+            <!--                style="@style/setting_row_label"-->
+            <!--                android:text="@string/notification_style_after_oreo" />-->
+            <!--            <Button-->
+            <!--                android:id="@+id/btnNotificationStyleEdit"-->
+            <!--                style="@style/setting_row_button"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:text="@string/default_"-->
+            <!--                android:textAllCaps="false" />-->
+            <!--            <Button-->
+            <!--                android:id="@+id/btnNotificationStyleEditReply"-->
+            <!--                style="@style/setting_row_button"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:text="@string/reply"-->
+            <!--                android:textAllCaps="false" />-->
 
             <View style="@style/setting_divider" />
 

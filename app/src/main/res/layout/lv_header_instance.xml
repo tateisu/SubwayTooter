@@ -226,6 +226,28 @@
         style="@style/setting_row_button"
         android:text="@string/profile_directory"
         />
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/server_configuration"
+        />
+
+    <jp.juggler.subwaytooter.view.MyTextView
+        android:id="@+id/tvConfiguration"
+        style="@style/setting_row_form"
+        />
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/fedibird_capacities"
+        />
+
+    <jp.juggler.subwaytooter.view.MyTextView
+        android:id="@+id/tvFedibirdCapacities"
+        style="@style/setting_row_form"
+        />
 
     <View style="@style/setting_divider"/>
 

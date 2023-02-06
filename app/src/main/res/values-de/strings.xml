@@ -399,7 +399,7 @@
     <string name="missing_install_id">Konnte Installations-ID nicht erhalten. Bitte versuche es später noch einmal.</string>
     <string name="missing_fcm_device_id">Konnte Firebase-(FCM-)Geräte-ID nicht erhalten. Bitte versuche es später noch einmal.</string>
     <string name="pseudo_account_not_supported">Pseudokonten können keine Benachrichtigungen benutzen.</string>
-    <string name="update_push_subscription">Push-Benachrichtigung updaten (Mastodon 2.4 und später)</string>
+    <string name="update_push_subscription">Push-Benachrichtigung updaten</string>
     <string name="confirm_boost_private_from">Booste den privaten Status von %1$s\? Dies wird allen Followern gezeigt.</string>
     <string name="profile_metadata">Profil-Metadaten</string>
     <string name="field_value4">Wert4</string>

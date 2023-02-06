@@ -8,6 +8,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import androidx.work.WorkManager
 import androidx.work.await
+import jp.juggler.anko.BuildConfig
 import jp.juggler.crypt.*
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
@@ -112,6 +113,7 @@ class PushRepo(
     }
     private val pushMastodon by lazy {
         PushMastodon(
+            context = context,
             api = apiPushMastodon,
             provider = provider,
             prefDevice = prefDevice,
@@ -273,6 +275,12 @@ class PushRepo(
 
         // アプリサーバにendpointを登録する
         refReporter?.get()?.setMessage("アプリサーバにプッシュサービスの情報を送信しています")
+
+        if( !fcmHandler.hasFcm && prefDevice.pushDistributor ==PrefDevice.PUSH_DISTRIBUTOR_FCM){
+            log.w("fmc selected, but this is noFcm build. unset distributer.")
+            prefDevice.pushDistributor = null
+        }
+
         log.i("pushDistributor=${prefDevice.pushDistributor}")
         val acctHashList = acctHashMap.keys.toList()
         val json = when (prefDevice.pushDistributor) {
@@ -310,39 +318,39 @@ class PushRepo(
             }
         }
 
-        realAccounts.forEach { a ->
+        realAccounts.forEach { account ->
             val subLog = object : PushBase.SubscriptionLogger {
                 override val context = this@PushRepo.context
                 override fun i(msg: String) {
-                    log.i("[${a.acct}]$msg")
+                    log.i("[${account.acct}]$msg")
                 }
 
                 override fun e(msg: String) {
-                    log.e("[${a.acct}]$msg")
+                    log.e("[${account.acct}]$msg")
                     daoAccountNotificationStatus.updateSubscriptionError(
-                        a.acct,
+                        account.acct,
                         msg
                     )
                 }
 
                 override fun e(ex: Throwable, msg: String) {
-                    log.e(ex, "[${a.acct}]$msg")
+                    log.e(ex, "[${account.acct}]$msg")
                     daoAccountNotificationStatus.updateSubscriptionError(
-                        a.acct,
+                        account.acct,
                         ex.withCaption(msg)
                     )
                 }
             }
             try {
-                refReporter?.get()?.setMessage("${a.acct.pretty} のWebPush購読を更新しています")
+                refReporter?.get()?.setMessage("${account.acct.pretty} のWebPush購読を更新しています")
                 daoAccountNotificationStatus.updateSubscriptionError(
-                    a.acct,
+                    account.acct,
                     null
                 )
-                pushBase(a).updateSubscription(
+                pushBase(account).updateSubscription(
                     subLog = subLog,
-                    a = a,
-                    willRemoveSubscription = willRemoveSubscription,
+                    account = account,
+                    willRemoveSubscription = willRemoveSubscription || !account.isRequiredPushSubscription(),
                     forceUpdate = false,
                 )
             } catch (ex: Throwable) {
@@ -392,20 +400,20 @@ class PushRepo(
      */
     suspend fun updateSubscription(
         subLog: PushBase.SubscriptionLogger,
-        a: SavedAccount,
+        account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate: Boolean = false,
     ) {
-        pushBase(a).updateSubscription(
+        pushBase(account).updateSubscription(
             subLog = subLog,
-            a = a,
-            willRemoveSubscription = willRemoveSubscription,
+            account = account,
+            willRemoveSubscription = willRemoveSubscription || !account.isRequiredPushSubscription(),
             forceUpdate = forceUpdate,
         )
     }
 
-    private fun pushBase(a: SavedAccount) = when {
-        a.isMisskey -> pushMisskey
+    private fun pushBase(account: SavedAccount) = when {
+        account.isMisskey -> pushMisskey
         else -> pushMastodon
     }
 
@@ -482,14 +490,18 @@ class PushRepo(
         val status = daoStatus.findByAcctHash(acctHash)
             ?: error("missing status for acctHash $acctHash")
 
-        val account = daoSavedAccount.loadAccountByAcct(Acct.parse(status.acct))
+        val acct = status.acct.notEmpty()
+            ?: error("empty acct.")
+
+        val account = daoSavedAccount.loadAccountByAcct(Acct.parse(acct))
             ?: error("missing account for acct ${status.acct}")
 
         pm.loginAcct = status.acct
 
         decodeMessageContent(status, pm, map)
+        val messageJson = pm.messageJson
 
-        if (pm.messageJson == null) {
+        if (messageJson == null) {
             // デコード失敗
             // 古い鍵で行った購読だろう。
             // メッセージに含まれるappServerHashを指定してendpoint登録を削除する
@@ -502,8 +514,11 @@ class PushRepo(
             error("can't decode WebPush message to JSON.")
         }
         // Mastodonはなぜかアクセストークンが書いてあるので危険…
-        val censored = pm.messageJson.toString()
-            .replace(""""access_token":"[^"]+"""".toRegex(), """"access_token":"***"""")
+        val censored = messageJson.toString()
+            .replace(
+                """"access_token":"[^"]+"""".toRegex(),
+                """"access_token":"***""""
+            )
         log.i("${status.acct} $censored")
 
         // messageJsonを解釈して通知に出す内容を決める
@@ -516,11 +531,6 @@ class PushRepo(
 
         daoPushMessage.save(pm)
 
-        val acct = pm.loginAcct
-        if (acct.isNullOrEmpty()) {
-            log.e("can't show notification. missing acct.")
-            return
-        }
         val notificationId = pm.notificationId
         if (notificationId.isNullOrEmpty()) {
             log.e("can't show notification. missing notificationId.")

@@ -66,8 +66,9 @@ class ApiPushMastodon(
         p256dh: String,
         // REQUIRED String. Auth secret. Base64 encoded string of 16 bytes of random data.
         auth: String,
-        // map of alert type to boolean, true to receive for alert type. false? null?
-        alerts: Map<String, Boolean>,
+        // map of alert type to boolean, true to receive for alert type.
+        // I dont know default behavior if alert key does not exists.
+        alerts: JsonObject,
         // whether to receive push notifications from all, followed, follower, or none users.
         policy: String,
     ): JsonObject = buildJsonObject {
@@ -79,11 +80,7 @@ class ApiPushMastodon(
             })
         })
         put("data", buildJsonObject {
-            put("alerts", buildJsonObject {
-                for (t in alertTypes) {
-                    alerts[t]?.let { put(t, it) }
-                }
-            })
+            put("alerts",alerts)
         })
         put("policy", policy)
     }.toPostRequestBuilder()
@@ -98,15 +95,11 @@ class ApiPushMastodon(
      */
     suspend fun updatePushSubscriptionData(
         a: SavedAccount,
-        alerts: Map<String, Boolean>,
+        alerts: JsonObject,
         policy: String,
     ): JsonObject = buildJsonObject {
         put("data", buildJsonObject {
-            put("alerts", buildJsonObject {
-                for (t in alertTypes) {
-                    alerts[t]?.let { put(t, it) }
-                }
-            })
+            put("alerts", alerts)
         })
         put("policy", policy)
     }.toPutRequestBuilder()

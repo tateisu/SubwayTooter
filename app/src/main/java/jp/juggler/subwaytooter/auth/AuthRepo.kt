@@ -58,7 +58,7 @@ class AuthRepo(
         TootParser(context, item).account(userJson)?.let { ta ->
             item.loginAccount = ta
             daoSavedAccount.save(item)
-            checkNotificationImmediateAll(context, onlySubscription = true)
+            checkNotificationImmediateAll(context, onlyEnqueue = true)
             checkNotificationImmediate(context, item.db_id)
         }
     }

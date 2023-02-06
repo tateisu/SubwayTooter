@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.columnviewholder
 
-import android.view.View
-import android.widget.CheckBox
+import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.RadioButton
 import jp.juggler.subwaytooter.ActMain
@@ -9,29 +8,34 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.column.startLoading
+import jp.juggler.subwaytooter.databinding.LvHeaderProfileDirectoryBinding
 
 internal class ViewHolderHeaderProfileDirectory(
-    activityArg: ActMain,
-    viewRoot: View
-) : ViewHolderHeaderBase(activityArg, viewRoot), CompoundButton.OnCheckedChangeListener {
-
-    private val rbOrderActive: RadioButton = viewRoot.findViewById(R.id.rbOrderActive)
-    private val rbOrderNew: RadioButton = viewRoot.findViewById(R.id.rbOrderNew)
-    private val cbResolve: CheckBox = viewRoot.findViewById(R.id.cbResolve)
+    override val activity: ActMain,
+    parent: ViewGroup,
+    val views: LvHeaderProfileDirectoryBinding =
+        LvHeaderProfileDirectoryBinding.inflate(activity.layoutInflater, parent, false),
+) : ViewHolderHeaderBase(views.root), CompoundButton.OnCheckedChangeListener {
 
     private var busy = false
 
     init {
-        rbOrderActive.setOnCheckedChangeListener(this)
-        rbOrderNew.setOnCheckedChangeListener(this)
-        cbResolve.setOnCheckedChangeListener(this)
+        views.root.tag = this
+        val holder = this
+        views.run {
+            rbOrderActive.setOnCheckedChangeListener(holder)
+            rbOrderNew.setOnCheckedChangeListener(holder)
+            cbResolve.setOnCheckedChangeListener(holder)
+        }
     }
 
     override fun showColor() {
-        val c = column.getContentColor()
-        rbOrderActive.setTextColor(c)
-        rbOrderNew.setTextColor(c)
-        cbResolve.setTextColor(c)
+        views.run {
+            val c = column.getContentColor()
+            rbOrderActive.setTextColor(c)
+            rbOrderNew.setTextColor(c)
+            cbResolve.setTextColor(c)
+        }
     }
 
     override fun bindData(column: Column) {
@@ -39,12 +43,14 @@ internal class ViewHolderHeaderProfileDirectory(
 
         busy = true
         try {
-            cbResolve.isChecked = column.searchResolve
+            views.run {
+                cbResolve.isChecked = column.searchResolve
 
-            if (column.searchQuery == "new") {
-                rbOrderNew.isChecked = true
-            } else {
-                rbOrderActive.isChecked = true
+                if (column.searchQuery == "new") {
+                    rbOrderNew.isChecked = true
+                } else {
+                    rbOrderActive.isChecked = true
+                }
             }
         } finally {
             busy = false

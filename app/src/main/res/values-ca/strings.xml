@@ -679,7 +679,7 @@
     <string name="available_mastodon_2_4_later">(disponible a Mastodont 2.4+)</string>
     <string name="confirm_boost_private_from">Vols difondre el missatge privat de %1$s \? Es mostrarà a totes les seguidores.</string>
     <string name="boost_private_toot_not_allowed">No es poden difondre brams privats d\'una altra persona.</string>
-    <string name="update_push_subscription">Actualitza la subscripció a push (Mastodont 2.4+)</string>
+    <string name="update_push_subscription">Actualitza la subscripció a push</string>
     <string name="pseudo_account_not_supported">Els pseudocomptes no poden generar notificacions.</string>
     <string name="instance_does_not_support_push_api">Aquest servidor no permet subscripcions a push (versió %1$s).</string>
     <string name="missing_fcm_device_id">No es pot preparar l\'ID del dispositiu FCM. Mira de provar-ho més tard.</string>

@@ -748,7 +748,7 @@
     <string name="unmute_succeeded">ミュート解除できました</string>
     <string name="unmute_this_conversation">この会話の次回以降の通知をミュート解除</string>
     <string name="update_access_token">アクセストークンの更新</string>
-    <string name="update_push_subscription">プッシュ購読の更新 (Mastodon2.4以降)</string>
+    <string name="update_push_subscription">プッシュ購読の更新</string>
     <string name="uri">URI</string>
     <string name="url_is_copied">URLをクリップボードにコピーしました</string>
     <string name="url_omitted">(URL略)</string>
@@ -1086,7 +1086,7 @@
     <string name="update_mail_address">登録メールアドレスを変更する</string>
     <string name="resend_confirm_mail_requested">確認メールの再送を要求しました。</string>
     <string name="confirm_mail_description">確認メールの再送を要求した後の手順:\n- あなたのメーラーで新着メールが届くのを確認する。\n- メール中の確認リンクを開く。\n- このダイアログを閉じてカラムをリロードする。</string>
-    <string name="push_notification_filter">プッシュ通知フィルタ(Mastodon 3.4.0以降。プッシュ通知の更新が必要)</string>
+    <string name="push_notification_filter">プッシュ通知フィルタ</string>
     <string name="no_one">誰もいない</string>
     <string name="reactioned_posts">リアクションした投稿</string>
     <string name="reactions">リアクション</string>
@@ -1233,4 +1233,8 @@
     <string name="saved_to">保存しました。 %1$s</string>
     <string name="view">見る</string>
     <string name="notification_permission_not_granted">通知表示権限がありません</string>
+    <string name="push_notification_use">プッシュ購読で通知を受信する</string>
+    <string name="pull_notification_use">定期的なプル通知チェックを使う</string>
+    <string name="push_subscription_exists_updateing">現在のプッシュ購読を更新しています…</string>
+    <string name="manually_update">手動Manually update</string>
 </resources>

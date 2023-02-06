@@ -14,49 +14,17 @@ import jp.juggler.util.log.*
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.ui.*
 import okhttp3.Request
-import okhttp3.Response
 
 class PushSubscriptionHelper(
     val context: Context,
     val account: SavedAccount,
-    val verbose: Boolean = false,
+    private val verbose: Boolean = false,
     private val daoSubscriptionServerKey: SubscriptionServerKey.Access =
         SubscriptionServerKey.Access(appDatabase),
 ) {
     companion object {
-
         private val log = LogCategory("PushSubscriptionHelper")
-
-        private const val ERROR_PREVENT_FREQUENTLY_CHECK =
-            "prevent frequently subscription check."
-
-        private val lastCheckedMap: HashMap<String, Long> = HashMap()
-
-        fun clearLastCheck(account: SavedAccount) {
-            synchronized(lastCheckedMap) {
-                lastCheckedMap.remove(account.acct.ascii)
-            }
-        }
-
-        private fun Boolean.booleanToInt(trueValue: Int, falseValue: Int = 0) =
-            if (this) trueValue else falseValue
-
-        private fun Response.closeQuietly() =
-            try {
-                close()
-            } catch (_: Throwable) {
-            }
     }
-
-    val flags = account.notificationBoost.booleanToInt(1) +
-            account.notificationFavourite.booleanToInt(2) +
-            account.notificationFollow.booleanToInt(4) +
-            account.notificationMention.booleanToInt(8) +
-            account.notificationReaction.booleanToInt(16) +
-            account.notificationVote.booleanToInt(32) +
-            account.notificationFollowRequest.booleanToInt(64) +
-            account.notificationPost.booleanToInt(128) +
-            account.notificationUpdate.booleanToInt(256)
 
     private val logBuffer = StringBuilder()
 
@@ -65,70 +33,13 @@ class PushSubscriptionHelper(
 
     private var subscribed: Boolean = false
 
+    val flags = account.notificationFlags()
+
     private fun addLog(s: String?) {
         if (s?.isNotEmpty() == true) {
             if (logBuffer.isNotEmpty()) logBuffer.append('\n')
             logBuffer.append(s)
         }
-    }
-
-    private fun isRecentlyChecked(): Boolean {
-        if (verbose) return false
-        val now = System.currentTimeMillis()
-        val acctAscii = account.acct.ascii
-        synchronized(lastCheckedMap) {
-            val lastChecked = lastCheckedMap[acctAscii]
-            val rv = lastChecked != null && now - lastChecked < 3600000L
-            if (!rv) lastCheckedMap[acctAscii] = now
-            return rv
-        }
-    }
-
-    private suspend fun updateServerKey(
-        client: TootApiClient,
-        clientIdentifier: String,
-        serverKey: String?,
-    ): TootApiResult {
-
-        if (serverKey == null) {
-            return TootApiResult(context.getString(R.string.push_notification_server_key_missing))
-        } else if (serverKey.isEmpty()) {
-            return TootApiResult(context.getString(R.string.push_notification_server_key_empty))
-        }
-
-        // 既に登録済みの値と同じなら何もしない
-        val oldKey = daoSubscriptionServerKey.find(clientIdentifier)
-        if (oldKey != serverKey) {
-
-            // サーバキーをアプリサーバに登録
-            client.http(
-                JsonObject().apply {
-                    put("client_id", clientIdentifier)
-                    put("server_key", serverKey)
-                }
-                    .toPostRequestBuilder()
-                    .url("$APP_SERVER/webpushserverkey")
-                    .build()
-
-            ).also { result ->
-                result.response?.let { res ->
-                    when (res.code.also { res.close() }) {
-
-                        200 -> {
-                            // 登録できたサーバーキーをアプリ内DBに保存
-                            daoSubscriptionServerKey.save(clientIdentifier, serverKey)
-                            addLog("(server public key is registered.)")
-                        }
-
-                        else -> {
-                            addLog("(server public key registration failed.)")
-                            addLog("${res.code} ${res.message}")
-                        }
-                    }
-                }
-            }
-        }
-        return TootApiResult()
     }
 
     // アプリサーバにendpoint URLの変更を伝える
@@ -172,9 +83,6 @@ class PushSubscriptionHelper(
 //        progress: suspend (SavedAccount, PollingState) -> Unit = { _, _ -> },
 //    ): TootApiResult? = try {
 //        when {
-//            isRecentlyChecked() ->
-//                TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
-//
 //            account.isPseudo ->
 //                TootApiResult(context.getString(R.string.pseudo_account_not_supported))
 //
@@ -409,44 +317,6 @@ class PushSubscriptionHelper(
 //        }
 //    }
 
-    private class CheckDeviceHasPriorityResult(
-        val result: TootApiResult?,
-        val failed: Boolean,
-    )
-
-    private suspend fun checkDeviceHasPriority(
-        client: TootApiClient,
-        tokenDigest: String,
-        installId: String,
-    ): CheckDeviceHasPriorityResult {
-        val r = client.http(
-            buildJsonObject {
-                put("token_digest", tokenDigest)
-                put("install_id", installId)
-            }
-                .toPostRequestBuilder()
-                .url("$APP_SERVER/webpushtokencheck")
-                .build()
-        )
-
-        fun rvError() = CheckDeviceHasPriorityResult(r, true)
-        fun rvOk() = CheckDeviceHasPriorityResult(r, false)
-
-        val res = r.response ?: return rvError()
-        return when {
-            res.code != 200 -> {
-                if (res.code == 403) addLog(context.getString(R.string.token_exported))
-                r.caption = "(SubwayTooter App server)"
-                client.readBodyString(r)
-                rvError()
-            }
-            else -> {
-                res.closeQuietly()
-                rvOk()
-            }
-        }
-    }
-
     // returns null if no error
     private fun checkInstanceVersionMastodon(
         ti: TootInstance,
@@ -527,107 +397,6 @@ class PushSubscriptionHelper(
         }
     }
 
-    private suspend fun canSkipSubscriptionMastodon(
-        client: TootApiClient,
-        clientIdentifier: String,
-        endpoint: String,
-        oldSubscription: TootPushSubscription?,
-        newAlerts: JsonObject,
-    ): TootApiResult? {
-
-        // 購読を解除したいのに古い購読があるのなら、購読の更新が必要
-        if (flags == 0 && oldSubscription != null) return null
-
-        // endpoint URLが合わないなら購読の更新が必要
-        if (oldSubscription?.endpoint != endpoint) return null
-
-        suspend fun makeSkipResult(): TootApiResult {
-            // 既に登録済みで、endpointも一致している
-            subscribed = true
-            if (verbose) addLog(context.getString(R.string.push_subscription_already_exists))
-            return updateServerKey(client, clientIdentifier, oldSubscription.server_key)
-        }
-
-        // STがstatus通知に対応した時期に古いサーバでここを通ると
-        // flagsの値が変わりendpoint URLも変わった状態で購読を自動更新してしまう
-        // しかしそのタイミングではサーバは古いのでサーバ側の購読内容は変化しなかった。
-
-        // サーバ上の購読アラートのリスト
-        var alertsOld = oldSubscription.alerts.entries
-            .mapNotNull { if (it.value) it.key else null }
-            .sorted()
-
-        // 期待する購読アラートのリスト
-        var alertsNew = newAlerts.entries
-            .mapNotNull { pair -> pair.key.takeIf { pair.value == true } }
-            .sorted()
-
-        // 両方に共通するアラートは除去する
-        val bothHave = alertsOld.filter { alertsNew.contains(it) }
-        alertsOld = alertsOld.filter { !bothHave.contains(it) }
-        alertsNew = alertsNew.filter { !bothHave.contains(it) }
-
-        // サーバのバージョンを調べる前に、この時点でalertsが一致するか確認する
-        if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
-            log.v("${account.acct}: same alerts(1)")
-            return makeSkipResult()
-        }
-
-        // ここでサーバのバージョンによって対応が変わる
-        val (ti, result) = TootInstance.get(client)
-        ti ?: return result
-
-        // サーバが知らないアラート種別は比較対象から除去する
-        fun Iterable<String>.knownOnly() = filter {
-            when (it) {
-                "follow",
-                "mention",
-                "favourite",
-                "reblog",
-                -> true
-                "poll",
-                -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
-                "follow_request",
-                -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
-                "status",
-                -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
-                "emoji_reaction" ->
-                    ti.versionGE(TootInstance.VERSION_3_4_0_rc1) &&
-                            InstanceCapability.emojiReaction(account, ti)
-
-                "update",
-                TootNotification.TYPE_ADMIN_SIGNUP,
-                ->  ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
-
-                TootNotification.TYPE_ADMIN_REPORT,
-                -> ti.versionGE(TootInstance.VERSION_4_0_0)
-
-                /*
-                2022年6月15日現在、admin.sign_up と update をalertsに指定しても意味がない
-                https://github.com/mastodon/mastodon/blob/main/app/controllers/api/v1/push/subscriptions_controller.rb#L55
-                This line does not have admin.sign_up and update.
-                Will these notifications not be pushed?
-                Or is there no way to control the subscription to these notifications?
-                 */
-
-                else -> {
-                    log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")
-                    false // 未知のアラートの差異は比較しない
-                }
-            }
-        }
-        alertsOld = alertsOld.knownOnly()
-        alertsNew = alertsNew.knownOnly()
-
-        return if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
-            log.v("${account.acct}: same alerts(2)")
-            makeSkipResult()
-        } else {
-            addLog("${account.acct}: alerts not match. account=${account.acct.pretty} old=${alertsOld.sorted()}, new=${alertsNew.sorted()}")
-            null
-        }
-    }
-
     private suspend fun unsubscribeMastodon(
         client: TootApiClient,
     ): TootApiResult? {
@@ -665,7 +434,6 @@ class PushSubscriptionHelper(
 
     private suspend fun subscribeMastodon(
         client: TootApiClient,
-        clientIdentifier: String,
         endpoint: String,
         newAlerts: JsonObject,
     ): TootApiResult? {
@@ -706,17 +474,9 @@ class PushSubscriptionHelper(
             }
 
             200 -> {
-                val newSubscription = parseItem(::TootPushSubscription, r.jsonObject)
-                    ?: return r.setError("parse error.")
-
                 subscribed = true
                 if (verbose) addLog(context.getString(R.string.push_subscription_updated))
-
-                return updateServerKey(
-                    client,
-                    clientIdentifier,
-                    newSubscription.server_key
-                )
+                return TootApiResult()
             }
 
             else -> {

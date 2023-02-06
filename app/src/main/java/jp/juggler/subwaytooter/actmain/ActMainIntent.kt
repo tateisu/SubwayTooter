@@ -268,8 +268,7 @@ private fun ActMain.afterAccessTokenUpdate(
         .forEach { it.startLoading() }
 
     // 通知の更新が必要かもしれない
-    PushSubscriptionHelper.clearLastCheck(sa)
-    checkNotificationImmediateAll(this, onlySubscription = true)
+    checkNotificationImmediateAll(this, onlyEnqueue = true)
     checkNotificationImmediate(this, sa.db_id)
     updatePushDistributer()
 
@@ -331,7 +330,7 @@ private fun ActMain.afterAccountAdd(
     }
 
     // 通知の更新が必要かもしれない
-    checkNotificationImmediateAll(this, onlySubscription = true)
+    checkNotificationImmediateAll(this, onlyEnqueue = true)
     checkNotificationImmediate(this, account.db_id)
     updatePushDistributer()
     showToast(false, R.string.account_confirmed)

@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.pref.prefDevice
 
 private val log = LogCategory("FcmHandler")
 
+@Suppress("MemberVisibilityCanBePrivate", "RedundantSuspendModifier")
 class FcmHandler(
     private val context: Context,
 ) {

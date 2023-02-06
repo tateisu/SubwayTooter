@@ -847,6 +847,8 @@ class ItemViewHolder(
     private fun _LinearLayout.inflateSearchTag() {
         llSearchTag = linearLayout {
             lparams(matchParent, wrapContent)
+            isBaselineAligned = false
+            gravity = Gravity.CENTER_VERTICAL or Gravity.START
 
             btnSearchTag = compatButton {
                 background =
@@ -856,26 +858,26 @@ class ItemViewHolder(
                 weight = 1f
             }
 
-            btnGapHead = imageButton {
-                background = ContextCompat.getDrawable(
-                    context,
-                    R.drawable.btn_bg_transparent_round6dp
-                )
-                contentDescription = context.getString(R.string.read_gap_head)
-                imageResource = R.drawable.ic_arrow_drop_down
-            }.lparams(dip(32), matchParent) {
+            verticalLayout {
+                btnGapHead = imageButton {
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
+                    contentDescription = context.getString(R.string.read_gap_head)
+                    imageResource = R.drawable.ic_arrow_drop_down
+                }.lparams(dip(36), dip(36))
+                btnGapTail = imageButton {
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
+                    contentDescription = context.getString(R.string.read_gap_tail)
+                    imageResource = R.drawable.ic_arrow_drop_up
+                }.lparams(dip(36), dip(36))
+            }.lparams(wrapContent, wrapContent) {
                 startMargin = dip(8)
-            }
-
-            btnGapTail = imageButton {
-                background = ContextCompat.getDrawable(
-                    context,
-                    R.drawable.btn_bg_transparent_round6dp
-                )
-                contentDescription = context.getString(R.string.read_gap_tail)
-                imageResource = R.drawable.ic_arrow_drop_up
-            }.lparams(dip(32), matchParent) {
-                startMargin = dip(8)
+                topMargin = dip(3)
             }
         }
     }

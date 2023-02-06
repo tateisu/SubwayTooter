@@ -49,18 +49,32 @@ object InstanceCapability {
         ti?.feature_quote == true
 
     fun visibilityMutual(ti: TootInstance?) =
-        ti?.fedibird_capabilities?.contains("visibility_mutual") == true
+        ti?.fedibirdCapabilities?.contains("visibility_mutual") == true
 
     fun visibilityLimited(ti: TootInstance?) =
-        ti?.fedibird_capabilities?.contains("visibility_limited") == true
+        ti?.fedibirdCapabilities?.contains("visibility_limited") == true
 
     fun emojiReaction(ai: SavedAccount, ti: TootInstance?) =
         when {
             ai.isPseudo -> false
             ai.isMisskey -> true
             else ->
-                ti?.fedibird_capabilities?.contains("emoji_reaction") == true ||
+                ti?.fedibirdCapabilities?.contains("emoji_reaction") == true ||
                         ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
+        }
+    fun statusReference(ai: SavedAccount, ti: TootInstance?) =
+        when {
+            ai.isPseudo -> false
+            ai.isMisskey -> false
+            else -> ti?.fedibirdCapabilities?.contains("status_reference") == true
+        }
+
+    fun scheduledStatus(ai: SavedAccount, ti: TootInstance?) =
+        when {
+            ai.isPseudo -> false
+            ai.isMisskey -> false
+            // 予約投稿自体はMastodonに2.7.0からある。通知はFedibird拡張
+            else -> ti?.fedibirdCapabilities !=null && ti.versionGE(TootInstance.VERSION_2_7_0_rc1)
         }
 
     fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
@@ -78,7 +92,7 @@ object InstanceCapability {
                 ti?.misskeyEndpoints?.contains("i/reactions") == true
             else ->
                 // fedibird extension
-                ti?.fedibird_capabilities?.contains("emoji_reaction") == true
+                ti?.fedibirdCapabilities?.contains("emoji_reaction") == true
         }
 }
 
@@ -142,7 +156,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
     var feature_quote = false
 
-    var fedibird_capabilities: Set<String>? = null
+    var fedibirdCapabilities: Set<String>? = null
 
     var misskeyEndpoints: Set<String>? = null
 
@@ -228,7 +242,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.invites_enabled = src.boolean("invites_enabled")
 
-            this.fedibird_capabilities =
+            this.fedibirdCapabilities =
                 src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()
             this.pleromaFeatures =
                 src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")
@@ -251,7 +265,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         }
 
     val canUseReference: Boolean?
-        get() = fedibird_capabilities?.contains("status_reference")
+        get() = fedibirdCapabilities?.contains("status_reference")
 
     fun versionGE(check: VersionString) = decoded_version.ge(check)
 

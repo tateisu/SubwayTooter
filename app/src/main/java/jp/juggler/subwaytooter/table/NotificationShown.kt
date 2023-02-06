@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.util.data.MetaColumns
 import jp.juggler.util.data.TableCompanion
 import jp.juggler.util.data.replaceTo
@@ -121,6 +122,13 @@ class NotificationShown(
             }
         }
 
+        fun cleayByAcct(acct: String) {
+            db.execSQL(
+                "delete from $table where $COL_ACCT=?",
+                arrayOf(acct)
+            )
+        }
+
         fun duplicateOrPut(acct: String, notificationId: String): Boolean {
             try {
                 db.rawQuery(
@@ -139,5 +147,6 @@ class NotificationShown(
             }
             return false
         }
+
     }
 }

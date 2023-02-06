@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.HeaderType
@@ -93,6 +92,7 @@ class ItemListAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        activity
         when (viewType) {
             0 -> {
                 val holder = ItemViewHolder(activity)
@@ -101,46 +101,22 @@ class ItemListAdapter(
             }
 
             HeaderType.Profile.viewType -> {
-                val viewRoot =
-                    activity.layoutInflater.inflate(R.layout.lv_header_profile, parent, false)
-                val holder = ViewHolderHeaderProfile(activity, viewRoot)
-                viewRoot.tag = holder
-                return holder
+                return ViewHolderHeaderProfile(activity, parent)
             }
 
             HeaderType.Search.viewType -> {
-                val viewRoot =
-                    activity.layoutInflater.inflate(R.layout.lv_header_search_desc, parent, false)
-                val holder = ViewHolderHeaderSearch(activity, viewRoot)
-                viewRoot.tag = holder
-                return holder
+                return ViewHolderHeaderSearch(activity, parent)
             }
 
             HeaderType.Instance.viewType -> {
-                val viewRoot =
-                    activity.layoutInflater.inflate(R.layout.lv_header_instance, parent, false)
-                val holder = ViewHolderHeaderInstance(activity, viewRoot)
-                viewRoot.tag = holder
-                return holder
+                return ViewHolderHeaderInstance(activity, parent)
             }
 
             HeaderType.Filter.viewType -> {
-                val viewRoot =
-                    activity.layoutInflater.inflate(R.layout.lv_header_filter, parent, false)
-                val holder = ViewHolderHeaderFilter(activity, viewRoot)
-                viewRoot.tag = holder
-                return holder
+                return ViewHolderHeaderFilter(activity, parent)
             }
             HeaderType.ProfileDirectory.viewType -> {
-                val viewRoot =
-                    activity.layoutInflater.inflate(
-                        R.layout.lv_header_profile_directory,
-                        parent,
-                        false
-                    )
-                val holder = ViewHolderHeaderProfileDirectory(activity, viewRoot)
-                viewRoot.tag = holder
-                return holder
+                return ViewHolderHeaderProfileDirectory(activity, parent)
             }
             else -> error("unknown viewType: $viewType")
         }

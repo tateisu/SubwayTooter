@@ -35,7 +35,7 @@ abstract class PushBase {
     // 購読の確認と更新
     abstract suspend fun updateSubscription(
         subLog: SubscriptionLogger,
-        a: SavedAccount,
+        account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate:Boolean,
     )

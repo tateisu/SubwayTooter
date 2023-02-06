@@ -504,7 +504,7 @@
     <string name="available_mastodon_2_4_later">(tilgjengelig i Mastodon 2.4 eller senere)</string>
     <string name="confirm_boost_private_from">Framhev privat status fra %1$s? Den vises for alle følgere.</string>
     <string name="boost_private_toot_not_allowed">Du kan ikke framheve privat tut fra en annen person.</string>
-    <string name="update_push_subscription">Oppdater push-abonnement (Mastodon 2.4 eller senere)</string>
+    <string name="update_push_subscription">Oppdater push-abonnement</string>
     <string name="pseudo_account_not_supported">Pseudo-konto kan ikke bruke merknader.</string>
     <string name="instance_does_not_support_push_api">Instansversjonen %1$s er for gammel. Den støtter ikke push-abonnementer.</string>
     <string name="missing_fcm_device_id">Kan ikke forberede FCM-enhets-ID. Prøv igjen senere.</string>

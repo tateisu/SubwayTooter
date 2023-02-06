@@ -1,17 +1,21 @@
 package jp.juggler.subwaytooter.columnviewholder
 
 import android.view.View
+import android.view.ViewGroup
 import jp.juggler.subwaytooter.ActKeywordFilter
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.databinding.LvHeaderFilterBinding
 
 internal class ViewHolderHeaderFilter(
-    activityArg: ActMain,
-    viewRoot: View,
-) : ViewHolderHeaderBase(activityArg, viewRoot), View.OnClickListener {
+    override val activity: ActMain,
+    parent: ViewGroup,
+    val views: LvHeaderFilterBinding =
+        LvHeaderFilterBinding.inflate(activity.layoutInflater, parent, false),
+) : ViewHolderHeaderBase(views.root), View.OnClickListener {
 
     init {
-        viewRoot.findViewById<View>(R.id.btnCreate).setOnClickListener(this)
+        views.root.tag = this
+        views.btnCreate.setOnClickListener(this)
     }
 
     override fun showColor() {

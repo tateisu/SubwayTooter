@@ -647,7 +647,7 @@
     <string name="available_mastodon_2_4_later">(disponible dans Mastodon 2.4+)</string>
     <string name="confirm_boost_private_from">Booster le statut privé venant de %1$s \? Il sera affiché à tous les abonné·e·s.</string>
     <string name="boost_private_toot_not_allowed">Vous ne pouvez pas booster les pouets privés publiés par une autre personne.</string>
-    <string name="update_push_subscription">Mise à jour de l’abonnement push (Mastodon 2.4+)</string>
+    <string name="update_push_subscription">Mise à jour de l’abonnement push</string>
     <string name="pseudo_account_not_supported">Les pseudo comptes ne gèrent pas les notifications.</string>
     <string name="instance_does_not_support_push_api">L’aonnement push n’est pas supporté sur ce serveur (version %1$s).</string>
     <string name="missing_fcm_device_id">Impossible de préparer l’ID FCM du périphérique. Veuillez réessayer plus tard.</string>

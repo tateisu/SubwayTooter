@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.notification
 import android.app.NotificationManager
 import android.content.Context
 import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkQuery
@@ -10,21 +11,16 @@ import androidx.work.await
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.notification.PullNotification.removeMessageNotification
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.daoNotificationCache
-import jp.juggler.subwaytooter.table.daoNotificationTracking
-import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.EmptyScope
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchDefault
 import jp.juggler.util.data.ellipsizeDot3
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.systemService
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -55,14 +51,17 @@ suspend fun setImportProtector(context: Context, newProtect: Boolean) {
     }
 }
 
-fun resetNotificationTracking(account: SavedAccount) {
+fun AppCompatActivity.resetNotificationTracking(account: SavedAccount) {
     if (importProtector.get()) {
         log.w("resetNotificationTracking: abort by importProtector.")
         return
     }
-    launchDefault {
-        PollingChecker.accountMutex(account.db_id).withLock {
-            daoNotificationTracking.resetTrackingState(account.db_id)
+    launchAndShowError {
+        withContext(AppDispatchers.IO){
+            daoNotificationShown.cleayByAcct(account.acct.ascii)
+            PollingChecker.accountMutex(account.db_id).withLock {
+                daoNotificationTracking.resetTrackingState(account.db_id)
+            }
         }
     }
 }
@@ -186,12 +185,13 @@ private fun <K, V> Map<K, V>.trans() = HashMap<V, ArrayList<K>>()
 
 /**
  * 全アカウントの通知チェックを行う
- * -
+ *
+ * @param onlyEnqueue Workerの定期実行ON/OFFの更新だけを行う
  */
 suspend fun checkNoticifationAll(
     context: Context,
     logPrefix: String,
-    onlySubscription: Boolean = false,
+    onlyEnqueue: Boolean = false,
     progress: suspend (Map<PollingState, List<String>>) -> Unit = {},
 ) {
     CheckerWakeLocks.checkerWakeLocks(context).checkConnection()
@@ -242,7 +242,7 @@ suspend fun checkNoticifationAll(
                         accountDbId = sa.db_id,
                     ).check(
                         checkNetwork = false,
-                        onlyEnqueue = onlySubscription,
+                        onlyEnqueue = onlyEnqueue,
                     ) { a, s -> updateStatus(a, s) }
                     updateStatus(sa, PollingState.Complete)
                 } catch (ex: Throwable) {
@@ -277,8 +277,10 @@ suspend fun checkNoticifationAll(
 
 /**
  * メイン画面のonCreate時に全ての通知をチェックする
+ *
+ * @param onlyEnqueue Workerの定期実行ON/OFFの更新だけを行う
  */
-fun checkNotificationImmediateAll(context: Context, onlySubscription: Boolean = false) {
+fun checkNotificationImmediateAll(context: Context, onlyEnqueue: Boolean = false) {
     EmptyScope.launch {
         try {
             if (importProtector.get()) {
@@ -289,7 +291,7 @@ fun checkNotificationImmediateAll(context: Context, onlySubscription: Boolean = 
             checkNoticifationAll(
                 context,
                 "(ImmediateAll)",
-                onlySubscription = onlySubscription
+                onlyEnqueue = onlyEnqueue
             )
         } catch (ex: Throwable) {
             log.e(ex, "checkNotificationImmediateAll failed.")

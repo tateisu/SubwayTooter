@@ -682,7 +682,7 @@
     <string name="available_mastodon_2_4_later">(available in Mastodon 2.4+)</string>
     <string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
     <string name="boost_private_toot_not_allowed">You can\'t boost private toots by another person.</string>
-    <string name="update_push_subscription">Update push subscription (Mastodon 2.4+)</string>
+    <string name="update_push_subscription">Update push subscription</string>
     <string name="pseudo_account_not_supported">Pseudo accounts can\'t use notifications.</string>
     <string name="instance_does_not_support_push_api">Push subscription is not supported on this server (version %1$s).</string>
     <string name="missing_fcm_device_id">Can\'t prepare FCM device ID. Please try again later.</string>
@@ -1102,7 +1102,7 @@
     <string name="update_mail_address">Update e-mail address</string>
     <string name="resend_confirm_mail_requested">Resending confirm E-mail was requested.</string>
     <string name="confirm_mail_description">After requesting resending confirm E-mail,\n- please check the mail on your mailer.\n- open confirm link in the mail.\n- close this dialog and reload column.</string>
-    <string name="push_notification_filter">Push notification filter (Mastodon 3.4.0+, requires update push subscription)</string>
+    <string name="push_notification_filter">Push notification filter</string>
     <string name="no_one">No one</string>
     <string name="reactioned_posts">Reactioned posts</string>
     <string name="reactions">Reactions</string>
@@ -1247,4 +1247,10 @@
     <string name="saved_to">Saved to %1$s</string>
     <string name="view">View</string>
     <string name="notification_permission_not_granted">notification permission not granted</string>
+    <string name="push_notification_use">Use push subscription to receive notification.</string>
+    <string name="pull_notification_use">Use pull check periodically to load notification.</string>
+    <string name="server_configuration">Server configuration</string>
+    <string name="fedibird_capacities">Fedibird capacities</string>
+    <string name="push_subscription_exists_updateing">Updating current push subscription…</string>
+    <string name="manually_update">Manually update</string>
 </resources>

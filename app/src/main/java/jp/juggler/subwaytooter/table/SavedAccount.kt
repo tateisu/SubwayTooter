@@ -69,9 +69,9 @@ class SavedAccount(
     var notificationUpdate: Boolean = true,
     var notificationVote: Boolean = false,
     var pushPolicy: String? = null,
-    var soundUri: String = "",
     var tokenJson: JsonObject? = null,
     var visibility: TootVisibility = TootVisibility.Public,
+//    var soundUri: String = "",
 // private var lastNotificationError: String? = null,
 // private var last_push_endpoint: String? = null,
 // private var last_subscription_error: String? = null,
@@ -167,7 +167,7 @@ class SavedAccount(
         notificationUpdate = cursor.getBoolean(COL_NOTIFICATION_UPDATE),
         notificationVote = cursor.getBoolean(COL_NOTIFICATION_VOTE),
         pushPolicy = cursor.getStringOrNull(COL_PUSH_POLICY),
-        soundUri = cursor.getString(COL_SOUND_URI),
+//        soundUri = cursor.getString(COL_SOUND_URI),
         tokenJson = cursor.getString(COL_TOKEN).decodeJsonObject(),
         visibility = TootVisibility.parseSavedVisibility(cursor.getStringOrNull(COL_VISIBILITY))
             ?: TootVisibility.Public,
@@ -239,8 +239,8 @@ class SavedAccount(
         private const val COL_NOTIFICATION_UPDATE = "notification_update"
         private const val COL_NOTIFICATION_VOTE = "notification_vote"
         private const val COL_PUSH_POLICY = "push_policy"
-        private const val COL_SOUND_URI = "sound_uri"
         private const val COL_VISIBILITY = "visibility"
+//        private const val COL_SOUND_URI = "sound_uri"
 //        private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error"
 //        private const val COL_LAST_PUSH_ENDPOINT = "last_push_endpoint"
 //        private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error"
@@ -272,7 +272,7 @@ class SavedAccount(
             column(13, COL_NOTIFICATION_TAG, MetaColumns.TS_EMPTY)
 //            column(14, COL_REGISTER_KEY, MetaColumns.TS_EMPTY)
 //            column(14, COL_REGISTER_TIME, MetaColumns.TS_ZERO)
-            column(16, COL_SOUND_URI, MetaColumns.TS_EMPTY)
+//            column(16, COL_SOUND_URI, MetaColumns.TS_EMPTY)
             column(18, COL_DONT_SHOW_TIMEOUT, MetaColumns.TS_ZERO)
             column(23, COL_CONFIRM_FAVOURITE, MetaColumns.TS_TRUE)
             column(24, COL_CONFIRM_UNBOOST, MetaColumns.TS_TRUE)
@@ -370,6 +370,9 @@ class SavedAccount(
                 log.e(ex, "parse failed.")
                 null
             }
+
+        private fun Boolean.booleanToInt(trueValue: Int, falseValue: Int = 0) =
+            if (this) trueValue else falseValue
     }
 
     class Access(
@@ -448,7 +451,7 @@ class SavedAccount(
                         "$COL_ID=?",
                         arrayOf(db_id.toString())
                     )
-                    checkNotificationImmediateAll(context, onlySubscription = true)
+                    checkNotificationImmediateAll(context, onlyEnqueue = true)
                     checkNotificationImmediate(context, db_id)
                 }
             }
@@ -489,7 +492,7 @@ class SavedAccount(
                     put(COL_NOTIFICATION_UPDATE, notificationUpdate)
                     put(COL_NOTIFICATION_VOTE, notificationVote)
                     put(COL_PUSH_POLICY, pushPolicy)
-                    put(COL_SOUND_URI, soundUri)
+//                    put(COL_SOUND_URI, soundUri)
                     put(COL_VISIBILITY, visibility.id.toString())
                 }.let { db.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
             }
@@ -535,11 +538,12 @@ class SavedAccount(
                 this.notificationUpdate = b.notificationUpdate
                 this.notificationVote = b.notificationVote
                 this.pushPolicy = b.pushPolicy
-                this.soundUri = b.soundUri
                 this.tokenJson = b.tokenJson
                 this.visibility = b.visibility
                 this.notificationPushEnable = b.notificationPushEnable
                 this.notificationPullEnable = b.notificationPullEnable
+
+                //                this.soundUri = b.soundUri
             }
         }
 
@@ -788,6 +792,14 @@ class SavedAccount(
     val misskeyApiToken: String?
         get() = tokenJson?.string(AuthBase.KEY_API_KEY_MISSKEY)
 
+    override fun hashCode(): Int = acct.hashCode()
+
+    override fun equals(other: Any?): Boolean =
+        when (other) {
+            is SavedAccount -> acct == other.acct
+            else -> false
+        }
+
     // APIリクエスト用のJsonObjectに misskeyApiToken を格納する
     fun putMisskeyApiToken(params: JsonObject = JsonObject()): JsonObject {
         val apiKey = misskeyApiToken
@@ -828,6 +840,18 @@ class SavedAccount(
 
     fun isNicoru(account: TootAccount?) =
         account?.apiHost == Host.FRIENDS_NICO
+
+    fun notificationFlags() = 0 +
+            notificationBoost.booleanToInt(1) +
+            notificationFavourite.booleanToInt(2) +
+            notificationFollow.booleanToInt(4) +
+            notificationMention.booleanToInt(8) +
+            notificationReaction.booleanToInt(16) +
+            notificationVote.booleanToInt(32) +
+            notificationFollowRequest.booleanToInt(64) +
+            notificationPost.booleanToInt(128) +
+            notificationUpdate.booleanToInt(256) +
+            notificationStatusReference.booleanToInt(512)
 
     fun canNotificationShowing(type: String?) = when (type) {
 
@@ -872,14 +896,6 @@ class SavedAccount(
         else -> false
     }
 
-    override fun equals(other: Any?): Boolean =
-        when (other) {
-            is SavedAccount -> acct == other.acct
-            else -> false
-        }
-
-    override fun hashCode(): Int = acct.hashCode()
-
     fun getResizeConfig() =
         resizeConfigList.find { it.spec == this.imageResize } ?: defaultResizeConfig
 
@@ -905,4 +921,7 @@ class SavedAccount(
             limitSquarePixels = movieTranscodeSquarePixels.toIntOrNull()
                 ?.takeIf { it > 0 } ?: 2304000,
         )
+
+    fun isRequiredPushSubscription() = (notificationFlags() != 0) && notificationPushEnable
+    fun isRequiredPullCheck() = (notificationFlags() != 0) && notificationPullEnable
 }

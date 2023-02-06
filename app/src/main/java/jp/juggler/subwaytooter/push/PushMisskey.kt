@@ -29,16 +29,16 @@ class PushMisskey(
 
     override suspend fun updateSubscription(
         subLog: SubscriptionLogger,
-        a: SavedAccount,
+        account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate: Boolean,
     ) {
-        val newUrl = snsCallbackUrl(a)
+        val newUrl = snsCallbackUrl(account)
 
-        val lastEndpointUrl = daoStatus.lastEndpointUrl(a.acct)
+        val lastEndpointUrl = daoStatus.lastEndpointUrl(account.acct)
             ?: newUrl
 
-        var status = daoStatus.load(a.acct)
+        var status = daoStatus.load(account.acct)
 
         @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
         var hasEmptySubscription = false
@@ -48,7 +48,7 @@ class PushMisskey(
                 null, "" -> null
                 else -> try {
                     // Misskeyは2022/12/18に現在の購読を確認するAPIができた
-                    api.getPushSubscription(a, lastEndpointUrl)
+                    api.getPushSubscription(account, lastEndpointUrl)
                     // 購読がない => 空オブジェクト (v13 drdr.club でそんな感じ)
                 } catch (ex: Throwable) {
                     // APIがない => 404 (v10 めいすきーのソースと動作で確認)
@@ -69,15 +69,15 @@ class PushMisskey(
                         false -> subLog.i(R.string.push_subscription_keep_using)
                         else -> {
                             // 未読クリア通知はオフにしたい
-                            api.updatePushSubscription(a, newUrl, sendReadMessage = false)
+                            api.updatePushSubscription(account, newUrl, sendReadMessage = false)
                             subLog.i(R.string.push_subscription_off_unread_notification)
                         }
                     }
                     return
                 } else {
                     // 古い購読はあったが、削除したい
-                    api.deletePushSubscription(a, lastEndpointUrl)
-                    daoStatus.deleteLastEndpointUrl(a.acct)
+                    api.deletePushSubscription(account, lastEndpointUrl)
+                    daoStatus.deleteLastEndpointUrl(account.acct)
                     if (willRemoveSubscription) {
                         subLog.i(R.string.push_subscription_delete_current)
                         return
@@ -99,7 +99,7 @@ class PushMisskey(
             when (status?.pushKeyPrivate) {
                 null -> subLog.i(R.string.push_subscription_is_not_required)
                 else -> {
-                    daoStatus.deletePushKey(a.acct)
+                    daoStatus.deletePushKey(account.acct)
                     subLog.i(R.string.push_subscription_is_not_required_delete_secret_keys)
                 }
             }
@@ -116,19 +116,19 @@ class PushMisskey(
             val auth = ByteArray(16).also { SecureRandom().nextBytes(it) }
             val p256dh = encodeP256Dh(keyPair.public as ECPublicKey)
             daoStatus.savePushKey(
-                a.acct,
+                account.acct,
                 pushKeyPrivate = keyPair.private.encoded,
                 pushKeyPublic = p256dh,
                 pushAuthSecret = auth,
             )
-            status = daoStatus.load(a.acct)
+            status = daoStatus.load(account.acct)
         }
 
         // 購読する
         subLog.i(R.string.push_subscription_creating)
         status!!
         val json = api.createPushSubscription(
-            a = a,
+            a = account,
             endpoint = newUrl,
             auth = status.pushAuthSecret!!.encodeBase64Url(),
             publicKey = status.pushKeyPublic!!.encodeBase64Url(),
@@ -142,7 +142,7 @@ class PushMisskey(
             ?: error("missing server key in response of sw/register API.")
         if (!serverKey.contentEquals(status.pushServerKey)) {
             daoStatus.saveServerKey(
-                acct = a.acct,
+                acct = account.acct,
                 lastPushEndpoint = newUrl,
                 pushServerKey = serverKey,
             )

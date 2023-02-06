@@ -26,7 +26,6 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         const val TYPE_FAVOURITE = "favourite"
         const val TYPE_REACTION = "reaction" // misskey
-        const val TYPE_EMOJI_REACTION = "emoji_reaction" // fedibird
         const val TYPE_EMOJI_REACTION_PLEROMA = "pleroma:emoji_reaction" // pleroma
 
         const val TYPE_FOLLOW_REQUEST = "follow_request"
@@ -50,8 +49,12 @@ class TootNotification(parser: TootParser, src: JsonObject) : TimelineItem() {
         // (Mastodon 4.0)
         const val TYPE_ADMIN_REPORT = "admin.report"
 
-        // (Fedibird beta)
+        // (Fedibird)
+        // https://github.com/fedibird/mastodon/blob/fedibird/app/controllers/api/v1/push/subscriptions_controller.rb#L55
+        // https://github.com/fedibird/mastodon/blob/fedibird/app/models/notification.rb
+        const val TYPE_EMOJI_REACTION = "emoji_reaction"
         const val TYPE_STATUS_REFERENCE = "status_reference"
+        const val TYPE_SCHEDULED_STATUS = "scheduled_status"
     }
 
     val json: JsonObject

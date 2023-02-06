@@ -52,6 +52,7 @@ class PollingWorker2(
                 (PrefS.spPullNotificationCheckInterval.value.toLongOrNull() ?: 0L) * 60000L,
             )
 
+            // アカウント毎に呼び出されるので重複排除したい
             // 未完了のジョブがあり、インターバルが同じなら何もしない
             if (workManager.getWorkInfosForUniqueWork(WORK_NAME).await()
                     .any {

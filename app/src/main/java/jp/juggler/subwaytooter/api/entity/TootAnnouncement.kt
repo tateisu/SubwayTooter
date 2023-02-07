@@ -8,73 +8,72 @@ import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 
-class TootAnnouncement(parser: TootParser, src: JsonObject) {
-
-    //	{"id":"1",
-    //	"content":"\u003cp\u003e日本語\u003cbr /\u003eURL \u003ca href=\"https://www.youtube.com/watch?v=2n1fM2ItdL8\" rel=\"nofollow noopener noreferrer\" target=\"_blank\"\u003e\u003cspan class=\"invisible\"\u003ehttps://www.\u003c/span\u003e\u003cspan class=\"ellipsis\"\u003eyoutube.com/watch?v=2n1fM2ItdL\u003c/span\u003e\u003cspan class=\"invisible\"\u003e8\u003c/span\u003e\u003c/a\u003e\u003cbr /\u003eカスタム絵文字 :ct013: \u003cbr /\u003e普通の絵文字 🤹 \u003c/p\u003e\u003cp\u003e改行2つ\u003c/p\u003e",
-    //	"starts_at":"2020-01-23T00:00:00.000Z",
-    //	"ends_at":"2020-01-28T23:59:00.000Z",
-    //	"all_day":true,
-    //	"mentions":[],
-    //	"tags":[],
-    //	"emojis":[{"shortcode":"ct013","url":"https://m2j.zzz.ac/custom_emojis/images/000/004/116/original/ct013.png","static_url":"https://m2j.zzz.ac/custom_emojis/images/000/004/116/static/ct013.png","visible_in_picker":true}],
-    //	"reactions":[]}]
-
-    val id = EntityId.mayDefault(src.string("id"))
-    val starts_at = TootStatus.parseTime(src.string("starts_at"))
-    val ends_at = TootStatus.parseTime(src.string("ends_at"))
-    val all_day = src.boolean("all_day") ?: false
-    val published_at = TootStatus.parseTime(src.string("published_at"))
-    val updated_at = TootStatus.parseTime(src.string("updated_at"))
-
-    private val custom_emojis: HashMap<String, CustomEmoji>?
-
+//	{"id":"1",
+//	"content":"\u003cp\u003e日本語\u003cbr /\u003eURL \u003ca href=\"https://www.youtube.com/watch?v=2n1fM2ItdL8\" rel=\"nofollow noopener noreferrer\" target=\"_blank\"\u003e\u003cspan class=\"invisible\"\u003ehttps://www.\u003c/span\u003e\u003cspan class=\"ellipsis\"\u003eyoutube.com/watch?v=2n1fM2ItdL\u003c/span\u003e\u003cspan class=\"invisible\"\u003e8\u003c/span\u003e\u003c/a\u003e\u003cbr /\u003eカスタム絵文字 :ct013: \u003cbr /\u003e普通の絵文字 🤹 \u003c/p\u003e\u003cp\u003e改行2つ\u003c/p\u003e",
+//	"starts_at":"2020-01-23T00:00:00.000Z",
+//	"ends_at":"2020-01-28T23:59:00.000Z",
+//	"all_day":true,
+//	"mentions":[],
+//	"tags":[],
+//	"emojis":[{"shortcode":"ct013","url":"https://m2j.zzz.ac/custom_emojis/images/000/004/116/original/ct013.png","static_url":"https://m2j.zzz.ac/custom_emojis/images/000/004/116/static/ct013.png","visible_in_picker":true}],
+//	"reactions":[]}]
+class TootAnnouncement(
+    val id: EntityId,
+    val starts_at: Long,
+    val ends_at: Long,
+    val all_day: Boolean,
+    val published_at: Long,
+    val updated_at: Long,
+    private val custom_emojis: HashMap<String, CustomEmoji>?,
     //	Body of the status; this will contain HTML (remote HTML already sanitized)
-    val content: String
-    val decoded_content: Spannable
-
+    val content: String,
+    val decoded_content: Spannable,
     //An array of Tags
-    val tags: List<TootTag>?
-
+    val tags: List<TootTag>?,
     //	An array of Mentions
-    val mentions: ArrayList<TootMention>?
-
-    var reactions: MutableList<TootReaction>? = null
-
-    init {
-        // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-        this.custom_emojis = parseMapOrNull(
-            CustomEmoji.decode,
-            parser.apDomain,
-            parser.apiHost,
-            src.jsonArray("emojis"),
-            log
-        )
-
-        this.tags = TootTag.parseListOrNull(parser, src.jsonArray("tags"))
-
-        this.mentions = parseListOrNull(::TootMention, src.jsonArray("mentions"), log)
-
-        val options = DecodeOptions(
-            parser.context,
-            parser.linkHelper,
-            short = true,
-            decodeEmoji = true,
-            emojiMapCustom = custom_emojis,
-            // emojiMapProfile = profile_emojis,
-            // attachmentList = media_attachments,
-            highlightTrie = parser.highlightTrie,
-            mentions = mentions,
-        )
-
-        this.content = src.string("content") ?: ""
-        this.decoded_content = options.decodeHTML(content)
-
-        this.reactions = parseListOrNull(TootReaction::parseFedibird, src.jsonArray("reactions"))
-    }
-
+    val mentions: ArrayList<TootMention>?,
+    var reactions: MutableList<TootReaction>? = null,
+) {
     companion object {
         private val log = LogCategory("TootAnnouncement")
+
+        fun tootAnnouncement(parser: TootParser, src: JsonObject): TootAnnouncement {
+            val custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
+                CustomEmoji.decode(parser.apDomain, parser.apiHost, it)
+            }
+            val reactions = parseListOrNull(src.jsonArray("reactions")) {
+                TootReaction.parseFedibird(it)
+            }
+            val mentions = parseListOrNull(src.jsonArray("mentions")) {
+                TootMention(it)
+            }
+            val options = DecodeOptions(
+                parser.context,
+                parser.linkHelper,
+                short = true,
+                decodeEmoji = true,
+                emojiMapCustom = custom_emojis,
+                // emojiMapProfile = profile_emojis,
+                // attachmentList = media_attachments,
+                highlightTrie = parser.highlightTrie,
+                mentions = mentions,
+            )
+            val content = src.string("content") ?: ""
+            return TootAnnouncement(
+                id = EntityId.mayDefault(src.string("id")),
+                starts_at = TootStatus.parseTime(src.string("starts_at")),
+                ends_at = TootStatus.parseTime(src.string("ends_at")),
+                all_day = src.boolean("all_day") ?: false,
+                published_at = TootStatus.parseTime(src.string("published_at")),
+                updated_at = TootStatus.parseTime(src.string("updated_at")),
+                custom_emojis = custom_emojis,
+                tags = TootTag.parseListOrNull(parser, src.jsonArray("tags")),
+                mentions = mentions,
+                content = content,
+                decoded_content = options.decodeHTML(content),
+                reactions = reactions,
+            )
+        }
 
         // return null if list is empty
         fun filterShown(src: List<TootAnnouncement>?): List<TootAnnouncement>? {

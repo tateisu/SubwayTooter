@@ -2,10 +2,49 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.*
 import jp.juggler.util.data.*
 
-class TootAttachment : TootAttachmentLike {
+class TootAttachment private constructor(
+    //	ID of the attachment
+    val id: EntityId,
+
+    //One of: "image", "video", "gifv". or may null ? may "unknown" ?
+    override val type: TootAttachmentType,
+
+    //URL of the locally hosted version of the image
+    val url: String?,
+
+    //For remote images, the remote URL of the original image
+    val remote_url: String?,
+
+    //	URL of the preview image
+    // (Mastodon 2.9.2) audioのpreview_url は .mpga のURL
+    // (Misskey v11) audioのpreview_url は null
+    val preview_url: String?,
+
+    val preview_remote_url: String?,
+
+    //	Shorter URL for the image, for insertion into text (only present on local images)
+    val text_url: String?,
+
+    // ALT text (Mastodon 2.0.0 or later)
+    override val description: String?,
+
+    override val focusX: Float,
+    override val focusY: Float,
+
+    // MisskeyはメディアごとにNSFWフラグがある
+    val isSensitive: Boolean,
+
+    // Mastodon 2.9.0 or later
+    val blurhash: String?,
+) : TootAttachmentLike {
+
+    // 内部フラグ: 再編集で引き継いだ添付メディアなら真
+    var redraft: Boolean = false
+
+    override val urlForDescription: String?
+        get() = remote_url.notEmpty() ?: url
 
     companion object {
         private fun parseFocusValue(parent: JsonObject?, key: String): Float {
@@ -35,9 +74,10 @@ class TootAttachment : TootAttachmentLike {
         private const val KEY_Y = "y"
         private const val KEY_BLURHASH = "blurhash"
 
-        fun decodeJson(src: JsonObject) = TootAttachment(src, decode = true)
-
         private val ext_audio = arrayOf(".mpga", ".mp3", ".aac", ".ogg")
+
+        private fun parseType(src: String?) =
+            TootAttachmentType.values().find { it.id == src }
 
         private fun guessMediaTypeByUrl(src: String?): TootAttachmentType? {
             val uri = src.mayUri() ?: return null
@@ -48,46 +88,135 @@ class TootAttachment : TootAttachmentLike {
 
             return null
         }
+
+        fun tootAttachmentJson(
+            src: JsonObject,
+        ): TootAttachment {
+            val url: String? = src.string(KEY_URL)
+            val remote_url: String? = src.string(KEY_REMOTE_URL)
+            val type: TootAttachmentType = when (val tmpType = parseType(src.string(KEY_TYPE))) {
+                null, TootAttachmentType.Unknown -> {
+                    guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
+                }
+                else -> tmpType
+            }
+            val focus = src.jsonObject(KEY_META)?.jsonObject(KEY_FOCUS)
+            return TootAttachment(
+                blurhash = src.string(KEY_BLURHASH),
+                description = src.string(KEY_DESCRIPTION),
+                focusX = parseFocusValue(focus, KEY_X),
+                focusY = parseFocusValue(focus, KEY_Y),
+                id = EntityId.mayDefault(src.string(KEY_ID)),
+                isSensitive = src.optBoolean(KEY_IS_SENSITIVE),
+                preview_remote_url = src.string(KEY_PREVIEW_REMOTE_URL),
+                preview_url = src.string(KEY_PREVIEW_URL),
+                remote_url = remote_url,
+                text_url = src.string(KEY_TEXT_URL),
+                type = type,
+                url = url,
+            )
+        }
+
+        private fun tootAttachmentMisskey(src: JsonObject): TootAttachment {
+            val mimeType = src.string("type") ?: "?"
+            val type: TootAttachmentType = when {
+                mimeType.startsWith("image/") -> TootAttachmentType.Image
+                mimeType.startsWith("video/") -> TootAttachmentType.Video
+                mimeType.startsWith("audio/") -> TootAttachmentType.Audio
+                else -> TootAttachmentType.Unknown
+            }
+            val url = src.string("url")
+            val description = src.string("comment")?.notBlank()
+                ?: src.string("name")?.notBlank()
+            return TootAttachment(
+                blurhash = null,
+                description = description,
+                focusX = 0f,
+                focusY = 0f,
+                id = EntityId.mayDefault(src.string("id")),
+                isSensitive = src.optBoolean("isSensitive", false),
+                preview_remote_url = null,
+                preview_url = src.string("thumbnailUrl"),
+                remote_url = url,
+                text_url = url,
+                type = type,
+                url = url,
+            )
+        }
+
+        private fun tootAttachmentNoteStock(src: JsonObject): TootAttachment {
+            val url: String? = src.string("url")
+
+            val preview_url: String? = src.string("img_hash")
+                ?.let { "https://img.osa-p.net/proxy/500x,q100,s$it/$url" }
+
+            val mediaType = src.string("mediaType")
+
+            val type: TootAttachmentType = when {
+                mediaType?.startsWith("image") == true -> TootAttachmentType.Image
+                mediaType?.startsWith("video") == true -> TootAttachmentType.Video
+                mediaType?.startsWith("audio") == true -> TootAttachmentType.Audio
+                else -> guessMediaTypeByUrl(url) ?: TootAttachmentType.Unknown
+            }
+
+            val focus = null
+
+            return TootAttachment(
+                blurhash = src.string("blurhash"),
+                description = src.string("name"),
+                focusX = parseFocusValue(focus, "x"),
+                focusY = parseFocusValue(focus, "y"),
+                id = EntityId.DEFAULT,
+                isSensitive = false,
+                preview_remote_url = null,
+                preview_url = preview_url,
+                remote_url = url,
+                text_url = url,
+                type = type,
+                url = url,
+            )
+        }
+
+        private fun tootAttachmentMastodon(src: JsonObject): TootAttachment {
+            val url: String? = src.string("url")
+            val remote_url: String? = src.string("remote_url")
+
+            val type: TootAttachmentType = when (val tmpType = parseType(src.string("type"))) {
+                null, TootAttachmentType.Unknown -> {
+                    guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
+                }
+
+                else -> tmpType
+            }
+
+            val focus = src.jsonObject("meta")?.jsonObject("focus")
+
+            return TootAttachment(
+                blurhash = src.string("blurhash"),
+                description = src.string("description"),
+                focusX = parseFocusValue(focus, "x"),
+                focusY = parseFocusValue(focus, "y"),
+                id = EntityId.mayDefault(src.string("id")),
+                isSensitive = false,
+                preview_remote_url = src.string("preview_remote_url"),
+                preview_url = src.string("preview_url"),
+                remote_url = remote_url,
+                text_url = src.string("text_url"),
+                type = type,
+                url = url,
+            )
+        }
+
+        fun tootAttachment(serviceType: ServiceType, src: JsonObject) =
+            when (serviceType) {
+                ServiceType.MISSKEY -> tootAttachmentMisskey(src)
+                ServiceType.NOTESTOCK -> tootAttachmentNoteStock(src)
+                else -> tootAttachmentMastodon(src)
+            }
+
+        fun tootAttachment(parser: TootParser, src: JsonObject) =
+            tootAttachment(parser.serviceType, src)
     }
-
-    constructor(parser: TootParser, src: JsonObject) : this(parser.serviceType, src)
-
-    //	ID of the attachment
-    val id: EntityId
-
-    //One of: "image", "video", "gifv". or may null ? may "unknown" ?
-    override val type: TootAttachmentType
-
-    //URL of the locally hosted version of the image
-    val url: String?
-
-    //For remote images, the remote URL of the original image
-    val remote_url: String?
-
-    //	URL of the preview image
-    // (Mastodon 2.9.2) audioのpreview_url は .mpga のURL
-    // (Misskey v11) audioのpreview_url は null
-    val preview_url: String?
-
-    val preview_remote_url: String?
-
-    //	Shorter URL for the image, for insertion into text (only present on local images)
-    val text_url: String?
-
-    // ALT text (Mastodon 2.0.0 or later)
-    override val description: String?
-
-    override val focusX: Float
-    override val focusY: Float
-
-    // 内部フラグ: 再編集で引き継いだ添付メディアなら真
-    var redraft: Boolean = false
-
-    // MisskeyはメディアごとにNSFWフラグがある
-    val isSensitive: Boolean
-
-    // Mastodon 2.9.0 or later
-    val blurhash: String?
 
     ///////////////////////////////
 
@@ -95,100 +224,6 @@ class TootAttachment : TootAttachmentLike {
         this.preview_url, this.preview_remote_url, this.remote_url, this.url, this.text_url -> true
         else -> false
     }
-
-    override val urlForDescription: String?
-        get() = remote_url.notEmpty() ?: url
-
-    constructor(serviceType: ServiceType, src: JsonObject) {
-
-        when (serviceType) {
-            ServiceType.MISSKEY -> {
-                id = EntityId.mayDefault(src.string("id"))
-
-                val mimeType = src.string("type") ?: "?"
-
-                this.type = when {
-                    mimeType.startsWith("image/") -> TootAttachmentType.Image
-                    mimeType.startsWith("video/") -> TootAttachmentType.Video
-                    mimeType.startsWith("audio/") -> TootAttachmentType.Audio
-                    else -> TootAttachmentType.Unknown
-                }
-
-                url = src.string("url")
-                preview_url = src.string("thumbnailUrl")
-                preview_remote_url = null
-                remote_url = url
-                text_url = url
-
-                description = src.string("comment")?.notBlank()
-                    ?: src.string("name")?.notBlank()
-
-                focusX = 0f
-                focusY = 0f
-                isSensitive = src.optBoolean("isSensitive", false)
-
-                blurhash = null
-            }
-
-            ServiceType.NOTESTOCK -> {
-                id = EntityId.DEFAULT
-                url = src.string("url")
-                remote_url = url
-                preview_url = src.string("img_hash")
-                    ?.let { "https://img.osa-p.net/proxy/500x,q100,s$it/$url" }
-                preview_remote_url = null
-
-                text_url = url
-                description = src.string("name")
-                isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
-
-                val mediaType = src.string("mediaType")
-                type = when {
-                    mediaType?.startsWith("image") == true -> TootAttachmentType.Image
-                    mediaType?.startsWith("video") == true -> TootAttachmentType.Video
-                    mediaType?.startsWith("audio") == true -> TootAttachmentType.Audio
-                    else -> guessMediaTypeByUrl(remote_url ?: url)
-                        ?: TootAttachmentType.Unknown
-                    // TODO GIFVかどうかの判定はどうするの？
-                }
-
-                val focus = null // TODO focus指定はどうなるの？
-                focusX = parseFocusValue(focus, "x")
-                focusY = parseFocusValue(focus, "y")
-
-                blurhash = src.string("blurhash")
-            }
-
-            else -> {
-                id = EntityId.mayDefault(src.string("id"))
-                url = src.string("url")
-                remote_url = src.string("remote_url")
-                preview_url = src.string("preview_url")
-                preview_remote_url = src.string("preview_remote_url")
-
-                text_url = src.string("text_url")
-                description = src.string("description")
-                isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
-
-                type = when (val tmpType = parseType(src.string("type"))) {
-                    null, TootAttachmentType.Unknown -> {
-                        guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
-                    }
-
-                    else -> tmpType
-                }
-
-                val focus = src.jsonObject("meta")?.jsonObject("focus")
-                focusX = parseFocusValue(focus, "x")
-                focusY = parseFocusValue(focus, "y")
-
-                blurhash = src.string("blurhash")
-            }
-        }
-    }
-
-    private fun parseType(src: String?) =
-        TootAttachmentType.values().find { it.id == src }
 
     override fun urlForThumbnail() =
         if (PrefB.bpPriorLocalURL.value) {
@@ -239,35 +274,6 @@ class TootAttachment : TootAttachmentLike {
                 })
             })
         }
-    }
-
-    constructor(
-        src: JsonObject,
-        @Suppress("UNUSED_PARAMETER") decode: Boolean, // dummy parameter for choosing this ctor.
-    ) {
-
-        id = EntityId.mayDefault(src.string(KEY_ID))
-        url = src.string(KEY_URL)
-        remote_url = src.string(KEY_REMOTE_URL)
-        preview_url = src.string(KEY_PREVIEW_URL)
-        preview_remote_url = src.string(KEY_PREVIEW_REMOTE_URL)
-        text_url = src.string(KEY_TEXT_URL)
-
-        type = when (val tmpType = parseType(src.string(KEY_TYPE))) {
-            null, TootAttachmentType.Unknown -> {
-                guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
-            }
-
-            else -> tmpType
-        }
-
-        description = src.string(KEY_DESCRIPTION)
-        isSensitive = src.optBoolean(KEY_IS_SENSITIVE)
-
-        val focus = src.jsonObject(KEY_META)?.jsonObject(KEY_FOCUS)
-        focusX = parseFocusValue(focus, KEY_X)
-        focusY = parseFocusValue(focus, KEY_Y)
-        blurhash = src.string(KEY_BLURHASH)
     }
 }
 

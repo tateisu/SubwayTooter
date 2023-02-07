@@ -1049,7 +1049,7 @@ class ColumnTask_Refresh(
             { src, head -> addAll(listTmp, src, head = head) }
 
         val listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootReport> =
-            { _, jsonArray -> parseList(::TootReport, jsonArray) }
+            { _, jsonArray -> parseList(jsonArray) { TootReport(it) } }
 
         return if (isMisskey) {
             TootApiResult("Misskey has no API to list reports from you.")
@@ -1163,7 +1163,7 @@ class ColumnTask_Refresh(
 
     suspend fun getScheduledStatuses(client: TootApiClient): TootApiResult? {
         val result = client.request(column.addRange(bBottom, ApiPath.PATH_SCHEDULED_STATUSES))
-        val src = parseList(::TootScheduled, parser, result?.jsonArray)
+        val src = parseList(result?.jsonArray) { TootScheduled(parser, it) }
         listTmp = addAll(listTmp, src)
         column.saveRange(bBottom, !bBottom, result, src)
         return result

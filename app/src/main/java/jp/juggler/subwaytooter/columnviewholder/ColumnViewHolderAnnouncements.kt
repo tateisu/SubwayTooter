@@ -374,10 +374,10 @@ private fun ColumnViewHolder.showReactions(
 
             btn.setPadding(paddingH, paddingV, paddingH, paddingV)
 
-            btn.text = if (url == null) {
-                EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
+            if (url == null) {
+                btn.text = EmojiDecoder.decodeEmojiCached(options, "${reaction.name} ${reaction.count}")
             } else {
-                SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
+                btn.text = SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
                     sb.setSpan(
                         NetworkEmojiSpan(url, scale = 1.5f),
                         0,

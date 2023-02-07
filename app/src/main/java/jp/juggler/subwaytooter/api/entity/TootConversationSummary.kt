@@ -12,7 +12,7 @@ class TootConversationSummary(parser: TootParser, src: JsonObject) : TimelineIte
 
     init {
         this.id = EntityId.mayDefault(src.string("id"))
-        this.accounts = parser.accountList(src.jsonArray("accounts"))
+        this.accounts = parser.accountRefList(src.jsonArray("accounts"))
         this.last_status = parser.status(src.jsonObject("last_status"))!!
         this.unread = src.optBoolean("unread")
 

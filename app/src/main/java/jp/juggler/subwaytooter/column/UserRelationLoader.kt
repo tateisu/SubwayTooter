@@ -110,7 +110,7 @@ class UserRelationLoader(val column: Column) {
 
                     if (result == null || result.response?.code in 400 until 500) break
 
-                    val list = parseList(::TootRelationShip, parser, result.jsonArray)
+                    val list = parseList(result.jsonArray) { TootRelationShip(parser, it) }
                     if (list.size == userIdList.size) {
                         for (i in 0 until list.size) {
                             list[i].id = userIdList[i]
@@ -144,7 +144,7 @@ class UserRelationLoader(val column: Column) {
                         sb.append(whoList[n++].toString())
                     }
                     val result = client.request(sb.toString()) ?: break // cancelled.
-                    val list = parseList(::TootRelationShip, parser, result.jsonArray)
+                    val list = parseList(result.jsonArray) { TootRelationShip(parser, it) }
                     if (list.size > 0) daoUserRelation.saveListMastodon(
                         now,
                         column.accessInfo.db_id,

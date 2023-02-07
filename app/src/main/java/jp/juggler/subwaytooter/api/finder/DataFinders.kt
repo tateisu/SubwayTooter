@@ -17,7 +17,7 @@ val misskeyArrayFinderUsers = { it: JsonObject ->
 // account list parser
 
 val defaultAccountListParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
-    { parser, jsonArray -> parser.accountList(jsonArray) }
+    { parser, jsonArray -> parser.accountRefList(jsonArray) }
 
 private fun misskeyUnwrapRelationAccount(parser: TootParser, srcList: JsonArray, key: String) =
     srcList.objectList().mapNotNull {
@@ -72,10 +72,12 @@ val defaultDomainBlockListParser: (parser: TootParser, jsonArray: JsonArray) -> 
     { _, jsonArray -> TootDomainBlock.parseList(jsonArray) }
 
 val defaultReportListParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootReport> =
-    { _, jsonArray -> parseList(::TootReport, jsonArray) }
+    { _, jsonArray -> parseList(jsonArray) { TootReport(it) } }
 
 val defaultConversationSummaryListParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootConversationSummary> =
-    { parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+    { parser, jsonArray ->
+        parseList(jsonArray) { TootConversationSummary(parser, it) }
+    }
 
 ///////////////////////////////////////////////////////////////////////
 

@@ -9,7 +9,6 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.databinding.ActTextBinding
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -115,10 +114,6 @@ class ActText : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.act_text, menu)
         return super.onCreateOptionsMenu(menu)
-    }
-
-    private val authRepo by lazy {
-        AuthRepo(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

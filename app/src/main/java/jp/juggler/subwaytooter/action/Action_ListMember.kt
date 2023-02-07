@@ -74,7 +74,7 @@ fun ActMain.listMemberAdd(
 
                     val relation = daoUserRelation.saveUserRelation(
                         accessInfo,
-                        parseItem(::TootRelationShip, parser, result.jsonObject)
+                        parseItem(result.jsonObject) { TootRelationShip(parser, it) }
                     ) ?: return@runApiTask TootApiResult("parse error.")
 
                     if (!relation.following) {

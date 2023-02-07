@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRef
 import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.search.MspHelper.loadingMSP
 import jp.juggler.subwaytooter.search.MspHelper.refreshMSP
@@ -1930,7 +1931,7 @@ enum class ColumnType(
                 if (a == null) {
                     TootApiResult("can't parse account information")
                 } else {
-                    column.whoAccount = TootAccountRef(parser, a)
+                    column.whoAccount = tootAccountRef(parser, a)
                     getScheduledStatuses(client)
                 }
             }

@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -393,7 +394,7 @@ class AttachmentUploader(
 
                 val jsonObject = result?.jsonObject
                 if (jsonObject != null) {
-                    val a = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
+                    val a = parseItem(jsonObject) { tootAttachment(ServiceType.MISSKEY, it) }
                     if (a == null) {
                         result.error = "TootAttachment.parse failed"
                     } else {
@@ -434,8 +435,9 @@ class AttachmentUploader(
 
                     // ポーリングして処理完了を待つ
                     pa.progress = context.getString(R.string.attachment_handling_waiting_async)
-                    val id = parseItem(::TootAttachment, ServiceType.MASTODON, result?.jsonObject)
-                        ?.id
+                    val id = parseItem(result?.jsonObject) {
+                        tootAttachment(ServiceType.MASTODON, it)
+                    }?.id
                         ?: return TootApiResult("/api/v2/media did not return the media ID.")
 
                     var lastResponse = SystemClock.elapsedRealtime()
@@ -467,8 +469,9 @@ class AttachmentUploader(
 
                 val jsonObject = result?.jsonObject
                 if (jsonObject != null) {
-                    when (val a =
-                        parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)) {
+                    when (val a = parseItem(jsonObject) {
+                        tootAttachment(ServiceType.MASTODON, it)
+                    }) {
                         null -> result.error = "TootAttachment.parse failed"
                         else -> pa.attachment = a
                     }
@@ -905,7 +908,7 @@ class AttachmentUploader(
 
                 val jsonObject = result?.jsonObject
                 if (jsonObject != null) {
-                    val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
+                    val a = parseItem(jsonObject) { tootAttachment(ServiceType.MASTODON, it) }
                     if (a == null) {
                         result.error = "TootAttachment.parse failed"
                     } else {
@@ -935,8 +938,9 @@ class AttachmentUploader(
                             put("comment", description)
                         }.toPostRequestBuilder()
                     )?.also { result ->
-                        resultAttachment =
-                            parseItem(::TootAttachment, ServiceType.MISSKEY, result.jsonObject)
+                        resultAttachment = parseItem(result.jsonObject) {
+                            tootAttachment(ServiceType.MISSKEY, it)
+                        }
                     }
                 } else {
                     client.request(
@@ -945,8 +949,9 @@ class AttachmentUploader(
                             put("description", description)
                         }.toPutRequestBuilder()
                     )?.also { result ->
-                        resultAttachment =
-                            parseItem(::TootAttachment, ServiceType.MASTODON, result.jsonObject)
+                        resultAttachment = parseItem(result.jsonObject) {
+                            tootAttachment(ServiceType.MASTODON, it)
+                        }
                     }
                 }
             }

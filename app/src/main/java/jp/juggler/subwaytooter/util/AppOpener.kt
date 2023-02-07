@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
 import jp.juggler.util.ui.attrColor
 
 // Subway Tooterの「アプリ設定/挙動/リンクを開く際にCustom Tabsを使わない」をONにして
@@ -149,7 +150,7 @@ fun Activity.openCustomTab(url: String?) {
                 .setShowTitle(true)
                 .build()
                 .let {
-                    log.w("startCustomTabIntent ComponentName=$cn")
+                    log.i("startCustomTabIntent ComponentName=$cn")
                     openBrowserExcludeMe(
                         it.intent.also { intent ->
                             if (cn != null) intent.component = cn
@@ -168,7 +169,7 @@ fun Activity.openCustomTab(url: String?) {
                 startCustomTabIntent(cn)
                 return
             } catch (ex2: Throwable) {
-                log.e(ex2, "openCustomTab: missing chrome. retry to other application.")
+                log.e(ex2.withCaption("openCustomTab: missing chrome. retry to other application."))
             }
         }
 

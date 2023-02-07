@@ -22,6 +22,8 @@
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
+        <!-- Chrome Custom Tabs が明示指定するChromeパッケージ -->
+        <package android:name="com.android.chrome" />
 
         <!-- カスタム共有ボタンのアプリ選択 -->
         <intent>

@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.column.ColumnTask_Loading
 import jp.juggler.subwaytooter.column.ColumnTask_Refresh
 import jp.juggler.subwaytooter.column.addWithFilterStatus
@@ -66,7 +67,7 @@ object TootsearchHelper {
                 for (src in array) {
                     try {
                         val source = src.cast<JsonObject>()?.jsonObject("_source") ?: continue
-                        add(TootStatus(parser, source))
+                        add(tootStatus(parser, source))
                     } catch (ex: Throwable) {
                         log.e(ex, "parse item failed.")
                     }

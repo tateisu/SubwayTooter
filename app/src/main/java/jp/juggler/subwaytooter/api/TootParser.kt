@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccount.Companion.tootAccount
+import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.JsonArray
@@ -33,29 +35,32 @@ class TootParser(
 
     fun getFullAcct(acct: Acct?) = linkHelper.getFullAcct(acct)
 
-    fun account(src: JsonObject?) = parseItem(::TootAccount, this, src)
-    fun accountList(array: JsonArray?) =
-        TootAccountRef.wrapList(this, parseList(::TootAccount, this, array))
+    fun account(src: JsonObject?) =
+        parseItem(src) { tootAccount(this, it) }
 
-    fun status(src: JsonObject?) = parseItem(::TootStatus, this, src)
-    fun statusList(array: JsonArray?) = parseList(::TootStatus, this, array)
+    fun accountRefList(array: JsonArray?) =
+        TootAccountRef.wrapList(this, parseList(array) { tootAccount(this, it) })
 
-    fun notification(src: JsonObject?) = parseItem(::TootNotification, this, src)
-    fun notificationList(src: JsonArray?) = parseList(::TootNotification, this, src)
+    fun status(src: JsonObject?) =
+        parseItem(src) { tootStatus(this, it) }
+    fun statusList(array: JsonArray?) = parseList(array) { tootStatus(this, it) }
 
-    fun tag(src: JsonObject?) =
-        src?.let { TootTag.parse(this, it) }
+    fun notification(src: JsonObject?) = parseItem(src) { TootNotification.tootNotification(this, it) }
+    fun notificationList(array: JsonArray?) =
+        parseList(array) { TootNotification.tootNotification(this, it) }
 
-    fun tagList(array: JsonArray?) =
-        TootTag.parseList(this, array)
+    fun tag(src: JsonObject?) = src?.let { TootTag.parse(this, it) }
+    fun tagList(array: JsonArray?) = TootTag.parseList(this, array)
 
-    fun results(src: JsonObject?) = parseItem(::TootResults, this, src)
-    fun instance(src: JsonObject?) = parseItem(::TootInstance, this, src)
+    fun results(src: JsonObject?) =
+        parseItem(src) { TootResults(this, it) }
+    fun instance(src: JsonObject?) =
+        parseItem(src) { TootInstance(this, it) }
 
     fun getMisskeyUserRelation(whoId: EntityId) = misskeyUserRelationMap[whoId]
 
-    fun parseMisskeyApShow(jsonObject: JsonObject?): Any? {
-        // ap/show の戻り値はActivityPubオブジェクトではなく、Misskeyのエンティティです。
+    // ap/show の戻り値はActivityPubオブジェクトではなく、Misskeyのエンティティ
+    suspend fun parseMisskeyApShow(jsonObject: JsonObject?): Any? {
         return when (jsonObject?.string("type")) {
             "Note" -> status(jsonObject.jsonObject("object"))
             "User" -> account(jsonObject.jsonObject("object"))

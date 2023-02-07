@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.getVisibilityString
@@ -88,10 +87,6 @@ class PostImpl(
         account.isMisskey -> 15
         pollType == TootPollsType.FriendsNico -> 15
         else -> 40 // TootPollsType.Mastodon
-    }
-
-    private val authRepo by lazy {
-        AuthRepo(activity)
     }
 
     private fun preCheckPollItemOne(list: List<String>, idx: Int, item: String) {

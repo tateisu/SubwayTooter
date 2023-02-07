@@ -1,6 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement.Companion.tootAnnouncement
+import jp.juggler.subwaytooter.api.entity.TootNotification.Companion.tootNotification
+import jp.juggler.subwaytooter.api.entity.TootReaction.Companion.parseFedibird
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 
@@ -27,7 +30,7 @@ object TootPayload {
                     "update" -> parser.status(payload)
 
                     // ここを通るケースはまだ確認できていない
-                    "notification" -> parser.notification(payload)
+                    "notification" -> tootNotification(parser, payload)
 
                     // ここを通るケースはまだ確認できていない
                     else -> {
@@ -58,15 +61,15 @@ object TootPayload {
                         -> parser.status(src)
 
                         // 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-                        "notification" -> parser.notification(src)
+                        "notification" -> tootNotification(parser, src)
 
-                        "conversation" -> parseItem(::TootConversationSummary, parser, src)
+                        "conversation" -> parseItem(src) { TootConversationSummary(parser, it) }
 
-                        "announcement" -> parseItem(::TootAnnouncement, parser, src)
+                        "announcement" -> parseItem(src) { tootAnnouncement(parser, it) }
 
                         "emoji_reaction",
                         "announcement.reaction",
-                        -> parseItem(TootReaction::parseFedibird, src)
+                        -> parseItem(src) { parseFedibird(it) }
 
                         else -> {
                             log.e("unknown payload(2). message=$parentText")

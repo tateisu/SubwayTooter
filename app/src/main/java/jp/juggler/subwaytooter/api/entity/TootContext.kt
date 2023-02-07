@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.util.data.JsonObject
 
 class TootContext(
@@ -12,8 +13,8 @@ class TootContext(
     val references: ArrayList<TootStatus>?,
 ) {
     constructor(parser: TootParser, src: JsonObject) : this(
-        ancestors = parseListOrNull(::TootStatus, parser, src.jsonArray("ancestors")),
-        descendants = parseListOrNull(::TootStatus, parser, src.jsonArray("descendants")),
-        references = parseListOrNull(::TootStatus, parser, src.jsonArray("references")),
+        ancestors = parseList(src.jsonArray("ancestors")) { tootStatus(parser, it) },
+        descendants = parseList(src.jsonArray("descendants")) { tootStatus(parser, it) },
+        references = parseList(src.jsonArray("references")) { tootStatus(parser, it) },
     )
 }

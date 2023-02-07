@@ -38,7 +38,7 @@ abstract class ResponseWithBase {
     /**
      * 応答ボディのHTMLやテキストを整形する
      */
-    private fun simplifyErrorHtml(body: String): String {
+    private suspend fun simplifyErrorHtml(body: String): String {
         // JsonObjectとして解釈できるならエラーメッセージを検出する
         try {
             val json = body.decodeJsonObject()
@@ -71,7 +71,7 @@ abstract class ResponseWithBase {
     /**
      * エラー応答のステータス部分や本文を文字列にする
      */
-    fun parseErrorResponse(body: String? = null): String =
+    suspend fun parseErrorResponse(body: String? = null): String =
         try {
             StringBuilder().apply {
                 // 応答ボディのテキストがあれば追加

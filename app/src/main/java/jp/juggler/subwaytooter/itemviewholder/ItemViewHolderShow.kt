@@ -337,27 +337,6 @@ fun ItemViewHolder.showBoost(
             accessInfo.supplyBaseUrl(who.avatar)
         )
     }
-
-    // フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-    val text: Spannable = if (reaction != null) {
-        val options = DecodeOptions(
-            activity,
-            accessInfo,
-            decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f
-        )
-        val ssb = reaction.toSpannableStringBuilder(options, boostStatus)
-        ssb.append(" ")
-        ssb.append(
-            who.decodeDisplayName(activity)
-                .intoStringResource(activity, stringId)
-        )
-    } else {
-        who.decodeDisplayName(activity)
-            .intoStringResource(activity, stringId)
-    }
-
     boostTime = time
     llBoosted.visibility = View.VISIBLE
     showStatusTime(
@@ -368,9 +347,33 @@ fun ItemViewHolder.showBoost(
         status = boostStatus,
         reblogVisibility = reblogVisibility
     )
-    tvBoosted.text = text
-    boostInvalidator.register(text)
     setAcct(tvBoostedAcct, accessInfo, who)
+
+    // フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
+    if (reaction != null) {
+        val options = DecodeOptions(
+            activity,
+            accessInfo,
+            decodeEmoji = true,
+            enlargeEmoji = 1.5f,
+            enlargeCustomEmoji = 1.5f
+        )
+        val ssb = reaction.toSpannableStringBuilder(options, boostStatus)
+        ssb.append(" ")
+        ssb.append(
+            who.decodeDisplayNameCached(activity)
+                .intoStringResource(activity, stringId)
+        )
+        val text: Spannable =ssb
+        tvBoosted.text = text
+        boostInvalidator.register(text)
+    } else {
+        val text: Spannable =
+            who.decodeDisplayNameCached(activity)
+            .intoStringResource(activity, stringId)
+        tvBoosted.text = text
+        boostInvalidator.register(text)
+    }
 }
 
 fun ItemViewHolder.showMessageHolder(item: TootMessageHolder) {
@@ -730,7 +733,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
         showStatusTimeScheduled(activity, tvTime, item)
 
         val who = column.whoAccount!!.get()
-        val whoRef = TootAccountRef(TootParser(activity, accessInfo), who)
+        val whoRef = TootAccountRef.tootAccountRef(TootParser(activity, accessInfo), who)
         this.statusAccount = whoRef
 
         setAcct(tvAcct, accessInfo, who)

@@ -16,13 +16,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import jp.juggler.subwaytooter.api.dialogOrToast
 import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.auth.authRepo
 import jp.juggler.subwaytooter.databinding.ActPushMessageListBinding
 import jp.juggler.subwaytooter.databinding.LvPushMessageBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.runInProgress
-import jp.juggler.subwaytooter.notification.PushMessageIconColor
-import jp.juggler.subwaytooter.notification.iconColor
+import jp.juggler.subwaytooter.push.PushMessageIconColor
+import jp.juggler.subwaytooter.push.iconColor
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.subwaytooter.table.daoAccountNotificationStatus
@@ -59,14 +58,6 @@ class ActPushMessageList : AppCompatActivity() {
 
     private val prNotification = permissionSpecNotification.requester {
         // 特に何もしない
-    }
-
-    private val authRepo by lazy {
-        applicationContext.authRepo
-    }
-
-    private val pushRepo by lazy {
-        applicationContext.pushRepo
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -209,7 +200,8 @@ class ActPushMessageList : AppCompatActivity() {
                 "type: ${pm.notificationType}",
                 "id: ${pm.notificationId}",
                 "dataSize: ${pm.rawBody?.size}",
-                pm.textExpand
+                pm.textExpand,
+                pm.formatError?.let { "error: $it" },
             ).mapNotNull { it.notBlank() }.joinToString("\n")
         }
     }

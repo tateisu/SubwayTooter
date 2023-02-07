@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.util.RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
@@ -78,7 +79,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         internal fun decodeMediaList(src: String?) =
             ArrayList<TootAttachment>().apply {
                 src?.decodeJsonArray()?.objectList()
-                    ?.map { TootAttachment.decodeJson(it) }
+                    ?.map { tootAttachmentJson(it) }
                     ?.let { addAll(it) }
             }
 

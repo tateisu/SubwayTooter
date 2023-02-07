@@ -283,7 +283,7 @@ object ColumnEncoder {
 
             enableSpeech = src.optBoolean(KEY_ENABLE_SPEECH)
             useOldApi = src.optBoolean(KEY_USE_OLD_API)
-            lastViewingItemId = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
+            lastViewingItemId = EntityId.entityId(src, KEY_LAST_VIEWING_ITEM)
 
             regexText = src.string(KEY_REGEX_TEXT) ?: ""
             languageFilter = src.jsonObject(KEY_LANGUAGE_FILTER)

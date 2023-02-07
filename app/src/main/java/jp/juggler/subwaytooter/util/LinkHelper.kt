@@ -69,6 +69,12 @@ fun LinkHelper.matchHost(src: TootAccount) =
     apiHost == src.apiHost || apDomain == src.apDomain ||
             apDomain == src.apiHost || apiHost == src.apDomain
 
+fun LinkHelper.matchHost(srcApiHost:Host,srcApDomain:Host) =
+    apiHost == srcApiHost ||
+            apDomain == srcApDomain ||
+            apDomain == srcApiHost ||
+            apiHost == srcApDomain
+
 // user や user@host から user@host を返す
 fun getFullAcctOrNull(
     rawAcct: Acct,

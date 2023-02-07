@@ -64,6 +64,13 @@ data class PushMessage(
             formatJson[JSON_ICON_LARGE] = value
         }
 
+    var formatError: String?
+        get() = formatJson.string(JSON_ERROR)
+        set(value) {
+            formatJson[JSON_ERROR] = value
+        }
+
+
     companion object : TableCompanion {
         private val log = LogCategory("PushMessage")
         const val TABLE = "push_message"
@@ -85,6 +92,7 @@ data class PushMessage(
         private const val JSON_TEXT_EXPAND = "text_expand"
         private const val JSON_ICON_SMALL = "icon_small"
         private const val JSON_ICON_LARGE = "icon_large"
+        private const val JSON_ERROR = "error"
 
         val columnList = MetaColumns(TABLE, initialVersion = 65).apply {
             deleteBeforeCreate = true

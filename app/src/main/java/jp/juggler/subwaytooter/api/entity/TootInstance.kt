@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.auth.AuthBase
+import jp.juggler.subwaytooter.api.entity.TootAccount.Companion.tootAccount
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -62,6 +63,7 @@ object InstanceCapability {
                 ti?.fedibirdCapabilities?.contains("emoji_reaction") == true ||
                         ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
         }
+
     fun statusReference(ai: SavedAccount, ti: TootInstance?) =
         when {
             ai.isPseudo -> false
@@ -74,7 +76,7 @@ object InstanceCapability {
             ai.isPseudo -> false
             ai.isMisskey -> false
             // 予約投稿自体はMastodonに2.7.0からある。通知はFedibird拡張
-            else -> ti?.fedibirdCapabilities !=null && ti.versionGE(TootInstance.VERSION_2_7_0_rc1)
+            else -> ti?.fedibirdCapabilities != null && ti.versionGE(TootInstance.VERSION_2_7_0_rc1)
         }
 
     fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
@@ -208,7 +210,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.version = src.string("version")
             this.decoded_version = VersionString(version)
-            this.stats = parseItem(::Stats, src.jsonObject("stats"))
+            this.stats = parseItem(src.jsonObject("stats")) { Stats(it) }
             this.thumbnail = src.string("thumbnail")
 
             this.max_toot_chars = src.int("max_toot_chars")
@@ -221,18 +223,19 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             languages = src.jsonArray("languages")?.stringArrayList()
 
-            contact_account = parseItem(
-                ::TootAccount,
-                TootParser(
-                    parser.context,
-                    LinkHelper.create(
-                        apiHostArg = apiHost,
-                        apDomainArg = apDomain,
-                        misskeyVersion = 0,
-                    )
-                ),
-                src.jsonObject("contact_account")
-            )
+            contact_account = parseItem(src.jsonObject("contact_account")) {
+                tootAccount(
+                    TootParser(
+                        parser.context,
+                        LinkHelper.create(
+                            apiHostArg = apiHost,
+                            apDomainArg = apDomain,
+                            misskeyVersion = 0,
+                        )
+                    ),
+                    it
+                )
+            }
 
             this.description = src.string("description")
             this.short_description = src.string("short_description")
@@ -592,17 +595,18 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                             val json = result?.jsonObject
                                 ?: return@QueuedRequest Pair(null, result)
 
-                            val item = parseItem(
-                                ::TootInstance,
-                                TootParser(
-                                    client.context,
-                                    linkHelper = linkHelper ?: LinkHelper.create(
-                                        (hostArg ?: client.apiHost)!!,
-                                        misskeyVersion = parseMisskeyVersion(json)
-                                    )
-                                ),
-                                json
-                            ) ?: return@QueuedRequest Pair(
+                            val item = parseItem(json) {
+                                TootInstance(
+                                    TootParser(
+                                        client.context,
+                                        linkHelper = linkHelper ?: LinkHelper.create(
+                                            (hostArg ?: client.apiHost)!!,
+                                            misskeyVersion = parseMisskeyVersion(json)
+                                        )
+                                    ),
+                                    it
+                                )
+                            } ?: return@QueuedRequest Pair(
                                 null,
                                 result.setError("instance information parse error.")
                             )

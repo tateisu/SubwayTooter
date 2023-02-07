@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonException
 import jp.juggler.util.data.JsonObject
@@ -12,273 +11,125 @@ object EntityUtil {
 
 ////////////////////////////////////////
 
-// JSONObjectを渡してEntityを生成するコードのnullチェックと例外補足
+// creator()を呼び出して例外チェックを行う
 inline fun <reified T> parseItem(
-    factory: (src: JsonObject) -> T,
-    src: JsonObject?,
-    log: LogCategory = EntityUtil.log,
-): T? {
-    if (src == null) return null
-    return try {
-        factory(src)
-    } catch (ex: Throwable) {
-        log.e(ex, "${T::class.simpleName} parse failed.")
-        null
-    }
+    creator: () -> T?,
+): T? = try {
+    creator()
+} catch (ex: Throwable) {
+    EntityUtil.log.e(ex, "parseItem failed. ${T::class.simpleName}")
+    null
 }
 
+inline fun <P1 : Any, reified T> parseItem(
+    p1: P1?,
+    creator: (P1) -> T?,
+): T? = try {
+    p1?.let { creator(it) }
+} catch (ex: Throwable) {
+    EntityUtil.log.e(ex, "parseItemP1 failed. ${T::class.simpleName}")
+    null
+}
+
+// creator(JsonObject)を呼び出して例外チェックを行う
 inline fun <reified T> parseList(
-    factory: (src: JsonObject) -> T,
     src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
+    creator: (JsonObject) -> T,
 ): ArrayList<T> {
-    val dst = ArrayList<T>()
+    val dstList = ArrayList<T>()
     if (src != null) {
-        val src_length = src.size
-        if (src_length > 0) {
-            dst.ensureCapacity(src_length)
-            for (i in 0 until src_length) {
-                val item = parseItem(factory, src.jsonObject(i), log)
-                if (item != null) dst.add(item)
+        val srcSize = src.size
+        for (i in 0 until srcSize) {
+            try {
+                val dst = src.jsonObject(i)?.let { creator(it) }
+                    ?: continue
+                dstList.add(dst)
+            } catch (ex: Throwable) {
+                EntityUtil.log.w("parseList failed. ${T::class.simpleName}")
             }
         }
     }
-    return dst
-}
-
-inline fun <S, reified T> parseList(
-    factory: (serviceType: S, src: JsonObject) -> T,
-    serviceType: S,
-    src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
-): ArrayList<T> {
-    val dst = ArrayList<T>()
-    if (src != null) {
-        val src_length = src.size
-        if (src_length > 0) {
-            dst.ensureCapacity(src_length)
-            for (i in 0 until src_length) {
-                val item = parseItem(factory, serviceType, src.jsonObject(i), log)
-                if (item != null) dst.add(item)
-            }
-        }
-    }
-    return dst
+    return dstList
 }
 
 inline fun <reified T> parseListOrNull(
-    factory: (src: JsonObject) -> T,
     src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
+    creator: (JsonObject) -> T?,
 ): ArrayList<T>? {
+    var dstList: ArrayList<T>? = null
     if (src != null) {
-        val src_length = src.size
-        if (src_length > 0) {
-            val dst = ArrayList<T>(src_length)
-            for (i in 0 until src.size) {
-                val item = parseItem(factory, src.jsonObject(i), log)
-                if (item != null) dst.add(item)
+        val srcSize = src.size
+        for (i in src.indices) {
+            try {
+                val dst = src.jsonObject(i)?.let { creator(it) }
+                    ?: continue
+                (dstList ?: ArrayList<T>(srcSize).also { dstList = it }).add(dst)
+            } catch (ex: Throwable) {
+                EntityUtil.log.w("parseListOrNull failed. ${T::class.simpleName}")
             }
-            if (dst.isNotEmpty()) return dst
         }
     }
-    return null
+    return dstList
 }
 
 @Suppress("unused")
 inline fun <reified K, reified V> parseMap(
-    factory: (src: JsonObject) -> V,
     src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
+    creator: (JsonObject) -> V?,
 ): HashMap<K, V> where V : Mappable<K> {
-    val dst = HashMap<K, V>()
+    val dstMap = HashMap<K, V>()
     if (src != null) {
         for (i in src.indices) {
-            val item = parseItem(factory, src.jsonObject(i), log)
-            if (item != null) dst[item.mapKey] = item
+            try {
+                val dst = src.jsonObject(i)?.let { creator(it) } ?: continue
+                dstMap[dst.mapKey] = dst
+            } catch (ex: Throwable) {
+                EntityUtil.log.w("parseMap failed. ${V::class.simpleName}")
+            }
         }
     }
-    return dst
+    return dstMap
 }
 
 inline fun <reified K, reified V> parseMapOrNull(
-    factory: (src: JsonObject) -> V,
     src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
+    creator: (src: JsonObject) -> V?,
 ): HashMap<K, V>? where V : Mappable<K> {
+    var dstMap: HashMap<K, V>? = null
     if (src != null) {
-        val size = src.size
-        if (size > 0) {
-            val dst = HashMap<K, V>()
-            for (i in 0 until size) {
-                val item = parseItem(factory, src.jsonObject(i), log)
-                if (item != null) dst[item.mapKey] = item
+        for (i in src.indices) {
+            try {
+                val dst = src.jsonObject(i)?.let { creator(it) } ?: continue
+                (dstMap ?: HashMap<K, V>().also { dstMap = it })[dst.mapKey] = dst
+            } catch (ex: Throwable) {
+                EntityUtil.log.w("parseMapOrNull failed. ${V::class.simpleName}")
             }
-            if (dst.isNotEmpty()) return dst
         }
     }
-    return null
-}
-
-inline fun <reified K, reified V> parseMapOrNull(
-    factory: (apDomain: Host, apiHost: Host, src: JsonObject) -> V,
-    apDomain: Host,
-    apiHost: Host,
-    src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
-): HashMap<K, V>? where V : Mappable<K> {
-    if (src != null) {
-        val size = src.size
-        if (size > 0) {
-            val dst = HashMap<K, V>()
-            for (i in 0 until size) {
-                val item = parseItem(factory, apDomain, apiHost, src.jsonObject(i), log)
-                if (item != null) dst[item.mapKey] = item
-            }
-            if (dst.isNotEmpty()) return dst
-        }
-    }
-    return null
+    return dstMap
 }
 
 inline fun <reified V> parseProfileEmoji2(
-    factory: (src: JsonObject, shortcode: String) -> V,
-    src: JsonObject?,
-    log: LogCategory = EntityUtil.log,
+    srcMap: JsonObject?,
+    creator: (src: JsonObject, shortcode: String) -> V,
 ): HashMap<String, V>? {
-    if (src != null) {
-        val size = src.size
-        if (size > 0) {
-            val dst = HashMap<String, V>()
-            for (key in src.keys) {
-                val v = src.jsonObject(key) ?: continue
-                val item = try {
-                    factory(v, key)
-                } catch (ex: Throwable) {
-                    log.e(ex, "parseProfileEmoji2 failed.")
-                    null
-                }
-                if (item != null) dst[key] = item
-            }
-            if (dst.isNotEmpty()) return dst
-        }
-    }
-    return null
-}
-
-////////////////////////////////////////
-
-inline fun <P, reified T> parseItem(
-    factory: (parser: P, src: JsonObject) -> T,
-    parser: P,
-    src: JsonObject?,
-    log: LogCategory = EntityUtil.log,
-): T? {
-    if (src == null) return null
-    return try {
-        factory(parser, src)
-    } catch (ex: Throwable) {
-        log.e(ex, "${T::class.simpleName} parse failed.")
-        null
-    }
-}
-
-inline fun <P1, P2, reified T> parseItem(
-    factory: (p1: P1, p2: P2, src: JsonObject) -> T,
-    p1: P1,
-    p2: P2,
-    src: JsonObject?,
-    log: LogCategory = EntityUtil.log,
-): T? {
-    if (src == null) return null
-    return try {
-        factory(p1, p2, src)
-    } catch (ex: Throwable) {
-        log.e(ex, "${T::class.simpleName} parse failed.")
-        null
-    }
-}
-
-inline fun <reified T> parseItem(
-    factory: (serviceType: ServiceType, src: JsonObject) -> T,
-    serviceType: ServiceType,
-    src: JsonObject?,
-    log: LogCategory = EntityUtil.log,
-): T? {
-    if (src == null) return null
-    return try {
-        factory(serviceType, src)
-    } catch (ex: Throwable) {
-        log.e(ex, "${T::class.simpleName} parse failed.")
-        null
-    }
-}
-
-inline fun <P1, reified T> parseListP1(
-    factory: (p1: P1, src: JsonObject) -> T,
-    p1: P1,
-    src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
-): ArrayList<T> {
-    val dst = ArrayList<T>()
-    if (src != null) {
-        val src_length = src.size
-        if (src_length > 0) {
-            dst.ensureCapacity(src_length)
-            for (i in src.indices) {
-                val item = parseItem(factory, p1, src.jsonObject(i), log)
-                if (item != null) dst.add(item)
+    var dstMap: HashMap<String, V>? = null
+    if (srcMap != null) {
+        for (key in srcMap.keys) {
+            try {
+                val dst = srcMap.jsonObject(key)
+                    ?.let { creator(it, key) }
+                    ?: continue
+                (dstMap ?: HashMap<String, V>().also { dstMap = it })[key] = dst
+            } catch (ex: Throwable) {
+                EntityUtil.log.w("parseProfileEmoji2 failed. ${V::class.simpleName}")
             }
         }
     }
-    return dst
+    return dstMap
 }
 
-inline fun <P1, P2, reified T> parseListP2(
-    factory: (p1: P1, p2: P2, src: JsonObject) -> T,
-    p1: P1,
-    p2: P2,
-    src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
-): ArrayList<T> {
-    val dst = ArrayList<T>()
-    if (src != null) {
-        val src_length = src.size
-        if (src_length > 0) {
-            dst.ensureCapacity(src_length)
-            for (i in src.indices) {
-                val item = parseItem(factory, p1, p2, src.jsonObject(i), log)
-                if (item != null) dst.add(item)
-            }
-        }
-    }
-    return dst
-}
-
-@Suppress("unused")
-inline fun <reified T> parseListOrNull(
-    factory: (parser: TootParser, src: JsonObject) -> T,
-    parser: TootParser,
-    src: JsonArray?,
-    log: LogCategory = EntityUtil.log,
-): ArrayList<T>? {
-    if (src != null) {
-        val src_length = src.size
-        if (src_length > 0) {
-            val dst = ArrayList<T>()
-            dst.ensureCapacity(src_length)
-            for (i in src.indices) {
-                val item = parseItem(factory, parser, src.jsonObject(i), log)
-                if (item != null) dst.add(item)
-            }
-            if (dst.isNotEmpty()) return dst
-        }
-    }
-    return null
-}
-
-////////////////////////////////////////
-
+// 添付データのJSON表現のリストを作る
 fun <T : TootAttachmentLike> ArrayList<T>.encodeJson(): JsonArray {
     val a = JsonArray()
     forEach { ta ->

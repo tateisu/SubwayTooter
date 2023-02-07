@@ -10,9 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
 import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.auth.AuthRepo
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
-import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.ActKeywordFilterBinding
 import jp.juggler.subwaytooter.databinding.LvKeywordFilterBinding
@@ -114,7 +114,7 @@ class ActKeywordFilter : AppCompatActivity() {
         launchAndShowError {
 
             // filter ID の有無はUIに影響するのでinitUIより先に初期化する
-            filterId = EntityId.from(intent, EXTRA_FILTER_ID)
+            filterId = EntityId.entityId(intent, EXTRA_FILTER_ID)
 
             val a = intent.long(EXTRA_ACCOUNT_DB_ID)
                 ?.let { daoSavedAccount.loadAccount(it) }

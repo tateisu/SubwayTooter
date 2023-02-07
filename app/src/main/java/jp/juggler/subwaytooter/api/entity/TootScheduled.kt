@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.log.LogCategory
@@ -27,12 +28,9 @@ class TootScheduled(parser: TootParser, val src: JsonObject) : TimelineItem() {
         timeScheduledAt = TootStatus.parseTime(scheduledAt)
 
         mediaAttachments =
-            parseListOrNull(
-                ::TootAttachment,
-                parser,
-                src.jsonArray("media_attachments"),
-                log
-            )
+            parseList(src.jsonArray("media_attachments")) {
+                tootAttachment(parser, it)
+            }
         val params = src.jsonObject("params")
         text = params?.string("text")
         visibility = TootVisibility.parseMastodon(params?.string("visibility"))

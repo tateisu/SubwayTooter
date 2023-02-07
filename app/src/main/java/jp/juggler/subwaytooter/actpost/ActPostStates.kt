@@ -82,12 +82,9 @@ suspend fun ActPost.restoreState(savedInstanceState: Bundle) {
 
         account?.let { a ->
             states.scheduledStatusEncoded?.let { jsonText ->
-                scheduledStatus = parseItem(
-                    ::TootScheduled,
-                    TootParser(this, a),
-                    jsonText.decodeJsonObject(),
-                    log
-                )
+                scheduledStatus = parseItem(jsonText.decodeJsonObject()) {
+                    TootScheduled(TootParser(this, a), it)
+                }
             }
         }
         val stateAttachmentList = appState.attachmentList

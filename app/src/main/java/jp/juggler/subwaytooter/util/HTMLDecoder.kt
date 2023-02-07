@@ -992,19 +992,18 @@ object HTMLDecoder {
                 status.account
             )
 
-            val linkInfo = if (fullAcct != null) {
-                LinkInfo(
-                    url = item.url,
-                    caption = "@${(if (PrefB.bpMentionFullAcct.value) fullAcct else item.acct).pretty}",
-                    ac = daoAcctColor.load(fullAcct),
-                    mention = item,
-                    tag = link_tag
-                )
-            } else {
-                LinkInfo(
+            val linkInfo = when (fullAcct) {
+                null -> LinkInfo(
                     url = item.url,
                     caption = "@${item.acct.pretty}",
                     ac = null,
+                    mention = item,
+                    tag = link_tag
+                )
+                else -> LinkInfo(
+                    url = item.url,
+                    caption = "@${(if (PrefB.bpMentionFullAcct.value) fullAcct else item.acct).pretty}",
+                    ac = daoAcctColor.load(fullAcct),
                     mention = item,
                     tag = link_tag
                 )

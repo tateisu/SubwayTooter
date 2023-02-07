@@ -193,16 +193,16 @@ class NotificationTracking {
                     if (cursor.moveToFirst()) {
                         dst.id = cursor.getLong(COL_ID)
 
-                        dst.post_id = EntityId.from(cursor, COL_POST_ID)
+                        dst.post_id = EntityId.entityId(cursor, COL_POST_ID)
                         dst.post_time = cursor.getLong(COL_POST_TIME)
 
-                        val show = EntityId.from(cursor, COL_NID_SHOW)
+                        val show = EntityId.entityId(cursor, COL_NID_SHOW)
                         if (show == null) {
                             dst.nid_show = null
                             dst.nid_read = null
                         } else {
                             dst.nid_show = show
-                            val read = EntityId.from(cursor, COL_NID_READ)
+                            val read = EntityId.entityId(cursor, COL_NID_READ)
                             if (read == null) {
                                 dst.nid_read = null
                             } else {
@@ -242,8 +242,8 @@ class NotificationTracking {
                         !cursor.moveToFirst() -> log.e("updateRead[$accountDbId,$notificationType]: can't find the data row.")
 
                         else -> {
-                            val nid_show = EntityId.from(cursor, COL_NID_SHOW)
-                            val nid_read = EntityId.from(cursor, COL_NID_READ)
+                            val nid_show = EntityId.entityId(cursor, COL_NID_SHOW)
+                            val nid_read = EntityId.entityId(cursor, COL_NID_READ)
                             when {
                                 nid_show == null ->
                                     log.e("updateRead[$accountDbId,$notificationType]: nid_show is null.")

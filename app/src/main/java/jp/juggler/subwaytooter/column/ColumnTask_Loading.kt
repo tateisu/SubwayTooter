@@ -3,9 +3,9 @@ package jp.juggler.subwaytooter.column
 import android.os.SystemClock
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.auth.authRepo
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.finder.*
-import jp.juggler.subwaytooter.auth.authRepo
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop
 import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefB
@@ -842,14 +842,14 @@ class ColumnTask_Loading(
         client: TootApiClient,
         pathBase: String,
     ) = client.request(pathBase)?.also { result ->
-        val src = parseList(::TootReport, result.jsonArray)
+        val src = parseList(result.jsonArray) { TootReport(it) }
         column.saveRange(bBottom = true, bTop = true, result = result, list = src)
         listTmp = addAll(null, src)
     }
 
     suspend fun getScheduledStatuses(client: TootApiClient): TootApiResult? {
         val result = client.request(ApiPath.PATH_SCHEDULED_STATUSES)
-        val src = parseList(::TootScheduled, parser, result?.jsonArray)
+        val src = parseList(result?.jsonArray) { TootScheduled(parser, it) }
         listTmp = addAll(listTmp, src)
 
         column.saveRange(bBottom = true, bTop = true, result = result, list = src)
@@ -889,7 +889,7 @@ class ColumnTask_Loading(
             client.request(pathBase)
         }
         if (result != null) {
-            val src = parseList(::TootList, parser, result.jsonArray)
+            val src = parseList(result.jsonArray) { TootList(parser, it) }
             src.sort()
             column.saveRange(bBottom = true, bTop = true, result = result, list = src)
             this.listTmp = addAll(null, src)
@@ -920,7 +920,7 @@ class ColumnTask_Loading(
             client.request(pathBase)
         }
         if (result != null) {
-            val src = parseList(::MisskeyAntenna, result.jsonArray)
+            val src = parseList(result.jsonArray) { MisskeyAntenna(it) }
             column.saveRange(bBottom = true, bTop = true, result = result, list = src)
             this.listTmp = addAll(null, src)
         }
@@ -1116,7 +1116,7 @@ class ColumnTask_Loading(
             )
             jsonObject = result?.jsonObject ?: return result
             val conversationContext =
-                parseItem(::TootContext, parser, jsonObject)
+                parseItem(jsonObject) { TootContext(parser, it) }
 
             // 一つのリストにまとめる
             targetStatus.conversation_main = true
@@ -1171,8 +1171,7 @@ class ColumnTask_Loading(
                 )
                 val jsonArray = result?.jsonArray
                 if (jsonArray != null) {
-                    val src =
-                        TootParser(context, accessInfo).accountList(jsonArray)
+                    val src = TootParser(context, accessInfo).accountRefList(jsonArray)
                     listTmp = addAll(listTmp, src)
                 }
             }

@@ -446,6 +446,7 @@ class App1 : Application() {
             .build()
 
         suspend fun getHttpCached(url: String): ByteArray? {
+            val caller = RuntimeException("caller's stackTrace.")
             val response: Response
 
             try {
@@ -461,7 +462,7 @@ class App1 : Application() {
             }
 
             if (!response.isSuccessful) {
-                log.e(TootApiClient.formatResponse(response, "getHttp response error. $url"))
+                log.e(caller,TootApiClient.formatResponse(response, "getHttp response error. $url"))
                 return null
             }
 

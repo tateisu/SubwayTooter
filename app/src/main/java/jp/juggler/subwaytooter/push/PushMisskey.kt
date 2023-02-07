@@ -1,23 +1,27 @@
 package jp.juggler.subwaytooter.push
 
+import android.content.Context
 import jp.juggler.crypt.defaultSecurityProvider
 import jp.juggler.crypt.encodeP256Dh
 import jp.juggler.crypt.generateKeyPair
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiError
+import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.push.ApiPushMisskey
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.pref.prefDevice
-import jp.juggler.subwaytooter.push.PushRepo.Companion.followDomain
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.data.*
-
+import jp.juggler.util.log.LogCategory
 import java.security.Provider
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 
 class PushMisskey(
+    private val context: Context,
     private val api: ApiPushMisskey,
     private val provider: Provider =
         defaultSecurityProvider,
@@ -26,6 +30,9 @@ class PushMisskey(
     override val daoStatus: AccountNotificationStatus.Access =
         AccountNotificationStatus.Access(appDatabase),
 ) : PushBase() {
+    companion object {
+        private val log = LogCategory("PushMisskey")
+    }
 
     override suspend fun updateSubscription(
         subLog: SubscriptionLogger,
@@ -161,50 +168,59 @@ class PushMisskey(
         a: SavedAccount,
         pm: PushMessage,
     ) {
-        val json = pm.messageJson ?: return
-        val apiHost = a.apiHost
-
-        pm.iconSmall = null // バッジ画像のURLはない。通知種別により決まる
-
-        json.long("dateTime")?.let {
-            pm.timestamp = it
-        }
-
-        val body = json.jsonObject("body")
-
-        val user = body?.jsonObject("user")
-
-        pm.iconLarge = user?.string("avatarUrl").followDomain(apiHost)
+        val json = pm.messageJson ?: error("missign messageJson")
 
         when (val eventType = json.string("type")) {
             "notification" -> {
-                val notificationType = body?.string("type")
+                val parser = TootParser(context, a)
+                val notification = parser.notification(json.jsonObject("body"))
+                    ?: error("can't parse notification. json=$json")
 
-                pm.notificationType = notificationType
+                val user = notification.account
+
+                // アプリミュートと単語ミュート
+                if (notification.status?.checkMuted() == true) {
+                    error("this message is muted by app or word.")
+                }
+
+                // ふぁぼ魔ミュート
+                when (notification.type) {
+                    TootNotification.TYPE_REBLOG,
+                    TootNotification.TYPE_FAVOURITE,
+                    TootNotification.TYPE_FOLLOW,
+                    TootNotification.TYPE_FOLLOW_REQUEST,
+                    TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+                    -> {
+                        val whoAcct = a.getFullAcct(user)
+                        if (TootStatus.favMuteSet?.contains(whoAcct) == true) {
+                            error("muted by favMuteSet ${whoAcct.pretty}")
+                        }
+                    }
+                }
+
+                // バッジ画像のURLはない。通知種別により決まる
+                pm.iconSmall = null
+                pm.iconLarge = a.supplyBaseUrl(user?.avatar_static)
+                pm.notificationType = notification.type
+
+                json.long("dateTime")?.let { pm.timestamp = it }
 
                 pm.text = arrayOf(
-                    user?.string("username"),
-                    notificationType,
-                    body?.string("text")?.takeIf {
-                        when (notificationType) {
-                            "mention", "quote" -> true
-                            else -> false
-                        }
-                    }
-                ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(128)
+                    notification.getNotificationLine(context),
+                ).mapNotNull { it.trim().notBlank() }
+                    .joinToString("\n")
+                    .ellipsizeDot3(128)
+
                 pm.textExpand = arrayOf(
-                    user?.string("username"),
-                    notificationType,
-                    body?.string("text")?.takeIf {
-                        when (notificationType) {
-                            "mention", "quote" -> true
-                            else -> false
-                        }
-                    }
-                ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(400)
+                    pm.text,
+                    notification.status?.decoded_content,
+                ).mapNotNull { it?.trim()?.notBlank() }
+                    .joinToString("\n")
+                    .ellipsizeDot3(400)
             }
+
             // 通知以外のイベントは全部無視したい
-            else -> error("謎のイベント $eventType user=${user?.string("username")}")
+            else -> error("謎のイベント $eventType json=$json")
         }
     }
 }

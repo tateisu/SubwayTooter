@@ -423,7 +423,8 @@ suspend fun Column.loadListInfo(client: TootApiClient, bForceReload: Boolean) {
 
         val jsonObject = result?.jsonObject
         if (jsonObject != null) {
-            val data = parseItem(::TootList, parser, jsonObject)
+            val data =
+                parseItem(jsonObject) { TootList(parser, it) }
             if (data != null) {
                 this.listInfo = data
                 client.publishApiProgress("") // カラムヘッダの再表示
@@ -449,7 +450,7 @@ suspend fun Column.loadAntennaInfo(client: TootApiClient, bForceReload: Boolean)
 
         val jsonObject = result?.jsonObject
         if (jsonObject != null) {
-            val data = parseItem(::MisskeyAntenna, jsonObject)
+            val data = parseItem(jsonObject) { MisskeyAntenna(it) }
             if (data != null) {
                 this.antennaInfo = data
                 client.publishApiProgress("") // カラムヘッダの再表示

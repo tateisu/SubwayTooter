@@ -32,7 +32,6 @@ import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.appsetting.AppSettingItem
 import jp.juggler.subwaytooter.appsetting.SettingType
 import jp.juggler.subwaytooter.appsetting.appSettingRoot
-import jp.juggler.subwaytooter.auth.AuthRepo
 import jp.juggler.subwaytooter.databinding.ActAppSettingBinding
 import jp.juggler.subwaytooter.databinding.LvSettingItemBinding
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
@@ -98,10 +97,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private val adapter by lazy {
         MyAdapter()
-    }
-
-    val authRepo by lazy {
-        AuthRepo(this)
     }
 
     private val arNoop = ActivityResultHandler(log) { }

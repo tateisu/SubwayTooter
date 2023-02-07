@@ -25,7 +25,7 @@ fun ActPost.resetMushroom() {
 }
 
 @SuppressLint("InflateParams")
-fun ActPost.showRecommendedPlugin(title: String?) {
+suspend fun ActPost.showRecommendedPlugin(title: String?) {
 
     @RawRes val resId = when (getString(R.string.language_code)) {
         "ja" -> R.raw.recommended_plugin_ja
@@ -59,7 +59,7 @@ fun ActPost.showRecommendedPlugin(title: String?) {
     }
 }
 
-fun ActPost.openMushroom() {
+suspend fun ActPost.openMushroom() {
     try {
         var text: String? = null
         when {

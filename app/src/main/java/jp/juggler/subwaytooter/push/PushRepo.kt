@@ -13,14 +13,13 @@ import jp.juggler.crypt.*
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.push.ApiPushAppServer
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
 import jp.juggler.subwaytooter.api.push.ApiPushMisskey
 import jp.juggler.subwaytooter.dialog.SuspendProgress
 import jp.juggler.subwaytooter.notification.NotificationChannels
 import jp.juggler.subwaytooter.notification.NotificationDeleteReceiver.Companion.intentNotificationDelete
-import jp.juggler.subwaytooter.notification.iconColor
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.*
@@ -82,35 +81,24 @@ class PushRepo(
     private val fcmHandler: FcmHandler,
 ) {
     companion object {
-        private val reHttp = """https?://""".toRegex()
-
         @Suppress("RegExpSimplifiable")
         private val reTailDigits = """([0-9]+)\z""".toRegex()
 
-        const val JSON_CAME_FROM = "<>cameFrom"
-        const val CAME_FROM_UNIFIED_PUSH = "unifiedPush"
-        const val CAME_FROM_FCM = "fcm"
+        private val ncPushMessage = NotificationChannels.PushMessage
 
         var refReporter: WeakReference<SuspendProgress.Reporter>? = null
-
-        val ncPushMessage = NotificationChannels.PushMessage
-
-        fun String?.followDomain(apiHost: Host) = when {
-            isNullOrEmpty() -> null
-            reHttp.containsMatchIn(this) -> this
-            this[0] == '/' -> "https://$apiHost$this"
-            else -> "https://$apiHost/$this"
-        }
     }
 
     private val pushMisskey by lazy {
         PushMisskey(
+            context = context,
             api = apiPushMisskey,
             provider = provider,
             prefDevice = prefDevice,
             daoStatus = daoStatus,
         )
     }
+
     private val pushMastodon by lazy {
         PushMastodon(
             context = context,
@@ -276,7 +264,7 @@ class PushRepo(
         // アプリサーバにendpointを登録する
         refReporter?.get()?.setMessage("アプリサーバにプッシュサービスの情報を送信しています")
 
-        if( !fcmHandler.hasFcm && prefDevice.pushDistributor ==PrefDevice.PUSH_DISTRIBUTOR_FCM){
+        if (!fcmHandler.hasFcm && prefDevice.pushDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM) {
             log.w("fmc selected, but this is noFcm build. unset distributer.")
             prefDevice.pushDistributor = null
         }
@@ -466,85 +454,86 @@ class PushRepo(
         val pm = daoPushMessage.find(messageId)
             ?: error("missing pushMessage")
 
-        // rawBodyをBinPackMapにデコード
-        var map = pm.rawBody?.decodeBinPackMap()
-            ?: error("binPack decode failed.")
-
-        // ペイロードがなくてURLが付与されたメッセージは
-        // アプリサーバから読み直す
-        if (map["b"] == null) {
-            map.string("l")?.let { largeObjectId ->
-                apiPushAppServer.getLargeObject(largeObjectId)
-                    ?.let {
-                        map = it.decodeBinPack() as? BinPackMap
-                            ?: error("binPack decode failed.")
-                        pm.rawBody = it
-                        daoPushMessage.save(pm)
-                    }
-            }
-        }
-
-        // acctHashがある
-        val acctHash = map.string("a") ?: error("missing a.")
-
-        val status = daoStatus.findByAcctHash(acctHash)
-            ?: error("missing status for acctHash $acctHash")
-
-        val acct = status.acct.notEmpty()
-            ?: error("empty acct.")
-
-        val account = daoSavedAccount.loadAccountByAcct(Acct.parse(acct))
-            ?: error("missing account for acct ${status.acct}")
-
-        pm.loginAcct = status.acct
-
-        decodeMessageContent(status, pm, map)
-        val messageJson = pm.messageJson
-
-        if (messageJson == null) {
-            // デコード失敗
-            // 古い鍵で行った購読だろう。
-            // メッセージに含まれるappServerHashを指定してendpoint登録を削除する
-            // するとアプリサーバはSNSサーバに対してgoneを返すようになり掃除が適切に行われるはず
-            map.string("c").notEmpty()?.let {
-                val count = apiPushAppServer.endpointRemove(hashId = it)
-                    .int("count")
-                log.w("endpointRemove $count hashId=$it")
-            }
-            error("can't decode WebPush message to JSON.")
-        }
-        // Mastodonはなぜかアクセストークンが書いてあるので危険…
-        val censored = messageJson.toString()
-            .replace(
-                """"access_token":"[^"]+"""".toRegex(),
-                """"access_token":"***""""
-            )
-        log.i("${status.acct} $censored")
-
-        // messageJsonを解釈して通知に出す内容を決める
         try {
+            // rawBodyをBinPackMapにデコード
+            var map = pm.rawBody?.decodeBinPackMap()
+                ?: error("binPack decode failed.")
+
+            // ペイロードがなくてURLが付与されたメッセージは
+            // アプリサーバから読み直す
+            if (map["b"] == null) {
+                map.string("l")?.let { largeObjectId ->
+                    apiPushAppServer.getLargeObject(largeObjectId)
+                        ?.let {
+                            map = it.decodeBinPack() as? BinPackMap
+                                ?: error("binPack decode failed.")
+                            pm.rawBody = it
+                            daoPushMessage.save(pm)
+                        }
+                }
+            }
+
+            // acctHashがある
+            val acctHash = map.string("a") ?: error("missing a.")
+
+            val status = daoStatus.findByAcctHash(acctHash)
+                ?: error("missing status for acctHash $acctHash")
+
+            val acct = status.acct.notEmpty()
+                ?: error("empty acct.")
+
+            val account = daoSavedAccount.loadAccountByAcct(Acct.parse(acct))
+                ?: error("missing account for acct ${status.acct}")
+
+            pm.loginAcct = status.acct
+
+            decodeMessageContent(status, pm, map)
+            val messageJson = pm.messageJson
+
+            if (messageJson == null) {
+                // デコード失敗
+                // 古い鍵で行った購読だろう。
+                // メッセージに含まれるappServerHashを指定してendpoint登録を削除する
+                // するとアプリサーバはSNSサーバに対してgoneを返すようになり掃除が適切に行われるはず
+                map.string("c").notEmpty()?.let {
+                    val count = apiPushAppServer.endpointRemove(hashId = it).int("count")
+                    log.w("endpointRemove $count hashId=$it")
+                }
+
+                error("can't decode WebPush message to JSON.")
+            }
+
+            // Mastodonはなぜかアクセストークンが書いてあるので危険…
+            val censored = messageJson.toString()
+                .replace(
+                    """"access_token":"[^"]+"""".toRegex(),
+                    """"access_token":"***""""
+                )
+            log.i("${status.acct} $censored")
+
+            // messageJsonを解釈して通知に出す内容を決める
+            TootStatus.updateMuteData()
             pushBase(account).formatPushMessage(account, pm)
+
+            val notificationId = pm.notificationId
+            if (notificationId.isNullOrEmpty()) {
+                error("can't show notification. missing notificationId.")
+            }
+
+            if (!allowDupilicateNotification &&
+                daoNotificationShown.duplicateOrPut(acct, notificationId)
+            ) {
+                error("can't show notification. it's duplicate. $acct $notificationId")
+            }
+
+            // 解読できた(例外が出なかった)なら通知を出す
+            showPushNotification(pm, account, notificationId)
         } catch (ex: Throwable) {
-            log.e(ex, "formatPushMessage failed.")
-            return
+            log.e(ex, "updateMessage failed.")
+            pm.formatError = ex.withCaption()
+        } finally {
+            daoPushMessage.save(pm)
         }
-
-        daoPushMessage.save(pm)
-
-        val notificationId = pm.notificationId
-        if (notificationId.isNullOrEmpty()) {
-            log.e("can't show notification. missing notificationId.")
-            return
-        }
-        if (!allowDupilicateNotification &&
-            daoNotificationShown.duplicateOrPut(acct, notificationId)
-        ) {
-            log.w("can't show notification. it's duplicate. $acct $notificationId")
-            return
-        }
-
-        // 解読できた(例外が出なかった)なら通知を出す
-        showPushNotification(pm, account, notificationId)
     }
 
     /**
@@ -687,7 +676,7 @@ class PushRepo(
         // val piTap = PendingIntent.getActivity(this, nc.pircTap, iTap, PendingIntent.FLAG_IMMUTABLE)
 
         ncPushMessage.notify(context, urlDelete) {
-            color = ContextCompat.getColor(context,iconAndColor.colorRes)
+            color = ContextCompat.getColor(context, iconAndColor.colorRes)
             setSmallIcon(iconSmall)
             iconBitmapLarge?.let { setLargeIcon(it) }
             setContentTitle(pm.loginAcct)

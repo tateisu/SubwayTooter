@@ -179,7 +179,7 @@ private fun ActMain.userMute(
                     if (jsonObject != null) {
                         resultRelation = daoUserRelation.saveUserRelation(
                             accessInfo,
-                            parseItem(::TootRelationShip, parser, jsonObject)
+                            parseItem(jsonObject) { TootRelationShip(parser, it) }
                         )
                     }
                 }
@@ -430,7 +430,7 @@ fun ActMain.userBlock(
                         val parser = TootParser(this, accessInfo)
                         relationResult = daoUserRelation.saveUserRelation(
                             accessInfo,
-                            parseItem(::TootRelationShip, parser, result.jsonObject)
+                            parseItem(result.jsonObject) { TootRelationShip(parser, it) }
                         )
                     }
                 }
@@ -793,7 +793,7 @@ fun ActMain.userSetShowBoosts(
                 val parser = TootParser(this, accessInfo)
                 resultRelation = daoUserRelation.saveUserRelation(
                     accessInfo,
-                    parseItem(::TootRelationShip, parser, result.jsonObject)
+                    parseItem(result.jsonObject) { TootRelationShip(parser, it) }
                 )
             }
         }?.let { result ->
@@ -844,11 +844,12 @@ fun ActMain.userSetStatusNotification(
                 jsonObjectOf("notify" to enabled)
                     .toPostRequestBuilder()
             )?.also { result ->
-                val relation = parseItem(
-                    ::TootRelationShip,
-                    TootParser(this, accessInfo),
-                    result.jsonObject
-                )
+                val relation = parseItem(result.jsonObject) {
+                    TootRelationShip(
+                        TootParser(this, accessInfo),
+                        it
+                    )
+                }
                 if (relation != null) {
                     daoUserRelation.save1Mastodon(
                         System.currentTimeMillis(),
@@ -893,7 +894,9 @@ fun ActMain.userEndorsement(
                     val parser = TootParser(this, accessInfo)
                     resultRelation = daoUserRelation.saveUserRelation(
                         accessInfo,
-                        parseItem(::TootRelationShip, parser, result.jsonObject)
+                        parseItem(result.jsonObject) {
+                            TootRelationShip(parser, it)
+                        }
                     )
                 }
         }?.let { result ->

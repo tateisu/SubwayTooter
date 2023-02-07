@@ -18,8 +18,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.auth.AuthBase
+import jp.juggler.subwaytooter.api.auth.authRepo
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.auth.AuthRepo
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
@@ -129,10 +130,6 @@ class ActAccountSetting : AppCompatActivity(),
         ActAccountSettingBinding.inflate(layoutInflater, null, false)
     }
 
-    private val authRepo by lazy {
-        AuthRepo(this)
-    }
-
     private lateinit var nameInvalidator: NetworkEmojiInvalidator
     private lateinit var noteInvalidator: NetworkEmojiInvalidator
     private lateinit var defaultTextInvalidator: NetworkEmojiInvalidator
@@ -205,7 +202,7 @@ class ActAccountSetting : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        backPressed {handleBackPressed()}
+        backPressed { handleBackPressed() }
 
         prPickAvater.register(this)
         prPickHeader.register(this)
@@ -543,7 +540,7 @@ class ActAccountSetting : AppCompatActivity(),
 
     private fun showPushSetting() {
         views.run {
-            run{
+            run {
                 val usePush = swNotificationPushEnabled.isChecked
                 tvPushPolicyDesc.vg(usePush)
                 spPushPolicy.vg(usePush)
@@ -552,7 +549,7 @@ class ActAccountSetting : AppCompatActivity(),
                 btnPushSubscriptionNotForce.vg(usePush)
             }
 
-            run{
+            run {
                 val usePull = swNotificationPullEnabled.isChecked
                 tvDontShowTimeout.vg(usePull)
                 swDontShowTimeout.vg(usePull)
@@ -625,12 +622,11 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
-    private fun handleBackPressed(){
+    private fun handleBackPressed() {
         checkNotificationImmediateAll(this, onlyEnqueue = true)
         checkNotificationImmediate(this, account.db_id)
         finish()
     }
-
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         when (buttonView) {
@@ -908,9 +904,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun showProfile(src: TootAccount) {
-
         if (isDestroyed) return
-
         profileBusy = true
         try {
             views.ivProfileAvatar.setImageUrl(
@@ -1095,11 +1089,8 @@ class ActAccountSetting : AppCompatActivity(),
             "/api/drive/files/create",
             multipartBuilder.build().toPost()
         )?.also { result ->
-            val jsonObject = result.jsonObject
-            if (jsonObject != null) {
-                ta = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
-                if (ta == null) result.error = "TootAttachment.parse failed"
-            }
+            ta = parseItem(result.jsonObject) { tootAttachment(ServiceType.MISSKEY, it) }
+            if (ta == null) result.error = "TootAttachment.parse failed"
         }
 
         return Pair(result, ta)

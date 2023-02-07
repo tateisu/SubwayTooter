@@ -261,7 +261,8 @@ fun ActMain.follow(
                     "/api/v1/accounts/$userId/${if (bFollow) "follow" else "unfollow"}",
                     "".toFormRequestBody().toPost()
                 )?.also { result ->
-                    val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
+                    val newRelation =
+                        parseItem(result.jsonObject) { TootRelationShip(parser, it) }
                     resultRelation = daoUserRelation.saveUserRelation(accessInfo, newRelation)
                 }
             }
@@ -373,7 +374,8 @@ private fun ActMain.followRemote(
                     "/api/v1/accounts/$userId/follow",
                     "".toFormRequestBody().toPost()
                 )?.also { result ->
-                    parseItem(::TootRelationShip, parser, result.jsonObject)?.let {
+                    parseItem(result.jsonObject) { TootRelationShip(parser, it) }
+                        ?.let {
                         resultRelation = daoUserRelation.saveUserRelation(accessInfo, it)
                     }
                 }
@@ -486,7 +488,8 @@ fun ActMain.followRequestAuthorize(
                 )?.also { result ->
                     // Mastodon 3.0.0 から更新されたリレーションを返す
                     // https//github.com/tootsuite/mastodon/pull/11800
-                    val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
+                    val newRelation =
+                        parseItem(result.jsonObject) { TootRelationShip(parser, it) }
                     daoUserRelation.saveUserRelation(accessInfo, newRelation)
                     // 読めなくてもエラー処理は行わない
                 }

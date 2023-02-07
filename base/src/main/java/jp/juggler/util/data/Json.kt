@@ -1,6 +1,7 @@
 package jp.juggler.util.data
 
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
 import java.io.*
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -642,8 +643,8 @@ class JsonTokenizer(reader: Reader) {
      */
     fun nextValue(): Any? {
         var c = nextClean()
-        val string: String
         when (c) {
+            CHAR0 -> throw syntaxError("unexpected end.")
             '"', '\'' -> return nextString(c)
 
             '{' -> {
@@ -672,13 +673,10 @@ class JsonTokenizer(reader: Reader) {
         if (!eof) {
             back()
         }
-        string = sb.toString().trim { it <= ' ' }
-        if ("" == string) {
-            throw syntaxError("Missing value")
-        }
+        val string = sb.toString().trim { it <= ' ' }
         return with(string) {
             when {
-                isEmpty() -> ""
+                isEmpty() -> throw syntaxError("empty identifier.")
                 equals("true", ignoreCase = true) -> true
                 equals("false", ignoreCase = true) -> false
                 equals("null", ignoreCase = true) -> null
@@ -1082,7 +1080,7 @@ private val log = LogCategory("Json")
 fun String.decodeJsonValue() = try {
     JsonTokenizer(this).nextValue()
 } catch (ex: Throwable) {
-    log.e(ex, "decodeJsonValue failed. $this")
+    log.e(ex.withCaption("decodeJsonValue failed. $this"))
     throw ex
 }
 

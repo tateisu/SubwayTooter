@@ -2,17 +2,18 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.SystemClock
 import android.text.Spannable
 import android.text.SpannableString
 import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.mfm.SpannableStringBuilderEx
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
 import jp.juggler.util.*
@@ -21,6 +22,7 @@ import jp.juggler.util.log.LogCategory
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 import kotlin.math.abs
 import kotlin.math.max
@@ -33,68 +35,67 @@ class FilterTrees(
 )
 
 @Suppress("MemberVisibilityCanPrivate")
-class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
+class TootStatus(
+    parser: TootParser,
 
-    val json: JsonObject
+    val json: JsonObject,
 
     // A Fediverse-unique resource ID
     // MSP から取得したデータだと uri は提供されずnullになる
-    val uri: String
+    val uri: String,
 
     // URL to the status page (can be remote)
     // ブーストだとnullになる
-    val url: String?
-
-    // 投稿元タンスのホスト名
-    val originalApDomain: Host
-        get() = account.apDomain
+    val url: String?,
 
     // 取得タンスのホスト名。トゥート検索サービスでは提供されずnullになる
-    val readerApDomain: Host?
+    val readerApDomain: Host?,
 
     // ステータスID。
     // host_access が null の場合は投稿元タンスでのIDかもしれない。
     // 取得に失敗するとINVALID_IDになる
     // Misskeyでは文字列のID。
-    val id: EntityId
+    val id: EntityId,
 
     // misskeyではページングIDにRelation ID が別途提供されることがある
-    internal var _orderId: EntityId? = null
-
-    override fun getOrderId() = _orderId ?: id
+    var _orderId: EntityId? = null,
 
     // The TootAccount which posted the status
-    val accountRef: TootAccountRef
-
-    val account: TootAccount
-        get() = TootAccountMap.find(accountRef.mapId)
+    val accountRef: TootAccountRef,
 
     //The number of reblogs for the status
-    var reblogs_count: Long? = null  // アプリから変更する。検索サービスでは提供されない(null)
+    // アプリから変更する。検索サービスでは提供されない(null)
+    var reblogs_count: Long? = null,
 
     //The number of favourites for the status
-    var favourites_count: Long? = null // アプリから変更する。検索サービスでは提供されない(null)
+    // アプリから変更する。検索サービスでは提供されない(null)
+    var favourites_count: Long? = null,
 
     //	Whether the authenticated user has reblogged the status
-    var reblogged: Boolean = false // アプリから変更する
+    // アプリから変更する
+    var reblogged: Boolean = false,
 
     //	Whether the authenticated user has favourited the status
-    var favourited: Boolean = false  // アプリから変更する
+    // アプリから変更する
+    var favourited: Boolean = false,
 
     //	Whether the authenticated user has bookmarked the status
-    var bookmarked: Boolean = false  // アプリから変更する
+    // アプリから変更する
+    var bookmarked: Boolean = false,
 
     // Whether the authenticated user has muted the conversation this status from
-    var muted: Boolean = false // アプリから変更する
+    // アプリから変更する
+    var muted: Boolean = false,
 
     // 固定されたトゥート
-    var pinned: Boolean = false  // アプリから変更する
+    // アプリから変更する
+    var pinned: Boolean = false,
 
     //Whether media attachments should be hidden by default
-    val sensitive: Boolean
+    val sensitive: Boolean,
 
     // The detected language for the status, if detected
-    val language: String?
+    val language: String?,
 
     //If not empty, warning text that should be displayed before the actual content
     // アプリ内部では空文字列はCWなしとして扱う
@@ -102,94 +103,120 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     // Pleromaは「空文字列：CWなし」「空じゃない文字列：CWあり」の2種類
     // Misskeyは「CWなし」「空欄CW」「CWあり」の3通り。空欄CWはパース時に書き換えてしまう
     // Misskeyで投稿が削除された時に変更されるため、val変数にできない
-    var spoiler_text: String = ""
-    var decoded_spoiler_text: Spannable
+    var spoiler_text: String = "",
+    var decoded_spoiler_text: Spannable,
 
     //	Body of the status; this will contain HTML (remote HTML already sanitized)
-    var content: String?
-    var decoded_content: Spannable
+    var content: String?,
+    var decoded_content: Spannable,
 
     //Application from which the status was posted
-    val application: TootApplication?
+    val application: TootApplication?,
 
-    var custom_emojis: HashMap<String, CustomEmoji>? = null
+    var custom_emojis: HashMap<String, CustomEmoji>? = null,
 
-    val profile_emojis: HashMap<String, NicoProfileEmoji>?
+    val profile_emojis: HashMap<String, NicoProfileEmoji>?,
 
     //	The time the status was created
-    private val created_at: String?
+    private val created_at: String?,
 
     //	null or the ID of the status it replies to
-    val in_reply_to_id: EntityId?
+    val in_reply_to_id: EntityId?,
 
     //	null or the ID of the account it replies to
-    val in_reply_to_account_id: EntityId?
+    val in_reply_to_account_id: EntityId?,
 
     // null or the reblogged Status
     // 投稿の更新が実装されたのでvarになった
-    var reblog: TootStatus? = null
+    var reblog: TootStatus? = null,
 
     //One of: public, unlisted, private, direct
-    val visibility: TootVisibility
+    val visibility: TootVisibility,
 
-    private val misskeyVisibleIds: ArrayList<String>?
+    private val misskeyVisibleIds: ArrayList<String>?,
 
     //	An array of Attachments
-    val media_attachments: ArrayList<TootAttachmentLike>?
+    val media_attachments: ArrayList<TootAttachmentLike>?,
 
     //	An array of Mentions
-    var mentions: ArrayList<TootMention>? = null
+    var mentions: ArrayList<TootMention>? = null,
 
     //An array of Tags
-    var tags: List<TootTag>? = null
+    var tags: List<TootTag>? = null,
 
     // public Spannable decoded_tags;
-    var decoded_mentions: Spannable = EMPTY_SPANNABLE
+    var decoded_mentions: Spannable = EMPTY_SPANNABLE,
 
-    var conversation_main: Boolean = false
-
-    var enquete: TootPolls? = null
+    var enquete: TootPolls? = null,
 
     //
-    var replies_count: Long? = null
+    var replies_count: Long? = null,
 
-    var viaMobile: Boolean = false
+    var viaMobile: Boolean = false,
 
-    var reactionSet: TootReactionSet? = null
+    var reactionSet: TootReactionSet? = null,
 
-    var reply: TootStatus?
+    var reply: TootStatus?,
 
-    val serviceType: ServiceType
+    val serviceType: ServiceType,
 
-    private val deletedAt: String?
-    val time_deleted_at: Long
+    val deletedAt: String?,
 
-    private var localOnly: Boolean = false
+    val time_deleted_at: Long,
 
-    var myRenoteId: EntityId? = null
+    private var localOnly: Boolean = false,
+
+    var myRenoteId: EntityId? = null,
 
     // reblog,reply された投稿からその外側を参照する
-    var reblogParent: TootStatus? = null
+    var reblogParent: TootStatus? = null,
 
     // quote toot かどうか。
-    var isQuoteToot = false
-    private var quote_id: EntityId? = null
+    var isQuoteToot: Boolean = false,
+
+    private var quote_id: EntityId? = null,
 
     // このstatusがquoteだった場合、ミュート済みかどうか示すフラグ
-    var quote_muted = false
+    var quote_muted: Boolean = false,
 
     // Misskey 12.3
-    var isPromoted = false
-    var isFeatured = false
+    var isPromoted: Boolean = false,
+    var isFeatured: Boolean = false,
 
     // Mastodon 3.5.0
-    var time_edited_at = 0L
+    var time_edited_at: Long = 0L,
 
     // Mastodon 4.0.0
-    var filteredV4: List<TootFilterResult>? = null
+    var filteredV4: List<TootFilterResult>? = null,
 
     ///////////////////////////////////////////////////////////////////
     // 以下はentityから取得したデータではなく、アプリ内部で使う
+
+    // アプリ内部で使うワークエリア
+    var auto_cw: AutoCW? = null,
+
+    // 会話の流れビューで後から追加する
+    var card: TootCard? = null,
+
+    var highlightSound: HighlightWord? = null,
+    var highlightSpeech: HighlightWord? = null,
+    var highlightAny: HighlightWord? = null,
+
+    val time_created_at: Long,
+
+    ) : TimelineItem() {
+    // 会話カラムの場合に使う
+    var conversationSummary: TootConversationSummary? = null
+    var conversation_main: Boolean = false
+
+    // 投稿元タンスのホスト名
+    val originalApDomain: Host
+        get() = account.apDomain
+
+    val account: TootAccount
+        get() = TootAccountMap.find(accountRef.mapId)
+
+    override fun getOrderId() = _orderId ?: id
 
     class AutoCW(
         var refActivity: WeakReference<Any>? = null,
@@ -198,632 +225,10 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         var originalLineCount: Int = 0,
     )
 
-    // アプリ内部で使うワークエリア
-    var auto_cw: AutoCW? = null
-
-    // 会話の流れビューで後から追加する
-    var card: TootCard? = null
-
-    var highlightSound: HighlightWord? = null
-    var highlightSpeech: HighlightWord? = null
-    var highlightAny: HighlightWord? = null
-
-    val time_created_at: Long
-
-    var conversationSummary: TootConversationSummary? = null
-
-    ////////////////////////////////////////////////////////
-
     init {
-        this.json = src
-        this.serviceType = parser.serviceType
-        src["_fromStream"] = parser.fromStream
-
-        when (parser.serviceType) {
-            ServiceType.MISSKEY -> {
-                val apiHost = parser.apiHost
-                val misskeyId = src.string("id")
-                this.readerApDomain = parser.apDomain
-
-                val uri = src.string("uri")
-                if (uri != null) {
-                    // リモート投稿には uriが含まれる
-                    this.uri = uri
-                    this.url = uri
-                } else {
-                    this.uri = "https://$apiHost/notes/$misskeyId"
-                    this.url = "https://$apiHost/notes/$misskeyId"
-                }
-
-                this.created_at = src.string("createdAt")
-                this.time_created_at = parseTime(this.created_at)
-                this.id = EntityId.mayDefault(misskeyId)
-
-                // お気に入りカラムなどではパース直後に変更することがある
-
-                // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-                this.custom_emojis = parseMapOrNull(
-                    CustomEmoji.decodeMisskey,
-                    parser.apDomain,
-                    parser.apiHost,
-                    src.jsonArray("emojis"),
-                    log
-                )
-                this.profile_emojis = null
-
-                val who = parser.account(src.jsonObject("user"))
-                    ?: error("missing account")
-
-                this.accountRef = TootAccountRef(parser, who)
-
-                this.reblogs_count = src.long("renoteCount") ?: 0L
-                this.favourites_count = 0L
-                this.replies_count = src.long("repliesCount") ?: 0L
-
-                this.reblogged = false
-                this.favourited = src.optBoolean("isFavorited")
-
-                this.localOnly = src.optBoolean("localOnly")
-                this.visibility = TootVisibility.parseMisskey(
-                    src.string("visibility"),
-                    localOnly
-                ) ?: TootVisibility.Unknown
-
-                this.misskeyVisibleIds = parseStringArray(src.jsonArray("visibleUserIds"))
-
-                this.media_attachments =
-                    parseListOrNull(
-                        ::TootAttachment,
-                        parser,
-                        src.jsonArray("files") ?: src.jsonArray("media") // v11,v10
-                    )
-
-                // Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
-                var bv = src.optBoolean("sensitive")
-                media_attachments?.forEach {
-                    if ((it as? TootAttachment)?.isSensitive == true) {
-                        bv = true
-                    }
-                }
-                this.sensitive = bv
-
-                this.reply = parser.status(src.jsonObject("reply"))
-                this.in_reply_to_id = EntityId.mayNull(src.string("replyId"))
-                this.in_reply_to_account_id = reply?.account?.id
-
-                this.pinned = parser.pinned
-                this.muted = false
-                this.language = null
-
-                // "mentionedRemoteUsers" -> "[{"uri":"https:\/\/mastodon.juggler.jp\/users\/tateisu","username":"tateisu","host":"mastodon.juggler.jp"}]"
-
-                this.tags = parseMisskeyTags(src.jsonArray("tags"))
-
-                this.application = parseItem(::TootApplication, parser, src.jsonObject("app"), log)
-
-                this.viaMobile = src.optBoolean("viaMobile")
-
-                // this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-
-                // content
-                this.content = src.string("text")
-
-                var options = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    emojiMapCustom = custom_emojis,
-                    emojiMapProfile = profile_emojis,
-                    attachmentList = media_attachments,
-                    highlightTrie = parser.highlightTrie,
-                    mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
-                    authorDomain = account
-                )
-
-                this.decoded_content = options.decodeHTML(content)
-                if (this.highlightSound == null) this.highlightSound = options.highlightSound
-                if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
-                if (this.highlightAny == null) this.highlightAny = options.highlightAny
-
-                // Markdownのデコード結果からmentionsを読むのだった
-                val mentions1 =
-                    (decoded_content as? SpannableStringBuilderEx)?.mentions
-
-                val sv = src.string("cw")?.cleanCW()
-                this.spoiler_text = when {
-                    sv == null -> "" // CWなし
-
-                    sv.replace('\u0323', ' ').isBlank() ->
-                        parser.context.getString(R.string.blank_cw)
-
-                    else -> sv
-                }
-
-                // ハイライト検出のためにDecodeOptionsを作り直す？
-                options = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    emojiMapCustom = custom_emojis,
-                    emojiMapProfile = profile_emojis,
-                    attachmentList = media_attachments,
-                    highlightTrie = parser.highlightTrie,
-                    mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
-                    authorDomain = account
-                )
-                this.decoded_spoiler_text = options.decodeHTML(spoiler_text)
-
-                if (this.highlightSound == null) this.highlightSound = options.highlightSound
-                if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
-                if (this.highlightAny == null) this.highlightAny = options.highlightAny
-
-                val mentions2 =
-                    (decoded_spoiler_text as? SpannableStringBuilderEx)?.mentions
-
-                this.mentions = mergeMentions(mentions1, mentions2)
-                this.decoded_mentions =
-                    HTMLDecoder.decodeMentions(parser, this)
-                        ?: EMPTY_SPANNABLE
-
-                // contentを読んだ後にアンケートのデコード
-                this.enquete = TootPolls.parse(
-                    parser,
-                    TootPollsType.Misskey,
-                    this,
-                    media_attachments,
-                    src.jsonObject("poll"),
-                )
-
-                this.reactionSet = TootReactionSet.parseMisskey(
-                    src.jsonObject("reactions") ?: src.jsonObject("reactionCounts"),
-                    src.string("myReaction")
-                )
-
-                val reblog = parser.status(src.jsonObject("renote"))
-                this.reblog = reblog
-
-                // めいめいフォークでは myRenoteIdというものがあるらしい
-                // https://github.com/mei23/misskey/blob/mei-m544/src/models/note.ts#L384-L394
-                // 直近の一つのrenoteのIdを得られるらしい。
-                this.myRenoteId = EntityId.mayNull(src.string("myRenoteId"))
-                if (myRenoteId != null) reblogged = true
-
-                // しかしTLにRenoteが露出してるならそのIDを使う方が賢明であろう
-                // 外側ステータスが自分なら、内側ステータスのmyRenoteIdを設定する
-                if (reblog != null && parser.linkHelper.cast<SavedAccount>()
-                        ?.isMe(account) == true
-                ) {
-                    reblog.myRenoteId = id
-                    reblog.reblogged = true
-                }
-
-                quote_muted = src.boolean("quote_muted") ?: false
-                isQuoteToot = when (reblog) {
-                    // 別の投稿を参照していない
-                    null -> false
-
-                    // 別の投稿を参照して、かつこの投稿自体が何かコンテンツを持つなら引用トゥートである
-                    else -> content?.isNotEmpty() == true ||
-                            spoiler_text.isNotEmpty() ||
-                            media_attachments?.isNotEmpty() == true ||
-                            enquete != null
-                }
-
-                this.quote_id = when {
-                    isQuoteToot -> reblog?.id
-                    else -> null
-                }
-
-                this.deletedAt = src.string("deletedAt")
-                this.time_deleted_at = parseTime(deletedAt)
-
-                if (card == null) {
-                    if (reblog != null && isQuoteToot) {
-                        // 引用Renoteにプレビューカードをでっちあげる
-                        card = TootCard(parser, reblog)
-                    } else if (reply != null) {
-                        // 返信にプレビューカードをでっちあげる
-                        card = TootCard(parser, reply!!)
-                    }
-                }
-
-                this.isPromoted = src.string("_prId_")?.isNotEmpty() == true
-                this.isFeatured = src.string("_featuredId_")?.isNotEmpty() == true
-            }
-
-            ServiceType.NOTESTOCK -> {
-                misskeyVisibleIds = null
-                reply = null
-                deletedAt = null
-                time_deleted_at = 0L
-
-                this.created_at = src.string("published")
-
-                val apTag = APTag(parser, src.jsonArray("tag"))
-                this.custom_emojis = apTag.emojiList.notEmpty()
-                this.profile_emojis = apTag.profileEmojiList.notEmpty()
-                this.mentions = apTag.mentions
-                this.tags = apTag.hashtags
-
-                val who = parser.account(src.jsonObject("account")) ?: error("missing account")
-
-                this.accountRef = TootAccountRef(parser, who)
-
-                this.reblogs_count = null
-                this.favourites_count = null
-                this.replies_count = null
-
-                this.readerApDomain = null
-                this.uri = src.string("id") ?: error("missing uri")
-                this.url = src.string("url") ?: uri
-                this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
-
-                this.time_created_at = parseTime(this.created_at)
-
-                val apAttachment = APAttachment(src.jsonArray("attachment"))
-                this.media_attachments = apAttachment.mediaAttachments.notEmpty()
-
-                this.visibility = when (src.jsonArray("to")
-                    ?.any { it == "https://www.w3.org/ns/activitystreams#Public" }) {
-                    true -> TootVisibility.Public
-                    else -> TootVisibility.UnlistedHome
-                }
-
-                this.sensitive = src.optBoolean("sensitive")
-
-                // TODO APには inReplyTo と inReplyToAtomUri があるけど
-                //  リモート投稿のURLからサーバ内IDを計算するのはサーバへのリクエストなしでは無理
-                this.in_reply_to_id = null
-                this.in_reply_to_account_id = null
-
-                this.application = null
-                this.pinned = parser.pinned || src.optBoolean("pinned")
-                this.muted = false
-                this.language = null
-                this.decoded_mentions =
-                    HTMLDecoder.decodeMentions(parser, this)
-                        ?: EMPTY_SPANNABLE
-
-                val quote = when {
-                    !parser.decodeQuote -> null
-                    else -> try {
-                        parser.decodeQuote = false
-                        parser.status(src.jsonObject("quote"))
-                    } finally {
-                        parser.decodeQuote = true
-                    }
-                }
-
-                this.quote_id = quote?.id ?: EntityId.mayNull(src.string("quote_id"))
-                this.isQuoteToot = quote_id != null
-                this.quote_muted = src.boolean("quote_muted") ?: false
-
-                this.reblog = null
-
-                this.card = if (quote != null) {
-                    // 引用Renoteにプレビューカードをでっちあげる
-                    TootCard(parser, quote)
-                    // content中のQTの表現が四角括弧の有無とか色々あるみたいだし
-                    // 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
-                    // removeQt = ! PrefB.bpDontShowPreviewCard(Pref.pref(parser.context))
-                } else {
-                    null
-                }
-
-                // content
-                this.content = src.string("content")
-
-                var options = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    emojiMapCustom = custom_emojis,
-                    emojiMapProfile = profile_emojis,
-                    attachmentList = media_attachments,
-                    highlightTrie = parser.highlightTrie,
-                    mentions = mentions,
-                    authorDomain = account,
-                    unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
-                )
-
-                this.decoded_content = options.decodeHTML(content)
-                if (this.highlightSound == null) this.highlightSound = options.highlightSound
-                if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
-                if (this.highlightAny == null) this.highlightAny = options.highlightAny
-
-                val sv = (src.string("summary") ?: "").cleanCW()
-                this.spoiler_text = when {
-                    sv.isEmpty() -> "" // CWなし
-                    sv.isBlank() -> parser.context.getString(R.string.blank_cw)
-                    else -> sv
-                }
-
-                // ハイライト検出のためにDecodeOptionsを作り直す？
-                options = DecodeOptions(
-                    parser.context,
-                    emojiMapCustom = custom_emojis,
-                    emojiMapProfile = profile_emojis,
-                    highlightTrie = parser.highlightTrie,
-                    mentions = mentions,
-                    authorDomain = account,
-                    unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
-                )
-
-                this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
-
-                if (this.highlightSound == null) this.highlightSound = options.highlightSound
-                if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
-                if (this.highlightAny == null) this.highlightAny = options.highlightAny
-
-                this.enquete = (src.jsonArray("oneOf") ?: src.jsonArray("anyOf"))?.let {
-                    try {
-                        TootPolls(
-                            parser,
-                            TootPollsType.Notestock,
-                            this,
-                            media_attachments,
-                            src,
-                            it
-                        )
-                    } catch (ex: Throwable) {
-                        log.e(ex, "TootStatus ctor failed. enquete (NoteStock)")
-                        null
-                    }
-                }
-            }
-
-            else -> {
-                misskeyVisibleIds = null
-                reply = null
-                deletedAt = null
-                time_deleted_at = 0L
-
-                this.url = src.string("url") // ブースト等では頻繁にnullになる
-                this.created_at = src.string("created_at")
-
-                // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-                this.custom_emojis = parseMapOrNull(
-                    CustomEmoji.decode,
-                    parser.apDomain,
-                    parser.apiHost,
-                    src.jsonArray("emojis"),
-                    log
-                )
-
-                this.profile_emojis = when (val o = src["profile_emojis"]) {
-                    is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
-                    is JsonObject -> parseProfileEmoji2(::NicoProfileEmoji, o, log)
-                    else -> null
-                }
-
-                val who = parser.account(src.jsonObject("account"))
-                    ?: error("missing account")
-
-                this.accountRef = TootAccountRef(parser, who)
-
-                this.reblogs_count = src.long("reblogs_count")
-                this.favourites_count = src.long("favourites_count")
-                this.replies_count = src.long("replies_count")
-
-                this.time_edited_at = parseTime(src.string("edited_at"))
-
-                this.reactionSet = TootReactionSet.parseFedibird(
-                    src.jsonArray("emoji_reactions")
-                        ?: src.jsonObject("pleroma")?.jsonArray("emoji_reactions")
-                )
-
-                when (parser.serviceType) {
-                    ServiceType.MASTODON -> {
-                        this.readerApDomain = parser.apDomain
-
-                        this.id = EntityId.mayDefault(src.string("id"))
-                        this.uri = src.string("uri") ?: error("missing uri")
-
-                        this.reblogged = src.optBoolean("reblogged")
-                        this.favourited = src.optBoolean("favourited")
-                        this.bookmarked = src.optBoolean("bookmarked")
-
-                        this.time_created_at = parseTime(this.created_at)
-                        this.media_attachments =
-                            parseListOrNull(
-                                ::TootAttachment,
-                                parser,
-                                src.jsonArray("media_attachments"),
-                                log
-                            )
-                        val visibilityString = when {
-                            src.boolean("limited") == true -> "limited"
-                            else -> src.string("visibility")
-                        }
-                        this.visibility = TootVisibility.parseMastodon(visibilityString)
-                            ?: TootVisibility.Unknown
-                        this.sensitive = src.optBoolean("sensitive")
-
-                        this.filteredV4 = TootFilterResult.parseList(src.jsonArray("filtered"))
-                    }
-
-                    ServiceType.TOOTSEARCH -> {
-                        this.readerApDomain = null
-
-                        // 投稿元タンスでのIDを調べる。失敗するかもしれない
-                        // XXX: Pleromaだとダメそうな印象
-                        this.uri = src.string("uri") ?: error("missing uri")
-                        this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
-
-                        this.time_created_at = parseTime(this.created_at)
-                        this.media_attachments = parseListOrNull(
-                            ::TootAttachment,
-                            parser,
-                            src.jsonArray("media_attachments"),
-                            log
-                        )
-                        this.visibility = TootVisibility.Public
-                        this.sensitive = src.optBoolean("sensitive")
-                    }
-
-                    ServiceType.MSP -> {
-                        this.readerApDomain = parser.apDomain
-
-                        // MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-                        this.id = EntityId.mayDefault(src.string("id"))
-
-                        // MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
-                        this.uri =
-                            "https://${account.apiHost}/users/${who.username}/statuses/$id"
-
-                        this.time_created_at = parseTimeMSP(created_at)
-                        this.media_attachments =
-                            TootAttachmentMSP.parseList(src.jsonArray("media_attachments"))
-                        this.visibility = TootVisibility.Public
-                        this.sensitive = src.optInt("sensitive", 0) != 0
-                    }
-
-                    ServiceType.MISSKEY, ServiceType.NOTESTOCK -> error("will not happen")
-                }
-
-                this.in_reply_to_id = EntityId.mayNull(src.string("in_reply_to_id"))
-                this.in_reply_to_account_id =
-                    EntityId.mayNull(src.string("in_reply_to_account_id"))
-                this.mentions = parseListOrNull(::TootMention, src.jsonArray("mentions"), log)
-                this.tags = TootTag.parseListOrNull(parser, src.jsonArray("tags"))
-                this.application =
-                    parseItem(::TootApplication, parser, src.jsonObject("application"), log)
-                this.pinned = parser.pinned || src.optBoolean("pinned")
-                this.muted = src.optBoolean("muted")
-                this.language = src.string("language")?.notEmpty()
-                this.decoded_mentions =
-                    HTMLDecoder.decodeMentions(parser, this)
-                        ?: EMPTY_SPANNABLE
-
-                val quote = when {
-                    !parser.decodeQuote -> null
-                    else -> try {
-                        parser.decodeQuote = false
-                        parser.status(src.jsonObject("quote"))
-                    } finally {
-                        parser.decodeQuote = true
-                    }
-                }
-
-                this.quote_id = quote?.id ?: EntityId.mayNull(src.string("quote_id"))
-                this.isQuoteToot = quote_id != null
-                this.quote_muted = src.boolean("quote_muted") ?: false
-
-                // Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
-                // Hostdon QT と通常のreblogが同時に出ることはないので、quoteが既出ならreblogのjsonデータは見ない
-                this.reblog = quote ?: parser.status(src.jsonObject("reblog"))
-
-                val removeQt = false
-
-                // 2.6.0からステータスにもカード情報が含まれる
-                this.card = parseItem(::TootCard, src.jsonObject("card"))
-                if (card == null && quote != null) {
-                    // 引用Renoteにプレビューカードをでっちあげる
-                    card = TootCard(parser, quote)
-                    // content中のQTの表現が四角括弧の有無とか色々あるみたいだし
-                    // 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
-                    // removeQt = ! PrefB.bpDontShowPreviewCard(Pref.pref(parser.context))
-                }
-
-                // content
-                this.content = src.string("content")?.let { sv ->
-                    when {
-                        removeQt -> {
-                            log.d("removeQt? $sv")
-                            val reQuoteTootRemover =
-                                """(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
-                            sv.replace(reQuoteTootRemover) {
-                                it.groupValues.elementAtOrNull(1) ?: ""
-                            }.also { after ->
-                                log.d("removeQt? after = $after")
-                            }
-                        }
-                        else -> sv
-                    }
-                }
-
-                var options = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    emojiMapCustom = custom_emojis,
-                    emojiMapProfile = profile_emojis,
-                    attachmentList = media_attachments,
-                    highlightTrie = parser.highlightTrie,
-                    mentions = mentions,
-                    authorDomain = account
-                )
-
-                this.decoded_content = options.decodeHTML(content)
-                if (this.highlightSound == null) this.highlightSound = options.highlightSound
-                if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
-                if (this.highlightAny == null) this.highlightAny = options.highlightAny
-
-                val sv = (src.string("spoiler_text") ?: "").cleanCW()
-                this.spoiler_text = when {
-                    sv.isEmpty() -> "" // CWなし
-                    sv.isBlank() -> parser.context.getString(R.string.blank_cw)
-                    else -> sv
-                }
-
-                // ハイライト検出のためにDecodeOptionsを作り直す？
-                options = DecodeOptions(
-                    parser.context,
-                    emojiMapCustom = custom_emojis,
-                    emojiMapProfile = profile_emojis,
-                    highlightTrie = parser.highlightTrie,
-                    mentions = mentions,
-                    authorDomain = account
-                )
-
-                this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
-
-                if (this.highlightSound == null) this.highlightSound = options.highlightSound
-                if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
-                if (this.highlightAny == null) this.highlightAny = options.highlightAny
-
-                this.enquete = try {
-                    src.string("enquete")?.notEmpty()?.let {
-                        TootPolls(
-                            parser,
-                            TootPollsType.FriendsNico,
-                            this,
-                            media_attachments,
-                            it.decodeJsonObject(),
-                        )
-                    } ?: src.jsonObject("poll")?.let {
-                        TootPolls(
-                            parser,
-                            TootPollsType.Mastodon,
-                            this,
-                            media_attachments,
-                            it,
-                        )
-                    }
-                } catch (ex: Throwable) {
-                    log.e(ex, "TootStatus ctor failed. enquete")
-                    null
-                }
-            }
-        }
+        decoded_mentions = HTMLDecoder.decodeMentions(parser, this) ?: EMPTY_SPANNABLE
 
         this.reblog?.reblogParent = this
-    }
-
-    private fun mergeMentions(
-        mentions1: List<TootMention>?,
-        mentions2: List<TootMention>?,
-    ): ArrayList<TootMention>? {
-        val size = (mentions1?.size ?: 0) + (mentions2?.size ?: 0)
-        if (size == 0) return null
-        val dst = ArrayList<TootMention>(size)
-        if (mentions1 != null) dst.addAll(mentions1)
-        if (mentions2 != null) dst.addAll(mentions2)
-        return dst
     }
 
     ///////////////////////////////////////////////////
@@ -840,17 +245,14 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     fun checkMuted(): Boolean {
 
         // app mute
-        val muted_app = muted_app
-        if (muted_app != null) {
-            val name = application?.name
-            if (name != null && muted_app.contains(name)) return true
+        if (application?.name?.let { muted_app?.contains(it) } == true) {
+            return true
         }
 
         // word mute
-        val muted_word = muted_word
-        if (muted_word != null) {
-            if (muted_word.matchShort(decoded_content)) return true
-            if (muted_word.matchShort(decoded_spoiler_text)) return true
+        muted_word?.run {
+            if (matchShort(decoded_content)) return true
+            if (matchShort(decoded_spoiler_text)) return true
         }
 
         // reblog
@@ -1134,6 +536,699 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         @Volatile
         internal var muted_word: WordTrieTree? = null
+
+        @Volatile
+        internal var favMuteSet: Set<Acct>? = null
+
+        private val timeMuteData = AtomicLong(0L)
+        private const val MUTE_DATA_EXPIRE = 120_000L
+
+        private fun mergeMentions(
+            mentions1: List<TootMention>?,
+            mentions2: List<TootMention>?,
+        ): ArrayList<TootMention>? {
+            val size = (mentions1?.size ?: 0) + (mentions2?.size ?: 0)
+            if (size == 0) return null
+            val dst = ArrayList<TootMention>(size)
+            if (mentions1 != null) dst.addAll(mentions1)
+            if (mentions2 != null) dst.addAll(mentions2)
+            return dst
+        }
+
+        private fun statusMisskey(parser: TootParser, src: JsonObject): TootStatus {
+            src["_fromStream"] = parser.fromStream
+            val apiHost = parser.apiHost
+            val misskeyId = src.string("id")
+            val id = EntityId.mayDefault(misskeyId)
+            var uri = "https://$apiHost/notes/$misskeyId"
+            var url = "https://$apiHost/notes/$misskeyId"
+            // リモート投稿には uriが含まれる
+            src.string("uri")?.let {
+                uri = it
+                url = it
+            }
+            val who = parser.account(src.jsonObject("user"))
+                ?: error("missing account")
+            val accountRef = TootAccountRef.tootAccountRef(parser, who)
+            val account = accountRef.get()
+            val created_at = src.string("createdAt")
+            // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
+            val custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
+                CustomEmoji.decodeMisskey(parser.apDomain, parser.apiHost, it)
+            }
+
+            // Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
+            var sensitive = src.optBoolean("sensitive")
+            val media_attachments = parseListOrNull(
+                src.jsonArray("files") ?: src.jsonArray("media") // v11,v10
+            ) {
+                @Suppress("USELESS_CAST")
+                tootAttachment(parser, it) as TootAttachmentLike
+            }
+            media_attachments?.forEach {
+                if ((it as? TootAttachment)?.isSensitive == true) {
+                    sensitive = true
+                }
+            }
+            val spoilerRaw = src.string("cw")?.cleanCW()
+            val profile_emojis = null
+            val options1 = DecodeOptions(
+                parser.context,
+                parser.linkHelper,
+                short = true,
+                decodeEmoji = true,
+                emojiMapCustom = custom_emojis,
+                emojiMapProfile = profile_emojis,
+                attachmentList = media_attachments,
+                highlightTrie = parser.highlightTrie,
+                mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
+                authorDomain = accountRef.get()
+            )
+            // ハイライト検出のためにDecodeOptionsを作り直す？
+            val options2 = DecodeOptions(
+                parser.context,
+                parser.linkHelper,
+                short = true,
+                decodeEmoji = true,
+                emojiMapCustom = custom_emojis,
+                emojiMapProfile = profile_emojis,
+                attachmentList = media_attachments,
+                highlightTrie = parser.highlightTrie,
+                mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
+                authorDomain = accountRef.get()
+            )
+
+            val content = src.string("text")
+
+            val spoiler_text = when {
+                spoilerRaw == null -> "" // CWなし
+                spoilerRaw.replace('\u0323', ' ').isBlank() ->
+                    parser.context.getString(R.string.blank_cw)
+                else -> spoilerRaw
+            }
+
+            // Markdownのデコード結果からmentionsを読む
+            val decoded_content = options1.decodeHTML(content)
+            val mentions1 = (decoded_content as? SpannableStringBuilderEx)?.mentions
+            var highlightSound = options1.highlightSound
+            var highlightSpeech = options1.highlightSpeech
+            var highlightAny = options1.highlightAny
+
+            val decoded_spoiler_text = options2.decodeHTML(spoiler_text)
+            val mentions2 = (decoded_spoiler_text as? SpannableStringBuilderEx)?.mentions
+            if (highlightSound == null) highlightSound = options2.highlightSound
+            if (highlightSpeech == null) highlightSpeech = options2.highlightSpeech
+            if (highlightAny == null) highlightAny = options2.highlightAny
+
+            val reply = parser.status(src.jsonObject("reply"))
+            val reblog = parser.status(src.jsonObject("renote"))
+
+            val isQuoteToot = when (reblog) {
+                // 別の投稿を参照していない
+                null -> false
+
+                // 別の投稿を参照して、かつ この投稿自体が何かコンテンツを持つなら引用トゥートである
+                else -> content?.isNotEmpty() == true ||
+                        spoiler_text.isNotEmpty() ||
+                        media_attachments?.isNotEmpty() == true ||
+                        src.jsonObject("poll") != null
+            }
+
+            val card: TootCard? = when {
+                // 引用Renoteにプレビューカードをでっちあげる
+                reblog != null && isQuoteToot -> {
+                    TootCard.tootCard(parser, reblog)
+                }
+                // 返信にプレビューカードをでっちあげる
+                reply != null -> {
+                    TootCard.tootCard(parser, reply)
+                }
+                else -> null
+            }
+
+            // めいめいフォークでは myRenoteIdというものがあるらしい
+            // https://github.com/mei23/misskey/blob/mei-m544/src/models/note.ts#L384-L394
+            // 直近の一つのrenoteのIdを得られるらしい。
+            var reblogged = false
+            val myRenoteId = EntityId.mayNull(src.string("myRenoteId"))
+            if (myRenoteId != null) reblogged = true
+            // しかしTLにRenoteが露出してるならそのIDを使う方が賢明であろう
+            // 外側ステータスが自分なら、内側ステータスのmyRenoteIdを設定する
+            if (reblog != null && parser.linkHelper.cast<SavedAccount>()
+                    ?.isMe(account) == true
+            ) {
+                reblog.myRenoteId = id
+                reblog.reblogged = true
+            }
+            val deletedAt = src.string("deletedAt")
+            val localOnly = src.optBoolean("localOnly")
+
+            // お気に入りカラムなどではパース直後に変更することがある
+            return TootStatus(
+                // "mentionedRemoteUsers" -> "[{"uri":"https:\/\/mastodon.juggler.jp\/users\/tateisu","username":"tateisu","host":"mastodon.juggler.jp"}]"
+                // this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
+                accountRef = accountRef,
+                // auto_cw
+                // bookmarked
+                card = card,
+                // conversationSummary
+                // conversation_main
+                content = content,
+                created_at = created_at,
+                custom_emojis = custom_emojis,
+                // decoded_mentions
+                decoded_content = decoded_content,
+                decoded_spoiler_text = decoded_spoiler_text,
+                deletedAt = deletedAt,
+                favourited = src.optBoolean("isFavorited"),
+                favourites_count = 0L,
+                // filteredV4
+                highlightAny = highlightAny,
+                highlightSound = highlightSound,
+                highlightSpeech = highlightSpeech,
+                id = id,
+                in_reply_to_account_id = reply?.account?.id,
+                in_reply_to_id = EntityId.mayNull(src.string("replyId")),
+                isFeatured = src.string("_featuredId_")?.isNotEmpty() == true,
+                isPromoted = src.string("_prId_")?.isNotEmpty() == true,
+                isQuoteToot = isQuoteToot,
+                json = src,
+                language = null,
+                localOnly = localOnly,
+                media_attachments = media_attachments,
+                mentions = mergeMentions(mentions1, mentions2),
+                misskeyVisibleIds = parseStringArray(src.jsonArray("visibleUserIds")),
+                muted = false,
+                myRenoteId = myRenoteId,
+                parser = parser,
+                pinned = parser.pinned,
+                // quote_id 下記
+                profile_emojis = profile_emojis,
+                quote_muted = src.boolean("quote_muted") ?: false,
+                // reactionSet 下記
+                readerApDomain = parser.apDomain,
+                reblog = reblog,
+                // reblogParent
+                reblogged = reblogged,
+                reblogs_count = src.long("renoteCount") ?: 0L,
+                replies_count = src.long("repliesCount") ?: 0L,
+                reply = reply,
+                sensitive = sensitive,
+                serviceType = parser.serviceType,
+                spoiler_text = spoiler_text,
+                tags = parseMisskeyTags(src.jsonArray("tags")),
+                time_created_at = parseTime(created_at),
+                time_deleted_at = parseTime(deletedAt),
+                // time_edited_at
+                uri = uri,
+                url = url,
+                viaMobile = src.optBoolean("viaMobile"),
+
+                application = parseItem(src.jsonObject("app")) {
+                    TootApplication(parser, it)
+                },
+                reactionSet = TootReactionSet.parseMisskey(
+                    src.jsonObject("reactions") ?: src.jsonObject("reactionCounts"),
+                    src.string("myReaction")
+                ),
+                quote_id = when {
+                    isQuoteToot -> reblog?.id
+                    else -> null
+                },
+                visibility = TootVisibility.parseMisskey(
+                    src.string("visibility"),
+                    localOnly
+                ) ?: TootVisibility.Unknown,
+            ).apply {
+                // contentを読んだ後にアンケートのデコード
+                enquete = TootPolls.parse(
+                    parser,
+                    TootPollsType.Misskey,
+                    this,
+                    media_attachments,
+                    src.jsonObject("poll"),
+                )
+            }
+        }
+
+        private fun statusNoteStock(parser: TootParser, src: JsonObject): TootStatus {
+
+            src["_fromStream"] = parser.fromStream
+
+            val apTag = APTag(parser, src.jsonArray("tag"))
+
+            val who = parser.account(src.jsonObject("account"))
+                ?: error("missing account")
+            val accountRef = TootAccountRef.tootAccountRef(parser, who)
+            val account = accountRef.get()
+
+            val uri = src.string("id") ?: error("missing uri")
+            val url = src.string("url") ?: uri
+
+            val quote = when {
+                !parser.decodeQuote -> null
+                else -> try {
+                    parser.decodeQuote = false
+                    parser.status(src.jsonObject("quote"))
+                } finally {
+                    parser.decodeQuote = true
+                }
+            }
+            val quote_id = quote?.id ?: EntityId.mayNull(src.string("quote_id"))
+
+            val apAttachment = APAttachment(src.jsonArray("attachment"))
+            val media_attachments = apAttachment.mediaAttachments.notEmpty()
+
+            val custom_emojis = apTag.emojiList.notEmpty()
+            val profile_emojis = apTag.profileEmojiList.notEmpty()
+            val created_at = src.string("published")
+            val mentions = apTag.mentions
+
+            val options1 = DecodeOptions(
+                parser.context,
+                parser.linkHelper,
+                short = true,
+                decodeEmoji = true,
+                emojiMapCustom = custom_emojis,
+                emojiMapProfile = profile_emojis,
+                attachmentList = media_attachments,
+                highlightTrie = parser.highlightTrie,
+                mentions = mentions,
+                authorDomain = account,
+                unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+            )
+
+            // ハイライト検出のためにDecodeOptionsを作り直す？
+            val options2 = DecodeOptions(
+                parser.context,
+                emojiMapCustom = custom_emojis,
+                emojiMapProfile = profile_emojis,
+                highlightTrie = parser.highlightTrie,
+                mentions = mentions,
+                authorDomain = account,
+                unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+            )
+
+            val content = src.string("content")
+            val decoded_content = options1.decodeHTML(content)
+            var highlightSound = options1.highlightSound
+            var highlightSpeech = options1.highlightSpeech
+            var highlightAny = options1.highlightAny
+
+            val summaryRaw = (src.string("summary") ?: "").cleanCW()
+            val spoiler_text = when {
+                summaryRaw.isEmpty() -> "" // CWなし
+                summaryRaw.isBlank() -> parser.context.getString(R.string.blank_cw)
+                else -> summaryRaw
+            }
+            val decoded_spoiler_text = options2.decodeEmoji(spoiler_text)
+            if (highlightSound == null) highlightSound = options2.highlightSound
+            if (highlightSpeech == null) highlightSpeech = options2.highlightSpeech
+            if (highlightAny == null) highlightAny = options2.highlightAny
+
+
+            return TootStatus(
+                accountRef = accountRef,
+                application = null,
+                // bookmarked
+                card = quote?.let { TootCard.tootCard(parser, it) },
+                // conversationSummary
+                // conversation_main
+                content = content,
+                created_at = created_at,
+                custom_emojis = custom_emojis,
+                decoded_content = decoded_content,
+                // decoded_mentions 下記
+                decoded_spoiler_text = decoded_spoiler_text,
+                deletedAt = null,
+                // enquete 下記
+                // favourited
+                favourites_count = null,
+                // filteredV4
+                highlightAny = highlightAny,
+                highlightSound = highlightSound,
+                highlightSpeech = highlightSpeech,
+                id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT,
+                in_reply_to_account_id = null,
+                in_reply_to_id = null,
+                // isFeatured
+                // isPromoted
+                //
+                isQuoteToot = quote_id != null,
+                // localOnly
+                json = src,
+                language = null,
+                media_attachments = media_attachments,
+                mentions = mentions,
+                misskeyVisibleIds = null,
+                muted = false,
+                // myRenoteId
+                parser = parser,
+                pinned = parser.pinned || src.optBoolean("pinned"),
+                profile_emojis = profile_emojis,
+                quote_id = quote_id,
+                quote_muted = src.boolean("quote_muted") ?: false,
+                // reactionSet
+                readerApDomain = null,
+                reblog = null,
+                // reblogParent
+                // reblogged
+                reblogs_count = null,
+                replies_count = null,
+                reply = null,
+                sensitive = src.optBoolean("sensitive"),
+                serviceType = parser.serviceType,
+                spoiler_text = spoiler_text,
+                tags = apTag.hashtags,
+                time_created_at = parseTime(created_at),
+                time_deleted_at = 0L,
+                uri = uri,
+                url = url,
+                // viaMobile
+
+                visibility = when (src.jsonArray("to")
+                    ?.any { it == "https://www.w3.org/ns/activitystreams#Public" }) {
+                    true -> TootVisibility.Public
+                    else -> TootVisibility.UnlistedHome
+                },
+            ).apply {
+                decoded_mentions =
+                    HTMLDecoder.decodeMentions(parser, this)
+                        ?: EMPTY_SPANNABLE
+                enquete = (src.jsonArray("oneOf") ?: src.jsonArray("anyOf"))?.let {
+                    try {
+                        TootPolls.tootPolls(
+                            TootPollsType.Notestock,
+                            parser,
+                            this,
+                            media_attachments,
+                            src,
+                            it
+                        )
+                    } catch (ex: Throwable) {
+                        log.e(ex, "TootStatus ctor failed. enquete (NoteStock)")
+                        null
+                    }
+                }
+            }
+        }
+
+        private fun statusMastodon(parser: TootParser, src: JsonObject): TootStatus {
+
+            src["_fromStream"] = parser.fromStream
+
+            val url = src.string("url") // ブースト等では頻繁にnullになる
+            val created_at = src.string("created_at")
+
+            // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
+            val custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
+                CustomEmoji.decode(parser.apDomain, parser.apiHost, it)
+            }
+
+            val profile_emojis = when (val o = src["profile_emojis"]) {
+                is JsonArray -> parseMapOrNull(o) { NicoProfileEmoji(it) }
+                is JsonObject -> parseProfileEmoji2(o) { j, k -> NicoProfileEmoji(j, k) }
+                else -> null
+            }
+
+            val mentions = parseListOrNull(src.jsonArray("mentions")) { TootMention(it) }
+
+            val who = parser.account(src.jsonObject("account"))
+                ?: error("missing account")
+            val accountRef = TootAccountRef.tootAccountRef(parser, who)
+            val account = accountRef.get()
+
+            val readerApDomain: Host?
+            val id: EntityId
+            val uri: String
+            var reblogged = false
+            var favourited = false
+            var bookmarked = false
+            val time_created_at: Long
+            var media_attachments: ArrayList<TootAttachmentLike>? = null
+            val visibility: TootVisibility
+            val sensitive: Boolean
+            var filteredV4: List<TootFilterResult>? = null
+            when (parser.serviceType) {
+                ServiceType.MASTODON -> {
+                    readerApDomain = parser.apDomain
+                    id = EntityId.mayDefault(src.string("id"))
+                    uri = src.string("uri") ?: error("missing uri")
+                    reblogged = src.optBoolean("reblogged")
+                    favourited = src.optBoolean("favourited")
+                    bookmarked = src.optBoolean("bookmarked")
+
+                    time_created_at = parseTime(created_at)
+                    media_attachments =
+                        parseListOrNull(src.jsonArray("media_attachments")) {
+                            tootAttachment(parser,it)
+                        }
+                    val visibilityString = when {
+                        src.boolean("limited") == true -> "limited"
+                        else -> src.string("visibility")
+                    }
+                    visibility = TootVisibility.parseMastodon(visibilityString)
+                        ?: TootVisibility.Unknown
+                    sensitive = src.optBoolean("sensitive")
+
+                    filteredV4 = TootFilterResult.parseList(src.jsonArray("filtered"))
+                }
+
+                ServiceType.TOOTSEARCH -> {
+                    readerApDomain = null
+
+                    // 投稿元タンスでのIDを調べる。失敗するかもしれない
+                    // XXX: Pleromaだとダメそうな印象
+                    uri = src.string("uri") ?: error("missing uri")
+                    id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
+
+                    time_created_at = parseTime(created_at)
+                    media_attachments = parseList(src.jsonArray("media_attachments")) {
+                        tootAttachment(parser, it)
+                    }
+                    visibility = TootVisibility.Public
+                    sensitive = src.optBoolean("sensitive")
+                }
+
+                ServiceType.MSP -> {
+                    readerApDomain = parser.apDomain
+
+                    // MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
+                    id = EntityId.mayDefault(src.string("id"))
+
+                    // MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
+                    uri =
+                        "https://${account.apiHost}/users/${who.username}/statuses/$id"
+
+                    time_created_at = parseTimeMSP(created_at)
+                    media_attachments =
+                        TootAttachmentMSP.parseList(src.jsonArray("media_attachments"))
+                    visibility = TootVisibility.Public
+                    sensitive = src.optInt("sensitive", 0) != 0
+                }
+
+                ServiceType.MISSKEY, ServiceType.NOTESTOCK -> error("will not happen")
+            }
+
+            val quote = when {
+                !parser.decodeQuote -> null
+                else -> try {
+                    parser.decodeQuote = false
+                    parser.status(src.jsonObject("quote"))
+                } finally {
+                    parser.decodeQuote = true
+                }
+            }
+
+            val quote_id = quote?.id ?: EntityId.mayNull(src.string("quote_id"))
+            val isQuoteToot = quote_id != null
+            val quote_muted = src.boolean("quote_muted") ?: false
+
+            // Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
+            // Hostdon QT と通常のreblogが同時に出ることはないので、quoteが既出ならreblogのjsonデータは見ない
+            val reblog = quote ?: parser.status(src.jsonObject("reblog"))
+
+            val removeQt = false
+
+            // content
+            val content = src.string("content")?.let { sv ->
+                when {
+                    removeQt -> {
+                        log.d("removeQt? $sv")
+                        val reQuoteTootRemover =
+                            """(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
+                        sv.replace(reQuoteTootRemover) {
+                            it.groupValues.elementAtOrNull(1) ?: ""
+                        }.also { after ->
+                            log.d("removeQt? after = $after")
+                        }
+                    }
+                    else -> sv
+                }
+            }
+
+            val options1 = DecodeOptions(
+                parser.context,
+                parser.linkHelper,
+                short = true,
+                decodeEmoji = true,
+                emojiMapCustom = custom_emojis,
+                emojiMapProfile = profile_emojis,
+                attachmentList = media_attachments,
+                highlightTrie = parser.highlightTrie,
+                mentions = mentions,
+                authorDomain = account
+            )
+
+            val decoded_content = options1.decodeHTML(content)
+            var highlightSound = options1.highlightSound
+            var highlightSpeech = options1.highlightSpeech
+            var highlightAny = options1.highlightAny
+
+            val sv = (src.string("spoiler_text") ?: "").cleanCW()
+            val spoiler_text = when {
+                sv.isEmpty() -> "" // CWなし
+                sv.isBlank() -> parser.context.getString(R.string.blank_cw)
+                else -> sv
+            }
+
+            // ハイライト検出のためにDecodeOptionsを作り直す？
+            val options2 = DecodeOptions(
+                parser.context,
+                emojiMapCustom = custom_emojis,
+                emojiMapProfile = profile_emojis,
+                highlightTrie = parser.highlightTrie,
+                mentions = mentions,
+                authorDomain = account
+            )
+            val decoded_spoiler_text = options2.decodeEmoji(spoiler_text)
+            if (highlightSound == null) highlightSound = options2.highlightSound
+            if (highlightSpeech == null) highlightSpeech = options2.highlightSpeech
+            if (highlightAny == null) highlightAny = options2.highlightAny
+
+            return TootStatus(
+                accountRef = accountRef,
+                bookmarked = bookmarked,
+                // card 下記
+                // conversationSummary
+                // conversation_main
+                content = content,
+                created_at = created_at,
+                custom_emojis = custom_emojis,
+                decoded_content = decoded_content,
+                // decoded_mentions
+                decoded_spoiler_text = decoded_spoiler_text,
+                deletedAt = null,
+                // enquete 下記
+                favourited = favourited,
+                favourites_count = src.long("favourites_count"),
+                filteredV4 = filteredV4,
+                highlightAny = highlightAny,
+                highlightSound = highlightSound,
+                highlightSpeech = highlightSpeech,
+                id = id,
+                in_reply_to_account_id = EntityId.mayNull(src.string("in_reply_to_account_id")),
+                in_reply_to_id = EntityId.mayNull(src.string("in_reply_to_id")),
+                // isFeatured
+                // isPromoted
+                isQuoteToot = isQuoteToot,
+                json = src,
+                language = src.string("language")?.notEmpty(),
+                // localOnly
+                media_attachments = media_attachments,
+                mentions = mentions,
+                misskeyVisibleIds = null,
+                muted = src.optBoolean("muted"),
+                // myRenoteId
+                parser = parser,
+                pinned = parser.pinned || src.optBoolean("pinned"),
+                profile_emojis = profile_emojis,
+                quote_id = quote_id,
+                quote_muted = quote_muted,
+                // reactionSet 下記
+                readerApDomain = readerApDomain,
+                reblog = reblog,
+                reblogged = reblogged,
+                reblogs_count = src.long("reblogs_count"),
+                replies_count = src.long("replies_count"),
+                reply = null,
+                sensitive = sensitive,
+                serviceType = parser.serviceType,
+                spoiler_text = spoiler_text,
+                tags = TootTag.parseListOrNull(parser, src.jsonArray("tags")),
+                time_created_at = time_created_at,
+                time_deleted_at = 0L,
+                time_edited_at = parseTime(src.string("edited_at")),
+                uri = uri,
+                url = url,
+                // viaMobile
+                visibility = visibility,
+
+                reactionSet = TootReactionSet.parseFedibird(
+                    src.jsonArray("emoji_reactions")
+                        ?: src.jsonObject("pleroma")?.jsonArray("emoji_reactions")
+                ),
+                application = parseItem(src.jsonObject("application")) {
+                    TootApplication(parser, it)
+                },
+            ).apply {
+                enquete = try {
+                    src.string("enquete")?.notEmpty()?.let {
+                        TootPolls.tootPolls(
+                            TootPollsType.FriendsNico,
+                            parser,
+                            this,
+                            media_attachments,
+                            it.decodeJsonObject(),
+                        )
+                    } ?: src.jsonObject("poll")?.let {
+                        TootPolls.tootPolls(
+                            TootPollsType.Mastodon,
+                            parser,
+                            this,
+                            media_attachments,
+                            it,
+                        )
+                    }
+                } catch (ex: Throwable) {
+                    log.e(ex, "TootStatus ctor failed. enquete")
+                    null
+                }
+
+                // 2.6.0からステータスにもカード情報が含まれる
+                card = parseItem(src.jsonObject("card")) { TootCard.tootCard(it) }
+                if (card == null && quote != null) {
+                    // 引用Renoteにプレビューカードをでっちあげる
+                    card = TootCard.tootCard(parser, quote)
+                    // content中のQTの表現が四角括弧の有無とか色々あるみたいだし
+                    // 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
+                    // removeQt = ! PrefB.bpDontShowPreviewCard(Pref.pref(parser.context))
+                }
+
+                decoded_mentions =
+                    HTMLDecoder.decodeMentions(parser, this)
+                        ?: EMPTY_SPANNABLE
+            }
+        }
+
+        fun tootStatus(parser: TootParser, src: JsonObject): TootStatus =
+            when (parser.serviceType) {
+                ServiceType.MISSKEY -> statusMisskey(parser, src)
+                ServiceType.NOTESTOCK -> statusNoteStock(parser, src)
+                else -> statusMastodon(parser, src)
+            }
+
+        fun updateMuteData(force: Boolean = false) {
+            val now = SystemClock.elapsedRealtime()
+            if (force || muted_app == null || muted_word == null ||
+                now >= timeMuteData.get() + MUTE_DATA_EXPIRE
+            ) {
+                timeMuteData.set(now)
+                muted_app = daoMutedApp.nameSet()
+                muted_word = daoMutedWord.nameSet()
+                favMuteSet = daoFavMute.acctSet()
+            }
+        }
 
         const val LANGUAGE_CODE_UNKNOWN = "unknown"
         const val LANGUAGE_CODE_DEFAULT = "default"

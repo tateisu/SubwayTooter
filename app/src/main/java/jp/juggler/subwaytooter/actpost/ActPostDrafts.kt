@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoPostDraft
@@ -160,7 +161,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                     if (tmpAttachmentList != null) {
                         // 本文からURLを除去する
                         tmpAttachmentList.forEach {
-                            val textUrl = TootAttachment.decodeJson(it).text_url
+                            val textUrl = tootAttachmentJson(it).text_url
                             if (textUrl?.isNotEmpty() == true) {
                                 content = content.replace(textUrl, "")
                             }
@@ -192,7 +193,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
             apiClient.account = account
 
             // 返信ステータスが存在するかどうか
-            EntityId.from(draft, DRAFT_REPLY_ID)?.let { inReplyToId ->
+            EntityId.entityId(draft, DRAFT_REPLY_ID)?.let { inReplyToId ->
                 val result = apiClient.request("/api/v1/statuses/$inReplyToId")
                 if (isTaskCancelled()) return@launchProgress null
                 if (result?.jsonObject == null) {
@@ -210,7 +211,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                     val it = tmpAttachmentList.iterator()
                     while (it.hasNext()) {
                         if (isTaskCancelled()) return@launchProgress null
-                        val ta = TootAttachment.decodeJson(it.next())
+                        val ta = tootAttachmentJson(it.next())
                         if (checkExist(ta.url)) continue
                         it.remove()
                         isSomeAttachmentRemoved = true
@@ -241,7 +242,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
             val contentWarningChecked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
             val nsfwChecked = draft.optBoolean(DRAFT_NSFW_CHECK)
             val tmpAttachmentList = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
-            val replyId = EntityId.from(draft, DRAFT_REPLY_ID)
+            val replyId = EntityId.entityId(draft, DRAFT_REPLY_ID)
 
             val draftVisibility =
                 TootVisibility.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
@@ -293,7 +294,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
                 attachmentList.clear()
                 tmpAttachmentList.forEach {
                     if (it !is JsonObject) return@forEach
-                    val pa = PostAttachment(TootAttachment.decodeJson(it))
+                    val pa = PostAttachment(tootAttachmentJson(it))
                     attachmentList.add(pa)
                 }
             }
@@ -328,7 +329,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
     )
 }
 
-fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String) {
+suspend fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String) {
     try {
         val baseStatus =
             TootParser(this, account).status(jsonText.decodeJsonObject())
@@ -423,7 +424,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
     }
 }
 
-fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
+suspend fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
     try {
         val baseStatus =
             TootParser(this, account).status(jsonText.decodeJsonObject())

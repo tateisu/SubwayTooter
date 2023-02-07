@@ -10,6 +10,8 @@ import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 
+private val log = LogCategory("TootPolls")
+
 enum class TootPollsType {
     Mastodon, // Mastodon 2.8
     Misskey, // Misskey
@@ -26,57 +28,64 @@ class TootPollsChoice(
 )
 
 class TootPolls(
-    parser: TootParser,
     val pollType: TootPollsType,
-    status: TootStatus,
-    list_attachment: ArrayList<TootAttachmentLike>?,
-    src: JsonObject,
-    srcArray: JsonArray? = null,
-) {
-
     // one of enquete,enquete_result
-    val type: String?
+    val type: String?,
 
-    val question: String? // HTML text
+    // HTML text
+    val question: String?,
 
-    val decoded_question: Spannable // 表示用にデコードしてしまうのでNonNullになる
+    // 表示用にデコードしてしまうのでNonNullになる
+    val decoded_question: Spannable,
 
     // array of text with emoji
-    val items: ArrayList<TootPollsChoice>?
+    val items: ArrayList<TootPollsChoice>?,
 
     // 結果の数値 // null or array of number
-    var ratios: MutableList<Float>? = null
+    var ratios: MutableList<Float>? = null,
 
     // 結果の数値のテキスト // null or array of string
-    private var ratios_text: MutableList<String>? = null
+    private var ratios_text: MutableList<String>? = null,
 
     // 以下はJSONには存在しないが内部で使う
-    val time_start: Long
-    val status_id: EntityId
+    val time_start: Long,
+
+    val status_id: EntityId,
 
     // Mastodon poll API
-    var expired_at = Long.MAX_VALUE
-    var expired = false
-    var multiple = false
-    var votes_count: Int? = null
-    var maxVotesCount: Int? = null
-    var pollId: EntityId? = null
+    var expired_at: Long = Long.MAX_VALUE,
 
-    var ownVoted: Boolean
+    var expired: Boolean = false,
 
-    init {
+    var multiple: Boolean = false,
 
-        this.time_start = status.time_created_at
-        this.status_id = status.id
+    var votes_count: Int? = null,
 
-        when (pollType) {
+    var maxVotesCount: Int? = null,
+    var pollId: EntityId? = null,
+
+    var ownVoted: Boolean,
+) {
+    companion object {
+        const val ENQUETE_EXPIRE = 30000L
+        const val TYPE_ENQUETE = "enquete"
+
+        @Suppress("unused")
+        const val TYPE_ENQUETE_RESULT = "enquete_result"
+
+        @Suppress("HasPlatformType")
+        private val reWhitespace = """[\s\t\x0d\x0a]+""".asciiPattern()
+
+        fun tootPolls(
+            pollType: TootPollsType,
+            parser: TootParser,
+            status: TootStatus,
+            list_attachment: ArrayList<TootAttachmentLike>?,
+            src: JsonObject,
+            srcArray: JsonArray? = null,
+        ): TootPolls = when (pollType) {
             TootPollsType.Misskey -> {
-
-                this.items = parseChoiceListMisskey(
-
-                    src.jsonArray("choices")
-                )
-
+                val items = parseChoiceListMisskey(src.jsonArray("choices"))
                 val votesList = ArrayList<Int>()
                 var votesMax = 1
                 var ownVoted = false
@@ -86,68 +95,51 @@ class TootPolls(
                     votesList.add(votes)
                     if (votes > votesMax) votesMax = votes
                 }
-                this.ownVoted = ownVoted
 
+                var ratios: MutableList<Float>? = null
+                var ratios_text: MutableList<String>? = null
                 if (votesList.isNotEmpty()) {
-                    this.ratios =
+                    ratios =
                         votesList.map { (it.toFloat() / votesMax.toFloat()) }.toMutableList()
-                    this.ratios_text =
+                    ratios_text =
                         votesList.map { parser.context.getString(R.string.vote_count_text, it) }
                             .toMutableList()
-                } else {
-                    this.ratios = null
-                    this.ratios_text = null
                 }
-
-                this.type = TYPE_ENQUETE
-
-                this.question = status.content
-                this.decoded_question = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    attachmentList = list_attachment,
-                    linkTag = status,
-                    emojiMapCustom = status.custom_emojis,
-                    emojiMapProfile = status.profile_emojis,
-                    mentions = status.mentions,
-                    authorDomain = status.account
-                ).decodeHTML(this.question ?: "?")
+                val question = status.content
+                TootPolls(
+                    pollType = pollType,
+                    time_start = status.time_created_at,
+                    status_id = status.id,
+                    items = items,
+                    ownVoted = ownVoted,
+                    ratios = ratios,
+                    ratios_text = ratios_text,
+                    type = TYPE_ENQUETE,
+                    question = question,
+                    decoded_question = DecodeOptions(
+                        parser.context,
+                        parser.linkHelper,
+                        short = true,
+                        decodeEmoji = true,
+                        attachmentList = list_attachment,
+                        linkTag = status,
+                        emojiMapCustom = status.custom_emojis,
+                        emojiMapProfile = status.profile_emojis,
+                        mentions = status.mentions,
+                        authorDomain = status.account
+                    ).decodeHTML(question ?: "?"),
+                )
             }
 
             TootPollsType.Mastodon -> {
-                this.type = "enquete"
-
-                this.question = status.content
-                this.decoded_question = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    attachmentList = list_attachment,
-                    linkTag = status,
-                    emojiMapCustom = status.custom_emojis,
-                    emojiMapProfile = status.profile_emojis,
-                    mentions = status.mentions,
-                    authorDomain = status.account
-                ).decodeHTML(this.question ?: "?")
-
-                this.items = parseChoiceListMastodon(
+                val question = status.content
+                val items = parseChoiceListMastodon(
                     parser.context,
                     status,
                     src.jsonArray("options")?.objectList()
                 )
-
-                this.pollId = EntityId.mayNull(src.string("id"))
-                this.expired_at =
-                    TootStatus.parseTime(src.string("expires_at")).notZero() ?: Long.MAX_VALUE
-                this.expired = src.optBoolean("expired", false)
-                this.multiple = src.optBoolean("multiple", false)
-                this.votes_count = src.int("votes_count")
-
+                val multiple = src.optBoolean("multiple", false)
                 var ownVoted = src.optBoolean("voted", false)
-
                 src.jsonArray("own_votes")?.forEach {
                     if (it is Number) {
                         val i = it.toInt()
@@ -156,103 +148,105 @@ class TootPolls(
                     }
                 }
 
-                this.ownVoted = ownVoted
-
-                when {
-                    this.items == null -> maxVotesCount = null
-
-                    this.multiple -> {
-                        var max: Int? = null
-                        for (item in items) {
-                            val v = item.votes
-                            if (v != null && (max == null || v > max)) max = v
+                TootPolls(
+                    pollType = pollType,
+                    type = "enquete",
+                    question = question,
+                    items = items,
+                    multiple = multiple,
+                    ownVoted = ownVoted,
+                    maxVotesCount = when {
+                        items == null -> null
+                        multiple -> {
+                            var max: Int? = null
+                            for (item in items) {
+                                val v = item.votes
+                                if (v != null && (max == null || v > max)) max = v
+                            }
+                            max
                         }
-                        maxVotesCount = max
-                    }
-
-                    else -> {
-                        var sum: Int? = null
-                        for (item in items) {
-                            val v = item.votes
-                            if (v != null) sum = (sum ?: 0) + v
+                        else -> {
+                            var sum: Int? = null
+                            for (item in items) {
+                                val v = item.votes
+                                if (v != null) sum = (sum ?: 0) + v
+                            }
+                            sum
                         }
-                        maxVotesCount = sum
-                    }
-                }
+                    },
+                    time_start = status.time_created_at,
+                    status_id = status.id,
+                    decoded_question = DecodeOptions(
+                        parser.context,
+                        parser.linkHelper,
+                        short = true,
+                        decodeEmoji = true,
+                        attachmentList = list_attachment,
+                        linkTag = status,
+                        emojiMapCustom = status.custom_emojis,
+                        emojiMapProfile = status.profile_emojis,
+                        mentions = status.mentions,
+                        authorDomain = status.account
+                    ).decodeHTML(question ?: "?"),
+                    pollId = EntityId.mayNull(src.string("id")),
+                    expired_at =
+                    TootStatus.parseTime(src.string("expires_at")).notZero() ?: Long.MAX_VALUE,
+                    expired = src.optBoolean("expired", false),
+                    votes_count = src.int("votes_count"),
+                )
             }
 
             TootPollsType.FriendsNico -> {
-                this.type = src.string("type")
-
-                this.question = src.string("question")
-                this.decoded_question = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    attachmentList = list_attachment,
-                    linkTag = status,
-                    emojiMapCustom = status.custom_emojis,
-                    emojiMapProfile = status.profile_emojis,
-                    mentions = status.mentions,
-                    authorDomain = status.account
-                ).decodeHTML(this.question ?: "?")
-
-                this.items = parseChoiceListFriendsNico(
-                    parser.context,
-                    status,
-                    src.stringArrayList("items")
+                val question = src.string("question")
+                TootPolls(
+                    pollType = pollType,
+                    question = question,
+                    type = src.string("type"),
+                    time_start = status.time_created_at,
+                    status_id = status.id,
+                    decoded_question = DecodeOptions(
+                        parser.context,
+                        parser.linkHelper,
+                        short = true,
+                        decodeEmoji = true,
+                        attachmentList = list_attachment,
+                        linkTag = status,
+                        emojiMapCustom = status.custom_emojis,
+                        emojiMapProfile = status.profile_emojis,
+                        mentions = status.mentions,
+                        authorDomain = status.account
+                    ).decodeHTML(question ?: "?"),
+                    items = parseChoiceListFriendsNico(
+                        parser.context,
+                        status,
+                        src.stringArrayList("items")
+                    ),
+                    ratios = src.floatArrayList("ratios"),
+                    ratios_text = src.stringArrayList("ratios_text"),
+                    ownVoted = false,
                 )
-
-                this.ratios = src.floatArrayList("ratios")
-                this.ratios_text = src.stringArrayList("ratios_text")
-
-                this.ownVoted = false
             }
 
             TootPollsType.Notestock -> {
-                this.type = "enquete"
-
-                this.question = status.content
-                this.decoded_question = DecodeOptions(
-                    parser.context,
-                    parser.linkHelper,
-                    short = true,
-                    decodeEmoji = true,
-                    attachmentList = list_attachment,
-                    linkTag = status,
-                    emojiMapCustom = status.custom_emojis,
-                    emojiMapProfile = status.profile_emojis,
-                    mentions = status.mentions,
-                    authorDomain = status.account,
-                    unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
-                ).decodeHTML(this.question ?: "?")
-
-                this.items = parseChoiceListNotestock(
+                val question = status.content
+                val expired_at =
+                    TootStatus.parseTime(src.string("endTime")).notZero() ?: Long.MAX_VALUE
+                val items = parseChoiceListNotestock(
                     parser.context,
                     status,
                     srcArray?.objectList()
                 )
+                val multiple = src.containsKey("anyOf")
+                val maxVotesCount = when {
+                    items == null -> null
 
-                this.pollId = EntityId.DEFAULT
-                this.expired_at =
-                    TootStatus.parseTime(src.string("endTime")).notZero() ?: Long.MAX_VALUE
-                this.expired = expired_at >= System.currentTimeMillis()
-                this.multiple = src.containsKey("anyOf")
-                this.votes_count = items?.sumOf { it.votes ?: 0 }?.notZero()
-
-                this.ownVoted = false
-
-                when {
-                    this.items == null -> maxVotesCount = null
-
-                    this.multiple -> {
+                    multiple -> {
                         var max: Int? = null
                         for (item in items) {
                             val v = item.votes
                             if (v != null && (max == null || v > max)) max = v
                         }
-                        maxVotesCount = max
+                        max
                     }
 
                     else -> {
@@ -261,26 +255,40 @@ class TootPolls(
                             val v = item.votes
                             if (v != null) sum = (sum ?: 0) + v
                         }
-                        maxVotesCount = sum
+                        sum
                     }
                 }
+
+                TootPolls(
+                    pollType = pollType,
+                    type = "enquete",
+                    status_id = status.id,
+                    time_start = status.time_created_at,
+                    question = question,
+                    items = items,
+                    expired_at = expired_at,
+                    maxVotesCount = maxVotesCount,
+                    multiple = multiple,
+                    decoded_question = DecodeOptions(
+                        parser.context,
+                        parser.linkHelper,
+                        short = true,
+                        decodeEmoji = true,
+                        attachmentList = list_attachment,
+                        linkTag = status,
+                        emojiMapCustom = status.custom_emojis,
+                        emojiMapProfile = status.profile_emojis,
+                        mentions = status.mentions,
+                        authorDomain = status.account,
+                        unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+                    ).decodeHTML(question ?: "?"),
+                    pollId = EntityId.DEFAULT,
+                    expired = expired_at >= System.currentTimeMillis(),
+                    votes_count = items?.sumOf { it.votes ?: 0 }?.notZero(),
+                    ownVoted = false,
+                )
             }
         }
-    }
-
-    companion object {
-
-        internal val log = LogCategory("TootPolls")
-
-        const val ENQUETE_EXPIRE = 30000L
-
-        const val TYPE_ENQUETE = "enquete"
-
-        @Suppress("unused")
-        const val TYPE_ENQUETE_RESULT = "enquete_result"
-
-        @Suppress("HasPlatformType")
-        private val reWhitespace = """[\s\t\x0d\x0a]+""".asciiPattern()
 
         fun parse(
             parser: TootParser,
@@ -291,9 +299,9 @@ class TootPolls(
         ): TootPolls? {
             src ?: return null
             return try {
-                TootPolls(
-                    parser,
+                tootPolls(
                     pollType,
+                    parser,
                     status,
                     listAttachment,
                     src

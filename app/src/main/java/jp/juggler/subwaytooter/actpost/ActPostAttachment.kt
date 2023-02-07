@@ -9,6 +9,8 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.defaultColorIcon
@@ -41,7 +43,7 @@ fun ActPost.decodeAttachments(sv: String) {
     try {
         sv.decodeJsonArray().objectList().forEach {
             try {
-                attachmentList.add(PostAttachment(TootAttachment.decodeJson(it)))
+                attachmentList.add(PostAttachment(tootAttachmentJson(it)))
             } catch (ex: Throwable) {
                 log.e(ex, "can't parse TootAttachment.")
             }
@@ -282,8 +284,9 @@ fun ActPost.sendFocusPoint(pa: PostAttachment, attachment: TootAttachment, x: Fl
                         put("focus", "%.2f,%.2f".format(x, y))
                     }.toPutRequestBuilder()
                 )?.also { result ->
-                    resultAttachment =
-                        parseItem(::TootAttachment, ServiceType.MASTODON, result.jsonObject)
+                    resultAttachment = parseItem(result.jsonObject) {
+                        tootAttachment(ServiceType.MASTODON, it)
+                    }
                 }
             } catch (ex: Throwable) {
                 TootApiResult(ex.withCaption("set focus point failed."))

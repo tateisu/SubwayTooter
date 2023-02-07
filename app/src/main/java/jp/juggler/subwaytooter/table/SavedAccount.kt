@@ -830,13 +830,12 @@ class SavedAccount(
     }
 
     // URLが相対指定だった場合にスキーマとホスト名を補う
-    fun supplyBaseUrl(url: String?): String? {
-        return when {
-            url == null || url.isEmpty() -> return null
+    fun supplyBaseUrl(url: String?): String? =
+        when {
+            url.isNullOrEmpty() -> null
             url[0] == '/' -> "https://${apiHost.ascii}$url"
             else -> url
         }
-    }
 
     fun isNicoru(account: TootAccount?) =
         account?.apiHost == Host.FRIENDS_NICO

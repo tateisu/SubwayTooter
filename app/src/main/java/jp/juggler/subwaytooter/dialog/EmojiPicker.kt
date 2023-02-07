@@ -42,7 +42,7 @@ private class EmojiPicker(
     private val activity: AppCompatActivity,
     private val accessInfo: SavedAccount?,
     private val closeOnSelected: Boolean,
-    private val onPicked: (EmojiBase, bInstanceHasCustomEmoji: Boolean) -> Unit,
+    private val onPicked: suspend (EmojiBase, bInstanceHasCustomEmoji: Boolean) -> Unit,
 ) {
     companion object {
         private val log = LogCategory("EmojiPicker")
@@ -452,7 +452,9 @@ private class EmojiPicker(
         } else {
             // この場合はビューの更新は不要で、タップ状態の表示を行える
         }
-        onPicked(targetEmoji, bInstanceHasCustomEmoji)
+        activity.launchAndShowError {
+            onPicked(targetEmoji, bInstanceHasCustomEmoji)
+        }
     }
 
     private suspend fun createCustomEmojiCategories(): List<PickerItemCategory> {
@@ -787,7 +789,7 @@ fun launchEmojiPicker(
     activity: AppCompatActivity,
     accessInfo: SavedAccount?,
     closeOnSelected: Boolean,
-    onPicked: (EmojiBase, bInstanceHasCustomEmoji: Boolean) -> Unit,
+    onPicked: suspend (EmojiBase, bInstanceHasCustomEmoji: Boolean) -> Unit,
 ) = activity.launchAndShowError {
     EmojiPicker(
         activity = activity,

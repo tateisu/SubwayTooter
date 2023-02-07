@@ -1,9 +1,8 @@
-package jp.juggler.subwaytooter.auth
+package jp.juggler.subwaytooter.api.auth
 
 import android.content.Context
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.auth.Auth2Result
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll

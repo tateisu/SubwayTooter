@@ -23,10 +23,13 @@ import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.dip
+
+private val log = LogCategory("ItemViewHolderReaction")
 
 fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     val reactionSet = status.reactionSet
@@ -77,9 +80,6 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
         if (reaction.count <= 0) return@forEachIndexed
 
-        val ssb = reaction.toSpannableStringBuilder(options, status)
-            .also { it.append(" ${reaction.count}") }
-
         val b = AppCompatButton(act).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
@@ -109,10 +109,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
             setTextColor(colorTextContent)
             setPadding(paddingH, 0, paddingH, 0)
-
-            text = ssb
             setTextSize(TypedValue.COMPLEX_UNIT_PX, textHeight)
-
             allCaps = false
             tag = reaction
             setOnClickListener {
@@ -123,7 +120,6 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                     act.reactionAdd(column, status, taggedReaction?.name, taggedReaction?.staticUrl)
                 }
             }
-
             setOnLongClickListener {
                 val taggedReaction = it.tag as? TootReaction
                 act.reactionFromAnotherAccount(
@@ -135,8 +131,17 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             }
             // カスタム絵文字の場合、アニメーション等のコールバックを処理する必要がある
             val invalidator = NetworkEmojiInvalidator(act.handler, this)
-            invalidator.register(ssb)
             extraInvalidatorList.add(invalidator)
+            try {
+                val ssb =
+                    reaction.toSpannableStringBuilder(options, status)
+                        .also { it.append(" ${reaction.count}") }
+                text = ssb
+                invalidator.register(ssb)
+            } catch (ex: Throwable) {
+                log.e(ex, "can't decode reaction emoji.")
+                text = "${reaction.name} ${reaction.count}"
+            }
         }
         box.addView(b)
     }

@@ -299,8 +299,7 @@ class AppState(
         if (list != null) editColumnList(save = false) { it.addAll(list) }
 
         // ミュートデータのロード
-        TootStatus.muted_app = daoMutedApp.nameSet()
-        TootStatus.muted_word = daoMutedWord.nameSet()
+        TootStatus.updateMuteData(force = true)
 
         // 背景フォルダの掃除
         try {
@@ -595,8 +594,7 @@ class AppState(
     }
 
     fun onMuteUpdated() {
-        TootStatus.muted_app = daoMutedApp.nameSet()
-        TootStatus.muted_word = daoMutedWord.nameSet()
+        TootStatus.updateMuteData(force=true)
         columnList.forEach { it.onMuteUpdated() }
     }
 }

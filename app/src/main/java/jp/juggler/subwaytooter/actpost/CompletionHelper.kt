@@ -26,6 +26,7 @@ import jp.juggler.util.data.asciiRegex
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.showKeyboard
+import kotlinx.coroutines.yield
 import kotlin.math.min
 
 // 入力補完機能
@@ -406,12 +407,12 @@ class CompletionHelper(
         // et.setCustomSelectionActionModeCallback( action_mode_callback );
     }
 
-    private fun SpannableStringBuilder.appendEmoji(
+    private suspend fun SpannableStringBuilder.appendEmoji(
         emoji: EmojiBase,
         bInstanceHasCustomEmoji: Boolean,
     ) = appendEmoji(bInstanceHasCustomEmoji, emoji)
 
-    private fun SpannableStringBuilder.appendEmoji(
+    private suspend fun SpannableStringBuilder.appendEmoji(
         bInstanceHasCustomEmoji: Boolean,
         emoji: EmojiBase,
     ): SpannableStringBuilder {
@@ -468,10 +469,8 @@ class CompletionHelper(
             procTextChanged.run()
 
             // キーボードを再度表示する
-            App1.getAppState(
-                activity,
-                "PostHelper/EmojiPicker/cb"
-            ).handler.post { et.showKeyboard() }
+            yield()
+            et.showKeyboard()
         }
     }
 

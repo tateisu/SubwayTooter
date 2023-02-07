@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
+import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.cast
@@ -18,10 +19,9 @@ class APAttachment(jsonArray: JsonArray?) {
             ?.mapNotNull { it.cast<JsonObject>() }
             ?.forEach { it ->
                 try {
-                    when (it.string("type")) {
-                        "Document" -> {
-                            mediaAttachments.add(TootAttachment(ServiceType.NOTESTOCK, it))
-                        }
+                    if (it.string("type") == "Document") {
+                        tootAttachment(ServiceType.NOTESTOCK, it)
+                            .let { mediaAttachments.add(it) }
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "APAttachment ctor failed.")

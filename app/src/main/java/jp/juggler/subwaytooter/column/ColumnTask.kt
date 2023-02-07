@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TimelineItem
-import jp.juggler.subwaytooter.api.entity.TootAnnouncement
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement.Companion.tootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -108,7 +108,7 @@ abstract class ColumnTask(
 
                         else -> {
                             column.announcements =
-                                parseList(::TootAnnouncement, parser, result.jsonArray)
+                                parseList(result.jsonArray) { tootAnnouncement(parser, it) }
                                     .notEmpty()
                             column.announcementUpdated = SystemClock.elapsedRealtime()
                             client.publishApiProgress("announcements loaded")

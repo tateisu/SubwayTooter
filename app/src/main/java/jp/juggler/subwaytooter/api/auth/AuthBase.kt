@@ -40,7 +40,10 @@ abstract class AuthBase {
 
         fun findAuthForVerifyAccount(client: TootApiClient, misskeyVersionMajor: Int) =
             when {
-                misskeyVersionMajor >= 13 -> MisskeyAuth13(client)
+                // https://mastodon.juggler.jp/@tateisu/109819635248751031
+                // https://github.com/misskey-dev/misskey/issues/9825
+                // https://github.com/misskey-dev/misskey/commit/788ae2f6ca37d297e912bfba02821543e8566522
+                // misskeyVersionMajor >= 13 -> MisskeyAuth13(client)
                 misskeyVersionMajor > 0 -> MisskeyAuth10(client)
                 else -> MastodonAuth(client)
             }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.entity.parseListP2
+import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.launchMain
@@ -163,7 +163,7 @@ class CustomEmojiLister(
             log.w("getCachedEmoji: missing cache for $apiHostAscii")
             return null
         }
-        val emoji = cache.mapShortCode.get(shortcode)
+        val emoji = cache.mapShortCode[shortcode]
         if (emoji == null) {
             log.w("getCachedEmoji: missing emoji for $shortcode in $apiHostAscii")
             return null
@@ -225,12 +225,13 @@ class CustomEmojiLister(
                 }?.decodeJsonObject()
                     ?.jsonArray("emojis")
                     ?.let { emojis12 ->
-                        parseListP2(
-                            CustomEmoji.decodeMisskey,
-                            accessInfo.apDomain,
-                            accessInfo.apiHost,
-                            emojis12,
-                        )
+                        parseList(emojis12) {
+                            CustomEmoji.decodeMisskey(
+                                accessInfo.apDomain,
+                                accessInfo.apiHost,
+                                it
+                            )
+                        }
                     }
 
             // v13のemojisを読む
@@ -245,12 +246,13 @@ class CustomEmojiLister(
                     ?.decodeJsonObject()
                     ?.jsonArray("emojis")
                     ?.let { emojis13 ->
-                        parseListP2(
-                            CustomEmoji.decodeMisskey13,
-                            accessInfo.apDomain,
-                            accessInfo.apiHost,
-                            emojis13,
-                        )
+                        parseList(emojis13) {
+                            CustomEmoji.decodeMisskey13(
+                                accessInfo.apDomain,
+                                accessInfo.apiHost,
+                                it
+                            )
+                        }
                     }
 
             // マストドンのカスタム絵文字一覧を読む
@@ -259,12 +261,13 @@ class CustomEmojiLister(
                     "https://$cacheKey/api/v1/custom_emojis",
                     accessInfo = accessInfo
                 )?.let { data ->
-                    parseListP2(
-                        CustomEmoji.decode,
-                        accessInfo.apDomain,
-                        accessInfo.apiHost,
-                        data.decodeJsonArray()
-                    )
+                    parseList(data.decodeJsonArray()) {
+                        CustomEmoji.decode(
+                            accessInfo.apDomain,
+                            accessInfo.apiHost,
+                            it
+                        )
+                    }
                 }
 
             val list = when {

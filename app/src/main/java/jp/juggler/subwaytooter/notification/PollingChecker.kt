@@ -6,7 +6,9 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
 import jp.juggler.subwaytooter.notification.PullNotification.getMessageNotifications
 import jp.juggler.subwaytooter.notification.PullNotification.removeMessageNotification
@@ -94,80 +96,6 @@ class PollingChecker(
 
     private val checkJob = Job()
 
-    private fun NotificationData.getNotificationLine(): String {
-
-        val name = when (PrefB.bpShowAcctInSystemNotification.value) {
-            false -> notification.accountRef?.decoded_display_name
-
-            true -> {
-                val acctPretty = notification.accountRef?.get()?.acct?.pretty
-                if (acctPretty?.isNotEmpty() == true) {
-                    "@$acctPretty"
-                } else {
-                    null
-                }
-            }
-        } ?: "?"
-
-        return "- " + when (notification.type) {
-            TootNotification.TYPE_MENTION,
-            TootNotification.TYPE_REPLY,
-            -> context.getString(R.string.display_name_replied_by, name)
-
-            TootNotification.TYPE_RENOTE,
-            TootNotification.TYPE_REBLOG,
-            -> context.getString(R.string.display_name_boosted_by, name)
-
-            TootNotification.TYPE_QUOTE,
-            -> context.getString(R.string.display_name_quoted_by, name)
-
-            TootNotification.TYPE_STATUS,
-            -> context.getString(R.string.display_name_posted_by, name)
-
-            TootNotification.TYPE_UPDATE,
-            -> context.getString(R.string.display_name_updates_post, name)
-
-            TootNotification.TYPE_STATUS_REFERENCE,
-            -> context.getString(R.string.display_name_references_post, name)
-
-            TootNotification.TYPE_FOLLOW,
-            -> context.getString(R.string.display_name_followed_by, name)
-
-            TootNotification.TYPE_UNFOLLOW,
-            -> context.getString(R.string.display_name_unfollowed_by, name)
-
-            TootNotification.TYPE_ADMIN_SIGNUP,
-            -> context.getString(R.string.display_name_signed_up, name)
-
-            TootNotification.TYPE_ADMIN_REPORT,
-            -> context.getString(R.string.display_name_report, name)
-
-            TootNotification.TYPE_FAVOURITE,
-            -> context.getString(R.string.display_name_favourited_by, name)
-
-            TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-            TootNotification.TYPE_EMOJI_REACTION,
-            TootNotification.TYPE_REACTION,
-            -> context.getString(R.string.display_name_reaction_by, name)
-
-            TootNotification.TYPE_VOTE,
-            TootNotification.TYPE_POLL_VOTE_MISSKEY,
-            -> context.getString(R.string.display_name_voted_by, name)
-
-            TootNotification.TYPE_FOLLOW_REQUEST,
-            TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-            -> context.getString(R.string.display_name_follow_request_by, name)
-
-            TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
-            -> context.getString(R.string.display_name_follow_request_accepted_by, name)
-
-            TootNotification.TYPE_POLL,
-            -> context.getString(R.string.end_of_polling_from, name)
-
-            else -> "?"
-        }
-    }
-
     private fun createPolicyFilter(
         account: SavedAccount,
     ): (TootNotification) -> Boolean = when (account.pushPolicy) {
@@ -240,21 +168,12 @@ class PollingChecker(
 
                 commonMutex.withLock {
                     // グローバル変数の暖気
-                    if (TootStatus.muted_app == null) {
-                        TootStatus.muted_app = daoMutedApp.nameSet()
-                    }
-                    if (TootStatus.muted_word == null) {
-                        TootStatus.muted_word = daoMutedWord.nameSet()
-                    }
+                    TootStatus.updateMuteData()
                 }
 
 //                // installIdとデバイストークンの取得
 //                val deviceToken = loadFirebaseMessagingToken(context)
 //                loadInstallId(context, account, deviceToken, progress)
-
-                val favMuteSet = commonMutex.withLock {
-                    daoFavMute.acctSet()
-                }
 
                 accountMutex(accountDbId).withLock {
                     if (!account.isRequiredPullCheck()) {
@@ -308,7 +227,6 @@ class PollingChecker(
                     if (PrefB.bpSeparateReplyNotificationGroup.value) {
                         var tr = TrackingRunner(
                             account = account,
-                            favMuteSet = favMuteSet,
                             trackingType = TrackingType.NotReply,
                             trackingName = PullNotification.TRACKING_NAME_DEFAULT
                         )
@@ -318,7 +236,6 @@ class PollingChecker(
                         //
                         tr = TrackingRunner(
                             account = account,
-                            favMuteSet = favMuteSet,
                             trackingType = TrackingType.Reply,
                             trackingName = PullNotification.TRACKING_NAME_REPLY
                         )
@@ -328,7 +245,6 @@ class PollingChecker(
                     } else {
                         val tr = TrackingRunner(
                             account = account,
-                            favMuteSet = favMuteSet,
                             trackingType = TrackingType.All,
                             trackingName = PullNotification.TRACKING_NAME_DEFAULT
                         )
@@ -345,7 +261,6 @@ class PollingChecker(
 
     inner class TrackingRunner(
         val account: SavedAccount,
-        val favMuteSet: Set<Acct>,
         var trackingType: TrackingType = TrackingType.All,
         var trackingName: String = "",
     ) {
@@ -424,9 +339,10 @@ class PollingChecker(
                 TootNotification.TYPE_FOLLOW_REQUEST,
                 TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
                 -> {
-                    val who = notification.account
-                    if (who != null && favMuteSet.contains(account.getFullAcct(who))) {
-                        log.d("${account.getFullAcct(who)} is in favMuteSet.")
+                    val whoAcct = notification.account
+                        ?.let { account.getFullAcct(it) }
+                    if (whoAcct?.let { TootStatus.favMuteSet?.contains(it) } == true) {
+                        log.d("${whoAcct.pretty} is in favMuteSet.")
                         return
                     }
                 }
@@ -518,7 +434,7 @@ class PollingChecker(
                     notificationId = item.notification.id.toString()
                 ) { builder ->
                     builder.setWhen(item.notification.time_created_at)
-                    val summary = item.getNotificationLine()
+                    val summary = item.notification.getNotificationLine(context)
                     builder.setContentTitle(summary)
                     when (val content = item.notification.status?.decoded_content?.notEmpty()) {
                         null -> builder.setContentText(item.accessInfo.acct.pretty)
@@ -547,7 +463,7 @@ class PollingChecker(
                 notificationTag
             ) { builder ->
                 builder.setWhen(first.notification.time_created_at)
-                val a = first.getNotificationLine()
+                val a = first.notification.getNotificationLine(context)
                 val dataList = dstListData
                 if (dataList.size == 1) {
                     builder.setContentTitle(a)
@@ -561,7 +477,7 @@ class PollingChecker(
                         .setSummaryText(account.acct.pretty)
 
                     for (i in 0 until min(4, dataList.size)) {
-                        style.addLine(dataList[i].getNotificationLine())
+                        style.addLine(dataList[i].notification.getNotificationLine(context))
                     }
 
                     builder.setStyle(style)

@@ -13,13 +13,13 @@ import jp.juggler.subwaytooter.action.openActPostImpl
 import jp.juggler.subwaytooter.action.userProfile
 import jp.juggler.subwaytooter.api.auth.Auth2Result
 import jp.juggler.subwaytooter.api.auth.AuthBase
+import jp.juggler.subwaytooter.api.auth.authRepo
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.api.showApiError
-import jp.juggler.subwaytooter.auth.authRepo
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.dialog.actionsDialog
@@ -52,7 +52,7 @@ private val log = LogCategory("ActMainIntent")
 // ActOAuthCallbackで受け取ったUriを処理する
 fun ActMain.handleIntentUri(uri: Uri) {
     try {
-        log.d("handleIntentUri $uri")
+        log.i("handleIntentUri $uri")
         when (uri.scheme) {
             "subwaytooter", "misskeyclientproto" -> handleCustomSchemaUri(uri)
             else -> handleOtherUri(uri)

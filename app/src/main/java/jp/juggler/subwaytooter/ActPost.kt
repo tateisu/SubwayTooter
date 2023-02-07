@@ -237,7 +237,7 @@ class ActPost : AppCompatActivity(),
         showMediaAttachment()
         showVisibility()
         updateTextCount()
-        showReplyTo()
+        launchAndShowError { showReplyTo() }
         showPoll()
         showQuotedRenote()
     }
@@ -274,9 +274,9 @@ class ActPost : AppCompatActivity(),
             R.id.ivMedia3 -> performAttachmentClick(2)
             R.id.ivMedia4 -> performAttachmentClick(3)
             R.id.btnPost -> performPost()
-            R.id.btnRemoveReply -> removeReply()
+            R.id.btnRemoveReply -> launchAndShowError { removeReply() }
             R.id.btnMore -> performMore()
-            R.id.btnPlugin -> openMushroom()
+            R.id.btnPlugin -> launchAndShowError { openMushroom() }
             R.id.btnEmojiPicker -> completionHelper.openEmojiPickerFromMore()
             R.id.btnFeaturedTag -> completionHelper.openFeaturedTagList(
                 featuredTagCache[account?.acct?.ascii ?: ""]?.list

@@ -8,15 +8,11 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiError
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.entity.InstanceCapability
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootPushSubscription
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.pref.prefDevice
-import jp.juggler.subwaytooter.push.PushRepo.Companion.followDomain
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -224,7 +220,7 @@ class PushMastodon(
         return if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
             log.i("${account.acct}: same alerts(2)")
             true
-        }else {
+        } else {
             log.i("${account.acct}: changed. old=${alertsOld.sorted()}, new=${alertsNew.sorted()}")
             subLog.i("notification type set changed.")
             false
@@ -290,15 +286,18 @@ class PushMastodon(
         a: SavedAccount,
         pm: PushMessage,
     ) {
-        val json = pm.messageJson ?: return
-        val apiHost = a.apiHost
+        val json = pm.messageJson ?: error("missing messageJson")
 
         pm.notificationType = json.string("notification_type")
-        pm.iconLarge = json.string("icon").followDomain(apiHost)
+        pm.iconLarge = a.supplyBaseUrl(json.string("icon"))
+
         pm.text = arrayOf(
             // あなたのトゥートが tateisu 🤹 さんにお気に入り登録されました
             json.string("title"),
-        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(400)
+        ).mapNotNull { it?.trim()?.notBlank() }
+            .joinToString("\n")
+            .ellipsizeDot3(128)
+
         pm.textExpand = arrayOf(
             // あなたのトゥートが tateisu 🤹 さんにお気に入り登録されました
             json.string("title"),
@@ -306,7 +305,10 @@ class PushMastodon(
             json.string("body"),
             // 対象の投稿の本文？ (古い
             json.jsonObject("data")?.string("content"),
-        ).mapNotNull { it?.trim()?.notBlank() }.joinToString("\n").ellipsizeDot3(400)
+        ).mapNotNull { it?.trim()?.notBlank() }
+            .joinToString("\n")
+            .ellipsizeDot3(400)
+
         when {
             pm.notificationType.isNullOrEmpty() -> {
                 // old mastodon
@@ -334,7 +336,7 @@ class PushMastodon(
                 // 重複排除は完全に諦める
                 pm.notificationId = pm.timestamp.toString()
 
-                pm.iconSmall = json.string("badge").followDomain(apiHost)
+                pm.iconSmall = a.supplyBaseUrl(json.string("badge"))
             }
             else -> {
                 // Mastodon 4.0
@@ -354,5 +356,29 @@ class PushMastodon(
                 // - タイムスタンプ情報はない。
             }
         }
+
+        // 通知のミュートについて:
+        // - アプリ名がないのでアプリ名ミュートは使えない
+        // - notification.user のfull acct がないのでふぁぼ魔ミュートは行えない
+        // - テキスト本文のミュートは…部分的には可能
+
+        if(pm.textExpand?.let{TootStatus.muted_word?.matchShort(it)}==true){
+            error("muted by text word.")
+        }
+
+//        // ふぁぼ魔ミュート
+//        when ( pm.notificationType) {
+//            TootNotification.TYPE_REBLOG,
+//            TootNotification.TYPE_FAVOURITE,
+//            TootNotification.TYPE_FOLLOW,
+//            TootNotification.TYPE_FOLLOW_REQUEST,
+//            TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+//            -> {
+//                val whoAcct = a.getFullAcct(user)
+//                if (TootStatus.favMuteSet?.contains(whoAcct) == true) {
+//                    error("muted by favMuteSet ${whoAcct.pretty}")
+//                }
+//            }
+//        }
     }
 }

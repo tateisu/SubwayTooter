@@ -30,7 +30,7 @@ import jp.juggler.util.ui.vg
 
 private val log = LogCategory("ActPostExtra")
 
-fun ActPost.appendContentText(
+suspend fun ActPost.appendContentText(
     src: String?,
     selectBefore: Boolean = false,
 ) {
@@ -77,7 +77,7 @@ fun ActPost.appendContentText(
     }
 }
 
-fun ActPost.appendContentText(src: Intent) {
+suspend fun ActPost.appendContentText(src: Intent) {
     val list = ArrayList<String>()
 
     var sv: String?
@@ -128,7 +128,7 @@ suspend fun ActPost.resetText() {
     }
 }
 
-fun ActPost.afterUpdateText() {
+suspend fun ActPost.afterUpdateText() {
     // 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
     // VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
     states.visibility = states.visibility ?: account?.visibility ?: TootVisibility.Public
@@ -211,7 +211,7 @@ suspend fun ActPost.updateText(
     afterUpdateText()
 }
 
-fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
+suspend fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
     try {
         val hasUri = when (sharedIntent.action) {
             Intent.ACTION_VIEW -> {

@@ -254,6 +254,7 @@ class LoginForm(
                                         short = true,
                                     ).decodeHTML(it)
                                 }.replace("""\n[\s\n]+""".toRegex(), "\n")
+                                .trim()
                         }
                     }
                 }

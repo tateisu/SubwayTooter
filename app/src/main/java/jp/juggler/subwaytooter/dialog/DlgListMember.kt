@@ -183,11 +183,12 @@ class DlgListMember(
                             .putMisskeyApiToken()
                             .toPostRequestBuilder()
                     )?.also { result ->
-                        resultList = parseList(
-                            ::TootList,
-                            TootParser(activity, listOwner),
-                            result.jsonArray ?: return@also
-                        ).apply {
+                        resultList = parseList(result.jsonArray) {
+                            TootList(
+                                TootParser(activity, listOwner),
+                                it
+                            )
+                        }.apply {
                             if (whoLocal != null) {
                                 forEach { list ->
                                     list.isRegistered =
@@ -197,31 +198,30 @@ class DlgListMember(
                         }
                     }
                 } else {
-
                     val registeredSet = HashSet<EntityId>()
 
                     // メンバーを指定してリスト登録状況を取得
                     if (whoLocal != null) client.request(
                         "/api/v1/accounts/${whoLocal.id}/lists"
                     )?.also { result ->
-                        val jsonArray = result.jsonArray
-                            ?: return@runApiTask result
-                        parseList(
-                            ::TootList,
-                            TootParser(activity, listOwner),
-                            jsonArray
-                        ).forEach {
+                        parseList(result.jsonArray) {
+                            TootList(
+                                TootParser(activity, listOwner),
+                                it
+                            )
+                        }.forEach {
                             registeredSet.add(it.id)
                         }
                     }
 
                     // リスト一覧を取得
                     client.request("/api/v1/lists")?.also { result ->
-                        resultList = parseList(
-                            ::TootList,
-                            TootParser(activity, listOwner),
-                            result.jsonArray ?: return@also
-                        ).apply {
+                        resultList = parseList(result.jsonArray) {
+                            TootList(
+                                TootParser(activity, listOwner),
+                                it
+                            )
+                        }.apply {
                             sort()
                             forEach {
                                 it.isRegistered = registeredSet.contains(it.id)

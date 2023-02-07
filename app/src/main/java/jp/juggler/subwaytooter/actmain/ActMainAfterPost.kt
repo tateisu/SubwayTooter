@@ -18,9 +18,9 @@ fun ActMain.onCompleteActPost(data: Intent) {
 
     this.postedAcct = data.string(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
     if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
-        postedStatusId = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
-        postedReplyId = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
-        postedRedraftId = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+        postedStatusId = EntityId.entityId(data, ActPost.EXTRA_POSTED_STATUS_ID)
+        postedReplyId = EntityId.entityId(data, ActPost.EXTRA_POSTED_REPLY_ID)
+        postedRedraftId = EntityId.entityId(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
 
         val postedStatusId = postedStatusId
         val statusJson = data.string(ActPost.KEY_EDIT_STATUS)

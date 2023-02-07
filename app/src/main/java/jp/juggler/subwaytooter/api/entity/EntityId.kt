@@ -36,20 +36,20 @@ class EntityId(val x: String) : Comparable<EntityId> {
             return EntityId(this.substring(1))
         }
 
-        fun from(intent: Intent?, key: String) =
+        fun entityId(intent: Intent?, key: String) =
             intent?.string(key)?.decodeEntityId()
 
-        fun from(bundle: Bundle?, key: String) =
+        fun entityId(bundle: Bundle?, key: String) =
             bundle?.string(key)?.decodeEntityId()
 
         // 内部保存データのデコード用。APIレスポンスのパースに使ってはいけない
-        fun from(data: JsonObject?, key: String): EntityId? {
+        fun entityId(data: JsonObject?, key: String): EntityId? {
             val o = data?.get(key)
             if (o is Long) return EntityId(o.toString())
             return (o as? String)?.decodeEntityId()
         }
 
-        fun from(cursor: Cursor, key: String) =
+        fun entityId(cursor: Cursor, key: String) =
             cursor.getStringOrNull(key)?.decodeEntityId()
     }
 

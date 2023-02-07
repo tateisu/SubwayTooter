@@ -31,7 +31,7 @@ fun ActPost.showQuotedRenote() {
     views.cbQuote.vg(states.inReplyToId != null)
 }
 
-fun ActPost.showReplyTo() {
+suspend fun ActPost.showReplyTo() {
     views.llReply.vg(states.inReplyToId != null)?.let {
         views.tvReplyTo.text = DecodeOptions(
             this,
@@ -46,7 +46,7 @@ fun ActPost.showReplyTo() {
     }
 }
 
-fun ActPost.removeReply() {
+suspend fun ActPost.removeReply() {
     states.inReplyToId = null
     states.inReplyToText = null
     states.inReplyToImage = null
@@ -55,7 +55,7 @@ fun ActPost.removeReply() {
     showQuotedRenote()
 }
 
-fun ActPost.initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
+suspend fun ActPost.initializeFromReplyStatus(account: SavedAccount, jsonText: String) {
     try {
         val replyStatus =
             TootParser(this, account).status(jsonText.decodeJsonObject())

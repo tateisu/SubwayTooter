@@ -97,11 +97,12 @@ fun ActMain.listCreate(
                 )
             }?.also { result ->
                 client.publishApiProgress(getString(R.string.parsing_response))
-                resultList = parseItem(
-                    ::TootList,
-                    TootParser(this, accessInfo),
-                    result.jsonObject
-                )
+                resultList = parseItem(result.jsonObject) {
+                    TootList(
+                        TootParser(this, accessInfo),
+                        it
+                    )
+                }
             }
         }?.let { result ->
             when (val list = resultList) {
@@ -196,11 +197,12 @@ fun ActMain.listRename(
                             )
                         }?.also { result ->
                             client.publishApiProgress(getString(R.string.parsing_response))
-                            resultList = parseItem(
-                                ::TootList,
-                                TootParser(this, accessInfo),
-                                result.jsonObject
-                            )
+                            resultList = parseItem(result.jsonObject) {
+                                TootList(
+                                    TootParser(this, accessInfo),
+                                    it
+                                )
+                            }
                         }
                     }?.let { result ->
                         when (val list = resultList) {

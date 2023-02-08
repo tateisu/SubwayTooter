@@ -9,7 +9,7 @@ sub cmd($){
         die "failed to execute: $!\n";
     }elsif ($? & 127) {
         die sprintf "child died with signal %d\n", ($? & 127);
-    }elseif($?){
+    }elsif($?){
         $rv = $? >> 8;
         die "child exited with value $rv\n";
     }

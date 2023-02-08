@@ -63,6 +63,7 @@ fun ActMain.accountAdd() {
                 when (action) {
                     LoginForm.Action.Login -> {
                         val authUri = runApiTask2(apiHost) { it.authStep1() }
+                        log.i("authUri=$authUri")
                         openBrowser(authUri)
                         dialogHost.dismissSafe()
                     }

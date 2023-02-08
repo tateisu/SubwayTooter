@@ -238,7 +238,7 @@ inline fun AnkoLogger.warn(message: () -> Any?) {
  *
  * @see [Log.e].
  */
-inline fun AnkoLogger.error(message: () -> Any?) {
+fun AnkoLogger.error(message: () -> Any?) {
     val tag = loggerTag
     if (Log.isLoggable(tag, Log.ERROR)) {
         Log.e(tag, message()?.toString() ?: "null")
@@ -248,7 +248,7 @@ inline fun AnkoLogger.error(message: () -> Any?) {
 /**
  * Return the stack trace [String] of a throwable.
  */
-inline fun Throwable.getStackTraceString(): String = Log.getStackTraceString(this)
+fun Throwable.getStackTraceString(): String = Log.getStackTraceString(this)
 
 private inline fun log(
     logger: AnkoLogger,

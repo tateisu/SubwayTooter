@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.databinding.ActLanguageFilterBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
+import jp.juggler.subwaytooter.pref.FILE_PROVIDER_AUTHORITY
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
@@ -425,7 +426,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
             afterProc = {
                 val uri = FileProvider.getUriForFile(
                     this@ActLanguageFilter,
-                    App1.FILE_PROVIDER_AUTHORITY,
+                    FILE_PROVIDER_AUTHORITY,
                     it
                 )
                 val intent = Intent(Intent.ACTION_SEND)

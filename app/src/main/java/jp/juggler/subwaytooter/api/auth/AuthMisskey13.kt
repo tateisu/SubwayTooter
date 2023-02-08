@@ -1,10 +1,11 @@
 package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
+import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.auth.MisskeyAuth10.Companion.encodeScopeArray
-import jp.juggler.subwaytooter.api.auth.MisskeyAuth10.Companion.getScopeArrayMisskey
+import jp.juggler.subwaytooter.api.auth.AuthMisskey10.Companion.encodeScopeArray
+import jp.juggler.subwaytooter.api.auth.AuthMisskey10.Companion.getScopeArrayMisskey
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.pref.prefDevice
@@ -19,17 +20,17 @@ import java.util.*
  * miauth と呼ばれている認証手順。
  * STではMisskey 13から使用する。
  */
-class MisskeyAuth13(override val client: TootApiClient) : AuthBase() {
+class AuthMisskey13(override val client: TootApiClient) : AuthBase() {
     companion object {
         private val log = LogCategory("MisskeyMiAuth")
         private const val appIconUrl = "https://m1j.zzz.ac/subwaytooter-miauth-icon.png"
-        private const val callbackUrl = "subwaytooter://miauth/auth_callback"
+        private const val callbackUrl = "${BuildConfig.customScheme}://miauth/auth_callback"
 
         fun isCallbackUrl(uriStr: String) = uriStr.startsWith(callbackUrl)
     }
 
-    private val api10 = MisskeyAuthApi10(client)
-    private val api13 = MisskeyAuthApi13(client)
+    private val api10 = ApiAuthMisskey10(client)
+    private val api13 = ApiAuthMisskey13(client)
 
     // 認証されたアカウントのユーザ情報を取得する
     override suspend fun verifyAccount(

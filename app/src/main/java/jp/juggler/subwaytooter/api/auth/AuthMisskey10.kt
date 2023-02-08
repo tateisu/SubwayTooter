@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
 import androidx.core.net.toUri
+import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -15,10 +16,10 @@ import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 
-class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
+class AuthMisskey10(override val client: TootApiClient) : AuthBase() {
     companion object {
         private val log = LogCategory("MisskeyOldAuth")
-        private const val callbackUrl = "subwaytooter://misskey/auth_callback"
+        private const val callbackUrl = "${BuildConfig.customScheme}://misskey/auth_callback"
 
         fun isCallbackUrl(uriStr: String) =
             uriStr.startsWith(callbackUrl) ||
@@ -88,7 +89,7 @@ class MisskeyAuth10(override val client: TootApiClient) : AuthBase() {
             a.encodeScopeArray() == b?.encodeScopeArray()
     }
 
-    val api = MisskeyAuthApi10(client)
+    val api = ApiAuthMisskey10(client)
 
     /**
      * Misskey v12 までの認証に使うURLを生成する

@@ -14,7 +14,7 @@ import jp.juggler.util.network.toFormRequestBody
 import jp.juggler.util.network.toPost
 import okhttp3.Request
 
-class MastodonAuthApi(
+class ApiAuthMastodon(
     val client: TootApiClient,
 ) {
     /**

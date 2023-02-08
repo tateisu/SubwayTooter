@@ -10,7 +10,7 @@ import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.jsonObjectOf
 import jp.juggler.util.network.toPostRequestBuilder
 
-class MisskeyAuthApi13(val client: TootApiClient) {
+class ApiAuthMisskey13(val client: TootApiClient) {
 
     /**
      * miauth のブラウザ認証URLを作成する

@@ -23,15 +23,15 @@ object PullNotification {
     const val TRACKING_NAME_DEFAULT = ""
     const val TRACKING_NAME_REPLY = "reply"
 
-    private val nc = NotificationChannels.PullNotification
+    private val ncPullNotification = NotificationChannels.PullNotification
 
     /**
      * メッセージ通知を消す
      */
     fun NotificationManager.removeMessageNotification(id: String?, tag: String) {
         when (id) {
-            null -> cancel(tag, nc.notificationId)
-            else -> cancel("$tag/$id", nc.notificationId)
+            null -> cancel(tag, ncPullNotification.notificationId)
+            else -> cancel("$tag/$id", ncPullNotification.notificationId)
         }
     }
 
@@ -41,13 +41,13 @@ object PullNotification {
     fun NotificationManager.removeMessageNotification(account: SavedAccount, tag: String) {
         if (PrefB.bpDivideNotification.value) {
             activeNotifications?.filterNotNull()?.filter {
-                it.id == nc.notificationId && it.tag.startsWith("$tag/")
+                it.id == ncPullNotification.notificationId && it.tag.startsWith("$tag/")
             }?.forEach {
                 log.d("cancel: ${it.tag} context=${account.acct.pretty} $tag")
-                cancel(it.tag, nc.notificationId)
+                cancel(it.tag, ncPullNotification.notificationId)
             }
         } else {
-            cancel(tag, nc.notificationId)
+            cancel(tag, ncPullNotification.notificationId)
         }
     }
 
@@ -56,7 +56,7 @@ object PullNotification {
      */
     fun NotificationManager.getMessageNotifications(tag: String) =
         activeNotifications?.filterNotNull()?.filter {
-            it.id == nc.notificationId && it.tag.startsWith("$tag/")
+            it.id == ncPullNotification.notificationId && it.tag.startsWith("$tag/")
         }?.map { Pair(it.tag, it) }?.toMutableMap() ?: mutableMapOf()
 
     fun showMessageNotification(
@@ -81,29 +81,29 @@ object PullNotification {
         }.joinToString("&")
 
         val iTap = Intent(context, ActCallback::class.java).apply {
-            data = "subwaytooter://notification_click/?$params".toUri()
+            data = "${ncPullNotification.uriPrefixTap}?$params".toUri()
             // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
 
         val piTap = PendingIntent.getActivity(
             context,
-            nc.pircTap,
+            ncPullNotification.pircTap,
             iTap,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val iDelete = Intent(context, EventReceiver::class.java).apply {
             action = EventReceiver.ACTION_NOTIFICATION_DELETE
-            data = "subwaytooter://notification_delete/?$params".toUri()
+            data = "${ncPullNotification.uriPrefixDelete}?$params".toUri()
         }
         val piDelete = PendingIntent.getBroadcast(
             context,
-            nc.pircDelete,
+            ncPullNotification.pircDelete,
             iDelete,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        nc.notify(context, notificationTag) {
+        ncPullNotification.notify(context, notificationTag) {
             setContentIntent(piTap)
             setDeleteIntent(piDelete)
             setAutoCancel(true)
@@ -125,9 +125,8 @@ object PullNotification {
     }
 
     fun openNotificationChannelSetting(context: Context) {
-        val nc = NotificationChannels.PullNotification
         val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
-        intent.putExtra(Settings.EXTRA_CHANNEL_ID, nc.id)
+        intent.putExtra(Settings.EXTRA_CHANNEL_ID, ncPullNotification.id)
         intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
         context.startActivity(intent)
     }

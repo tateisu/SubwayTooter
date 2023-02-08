@@ -121,7 +121,7 @@
                 <data
                     android:host="*"
                     android:pathPattern=".*"
-                    android:scheme="subwaytooter" />
+                    android:scheme="${customScheme}" />
             </intent-filter>
 
             <intent-filter>
@@ -328,20 +328,12 @@
             android:value="100.0" />
 
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_notification" />
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/Light_colorAppCompatAccent" />
-
-        <meta-data
             android:name="android.allow_multiple_resumed_activities"
             android:value="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="jp.juggler.subwaytooter.FileProvider"
+            android:authorities="${applicationId}.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

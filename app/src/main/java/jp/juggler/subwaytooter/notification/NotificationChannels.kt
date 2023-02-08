@@ -15,6 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.startup.Initializer
 import androidx.work.ForegroundInfo
+import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.LazyContextInitializer
 import jp.juggler.util.*
@@ -37,6 +38,8 @@ enum class NotificationChannels(
     val pircDelete: Int,
     // 通知削除のUri prefix
     val uriPrefixDelete: String,
+    // 通知タップのUri prefix
+    val uriPrefixTap: String,
 ) {
     PullNotification(
         id = "SnsNotification",
@@ -47,7 +50,8 @@ enum class NotificationChannels(
         notificationId = 1,
         pircTap = 1,
         pircDelete = 1, // uriでtapとdeleteを区別している
-        uriPrefixDelete = "subwaytooter://sns-notification",
+        uriPrefixDelete = "${BuildConfig.customScheme}://notification_delete/",
+        uriPrefixTap = "${BuildConfig.customScheme}://notification_click/",
     ),
     PullWorker(
         id = "PollingForegrounder",
@@ -58,7 +62,8 @@ enum class NotificationChannels(
         notificationId = 2,
         pircTap = 2,
         pircDelete = -1,
-        uriPrefixDelete = "subwaytooter://checker",
+        uriPrefixDelete = "${BuildConfig.customScheme}://checker",
+        uriPrefixTap = "${BuildConfig.customScheme}://checker-tap",
     ),
     ServerTimeout(
         id = "ErrorNotification",
@@ -69,7 +74,8 @@ enum class NotificationChannels(
         notificationId = 3,
         pircTap = 3,
         pircDelete = 4,
-        uriPrefixDelete = "subwaytooter://server-timeout",
+        uriPrefixDelete = "${BuildConfig.customScheme}://server-timeout",
+        uriPrefixTap = "${BuildConfig.customScheme}://server-timeout-tap",
     ),
     PushMessage(
         id = "PushMessage",
@@ -80,7 +86,8 @@ enum class NotificationChannels(
         notificationId = 5,
         pircTap = 5,
         pircDelete = 6,
-        uriPrefixDelete = "subwaytooter://pushMessage",
+        uriPrefixDelete = "${BuildConfig.customScheme}://pushMessage",
+        uriPrefixTap = "${BuildConfig.customScheme}://notification_click/",
     ),
     Alert(
         id = "Alert",
@@ -91,7 +98,8 @@ enum class NotificationChannels(
         notificationId = 7,
         pircTap = 7,
         pircDelete = 8,
-        uriPrefixDelete = "subwaytooter://alert",
+        uriPrefixDelete = "${BuildConfig.customScheme}://alert",
+        uriPrefixTap = "${BuildConfig.customScheme}://alert-tap",
     ),
     PushWorker(
         id = "PushMessageWorker",
@@ -102,22 +110,9 @@ enum class NotificationChannels(
         notificationId = 9,
         pircTap = 9,
         pircDelete = 10,
-        uriPrefixDelete = "subwaytooter://pushWorker",
+        uriPrefixDelete = "${BuildConfig.customScheme}://pushWorker",
+        uriPrefixTap = "${BuildConfig.customScheme}://pushWorker-tag",
     ),
-    /////////////////////////////
-    // 以下、通知IDやpirc を吟味していない
-
-    //    SubscriptionUpdate(
-//        id = "SubscriptionUpdate",
-//        titleId = R.string.push_subscription_update,
-//        descId = R.string.push_subscription_update_desc,
-//        importance = NotificationManagerCompat.IMPORTANCE_LOW,
-//        priority = NotificationCompat.PRIORITY_LOW,
-//        notificationId = 3,
-//        pircTap = 4,
-//        pircDelete = 5,
-//        uriPrefixDelete = "pushreceiverapp://subscriptionUpdate",
-//    ),
 
     ;
 
@@ -175,11 +170,11 @@ enum class NotificationChannels(
         text: String? = context.getString(descId),
         piTap: PendingIntent? = null,
         piDelete: PendingIntent? = null,
-        force:Boolean = false,
+        force: Boolean = false,
     ): ForegroundInfo? {
         val notificationManager = NotificationManagerCompat.from(context)
 
-        if(!force){
+        if (!force) {
             if (Build.VERSION.SDK_INT >= 33) {
                 if (ActivityCompat.checkSelfPermission(
                         context,

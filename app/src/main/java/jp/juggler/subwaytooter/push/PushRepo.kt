@@ -670,7 +670,7 @@ class PushRepo(
         }
 
         val iTap = Intent(context, ActCallback::class.java).apply {
-            data = "subwaytooter://notification_click/?$params".toUri()
+            data = "${ncPushMessage.uriPrefixTap}?$params".toUri()
             // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
@@ -684,13 +684,12 @@ class PushRepo(
 
         val urlDelete = "${ncPushMessage.uriPrefixDelete}/${pm.id}"
         val iDelete = context.intentNotificationDelete(urlDelete.toUri())
-        val piDelete =
-            PendingIntent.getBroadcast(
-                context,
-                ncPushMessage.pircDelete,
-                iDelete,
-                PendingIntent.FLAG_IMMUTABLE
-            )
+        val piDelete = PendingIntent.getBroadcast(
+            context,
+            ncPushMessage.pircDelete,
+            iDelete,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
         // val iTap = intentActMessage(pm.messageDbId)
         // val piTap = PendingIntent.getActivity(this, nc.pircTap, iTap, PendingIntent.FLAG_IMMUTABLE)

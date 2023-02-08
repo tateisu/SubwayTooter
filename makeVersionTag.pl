@@ -8,10 +8,10 @@ sub cmd($){
 	if ($? == -1) {
         die "failed to execute: $!\n";
     }elsif ($? & 127) {
-        die "child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with' : 'without';
-    }else {
-		my $rv = $? >> 8;
-		$rv and die "child exited with value $rv\n";
+        die sprintf "child died with signal %d\n", ($? & 127);
+    }elseif($?){
+        $rv = $? >> 8;
+        die "child exited with value $rv\n";
     }
 }
 

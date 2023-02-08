@@ -6,7 +6,7 @@ import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import jp.juggler.subwaytooter.api.auth.AuthBase
-import jp.juggler.subwaytooter.api.auth.MastodonAuth
+import jp.juggler.subwaytooter.api.auth.AuthMastodon
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -1069,7 +1069,7 @@ class TestTootApiClient {
         val (ti, ri) = TootInstance.get(client)
         ti ?: error("can't get server information. ${ri?.error}")
 
-        val auth = AuthBase.findAuthForAuthStep1(client, ti, ri) as MastodonAuth
+        val auth = AuthBase.findAuthForAuthStep1(client, ti, ri) as AuthMastodon
         val authUri = auth.authStep1(ti, forceUpdateClient = false)
         println("authUri=$authUri")
 
@@ -1137,7 +1137,7 @@ class TestTootApiClient {
             Triple("?code=a&state=host:${testHost.ascii},other:a", null, "ignored"),
         ).forEach {
             val (suffix, exClass, exMessage) = it
-            val callbackUrl = "${MastodonAuth.callbackUrl}$suffix".toUri()
+            val callbackUrl = "${AuthMastodon.callbackUrl}$suffix".toUri()
             if (exClass == null) {
                 // expect not throw
                 auth.authStep2(callbackUrl)
@@ -1151,7 +1151,7 @@ class TestTootApiClient {
 
         // 正常ケース
         val auth2Result =
-            auth.authStep2("${MastodonAuth.callbackUrl}?code=a&state=host:${testHost.ascii}".toUri())
+            auth.authStep2("${AuthMastodon.callbackUrl}?code=a&state=host:${testHost.ascii}".toUri())
 
         assertEquals(
             "auth2Result.tokenJson",

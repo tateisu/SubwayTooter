@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import jp.juggler.subwaytooter.pref.FILE_PROVIDER_AUTHORITY
 import jp.juggler.util.*
 import jp.juggler.util.data.digestSHA256Hex
 import jp.juggler.util.log.LogCategory
@@ -211,7 +212,7 @@ class ActCallback : AppCompatActivity() {
                 inStream.copyTo(outStream)
             }
         }
-        return FileProvider.getUriForFile(this, App1.FILE_PROVIDER_AUTHORITY, dst)
+        return FileProvider.getUriForFile(this, FILE_PROVIDER_AUTHORITY, dst)
     }
 
     private fun sweepOldCache() {

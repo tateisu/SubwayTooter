@@ -44,8 +44,8 @@ abstract class AuthBase {
                 // https://github.com/misskey-dev/misskey/issues/9825
                 // https://github.com/misskey-dev/misskey/commit/788ae2f6ca37d297e912bfba02821543e8566522
                 // misskeyVersionMajor >= 13 -> MisskeyAuth13(client)
-                misskeyVersionMajor > 0 -> MisskeyAuth10(client)
-                else -> MastodonAuth(client)
+                misskeyVersionMajor > 0 -> AuthMisskey10(client)
+                else -> AuthMastodon(client)
             }
 
         fun findAuthForAuthStep1(client: TootApiClient, ti: TootInstance?, ri: TootApiResult?) =
@@ -54,20 +54,20 @@ abstract class AuthBase {
                     // インスタンス情報を取得できないが、マストドンだと分かる場合がある
                     // https://github.com/tateisu/SubwayTooter/issues/155
                     // Mastodon's WHITELIST_MODE
-                    401 -> MastodonAuth(client)
+                    401 -> AuthMastodon(client)
                     else -> null
                 }
 
         fun findAuthForAuthCallback(client: TootApiClient, callbackUrl: String) =
             when {
-                MisskeyAuth10.isCallbackUrl(callbackUrl) -> MisskeyAuth10(client)
-                MisskeyAuth13.isCallbackUrl(callbackUrl) -> MisskeyAuth13(client)
-                else -> MastodonAuth(client)
+                AuthMisskey10.isCallbackUrl(callbackUrl) -> AuthMisskey10(client)
+                AuthMisskey13.isCallbackUrl(callbackUrl) -> AuthMisskey13(client)
+                else -> AuthMastodon(client)
             }
 
         fun findAuthForCreateUser(client: TootApiClient, ti: TootInstance?) =
             when (ti?.instanceType) {
-                InstanceType.Mastodon -> MastodonAuth(client)
+                InstanceType.Mastodon -> AuthMastodon(client)
                 else -> null
             }
     }

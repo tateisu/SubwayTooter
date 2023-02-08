@@ -36,6 +36,7 @@ import jp.juggler.subwaytooter.databinding.ActAppSettingBinding
 import jp.juggler.subwaytooter.databinding.LvSettingItemBinding
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.notification.restartAllWorker
+import jp.juggler.subwaytooter.pref.FILE_PROVIDER_AUTHORITY
 import jp.juggler.subwaytooter.pref.impl.BooleanPref
 import jp.juggler.subwaytooter.pref.impl.FloatPref
 import jp.juggler.subwaytooter.pref.impl.IntPref
@@ -844,7 +845,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 file
             },
             afterProc = {
-                val uri = FileProvider.getUriForFile(activity, App1.FILE_PROVIDER_AUTHORITY, it)
+                val uri = FileProvider.getUriForFile(activity, FILE_PROVIDER_AUTHORITY, it)
                 val intent = Intent(Intent.ACTION_SEND)
                 intent.type = contentResolver.getType(uri)
                 intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")

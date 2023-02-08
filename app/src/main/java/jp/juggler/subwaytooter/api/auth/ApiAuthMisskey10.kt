@@ -9,7 +9,7 @@ import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.data.jsonObjectOf
 import jp.juggler.util.network.toPostRequestBuilder
 
-class MisskeyAuthApi10(val client: TootApiClient) {
+class ApiAuthMisskey10(val client: TootApiClient) {
 
     suspend fun appCreate(
         apiHost: Host,

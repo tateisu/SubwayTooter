@@ -77,8 +77,6 @@ class App1 : Application() {
 
         internal val log = LogCategory("App1")
 
-        const val FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider"
-
         //		private val APPROVED_CIPHER_SUITES = arrayOf(
         //
         //			// 以下は okhttp 3 のデフォルト
@@ -462,7 +460,10 @@ class App1 : Application() {
             }
 
             if (!response.isSuccessful) {
-                log.e(caller,TootApiClient.formatResponse(response, "getHttp response error. $url"))
+                log.e(
+                    caller,
+                    TootApiClient.formatResponse(response, "getHttp response error. $url")
+                )
                 return null
             }
 

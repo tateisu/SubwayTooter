@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationOtherInstance
 import jp.juggler.subwaytooter.action.openActPostImpl
@@ -54,7 +55,7 @@ fun ActMain.handleIntentUri(uri: Uri) {
     try {
         log.i("handleIntentUri $uri")
         when (uri.scheme) {
-            "subwaytooter", "misskeyclientproto" -> handleCustomSchemaUri(uri)
+            BuildConfig.customScheme -> handleCustomSchemaUri(uri)
             else -> handleOtherUri(uri)
         }
     } catch (ex: Throwable) {
@@ -175,7 +176,7 @@ private fun ActMain.handleCustomSchemaUri(uri: Uri) = launchAndShowError {
         // subwaytooter://oauth(\d*)/?...
         handleOAuth2Callback(uri)
     } else {
-        // subwaytooter://notification_click/?db_id=(db_id)
+        // ${BuildConfig.customScheme}://notification_click/?db_id=(db_id)
         handleNotificationClick(uri, dataIdString)
     }
 }

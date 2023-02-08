@@ -13,6 +13,10 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion stCompileSdkVersion
     buildToolsVersion stBuildToolsVersion
@@ -59,6 +63,15 @@ android {
     //        kotlinCompilerExtensionVersion compose_version
     //    }
 
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -68,15 +81,9 @@ android {
             lintOptions {
                 disable "MissingTranslation"
             }
-            // You need to specify either an absolute path or include the
-            // keystore file in the same directory as the build.gradle file.
-            storeFile file("D:\\GoogleDrive\\_private\\AndroidSignKeys\\SubwayTooter.jks")
-            storePassword "password"
-            keyAlias "my-alias"
-            keyPassword "password"
+            signingConfig signingConfigs.release
         }
         debug {
-
         }
     }
 
@@ -87,10 +94,16 @@ android {
         nofcm {
             dimension "fcmType"
             versionNameSuffix "-noFcm"
+            applicationIdSuffix ".noFcm"
+            def scheme = "subwaytooternofcm"
+            manifestPlaceholders = [customScheme: scheme]
+            buildConfigField("String", "customScheme", "\"$scheme\"")
         }
         fcm {
             dimension "fcmType"
-            versionNameSuffix "-play"
+            def scheme = "subwaytooter"
+            manifestPlaceholders = [customScheme: scheme]
+            buildConfigField("String", "customScheme", "\"$scheme\"")
         }
     }
 

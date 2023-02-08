@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
+import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.api.SendException
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -17,12 +18,12 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
 
-class MastodonAuth(override val client: TootApiClient) : AuthBase() {
+class AuthMastodon(override val client: TootApiClient) : AuthBase() {
 
     companion object {
         private val log = LogCategory("MastodonAuth")
 
-        const val callbackUrl = "subwaytooter://oauth/"
+        const val callbackUrl = "${BuildConfig.customScheme}://oauth/"
 
         fun mastodonScope(ti: TootInstance?) = when {
             // 古いサーバ
@@ -36,7 +37,7 @@ class MastodonAuth(override val client: TootApiClient) : AuthBase() {
         }
     }
 
-    val api = MastodonAuthApi(client)
+    val api = ApiAuthMastodon(client)
 
     // クライアントアプリの登録を確認するためのトークンを生成する
     // oAuth2 Client Credentials の取得

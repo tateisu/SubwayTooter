@@ -18,6 +18,7 @@ import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.time.parseTimeIso8601
 import kotlinx.coroutines.isActive
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.security.Provider
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
@@ -88,11 +89,16 @@ class PushMastodon(
                             }
                     }
                 }
-                if (params["dh"] != deviceHash) {
+                if (params["dh"] != deviceHash && !isOldSubscription(account, oldEndpointUrl)) {
+
                     // この端末で作成した購読ではない。
                     // TODO: 古い形式のURLを移行できないか？
                     log.w("deviceHash not match. keep it for other devices. ${account.acct} $oldEndpointUrl")
                     subLog.e(R.string.push_subscription_exists_but_not_created_by_this_device)
+                    daoAccountNotificationStatus.updateSubscriptionError(
+                        account.acct,
+                        context.getString(R.string.push_subscription_exists_but_not_created_by_this_device)
+                    )
                     return
                 }
             }
@@ -173,6 +179,22 @@ class PushMastodon(
             )
             subLog.i(R.string.push_subscription_completed)
         }
+    }
+
+    private fun isOldSubscription(account: SavedAccount, url: String): Boolean {
+        //        https://mastodon-msg.juggler.jp
+        //        /webpushcallback
+        //        /{ deviceId(FCM token) }
+        //        /{ acct }
+        //        /{flags }
+        //        /{ client identifier}
+
+        val clientIdentifierOld =  url.toHttpUrlOrNull()?.pathSegments?.elementAtOrNull(4)
+            ?: return false
+        val installId = prefDevice.installIdV1?.notEmpty() ?: return false
+        val accessToken = account.bearerAccessToken?.notEmpty() ?: return false
+        val clientIdentifier = "$accessToken$installId".digestSHA256Base64Url()
+        return clientIdentifier == clientIdentifierOld
     }
 
     private suspend fun isSameAlerts(
@@ -362,7 +384,7 @@ class PushMastodon(
         // - notification.user のfull acct がないのでふぁぼ魔ミュートは行えない
         // - テキスト本文のミュートは…部分的には可能
 
-        if(pm.textExpand?.let{TootStatus.muted_word?.matchShort(it)}==true){
+        if (pm.textExpand?.let { TootStatus.muted_word?.matchShort(it) } == true) {
             error("muted by text word.")
         }
 

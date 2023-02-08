@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.security.Provider
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
@@ -99,6 +100,10 @@ class PushMisskey(
                 subLog.i(R.string.push_subscription_app_server_hash_missing_but_ok)
             } else {
                 subLog.e(R.string.push_subscription_app_server_hash_missing_error)
+                daoAccountNotificationStatus.updateSubscriptionError(
+                    account.acct,
+                    context.getString(R.string.push_subscription_app_server_hash_missing_error)
+                )
             }
             return
         } else if (willRemoveSubscription) {
@@ -158,6 +163,22 @@ class PushMisskey(
             subLog.i(R.string.push_subscription_server_key_saved)
         }
         subLog.i(R.string.push_subscription_completed)
+    }
+
+    private fun isOldSubscription(account: SavedAccount, url: String): Boolean {
+        //        https://mastodon-msg.juggler.jp
+        //        /webpushcallback
+        //        /{ deviceId(FCM token) }
+        //        /{ acct }
+        //        /{flags }
+        //        /{ client identifier}
+
+        val clientIdentifierOld =  url.toHttpUrlOrNull()?.pathSegments?.elementAtOrNull(4)
+            ?: return false
+        val installId = prefDevice.installIdV1?.notEmpty() ?: return false
+        val accessToken = account.misskeyApiToken?.notEmpty() ?: return false
+        val clientIdentifier = "$accessToken$installId".digestSHA256Base64Url()
+        return clientIdentifier == clientIdentifierOld
     }
 
     /*

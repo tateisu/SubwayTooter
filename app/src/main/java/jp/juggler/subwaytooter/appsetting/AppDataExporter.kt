@@ -182,6 +182,7 @@ object AppDataExporter {
                 cv.clear()
 
                 reader.beginObject()
+                val keys = ArrayList<String>()
                 while (reader.hasNext()) {
                     val name = reader.nextName()
                     if (name == null) {
@@ -205,6 +206,7 @@ object AppDataExporter {
                             "last_notification_error",
                             "last_subscription_error",
                             "last_push_endpoint",
+                            "sound_uri",
                             -> {
                                 reader.skipValue()
                                 continue
@@ -217,20 +219,35 @@ object AppDataExporter {
                         JsonToken.NULL -> {
                             reader.skipValue()
                             cv.putNull(name)
+                            keys.add(name)
                         }
 
-                        JsonToken.BOOLEAN -> cv.put(name, if (reader.nextBoolean()) 1 else 0)
+                        JsonToken.BOOLEAN -> {
+                            cv.put(name, if (reader.nextBoolean()) 1 else 0)
+                            keys.add(name)
+                        }
 
-                        JsonToken.NUMBER -> cv.put(name, reader.nextLong())
+                        JsonToken.NUMBER -> {
+                            cv.put(name, reader.nextLong())
+                            keys.add(name)
+                        }
 
-                        JsonToken.STRING -> cv.put(name, reader.nextString())
+                        JsonToken.STRING -> {
+                            cv.put(name, reader.nextString())
+                            keys.add(name)
+                        }
 
-                        else -> reader.skipValue()
+                        else -> {
+                            reader.skipValue()
+                            log.w("skip $table.$name")
+                        }
                     }
                 }
                 reader.endObject()
                 val new_id = db.replace(table, null, cv)
-                if (new_id == -1L) error("importTable: invalid row_id")
+                if (new_id == -1L) {
+                    error("importTable: replace failed. table=$table, names=${keys.joinToString(",")}")
+                }
                 idMap?.put(old_id, new_id)
             }
             reader.endArray()

@@ -357,6 +357,10 @@ class PushRepo(
                 )
             } catch (ex: Throwable) {
                 subLog.e(ex, "updateSubscription failed.")
+                daoAccountNotificationStatus.updateSubscriptionError(
+                    account.acct,
+                    ex.withCaption()
+                )
             }
         }
         prefDevice.timeLastEndpointRegister = System.currentTimeMillis()

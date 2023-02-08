@@ -15,8 +15,10 @@ sub cmd($){
     }
 }
 
+cmd "./gradlew --stop";
 cmd "./gradlew clean";
 cmd "./gradlew assembleNoFcmRelease";
 cmd "./gradlew assembleFcmRelease";
+cmd "./gradlew --stop";
 cmd "mv app/build/outputs/apk/SubwayTooter*.apk app/";
 cmd " ls -1t app/SubwayTooter*.apk |head -n 5";

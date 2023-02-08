@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -16,12 +17,16 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.jrummyapps.android.colorpicker.ColorPickerDialog
+import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.auth.authRepo
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.push.PushBase
@@ -64,6 +69,7 @@ import kotlin.math.max
 
 class ActAccountSetting : AppCompatActivity(),
     View.OnClickListener,
+    ColorPickerDialogListener,
     CompoundButton.OnCheckedChangeListener,
     AdapterView.OnItemSelectedListener {
     companion object {
@@ -83,6 +89,8 @@ class ActAccountSetting : AppCompatActivity(),
         internal const val MIME_TYPE_PNG = "image/png"
 
         private const val ACTIVITY_STATE = "MyActivityState"
+
+        private const val COLOR_DIALOG_NOTIFICATION_ACCENT_COLOR = 1
 
         fun createIntent(activity: Activity, ai: SavedAccount) =
             Intent(activity, ActAccountSetting::class.java).apply {
@@ -510,6 +518,8 @@ class ActAccountSetting : AppCompatActivity(),
                     spResizeImage,
                     swNotificationPullEnabled,
                     swNotificationPushEnabled,
+                    btnNotificationAccentColorEdit,
+                    btnNotificationAccentColorReset,
                 ).forEach { it.isEnabledAlpha = enabled }
 
 //                arrayOf(
@@ -521,6 +531,7 @@ class ActAccountSetting : AppCompatActivity(),
             showVisibility()
             showAcctColor()
             showPushSetting()
+            showNotificationColor()
         } finally {
             loadingBusy = false
         }
@@ -547,6 +558,8 @@ class ActAccountSetting : AppCompatActivity(),
                 tvPushActions.vg(usePush)
                 btnPushSubscription.vg(usePush)
                 btnPushSubscriptionNotForce.vg(usePush)
+                tvNotificationAccentColor.vg(usePush)
+                llNotificationAccentColor.vg(usePush)
             }
 
             run {
@@ -688,6 +701,22 @@ class ActAccountSetting : AppCompatActivity(),
 //                PullNotification.openNotificationChannelSetting(
 //                    this
 //                )
+
+            R.id.btnNotificationAccentColorEdit -> {
+                ColorPickerDialog.newBuilder().apply {
+                    setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+                    setAllowPresets(true)
+                    setShowAlphaSlider(false)
+                    setDialogId(COLOR_DIALOG_NOTIFICATION_ACCENT_COLOR)
+                    account.notificationAccentColor.notZero()?.let { setColor(it) }
+                }.show(this)
+            }
+
+            R.id.btnNotificationAccentColorReset -> {
+                account.notificationAccentColor = 0
+                saveUIToData()
+                showNotificationColor()
+            }
         }
     }
 
@@ -788,16 +817,11 @@ class ActAccountSetting : AppCompatActivity(),
 ///////////////////////////////////////////////////
 
     private fun performAccountRemove() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.confirm)
-            .setMessage(R.string.confirm_account_remove)
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                launchAndShowError {
-                    authRepo.accountRemove(account)
-                    finish()
-                }
-            }.show()
+        launchAndShowError {
+            confirm(getString(R.string.confirm_account_remove), title = getString(R.string.confirm))
+            authRepo.accountRemove(account)
+            finish()
+        }
     }
 
     ///////////////////////////////////////////////////
@@ -1524,5 +1548,25 @@ class ActAccountSetting : AppCompatActivity(),
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
         }
+    }
+
+    override fun onDialogDismissed(dialogId: Int) {
+    }
+
+    override fun onColorSelected(dialogId: Int, newColor: Int) {
+        when (dialogId) {
+            COLOR_DIALOG_NOTIFICATION_ACCENT_COLOR -> {
+                account.notificationAccentColor = newColor or Color.BLACK
+                showNotificationColor()
+                saveUIToData()
+            }
+            else -> Unit
+        }
+    }
+
+    private fun showNotificationColor() {
+        views.vNotificationAccentColorColor.backgroundColor =
+            account.notificationAccentColor.notZero()
+                ?: ContextCompat.getColor(this, R.color.colorOsNotificationAccent)
     }
 }

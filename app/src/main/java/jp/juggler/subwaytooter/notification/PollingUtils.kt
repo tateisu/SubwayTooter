@@ -58,7 +58,7 @@ fun AppCompatActivity.resetNotificationTracking(account: SavedAccount) {
     }
     launchAndShowError {
         withContext(AppDispatchers.IO){
-            daoNotificationShown.cleayByAcct(account.acct.ascii)
+            daoNotificationShown.cleayByAcct(account.acct)
             PollingChecker.accountMutex(account.db_id).withLock {
                 daoNotificationTracking.resetTrackingState(account.db_id)
             }
@@ -232,7 +232,7 @@ suspend fun checkNoticifationAll(
         }
     }
 
-    daoSavedAccount.loadAccountList().mapNotNull { sa ->
+    daoSavedAccount.loadRealAccounts().mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
             else -> EmptyScope.launch(AppDispatchers.DEFAULT) {

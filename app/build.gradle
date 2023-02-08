@@ -68,6 +68,12 @@ android {
             lintOptions {
                 disable "MissingTranslation"
             }
+            // You need to specify either an absolute path or include the
+            // keystore file in the same directory as the build.gradle file.
+            storeFile file("D:\\GoogleDrive\\_private\\AndroidSignKeys\\SubwayTooter.jks")
+            storePassword "password"
+            keyAlias "my-alias"
+            keyPassword "password"
         }
         debug {
 

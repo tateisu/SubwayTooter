@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import jp.juggler.subwaytooter.api.dialogOrToast
-import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActPushMessageListBinding
 import jp.juggler.subwaytooter.databinding.LvPushMessageBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
@@ -26,12 +25,14 @@ import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.subwaytooter.table.daoAccountNotificationStatus
 import jp.juggler.subwaytooter.table.daoPushMessage
+import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.permissionSpecNotification
 import jp.juggler.subwaytooter.util.requester
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.encodeBase64Url
 import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.os.saveToDownload
 import jp.juggler.util.time.formatLocalTime
@@ -58,6 +59,9 @@ class ActPushMessageList : AppCompatActivity() {
 
     private val prNotification = permissionSpecNotification.requester {
         // 特に何もしない
+    }
+    private val acctMap by lazy {
+        daoSavedAccount.loadRealAccounts().associateBy { it.acct }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +100,7 @@ class ActPushMessageList : AppCompatActivity() {
         launchAndShowError {
             actionsDialog {
                 action(getString(R.string.push_message_re_decode)) {
-                    pushRepo.reDecode(pm)
+                    pushRepo.reprocess(pm)
                 }
                 action(getString(R.string.push_message_save_to_download_folder)) {
                     export(pm)
@@ -140,7 +144,7 @@ class ActPushMessageList : AppCompatActivity() {
             if (acct == null) {
                 println("!!secret key is not exported because missing recepients acct.")
             } else {
-                val status = daoAccountNotificationStatus.load(Acct.parse(acct))
+                val status = daoAccountNotificationStatus.load(acct)
                 if (status == null) {
                     println("!!secret key is not exported because missing status for acct $acct .")
                 } else {
@@ -157,12 +161,16 @@ class ActPushMessageList : AppCompatActivity() {
 
     private val tintIconMap = HashMap<String, Drawable>()
 
-    fun tintIcon(ic: PushMessageIconColor) =
-        tintIconMap.getOrPut(ic.name) {
+    fun tintIcon(pm: PushMessage, ic: PushMessageIconColor) =
+        tintIconMap.getOrPut("${ic.name}-${pm.loginAcct}") {
             val context = this
             val src = ContextCompat.getDrawable(context, ic.iconId)!!
-            DrawableCompat.wrap(src).also {
-                DrawableCompat.setTint(it, ContextCompat.getColor(context, ic.colorRes))
+            DrawableCompat.wrap(src).also { d ->
+                val a = acctMap[pm.loginAcct]
+                val c = ic.colorRes.notZero()?.let { ContextCompat.getColor(context, it) }
+                    ?: a?.notificationAccentColor?.notZero()
+                    ?: ContextCompat.getColor(this, R.color.colorOsNotificationAccent)
+                DrawableCompat.setTint(d, c)
             }
         }
 
@@ -183,10 +191,9 @@ class ActPushMessageList : AppCompatActivity() {
             pm ?: return
             lastItem = pm
 
-            val iconAndColor = pm.iconColor()
             Glide.with(views.ivSmall)
                 .load(pm.iconSmall)
-                .error(tintIcon(iconAndColor))
+                .error(tintIcon(pm, pm.iconColor()))
                 .into(views.ivSmall)
 
             Glide.with(views.ivLarge)

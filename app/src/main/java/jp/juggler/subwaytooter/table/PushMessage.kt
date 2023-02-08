@@ -16,7 +16,7 @@ data class PushMessage(
     // DBの主ID
     var id: Long = 0L,
     // 通知を受け取るアカウントのacct。通知のタイトルでもある
-    var loginAcct: String? = null,
+    var loginAcct: Acct? = null,
     // 通知情報に含まれるタイムスタンプ
     var timestamp: Long = System.currentTimeMillis(),
     // 通知を受信/保存した時刻
@@ -151,7 +151,7 @@ data class PushMessage(
         fun readRow(cursor: Cursor) =
             PushMessage(
                 id = cursor.getLong(idxId),
-                loginAcct = cursor.getStringOrNull(idxLoginAcct),
+                loginAcct = cursor.getStringOrNull(idxLoginAcct)?.let{Acct.parse(it)},
                 timestamp = cursor.getLong(idxTimestamp),
                 timeSave = cursor.getLong(idxTimeSave),
                 timeDismiss = cursor.getLong(idxTimeDismiss),
@@ -183,7 +183,7 @@ data class PushMessage(
 
     // ID以外のカラムをContentValuesに変換する
     fun toContentValues() = ContentValues().apply {
-        put(COL_LOGIN_ACCT, loginAcct)
+        put(COL_LOGIN_ACCT, loginAcct?.ascii)
         put(COL_TIMESTAMP, timestamp)
         put(COL_TIME_SAVE, timeSave)
         put(COL_TIME_DISMISS, timeDismiss)
@@ -253,6 +253,18 @@ data class PushMessage(
             db.queryAll(TABLE, "$COL_TIME_SAVE desc")
                 ?.use { ColIdx(it).readAll(it) }
                 ?: emptyList()
+
+        fun deleteAccount(acct: Acct) {
+            try {
+                db.execSQL(
+                    "delete from $TABLE where $COL_LOGIN_ACCT=?",
+                    arrayOf(acct.ascii)
+                )
+                fireDataChanged()
+            } catch (ex: Throwable) {
+                log.e(ex, "sweep failed.")
+            }
+        }
     }
 
     override fun hashCode() = if (id == 0L) super.hashCode() else id.hashCode()

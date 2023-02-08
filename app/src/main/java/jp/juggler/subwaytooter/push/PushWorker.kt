@@ -1,7 +1,10 @@
 package jp.juggler.subwaytooter.push
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.work.*
+import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.notification.NotificationChannels
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.notEmpty
@@ -14,6 +17,8 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
 
     companion object {
         private val log = LogCategory("PushWorker")
+
+        private val ncPushWorker = NotificationChannels.PushWorker
 
         const val KEY_ACTION = "action"
         const val KEY_ENDPOINT = "endpoint"
@@ -31,8 +36,8 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
 
         fun enqueueUpEndpoint(context: Context, endpoint: String) {
             workDataOf(
-                PushWorker.KEY_ACTION to PushWorker.ACTION_UP_ENDPOINT,
-                PushWorker.KEY_ENDPOINT to endpoint,
+                KEY_ACTION to ACTION_UP_ENDPOINT,
+                KEY_ENDPOINT to endpoint,
             ).launchPushWorker(context)
         }
 
@@ -45,8 +50,8 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
 
         fun enqueuePushMessage(context: Context, messageId: Long) {
             workDataOf(
-                PushWorker.KEY_ACTION to PushWorker.ACTION_MESSAGE,
-                PushWorker.KEY_MESSAGE_ID to messageId,
+                KEY_ACTION to ACTION_MESSAGE,
+                KEY_MESSAGE_ID to messageId,
             ).launchPushWorker(context)
         }
 
@@ -68,9 +73,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
     }
 
     override suspend fun doWork(): Result = try {
-        NotificationChannels.PushWorker.createForegroundInfo(
-            applicationContext,
-        )?.let{setForegroundAsync(it)}
+        createForegroundInfo()?.let { setForegroundAsync(it) }
         withContext(AppDispatchers.IO) {
             val pushRepo = applicationContext.pushRepo
             when (val action = inputData.getString(KEY_ACTION)) {
@@ -80,7 +83,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
                         val endpoint = inputData.getString(KEY_ENDPOINT)
                             ?.notEmpty() ?: error("missing endpoint.")
                         pushRepo.newUpEndpoint(endpoint)
-                    }finally{
+                    } finally {
                         timeEndUpEndpoint.set(System.currentTimeMillis())
                     }
                 }
@@ -89,7 +92,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
                     try {
                         val keepAliveMode = inputData.getBoolean(KEY_KEEP_ALIVE_MODE, false)
                         pushRepo.registerEndpoint(keepAliveMode)
-                    }finally{
+                    } finally {
                         timeEndRegisterEndpoint.set(System.currentTimeMillis())
                     }
                 }
@@ -105,5 +108,33 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
     } catch (ex: Throwable) {
         log.e(ex, "doWork failed.")
         Result.failure()
+    }
+
+    /**
+     * 時々OSに呼ばれる
+     * Android 11 moto g31 で発生
+     */
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return createForegroundInfo(force = true)!!
+    }
+
+    private fun createForegroundInfo(force: Boolean = false): ForegroundInfo? {
+        val context = applicationContext
+
+        // 通知タップ時のPendingIntent
+        val iTap = Intent(context, ActMain::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val piTap = PendingIntent.getActivity(
+            context,
+            ncPushWorker.pircTap,
+            iTap,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        return ncPushWorker.createForegroundInfo(
+            context,
+            piTap = piTap,
+            force = force,
+        )
     }
 }

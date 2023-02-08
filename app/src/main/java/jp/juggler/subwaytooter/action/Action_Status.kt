@@ -607,5 +607,5 @@ fun ActMain.openStatusHistory(
     accessInfo: SavedAccount,
     status: TootStatus,
 ) {
-    addColumn(pos, accessInfo, ColumnType.STATUS_HISTORY, status.id, status.json)
+    addColumn(pos, accessInfo, ColumnType.STATUS_HISTORY, params = arrayOf(status.id, status.json))
 }

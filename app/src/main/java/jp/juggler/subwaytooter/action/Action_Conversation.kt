@@ -164,7 +164,7 @@ fun ActMain.conversationLocal(
         else ->
             ColumnType.CONVERSATION
     },
-    statusId,
+    params = arrayOf(statusId),
 )
 
 private val reDetailedStatusTime =
@@ -501,7 +501,10 @@ fun ActMain.conversationFromTootsearch(
                 val replyId = status?.in_reply_to_id
                 when {
                     status == null -> showToast(true, result.error ?: "?")
-                    replyId == null -> showToast(true, "showReplyTootsearch: in_reply_to_id is null")
+                    replyId == null -> showToast(
+                        true,
+                        "showReplyTootsearch: in_reply_to_id is null"
+                    )
                     else -> conversationLocal(pos, a, replyId)
                 }
             }

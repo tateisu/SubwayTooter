@@ -38,9 +38,7 @@ class TootAnnouncement(
         private val log = LogCategory("TootAnnouncement")
 
         fun tootAnnouncement(parser: TootParser, src: JsonObject): TootAnnouncement {
-            val custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
-                CustomEmoji.decode(parser.apDomain, parser.apiHost, it)
-            }
+            val custom_emojis = parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMastodon)
             val reactions = parseListOrNull(src.jsonArray("reactions")) {
                 TootReaction.parseFedibird(it)
             }

@@ -166,7 +166,8 @@
     <color name="colorNotificationAccentReaction">#f5f233</color>
     <color name="colorNotificationAccentReblog">#39e3d5</color>
     <color name="colorNotificationAccentReply">#ff3dbb</color>
-    <color name="colorNotificationAccentSignUp">#f56a33</color>
+    <color name="colorNotificationAccentAdminSignUp">#f56a33</color>
+    <color name="colorNotificationAccentAdminReport">#ff0000</color>
     <color name="colorNotificationAccentStatus">#33f597</color>
     <color name="colorNotificationAccentUnfollow">#9433f5</color>
     <color name="colorNotificationAccentUnknown">#ae1aed</color>

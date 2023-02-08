@@ -189,7 +189,7 @@ object PrefB {
     )
     val bpMoveNotificationsQuickFilter = BooleanPref(
         "MoveNotificationsQuickFilter",
-        false
+        true
     )
     val bpShowAcctInSystemNotification = BooleanPref(
         "ShowAcctInSystemNotification",

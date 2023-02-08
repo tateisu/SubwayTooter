@@ -115,9 +115,14 @@ class SavedAccount(
     @JsonPropBoolean("notificationPullEnable", false)
     var notificationPullEnable by jsonDelegates.boolean
 
+    @JsonPropInt("notificationAccentColor", 0)
+    var notificationAccentColor by jsonDelegates.int
+
     init {
         log.i("ctor acctArg $acctArg")
 
+        // acctArg はMastodonの生のやつで、ドメイン部分がない場合がある
+        // Acct.parse はHost部分がnullのacctになるかもしれない
         val tmpAcct = Acct.parse(acctArg)
         this.username = tmpAcct.username
         if (username.isEmpty()) error("missing username in acct")
@@ -128,6 +133,7 @@ class SavedAccount(
         this.apiHost = tmpApiHost ?: tmpApDomain ?: tmpAcct.host ?: error("missing apiHost")
         this.apDomain = tmpApDomain ?: tmpApiHost ?: tmpAcct.host ?: error("missing apDomain")
 
+        // Full Acct
         this.acct = tmpAcct.followHost(apDomain)
     }
 
@@ -590,15 +596,24 @@ class SavedAccount(
         fun loadAccountList() =
             ArrayList<SavedAccount>().also { result ->
                 try {
-                    db.query(
-                        table,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null
-                    ).use { cursor ->
+                    db.rawQuery("select * from $table", emptyArray()).use { cursor ->
+                        while (cursor.moveToNext()) {
+                            parse(lazyContext, cursor)?.let { result.add(it) }
+                        }
+                    }
+                } catch (ex: Throwable) {
+                    log.e(ex, "loadAccountList failed.")
+                    lazyContext.showToast(
+                        true,
+                        ex.withCaption("(SubwayTooter) broken in-app database?")
+                    )
+                }
+            }
+
+        fun loadRealAccounts() =
+            ArrayList<SavedAccount>().also { result ->
+                try {
+                    db.rawQuery("select * from $table where $COL_USER not like '?%'", emptyArray()).use { cursor ->
                         while (cursor.moveToNext()) {
                             parse(lazyContext, cursor)?.let { result.add(it) }
                         }
@@ -892,7 +907,8 @@ class SavedAccount(
 
         TootNotification.TYPE_STATUS_REFERENCE -> notificationStatusReference
 
-        else -> false
+        // 未知の通知はオフらない
+        else -> true
     }
 
     fun getResizeConfig() =

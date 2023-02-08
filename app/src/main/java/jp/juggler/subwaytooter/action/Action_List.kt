@@ -28,8 +28,10 @@ import okhttp3.Request
 
 fun ActMain.clickListTl(pos: Int, accessInfo: SavedAccount, item: TimelineItem?) {
     when (item) {
-        is TootList -> addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
-        is MisskeyAntenna -> addColumn(pos, accessInfo, ColumnType.MISSKEY_ANTENNA_TL, item.id)
+        is TootList ->
+            addColumn(pos, accessInfo, ColumnType.LIST_TL, params = arrayOf(item.id))
+        is MisskeyAntenna ->
+            addColumn(pos, accessInfo, ColumnType.MISSKEY_ANTENNA_TL, params = arrayOf(item.id))
     }
 }
 
@@ -39,7 +41,7 @@ fun ActMain.clickListMoreButton(pos: Int, accessInfo: SavedAccount, item: Timeli
             launchAndShowError {
                 actionsDialog(item.title) {
                     action(getString(R.string.list_timeline)) {
-                        addColumn(pos, accessInfo, ColumnType.LIST_TL, item.id)
+                        addColumn(pos, accessInfo, ColumnType.LIST_TL, params = arrayOf(item.id))
                     }
                     action(getString(R.string.list_member)) {
                         addColumn(
@@ -47,7 +49,7 @@ fun ActMain.clickListMoreButton(pos: Int, accessInfo: SavedAccount, item: Timeli
                             pos,
                             accessInfo,
                             ColumnType.LIST_MEMBER,
-                            item.id
+                            params = arrayOf(item.id)
                         )
                     }
                     action(getString(R.string.rename)) {

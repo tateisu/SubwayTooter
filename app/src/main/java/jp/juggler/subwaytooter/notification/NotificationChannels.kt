@@ -121,7 +121,7 @@ enum class NotificationChannels(
 
     ;
 
-    fun isDissabled(context: Context) = !isEnabled(context)
+    fun isDisabled(context: Context) = !isEnabled(context)
 
     fun isEnabled(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= 33) {
@@ -175,21 +175,25 @@ enum class NotificationChannels(
         text: String? = context.getString(descId),
         piTap: PendingIntent? = null,
         piDelete: PendingIntent? = null,
+        force:Boolean = false,
     ): ForegroundInfo? {
-        if (Build.VERSION.SDK_INT >= 33) {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                log.w("[$id] missing POST_NOTIFICATIONS.")
+        val notificationManager = NotificationManagerCompat.from(context)
+
+        if(!force){
+            if (Build.VERSION.SDK_INT >= 33) {
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    log.w("[$id] missing POST_NOTIFICATIONS.")
+                    return null
+                }
+            }
+            if (!notificationManager.isChannelEnabled(id)) {
+                log.w("[$id] notification channel is disabled.")
                 return null
             }
-        }
-        val notificationManager = NotificationManagerCompat.from(context)
-        if (!notificationManager.isChannelEnabled(id)) {
-            log.w("[$id] notification channel is disabled.")
-            return null
         }
         val nc = this
         val builder = NotificationCompat.Builder(context, nc.id).apply {

@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.Context
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
@@ -81,90 +82,79 @@ class TootNotification(
         const val TYPE_STATUS_REFERENCE = "status_reference"
         const val TYPE_SCHEDULED_STATUS = "scheduled_status"
 
-        fun tootNotification(parser: TootParser, src: JsonObject): TootNotification {
-            val id: EntityId
-            //	One of: "mention", "reblog", "favourite", "follow"
-            val type: String
-            //	The Account sending the notification to the user
-            val accountRef: TootAccountRef?
+        private fun tootNotificationMisskey(parser: TootParser, src: JsonObject): TootNotification {
+            // Misskeyの通知APIはページネーションをIDでしか行えない
+            // これは改善される予定 https://github.com/syuilo/misskey/issues/2275
 
-            // The Status associated with the notification, if applicable
-            // 投稿の更新により変更可能になる
-            val status: TootStatus?
+            val created_at: String? = src.string("createdAt")
 
-            val reaction: TootReaction?
+            val accountRef = tootAccountRefOrNull(
+                parser,
+                parser.account(src.jsonObject("user"))
+            )
 
-            val reblog_visibility: TootVisibility
+            val reaction: TootReaction? = src.string("reaction")
+                ?.notEmpty()
+                ?.let { TootReaction.parseMisskey(it) }
 
-            //	The time the notification was created
-            val created_at: String?
-            val time_created_at: Long
-
-
-            if (parser.serviceType == ServiceType.MISSKEY) {
-                id = EntityId.mayDefault(src.string("id"))
-
-                type = src.stringOrThrow("type")
-
-                created_at = src.string("createdAt")
-                time_created_at = TootStatus.parseTime(created_at)
-
-                accountRef = TootAccountRef.mayNull(
-                    parser,
-                    parser.account(
-                        src.jsonObject("user")
-                    )
-                )
-                status = parser.status(
-                    src.jsonObject("note")
-                )
-
-                reaction = src.string("reaction")
-                    ?.notEmpty()
-                    ?.let { TootReaction.parseMisskey(it) }
-
-                reblog_visibility = TootVisibility.Unknown
-
-                // Misskeyの通知APIはページネーションをIDでしか行えない
-                // これは改善される予定 https://github.com/syuilo/misskey/issues/2275
-            } else {
-                id = EntityId.mayDefault(src.string("id"))
-
-                type = src.stringOrThrow("type")
-
-                created_at = src.string("created_at")
-                time_created_at = TootStatus.parseTime(created_at)
-                accountRef =
-                    TootAccountRef.mayNull(parser, parser.account(src.jsonObject("account")))
-                status = parser.status(src.jsonObject("status"))
-
-                reaction = src.jsonObject("emoji_reaction")
-                    ?.notEmpty()
-                    ?.let { TootReaction.parseFedibird(it) }
-                        // pleroma unicode emoji
-                    ?: src.string("emoji")?.let { TootReaction(name = it) }
-
-                // fedibird
-                // https://github.com/fedibird/mastodon/blob/7974fd3c7ec11ea9f7bef4ad7f4009fff53f62af/app/serializers/rest/notification_serializer.rb#L9
-                val visibilityString = when {
-                    src.boolean("limited") == true -> "limited"
-                    else -> src.string("reblog_visibility")
-                }
-                reblog_visibility = TootVisibility.parseMastodon(visibilityString)
-                    ?: TootVisibility.Unknown
-            }
             return TootNotification(
                 json = src,
-                id = id,
-                type = type,
+                id = EntityId.mayDefault(src.string("id")),
+                type = src.stringOrThrow("type"),
+                accountRef = accountRef,
+                status = parser.status(src.jsonObject("note")),
+                reaction = reaction,
+                reblog_visibility = TootVisibility.Unknown,
+                created_at = created_at,
+                time_created_at = TootStatus.parseTime(created_at),
+            )
+        }
+
+        private fun tootNotificationMastodon(
+            parser: TootParser,
+            src: JsonObject,
+        ): TootNotification {
+
+            val created_at: String? = src.string("created_at")
+
+            val accountRef: TootAccountRef? =
+                tootAccountRefOrNull(parser, parser.account(src.jsonObject("account")))
+
+            val status: TootStatus? = parser.status(src.jsonObject("status"))
+
+            val reaction: TootReaction? = src.jsonObject("emoji_reaction")
+                ?.notEmpty()
+                ?.let { TootReaction.parseFedibird(it) }
+                ?: src.string("emoji")?.let { TootReaction(name = it) } // pleroma unicode emoji
+
+            // fedibird
+            // https://github.com/fedibird/mastodon/blob/7974fd3c7ec11ea9f7bef4ad7f4009fff53f62af/app/serializers/rest/notification_serializer.rb#L9
+            val visibilityString = when {
+                src.boolean("limited") == true -> "limited"
+                else -> src.string("reblog_visibility")
+            }
+
+            val reblog_visibility = TootVisibility.parseMastodon(visibilityString)
+                ?: TootVisibility.Unknown
+
+            return TootNotification(
+                json = src,
+                id = EntityId.mayDefault(src.string("id")),
+                type = src.stringOrThrow("type"),
                 accountRef = accountRef,
                 status = status,
                 reaction = reaction,
                 reblog_visibility = reblog_visibility,
                 created_at = created_at,
-                time_created_at = time_created_at,
+                time_created_at = TootStatus.parseTime(created_at),
             )
         }
+
+        fun tootNotification(parser: TootParser, src: JsonObject): TootNotification =
+            when (parser.serviceType) {
+                ServiceType.MISSKEY -> tootNotificationMisskey(parser, src)
+                else -> tootNotificationMastodon(parser, src)
+            }
     }
 
     override fun getOrderId() = id
@@ -172,16 +162,8 @@ class TootNotification(
     fun getNotificationLine(context: Context): String {
 
         val name = when (PrefB.bpShowAcctInSystemNotification.value) {
-            false -> accountRef?.decoded_display_name
-
-            true -> {
-                val acctPretty = accountRef?.get()?.acct?.pretty
-                if (acctPretty?.isNotEmpty() == true) {
-                    "@$acctPretty"
-                } else {
-                    null
-                }
-            }
+            true -> accountRef?.get()?.acct?.pretty?.notEmpty()?.let { "@$it" }
+            else -> accountRef?.decoded_display_name
         } ?: "?"
 
         return when (type) {
@@ -223,7 +205,10 @@ class TootNotification(
             TYPE_EMOJI_REACTION_PLEROMA,
             TYPE_EMOJI_REACTION,
             TYPE_REACTION,
-            -> context.getString(R.string.display_name_reaction_by, name)
+            -> arrayOf(
+                context.getString(R.string.display_name_reaction_by, name),
+                reaction?.name
+            ).mapNotNull { it.notEmpty() }.joinToString(" ")
 
             TYPE_VOTE,
             TYPE_POLL_VOTE_MISSKEY,
@@ -239,7 +224,7 @@ class TootNotification(
             TYPE_POLL,
             -> context.getString(R.string.end_of_polling_from, name)
 
-            else -> "?"
+            else -> context.getString(R.string.unknown_notification_from, name) + " :" + type
         }
     }
 }

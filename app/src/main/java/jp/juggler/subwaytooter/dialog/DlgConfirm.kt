@@ -95,21 +95,22 @@ object DlgConfirm {
     suspend fun AppCompatActivity.confirm(@StringRes messageId: Int, vararg args: Any?) =
         confirm(getString(messageId, *args))
 
-    suspend fun AppCompatActivity.confirm(message: CharSequence) {
+    suspend fun AppCompatActivity.confirm(message: CharSequence, title: CharSequence? = null) {
         suspendCancellableCoroutine { cont ->
             try {
                 val views = DlgConfirmBinding.inflate(layoutInflater)
                 views.tvMessage.text = message
                 views.cbSkipNext.visibility = View.GONE
 
-                val dialog = AlertDialog.Builder(this)
-                    .setView(views.root)
-                    .setCancelable(true)
-                    .setNegativeButton(R.string.cancel, null)
-                    .setPositiveButton(R.string.ok) { _, _ ->
+                val dialog = AlertDialog.Builder(this).apply {
+                    setView(views.root)
+                    setCancelable(true)
+                    title?.let { setTitle(it) }
+                    setNegativeButton(R.string.cancel, null)
+                    setPositiveButton(R.string.ok) { _, _ ->
                         if (cont.isActive) cont.resume(Unit)
                     }
-                    .create()
+                }.create()
                 dialog.setOnDismissListener {
                     if (cont.isActive) cont.resumeWithException(CancellationException("dialog closed."))
                 }

@@ -224,15 +224,7 @@ class CustomEmojiLister(
                     builder.post(JsonObject().toRequestBody())
                 }?.decodeJsonObject()
                     ?.jsonArray("emojis")
-                    ?.let { emojis12 ->
-                        parseList(emojis12) {
-                            CustomEmoji.decodeMisskey(
-                                accessInfo.apDomain,
-                                accessInfo.apiHost,
-                                it
-                            )
-                        }
-                    }
+                    ?.let { parseList(it, CustomEmoji::decodeMisskey) }
 
             // v13のemojisを読む
             suspend fun misskeyEmojis13(): List<CustomEmoji>? =
@@ -247,11 +239,7 @@ class CustomEmojiLister(
                     ?.jsonArray("emojis")
                     ?.let { emojis13 ->
                         parseList(emojis13) {
-                            CustomEmoji.decodeMisskey13(
-                                accessInfo.apDomain,
-                                accessInfo.apiHost,
-                                it
-                            )
+                            CustomEmoji.decodeMisskey13(accessInfo.apiHost, it)
                         }
                     }
 
@@ -261,13 +249,7 @@ class CustomEmojiLister(
                     "https://$cacheKey/api/v1/custom_emojis",
                     accessInfo = accessInfo
                 )?.let { data ->
-                    parseList(data.decodeJsonArray()) {
-                        CustomEmoji.decode(
-                            accessInfo.apDomain,
-                            accessInfo.apiHost,
-                            it
-                        )
-                    }
+                    parseList(data.decodeJsonArray(), CustomEmoji::decodeMastodon)
                 }
 
             val list = when {

@@ -15,22 +15,26 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.Options
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
+import com.bumptech.glide.load.model.ModelLoader
+import com.bumptech.glide.load.model.ModelLoader.LoadData
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.MyGifDrawable
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.clip
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
+import java.nio.ByteBuffer
 
 class MyNetworkImageView : AppCompatImageView {
-
-    companion object {
-        internal val log = LogCategory("MyNetworkImageView")
-    }
 
     // ロード中などに表示するDrawableのリソースID
     private var mDefaultImage: Drawable? = null
@@ -43,7 +47,7 @@ class MyNetworkImageView : AppCompatImageView {
 
     // 表示したい画像のURL
     private var mUrl: String? = null
-    private var mMayGif: Boolean = false
+    private var mMayAnime: Boolean = false
 
     // 非同期処理のキャンセル
     private var mTarget: Target<*>? = null
@@ -76,20 +80,19 @@ class MyNetworkImageView : AppCompatImageView {
     fun setImageUrl(
         r: Float,
         url: String?,
-        gifUrlArg: String? = null,
+        animeUrl: String? = null,
     ) {
-
         mCornerRadius = r
-
-        val gifUrl = if (PrefB.bpEnableGifAnimation.value) gifUrlArg else null
-
-        if (gifUrl?.isNotEmpty() == true) {
-            mUrl = gifUrl
-            mMayGif = true
-        } else {
-            mUrl = url
-            mMayGif = false
+        if (PrefB.bpEnableGifAnimation.value) {
+            animeUrl?.notEmpty()?.let {
+                mUrl = it
+                mMayAnime = true
+                loadImageIfNecessary()
+                return
+            }
         }
+        mUrl = url
+        mMayAnime = false
         loadImageIfNecessary()
     }
 
@@ -178,13 +181,15 @@ class MyNetworkImageView : AppCompatImageView {
 
             val glideUrl = GlideUrl(url, glideHeaders)
 
-            mTarget = if (mMayGif) {
+            mTarget = if (mMayAnime) {
                 getGlide()
                     ?.load(glideUrl)
+                    ?.listener(listener)
                     ?.into(MyTargetGif(url))
             } else {
                 getGlide()
                     ?.load(glideUrl)
+                    ?.listener(listener)
                     ?.into(MyTarget(url))
             }
         } catch (ex: Throwable) {
@@ -563,4 +568,61 @@ class MyNetworkImageView : AppCompatImageView {
             }
         }
     }
+
+    companion object {
+        private val log = LogCategory("MyNetworkImageView")
+        private val listener = MyRequestListener()
+        private val misskey13ModelLoader = Misskey13ModelLoader()
+    }
+
+    class MyRequestListener : RequestListener<Drawable> {
+        override fun onResourceReady(
+            resource: Drawable,
+            model: Any?,
+            target: Target<Drawable>?,
+            dataSource: DataSource?,
+            isFirstResource: Boolean,
+        ): Boolean {
+            return false // Allow calling onResourceReady on the Target.
+        }
+
+        override fun onLoadFailed(
+            e: GlideException?,
+            model: Any?,
+            target: Target<Drawable>?,
+            isFirstResource: Boolean,
+        ): Boolean {
+            e?.let {
+                log.e(it, "onLoadFailed")
+                it.rootCauses?.forEach { cause ->
+                    val message = cause?.message
+                    when {
+                        cause == null -> Unit
+                        message?.contains("setDataSource failed: status") == true ||
+                                message?.contains("etDataSourceCallback failed: status") == true
+                        -> log.w(message)
+                        else -> log.e(cause, "caused by")
+                    }
+                }
+            }
+            return false // Allow calling onLoadFailed on the Target.
+        }
+    }
+
+    class Misskey13ModelLoader : ModelLoader<String?, ByteBuffer> {
+        override fun handles(model: String): Boolean {
+            return model.startsWith("http") &&
+                    model.contains(".webp?")
+        }
+
+        override fun buildLoadData(
+            model: String,
+            width: Int,
+            height: Int,
+            options: Options,
+        ): LoadData<ByteBuffer>? {
+            TODO("Not yet implemented")
+        }
+    }
 }
+

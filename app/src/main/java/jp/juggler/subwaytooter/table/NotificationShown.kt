@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.util.data.MetaColumns
 import jp.juggler.util.data.TableCompanion
 import jp.juggler.util.data.replaceTo
@@ -15,7 +16,6 @@ class NotificationShown(
     var acct: String = "",
     var notificationId: String = "",
     var timeCreate: Long = System.currentTimeMillis(),
-    var timeDismiss: Long = 0L,
 ) {
     companion object : TableCompanion {
         private val log = LogCategory("NotificationShown")
@@ -24,13 +24,11 @@ class NotificationShown(
         private const val COL_ACCT = "a"
         private const val COL_NOTIFICATION_ID = "ni"
         private const val COL_TIME_CREATE = "tc"
-        private const val COL_TIME_DISMISS = "td"
         private val columnList = MetaColumns(table, initialVersion = 65).apply {
             column(0, COL_ID, MetaColumns.TS_INT_PRIMARY_KEY_NOT_NULL)
             column(0, COL_ACCT, MetaColumns.TS_EMPTY_NOT_NULL)
             column(0, COL_NOTIFICATION_ID, MetaColumns.TS_EMPTY_NOT_NULL)
             column(0, COL_TIME_CREATE, MetaColumns.TS_ZERO_NOT_NULL)
-            column(0, COL_TIME_DISMISS, MetaColumns.TS_ZERO_NOT_NULL)
             createExtra = {
                 arrayOf(
                     "create unique index if not exists ${table}_a on $table($COL_ACCT,$COL_NOTIFICATION_ID)",
@@ -122,24 +120,29 @@ class NotificationShown(
             }
         }
 
-        fun cleayByAcct(acct: String) {
+        fun cleayByAcct(acct: Acct) {
             db.execSQL(
                 "delete from $table where $COL_ACCT=?",
                 arrayOf(acct)
             )
         }
 
-        fun duplicateOrPut(acct: String, notificationId: String): Boolean {
+        fun duplicateOrPut(acct: Acct, notificationId: String): Boolean {
             try {
+                // 有効なIDがない場合は重複排除しない
+                when (notificationId) {
+                    "", EntityId.DEFAULT.toString() -> return false
+                }
+
                 db.rawQuery(
                     "select $COL_ID from $table where $COL_ACCT=? and $COL_NOTIFICATION_ID=? limit 1",
-                    arrayOf(acct, notificationId)
+                    arrayOf(acct.ascii, notificationId)
                 )?.use {
                     if (it.count > 0) return true
                 }
                 ContentValues().apply {
                     put(COL_TIME_CREATE, System.currentTimeMillis())
-                    put(COL_ACCT, acct)
+                    put(COL_ACCT, acct.ascii)
                     put(COL_NOTIFICATION_ID, notificationId)
                 }.replaceTo(db, table)
             } catch (ex: Throwable) {
@@ -148,5 +151,23 @@ class NotificationShown(
             return false
         }
 
+        fun isDuplicate(acct: Acct, notificationId: String): Boolean {
+            try {
+                // 有効なIDがない場合は重複排除しない
+                when (notificationId) {
+                    "", EntityId.DEFAULT.toString() -> return false
+                }
+
+                db.rawQuery(
+                    "select $COL_ID from $table where $COL_ACCT=? and $COL_NOTIFICATION_ID=? limit 1",
+                    arrayOf(acct.ascii, notificationId)
+                )?.use {
+                    if (it.count > 0) return true
+                }
+            } catch (ex: Throwable) {
+                log.e(ex, "isDuplicate failed.")
+            }
+            return false
+        }
     }
 }

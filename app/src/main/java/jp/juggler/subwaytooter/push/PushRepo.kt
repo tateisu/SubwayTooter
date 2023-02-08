@@ -12,7 +12,6 @@ import androidx.work.await
 import jp.juggler.crypt.*
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.push.ApiPushAppServer
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
@@ -46,19 +45,23 @@ import java.util.concurrent.TimeUnit
 
 private val log = LogCategory("PushRepo")
 
+private val defaultOkHttp by lazy {
+    OkHttpClient.Builder().apply {
+        connectTimeout(60, TimeUnit.SECONDS)
+        writeTimeout(60, TimeUnit.SECONDS)
+        readTimeout(60, TimeUnit.SECONDS)
+    }.build()
+}
+
 val Context.pushRepo: PushRepo
     get() {
-        val okHttp = OkHttpClient.Builder().apply {
-            connectTimeout(60, TimeUnit.SECONDS)
-            writeTimeout(60, TimeUnit.SECONDS)
-            readTimeout(60, TimeUnit.SECONDS)
-        }.build()
+        val okHttp = defaultOkHttp
         val appDatabase = appDatabase
         return PushRepo(
             context = applicationContextSafe,
-            apiPushAppServer = ApiPushAppServer(okHttp),
-            apiPushMastodon = ApiPushMastodon(okHttp),
-            apiPushMisskey = ApiPushMisskey(okHttp),
+            apiAppServer = ApiPushAppServer(okHttp),
+            apiMastodon = ApiPushMastodon(okHttp),
+            apiMisskey = ApiPushMisskey(okHttp),
             daoSavedAccount = SavedAccount.Access(appDatabase, this),
             daoPushMessage = PushMessage.Access(appDatabase),
             daoStatus = AccountNotificationStatus.Access(appDatabase),
@@ -70,9 +73,9 @@ val Context.pushRepo: PushRepo
 
 class PushRepo(
     private val context: Context,
-    private val apiPushMastodon: ApiPushMastodon,
-    private val apiPushMisskey: ApiPushMisskey,
-    private val apiPushAppServer: ApiPushAppServer,
+    private val apiMastodon: ApiPushMastodon,
+    private val apiMisskey: ApiPushMisskey,
+    private val apiAppServer: ApiPushAppServer,
     private val daoSavedAccount: SavedAccount.Access,
     private val daoPushMessage: PushMessage.Access,
     private val daoStatus: AccountNotificationStatus.Access,
@@ -92,7 +95,7 @@ class PushRepo(
     private val pushMisskey by lazy {
         PushMisskey(
             context = context,
-            api = apiPushMisskey,
+            api = apiMisskey,
             provider = provider,
             prefDevice = prefDevice,
             daoStatus = daoStatus,
@@ -102,7 +105,7 @@ class PushRepo(
     private val pushMastodon by lazy {
         PushMastodon(
             context = context,
-            api = apiPushMastodon,
+            api = apiMastodon,
             provider = provider,
             prefDevice = prefDevice,
             daoStatus = daoStatus,
@@ -220,7 +223,7 @@ class PushRepo(
             prefDevice.fcmTokenExpired.notEmpty()?.let {
                 refReporter?.get()?.setMessage("期限切れのFCMデバイストークンをアプリサーバから削除しています")
                 log.i("remove fcmTokenExpired")
-                apiPushAppServer.endpointRemove(fcmToken = it)
+                apiAppServer.endpointRemove(fcmToken = it)
                 prefDevice.fcmTokenExpired = null
             }
         } catch (ex: Throwable) {
@@ -232,15 +235,15 @@ class PushRepo(
             prefDevice.upEndpointExpired.notEmpty()?.let {
                 refReporter?.get()?.setMessage("期限切れのUnifiedPushエンドポイントをアプリサーバから削除しています")
                 log.i("remove upEndpointExpired")
-                apiPushAppServer.endpointRemove(upUrl = it)
+                apiAppServer.endpointRemove(upUrl = it)
                 prefDevice.upEndpointExpired = null
             }
         } catch (ex: Throwable) {
             log.w(ex, "can't forgot upEndpointExpired")
         }
 
-        val realAccounts = daoSavedAccount.loadAccountList()
-            .filter { !it.isPseudo }
+        val realAccounts = daoSavedAccount.loadRealAccounts()
+            .filter { !it.isPseudo && it.isConfirmed }
 
         val accts = realAccounts.map { it.acct }
 
@@ -269,23 +272,34 @@ class PushRepo(
             prefDevice.pushDistributor = null
         }
 
-        log.i("pushDistributor=${prefDevice.pushDistributor}")
         val acctHashList = acctHashMap.keys.toList()
+
         val json = when (prefDevice.pushDistributor) {
             null, "" -> when {
-                fcmHandler.hasFcm -> registerEndpointFcm(acctHashList)
+                fcmHandler.hasFcm -> {
+                    log.i("registerEndpoint dist=FCM(default), acctHashList=${acctHashList.size}")
+                    registerEndpointFcm(acctHashList)
+                }
                 else -> {
                     log.w("pushDistributor not selected. but can't select default distributor from background service.")
-                    null
+                    return
                 }
             }
             PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
+                log.i("push distrobuter 'none' is selected. it will remove subscription.")
                 willRemoveSubscription = true
                 null
             }
-            PrefDevice.PUSH_DISTRIBUTOR_FCM -> registerEndpointFcm(acctHashList)
-            else -> registerEndpointUnifiedPush(acctHashList)
+            PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
+                log.i("registerEndpoint dist=FCM, acctHashList=${acctHashList.size}")
+                registerEndpointFcm(acctHashList)
+            }
+            else -> {
+                log.i("registerEndpoint dist=${prefDevice.pushDistributor}, acctHashList=${acctHashList.size}")
+                registerEndpointUnifiedPush(acctHashList)
+            }
         }
+
         when {
             json.isNullOrEmpty() ->
                 log.i("no information of appServerHash.")
@@ -355,8 +369,7 @@ class PushRepo(
                 null
             }
             else -> {
-                log.i("endpointUpsert up ")
-                apiPushAppServer.endpointUpsert(
+                apiAppServer.endpointUpsert(
                     upUrl = upEndpoint,
                     fcmToken = null,
                     acctHashList = acctHashList
@@ -371,8 +384,7 @@ class PushRepo(
                 null
             }
             else -> {
-                log.i("endpointUpsert fcm ")
-                apiPushAppServer.endpointUpsert(
+                apiAppServer.endpointUpsert(
                     upUrl = null,
                     fcmToken = fcmToken,
                     acctHashList = acctHashList
@@ -436,7 +448,7 @@ class PushRepo(
      *
      * - 実際のアプリでは解読できたものだけを保存したいが、これは試験アプリなので…
      */
-    suspend fun reDecode(pm: PushMessage) {
+    suspend fun reprocess(pm: PushMessage) {
         withContext(AppDispatchers.IO) {
             updateMessage(pm.id, allowDupilicateNotification = true)
         }
@@ -463,7 +475,7 @@ class PushRepo(
             // アプリサーバから読み直す
             if (map["b"] == null) {
                 map.string("l")?.let { largeObjectId ->
-                    apiPushAppServer.getLargeObject(largeObjectId)
+                    apiAppServer.getLargeObject(largeObjectId)
                         ?.let {
                             map = it.decodeBinPack() as? BinPackMap
                                 ?: error("binPack decode failed.")
@@ -479,13 +491,13 @@ class PushRepo(
             val status = daoStatus.findByAcctHash(acctHash)
                 ?: error("missing status for acctHash $acctHash")
 
-            val acct = status.acct.notEmpty()
+            val acct = status.acct.takeIf { it.isValidFull }
                 ?: error("empty acct.")
 
-            val account = daoSavedAccount.loadAccountByAcct(Acct.parse(acct))
-                ?: error("missing account for acct ${status.acct}")
-
             pm.loginAcct = status.acct
+
+            val account = daoSavedAccount.loadAccountByAcct(acct)
+                ?: error("missing account for acct ${status.acct}")
 
             decodeMessageContent(status, pm, map)
             val messageJson = pm.messageJson
@@ -496,7 +508,7 @@ class PushRepo(
                 // メッセージに含まれるappServerHashを指定してendpoint登録を削除する
                 // するとアプリサーバはSNSサーバに対してgoneを返すようになり掃除が適切に行われるはず
                 map.string("c").notEmpty()?.let {
-                    val count = apiPushAppServer.endpointRemove(hashId = it).int("count")
+                    val count = apiAppServer.endpointRemove(hashId = it).int("count")
                     log.w("endpointRemove $count hashId=$it")
                 }
 
@@ -504,29 +516,37 @@ class PushRepo(
             }
 
             // Mastodonはなぜかアクセストークンが書いてあるので危険…
-            val censored = messageJson.toString()
+            val messageJsonFiltered = messageJson.toString()
                 .replace(
                     """"access_token":"[^"]+"""".toRegex(),
                     """"access_token":"***""""
                 )
-            log.i("${status.acct} $censored")
+            log.i("${status.acct} $messageJsonFiltered")
+
+            // ミュート用データを時々読む
+            TootStatus.updateMuteData()
 
             // messageJsonを解釈して通知に出す内容を決める
-            TootStatus.updateMuteData()
             pushBase(account).formatPushMessage(account, pm)
 
             val notificationId = pm.notificationId
             if (notificationId.isNullOrEmpty()) {
-                error("can't show notification. missing notificationId.")
+                log.w("can't show notification. missing notificationId.")
+                return
+            }
+
+            if (!account.canNotificationShowing(pm.notificationType)) {
+                log.w("notificationType ${pm.notificationType} is disabled.")
+                return
             }
 
             if (!allowDupilicateNotification &&
                 daoNotificationShown.duplicateOrPut(acct, notificationId)
             ) {
-                error("can't show notification. it's duplicate. $acct $notificationId")
+                log.w("can't show notification. it's duplicate. $acct $notificationId")
+                return
             }
 
-            // 解読できた(例外が出なかった)なら通知を出す
             showPushNotification(pm, account, notificationId)
         } catch (ex: Throwable) {
             log.e(ex, "updateMessage failed.")
@@ -620,8 +640,8 @@ class PushRepo(
         account: SavedAccount,
         notificationId: String,
     ) {
-        if (ncPushMessage.isDissabled(context)) {
-            log.w("ncPushMessage isDissabled.")
+        if (ncPushMessage.isDisabled(context)) {
+            log.w("ncPushMessage isDisabled.")
             return
         }
 
@@ -672,14 +692,18 @@ class PushRepo(
                 PendingIntent.FLAG_IMMUTABLE
             )
 
-        //  val iTap = intentActMessage(pm.messageDbId)
+        // val iTap = intentActMessage(pm.messageDbId)
         // val piTap = PendingIntent.getActivity(this, nc.pircTap, iTap, PendingIntent.FLAG_IMMUTABLE)
 
         ncPushMessage.notify(context, urlDelete) {
-            color = ContextCompat.getColor(context, iconAndColor.colorRes)
+            color = pm.iconColor().colorRes.notZero()
+                ?.let { ContextCompat.getColor(context, it) }
+                ?: account.notificationAccentColor.notZero()
+                        ?: ContextCompat.getColor(context, R.color.colorOsNotificationAccent)
+
             setSmallIcon(iconSmall)
             iconBitmapLarge?.let { setLargeIcon(it) }
-            setContentTitle(pm.loginAcct)
+            setContentTitle(pm.loginAcct?.pretty)
             setContentText(pm.text)
             setWhen(pm.timestamp)
             setContentIntent(piTap)
@@ -688,6 +712,8 @@ class PushRepo(
             pm.textExpand.notEmpty()?.let {
                 setStyle(NotificationCompat.BigTextStyle().bigText(it))
             }
+
+            setGroup(context.packageName + ":" + account.acct.ascii)
         }
     }
 

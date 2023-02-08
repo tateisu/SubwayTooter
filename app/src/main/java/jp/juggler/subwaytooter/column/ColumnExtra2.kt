@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
 import jp.juggler.subwaytooter.columnviewholder.saveScrollPosition
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -122,7 +123,7 @@ suspend fun Column.loadProfileAccount(
             // ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
             parser.misskeyDecodeProfilePin = true
             try {
-                TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
+                tootAccountRefOrNull(parser, parser.account(result1.jsonObject))?.also { a ->
                     this.whoAccount = a
                     client.publishApiProgress("") // カラムヘッダの再表示
                 }
@@ -134,7 +135,7 @@ suspend fun Column.loadProfileAccount(
         else -> client.request(
             "/api/v1/accounts/$profileId"
         )?.also { result1 ->
-            TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
+            tootAccountRefOrNull(parser, parser.account(result1.jsonObject))?.also { a ->
                 this.whoAccount = a
 
                 this.whoFeaturedTags = null

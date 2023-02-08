@@ -26,7 +26,10 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefDevice.Companion.PUSH_DISTRIBUTOR_NONE
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.push.fcmHandler
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.accountListCanSeeMyReactions
 import jp.juggler.subwaytooter.util.VersionString
@@ -404,7 +407,12 @@ class SideMenuAdapter(
 //        },
 
         Item(icon = R.drawable.ic_search, title = R.string.notestock) {
-            addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_NOTESTOCK, "")
+            addColumn(
+                defaultInsertPosition,
+                SavedAccount.na,
+                ColumnType.SEARCH_NOTESTOCK,
+                params = arrayOf("")
+            )
         },
 
         Item(),
@@ -524,7 +532,8 @@ class SideMenuAdapter(
                 ItemType.IT_NOTIFICATION_PERMISSION ->
                     viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
                         isAllCaps = false
-                        text = actMain.getString(R.string.notification_permission_not_granted)
+                        val action = notificationActionRecommend() ?: return@apply
+                        text = actMain.getString(action.first)
                         val drawable = createColoredDrawable(actMain, icon, iconColor, 1f)
                         setCompoundDrawablesRelativeWithIntrinsicBounds(
                             drawable,
@@ -534,11 +543,8 @@ class SideMenuAdapter(
                         )
                         setOnClickListener {
                             drawer.closeDrawer(GravityCompat.START)
-                            if (actMain.prNotification.spec.listNotGranded(actMain).isNotEmpty()) {
-                                actMain.prNotification.openAppSetting(actMain)
-                            } else {
-                                filterListItems()
-                            }
+                            notificationActionRecommend()?.second?.invoke()
+                            filterListItems()
                         }
                     }
             }
@@ -581,11 +587,24 @@ class SideMenuAdapter(
         this.notifyDataSetChanged()
     }
 
+    private fun notificationActionRecommend(): Pair<Int, () -> Unit>? = when {
+        actMain.prNotification.spec.listNotGranded(actMain).isNotEmpty() ->
+            Pair(R.string.notification_permission_not_granted) {
+                actMain.prNotification.openAppSetting(actMain)
+            }
+        (actMain.prefDevice.pushDistributor.isNullOrEmpty() && actMain.fcmHandler.noFcm) ||
+                actMain.prefDevice.pushDistributor == PUSH_DISTRIBUTOR_NONE ->
+            Pair(R.string.notification_push_distributor_disabled) {
+                actMain.selectPushDistributor()
+            }
+        else -> null
+    }
+
     fun filterListItems() {
         list = originalList.filter {
             when (it.itemType) {
                 ItemType.IT_NOTIFICATION_PERMISSION ->
-                    actMain.prNotification.spec.listNotGranded(actMain).isNotEmpty()
+                    notificationActionRecommend() != null
                 else -> true
             }
         }

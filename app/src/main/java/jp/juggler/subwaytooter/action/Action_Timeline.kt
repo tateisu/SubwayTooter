@@ -38,12 +38,14 @@ fun ActMain.timeline(
         )?.let { account ->
             when (type) {
                 ColumnType.PROFILE ->
-                    account.loginAccount?.id?.let { addColumn(pos, account, type, it) }
+                    account.loginAccount?.id?.let {
+                        addColumn(pos, account, type, params = arrayOf(it))
+                    }
 
                 ColumnType.PROFILE_DIRECTORY ->
-                    addColumn(pos, account, type, account.apiHost)
+                    addColumn(pos, account, type, params = arrayOf(account.apiHost))
 
-                else -> addColumn(pos, account, type, *args)
+                else -> addColumn(pos, account, type, params = args)
             }
         }
     }
@@ -95,7 +97,7 @@ fun ActMain.timelineDomain(
     pos: Int,
     accessInfo: SavedAccount,
     host: Host,
-) = addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE, host)
+) = addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE, params = arrayOf(host))
 
 // 指定タンスのローカルタイムラインを開く
 fun ActMain.timelineLocal(
@@ -131,7 +133,7 @@ private fun ActMain.timelineAround(
     pos: Int,
     id: EntityId,
     type: ColumnType,
-) = addColumn(pos, accessInfo, type, id)
+) = addColumn(pos, accessInfo, type, params = arrayOf(id))
 
 // 投稿を同期してstatusIdを調べてから指定アカウントでタイムラインを開く
 private fun ActMain.timelineAroundByStatus(

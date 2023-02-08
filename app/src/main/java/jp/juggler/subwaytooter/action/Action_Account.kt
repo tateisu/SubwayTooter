@@ -70,7 +70,7 @@ fun ActMain.accountAdd() {
                         val tootInstance = runApiTask2(apiHost) { TootInstance.getOrThrow(it) }
                         addPseudoAccount(apiHost, tootInstance)?.let { a ->
                             showToast(false, R.string.server_confirmed)
-                            addColumn(defaultInsertPosition, a, ColumnType.LOCAL)
+                            addColumn(defaultInsertPosition, a, ColumnType.LOCAL,protect=true)
                             dialogHost.dismissSafe()
                         }
                     }

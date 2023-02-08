@@ -4,11 +4,15 @@ import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.log.LogCategory
 
-class MisskeyNoteUpdate(apDomain: Host, apiHost: Host, src: JsonObject) {
-    companion object {
-        private val log = LogCategory("MisskeyNoteUpdate")
-    }
-
+class MisskeyNoteUpdate(
+    val noteId: EntityId,
+    val type: Type,
+    var reaction: String? = null,
+    var userId: EntityId? = null,
+    var deletedAt: Long? = null,
+    var choice: Int? = null,
+    var emoji: CustomEmoji? = null,
+) {
     enum class Type {
         REACTION,
         UNREACTION,
@@ -16,53 +20,34 @@ class MisskeyNoteUpdate(apDomain: Host, apiHost: Host, src: JsonObject) {
         VOTED
     }
 
-    val noteId: EntityId
-    val type: Type
-    var reaction: String? = null
-    var userId: EntityId? = null
-    var deletedAt: Long? = null
-    var choice: Int? = null
-    var emoji: CustomEmoji? = null
+    companion object {
 
-    init {
-        noteId = EntityId.mayNull(src.string("id")) ?: error("MisskeyNoteUpdate: missing note id")
+        fun misskeyNoteUpdate(src: JsonObject): MisskeyNoteUpdate {
 
-        // root.body.body
-        val body2 = src.jsonObject("body") ?: error("MisskeyNoteUpdate: missing body")
+            val noteId = EntityId.mayNull(src.string("id"))
+                ?: error("MisskeyNoteUpdate: missing note id")
 
-        when (val strType = src.string("type")) {
-            "reacted" -> {
-                type = Type.REACTION
-                reaction = body2.string("reaction")
-                userId = EntityId.mayDefault(body2.string("userId"))
-                emoji = body2.jsonObject("emoji")?.let {
-                    try {
-                        CustomEmoji.decodeMisskey(apDomain, apiHost, it)
-                    } catch (ex: Throwable) {
-                        log.e(ex, "can't parse custom emoji.")
-                        null
-                    }
-                }
+            // root.body.body
+            val body2 = src.jsonObject("body")
+                ?: error("MisskeyNoteUpdate: missing body")
+
+            val type: Type = when (val strType = src.string("type")) {
+                "reacted" -> Type.REACTION
+                "unreacted" -> Type.UNREACTION
+                "deleted" -> Type.DELETED
+                "pollVoted" -> Type.VOTED
+                else -> error("MisskeyNoteUpdate: unknown type $strType")
             }
 
-            "unreacted" -> {
-                type = Type.UNREACTION
-                reaction = body2.string("reaction")
-                userId = EntityId.mayDefault(body2.string("userId"))
-            }
-
-            "deleted" -> {
-                type = Type.DELETED
-                deletedAt = TootStatus.parseTime(body2.string("deletedAt"))
-            }
-
-            "pollVoted" -> {
-                type = Type.VOTED
-                choice = body2.int("choice")
-                userId = EntityId.mayDefault(body2.string("userId"))
-            }
-
-            else -> error("MisskeyNoteUpdate: unknown type $strType")
+            return MisskeyNoteUpdate(
+                noteId = noteId,
+                type = type,
+                reaction = body2.string("reaction"),
+                userId = EntityId.mayNull(body2.string("userId")),
+                deletedAt = body2.string("deletedAt")?.let { TootStatus.parseTime(it) },
+                choice = body2.int("choice"),
+                emoji = parseItem(body2.jsonObject("emoji"), CustomEmoji::decodeMisskey),
+            )
         }
     }
 }

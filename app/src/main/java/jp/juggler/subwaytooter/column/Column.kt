@@ -327,7 +327,7 @@ class Column(
         appState: AppState,
         accessInfo: SavedAccount,
         type: Int,
-        vararg params: Any,
+        params: Array<out Any>,
     ) : this(
         appState = appState,
         context = appState.context,

@@ -469,6 +469,56 @@ object EmojiDecoder {
         val useEmojioneShortcode = PrefB.bpEmojioneShortcode.value
         val disableEmojiAnimation = PrefB.bpDisableEmojiAnimation.value
 
+        // カスタム絵文字のアニメーション切り替え
+        fun CustomEmoji.customEmojiToUrl(): String = when {
+            disableEmojiAnimation && staticUrl?.isNotEmpty() == true -> staticUrl
+            else -> this.url
+        }
+
+        fun findEmojiMisskey13(name: String): String? {
+            val cols = name.split("@", limit = 2)
+            val apiHostAscii = options.linkHelper?.apiHost?.ascii
+
+            // @以降にあるホスト名か、投稿者のホスト名か、閲覧先サーバのホスト名
+            val userHost = cols.elementAtOrNull(1)
+                ?: options.authorDomain?.apiHost?.ascii
+                ?: apiHostAscii
+            log.i(
+                "decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
+                    cols.elementAtOrNull(1)
+                } apiHostAscii=$apiHostAscii, userHost=$userHost"
+            )
+
+            when {
+                // 絵文字プロクシを利用できない
+                apiHostAscii == null -> {
+                    log.w("decodeEmoji Misskey13 missing apiHostAscii")
+                }
+                userHost != null && userHost != "." && userHost != apiHostAscii -> {
+                    // 投稿者のホスト名を使う
+                    return "https://$apiHostAscii/emoji/${
+                        cols.elementAtOrNull(0)
+                    }@$userHost.webp"
+                }
+                else -> {
+                    // 存在確認せずに絵文字プロキシのURLを返す
+                    // 閲覧先サーバの絵文字を探す
+                    App1.custom_emoji_lister.getCachedEmoji(apiHostAscii, name)
+                        ?.let { return it.customEmojiToUrl() }
+                }
+            }
+            return null
+        }
+        fun findCustomEmojiUrl(name: String): String? {
+            emojiMapCustom?.get(name)?.customEmojiToUrl()
+                ?.let{ return it}
+            val misskeyVersion = options.linkHelper?.misskeyVersion ?: 0
+            return if (misskeyVersion >= 13) {
+                findEmojiMisskey13(name = name)
+            } else {
+                null
+            }
+        }
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
             override fun onString(part: String) {
                 builder.addUnicodeString(part)
@@ -487,53 +537,7 @@ object EmojiDecoder {
                     }
                 }
 
-                // カスタム絵文字
-                fun CustomEmoji.customEmojiToUrl(): String = when {
-                    disableEmojiAnimation && staticUrl?.isNotEmpty() == true ->
-                        this.staticUrl
-                    else ->
-                        this.url
-                }
-
-                fun findCustomEmojiUrl(): String? {
-                    val misskeyVersion = options.linkHelper?.misskeyVersion ?: 0
-                    if (misskeyVersion >= 13) {
-                        val cols = name.split("@", limit = 2)
-                        val apiHostAscii = options.linkHelper?.apiHost?.ascii
-
-                        // @以降にあるホスト名か、投稿者のホスト名か、閲覧先サーバのホスト名
-                        val userHost = cols.elementAtOrNull(1)
-                            ?: options.authorDomain?.apiHost?.ascii
-                            ?: apiHostAscii
-
-                        log.i(
-                            "decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
-                                cols.elementAtOrNull(1)
-                            } apiHostAscii=$apiHostAscii, userHost=$userHost"
-                        )
-
-                        when {
-                            // 絵文字プロクシを利用できない
-                            apiHostAscii == null -> {
-                                log.w("decodeEmoji Misskey13 missing apiHostAscii")
-                            }
-                            userHost != null && userHost != "." && userHost != apiHostAscii -> {
-                                // 投稿者のホスト名を使う
-                                return "https://$apiHostAscii/emoji/${
-                                    cols.elementAtOrNull(0)
-                                }@$userHost.webp"
-                            }
-                            else -> {
-                                // 閲覧先サーバの絵文字を探す
-                                App1.custom_emoji_lister.getCachedEmoji(apiHostAscii, name)
-                                    ?.let { return it.customEmojiToUrl() }
-                            }
-                        }
-                    }
-                    return emojiMapCustom?.get(name)?.customEmojiToUrl()
-                }
-
-                val url = findCustomEmojiUrl()
+                val url = findCustomEmojiUrl(name)
                 if (url != null) {
                     builder.addNetworkEmojiSpan(part, url)
                     return

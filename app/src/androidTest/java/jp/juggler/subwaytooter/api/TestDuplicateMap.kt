@@ -1,8 +1,12 @@
 package jp.juggler.subwaytooter.api
 
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccount.Companion.tootAccount
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRef
+import jp.juggler.subwaytooter.api.entity.TootNotification.Companion.tootNotification
+import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.*
 import org.junit.Assert.assertEquals
@@ -36,7 +40,7 @@ class TestDuplicateMap {
             if (url != null) put("url", url)
         }
 
-        return TootStatus(parser, itemJson)
+        return tootStatus(parser, itemJson)
     }
 
     private fun testDuplicateStatus(): ArrayList<TimelineItem> {
@@ -63,7 +67,7 @@ class TestDuplicateMap {
             put("url", "http://${parser.apiHost}/@user1")
         }
 
-        val account1 = TootAccount(parser, account1Json)
+        val account1 = tootAccount(parser, account1Json)
         assertNotNull(account1)
 
         val map = DuplicateMap()
@@ -122,7 +126,7 @@ class TestDuplicateMap {
                 put("id", id)
             }
 
-            val item = TootNotification(parser, itemJson)
+            val item = tootNotification(parser, itemJson)
             assertNotNull(item)
             generatedItems.add(item)
             assertEquals(false, map.isDuplicate(item))
@@ -178,7 +182,7 @@ class TestDuplicateMap {
                 put("url", "http://${parser.apiHost}/@user$id")
             }
 
-            val item = TootAccountRef.notNull(parser, TootAccount(parser, itemJson))
+            val item = tootAccountRef(parser, tootAccount(parser, itemJson))
             assertNotNull(item)
             generatedItems.add(item)
             assertEquals(false, map.isDuplicate(item))

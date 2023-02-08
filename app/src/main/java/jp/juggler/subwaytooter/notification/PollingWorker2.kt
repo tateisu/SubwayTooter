@@ -158,9 +158,10 @@ class PollingWorker2(
 
     private fun messageToForegroundInfo(
         text: String,
+        force:Boolean =false
     ): ForegroundInfo? {
         // テキストが変化していないなら更新しない
-        if (text.isEmpty() || text == lastMessage) return null
+        if (!force && (text.isEmpty() || text == lastMessage)) return null
 
         lastMessage = text
         log.i(text)
@@ -181,6 +182,15 @@ class PollingWorker2(
             context,
             text = text,
             piTap = piTap,
+            force = force,
         )
     }
+
+    /**
+     * ワーカーの初期化時にOSから呼ばれる場合がある
+     * - Android 11 moto g31 で発生
+     * - ダミーメッセージを仕込んだForegroundInfoを返す
+     */
+    override suspend fun getForegroundInfo(): ForegroundInfo =
+        messageToForegroundInfo("initializing…",force=true)!!
 }

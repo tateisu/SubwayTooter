@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.finder
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
@@ -23,7 +24,7 @@ private fun misskeyUnwrapRelationAccount(parser: TootParser, srcList: JsonArray,
     srcList.objectList().mapNotNull {
         when (val relationId = EntityId.mayNull(it.string("id"))) {
             null -> null
-            else -> TootAccountRef.mayNull(parser, parser.account(it.jsonObject(key)))
+            else -> tootAccountRefOrNull(parser, parser.account(it.jsonObject(key)))
                 ?.apply { _orderId = relationId }
         }
     }

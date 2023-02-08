@@ -77,7 +77,8 @@ fun ActMain.addColumn(
     indexArg: Int,
     ai: SavedAccount,
     type: ColumnType,
-    vararg params: Any,
+    protect: Boolean = false,
+    params: Array<out Any> = emptyArray(),
 ): Column {
     if (!allowColumnDuplication) {
         // 既に同じカラムがあればそこに移動する
@@ -90,7 +91,8 @@ fun ActMain.addColumn(
     }
 
     //
-    val col = Column(appState, ai, type.id, *params)
+    val col = Column(appState, ai, type.id, params)
+    if (protect) col.dontClose = true
     val index = addColumn(col, indexArg)
     scrollAndLoad(index)
     return col
@@ -100,16 +102,16 @@ fun ActMain.addColumn(
     indexArg: Int,
     ai: SavedAccount,
     type: ColumnType,
-    vararg params: Any,
-): Column {
-    return addColumn(
-        PrefB.bpAllowColumnDuplication.value,
-        indexArg,
-        ai,
-        type,
-        *params
-    )
-}
+    protect: Boolean = false,
+    params: Array<out Any> = emptyArray(),
+): Column = addColumn(
+    PrefB.bpAllowColumnDuplication.value,
+    indexArg,
+    ai,
+    type,
+    protect = protect,
+    params = params,
+)
 
 fun ActMain.removeColumn(column: Column) {
     val idxColumn = appState.columnIndex(column) ?: return
@@ -342,7 +344,7 @@ fun ActMain.searchFromActivityResult(data: Intent?, columnType: ColumnType) =
             defaultInsertPosition,
             SavedAccount.na,
             columnType,
-            it
+            params = arrayOf(it)
         )
     }
 

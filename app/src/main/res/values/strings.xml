@@ -1253,4 +1253,6 @@
     <string name="fedibird_capacities">Fedibird capacities</string>
     <string name="push_subscription_exists_updateing">Updating current push subscription…</string>
     <string name="manually_update">Manually update</string>
+    <string name="notification_push_distributor_disabled">Notification push distributor not selected.</string>
+    <string name="notification_accent_color">Notification accent color</string>
 </resources>

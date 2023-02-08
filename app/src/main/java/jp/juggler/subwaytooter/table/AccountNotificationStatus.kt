@@ -12,7 +12,7 @@ class AccountNotificationStatus(
     // DB上のID
     var id: Long = 0L,
     // 該当ユーザのacct
-    var acct: String = "",
+    var acct: Acct = Acct.UNKNOWN,
     // acctのハッシュ値
     var acctHash: String = "",
     // アプリサーバから受け取ったハッシュ
@@ -100,7 +100,7 @@ class AccountNotificationStatus(
                 cursor ?: error("cursor is null!")
                 AccountNotificationStatus(
                     id = cursor.getLong(idxId),
-                    acct = cursor.getString(idxAcct),
+                    acct = Acct.parse(cursor.getString(idxAcct)),
                     acctHash = cursor.getString(idxAcctHash),
                     appServerHash = cursor.getStringOrNull(idxAppServerHash),
                     pushKeyPrivate = cursor.getBlobOrNull(idxPushKeyPrivate),
@@ -119,7 +119,7 @@ class AccountNotificationStatus(
 
     // ID以外のカラムをContentValuesに変換する
     fun toContentValues() = ContentValues().apply {
-        put(COL_ACCT, acct)
+        put(COL_ACCT, acct.ascii)
         put(COL_ACCT_HASH, acctHash)
         put(COL_APP_SERVER_HASH, appServerHash)
         put(COL_PUSH_KEY_PRIVATE, pushKeyPrivate)
@@ -154,7 +154,7 @@ class AccountNotificationStatus(
 
         private fun newInstance(acct: Acct) =
             AccountNotificationStatus(
-                acct = acct.ascii,
+                acct = acct,
                 acctHash = acct.ascii.encodeUTF8().digestSHA256().encodeBase64Url()
             )
 

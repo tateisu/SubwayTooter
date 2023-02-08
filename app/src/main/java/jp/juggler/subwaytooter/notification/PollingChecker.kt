@@ -328,6 +328,13 @@ class PollingChecker(
 
             val notification = parser.notification(src) ?: return
 
+            // プッシュ通知で既出なら通知しない
+            // プルの場合同じ通知が何度もここを通るので、既出フラグを立てない
+            if (daoNotificationShown.isDuplicate(account.acct, notification.id.toString())) {
+                log.i("update_sub: skip duplicate. ${account.acct} ${notification.id}")
+                return
+            }
+
             // アプリミュートと単語ミュート
             if (notification.status?.checkMuted() == true) return
 

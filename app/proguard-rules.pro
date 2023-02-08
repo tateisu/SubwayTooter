@@ -60,6 +60,10 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+-keep public class com.bumptech.glide.integration.webp.WebpImage { *; }
+-keep public class com.bumptech.glide.integration.webp.WebpFrame { *; }
+-keep public class com.bumptech.glide.integration.webp.WebpBitmapFactory { *; }
+
 # keep everything
 -keep class ** { *; }
 -keepclassmembers class ** { *** Companion; }

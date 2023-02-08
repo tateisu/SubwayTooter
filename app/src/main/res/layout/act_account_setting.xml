@@ -595,6 +595,42 @@
             </LinearLayout>
 
             <TextView
+                style="@style/setting_row_label"
+                android:id="@+id/tvNotificationAccentColor"
+                android:text="@string/notification_accent_color" />
+
+            <LinearLayout
+                style="@style/setting_row_form"
+                android:id="@+id/llNotificationAccentColor"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                >
+
+                <Button
+                    android:id="@+id/btnNotificationAccentColorEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
+                    android:id="@+id/btnNotificationAccentColorReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    android:textAllCaps="false"
+                    />
+
+                <View android:id="@+id/vNotificationAccentColorColor"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="8dp"
+                    />
+
+            </LinearLayout>
+
+            <TextView
                 android:id="@+id/tvPushPolicyDesc"
                 style="@style/setting_row_label"
                 android:text="@string/push_notification_filter" />
@@ -631,7 +667,7 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/push_notification_use" />
+                android:text="@string/pull_notification_use" />
 
             <LinearLayout style="@style/setting_row_form">
 

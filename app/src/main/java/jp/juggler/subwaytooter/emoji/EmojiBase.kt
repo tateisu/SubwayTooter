@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.toMutableMap
 
 sealed interface EmojiBase
 
@@ -52,7 +53,6 @@ class UnicodeEmoji(
 }
 
 class CustomEmoji(
-    val apDomain: Host,
     val shortcode: String, // shortcode (コロンを含まない)
     val url: String, // 画像URL
     val staticUrl: String?, // アニメーションなしの画像URL
@@ -63,7 +63,6 @@ class CustomEmoji(
 ) : EmojiBase, Mappable<String> {
 
     fun makeAlias(alias: String) = CustomEmoji(
-        apDomain = apDomain,
         shortcode = shortcode,
         url = url,
         staticUrl = staticUrl,
@@ -80,9 +79,8 @@ class CustomEmoji(
 
     companion object {
 
-        val decode: (Host, Host, JsonObject) -> CustomEmoji = { apDomain, _, src ->
-            CustomEmoji(
-                apDomain = apDomain,
+        fun decodeMastodon(src: JsonObject): CustomEmoji {
+            return CustomEmoji(
                 shortcode = src.stringOrThrow("shortcode"),
                 url = src.stringOrThrow("url"),
                 staticUrl = src.string("static_url"),
@@ -91,24 +89,20 @@ class CustomEmoji(
             )
         }
 
-        val decodeMisskey: (Host, Host, JsonObject) -> CustomEmoji = { apDomain, _, src ->
+        fun decodeMisskey(src: JsonObject): CustomEmoji {
             val url = src.string("url") ?: error("missing url")
-
-            CustomEmoji(
-                apDomain = apDomain,
+            return CustomEmoji(
                 shortcode = src.string("name") ?: error("missing name"),
                 url = url,
                 staticUrl = url,
-                aliases = parseAliases(src.jsonArray("aliases")),
                 category = src.string("category"),
             )
         }
 
-        val decodeMisskey13: (Host, Host, JsonObject) -> CustomEmoji = { apDomain, apiHost, src ->
+        fun decodeMisskey13(apiHost: Host, src: JsonObject): CustomEmoji {
             val name = src.string("name") ?: error("missing name")
             val url = "https://${apiHost.ascii}/emoji/$name.webp"
-            CustomEmoji(
-                apDomain = apDomain,
+            return CustomEmoji(
                 shortcode = name,
                 url = url,
                 staticUrl = url,
@@ -116,6 +110,20 @@ class CustomEmoji(
                 category = src.string("category"),
             )
         }
+
+        // 入力は name→URLの単純なマップ
+        fun decodeMisskey12ReactionEmojis(src: JsonObject?): MutableMap<String, CustomEmoji>? =
+            src?.entries?.mapNotNull {
+                val (k, v) = it
+                when (val url = (v as? String)) {
+                    null, "" -> null
+                    else -> k to CustomEmoji(
+                        shortcode = k,
+                        url = url,
+                        staticUrl = url + (if (url.contains('?')) '&' else '?') + "static=1",
+                    )
+                }
+            }?.notEmpty()?.toMutableMap()
 
         private fun parseAliases(src: JsonArray?): ArrayList<String>? {
             var dst = null as ArrayList<String>?

@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.push
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.util.log.LogCategory
 
@@ -14,42 +15,42 @@ enum class PushMessageIconColor(
     val keys: Array<String>,
 ) {
     Favourite(
-        R.color.colorNotificationAccentFavourite,
+        0,
         R.drawable.ic_star_outline,
         arrayOf("favourite"),
     ),
     Mention(
-        R.color.colorNotificationAccentMention,
+        0,
         R.drawable.outline_alternate_email_24,
         arrayOf("mention"),
     ),
     Reply(
-        R.color.colorNotificationAccentReply,
+        0,
         R.drawable.ic_reply,
         arrayOf("reply")
     ),
     Reblog(
-        R.color.colorNotificationAccentReblog,
+        0,
         R.drawable.ic_repeat,
         arrayOf("reblog", "renote"),
     ),
     Quote(
-        R.color.colorNotificationAccentQuote,
+        0,
         R.drawable.ic_quote,
         arrayOf("quote"),
     ),
     Follow(
-        R.color.colorNotificationAccentFollow,
+        0,
         R.drawable.ic_person_add,
         arrayOf("follow", "followRequestAccepted")
     ),
     Unfollow(
-        R.color.colorNotificationAccentUnfollow,
+        0,
         R.drawable.ic_follow_cross,
         arrayOf("unfollow")
     ),
     Reaction(
-        R.color.colorNotificationAccentReaction,
+        0,
         R.drawable.outline_add_reaction_24,
         arrayOf("reaction", "emoji_reaction", "pleroma:emoji_reaction")
     ),
@@ -59,25 +60,30 @@ enum class PushMessageIconColor(
         arrayOf("follow_request", "receiveFollowRequest"),
     ),
     Poll(
-        R.color.colorNotificationAccentPoll,
+        0,
         R.drawable.outline_poll_24,
         arrayOf("pollVote", "poll_vote", "poll"),
     ),
     Status(
-        R.color.colorNotificationAccentStatus,
+        0,
         R.drawable.ic_edit,
         arrayOf("status", "update", "status_reference")
     ),
-    SignUp(
-        R.color.colorNotificationAccentSignUp,
+    AdminSignUp(
+        0,
         R.drawable.outline_group_add_24,
-        arrayOf("admin.sign_up"),
+        arrayOf(TootNotification.TYPE_ADMIN_SIGNUP),
+    ),
+    AdminReport(
+        R.color.colorNotificationAccentAdminReport,
+        R.drawable.ic_error,
+        arrayOf(TootNotification.TYPE_ADMIN_REPORT),
     ),
 
     Unknown(
         R.color.colorNotificationAccentUnknown,
         R.drawable.ic_question,
-        arrayOf("unknown", "admin.sign_up"),
+        arrayOf("unknown"),
     )
     ;
 

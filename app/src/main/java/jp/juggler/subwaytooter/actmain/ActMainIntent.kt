@@ -320,11 +320,11 @@ private fun ActMain.afterAccountAdd(
     }
 
     // 適当にカラムを追加する
-    addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
+    addColumn(false, defaultInsertPosition, account, ColumnType.HOME, protect = true)
     if (daoSavedAccount.isSingleAccount()) {
-        addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
-        addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
-        addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
+        addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS, protect = true)
+        addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL, protect = true)
+        addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE, protect = true)
     }
 
     // 通知の更新が必要かもしれない

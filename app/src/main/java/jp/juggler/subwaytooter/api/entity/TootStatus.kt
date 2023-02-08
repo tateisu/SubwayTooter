@@ -9,6 +9,7 @@ import androidx.annotation.StringRes
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.mfm.SpannableStringBuilderEx
@@ -113,9 +114,9 @@ class TootStatus(
     //Application from which the status was posted
     val application: TootApplication?,
 
-    var custom_emojis: HashMap<String, CustomEmoji>? = null,
+    var custom_emojis: MutableMap<String, CustomEmoji>?,
 
-    val profile_emojis: HashMap<String, NicoProfileEmoji>?,
+    val profile_emojis: Map<String, NicoProfileEmoji>?,
 
     //	The time the status was created
     private val created_at: String?,
@@ -569,12 +570,19 @@ class TootStatus(
             }
             val who = parser.account(src.jsonObject("user"))
                 ?: error("missing account")
-            val accountRef = TootAccountRef.tootAccountRef(parser, who)
+            val accountRef = tootAccountRef(parser, who)
             val account = accountRef.get()
             val created_at = src.string("createdAt")
             // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-            val custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
-                CustomEmoji.decodeMisskey(parser.apDomain, parser.apiHost, it)
+            var custom_emojis: MutableMap<String, CustomEmoji>? =
+                parseMapOrNull(src.jsonArray("emojis"),CustomEmoji::decodeMisskey)
+            val reactionEmojis: MutableMap<String, CustomEmoji>? =
+                CustomEmoji.decodeMisskey12ReactionEmojis(src.jsonObject("reactionEmojis"))
+            if (reactionEmojis != null) {
+                custom_emojis = when (custom_emojis) {
+                    null -> reactionEmojis
+                    else -> (reactionEmojis + custom_emojis).toMutableMap()
+                }
             }
 
             // Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
@@ -941,9 +949,7 @@ class TootStatus(
             val created_at = src.string("created_at")
 
             // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-            val custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
-                CustomEmoji.decode(parser.apDomain, parser.apiHost, it)
-            }
+            val custom_emojis = parseMapOrNull(src.jsonArray("emojis"),CustomEmoji::decodeMastodon)
 
             val profile_emojis = when (val o = src["profile_emojis"]) {
                 is JsonArray -> parseMapOrNull(o) { NicoProfileEmoji(it) }
@@ -981,7 +987,7 @@ class TootStatus(
                     time_created_at = parseTime(created_at)
                     media_attachments =
                         parseListOrNull(src.jsonArray("media_attachments")) {
-                            tootAttachment(parser,it)
+                            tootAttachment(parser, it)
                         }
                     val visibilityString = when {
                         src.boolean("limited") == true -> "limited"

@@ -38,7 +38,6 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                                 )
                             } else {
                                 emojiList[shortcode] = CustomEmoji(
-                                    apDomain = parser.apDomain,
                                     shortcode = shortcode,
                                     url = iconUrl,
                                     staticUrl = iconUrl,

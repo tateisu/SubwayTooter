@@ -7,6 +7,7 @@ import android.widget.TextView
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.pref.PrefB
@@ -386,6 +387,8 @@ open class TootAccount(
             """\Ahttps://($reHostIdn)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])"""
                 .asciiPattern()
 
+        private val reMisskeyIoProxy = """\Ahttps://misskey\.io/proxy/""".toRegex()
+
         fun tootAccount(parser: TootParser, src: JsonObject): TootAccount {
             src["_fromStream"] = parser.fromStream
 
@@ -427,9 +430,7 @@ open class TootAccount(
                 ServiceType.MISSKEY -> {
 
                     custom_emojis =
-                        parseMapOrNull(src.jsonArray("emojis")) {
-                            CustomEmoji.decodeMisskey(parser.apDomain, parser.apiHost, it)
-                        }
+                        parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMisskey)
                     profile_emojis = null
 
                     username = src.stringOrThrow("username")
@@ -476,17 +477,14 @@ open class TootAccount(
                     created_at = src.string("createdAt")
                     time_created_at = TootStatus.parseTime(created_at)
 
-                    // https://github.com/syuilo/misskey/blob/develop/src/client/scripts/get-static-image-url.ts
-                    fun String.getStaticImageUrl(): String? {
-                        val uri = this.mayUri() ?: return null
-                        val dummy = "${uri.encodedAuthority}${uri.encodedPath}"
-                        return "https://${parser.linkHelper.apiHost.ascii}/proxy/$dummy?url=${encodePercent()}&static=1"
-                    }
-
+                    // 画像を静止させるURLはAPIとしては提供されていない
+                    // サーバ側で実装されている方法は仕様が安定しない
+                    // クライアント側でアニメーションを止めるのが正解らしいが、
+                    // 対応できてないな…
                     avatar = src.string("avatarUrl")
-                    avatar_static = src.string("avatarUrl")?.getStaticImageUrl()
+                    avatar_static = src.string("avatarUrl")
                     header = src.string("bannerUrl")
-                    header_static = src.string("bannerUrl")?.getStaticImageUrl()
+                    header_static = src.string("bannerUrl")
 
                     pinnedNoteIds = src.stringArrayList("pinnedNoteIds")
                     if (parser.misskeyDecodeProfilePin) {
@@ -561,13 +559,8 @@ open class TootAccount(
                 else -> {
 
                     // 絵文字データは先に読んでおく
-                    custom_emojis = parseMapOrNull(src.jsonArray("emojis")) {
-                        CustomEmoji.decode(
-                            parser.apDomain,
-                            parser.apiHost,
-                            it
-                        )
-                    }
+                    custom_emojis =
+                        parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMastodon)
 
                     profile_emojis = when (val o = src["profile_emojis"]) {
                         is JsonArray -> parseMapOrNull(o) { NicoProfileEmoji(it) }
@@ -587,7 +580,7 @@ open class TootAccount(
                     note = src.string("note")
 
                     source = parseSource(src.jsonObject("source"))
-                    movedRef = TootAccountRef.mayNull(
+                    movedRef = tootAccountRefOrNull(
                         parser,
                         src.jsonObject("moved")?.let {
                             tootAccount(parser, it)
@@ -692,8 +685,8 @@ open class TootAccount(
                 acct = acct,
                 apDomain = apDomain,
                 apiHost = apiHost,
-                avatar = avatar,
-                avatar_static = avatar_static,
+                avatar = avatar?.replace(reMisskeyIoProxy, "https://"),
+                avatar_static = avatar_static?.replace(reMisskeyIoProxy, "https://"),
                 birthday = birthday,
                 bot = bot,
                 created_at = created_at,

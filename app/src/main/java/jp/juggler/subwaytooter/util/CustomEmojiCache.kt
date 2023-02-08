@@ -231,7 +231,7 @@ class CustomEmojiCache(
                         data = try {
                             App1.getHttpCached(request.url)
                         } catch (ex: Throwable) {
-                            log.w(ex, "get failed. url=${request.url}")
+                            log.w( "get failed. url=${request.url}")
                             null
                         }
                         te = elapsedTime

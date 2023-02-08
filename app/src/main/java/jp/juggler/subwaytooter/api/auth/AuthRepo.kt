@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.auth
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
@@ -8,24 +9,26 @@ import jp.juggler.subwaytooter.notification.checkNotificationImmediate
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.pref.PrefL
 import jp.juggler.subwaytooter.pref.lazyContext
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.appDatabase
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.log.LogCategory
 
 val Context.authRepo
     get() = AuthRepo(
         context = this,
-        daoAcctColor = AcctColor.Access(appDatabase),
-        daoSavedAccount = SavedAccount.Access(appDatabase, lazyContext),
+        database = appDatabase,
     )
 
 class AuthRepo(
     private val context: Context = lazyContext,
+    private val database: SQLiteDatabase = appDatabase,
     private val daoAcctColor: AcctColor.Access =
-        AcctColor.Access(appDatabase),
+        AcctColor.Access(database),
     private val daoSavedAccount: SavedAccount.Access =
-        SavedAccount.Access(appDatabase, lazyContext),
+        SavedAccount.Access(database, context),
+    private val daoPushMessage: PushMessage.Access =
+        PushMessage.Access(database),
+    private val daoNotificationShown: NotificationShown.Access =
+        NotificationShown.Access(database),
 ) {
     companion object {
         private val log = LogCategory("AuthRepo")
@@ -69,6 +72,8 @@ class AuthRepo(
             PrefL.lpTabletTootDefaultAccount.value = -1L
         }
         daoSavedAccount.delete(account.db_id)
+        daoPushMessage.deleteAccount(account.acct)
+        daoNotificationShown.cleayByAcct(account.acct)
         // appServerUnregister(context.applicationContextSafe, account)
     }
 

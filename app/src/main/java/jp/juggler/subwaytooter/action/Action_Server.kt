@@ -59,7 +59,7 @@ private fun ActMain.serverProfileDirectory(
                 pos,
                 accessInfo,
                 ColumnType.PROFILE_DIRECTORY,
-                host
+                params = arrayOf(host)
             )
 
         // 疑似アカウントで開く
@@ -70,7 +70,7 @@ private fun ActMain.serverProfileDirectory(
                     pos,
                     ai,
                     ColumnType.PROFILE_DIRECTORY,
-                    host
+                    params = arrayOf(host)
                 )
             }
         }
@@ -116,7 +116,7 @@ fun ActMain.serverInformation(
     pos,
     SavedAccount.na,
     ColumnType.INSTANCE_INFORMATION,
-    host
+    params = arrayOf(host),
 )
 
 // ドメインブロック一覧から解除

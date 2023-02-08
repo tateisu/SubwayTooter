@@ -18,10 +18,7 @@ class TootAccountRef private constructor(
     fun get() = TootAccountMap.find(this)
 
     companion object {
-        fun notNull(parser: TootParser, account: TootAccount) =
-            tootAccountRef(parser, account)
-
-        fun mayNull(parser: TootParser, account: TootAccount?): TootAccountRef? {
+        fun tootAccountRefOrNull(parser: TootParser, account: TootAccount?): TootAccountRef? {
             return when (account) {
                 null -> null
                 else -> tootAccountRef(parser, account)

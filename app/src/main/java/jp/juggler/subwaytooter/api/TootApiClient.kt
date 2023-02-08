@@ -6,6 +6,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.data.*
@@ -603,7 +604,7 @@ suspend fun TootApiClient.syncAccountByUrl(
             }.toPostRequestBuilder()
         )
             ?.apply {
-                ar = TootAccountRef.mayNull(parser, parser.account(jsonObject))
+                ar = tootAccountRefOrNull(parser, parser.account(jsonObject))
                 if (ar == null && error == null) {
                     setError(context.getString(R.string.user_id_conversion_failed))
                 }
@@ -646,7 +647,7 @@ suspend fun TootApiClient.syncAccountByAcct(
                 .toPostRequestBuilder()
         )
             ?.apply {
-                ar = TootAccountRef.mayNull(parser, parser.account(jsonObject))
+                ar = tootAccountRefOrNull(parser, parser.account(jsonObject))
                 if (ar == null && error == null) {
                     setError(context.getString(R.string.user_id_conversion_failed))
                 }

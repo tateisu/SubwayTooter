@@ -383,7 +383,7 @@ fun ActMain.clickBoostBy(
     columnType: ColumnType = ColumnType.BOOSTED_BY,
 ) {
     status ?: return
-    addColumn(false, pos, accessInfo, columnType, status.id)
+    addColumn(false, pos, accessInfo, columnType, params= arrayOf(status.id))
 }
 
 fun ActMain.clickBoost(accessInfo: SavedAccount, status: TootStatus, willToast: Boolean) {

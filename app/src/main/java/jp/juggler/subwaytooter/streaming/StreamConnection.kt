@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate.Companion.misskeyNoteUpdate
 import jp.juggler.subwaytooter.column.onStatusRemoved
 import jp.juggler.subwaytooter.column.reloadFilter
 import jp.juggler.subwaytooter.column.replaceStatus
@@ -201,13 +202,7 @@ class StreamConnection(
                     log.e("$name handleMisskeyMessage: noteUpdated body is null")
                     return
                 }
-                fireNoteUpdated(
-                    MisskeyNoteUpdate(
-                        acctGroup.account.apDomain,
-                        acctGroup.account.apiHost,
-                        body
-                    ), channelId
-                )
+                fireNoteUpdated(misskeyNoteUpdate(body), channelId)
             }
 
             "notification" -> {

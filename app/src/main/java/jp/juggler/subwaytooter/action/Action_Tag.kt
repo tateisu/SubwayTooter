@@ -145,14 +145,13 @@ fun ActMain.tagTimeline(
     acctAscii: String? = null,
 ) {
     if (acctAscii == null) {
-        addColumn(pos, accessInfo, ColumnType.HASHTAG, tagWithoutSharp)
+        addColumn(pos, accessInfo, ColumnType.HASHTAG, params = arrayOf(tagWithoutSharp))
     } else {
         addColumn(
             pos,
             accessInfo,
             ColumnType.HASHTAG_FROM_ACCT,
-            tagWithoutSharp,
-            acctAscii
+            params = arrayOf(tagWithoutSharp, acctAscii)
         )
     }
 }

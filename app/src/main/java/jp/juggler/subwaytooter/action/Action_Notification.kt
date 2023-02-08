@@ -26,12 +26,7 @@ fun ActMain.clickNotificationFrom(
         showToast(false, R.string.misskey_account_not_supported)
     } else {
         accessInfo.getFullAcct(who).validFull()?.let {
-            addColumn(
-                pos,
-                accessInfo,
-                ColumnType.NOTIFICATION_FROM_ACCT,
-                it
-            )
+            addColumn(pos, accessInfo, ColumnType.NOTIFICATION_FROM_ACCT, params = arrayOf(it))
         }
     }
 }

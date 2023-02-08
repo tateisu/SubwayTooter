@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.*
@@ -30,42 +30,42 @@ class TestEntityUtils {
 
     @Test
     fun testParseItem() {
-        assertEquals(null, parseItem(::TestEntity, null))
+        assertEquals(null, parseItem(null, ::TestEntity))
 
         run {
             val src = """{"s":null,"l":"100"}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, src)
+            val item = parseItem(src, ::TestEntity)
             assertNull(item)
         }
         run {
             val src = """{"s":"","l":"100"}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, src)
+            val item = parseItem(src, ::TestEntity)
             assertNull(item)
         }
         run {
             val src = """{"s":"A","l":null}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, src)
+            val item = parseItem(src, ::TestEntity)
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
         }
         run {
             val src = """{"s":"A","l":""}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, src)
+            val item = parseItem(src, ::TestEntity)
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
         }
         run {
             val src = """{"s":"A","l":100}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, src)
+            val item = parseItem(src, ::TestEntity)
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
         }
         run {
             val src = """{"s":"A","l":"100"}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, src)
+            val item = parseItem(src, ::TestEntity)
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
@@ -74,74 +74,74 @@ class TestEntityUtils {
 
     @Test
     fun testParseList() {
-        assertEquals(0, parseList(::TestEntity, null).size)
+        assertEquals(0, parseList(null, ::TestEntity).size)
 
         val src = JsonArray()
-        assertEquals(0, parseList(::TestEntity, src).size)
+        assertEquals(0, parseList(src, ::TestEntity).size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(1, parseList(::TestEntity, src).size)
+        assertEquals(1, parseList(src, ::TestEntity).size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseList(::TestEntity, src).size)
+        assertEquals(2, parseList(src, ::TestEntity).size)
 
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseList(::TestEntity, src).size)
+        assertEquals(2, parseList(src, ::TestEntity).size)
     }
 
     @Test
     fun testParseListOrNull() {
-        assertEquals(null, parseListOrNull(::TestEntity, null))
+        assertEquals(null, parseListOrNull(null, ::TestEntity))
 
         val src = JsonArray()
-        assertEquals(null, parseListOrNull(::TestEntity, src))
+        assertEquals(null, parseListOrNull(src, ::TestEntity))
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(1, parseListOrNull(::TestEntity, src)?.size)
+        assertEquals(1, parseListOrNull(src, ::TestEntity)?.size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
+        assertEquals(2, parseListOrNull(src, ::TestEntity)?.size)
 
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
+        assertEquals(2, parseListOrNull(src, ::TestEntity)?.size)
     }
 
     @Test
     fun testParseMap() {
-        assertEquals(0, parseMap(::TestEntity, null).size)
+        assertEquals(0, parseMap(null, ::TestEntity).size)
 
         val src = JsonArray()
-        assertEquals(0, parseMap(::TestEntity, src).size)
+        assertEquals(0, parseMap(null, ::TestEntity).size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(1, parseMap(::TestEntity, src).size)
+        assertEquals(1, parseMap(src, ::TestEntity).size)
 
         src.add("""{"s":"B","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseMap(::TestEntity, src).size)
+        assertEquals(2, parseMap(src, ::TestEntity).size)
 
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseMap(::TestEntity, src).size)
+        assertEquals(2, parseMap(src, ::TestEntity).size)
     }
 
     @Test
     fun testParseMapOrNull() {
-        assertEquals(null, parseMapOrNull(::TestEntity, null))
+        assertEquals(null, parseMapOrNull(null, ::TestEntity))
 
         val src = JsonArray()
-        assertEquals(null, parseMapOrNull(::TestEntity, src))
+        assertEquals(null, parseMapOrNull(src, ::TestEntity))
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(1, parseMapOrNull(::TestEntity, src)?.size)
+        assertEquals(1, parseMapOrNull(src, ::TestEntity)?.size)
 
         src.add("""{"s":"B","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
+        assertEquals(2, parseMapOrNull(src, ::TestEntity)?.size)
 
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
+        assertEquals(2, parseMapOrNull(src, ::TestEntity)?.size)
     }
 
     private val parser by lazy {
@@ -154,42 +154,42 @@ class TestEntityUtils {
     @Test
     fun testParseItemWithParser() {
 
-        assertEquals(null, parseItem(::TestEntity, parser, null))
+        assertEquals(null, parseItem(null) { TestEntity(parser, it) })
 
         run {
             val src = """{"s":null,"l":"100"}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, parser, src)
+            val item = parseItem(src) { TestEntity(parser, it) }
             assertNull(item)
         }
         run {
             val src = """{"s":"","l":"100"}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, parser, src)
+            val item = parseItem(src) { TestEntity(parser, it) }
             assertNull(item)
         }
         run {
             val src = """{"s":"A","l":null}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, parser, src)
+            val item = parseItem(src) { TestEntity(parser, it) }
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
         }
         run {
             val src = """{"s":"A","l":""}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, parser, src)
+            val item = parseItem(src) { TestEntity(parser, it) }
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
         }
         run {
             val src = """{"s":"A","l":100}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, parser, src)
+            val item = parseItem(src) { TestEntity(parser, it) }
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
         }
         run {
             val src = """{"s":"A","l":"100"}""".decodeJsonObject()
-            val item = parseItem(::TestEntity, parser, src)
+            val item = parseItem(src) { TestEntity(parser, it) }
             assertNotNull(item)
             assertEquals(src.optString("s"), item?.s)
             assertEquals(src.optLong("l"), item?.l)
@@ -198,38 +198,38 @@ class TestEntityUtils {
 
     @Test
     fun testParseListWithParser() {
-        assertEquals(0, parseList(::TestEntity, parser, null).size)
+        assertEquals(0, parseList(null) { TestEntity(parser, it) }.size)
 
         val src = JsonArray()
-        assertEquals(0, parseList(::TestEntity, parser, src).size)
+        assertEquals(0, parseList(src) { TestEntity(parser, it) }.size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(1, parseList(::TestEntity, parser, src).size)
+        assertEquals(1, parseList(src) { TestEntity(parser, it) }.size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseList(::TestEntity, parser, src).size)
+        assertEquals(2, parseList(src) { TestEntity(parser, it) }.size)
 
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseList(::TestEntity, parser, src).size)
+        assertEquals(2, parseList(src) { TestEntity(parser, it) }.size)
     }
 
     @Test
     fun testParseListOrNullWithParser() {
-        assertEquals(null, parseListOrNull(::TestEntity, parser, null))
+        assertEquals(null, parseListOrNull(null) { TestEntity(parser, it) })
 
         val src = JsonArray()
-        assertEquals(null, parseListOrNull(::TestEntity, parser, src))
+        assertEquals(null, parseListOrNull(src) { TestEntity(parser, it) })
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(1, parseListOrNull(::TestEntity, parser, src)?.size)
+        assertEquals(1, parseListOrNull(src) { TestEntity(parser, it) }?.size)
 
         src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
+        assertEquals(2, parseListOrNull(src) { TestEntity(parser, it) }?.size)
 
         // error
         src.add("""{"s":"","l":"100"}""".decodeJsonObject())
-        assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
+        assertEquals(2, parseListOrNull(src) { TestEntity(parser, it)  }?.size)
     }
 
     @Test(expected = RuntimeException::class)

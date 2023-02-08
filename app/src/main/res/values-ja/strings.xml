@@ -1237,4 +1237,6 @@
     <string name="pull_notification_use">定期的なプル通知チェックを使う</string>
     <string name="push_subscription_exists_updateing">現在のプッシュ購読を更新しています…</string>
     <string name="manually_update">手動Manually update</string>
+    <string name="notification_push_distributor_disabled">通知のプッシュ配送サービスが選択されていません</string>
+    <string name="notification_accent_color">通知のアクセント色</string>
 </resources>

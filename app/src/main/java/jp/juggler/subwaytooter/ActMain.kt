@@ -158,6 +158,8 @@ class ActMain : AppCompatActivity(),
 
     lateinit var sideMenuAdapter: SideMenuAdapter
 
+    var subscriptionUpdaterCalled = false
+
     //////////////////////////////////////////////////////////////////
     // 読み取り専用のプロパティ
 

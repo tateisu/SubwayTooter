@@ -73,8 +73,6 @@ class PushMastodon(
                 throw ex
             }
         }
-        log.i("${account.acct} oldSubscription=${oldSubscription}")
-
         val oldEndpointUrl = oldSubscription?.string("endpoint")
         when (oldEndpointUrl) {
             // 購読がない。作ってもよい
@@ -94,7 +92,6 @@ class PushMastodon(
                 }
                 if (params["dh"] != deviceHash && !isOldSubscription(account, oldEndpointUrl)) {
                     // この端末で作成した購読ではない。
-                    // TODO: 古い形式のURLを移行できないか？
                     log.w("deviceHash not match. keep it for other devices. ${account.acct} $oldEndpointUrl")
                     return context.getString(
                         R.string.push_subscription_exists_but_not_created_by_this_device
@@ -144,6 +141,8 @@ class PushMastodon(
             subLog.i(R.string.push_subscription_keep_using)
             return null
         }
+
+        log.i("${account.acct} oldSubscription=${oldSubscription}")
 
         if (newUrl == oldEndpointUrl) {
             subLog.i(R.string.push_subscription_exists_updateing)

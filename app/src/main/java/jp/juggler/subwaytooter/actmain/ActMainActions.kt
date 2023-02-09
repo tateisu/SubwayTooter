@@ -253,7 +253,12 @@ fun ActMain.launchDialogs() {
             if (!prNotification.checkOrLaunch()) return@launchAndShowError
         }
 
-        afterNotificationGranted()
+        // 画面を作成したあと一度だけ行う
+        // 画像ビューアから戻ってきたときなどは行わない
+        if(!subscriptionUpdaterCalled){
+            subscriptionUpdaterCalled=true
+            afterNotificationGranted()
+        }
     }
 }
 

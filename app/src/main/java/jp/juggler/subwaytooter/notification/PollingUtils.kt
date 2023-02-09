@@ -57,7 +57,7 @@ fun AppCompatActivity.resetNotificationTracking(account: SavedAccount) {
         return
     }
     launchAndShowError {
-        withContext(AppDispatchers.IO){
+        withContext(AppDispatchers.IO) {
             daoNotificationShown.cleayByAcct(account.acct)
             PollingChecker.accountMutex(account.db_id).withLock {
                 daoNotificationTracking.resetTrackingState(account.db_id)
@@ -204,7 +204,7 @@ suspend fun checkNoticifationAll(
     // 進捗表示
     // 複数アカウントの状態をマップにまとめる
     suspend fun updateStatus(a: SavedAccount, s: PollingState) {
-        log.i("$logPrefix[${a.acct.pretty}]${s.desc}")
+        if (s != PollingState.Complete) log.i("$logPrefix[${a.acct.pretty}]${s.desc}")
         when (s) {
             PollingState.CheckNotifications,
             -> nextPollingRequired = true
@@ -235,6 +235,15 @@ suspend fun checkNoticifationAll(
     daoSavedAccount.loadRealAccounts().mapNotNull { sa ->
         when {
             sa.isPseudo || !sa.isConfirmed -> null
+            !sa.isRequiredPullCheck() -> {
+                // 通知チェックの定期実行が不要なら
+                // 通知表示のエラーをクリアする
+                daoAccountNotificationStatus.updateNotificationError(
+                    sa.acct,
+                    null
+                )
+                null
+            }
             else -> EmptyScope.launch(AppDispatchers.DEFAULT) {
                 try {
                     PollingChecker(

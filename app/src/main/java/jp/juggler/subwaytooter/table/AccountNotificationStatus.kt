@@ -50,17 +50,17 @@ class AccountNotificationStatus(
         private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error"
 
         val columnList = MetaColumns(table = TABLE, initialVersion = 65).apply {
-            column( 0, COL_ID, MetaColumns.TS_INT_PRIMARY_KEY_NOT_NULL)
-            column( 0, COL_ACCT, MetaColumns.TS_EMPTY_NOT_NULL)
-            column( 0, COL_ACCT_HASH, MetaColumns.TS_EMPTY_NOT_NULL)
-            column( 0, COL_APP_SERVER_HASH, MetaColumns.TS_TEXT_NULL)
-            column( 0, COL_PUSH_KEY_PRIVATE, MetaColumns.TS_BLOB_NULL)
-            column( 0, COL_PUSH_KEY_PUBLIC, MetaColumns.TS_BLOB_NULL)
-            column( 0, COL_PUSH_AUTH_SECRET, MetaColumns.TS_BLOB_NULL)
-            column( 0, COL_PUSH_SERVER_KEY, MetaColumns.TS_BLOB_NULL)
-            column( 0, COL_LAST_PUSH_ENDPOINT, MetaColumns.TS_TEXT_NULL)
-            column( 0, COL_LAST_NOTIFICATION_ERROR, MetaColumns.TS_TEXT_NULL)
-            column( 0, COL_LAST_SUBSCRIPTION_ERROR, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_ID, MetaColumns.TS_INT_PRIMARY_KEY_NOT_NULL)
+            column(0, COL_ACCT, MetaColumns.TS_EMPTY_NOT_NULL)
+            column(0, COL_ACCT_HASH, MetaColumns.TS_EMPTY_NOT_NULL)
+            column(0, COL_APP_SERVER_HASH, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_PUSH_KEY_PRIVATE, MetaColumns.TS_BLOB_NULL)
+            column(0, COL_PUSH_KEY_PUBLIC, MetaColumns.TS_BLOB_NULL)
+            column(0, COL_PUSH_AUTH_SECRET, MetaColumns.TS_BLOB_NULL)
+            column(0, COL_PUSH_SERVER_KEY, MetaColumns.TS_BLOB_NULL)
+            column(0, COL_LAST_PUSH_ENDPOINT, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_LAST_NOTIFICATION_ERROR, MetaColumns.TS_TEXT_NULL)
+            column(0, COL_LAST_SUBSCRIPTION_ERROR, MetaColumns.TS_TEXT_NULL)
 
             createExtra = {
                 arrayOf(
@@ -240,17 +240,20 @@ class AccountNotificationStatus(
                 put(COL_APP_SERVER_HASH, appServerHash)
             }.updateTo(db, TABLE, id.toString())
 
-
-        private fun updateSingleString(acct:Acct, col: String, value: String?) {
-            ContentValues().apply{
-                put(col, value)
-            }.updateTo(db, TABLE,acct.ascii, COL_ACCT)
+        private fun updateSingleString(acct: Acct, col: String, value: String?) {
+            db.update(
+                TABLE,
+                ContentValues().apply { put(col, value) },
+                "$COL_ACCT=? and $col!=?",
+                arrayOf(acct.ascii, value)
+            )
         }
-        fun updateNotificationError(acct:Acct, text: String?) {
+
+        fun updateNotificationError(acct: Acct, text: String?) {
             updateSingleString(acct, COL_LAST_NOTIFICATION_ERROR, text)
         }
 
-        fun updateSubscriptionError(acct:Acct, text: String?) {
+        fun updateSubscriptionError(acct: Acct, text: String?) {
             updateSingleString(acct, COL_LAST_SUBSCRIPTION_ERROR, text)
         }
     }

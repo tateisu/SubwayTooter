@@ -268,6 +268,7 @@ class PushRepo(
                 val now = System.currentTimeMillis()
                 if (now - lastUpdated < TimeUnit.DAYS.toMillis(3)) {
                     log.i("lazeMode: skip re-registration.")
+                    return
                 }
             }
 

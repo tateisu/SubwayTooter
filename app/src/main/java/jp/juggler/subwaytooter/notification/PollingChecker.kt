@@ -183,7 +183,7 @@ class PollingChecker(
                             account.acct,
                             null
                         )
-                        log.i("notification check not required.")
+                        log.i("[${account.acct}]pull check not required.")
                         return@withLock
                     }
 

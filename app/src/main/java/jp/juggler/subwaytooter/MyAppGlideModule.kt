@@ -11,6 +11,7 @@ import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.ResourceDecoder
 import com.bumptech.glide.load.engine.Resource
 import com.bumptech.glide.load.resource.SimpleResource
+import com.bumptech.glide.load.resource.drawable.DrawableResource
 import com.bumptech.glide.load.resource.transcode.ResourceTranscoder
 import com.bumptech.glide.module.AppGlideModule
 import com.caverock.androidsvg.SVG
@@ -81,12 +82,8 @@ class MyAppGlideModule : AppGlideModule() {
         override fun transcode(
             toTranscode: Resource<SVG>,
             options: Options,
-        ): Resource<PictureDrawable> = try {
-            SimpleResource(
-                PictureDrawable(
-                    toTranscode.get().renderToPicture()
-                )
-            )
+        ) = try {
+            SimpleResource(PictureDrawable(toTranscode.get().renderToPicture()))
         } catch (ex: Throwable) {
             throw IOException("Cannot render SVG.", ex)
         }
@@ -119,9 +116,13 @@ class MyAppGlideModule : AppGlideModule() {
         override fun transcode(
             toTranscode: Resource<APNGDecoder>,
             options: Options,
-        ): Resource<APNGDrawable> = SimpleResource(
-            APNGDrawable(toTranscode.get()).apply { setAutoPlay(false) }
-        )
+        ) = APNGDrawable(toTranscode.get()).apply { setAutoPlay(false) }.let {
+            object : DrawableResource<APNGDrawable>(it) {
+                override fun getResourceClass() = APNGDrawable::class.java
+                override fun getSize() = it.memorySize
+                override fun recycle() = it.stop()
+            }
+        }
     }
 
     // v3との互換性のためにAndroidManifestを読むかどうか(デフォルトtrue)

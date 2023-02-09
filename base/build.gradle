@@ -101,6 +101,7 @@ dependencies {
     // api "io.insert-koin:koin-androidx-navigation:$koinVersion"
     // api "io.insert-koin:koin-androidx-compose:$koinVersion"
 
+    // for com.bumptech.glide.integration.webp.*
     api "com.github.zjupure:webpdecoder:2.3.$glideVersion"
     api "com.github.bumptech.glide:glide:$glideVersion"
     api "com.github.bumptech.glide:annotations:$glideVersion"

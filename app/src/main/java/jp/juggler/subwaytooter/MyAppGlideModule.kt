@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
-import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.PictureDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
@@ -13,14 +10,16 @@ import com.bumptech.glide.integration.webp.decoder.*
 import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.ResourceDecoder
 import com.bumptech.glide.load.engine.Resource
-import com.bumptech.glide.load.engine.bitmap_recycle.ArrayPool
-import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.SimpleResource
-import com.bumptech.glide.load.resource.bitmap.BitmapDrawableDecoder
 import com.bumptech.glide.load.resource.transcode.ResourceTranscoder
 import com.bumptech.glide.module.AppGlideModule
 import com.caverock.androidsvg.SVG
 import com.caverock.androidsvg.SVGParseException
+import com.github.penfeizhou.animation.apng.APNGDrawable
+import com.github.penfeizhou.animation.apng.decode.APNGDecoder
+import com.github.penfeizhou.animation.apng.decode.APNGParser
+import com.github.penfeizhou.animation.io.ByteBufferReader
+import com.github.penfeizhou.animation.loader.ByteBufferLoader
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -49,7 +48,7 @@ class MyAppGlideModule : AppGlideModule() {
         }
     }
 
-    // Decodes an SVG internal representation from an [InputStream].
+    // SVG: InputStream => SVG
     inner class SvgDecoder : ResourceDecoder<InputStream, SVG> {
 
         @Throws(IOException::class)
@@ -77,18 +76,52 @@ class MyAppGlideModule : AppGlideModule() {
         }
     }
 
-    // Convert the [SVG]'s internal representation to an Android-compatible one ([Picture]).
+    // SVG: transcode SVG => PictureDrawable
     class SvgDrawableTranscoder : ResourceTranscoder<SVG, PictureDrawable> {
-
         override fun transcode(
             toTranscode: Resource<SVG>,
             options: Options,
-        ): Resource<PictureDrawable> {
-            val svg = toTranscode.get()
-            val picture = svg.renderToPicture()
-            val drawable = PictureDrawable(picture)
-            return SimpleResource(drawable)
+        ): Resource<PictureDrawable> = try {
+            SimpleResource(
+                PictureDrawable(
+                    toTranscode.get().renderToPicture()
+                )
+            )
+        } catch (ex: Throwable) {
+            throw IOException("Cannot render SVG.", ex)
         }
+    }
+
+    // APNG: transcode ByteBuffer => APNGDecoder
+    class ApngByteBufferDecoder : ResourceDecoder<ByteBuffer, APNGDecoder> {
+        override fun handles(source: ByteBuffer, options: Options) =
+            source.limit() >= 8 && APNGParser.isAPNG(ByteBufferReader(source))
+
+        override fun decode(
+            source: ByteBuffer,
+            width: Int,
+            height: Int,
+            options: Options,
+        ) = object : Resource<APNGDecoder> {
+            val decoder = object : ByteBufferLoader() {
+                override fun getByteBuffer() = source.apply { position(0) }
+            }.let { APNGDecoder(it, null) }
+
+            override fun getResourceClass() = APNGDecoder::class.java
+            override fun getSize() = source.limit()
+            override fun get() = decoder
+            override fun recycle() = decoder.stop()
+        }
+    }
+
+    // APNG: transcode APNGDecoder => APNGDrawable
+    class ApngTranscoder : ResourceTranscoder<APNGDecoder, APNGDrawable> {
+        override fun transcode(
+            toTranscode: Resource<APNGDecoder>,
+            options: Options,
+        ): Resource<APNGDrawable> = SimpleResource(
+            APNGDrawable(toTranscode.get()).apply { setAutoPlay(false) }
+        )
     }
 
     // v3との互換性のためにAndroidManifestを読むかどうか(デフォルトtrue)
@@ -106,6 +139,8 @@ class MyAppGlideModule : AppGlideModule() {
 
         //SVGデコーダーの追加
         registry
+            .prepend(ByteBuffer::class.java, APNGDecoder::class.java, ApngByteBufferDecoder())
+            .register(APNGDecoder::class.java, APNGDrawable::class.java, ApngTranscoder())
             .register(SVG::class.java, PictureDrawable::class.java, SvgDrawableTranscoder())
             .append(InputStream::class.java, SVG::class.java, SvgDecoder())
 

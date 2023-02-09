@@ -480,7 +480,7 @@
     <string name="change_avatar">更改头像图标</string>
     <string name="public_profile">公开个人资料</string>
     <string name="acct_sample">(示例)username@server</string>
-    <string name="enable_gif_animation">启用GIF动画(消耗大量电量)</string>
+    <string name="image_animation_enable">启用GIF动画(消耗大量电量)</string>
     <string name="content_sample">(示例)中国智造，慧及全球.</string>
     <string name="content_color">内容文字颜色</string>
     <string name="acct_color">帐户文字颜色</string>

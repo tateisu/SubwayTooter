@@ -435,7 +435,7 @@
     <string name="background_image">תמונת רקע</string>
     <string name="content_color">צבע הטקסט עבור תוכן</string>
     <string name="content_sample">(דוגמא)עטלף אבק נס דרך מזגן שהתפוצץ כי חם.</string>
-    <string name="enable_gif_animation">אפשר אנימציית GIF (שצורכת הרבה סוללה)</string>
+    <string name="image_animation_enable">אפשר אנימציית GIF (שצורכת הרבה סוללה)</string>
     <string name="remote_profile_warning">מידע ששייך לדף פרופיל מרוחק עלול  שלא להיות מוצג במדויק. לחץ כאן לצפייה בפרופיל בדפדפן.</string>
     <string name="open_hashtag_column">פתח את עמודת התגית</string>
     <string name="quote_hashtag_of">צטט את התגית בשם \"%1$s\"</string>

@@ -421,7 +421,7 @@
     <string name="acct_color">Couleur du texte du compte</string>
     <string name="content_color">Content text color</string>
     <string name="content_sample">(Exemple) Le cœur déçu mais l’âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
-    <string name="enable_gif_animation">Activer l\'animation des GIF (Consomme beaucoup de batterie)</string>
+    <string name="image_animation_enable">Activer l\'animation des GIF (Consomme beaucoup de batterie)</string>
     <string name="acct_sample">(exemple) utilisateur@serveur</string>
     <string name="mention_full_acct">Afficher la mention en tant que compte complet (recharge de colonne requise)</string>
     <string name="remote_profile_warning">Les informations concernant les pages des profils distants peuvent ne pas être affichées correctement. Appuyez ici pour afficher le profil dans un navigateur web.</string>

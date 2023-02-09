@@ -959,7 +959,7 @@
     <string name="display_name">Anzeigename</string>
     <string name="change_avatar">Avatarbild ändern</string>
     <string name="public_profile">Öffentliches Profil</string>
-    <string name="enable_gif_animation">GIF-Animationen aktivieren (frisst viel Akku)</string>
+    <string name="image_animation_enable">GIF-Animationen aktivieren (frisst viel Akku)</string>
     <string name="content_sample">(Beispiel) The quick brown fox jumps over the lazy dog.</string>
     <string name="background_image_alpha">Transparenz des Hintergrundbilds</string>
     <string name="background_image">Hintergrundbild</string>

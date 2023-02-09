@@ -322,6 +322,10 @@
             android:name="jp.juggler.subwaytooter.ActAlert"
             android:exported="false"
             android:label="@string/alert" />
+        <activity
+            android:name="jp.juggler.subwaytooter.ActGlideTest"
+            android:exported="false"
+            android:label="@string/glide_test" />
 
         <meta-data
             android:name="android.max_aspect"

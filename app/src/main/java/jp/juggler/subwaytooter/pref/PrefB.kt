@@ -57,7 +57,7 @@ object PrefB {
         false
     )
 
-    val bpEnableGifAnimation = BooleanPref(
+    val bpImageAnimationEnable = BooleanPref(
         "enable_gif_animation",
         false
     )

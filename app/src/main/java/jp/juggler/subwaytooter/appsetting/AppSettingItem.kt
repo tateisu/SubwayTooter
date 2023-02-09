@@ -516,7 +516,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     }
 
     section(R.string.animation) {
-        sw(PrefB.bpEnableGifAnimation, R.string.enable_gif_animation)
+        sw(PrefB.bpImageAnimationEnable, R.string.image_animation_enable)
         sw(PrefB.bpDisableEmojiAnimation, R.string.disable_custom_emoji_animation)
     }
 
@@ -1051,6 +1051,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                         delay(2000L)
                     }
                 }
+            }
+        }
+
+        action(R.string.glide_test) {
+            action = {
+                startActivity(Intent(this, ActGlideTest::class.java))
             }
         }
 

@@ -264,7 +264,7 @@
     <string name="emoji_category_places">場所</string>
     <string name="emoji_category_recent">最近</string>
     <string name="emoji_category_symbols">記号</string>
-    <string name="enable_gif_animation">GIFアニメーションを有効にする(バッテリーをとても浪費します)</string>
+    <string name="image_animation_enable">画像のアニメーションを有効にする(バッテリーをとても浪費します)</string>
     <string name="enable_speech">読み上げを有効にする</string>
     <string name="end">終端</string>
     <string name="end_of_list">リストの終端</string>

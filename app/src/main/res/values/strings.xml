@@ -453,7 +453,7 @@
     <string name="acct_color">Acct text color</string>
     <string name="content_color">Content text color</string>
     <string name="content_sample">(sample)The quick brown fox jumps over the lazy dog.</string>
-    <string name="enable_gif_animation">Enable GIF animation (Wastes a lot of battery)</string>
+    <string name="image_animation_enable">Enable image animation (Wastes a lot of battery)</string>
     <string name="acct_sample">(sample)username@server</string>
     <string name="mention_full_acct">Show mention as full acct (column reload required)</string>
     <string name="remote_profile_warning">Information on remote profile pages may not be displayed accurately. Press here to view the profile in web browser.</string>
@@ -1261,4 +1261,5 @@
     <string name="removing_old_unified_push_url">Removing expired UnifiedPush endpoint URL from app server…</string>
     <string name="sending_push_distributor_info_to_app_server">Sending push service information to app server…</string>
     <string name="push_distributor_not_available">Push distributor is not available. You can receive push notifications by installing a UnifiedPush compatible push delivery app. see https://unifiedpush.org/</string>
+    <string name="glide_test">glide test</string>
 </resources>

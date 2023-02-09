@@ -441,6 +441,6 @@
     <string name="acct_color">Acct tekst kleur</string>
     <string name="content_color">Context tekst kleur</string>
     <string name="content_sample">(voorbeeld) Pa\'s wijze lynx bezag vroom het fikse aquaduct.</string>
-    <string name="enable_gif_animation">GIF animaties weergeven (gebruikt veel batterij)</string>
+    <string name="image_animation_enable">GIF animaties weergeven (gebruikt veel batterij)</string>
     <string name="acct_sample">(voorbeeld) gebruikersnaam@server</string>
 </resources>

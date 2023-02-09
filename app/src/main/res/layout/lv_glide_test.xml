@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:baselineAligned="false"
+    android:gravity="top|start"
+    android:orientation="horizontal"
+    android:padding="4dp">
+
+    <jp.juggler.subwaytooter.view.MyNetworkImageView
+        android:id="@+id/nivStatic"
+        android:layout_width="60dp"
+        android:layout_height="60dp" />
+
+    <jp.juggler.subwaytooter.view.MyNetworkImageView
+        android:id="@+id/nivAnimation"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="4dp" />
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

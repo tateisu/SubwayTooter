@@ -454,7 +454,7 @@
     <string name="token_exported">Si s\'exporten dades de l\'aplicació o es restaura des d\'una còpia de seguretat, aquesta credencial d\'accés pot ser utilitzada per altres dispositius. Com que es necessiten les claus d\'accés no utilitzades per altres dispositius per a les notificacions activables, recomanem actualitzar la credencial d\'accés.</string>
     <string name="missing_push_scope">La credencial d\'accés no inclou les funcions d\'activació tàctil. es recomana actialitzar la credencial d\'accés.</string>
     <string name="content_sample">(mostra)Setze jutges mengen fetge d\'un penjat.</string>
-    <string name="enable_gif_animation">Activar GIFs animats (Gasta molta bateria)</string>
+    <string name="image_animation_enable">Activar GIFs animats (Gasta molta bateria)</string>
     <string name="acct_sample">(exemple)usuaria@servidor</string>
     <string name="mention_full_acct">Mostrar mencions amb noms complets (cal recerregar la pissarra)</string>
     <string name="remote_profile_warning">La informació de perfils remots pot no ser del tot correcta. Pitja aquí per veure el perfil amb el navegador.</string>

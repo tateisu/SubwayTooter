@@ -343,7 +343,7 @@
     <string name="background_image_alpha">Bakgrunnsbildegjennomsiktighet</string>
     <string name="acct_color">Kontotekstfarge</string>
     <string name="content_color">Innholdstekstfarge</string>
-    <string name="enable_gif_animation">Skru på GIF-animasjon (kaster bort mye batteritid)</string>
+    <string name="image_animation_enable">Skru på GIF-animasjon (kaster bort mye batteritid)</string>
     <string name="acct_sample">(eksempel)brukernavn@instans</string>
     <string name="public_profile">Offentlig profil</string>
     <string name="change_avatar">Endre avatarikon</string>

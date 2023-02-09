@@ -1,9 +1,7 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Matrix
+import android.graphics.*
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -16,25 +14,64 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
-import com.bumptech.glide.load.model.ModelLoader
-import com.bumptech.glide.load.model.ModelLoader.LoadData
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
+import com.github.penfeizhou.animation.apng.APNGDrawable
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.clip
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
-import java.nio.ByteBuffer
+import java.io.File
 
 class MyNetworkImageView : AppCompatImageView {
+
+    companion object {
+        private val log = LogCategory("MyNetworkImageView")
+        private val listenerDrawable = MyRequestListener<Drawable>()
+        private val listenerBitmap = MyRequestListener<Bitmap>()
+        private val listenerFile = MyRequestListener<File>()
+    }
+
+    class MyRequestListener<T> : RequestListener<T> {
+        override fun onResourceReady(
+            resource: T,
+            model: Any?,
+            target: Target<T>?,
+            dataSource: DataSource?,
+            isFirstResource: Boolean,
+        ): Boolean {
+            return false // Allow calling onResourceReady on the Target.
+        }
+
+        override fun onLoadFailed(
+            e: GlideException?,
+            model: Any?,
+            target: Target<T>?,
+            isFirstResource: Boolean,
+        ): Boolean {
+            e?.let {
+                log.e(it, "onLoadFailed")
+                it.rootCauses?.forEach { cause ->
+                    val message = cause?.message
+                    when {
+                        cause == null -> Unit
+                        message?.contains("setDataSource failed: status") == true ||
+                                message?.contains("etDataSourceCallback failed: status") == true
+                        -> log.w(message)
+                        else -> log.e(cause, "caused by")
+                    }
+                }
+            }
+            return false // Allow calling onLoadFailed on the Target.
+        }
+    }
 
     // ロード中などに表示するDrawableのリソースID
     private var mDefaultImage: Drawable? = null
@@ -43,7 +80,7 @@ class MyNetworkImageView : AppCompatImageView {
     private var mErrorImage: Drawable? = null
 
     // 角丸の半径。元画像の短辺に対する割合を指定するらしい
-    internal var mCornerRadius = 0f
+    private var mCornerRadius = 0f
 
     // 表示したい画像のURL
     private var mUrl: String? = null
@@ -83,7 +120,7 @@ class MyNetworkImageView : AppCompatImageView {
         animeUrl: String? = null,
     ) {
         mCornerRadius = r
-        if (PrefB.bpEnableGifAnimation.value) {
+        if (PrefB.bpImageAnimationEnable.value) {
             animeUrl?.notEmpty()?.let {
                 mUrl = it
                 mMayAnime = true
@@ -175,23 +212,18 @@ class MyNetworkImageView : AppCompatImageView {
                 return
             }
 
+            updatePath()
+
             val glideHeaders = LazyHeaders.Builder()
                 .addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
                 .build()
 
             val glideUrl = GlideUrl(url, glideHeaders)
 
-            mTarget = if (mMayAnime) {
-                getGlide()
-                    ?.load(glideUrl)
-                    ?.listener(listener)
-                    ?.into(MyTargetGif(url))
-            } else {
-                getGlide()
-                    ?.load(glideUrl)
-                    ?.listener(listener)
-                    ?.into(MyTarget(url))
-            }
+            mTarget = getGlide()
+                ?.load(glideUrl)
+                ?.listener(listenerDrawable)
+                ?.into(MyImageViewTarget(url))
         } catch (ex: Throwable) {
             log.e(ex, "loadImageIfNecessary failed.")
         }
@@ -241,45 +273,10 @@ class MyNetworkImageView : AppCompatImageView {
     }
 
     private interface UrlTarget {
-
         val urlLoading: String
     }
 
-    // 静止画用のターゲット
-    private inner class MyTarget(
-        override val urlLoading: String,
-    ) : ImageViewTarget<Drawable>(this@MyNetworkImageView), UrlTarget {
-
-        // errorDrawable The error drawable to optionally show, or null.
-        override fun onLoadFailed(errorDrawable: Drawable?) {
-            onLoadFailed(urlLoading)
-        }
-
-        override fun setResource(resource: Drawable?) {
-            try {
-                // 別の画像を表示するよう指定が変化していたなら何もしない
-                if (urlLoading != mUrl) return
-
-                if (mCornerRadius > 0f) {
-                    if (resource is BitmapDrawable) {
-                        // BitmapDrawableは角丸処理が可能。
-                        setImageDrawable(replaceBitmapDrawable(resource.bitmap))
-                        return
-                    }
-                    // その他のDrawable
-                    // たとえばInstanceTickerのアイコンにSVGが使われていたらPictureDrawableになる
-                    // log.w("cornerRadius=$mCornerRadius,drawable=$resource,url=$urlLoading")
-                }
-
-                setImageDrawable(resource)
-                return
-            } catch (ex: Throwable) {
-                log.e(ex, "setResource failed.")
-            }
-        }
-    }
-
-    private inner class MyTargetGif(
+    private inner class MyImageViewTarget(
         override val urlLoading: String,
     ) : ImageViewTarget<Drawable>(this@MyNetworkImageView), UrlTarget {
 
@@ -292,71 +289,53 @@ class MyNetworkImageView : AppCompatImageView {
             transition: Transition<in Drawable>?,
         ) {
             try {
-                // 別の画像を表示するよう指定が変化していたなら何もしない
-                if (urlLoading != mUrl) return
+                when {
+                    // ロード中に表示対象が変わった
+                    urlLoading != mUrl -> return
 
-                afterResourceReady(
-                    transition,
-                    when {
-                        mCornerRadius <= 0f -> {
-                            // 角丸でないならそのまま使う
-                            drawable
-                        }
-
-                        // GidDrawableを置き換える
-                        drawable is GifDrawable -> replaceGifDrawable(drawable)
-
-                        // Glide 4.xから、静止画はBitmapDrawableになった
-                        drawable is BitmapDrawable -> replaceBitmapDrawable(drawable)
-
-                        else -> {
-                            log.d("onResourceReady: drawable class=${drawable.javaClass.simpleName}")
-                            drawable
+                    drawable is Animatable && !mMayAnime -> {
+                        // アニメーションするDrawableを止めたいので、ビットマップに変換する
+                        // URL指定でないと色々あるので、やや無駄だが再ロード
+                        // Handlerを通さないとGlideに怒られる
+                        post {
+                            if (urlLoading != mUrl) return@post
+                            mTarget = getGlide()
+                                ?.asBitmap()
+                                ?.load(urlLoading)
+                                ?.listener(listenerBitmap)
+                                ?.into(MyImageViewTargetBitmap(urlLoading))
                         }
                     }
-                )
+
+                    // その他はDrawableのままビューにセットする
+                    else -> {
+                        glideDrawable = drawable
+                        if (drawable is Animatable) {
+                            when (drawable) {
+                                is GifDrawable -> drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
+                                is MyGifDrawable -> drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
+                                is APNGDrawable -> drawable.setLoopLimit(0)
+                                // WebPは AnimatedImageDrawable (APIレベル28以降)
+                            }
+                            drawable.start()
+                        }
+                        super.onResourceReady(drawable, transition)
+                    }
+                }
             } catch (ex: Throwable) {
                 log.e(ex, "onResourceReady failed.")
             }
         }
 
-        private fun afterResourceReady(transition: Transition<in Drawable>?, drawable: Drawable) {
-            super.onResourceReady(drawable, transition)
-
-            //if( ! drawable.isAnimated() ){
-            //    //XXX: Try to generalize this to other sizes/shapes.
-            //    // This is a dirty hack that tries to make loading square thumbnails and then square full images less costly
-            //    // by forcing both the smaller thumb and the larger version to have exactly the same intrinsic dimensions.
-            //    // If a drawable is replaced in an ImageView by another drawable with different intrinsic dimensions,
-            //    // the ImageView requests a layout. Scrolling rapidly while replacing thumbs with larger images triggers
-            //    // lots of these calls and causes significant amounts of junk.
-            //    float viewRatio = view.getWidth() / (float) view.getHeight();
-            //    float drawableRatio = drawable.getIntrinsicWidth() / (float) drawable.getIntrinsicHeight();
-            //    if( Math.abs( viewRatio - 1f ) <= SQUARE_RATIO_MARGIN
-            //        && Math.abs( drawableRatio - 1f ) <= SQUARE_RATIO_MARGIN ){
-            //        drawable = new SquaringDrawable( drawable, view.getWidth() );
-            //    }
-            //}
-
-            this.glideDrawable = drawable
-            if (drawable is GifDrawable) {
-                drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
-                drawable.start()
-            } else if (drawable is MyGifDrawable) {
-                drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
-                drawable.start()
-            }
-        }
-
-        // super.onResourceReady から呼ばれる
+        //  super.onResourceReady から呼ばれる
         override fun setResource(drawable: Drawable?) {
             setImageDrawable(drawable)
         }
 
         override fun onStart() {
             val drawable = glideDrawable
-            if (drawable is Animatable && !drawable.isRunning) {
-                log.d("MyTargetGif onStart glide_drawable=$drawable")
+            if (drawable is Animatable && !drawable.isRunning && mMayAnime) {
+                log.d("MyImageViewTarget onStart glide_drawable=$drawable")
                 drawable.start()
             }
         }
@@ -364,20 +343,38 @@ class MyNetworkImageView : AppCompatImageView {
         override fun onStop() {
             val drawable = glideDrawable
             if (drawable is Animatable && drawable.isRunning) {
-                log.d("MyTargetGif onStop glide_drawable=$drawable")
+                log.d("MyImageViewTarget onStop glide_drawable=$drawable")
                 drawable.stop()
             }
         }
+    }
 
-        override fun onDestroy() {
-            val drawable = glideDrawable
-            log.d("MyTargetGif onDestroy glide_drawable=$drawable")
-            super.onDestroy()
+    private inner class MyImageViewTargetBitmap(
+        override val urlLoading: String,
+    ) : ImageViewTarget<Bitmap>(this@MyNetworkImageView), UrlTarget {
+        override fun onLoadFailed(errorDrawable: Drawable?) = onLoadFailed(urlLoading)
+        override fun onResourceReady(
+            drawable: Bitmap,
+            transition: Transition<in Bitmap>?,
+        ) {
+            try {
+                if (urlLoading != mUrl) return
+                super.onResourceReady(drawable, transition)
+            } catch (ex: Throwable) {
+                log.e(ex, "onResourceReady failed.")
+            }
+        }
+
+        override fun setResource(resource: Bitmap?) {
+            setImageBitmap(resource)
         }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        pathRect.right = w.toFloat()
+        pathRect.bottom = h.toFloat()
+        updatePath()
         post(procLoadImage)
         post(procFocusPoint)
     }
@@ -569,60 +566,27 @@ class MyNetworkImageView : AppCompatImageView {
         }
     }
 
-    companion object {
-        private val log = LogCategory("MyNetworkImageView")
-        private val listener = MyRequestListener()
-        private val misskey13ModelLoader = Misskey13ModelLoader()
+    private val path = Path()
+    private val pathRect = RectF() // onSizeChangedでW,Hが与えられる
+    private fun updatePath() {
+        path.reset()
+        val r = mCornerRadius
+        if (r > 0f) {
+            path.addRoundRect(pathRect, r, r, Path.Direction.CW)
+        }
     }
 
-    class MyRequestListener : RequestListener<Drawable> {
-        override fun onResourceReady(
-            resource: Drawable,
-            model: Any?,
-            target: Target<Drawable>?,
-            dataSource: DataSource?,
-            isFirstResource: Boolean,
-        ): Boolean {
-            return false // Allow calling onResourceReady on the Target.
-        }
-
-        override fun onLoadFailed(
-            e: GlideException?,
-            model: Any?,
-            target: Target<Drawable>?,
-            isFirstResource: Boolean,
-        ): Boolean {
-            e?.let {
-                log.e(it, "onLoadFailed")
-                it.rootCauses?.forEach { cause ->
-                    val message = cause?.message
-                    when {
-                        cause == null -> Unit
-                        message?.contains("setDataSource failed: status") == true ||
-                                message?.contains("etDataSourceCallback failed: status") == true
-                        -> log.w(message)
-                        else -> log.e(cause, "caused by")
-                    }
-                }
+    override fun draw(canvas: Canvas?) {
+        canvas ?: return
+        when (path.isEmpty) {
+            true -> super.draw(canvas)
+            else -> {
+                // API18からハードウェアアクセラレーションが効く
+                val save = canvas.save()
+                canvas.clipPath(path)
+                super.draw(canvas)
+                canvas.restoreToCount(save)
             }
-            return false // Allow calling onLoadFailed on the Target.
-        }
-    }
-
-    class Misskey13ModelLoader : ModelLoader<String?, ByteBuffer> {
-        override fun handles(model: String): Boolean {
-            return model.startsWith("http") &&
-                    model.contains(".webp?")
-        }
-
-        override fun buildLoadData(
-            model: String,
-            width: Int,
-            height: Int,
-            options: Options,
-        ): LoadData<ByteBuffer>? {
-            TODO("Not yet implemented")
         }
     }
 }
-

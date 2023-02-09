@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.startLoading
+import jp.juggler.subwaytooter.dialog.DlgConfirm.okDialog
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.dialog.runInProgress
@@ -356,7 +357,7 @@ fun ActMain.handleSharedIntent(intent: Intent) {
 // アカウントを追加/更新したらappServerHashの取得をやりなおす
 suspend fun ActMain.updatePushDistributer() {
     when {
-        fcmHandler.noFcm && prefDevice.pushDistributor.isNullOrEmpty() -> {
+        fcmHandler.noFcm(this) && prefDevice.pushDistributor.isNullOrEmpty() -> {
             selectPushDistributor()
             // 選択しなかった場合は購読の更新を行わない
         }
@@ -384,49 +385,55 @@ fun AppCompatActivity.selectPushDistributor() {
             else -> this
         }
 
-        actionsDialog(getString(R.string.select_push_delivery_service)) {
-            if (fcmHandler.hasFcm) {
+        val upDistrobutors = UnifiedPush.getDistributors(
+            context,
+            features = ArrayList(listOf(UnifiedPush.FEATURE_BYTES_MESSAGE))
+        )
+        val hasFcm = fcmHandler.hasFcm(context)
+        if (upDistrobutors.isEmpty() && !hasFcm) {
+            okDialog(R.string.push_distributor_not_available)
+        } else {
+            actionsDialog(getString(R.string.select_push_delivery_service)) {
+                if (hasFcm) {
+                    action(
+                        getString(R.string.firebase_cloud_messaging)
+                            .appendChecked(lastDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM)
+                    ) {
+                        runInProgress(cancellable = false) { reporter ->
+                            withContext(AppDispatchers.DEFAULT) {
+                                pushRepo.switchDistributor(
+                                    PrefDevice.PUSH_DISTRIBUTOR_FCM,
+                                    reporter = reporter
+                                )
+                            }
+                        }
+                    }
+                }
+                for (packageName in upDistrobutors) {
+                    action(
+                        packageName.appendChecked(lastDistributor == packageName)
+                    ) {
+                        runInProgress(cancellable = false) { reporter ->
+                            withContext(AppDispatchers.DEFAULT) {
+                                pushRepo.switchDistributor(
+                                    packageName,
+                                    reporter = reporter
+                                )
+                            }
+                        }
+                    }
+                }
                 action(
-                    getString(R.string.firebase_cloud_messaging)
-                        .appendChecked(lastDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM)
+                    getString(R.string.none)
+                        .appendChecked(lastDistributor == PrefDevice.PUSH_DISTRIBUTOR_NONE)
                 ) {
                     runInProgress(cancellable = false) { reporter ->
                         withContext(AppDispatchers.DEFAULT) {
                             pushRepo.switchDistributor(
-                                PrefDevice.PUSH_DISTRIBUTOR_FCM,
+                                PrefDevice.PUSH_DISTRIBUTOR_NONE,
                                 reporter = reporter
                             )
                         }
-                    }
-                }
-            }
-            for (packageName in UnifiedPush.getDistributors(
-                context,
-                features = ArrayList(listOf(UnifiedPush.FEATURE_BYTES_MESSAGE))
-            )) {
-                action(
-                    packageName.appendChecked(lastDistributor == packageName)
-                ) {
-                    runInProgress(cancellable = false) { reporter ->
-                        withContext(AppDispatchers.DEFAULT) {
-                            pushRepo.switchDistributor(
-                                packageName,
-                                reporter = reporter
-                            )
-                        }
-                    }
-                }
-            }
-            action(
-                getString(R.string.none)
-                    .appendChecked(lastDistributor == PrefDevice.PUSH_DISTRIBUTOR_NONE)
-            ) {
-                runInProgress(cancellable = false) { reporter ->
-                    withContext(AppDispatchers.DEFAULT) {
-                        pushRepo.switchDistributor(
-                            PrefDevice.PUSH_DISTRIBUTOR_NONE,
-                            reporter = reporter
-                        )
                     }
                 }
             }

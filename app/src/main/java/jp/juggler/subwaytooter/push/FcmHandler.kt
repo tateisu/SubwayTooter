@@ -1,69 +1,36 @@
 package jp.juggler.subwaytooter.push
 
 import android.content.Context
-import androidx.startup.AppInitializer
-import androidx.startup.Initializer
-import jp.juggler.util.coroutine.AppDispatchers
-import jp.juggler.util.coroutine.EmptyScope
-import jp.juggler.util.log.LogCategory
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.log.LogCategory
+import kotlinx.coroutines.withContext
 
-private val log = LogCategory("FcmHandler")
+val fcmHandler = FcmHandler
 
-@Suppress("MemberVisibilityCanBePrivate", "RedundantSuspendModifier")
-class FcmHandler(
-    private val context: Context,
-) {
-    companion object {
-        val reNoFcm = """noFcm""".toRegex(RegexOption.IGNORE_CASE)
-    }
+object FcmHandler {
+    private val log = LogCategory("FcmHandler")
 
-    val fcmToken = MutableStateFlow(context.prefDevice.fcmToken)
+    fun hasFcm(context: Context): Boolean =
+        FcmTokenLoader.isPlayServiceAvailavle(context)
 
-    val noFcm :Boolean
-        get()= reNoFcm.containsMatchIn(BuildConfig.FLAVOR)
+    fun noFcm(context: Context): Boolean =
+        !hasFcm(context)
 
-    val hasFcm get() = !noFcm
-
-    fun onTokenChanged(token: String?) {
-        context.prefDevice.fcmToken = token
-        EmptyScope.launch(AppDispatchers.IO) { fcmToken.emit(token) }
-    }
-
-    suspend fun onMessageReceived(data: Map<String, String>) {
-        try {
-            context.pushRepo.handleFcmMessage(data)
-        } catch (ex: Throwable) {
-            log.e(ex, "onMessage failed.")
-        }
-    }
-
-    suspend fun deleteFcmToken() =
+    suspend fun deleteFcmToken(context: Context) =
         withContext(AppDispatchers.IO) {
             // 古いトークンを覚えておく
-            context.prefDevice.fcmToken
-                ?.takeIf { it.isNotEmpty() }
-                ?.let { context.prefDevice.fcmTokenExpired = it }
-            // FCMから削除する
-            log.i("deleteFcmToken: start")
-            FcmTokenLoader().deleteToken()
-            log.i("deleteFcmToken: end")
-            onTokenChanged(null)
-            log.i("deleteFcmToken complete")
+            loadFcmToken()?.notEmpty()?.let {
+                context.prefDevice.fcmTokenExpired = it
+            }
+            // FCMにトークン変更を依頼する
+            FcmTokenLoader.deleteToken()
         }
 
     suspend fun loadFcmToken(): String? = try {
         withContext(AppDispatchers.IO) {
-            log.i("loadFcmToken start")
-            val token = FcmTokenLoader().getToken()
-            log.i("loadFcmToken onTokenChanged")
-            onTokenChanged(token)
-            log.i("loadFcmToken end")
-            token
+            FcmTokenLoader.getToken()
         }
     } catch (ex: Throwable) {
         // https://github.com/firebase/firebase-android-sdk/issues/4053
@@ -77,25 +44,3 @@ class FcmHandler(
         null
     }
 }
-
-/**
- * AndroidManifest.xml で androidx.startup.InitializationProvider から参照される
- */
-@Suppress("unused")
-class FcmHandlerInitializer : Initializer<FcmHandler> {
-    override fun dependencies(): List<Class<out Initializer<*>>> =
-        emptyList()
-
-    override fun create(context: Context): FcmHandler {
-        val newHandler = FcmHandler(context.applicationContext)
-        log.i("FcmHandlerInitializer hasFcm=${newHandler.hasFcm}, BuildConfig.FLAVOR=${BuildConfig.FLAVOR}")
-        EmptyScope.launch{
-            newHandler.loadFcmToken()
-        }
-        return newHandler
-    }
-}
-
-val Context.fcmHandler: FcmHandler
-    get() = AppInitializer.getInstance(this)
-        .initializeComponent(FcmHandlerInitializer::class.java)

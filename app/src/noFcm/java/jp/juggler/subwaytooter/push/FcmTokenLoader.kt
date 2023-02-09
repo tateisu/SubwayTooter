@@ -1,7 +1,10 @@
 package jp.juggler.subwaytooter.push
 
-@Suppress("RedundantSuspendModifier")
-class FcmTokenLoader {
+import android.content.Context
+
+@Suppress("RedundantSuspendModifier", "UNUSED_PARAMETER")
+object FcmTokenLoader {
     suspend fun getToken(): String? = null
     suspend fun deleteToken() = Unit
+    fun isPlayServiceAvailavle(context: Context) = false
 }

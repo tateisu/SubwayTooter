@@ -1256,4 +1256,9 @@
     <string name="notification_push_distributor_disabled">Notification push distributor not selected.</string>
     <string name="notification_accent_color">Notification accent color</string>
     <string name="pleroma_features">Pleroma features</string>
+    <string name="unified_push_got_new_endpoint_url">Got new UnifiedPush endpoint URL…</string>
+    <string name="removing_old_fcm_token">Removing expired FCM device token from app server…</string>
+    <string name="removing_old_unified_push_url">Removing expired UnifiedPush endpoint URL from app server…</string>
+    <string name="sending_push_distributor_info_to_app_server">Sending push service information to app server…</string>
+    <string name="push_distributor_not_available">Push distributor is not available. You can receive push notifications by installing a UnifiedPush compatible push delivery app. see https://unifiedpush.org/</string>
 </resources>

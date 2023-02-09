@@ -141,21 +141,22 @@ class PushRepo(
             UnifiedPush.unregisterApp(context)
 
             // FCMトークンの削除。これでこの端末のこのアプリへの古いエンドポイント登録はgoneになり消えるはず
-            fcmHandler.deleteFcmToken()
+            fcmHandler.deleteFcmToken(context)
 
             when (pushDistributor) {
                 null, "" -> {
                     // 特に変更しない(アクセストークン更新時に呼ばれる
+                    reporter.setMessage("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
                 PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
                     // 購読解除
-                    reporter.setMessage("SubscriptionUpdateService.launch")
+                    reporter.setMessage("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
                 PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
                     // 特にイベントは来ないので、プッシュ購読をやりなおす
-                    reporter.setMessage("SubscriptionUpdateService.launch")
+                    reporter.setMessage("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
                 else -> {
@@ -196,7 +197,8 @@ class PushRepo(
      * ワーカーからnewUpEndpoint()が呼ばれる
      */
     suspend fun newUpEndpoint(upEndpoint: String) {
-        refReporter?.get()?.setMessage("新しい UnifiedPush endpoint URL を取得しました")
+        refReporter?.get()
+            ?.setMessage(context.getString(R.string.unified_push_got_new_endpoint_url))
 
         val upPackageName = UnifiedPush.getDistributor(context).notEmpty()
             ?: error("missing upPackageName")
@@ -223,6 +225,7 @@ class PushRepo(
     suspend fun registerEndpoint(
         keepAliveMode: Boolean,
     ) {
+        refReporter?.get()?.setMessage("registerEndpoint for ${prefDevice.pushDistributor}…")
         subscriptionMutex.withLock {
             log.i("registerEndpoint: keepAliveMode=$keepAliveMode")
 
@@ -230,7 +233,8 @@ class PushRepo(
             try {
                 // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
                 prefDevice.fcmTokenExpired.notEmpty()?.let {
-                    refReporter?.get()?.setMessage("期限切れのFCMデバイストークンをアプリサーバから削除しています")
+                    refReporter?.get()
+                        ?.setMessage(context.getString(R.string.removing_old_fcm_token))
                     log.i("remove fcmTokenExpired")
                     apiAppServer.endpointRemove(fcmToken = it)
                     prefDevice.fcmTokenExpired = null
@@ -242,7 +246,8 @@ class PushRepo(
             try {
                 // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
                 prefDevice.upEndpointExpired.notEmpty()?.let {
-                    refReporter?.get()?.setMessage("期限切れのUnifiedPushエンドポイントをアプリサーバから削除しています")
+                    refReporter?.get()
+                        ?.setMessage(context.getString(R.string.removing_old_unified_push_url))
                     log.i("remove upEndpointExpired")
                     apiAppServer.endpointRemove(upUrl = it)
                     prefDevice.upEndpointExpired = null
@@ -274,19 +279,23 @@ class PushRepo(
 
             var willRemoveSubscription = false
 
-            // アプリサーバにendpointを登録する
-            refReporter?.get()?.setMessage("アプリサーバにプッシュサービスの情報を送信しています")
+            val hasFcm = fcmHandler.hasFcm(context)
 
-            if (!fcmHandler.hasFcm && prefDevice.pushDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM) {
+
+            if (!hasFcm && prefDevice.pushDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM) {
                 log.w("fmc selected, but this is noFcm build. unset distributer.")
                 prefDevice.pushDistributor = null
             }
+
+            // アプリサーバにendpointを登録する
+            refReporter?.get()
+                ?.setMessage(context.getString(R.string.sending_push_distributor_info_to_app_server))
 
             val acctHashList = acctHashMap.keys.toList()
 
             val json = when (prefDevice.pushDistributor) {
                 null, "" -> when {
-                    fcmHandler.hasFcm -> {
+                    hasFcm -> {
                         log.i("registerEndpoint dist=FCM(default), acctHashList=${acctHashList.size}")
                         registerEndpointFcm(acctHashList)
                     }

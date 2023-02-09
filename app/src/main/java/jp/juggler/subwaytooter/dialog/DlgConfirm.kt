@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
+import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -107,6 +109,41 @@ object DlgConfirm {
                     setCancelable(true)
                     title?.let { setTitle(it) }
                     setNegativeButton(R.string.cancel, null)
+                    setPositiveButton(R.string.ok) { _, _ ->
+                        if (cont.isActive) cont.resume(Unit)
+                    }
+                }.create()
+                dialog.setOnDismissListener {
+                    if (cont.isActive) cont.resumeWithException(CancellationException("dialog closed."))
+                }
+                dialog.show()
+                cont.invokeOnCancellation { dialog.dismissSafe() }
+            } catch (ex: Throwable) {
+                cont.resumeWithException(ex)
+            }
+        }
+    }
+
+    suspend fun AppCompatActivity.okDialog(@StringRes messageId: Int, vararg args: Any?) =
+        okDialog(getString(messageId, *args))
+
+    suspend fun AppCompatActivity.okDialog(message: CharSequence, title: CharSequence? = null) {
+        suspendCancellableCoroutine { cont ->
+            try {
+                val views = DlgConfirmBinding.inflate(layoutInflater)
+
+                views.cbSkipNext.visibility = View.GONE
+
+                views.tvMessage.apply {
+                    movementMethod = LinkMovementMethod.getInstance()
+                    autoLinkMask = Linkify.WEB_URLS
+                    text = message
+                }
+
+                val dialog = AlertDialog.Builder(this).apply {
+                    setView(views.root)
+                    setCancelable(true)
+                    title?.let { setTitle(it) }
                     setPositiveButton(R.string.ok) { _, _ ->
                         if (cont.isActive) cont.resume(Unit)
                     }

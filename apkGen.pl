@@ -16,6 +16,7 @@ sub cmd($){
 }
 
 cmd "./gradlew --stop";
+cmd "rm -rf .gradle/caches/build-cache-*";
 cmd "./gradlew clean";
 cmd "./gradlew assembleNoFcmRelease";
 cmd "./gradlew assembleFcmRelease";

@@ -588,11 +588,13 @@ class SideMenuAdapter(
     }
 
     private fun notificationActionRecommend(): Pair<Int, () -> Unit>? = when {
+        // 通知権限がない場合の警告とアクション
         actMain.prNotification.spec.listNotGranded(actMain).isNotEmpty() ->
             Pair(R.string.notification_permission_not_granted) {
                 actMain.prNotification.openAppSetting(actMain)
             }
-        (actMain.prefDevice.pushDistributor.isNullOrEmpty() && actMain.fcmHandler.noFcm) ||
+        // プッシュ配送が選択されていない場合の警告とアクション
+        (actMain.prefDevice.pushDistributor.isNullOrEmpty() && fcmHandler.noFcm(actMain)) ||
                 actMain.prefDevice.pushDistributor == PUSH_DISTRIBUTOR_NONE ->
             Pair(R.string.notification_push_distributor_disabled) {
                 actMain.selectPushDistributor()

@@ -1240,4 +1240,9 @@
     <string name="notification_push_distributor_disabled">通知のプッシュ配送サービスが選択されていません</string>
     <string name="notification_accent_color">通知のアクセント色</string>
     <string name="pleroma_features">Pleroma機能</string>
+    <string name="unified_push_got_new_endpoint_url">UnifiedPushの新しいendpoint URLを取得しました…</string>
+    <string name="removing_old_fcm_token">期限切れのFCMデバイストークンをアプリサーバから削除しています…</string>
+    <string name="removing_old_unified_push_url">期限切れのUnifiedPushエンドポイントをアプリサーバから削除しています…</string>
+    <string name="sending_push_distributor_info_to_app_server">アプリサーバにプッシュサービスの情報を送信しています…</string>
+    <string name="push_distributor_not_available">プッシュ配送サービスを利用できません。UnifiedPush対応のプッシュ配送アプリをインストールすることで、プッシュ通知を受け取ることができます。詳細 https://unifiedpush.org/</string>
 </resources>

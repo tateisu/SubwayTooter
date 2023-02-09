@@ -36,12 +36,15 @@ import jp.juggler.util.os.applicationContextSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.unifiedpush.android.connector.UnifiedPush
 import java.lang.ref.WeakReference
 import java.security.Provider
 import java.util.concurrent.TimeUnit
+import kotlin.math.min
 
 private val log = LogCategory("PushRepo")
 
@@ -90,6 +93,8 @@ class PushRepo(
         private val ncPushMessage = NotificationChannels.PushMessage
 
         var refReporter: WeakReference<SuspendProgress.Reporter>? = null
+
+        var subscriptionMutex = Mutex()
     }
 
     private val pushMisskey by lazy {
@@ -116,7 +121,7 @@ class PushRepo(
      * UPでプッシュサービスを選ぶと呼ばれる
      */
     suspend fun switchDistributor(
-        pushDistributor: String,
+        pushDistributor: String?,
         reporter: SuspendProgress.Reporter,
     ) {
         val timeSwitchStart = System.currentTimeMillis()
@@ -139,6 +144,10 @@ class PushRepo(
             fcmHandler.deleteFcmToken()
 
             when (pushDistributor) {
+                null, "" -> {
+                    // 特に変更しない(アクセストークン更新時に呼ばれる
+                    enqueueRegisterEndpoint(context)
+                }
                 PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
                     // 購読解除
                     reporter.setMessage("SubscriptionUpdateService.launch")
@@ -161,20 +170,19 @@ class PushRepo(
         }
         val timeout = timeSwitchStart + TimeUnit.SECONDS.toMillis(20)
         while (true) {
-            val now = System.currentTimeMillis()
-            if (now >= timeout) {
-                reporter.setMessage("timeout")
-                delay(888L)
-                break
-            }
             if (PushWorker.timeEndRegisterEndpoint.get() >= timeSwitchStart ||
                 PushWorker.timeEndUpEndpoint.get() >= timeSwitchStart
             ) {
-                reporter.setMessage("complete")
-                delay(888L)
+                // complete
                 break
             }
-            delay(1000L)
+            val remain = min(1000L, timeout - System.currentTimeMillis())
+            if (remain <= 0) {
+                reporter.setMessage("timeout")
+                delay(666L)
+                break
+            }
+            delay(remain)
         }
     }
 
@@ -215,155 +223,158 @@ class PushRepo(
     suspend fun registerEndpoint(
         keepAliveMode: Boolean,
     ) {
-        log.i("registerEndpoint: keepAliveMode=$keepAliveMode")
+        subscriptionMutex.withLock {
+            log.i("registerEndpoint: keepAliveMode=$keepAliveMode")
 
-        // 古いFCMトークンの情報はアプリサーバ側で勝手に消えるはず
-        try {
-            // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
-            prefDevice.fcmTokenExpired.notEmpty()?.let {
-                refReporter?.get()?.setMessage("期限切れのFCMデバイストークンをアプリサーバから削除しています")
-                log.i("remove fcmTokenExpired")
-                apiAppServer.endpointRemove(fcmToken = it)
-                prefDevice.fcmTokenExpired = null
+            // 古いFCMトークンの情報はアプリサーバ側で勝手に消えるはず
+            try {
+                // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
+                prefDevice.fcmTokenExpired.notEmpty()?.let {
+                    refReporter?.get()?.setMessage("期限切れのFCMデバイストークンをアプリサーバから削除しています")
+                    log.i("remove fcmTokenExpired")
+                    apiAppServer.endpointRemove(fcmToken = it)
+                    prefDevice.fcmTokenExpired = null
+                }
+            } catch (ex: Throwable) {
+                log.w(ex, "can't forgot fcmTokenExpired")
             }
-        } catch (ex: Throwable) {
-            log.w(ex, "can't forgot fcmTokenExpired")
-        }
 
-        try {
-            // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
-            prefDevice.upEndpointExpired.notEmpty()?.let {
-                refReporter?.get()?.setMessage("期限切れのUnifiedPushエンドポイントをアプリサーバから削除しています")
-                log.i("remove upEndpointExpired")
-                apiAppServer.endpointRemove(upUrl = it)
-                prefDevice.upEndpointExpired = null
+            try {
+                // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
+                prefDevice.upEndpointExpired.notEmpty()?.let {
+                    refReporter?.get()?.setMessage("期限切れのUnifiedPushエンドポイントをアプリサーバから削除しています")
+                    log.i("remove upEndpointExpired")
+                    apiAppServer.endpointRemove(upUrl = it)
+                    prefDevice.upEndpointExpired = null
+                }
+            } catch (ex: Throwable) {
+                log.w(ex, "can't forgot upEndpointExpired")
             }
-        } catch (ex: Throwable) {
-            log.w(ex, "can't forgot upEndpointExpired")
-        }
 
-        val realAccounts = daoSavedAccount.loadRealAccounts()
-            .filter { !it.isPseudo && it.isConfirmed }
+            val realAccounts = daoSavedAccount.loadRealAccounts()
+                .filter { !it.isPseudo && it.isConfirmed }
 
-        val accts = realAccounts.map { it.acct }
+            val accts = realAccounts.map { it.acct }
 
-        // map of acctHash to account
-        val acctHashMap = daoStatus.updateAcctHash(accts)
-        if (acctHashMap.isEmpty()) {
-            log.w("acctHashMap is empty. no need to update register endpoint")
-            return
-        }
-
-        if (keepAliveMode) {
-            val lastUpdated = prefDevice.timeLastEndpointRegister
-            val now = System.currentTimeMillis()
-            if (now - lastUpdated < TimeUnit.DAYS.toMillis(3)) {
-                log.i("lazeMode: skip re-registration.")
+            // map of acctHash to account
+            val acctHashMap = daoStatus.updateAcctHash(accts)
+            if (acctHashMap.isEmpty()) {
+                log.w("acctHashMap is empty. no need to update register endpoint")
+                return
             }
-        }
 
-        var willRemoveSubscription = false
+            if (keepAliveMode) {
+                val lastUpdated = prefDevice.timeLastEndpointRegister
+                val now = System.currentTimeMillis()
+                if (now - lastUpdated < TimeUnit.DAYS.toMillis(3)) {
+                    log.i("lazeMode: skip re-registration.")
+                }
+            }
 
-        // アプリサーバにendpointを登録する
-        refReporter?.get()?.setMessage("アプリサーバにプッシュサービスの情報を送信しています")
+            var willRemoveSubscription = false
 
-        if (!fcmHandler.hasFcm && prefDevice.pushDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM) {
-            log.w("fmc selected, but this is noFcm build. unset distributer.")
-            prefDevice.pushDistributor = null
-        }
+            // アプリサーバにendpointを登録する
+            refReporter?.get()?.setMessage("アプリサーバにプッシュサービスの情報を送信しています")
 
-        val acctHashList = acctHashMap.keys.toList()
+            if (!fcmHandler.hasFcm && prefDevice.pushDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM) {
+                log.w("fmc selected, but this is noFcm build. unset distributer.")
+                prefDevice.pushDistributor = null
+            }
 
-        val json = when (prefDevice.pushDistributor) {
-            null, "" -> when {
-                fcmHandler.hasFcm -> {
-                    log.i("registerEndpoint dist=FCM(default), acctHashList=${acctHashList.size}")
+            val acctHashList = acctHashMap.keys.toList()
+
+            val json = when (prefDevice.pushDistributor) {
+                null, "" -> when {
+                    fcmHandler.hasFcm -> {
+                        log.i("registerEndpoint dist=FCM(default), acctHashList=${acctHashList.size}")
+                        registerEndpointFcm(acctHashList)
+                    }
+                    else -> {
+                        log.w("pushDistributor not selected. but can't select default distributor from background service.")
+                        return
+                    }
+                }
+                PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
+                    log.i("push distrobuter 'none' is selected. it will remove subscription.")
+                    willRemoveSubscription = true
+                    null
+                }
+                PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
+                    log.i("registerEndpoint dist=FCM, acctHashList=${acctHashList.size}")
                     registerEndpointFcm(acctHashList)
                 }
                 else -> {
-                    log.w("pushDistributor not selected. but can't select default distributor from background service.")
-                    return
+                    log.i("registerEndpoint dist=${prefDevice.pushDistributor}, acctHashList=${acctHashList.size}")
+                    registerEndpointUnifiedPush(acctHashList)
                 }
             }
-            PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
-                log.i("push distrobuter 'none' is selected. it will remove subscription.")
-                willRemoveSubscription = true
-                null
-            }
-            PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
-                log.i("registerEndpoint dist=FCM, acctHashList=${acctHashList.size}")
-                registerEndpointFcm(acctHashList)
-            }
-            else -> {
-                log.i("registerEndpoint dist=${prefDevice.pushDistributor}, acctHashList=${acctHashList.size}")
-                registerEndpointUnifiedPush(acctHashList)
-            }
-        }
 
-        when {
-            json.isNullOrEmpty() ->
-                log.i("no information of appServerHash.")
+            when {
+                json.isNullOrEmpty() ->
+                    log.i("no information of appServerHash.")
 
-            else -> {
-                // acctHash => appServerHash のマップが返ってくる
-                // ステータスに覚える
-                var saveCount = 0
-                for (acctHash in json.keys) {
-                    val acct = acctHashMap[acctHash] ?: continue
-                    val appServerHash = json.string(acctHash) ?: continue
-                    ++saveCount
-                    val status = daoStatus.loadOrCreate(acct)
-                    if (status.appServerHash == appServerHash) continue
-                    daoStatus.saveAppServerHash(status.id, appServerHash)
+                else -> {
+                    // acctHash => appServerHash のマップが返ってくる
+                    // ステータスに覚える
+                    var saveCount = 0
+                    for (acctHash in json.keys) {
+                        val acct = acctHashMap[acctHash] ?: continue
+                        val appServerHash = json.string(acctHash) ?: continue
+                        ++saveCount
+                        val status = daoStatus.loadOrCreate(acct)
+                        if (status.appServerHash == appServerHash) continue
+                        daoStatus.saveAppServerHash(status.id, appServerHash)
+                    }
+                    log.i("appServerHash updated. saveCount=$saveCount")
                 }
-                log.i("appServerHash updated. saveCount=$saveCount")
             }
-        }
 
-        realAccounts.forEach { account ->
-            val subLog = object : PushBase.SubscriptionLogger {
-                override val context = this@PushRepo.context
-                override fun i(msg: String) {
-                    log.i("[${account.acct}]$msg")
+            realAccounts.forEach { account ->
+                val subLog = object : PushBase.SubscriptionLogger {
+                    override val context = this@PushRepo.context
+                    override fun i(msg: String) {
+                        log.i("[${account.acct}]$msg")
+                        refReporter?.get()?.setMessage("[${account.acct}]$msg")
+                    }
+
+                    override fun e(msg: String) {
+                        log.e("[${account.acct}]$msg")
+                        refReporter?.get()?.setMessage("[${account.acct}]$msg")
+                        daoAccountNotificationStatus.updateSubscriptionError(
+                            account.acct,
+                            msg
+                        )
+                    }
+
+                    override fun e(ex: Throwable, msg: String) {
+                        log.e(ex, "[${account.acct}]$msg")
+                        refReporter?.get()?.setMessage("[${account.acct}]$msg")
+                        daoAccountNotificationStatus.updateSubscriptionError(
+                            account.acct,
+                            ex.withCaption(msg)
+                        )
+                    }
                 }
-
-                override fun e(msg: String) {
-                    log.e("[${account.acct}]$msg")
-                    daoAccountNotificationStatus.updateSubscriptionError(
-                        account.acct,
-                        msg
+                try {
+                    val errMsg = pushBase(account).updateSubscription(
+                        subLog = subLog,
+                        account = account,
+                        willRemoveSubscription = willRemoveSubscription || !account.isRequiredPushSubscription(),
+                        forceUpdate = false,
                     )
-                }
-
-                override fun e(ex: Throwable, msg: String) {
-                    log.e(ex, "[${account.acct}]$msg")
-                    daoAccountNotificationStatus.updateSubscriptionError(
-                        account.acct,
-                        ex.withCaption(msg)
-                    )
+                    daoAccountNotificationStatus.updateSubscriptionError(account.acct, errMsg)
+                    if (errMsg != null) {
+                        subLog.e(errMsg)
+                    }
+                } catch (ex: Throwable) {
+                    log.e(ex, "updateSubscription failed.")
+                    val errMsg = ex.withCaption()
+                    subLog.e(errMsg)
+                    daoAccountNotificationStatus.updateSubscriptionError(account.acct, errMsg)
                 }
             }
-            try {
-                refReporter?.get()?.setMessage("${account.acct.pretty} のWebPush購読を更新しています")
-                daoAccountNotificationStatus.updateSubscriptionError(
-                    account.acct,
-                    null
-                )
-                pushBase(account).updateSubscription(
-                    subLog = subLog,
-                    account = account,
-                    willRemoveSubscription = willRemoveSubscription || !account.isRequiredPushSubscription(),
-                    forceUpdate = false,
-                )
-            } catch (ex: Throwable) {
-                subLog.e(ex, "updateSubscription failed.")
-                daoAccountNotificationStatus.updateSubscriptionError(
-                    account.acct,
-                    ex.withCaption()
-                )
-            }
+            prefDevice.timeLastEndpointRegister = System.currentTimeMillis()
         }
-        prefDevice.timeLastEndpointRegister = System.currentTimeMillis()
     }
 
     private suspend fun registerEndpointUnifiedPush(acctHashList: List<String>) =
@@ -408,12 +419,25 @@ class PushRepo(
         willRemoveSubscription: Boolean,
         forceUpdate: Boolean = false,
     ) {
-        pushBase(account).updateSubscription(
-            subLog = subLog,
-            account = account,
-            willRemoveSubscription = willRemoveSubscription || !account.isRequiredPushSubscription(),
-            forceUpdate = forceUpdate,
-        )
+        subscriptionMutex.withLock {
+            try {
+                val errMsg = pushBase(account).updateSubscription(
+                    subLog = subLog,
+                    account = account,
+                    willRemoveSubscription = willRemoveSubscription || !account.isRequiredPushSubscription(),
+                    forceUpdate = forceUpdate,
+                )
+                daoAccountNotificationStatus.updateSubscriptionError(account.acct, errMsg)
+                if (errMsg != null) {
+                    subLog.e(errMsg)
+                }
+            } catch (ex: Throwable) {
+                log.e(ex, "updateSubscription failed.")
+                val errMsg = ex.withCaption()
+                subLog.e(errMsg)
+                daoAccountNotificationStatus.updateSubscriptionError(account.acct, errMsg)
+            }
+        }
     }
 
     private fun pushBase(account: SavedAccount) = when {

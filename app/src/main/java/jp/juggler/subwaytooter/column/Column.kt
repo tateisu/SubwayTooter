@@ -68,7 +68,7 @@ class Column(
             val account_db_id = src.long(ColumnEncoder.KEY_ACCOUNT_ROW_ID) ?: -1L
             return if (account_db_id > 0) {
                 daoSavedAccount.loadAccount(account_db_id)
-                    ?: error("missing account")
+                    ?: error("missing account for db_id $account_db_id")
             } else {
                 SavedAccount.na
             }

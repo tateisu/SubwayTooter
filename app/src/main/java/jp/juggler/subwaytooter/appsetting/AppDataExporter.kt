@@ -115,7 +115,7 @@ object AppDataExporter {
         writer.name(jsonKey)
         writer.beginArray()
 
-        appDatabase.rawQuery("select from $table", emptyArray()).use { cursor ->
+        appDatabase.rawQuery("select * from $table", emptyArray()).use { cursor ->
             val names = ArrayList<String>()
             val column_count = cursor.columnCount
             for (i in 0 until column_count) {

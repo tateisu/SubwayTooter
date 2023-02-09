@@ -23,6 +23,9 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
     companion object {
         private val log = LogCategory("MastodonAuth")
 
+        @Suppress("MayBeConstant")
+        val DEBUG_AUTH = false
+
         const val callbackUrl = "${BuildConfig.customScheme}://oauth/"
 
         fun mastodonScope(ti: TootInstance?) = when {
@@ -153,6 +156,7 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
             put(KEY_AUTH_VERSION, AUTH_VERSION)
             put(KEY_CLIENT_SCOPE, scopeString)
         }
+        if(DEBUG_AUTH) log.i("DEBUG_AUTH client_id=${clientInfo.string("client_id")}")
         // client credentialを取得して保存する
         // この時点ではまだ client credential がないので、必ず更新と保存が行われる
         prepareClientCredential(apiHost, clientInfo, clientName)
@@ -291,6 +295,7 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
 
         val accessToken = tokenInfo.string("access_token")
             ?.notEmpty() ?: error("can't parse access token.")
+        if(DEBUG_AUTH) log.i("DEBUG_AUTH accessToken=${accessToken}")
 
         val accountJson = verifyAccount(
             accessToken = accessToken,

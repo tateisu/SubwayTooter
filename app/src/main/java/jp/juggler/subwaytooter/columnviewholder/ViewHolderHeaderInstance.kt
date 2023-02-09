@@ -91,6 +91,7 @@ internal class ViewHolderHeaderInstance(
                 btnExplore.isEnabledAlpha = false
                 tvConfiguration.text = ""
                 tvFedibirdCapacities.text = ""
+                tvPlelomaFeatures.text = ""
             } else {
                 val domain = instance.apDomain
                 btnInstance.text = when {
@@ -163,6 +164,8 @@ internal class ViewHolderHeaderInstance(
                     instance.configuration?.toString(1, sort = true) ?: ""
                 tvFedibirdCapacities.text =
                     instance.fedibirdCapabilities?.sorted()?.joinToString("\n") ?: ""
+                tvPlelomaFeatures.text=
+                    instance.pleromaFeatures?.sorted()?.joinToString("\n") ?: ""
             }
 
             tvHandshake.text = when (val handshake = column.handshake) {

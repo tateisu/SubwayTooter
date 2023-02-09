@@ -5,87 +5,76 @@
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
     android:orientation="vertical"
+    android:paddingBottom="128dp"
+    android:paddingEnd="12dp"
     android:paddingStart="12dp"
     android:paddingTop="12dp"
-    android:paddingEnd="12dp"
-    android:paddingBottom="128dp"
 
     >
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/instance"
-        />
+        android:text="@string/instance" />
 
     <Button
         android:id="@+id/btnInstance"
-        style="@style/setting_row_button"
-        />
+        style="@style/setting_row_button" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/version"
-        />
+        android:text="@string/version" />
 
     <LinearLayout style="@style/setting_row_form">
 
         <TextView
             android:id="@+id/tvVersion"
-            style="@style/setting_horizontal_stretch"
-            />
+            style="@style/setting_horizontal_stretch" />
 
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/title"
-        />
+        android:text="@string/title" />
 
     <LinearLayout style="@style/setting_row_form">
 
         <TextView
             android:id="@+id/tvTitle"
-            style="@style/setting_horizontal_stretch"
-            />
+            style="@style/setting_horizontal_stretch" />
 
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/email"
-        />
+        android:text="@string/email" />
 
     <Button
         android:id="@+id/btnEmail"
-        style="@style/setting_row_button"
-        />
+        style="@style/setting_row_button" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/contact"
-        />
+        android:text="@string/contact" />
 
     <Button
         android:id="@+id/btnContact"
-        style="@style/setting_row_button"
-        />
+        style="@style/setting_row_button" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/languages"
-        />
+        android:text="@string/languages" />
 
     <LinearLayout style="@style/setting_row_form">
 
@@ -94,16 +83,14 @@
             style="@style/setting_horizontal_stretch"
             android:background="@drawable/btn_bg_transparent_round6dp"
             android:gravity="start|center_vertical"
-            android:textAllCaps="false"
-            />
+            android:textAllCaps="false" />
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/invites_enabled"
-        />
+        android:text="@string/invites_enabled" />
 
     <LinearLayout style="@style/setting_row_form">
 
@@ -112,60 +99,52 @@
             style="@style/setting_horizontal_stretch"
             android:background="@drawable/btn_bg_transparent_round6dp"
             android:gravity="start|center_vertical"
-            android:textAllCaps="false"
-            />
+            android:textAllCaps="false" />
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/user_count"
-        />
+        android:text="@string/user_count" />
 
     <LinearLayout style="@style/setting_row_form">
 
         <TextView
             android:id="@+id/tvUserCount"
-            style="@style/setting_horizontal_stretch"
-            />
+            style="@style/setting_horizontal_stretch" />
 
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/toot_count"
-        />
+        android:text="@string/toot_count" />
 
     <LinearLayout style="@style/setting_row_form">
 
         <TextView
             android:id="@+id/tvTootCount"
-            style="@style/setting_horizontal_stretch"
-            />
+            style="@style/setting_horizontal_stretch" />
 
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/domain_count"
-        />
+        android:text="@string/domain_count" />
 
     <TextView
         android:id="@+id/tvDomainCount"
-        style="@style/setting_row_form"
-        />
+        style="@style/setting_row_form" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/thumbnail"
-        />
+        android:text="@string/thumbnail" />
 
     <LinearLayout style="@style/setting_row_form">
 
@@ -173,94 +152,90 @@
             android:id="@+id/ivThumbnail"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:scaleType="fitCenter"
-            />
+            android:scaleType="fitCenter" />
 
     </LinearLayout>
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/short_description"
-        />
+        android:text="@string/short_description" />
 
     <jp.juggler.subwaytooter.view.MyTextView
         android:id="@+id/tvShortDescription"
-        style="@style/setting_row_form"
-        />
+        style="@style/setting_row_form" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/description"
-        />
+        android:text="@string/description" />
 
     <jp.juggler.subwaytooter.view.MyTextView
         android:id="@+id/tvDescription"
-        style="@style/setting_row_form"
-        />
+        style="@style/setting_row_form" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/links"
-        />
+        android:text="@string/links" />
 
     <Button
         android:id="@+id/btnAbout"
         style="@style/setting_row_button"
-        android:text="@string/top_page"
-        />
+        android:text="@string/top_page" />
 
     <Button
         android:id="@+id/btnAboutMore"
         style="@style/setting_row_button"
-        android:text="@string/about_this_instance"
-        />
+        android:text="@string/about_this_instance" />
 
     <Button
         android:id="@+id/btnExplore"
         style="@style/setting_row_button"
-        android:text="@string/profile_directory"
-        />
-    <View style="@style/setting_divider"/>
+        android:text="@string/profile_directory" />
+
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/server_configuration"
-        />
+        android:text="@string/server_configuration" />
 
     <jp.juggler.subwaytooter.view.MyTextView
         android:id="@+id/tvConfiguration"
-        style="@style/setting_row_form"
-        />
-    <View style="@style/setting_divider"/>
+        style="@style/setting_row_form" />
+
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/fedibird_capacities"
-        />
+        android:text="@string/fedibird_capacities" />
 
     <jp.juggler.subwaytooter.view.MyTextView
         android:id="@+id/tvFedibirdCapacities"
-        style="@style/setting_row_form"
-        />
+        style="@style/setting_row_form" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/tls_handshake"
-        />
+        android:text="@string/pleroma_features" />
+
+    <jp.juggler.subwaytooter.view.MyTextView
+        android:id="@+id/tvPlelomaFeatures"
+        style="@style/setting_row_form" />
+    <View style="@style/setting_divider" />
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/tls_handshake" />
 
     <jp.juggler.subwaytooter.view.MyTextView
         android:id="@+id/tvHandshake"
-        style="@style/setting_row_form"
-        />
+        style="@style/setting_row_form" />
 
-    <View style="@style/setting_divider"/>
+    <View style="@style/setting_divider" />
 
 </LinearLayout>

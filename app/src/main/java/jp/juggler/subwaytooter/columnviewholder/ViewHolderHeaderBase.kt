@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.withCaption
 import jp.juggler.util.ui.scan
 
 abstract class ViewHolderHeaderBase(viewRoot: View) : RecyclerView.ViewHolder(viewRoot) {
@@ -28,15 +29,18 @@ abstract class ViewHolderHeaderBase(viewRoot: View) : RecyclerView.ViewHolder(vi
                 if (v is Button) {
                     // ボタンは太字なので触らない
                 } else if (v is TextView) {
-
                     v.typeface = ActMain.timelineFont
+                    try {
+                        activity.timelineFontSizeSp
+                            .takeIf { it.isFinite() }
+                            ?.let { v.textSize = it }
 
-                    activity.timelineFontSizeSp
-                        .takeIf { it.isFinite() }
-                        ?.let { v.textSize = it }
-
-                    activity.timelineSpacing
-                        ?.let { v.setLineSpacing(0f, it) }
+                        activity.timelineSpacing
+                            ?.let { v.setLineSpacing(0f, it) }
+                    } catch (ex: NullPointerException) {
+                        // 非null型なのになぜかnull例外が出る
+                        log.w(ex.withCaption("can't read timelineFontSizeSp, timelineSpacing"))
+                    }
                 }
             } catch (ex: Throwable) {
                 log.e(ex, "can't initialize text styles.")

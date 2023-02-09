@@ -33,12 +33,13 @@ abstract class PushBase {
     protected abstract val daoStatus: AccountNotificationStatus.Access
 
     // 購読の確認と更新
+    // 失敗したらエラーメッセージを返す。成功したらnull
     abstract suspend fun updateSubscription(
         subLog: SubscriptionLogger,
         account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate:Boolean,
-    )
+    ):String?
 
     // プッシュメッセージのJSONデータを通知用に整形
     abstract suspend fun formatPushMessage(

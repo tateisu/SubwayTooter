@@ -32,6 +32,7 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.dismissSafe
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.concurrent.TimeUnit
 
@@ -256,12 +257,16 @@ fun ActMain.launchDialogs() {
     }
 }
 
-fun ActMain.afterNotificationGranted() {
+suspend fun ActMain.afterNotificationGranted() {
     sideMenuAdapter.filterListItems()
 
     // Workの掃除
     WorkManager.getInstance(applicationContext).pruneWork()
 
-    // 定期的にendpointを再登録したい
-    PushWorker.enqueueRegisterEndpoint(applicationContext, keepAliveMode = true)
+    // 認証やアクセストークン更新から戻ってきた時に処理を重ねたくない
+    delay(2000L)
+    if (!accountVerifyMutex.isLocked) {
+        // 定期的にendpointを再登録したい
+        PushWorker.enqueueRegisterEndpoint(applicationContext, keepAliveMode = true)
+    }
 }

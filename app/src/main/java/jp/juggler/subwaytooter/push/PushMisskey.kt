@@ -42,7 +42,7 @@ class PushMisskey(
         account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate: Boolean,
-    ) {
+    ): String? {
         val newUrl = snsCallbackUrl(account)
 
         val lastEndpointUrl = daoStatus.lastEndpointUrl(account.acct)
@@ -83,29 +83,28 @@ class PushMisskey(
                             subLog.i(R.string.push_subscription_off_unread_notification)
                         }
                     }
-                    return
+                    return null
                 } else {
                     // 古い購読はあったが、削除したい
                     api.deletePushSubscription(account, lastEndpointUrl)
                     daoStatus.deleteLastEndpointUrl(account.acct)
                     if (willRemoveSubscription) {
                         subLog.i(R.string.push_subscription_delete_current)
-                        return
+                        return null
                     }
                 }
             }
         }
         if (newUrl == null) {
-            if (willRemoveSubscription) {
-                subLog.i(R.string.push_subscription_app_server_hash_missing_but_ok)
-            } else {
-                subLog.e(R.string.push_subscription_app_server_hash_missing_error)
-                daoAccountNotificationStatus.updateSubscriptionError(
-                    account.acct,
-                    context.getString(R.string.push_subscription_app_server_hash_missing_error)
+            return when {
+                willRemoveSubscription -> {
+                    subLog.i(R.string.push_subscription_app_server_hash_missing_but_ok)
+                    null
+                }
+                else -> context.getString(
+                    R.string.push_subscription_app_server_hash_missing_error
                 )
             }
-            return
         } else if (willRemoveSubscription) {
             // 購読を解除したい。
             // hasEmptySubscription が真なら購読はないが、
@@ -117,7 +116,7 @@ class PushMisskey(
                     subLog.i(R.string.push_subscription_is_not_required_delete_secret_keys)
                 }
             }
-            return
+            return null
         }
 
         // 鍵がなければ作る
@@ -163,6 +162,7 @@ class PushMisskey(
             subLog.i(R.string.push_subscription_server_key_saved)
         }
         subLog.i(R.string.push_subscription_completed)
+        return null
     }
 
     private fun isOldSubscription(account: SavedAccount, url: String): Boolean {
@@ -173,7 +173,7 @@ class PushMisskey(
         //        /{flags }
         //        /{ client identifier}
 
-        val clientIdentifierOld =  url.toHttpUrlOrNull()?.pathSegments?.elementAtOrNull(4)
+        val clientIdentifierOld = url.toHttpUrlOrNull()?.pathSegments?.elementAtOrNull(4)
             ?: return false
         val installId = prefDevice.installIdV1?.notEmpty() ?: return false
         val accessToken = account.misskeyApiToken?.notEmpty() ?: return false

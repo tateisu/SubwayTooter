@@ -1255,4 +1255,5 @@
     <string name="manually_update">Manually update</string>
     <string name="notification_push_distributor_disabled">Notification push distributor not selected.</string>
     <string name="notification_accent_color">Notification accent color</string>
+    <string name="pleroma_features">Pleroma features</string>
 </resources>

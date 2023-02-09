@@ -31,7 +31,6 @@ import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.notification.recycleClickedNotification
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
-import jp.juggler.subwaytooter.push.PushWorker
 import jp.juggler.subwaytooter.push.fcmHandler
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -44,7 +43,8 @@ import jp.juggler.util.data.groupEx
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.queryIntentActivitiesCompat
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.unifiedpush.android.connector.UnifiedPush
 
@@ -229,32 +229,36 @@ private fun ActMain.handleOAuth2Callback(uri: Uri) {
     }
 }
 
+val accountVerifyMutex = Mutex()
+
 /**
  * アカウントを確認した後に呼ばれる
  * @return 何かデータを更新したら真
  */
-fun ActMain.afterAccountVerify(auth2Result: Auth2Result): Boolean = auth2Result.run {
+suspend fun ActMain.afterAccountVerify(auth2Result: Auth2Result): Boolean = auth2Result.run {
+    accountVerifyMutex.withLock {
+        // ユーザ情報中のacctはfull acct ではないので、組み立てる
+        val newAcct = Acct.parse(tootAccount.username, apDomain)
 
-    // ユーザ情報中のacctはfull acct ではないので、組み立てる
-    val newAcct = Acct.parse(tootAccount.username, apDomain)
+        // full acctだよな？
+        """\A[^@]+@[^@]+\z""".toRegex().find(newAcct.ascii)
+            ?: error("afterAccountAdd: incorrect userAcct. ${newAcct.ascii}")
 
-    // full acctだよな？
-    """\A[^@]+@[^@]+\z""".toRegex().find(newAcct.ascii)
-        ?: error("afterAccountAdd: incorrect userAcct. ${newAcct.ascii}")
-
-    // 「アカウント追加のハズが既存アカウントで認証していた」
-    // 「アクセストークン更新のハズが別アカウントで認証していた」
-    // などを防止するため、full acctでアプリ内DBを検索
-    when (val sa = daoSavedAccount.loadAccountByAcct(newAcct)) {
-        null -> afterAccountAdd(newAcct, auth2Result)
-        else -> afterAccessTokenUpdate(auth2Result, sa)
+        // 「アカウント追加のハズが既存アカウントで認証していた」
+        // 「アクセストークン更新のハズが別アカウントで認証していた」
+        // などを防止するため、full acctでアプリ内DBを検索
+        when (val sa = daoSavedAccount.loadAccountByAcct(newAcct)) {
+            null -> afterAccountAdd(newAcct, auth2Result)
+            else -> afterAccessTokenUpdate(auth2Result, sa)
+        }
     }
 }
 
-private fun ActMain.afterAccessTokenUpdate(
+private suspend fun ActMain.afterAccessTokenUpdate(
     auth2Result: Auth2Result,
     sa: SavedAccount,
 ): Boolean {
+    log.i("afterAccessTokenUpdate token ${sa.bearerAccessToken ?: sa.misskeyApiToken} =>${auth2Result.tokenJson}")
     // DBの情報を更新する
     authRepo.updateTokenInfo(sa, auth2Result)
 
@@ -275,7 +279,7 @@ private fun ActMain.afterAccessTokenUpdate(
     return true
 }
 
-private fun ActMain.afterAccountAdd(
+private suspend fun ActMain.afterAccountAdd(
     newAcct: Acct,
     auth2Result: Auth2Result,
 ): Boolean {
@@ -350,17 +354,22 @@ fun ActMain.handleSharedIntent(intent: Intent) {
 }
 
 // アカウントを追加/更新したらappServerHashの取得をやりなおす
-fun ActMain.updatePushDistributer() {
+suspend fun ActMain.updatePushDistributer() {
     when {
         fcmHandler.noFcm && prefDevice.pushDistributor.isNullOrEmpty() -> {
-            try {
-                selectPushDistributor()
-                // 選択したら
-            } catch (_: CancellationException) {
-                // 選択しなかった場合は購読の更新を行わない
+            selectPushDistributor()
+            // 選択しなかった場合は購読の更新を行わない
+        }
+        else -> {
+            runInProgress(cancellable = false) { reporter ->
+                withContext(AppDispatchers.DEFAULT) {
+                    pushRepo.switchDistributor(
+                        prefDevice.pushDistributor,
+                        reporter = reporter
+                    )
+                }
             }
         }
-        else -> PushWorker.enqueueRegisterEndpoint(this)
     }
 }
 

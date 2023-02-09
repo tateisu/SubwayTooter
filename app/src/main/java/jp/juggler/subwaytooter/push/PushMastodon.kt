@@ -8,12 +8,16 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiError
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.auth.AuthMastodon
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.pref.prefDevice
-import jp.juggler.subwaytooter.table.*
+import jp.juggler.subwaytooter.table.AccountNotificationStatus
+import jp.juggler.subwaytooter.table.PushMessage
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.appDatabase
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.time.parseTimeIso8601
@@ -41,26 +45,25 @@ class PushMastodon(
         account: SavedAccount,
         willRemoveSubscription: Boolean,
         forceUpdate: Boolean,
-    ) {
+    ): String? {
         val deviceHash = deviceHash(account)
         val newUrl = snsCallbackUrl(account) // appServerHashを参照する
         if (newUrl.isNullOrEmpty()) {
-            if (willRemoveSubscription) {
-                val msg =
-                    lazyContext.getString(R.string.push_subscription_app_server_hash_missing_but_ok)
-                subLog.i(msg)
-            } else {
-                val msg =
-                    lazyContext.getString(R.string.push_subscription_app_server_hash_missing_error)
-                subLog.e(msg)
-                daoAccountNotificationStatus.updateSubscriptionError(
-                    account.acct,
-                    msg
+            return when {
+                willRemoveSubscription -> {
+                    val msg = lazyContext.getString(
+                        R.string.push_subscription_app_server_hash_missing_but_ok
+                    )
+                    subLog.i(msg)
+                    null
+                }
+                else -> lazyContext.getString(
+                    R.string.push_subscription_app_server_hash_missing_error
                 )
             }
-            return
         }
 
+        if (AuthMastodon.DEBUG_AUTH) log.i("DEBUG_AUTH bearerAccessToken=${account.bearerAccessToken} ${account.acct}")
         val oldSubscription = try {
             api.getPushSubscription(account)
         } catch (ex: Throwable) {
@@ -90,16 +93,12 @@ class PushMastodon(
                     }
                 }
                 if (params["dh"] != deviceHash && !isOldSubscription(account, oldEndpointUrl)) {
-
                     // この端末で作成した購読ではない。
                     // TODO: 古い形式のURLを移行できないか？
                     log.w("deviceHash not match. keep it for other devices. ${account.acct} $oldEndpointUrl")
-                    subLog.e(R.string.push_subscription_exists_but_not_created_by_this_device)
-                    daoAccountNotificationStatus.updateSubscriptionError(
-                        account.acct,
-                        context.getString(R.string.push_subscription_exists_but_not_created_by_this_device)
+                    return context.getString(
+                        R.string.push_subscription_exists_but_not_created_by_this_device
                     )
-                    return
                 }
             }
         }
@@ -114,14 +113,22 @@ class PushMastodon(
                     api.deletePushSubscription(account)
                 }
             }
-            return
+            return null
         }
 
-        val newAlerts = account.alerts()
+        // サーバのバージョンを見て、サーバの知らないalertを無視して比較する
+        val client = TootApiClient(context, callback = object : TootApiCallback {
+            override suspend fun isApiCancelled(): Boolean = !coroutineContext.isActive
+        })
+        client.account = account
+        val ti = TootInstance.getExOrThrow(client)
+
+        val newAlerts = account.alerts(ti)
 
         val isSameAlert = isSameAlerts(
             subLog = subLog,
             account = account,
+            ti = ti,
             oldSubscriptionJson = oldSubscription,
             newAlerts = newAlerts,
         )
@@ -135,7 +142,7 @@ class PushMastodon(
         ) {
             // 現在の更新を使い続ける
             subLog.i(R.string.push_subscription_keep_using)
-            return
+            return null
         }
 
         if (newUrl == oldEndpointUrl) {
@@ -179,6 +186,7 @@ class PushMastodon(
             )
             subLog.i(R.string.push_subscription_completed)
         }
+        return null
     }
 
     private fun isOldSubscription(account: SavedAccount, url: String): Boolean {
@@ -189,7 +197,7 @@ class PushMastodon(
         //        /{flags }
         //        /{ client identifier}
 
-        val clientIdentifierOld =  url.toHttpUrlOrNull()?.pathSegments?.elementAtOrNull(4)
+        val clientIdentifierOld = url.toHttpUrlOrNull()?.pathSegments?.elementAtOrNull(4)
             ?: return false
         val installId = prefDevice.installIdV1?.notEmpty() ?: return false
         val accessToken = account.bearerAccessToken?.notEmpty() ?: return false
@@ -197,9 +205,10 @@ class PushMastodon(
         return clientIdentifier == clientIdentifierOld
     }
 
-    private suspend fun isSameAlerts(
+    private fun isSameAlerts(
         subLog: SubscriptionLogger,
         account: SavedAccount,
+        ti: TootInstance,
         oldSubscriptionJson: JsonObject?,
         newAlerts: JsonObject,
     ): Boolean {
@@ -210,7 +219,7 @@ class PushMastodon(
         // flagsの値が変わりendpoint URLも変わった状態で購読を自動更新してしまう
         // しかしそのタイミングではサーバは古いのでサーバ側の購読内容は変化しなかった。
 
-        // サーバ上の購読アラートのリスト
+        // 既存の購読のアラートのリスト
         var alertsOld = oldSubscription.alerts.entries
             .mapNotNull { if (it.value) it.key else null }
             .sorted()
@@ -221,26 +230,13 @@ class PushMastodon(
             .sorted()
 
         // 両方に共通するアラートは除去する
+        // サーバが知らないアラートは除去する
         val bothHave = alertsOld.filter { alertsNew.contains(it) }
-        alertsOld = alertsOld.filter { !bothHave.contains(it) }
-        alertsNew = alertsNew.filter { !bothHave.contains(it) }
-
-        // サーバのバージョンを調べる前に、この時点でalertsが一致するか確認する
-        if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
-            return true
-        }
-
-        // サーバのバージョンを見て、サーバの知らないalertを無視して比較する
-        val client = TootApiClient(context, callback = object : TootApiCallback {
-            override suspend fun isApiCancelled(): Boolean = !coroutineContext.isActive
-        })
-        client.account = account
-        val ti = TootInstance.getExOrThrow(client)
-
-        alertsOld = alertsOld.knownOnly(account, ti)
-        alertsNew = alertsNew.knownOnly(account, ti)
+        alertsOld =
+            alertsOld.filter { !bothHave.contains(it) }.knownOnly(account, ti)
+        alertsNew =
+            alertsNew.filter { !bothHave.contains(it) }.knownOnly(account, ti)
         return if (alertsOld.joinToString(",") == alertsNew.joinToString(",")) {
-            log.i("${account.acct}: same alerts(2)")
             true
         } else {
             log.i("${account.acct}: changed. old=${alertsOld.sorted()}, new=${alertsNew.sorted()}")
@@ -249,32 +245,41 @@ class PushMastodon(
         }
     }
 
-    private fun SavedAccount.alerts() = JsonObject().apply {
+    private fun SavedAccount.alerts(ti: TootInstance) = JsonObject().also { dst ->
         // Mastodon's Notification::TYPES in
         // in https://github.com/mastodon/mastodon/blob/main/app/models/notification.rb#L30
-        put(TootNotification.TYPE_ADMIN_REPORT, notificationFollow)
-        put(TootNotification.TYPE_ADMIN_SIGNUP, notificationFollow) // 設定項目不足
-        put(TootNotification.TYPE_FAVOURITE, notificationFavourite)
-        put(TootNotification.TYPE_FOLLOW, notificationFollow)
-        put(TootNotification.TYPE_FOLLOW_REQUEST, notificationFollowRequest)
-        put(TootNotification.TYPE_MENTION, notificationMention)
-        put(TootNotification.TYPE_POLL, notificationVote)
-        put(TootNotification.TYPE_REBLOG, notificationBoost)
-        put(TootNotification.TYPE_STATUS, notificationPost)
-        put(TootNotification.TYPE_UPDATE, notificationUpdate)
+        dst[TootNotification.TYPE_ADMIN_REPORT] = notificationFollow
+        dst[TootNotification.TYPE_ADMIN_SIGNUP] = notificationFollow // 設定項目不足
+        dst[TootNotification.TYPE_FAVOURITE] = notificationFavourite
+        dst[TootNotification.TYPE_FOLLOW] = notificationFollow
+        dst[TootNotification.TYPE_FOLLOW_REQUEST] = notificationFollowRequest
+        dst[TootNotification.TYPE_MENTION] = notificationMention
+        dst[TootNotification.TYPE_POLL] = notificationVote
+        dst[TootNotification.TYPE_REBLOG] = notificationBoost
+        dst[TootNotification.TYPE_STATUS] = notificationPost
+        dst[TootNotification.TYPE_UPDATE] = notificationUpdate
         // fedibird拡張
         // https://github.com/fedibird/mastodon/blob/fedibird/app/controllers/api/v1/push/subscriptions_controller.rb#L55
         // https://github.com/fedibird/mastodon/blob/fedibird/app/models/notification.rb
-        put(TootNotification.TYPE_EMOJI_REACTION, notificationReaction)
-        put(TootNotification.TYPE_SCHEDULED_STATUS, notificationPost) // 設定項目不足
-        put(TootNotification.TYPE_STATUS_REFERENCE, notificationStatusReference)
+        if (!ti.pleromaFeatures.isNullOrEmpty()) {
+            dst[TootNotification.TYPE_EMOJI_REACTION_PLEROMA] = notificationReaction
+        } else if (!ti.fedibirdCapabilities.isNullOrEmpty()) {
+            dst[TootNotification.TYPE_EMOJI_REACTION] = notificationReaction
+        }
+        dst[TootNotification.TYPE_SCHEDULED_STATUS] = notificationPost // 設定項目不足
+        dst[TootNotification.TYPE_STATUS_REFERENCE] = notificationStatusReference
     }
 
     // サーバが知らないアラート種別は比較対象から除去する
-    private fun Iterable<String>.knownOnly(account: SavedAccount, ti: TootInstance) = filter {
+    private fun Iterable<String>.knownOnly(
+        account: SavedAccount,
+        ti: TootInstance,
+    ) = filter {
         when (it) {
+            // TYPE_ADMIN_SIGNUP, TYPE_UPDATE はalertから読めない時期があった。4.0.0以降なら大丈夫だろう
+
             TootNotification.TYPE_ADMIN_REPORT -> ti.versionGE(TootInstance.VERSION_4_0_0)
-            TootNotification.TYPE_ADMIN_SIGNUP -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+            TootNotification.TYPE_ADMIN_SIGNUP -> ti.versionGE(TootInstance.VERSION_4_0_0)
             TootNotification.TYPE_FAVOURITE -> true
             TootNotification.TYPE_FOLLOW -> true
             TootNotification.TYPE_FOLLOW_REQUEST -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
@@ -282,12 +287,15 @@ class PushMastodon(
             TootNotification.TYPE_POLL -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
             TootNotification.TYPE_REBLOG -> true
             TootNotification.TYPE_STATUS -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
-            TootNotification.TYPE_UPDATE -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+            TootNotification.TYPE_UPDATE -> ti.versionGE(TootInstance.VERSION_4_0_0)
 
             //////////////////////
             // Fedibird拡張
 
             TootNotification.TYPE_EMOJI_REACTION,
+            -> InstanceCapability.emojiReaction(account, ti)
+
+            // pleromaの絵文字リアクションはalertに指定できない
             TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
             -> InstanceCapability.emojiReaction(account, ti)
 

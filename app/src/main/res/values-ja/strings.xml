@@ -1239,4 +1239,5 @@
     <string name="manually_update">手動Manually update</string>
     <string name="notification_push_distributor_disabled">通知のプッシュ配送サービスが選択されていません</string>
     <string name="notification_accent_color">通知のアクセント色</string>
+    <string name="pleroma_features">Pleroma機能</string>
 </resources>

@@ -38,6 +38,7 @@ class SavedAccount(
     apiHostArg: String? = null,
     apDomainArg: String? = null,
 
+    var accountJson:JsonObject? = null,
     var confirmBoost: Boolean = false,
     var confirmFavourite: Boolean = false,
     var confirmFollow: Boolean = false,
@@ -119,7 +120,7 @@ class SavedAccount(
     var notificationAccentColor by jsonDelegates.int
 
     init {
-        log.i("ctor acctArg $acctArg")
+        // log.i("ctor acctArg $acctArg")
 
         // acctArg はMastodonの生のやつで、ドメイン部分がない場合がある
         // Acct.parse はHost部分がnullのacctになるかもしれない
@@ -142,7 +143,8 @@ class SavedAccount(
         acctArg = cursor.getString(COL_USER), // acct
         apiHostArg = cursor.getStringOrNull(COL_HOST), // host
         apDomainArg = cursor.getStringOrNull(COL_DOMAIN), // host
-        misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION),
+
+        accountJson = cursor.getStringOrNull(COL_ACCOUNT)?.decodeJsonObject(),
         confirmBoost = cursor.getBoolean(COL_CONFIRM_BOOST),
         confirmFavourite = cursor.getBoolean(COL_CONFIRM_FAVOURITE),
         confirmFollow = cursor.getBoolean(COL_CONFIRM_FOLLOW),
@@ -177,6 +179,9 @@ class SavedAccount(
         tokenJson = cursor.getString(COL_TOKEN).decodeJsonObject(),
         visibility = TootVisibility.parseSavedVisibility(cursor.getStringOrNull(COL_VISIBILITY))
             ?: TootVisibility.Public,
+
+        misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION),
+
         //        lastNotificationError = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
         //        last_push_endpoint = cursor.getStringOrNull(COL_LAST_PUSH_ENDPOINT)
         //        last_subscription_error = cursor.getStringOrNull(COL_LAST_SUBSCRIPTION_ERROR)
@@ -185,9 +190,7 @@ class SavedAccount(
         //        register_time = cursor.getLong(COL_REGISTER_TIME)
 
     ) {
-        val strAccount = cursor.getString(COL_ACCOUNT)
-        val jsonAccount = strAccount.decodeJsonObject()
-        loginAccount = if (jsonAccount["id"] == null) {
+        loginAccount = if (accountJson?.get("id") == null) {
             null // 疑似アカウント
         } else {
             TootParser(
@@ -197,8 +200,8 @@ class SavedAccount(
                     apDomainArg = this@SavedAccount.apDomain,
                     misskeyVersion = misskeyVersion
                 )
-            ).account(jsonAccount)
-                ?: error("missing loginAccount for $strAccount")
+            ).account(accountJson)
+                ?: error("missing loginAccount for $accountJson")
         }
     }
 
@@ -468,6 +471,7 @@ class SavedAccount(
                 if (isInvalidId) error("saveSetting: missing db_id")
 
                 ContentValues().apply {
+                    put(COL_ACCOUNT,accountJson?.toString())
                     put(COL_CONFIRM_BOOST, confirmBoost)
                     put(COL_CONFIRM_FAVOURITE, confirmFavourite)
                     put(COL_CONFIRM_FOLLOW, confirmFollow)
@@ -499,7 +503,9 @@ class SavedAccount(
                     put(COL_NOTIFICATION_VOTE, notificationVote)
                     put(COL_PUSH_POLICY, pushPolicy)
 //                    put(COL_SOUND_URI, soundUri)
+                    put(COL_TOKEN,tokenJson?.toString())
                     put(COL_VISIBILITY, visibility.id.toString())
+                    put(COL_MISSKEY_VERSION,misskeyVersion)
                 }.let { db.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
             }
         }
@@ -512,7 +518,7 @@ class SavedAccount(
 
                 // DBから削除されてるかもしれない
                 val b = newData ?: loadAccount(db_id) ?: return
-
+                this.accountJson = b.accountJson
                 this.confirmBoost = b.confirmBoost
                 this.confirmFavourite = b.confirmFavourite
                 this.confirmPost = b.confirmPost
@@ -525,31 +531,32 @@ class SavedAccount(
                 this.dontHideNsfw = b.dontHideNsfw
                 this.dontShowTimeout = b.dontShowTimeout
                 this.expandCw = b.expandCw
+                this.extraJson = b.extraJson
                 this.imageMaxMegabytes = b.imageMaxMegabytes
                 this.imageResize = b.imageResize
                 this.lang = b.lang
+                this.movieMaxMegabytes = b.movieMaxMegabytes
                 this.movieTranscodeBitrate = b.movieTranscodeBitrate
                 this.movieTranscodeFramerate = b.movieTranscodeFramerate
                 this.movieTranscodeMode = b.movieTranscodeMode
                 this.movieTranscodeSquarePixels = b.movieTranscodeSquarePixels
-                this.movieMaxMegabytes = b.movieMaxMegabytes
                 this.notificationBoost = b.notificationBoost
                 this.notificationFavourite = b.notificationFavourite
                 this.notificationFollow = b.notificationFollow
                 this.notificationFollowRequest = b.notificationFollowRequest
                 this.notificationMention = b.notificationMention
                 this.notificationPost = b.notificationPost
+                this.notificationPullEnable = b.notificationPullEnable
+                this.notificationPushEnable = b.notificationPushEnable
                 this.notificationReaction = b.notificationReaction
                 this.notificationStatusReference = b.notificationStatusReference
                 this.notificationUpdate = b.notificationUpdate
                 this.notificationVote = b.notificationVote
                 this.pushPolicy = b.pushPolicy
+                // this.soundUri = b.soundUri
                 this.tokenJson = b.tokenJson
                 this.visibility = b.visibility
-                this.notificationPushEnable = b.notificationPushEnable
-                this.notificationPullEnable = b.notificationPullEnable
-
-                //                this.soundUri = b.soundUri
+                this.misskeyVersion = b.misskeyVersion
             }
         }
 

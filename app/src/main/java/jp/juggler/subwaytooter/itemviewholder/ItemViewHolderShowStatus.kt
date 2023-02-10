@@ -58,6 +58,9 @@ fun ItemViewHolder.showStatus(
 
     val filteredWord = status.filteredWord
     if (filteredWord != null) {
+        PrefI.ipEventBgColorFiltered.value.notZero()?.let{
+            viewRoot.backgroundColor = it
+        }
         showMessageHolder(
             TootMessageHolder(
                 if (PrefB.bpShowFilteredWord.value) {

@@ -840,6 +840,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             )
 
             colorAlpha(PrefI.ipEventBgColorGap, R.string.gap)
+            colorAlpha(PrefI.ipEventBgColorFiltered, R.string.filtered)
         }
 
         group(R.string.button_accent_color) {

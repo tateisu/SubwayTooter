@@ -58,7 +58,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStreamWriter
-import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -368,9 +367,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             else -> newColor or Color.BLACK
         }
         ip.value = c
-        findItemViewHolder(colorTarget)?.showColor()
+        val vh = findItemViewHolder(colorTarget)
+        vh?.showColor()
         colorTarget.changed(this)
     }
+
+    private val settingHolderList =
+        ConcurrentHashMap<Int, VhSettingItem>()
 
     inner class MyAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         var items: List<Any> = emptyList()
@@ -396,9 +399,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 }, true).dispatchUpdatesTo(this)
             }
 
-        private val settingHolderList =
-            ConcurrentHashMap<AppSettingItem, WeakReference<VhSettingItem>>()
-
         override fun getItemCount() = items.size
 
         override fun getItemViewType(position: Int) =
@@ -416,6 +416,17 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                 else -> VhSettingItem(this@ActAppSetting, parent)
             }
 
+        override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+            super.onViewRecycled(holder)
+            // 古い紐付けを削除
+            settingHolderList.entries.filter {
+                when (it.value) {
+                    holder -> true
+                    else -> false
+                }
+            }.forEach { settingHolderList.remove(it.key) }
+        }
+
         override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
             when (val item = items.elementAtOrNull(position)) {
                 divider -> viewHolder.cast<VhDivider>()
@@ -424,18 +435,19 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     viewHolder.bind(item)
                     // 古い紐付けを削除
                     settingHolderList.entries.filter {
-                        when (it.value.get()) {
-                            null, viewHolder -> true
+                        when (it.value) {
+                            viewHolder -> true
                             else -> false
                         }
                     }.forEach { settingHolderList.remove(it.key) }
                     // 新しい紐付けを覚える
-                    settingHolderList[item] = WeakReference(viewHolder)
+                    settingHolderList[item.id] = viewHolder
                 }
             }
         }
 
-        fun findVhSetting(item: AppSettingItem) = settingHolderList[item]?.get()
+        fun findVhSetting(item: AppSettingItem) =
+            settingHolderList[item.id]
     }
 
     private inner class VhDivider(
@@ -887,12 +899,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         finish()
     }
 
-    fun findItemViewHolder(item: AppSettingItem?): VhSettingItem? {
-        if (item != null) {
-            adapter.findVhSetting(item)
-        }
-        return null
-    }
+    fun findItemViewHolder(item: AppSettingItem?) =
+        item?.let { adapter.findVhSetting(it) }
 
     fun showSample(item: AppSettingItem?) {
         item ?: error("showSample: missing item…")

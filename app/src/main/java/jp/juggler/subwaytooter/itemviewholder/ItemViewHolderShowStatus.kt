@@ -22,6 +22,7 @@ import jp.juggler.util.ui.setIconDrawableId
 import jp.juggler.util.ui.textOrGone
 import jp.juggler.util.ui.vg
 import org.jetbrains.anko.backgroundColor
+import org.jetbrains.anko.imageResource
 import org.jetbrains.anko.textColor
 
 private val log = LogCategory("ItemViewHolderShowStatus")
@@ -207,7 +208,9 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
 // 予約投稿でも使う
 fun ItemViewHolder.setContentVisibility(shown: Boolean) {
     llContents.visibility = if (shown) View.VISIBLE else View.GONE
-    btnContentWarning.setText(if (shown) R.string.hide else R.string.show)
+    btnContentWarning.contentDescription = activity.getString(if (shown) R.string.hide else R.string.show)
+    btnContentWarning.imageResource = if (shown) R.drawable.outline_compress_24 else R.drawable.outline_expand_24
+
     statusShowing?.let { status ->
         val r = status.auto_cw
         tvContent.minLines = r?.originalLineCount ?: -1

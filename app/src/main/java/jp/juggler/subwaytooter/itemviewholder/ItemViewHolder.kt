@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
@@ -85,7 +86,7 @@ class ItemViewHolder(
 
     lateinit var llContentWarning: View
     lateinit var tvContentWarning: MyTextView
-    lateinit var btnContentWarning: AppCompatButton
+    lateinit var btnContentWarning: AppCompatImageButton
 
     lateinit var llContents: View
     lateinit var tvMentions: MyTextView
@@ -645,13 +646,13 @@ class ItemViewHolder(
             }
             gravity = Gravity.CENTER_VERTICAL
 
-            btnContentWarning = compatButton {
+            btnContentWarning = imageButton {
                 backgroundDrawable =
                     ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
-                minWidthCompat = dip(40)
-                padding = dip(4)
-                //tools:text="見る"
-            }.lparams(wrapContent, dip(40)) {
+                contentDescription = context.getString(R.string.show)
+                imageResource = R.drawable.ic_eye
+                imageTintList = ColorStateList.valueOf(context.attrColor(R.attr.colorTextContent))
+            }.lparams(dip(40), dip(40)) {
                 endMargin = dip(8)
             }
 

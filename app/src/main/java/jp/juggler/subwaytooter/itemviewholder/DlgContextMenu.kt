@@ -182,7 +182,13 @@ internal class DlgContextMenu(
             views.btnTranslate.vg(hasTranslateApp)
 
             val canEdit = statusByMe && (TootInstance.getCached(column.accessInfo)
-                ?.let { it.isMastodon && it.versionGE(TootInstance.VERSION_3_5_0_rc1) } ?: false)
+                ?.let {
+                    when {
+                        it.isMastodon && it.versionGE(TootInstance.VERSION_3_5_0_rc1) -> true
+                        it.pleromaFeatures?.contains("editing") == true -> true
+                        else -> false
+                    }
+                } ?: false)
 
             views.btnStatusEdit2.vg(canEdit)
             views.btnStatusEdit.vg(canEdit)

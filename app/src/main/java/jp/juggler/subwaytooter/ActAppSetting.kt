@@ -282,31 +282,35 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                     fun scanGroup(level: Int, item: AppSettingItem) {
                         if (item.caption == 0) return
                         if (item.type != SettingType.Section) {
-                            var match = getString(item.caption).contains(query, ignoreCase = true)
-                            if (item.type == SettingType.Group) {
-                                for (child in item.items) {
-                                    if (child.caption == 0) continue
-                                    if (getString(item.caption).contains(
-                                            query,
-                                            ignoreCase = true
-                                        )
-                                    ) {
-                                        match = true
-                                        break
+                            when (item.type) {
+                                SettingType.Group -> {
+                                    var caption =getString(item.caption)
+                                    var match = caption.contains(query, ignoreCase = true)
+                                    // log.d("group match=$match caption=$caption")
+                                    for (child in item.items) {
+                                        if (child.caption == 0) continue
+                                        caption = getString(child.caption)
+                                        match = caption.contains(query,ignoreCase = true)
+                                        // log.d("group.item match=$match caption=$caption")
+                                        if (match) break
+                                    }
+                                    if (match) {
+                                        // put entire group
+                                        addParentPath(item)
+                                        add(item)
+                                        addAll(item.items)
+                                    }
+                                    return
+                                }
+                                else -> {
+                                    val caption =getString(item.caption)
+                                    val match = caption.contains(query, ignoreCase = true)
+                                    // log.d("item match=$match caption=$caption")
+                                    if (match) {
+                                        addParentPath(item)
+                                        add(item)
                                     }
                                 }
-                                if (match) {
-                                    // put entire group
-                                    addParentPath(item)
-                                    add(item)
-                                    addAll(item.items)
-                                }
-                                return
-                            }
-
-                            if (match) {
-                                addParentPath(item)
-                                add(item)
                             }
                         }
                         for (child in item.items) {

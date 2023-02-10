@@ -1252,4 +1252,5 @@
     <string name="incorrect_chars">文字 \"%1$s\" は使えません</string>
     <string name="approved">承認されました。</string>
     <string name="account_list">アカウント一覧</string>
+    <string name="show_username_on_filtered_post">フィルタされた投稿にユーザ名を表示する</string>
 </resources>

@@ -395,7 +395,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         )
 
         sw(PrefB.bpEnablePixelfed, R.string.enable_connect_to_pixelfed_server)
+
         sw(PrefB.bpShowFilteredWord, R.string.show_filtered_word)
+        sw(PrefB.bpShowUsernameFilteredPost,R.string.show_username_on_filtered_post)
+
         sw(PrefB.bpEnableDomainTimeline, R.string.enable_domain_timeline)
     }
 

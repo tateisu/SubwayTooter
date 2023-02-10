@@ -58,18 +58,20 @@ fun ItemViewHolder.showStatus(
 
     val filteredWord = status.filteredWord
     if (filteredWord != null) {
-        PrefI.ipEventBgColorFiltered.value.notZero()?.let{
+        PrefI.ipEventBgColorFiltered.value.notZero()?.let {
             viewRoot.backgroundColor = it
         }
-        showMessageHolder(
-            TootMessageHolder(
-                if (PrefB.bpShowFilteredWord.value) {
-                    "${activity.getString(R.string.filtered)} / $filteredWord"
-                } else {
-                    activity.getString(R.string.filtered)
-                }
-            )
-        )
+        val text = StringBuilder().apply {
+            append(activity.getString(R.string.filtered))
+            if (PrefB.bpShowFilteredWord.value) {
+                append(" / $filteredWord")
+            }
+            if (PrefB.bpShowUsernameFilteredPost.value) {
+                val s = status.reblog ?: status
+                append(" / ${s.account.display_name} @${s.account.acct}")
+            }
+        }.toString()
+        showMessageHolder(TootMessageHolder(text))
         return
     }
 
@@ -211,8 +213,10 @@ private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
 // 予約投稿でも使う
 fun ItemViewHolder.setContentVisibility(shown: Boolean) {
     llContents.visibility = if (shown) View.VISIBLE else View.GONE
-    btnContentWarning.contentDescription = activity.getString(if (shown) R.string.hide else R.string.show)
-    btnContentWarning.imageResource = if (shown) R.drawable.outline_compress_24 else R.drawable.outline_expand_24
+    btnContentWarning.contentDescription =
+        activity.getString(if (shown) R.string.hide else R.string.show)
+    btnContentWarning.imageResource =
+        if (shown) R.drawable.outline_compress_24 else R.drawable.outline_expand_24
 
     statusShowing?.let { status ->
         val r = status.auto_cw

@@ -355,4 +355,9 @@ object PrefB {
         "MisskeyNotificationCheck",
         false
     )
+
+    val bpShowUsernameFilteredPost = BooleanPref(
+        "ShowUsernameFilteredPost",
+        false
+    )
 }

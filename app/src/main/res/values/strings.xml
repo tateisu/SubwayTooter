@@ -1253,4 +1253,5 @@
     <string name="glide_test">glide test</string>
     <string name="default_post_account_default_action">viewing column account(phone), or ask always(tablet)</string>
     <string name="quick_post_account">Quick post account</string>
+    <string name="show_username_on_filtered_post">Show username on filtered post</string>
 </resources>

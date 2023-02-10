@@ -168,6 +168,7 @@ dependencies {
     implementation fileTree(include: ["*.aar"], dir: "src/main/libs")
 
     fcmImplementation "com.google.firebase:firebase-messaging:23.1.1"
+    fcmImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinxCoroutinesVersion"
 
     // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
     api "org.conscrypt:conscrypt-android:$conscryptVersion"
@@ -175,11 +176,7 @@ dependencies {
     implementation "jp.wasabeef:glide-transformations:4.3.0"
 
     def apng4AndroidVersion = "2.24.0"
-    implementation "com.github.penfeizhou.android.animation:awebp:$apng4AndroidVersion"
     implementation "com.github.penfeizhou.android.animation:apng:$apng4AndroidVersion"
-    implementation "com.github.penfeizhou.android.animation:gif:$apng4AndroidVersion"
-    implementation "com.github.penfeizhou.android.animation:glide-plugin:$apng4AndroidVersion"
-
 
     kapt "androidx.annotation:annotation:$androidxAnnotationVersion"
 

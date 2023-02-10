@@ -88,7 +88,6 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinxCoroutinesVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinxCoroutinesVersion"
     api "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
     api "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"

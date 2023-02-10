@@ -133,7 +133,7 @@
     <string name="close_all_columns">全てのカラムを閉じる</string>
     <string name="close_column">カラムを閉じる</string>
     <string name="color">色</string>
-    <string name="color_and_background">色と背景</string>
+    <string name="color_and_background">色と背景…</string>
     <string name="column">カラム</string>
     <string name="column_background">カラム背景</string>
     <string name="column_empty">左下のメニューボタンを押してアカウントまたはカラムを追加してください</string>
@@ -537,8 +537,8 @@
     <string name="people_talking">%1$d(%2$d)人がトゥート</string>
     <string name="performance">性能</string>
     <string name="pick_image">画像を選択</string>
-    <string name="pick_images">画像を選択</string>
-    <string name="pick_videos">動画を選択</string>
+    <string name="pick_images">画像を選択…</string>
+    <string name="pick_videos">動画を選択…</string>
     <string name="pick_audios">音声ファイルを選択…</string>
     <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください。</string>
     <string name="please_donate">開発継続のために寄付をお願いします！</string>
@@ -1213,7 +1213,7 @@
     <string name="push_subscription_delete_current">現在の購読がありましたが、指示により削除しました。</string>
     <string name="push_subscription_app_server_hash_missing_but_ok">プッシュ配送サービスをアプリサーバに登録できていませんが、購読が不要な状況なので問題ありません。</string>
     <string name="push_subscription_app_server_hash_missing_error">プッシュ配送サービスをアプリサーバに登録できていません。プッシュ配送サービスを再度選択すると改善する場合があります。</string>
-    <string name="removing_old_distributer">プッシュサービスの古い情報を削除しています。</string>
+    <string name="removing_old_distributer">プッシュサービスの古い情報を削除しています…</string>
     <string name="test_progress_dialog">プログレスダイアログのテスト</string>
     <string name="push_subscription_is_not_required">購読は不要な状態です</string>
     <string name="push_subscription_is_not_required_delete_secret_keys">購読が不要なので解読用キーを削除しました</string>

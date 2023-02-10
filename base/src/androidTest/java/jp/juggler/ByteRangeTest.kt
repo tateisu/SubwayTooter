@@ -12,6 +12,9 @@ import org.junit.Test
 
 class ByteRangeTest {
 
+    /**
+     * ByteRangeや StringUtilsのBase64が、commons-codecの出力結果と一致するか調べる。
+     */
     @Test
     fun testByteRangeBase64() {
         for (len in 0..300) {

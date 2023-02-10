@@ -152,6 +152,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
             daoAcctColor.save(
                 System.currentTimeMillis(),
                 AcctColor(
+                    acctAscii = acctAscii,
                     nicknameSave = views.etNickname.text.toString().trim { it <= ' ' },
                     colorFg = colorFg,
                     colorBg = colorBg,

@@ -754,7 +754,6 @@
     <string name="display_replies_count">Show replies count</string>
     <string name="display_boost_count">Show boosts count</string>
     <string name="display_favourite_count">Show favourites count</string>
-
     <string name="replies_count_simple">0/1/1+</string>
     <string name="replies_count_actual">Actual</string>
     <string name="replies_count_none">None</string>
@@ -932,7 +931,7 @@
     <string name="quick_toot_menu">Quick toot menu</string>
     <string name="input">Input</string>
     <string name="polls_choice_not_selected">Please select 1 or more choices.</string>
-    <string name="custom_emoji_separator_zwsp">use ZWS instead of space for custom emoji separator</string>
+    <string name="custom_emoji_separator_zwsp">use ZWSP instead of space for custom emoji separator</string>
     <string name="fixed_phrase">fixed phrase</string>
     <string name="mark_sensitive_by_default">Always mark media as sensitive (when posting)</string>
     <string name="load_preference_from_web_ui">Load some preferences from WebUI</string>
@@ -1075,7 +1074,6 @@
     <string name="powered_by_open_sticker">Using OpenSticker API.</string>
     <string name="speech">Speech</string>
     <string name="duration">Duration</string>
-
     <string name="duration_indefinite">Indefinite</string>
     <string name="duration_minutes_5">5 minutes</string>
     <string name="duration_minutes_30">30 minutes</string>
@@ -1084,7 +1082,6 @@
     <string name="duration_days_1">1 day</string>
     <string name="duration_days_3">3 days</string>
     <string name="duration_days_7">7 days</string>
-
     <string name="notestock" translatable="false">notestock</string>
     <string name="toot_search_notestock_of">notestock search \"%1$s\"</string>
     <string name="update_push_subscription_not_force" translatable="false">Update push subscription(not force)</string>
@@ -1167,13 +1164,10 @@
     <string name="conversation_with_reference">conversation + reference</string>
     <string name="tootsearch_discontinued">Tootsearch service discontinued on 2022/12/25.</string>
     <string name="msp_discontinued">Mastodon Search Portal service was discontinued.</string>
-
     <string name="permission_rational_notifications">to check/show notifications, the app need runtime permission.</string>
     <string name="permission_denied_notifications">Missing app permission to show notifications.</string>
-
     <string name="permission_rational_download_manager">Permission required to use DownloadManager.</string>
     <string name="permission_denied_download_manager">Missing app permission to use DownloadManager.</string>
-
     <string name="permission_rational_media_access">Permission required to access the device\'s media data.</string>
     <string name="permission_denied_media_access">Missing app permission to access the device\'s media data.</string>
     <string name="popup_background_color">Popup background color</string>
@@ -1189,7 +1183,6 @@
     <string name="delete_confirm">delete \"%1$s\" ?</string>
     <string name="color_theme_changed">Default color theme has been updated. This may conflict with your customized color settings. We recommend reviewing the colors section in app settings.</string>
     <string name="tablet_snap">Align column edge to screen edge when scrolling (app restart required)</string>
-
     <string name="server_host_name">Server\'s host name</string>
     <string name="input_server_name_desc">・The host name part in the server\'s URL.\n・without http:// or trailing /path… .\n・Mastodon server list: https://joinmastodon.org/servers</string>
     <string name="authentication_select">Select authentication method</string>
@@ -1198,8 +1191,6 @@
     <string name="next_step">Next step</string>
     <string name="user_creation_not_supported">[%1$s, %2$s] server type does not support user registration from app.</string>
     <string name="confirm_remove_column_mark_as_dont_close">Remove column that mark as \"don\'t close\" ?</string>
-
-
     <!-- 通知チャネル -->
     <string name="alert">Alert</string>
     <string name="alert_notification_desc">shows various alerts</string>
@@ -1208,15 +1199,13 @@
     <string name="pull_notification">Pull notification</string>
     <string name="pull_notification_desc">notifications pulled from SNS</string>
     <string name="push_worker">Push notification handler</string>
-    <string name="push_worker_desc">proceccing tasks about push notification</string>
+    <string name="push_worker_desc">processing tasks about push notification</string>
     <string name="polling_foregrounder_desc">polling new notifications from SNS</string>
     <string name="server_timeout">Server timeout</string>
     <string name="server_timeout_desc">showing errors about checking notifications from SNS</string>
-
     <!-- アプリ設定 -->
     <string name="push_distributor">Push distributor</string>
     <string name="push_distributor_desc">select push distributer that is used to deliver push notification,</string>
-
     <!-- プッシュサービス選択 -->
     <string name="select_push_delivery_service">Select push delivery service</string>
     <string name="firebase_cloud_messaging">Google FCM(Firebase Cloud Messaging)</string>

@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.getVisibilityIconId
 import jp.juggler.subwaytooter.pref.PrefB
@@ -17,7 +18,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PostImpl
 import jp.juggler.subwaytooter.util.PostResult
 import jp.juggler.util.coroutine.launchAndShowError
-import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.ui.hideKeyboard
 import org.jetbrains.anko.imageResource
 
@@ -80,30 +80,42 @@ fun ActMain.toggleQuickPostMenu() {
     dlgQuickTootMenu.toggle()
 }
 
-fun ActMain.performQuickPost(account: SavedAccount?) {
-    if (account == null) {
-        val a = if (tabletViews != null && !PrefB.bpQuickTootOmitAccountSelection.value) {
-            // タブレットモードでオプションが無効なら
-            // 簡易投稿は常にアカウント選択する
+fun ActMain.quickPostAccount(): SavedAccount? =
+    when {
+        // タブレットモードでオプションが無効なら
+        // 簡易投稿は常にアカウント選択する
+        tabletViews != null && !PrefB.bpQuickTootOmitAccountSelection.value -> {
             null
-        } else {
-            currentPostTarget
         }
+        else -> currentPostTarget
+    }
 
-        if (a != null && !a.isPseudo) {
-            performQuickPost(a)
-        } else {
-            // アカウントを選択してやり直し
-            launchMain {
+fun ActMain.quickPostAccountDialog(
+    title: String = getString(R.string.account_picker_toot),
+    block: (SavedAccount) -> Unit,
+) {
+    val a = quickPostAccount()
+    when {
+        a != null && !a.isPseudo -> block(a)
+        else -> {
+            launchAndShowError {
                 pickAccount(
                     bAllowPseudo = false,
                     bAuto = true,
-                    message = getString(R.string.account_picker_toot)
-                )?.let { performQuickPost(it) }
+                    message = title,
+                )?.let { block(it) }
             }
         }
-        return
     }
+}
+
+fun ActMain.openProfileQuickPostAccount(account: SavedAccount) {
+    account.loginAccount?.id?.let {
+        addColumn(defaultInsertPosition, account, ColumnType.PROFILE, params = arrayOf(it))
+    }
+}
+
+fun ActMain.performQuickPost(account: SavedAccount) {
 
     etQuickPost.hideKeyboard()
 

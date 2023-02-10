@@ -375,7 +375,7 @@
     <string name="behavior">Gedrag</string>
     <string name="notification_on_off_desc">Het is ook mogelijk om notificaties per account aan/uit te zetten.</string>
     <string name="post">Post</string>
-    <string name="toot_button_default_account">Standaadaccount wanneer de \"Toot\" knop is ingedrukt</string>
+    <string name="post_compose_button_default_account">Standaadaccount wanneer de \"Toot\" knop is ingedrukt</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Kon niet van account wisselen. Oud concept heeft geen in_reply_to_url, kon in_reply_to niet omzetten voor de geselecteerde server.</string>
     <string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID kon niet omgezet worden.</string>
     <string name="prior_chrome_custom_tabs">Geef Google Chrome prioriteit (wanneer \"Custom tabs\" ingeschakeld zijn)</string>

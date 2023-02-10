@@ -423,10 +423,10 @@ object AppDataExporter {
         }
 
         run {
-            val old_id = PrefL.lpTabletTootDefaultAccount.value
+            val old_id = PrefL.lpDefaultPostAccount.value
             if (old_id != -1L) {
                 val new_id = account_id_map[old_id]
-                PrefL.lpTabletTootDefaultAccount.value = new_id ?: -1L
+                PrefL.lpDefaultPostAccount.value = new_id ?: -1L
             }
         }
 

@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
 import jp.juggler.subwaytooter.appsetting.appSettingRoot
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.TabletColumnViewHolder
 import jp.juggler.subwaytooter.columnviewholder.ViewHolderHeaderBase
@@ -112,13 +113,20 @@ fun ActMain.onBackPressedImpl() {
 fun ActMain.onClickImpl(v: View) {
     when (v.id) {
         R.id.btnToot -> openPost()
-        R.id.btnQuickToot -> performQuickPost(null)
+        R.id.ivQuickTootAccount -> quickPostAccountDialog(
+            getString(
+                R.string.account_picker_add_timeline_of,
+                ColumnType.PROFILE.name1(this)
+            )
+        ){ openProfileQuickPostAccount(it)}
+        R.id.btnQuickToot -> quickPostAccountDialog{ performQuickPost(it)}
         R.id.btnQuickTootMenu -> toggleQuickPostMenu()
         R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.openDrawer(GravityCompat.START)
         }
     }
 }
+
 
 fun ActMain.onMyClickableSpanClickedImpl(viewClicked: View, span: MyClickableSpan) {
     // ビュー階層を下から辿って文脈を取得する

@@ -1019,26 +1019,18 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     inner class AccountAdapter(val list: List<SavedAccount>) : BaseAdapter() {
 
-        override fun getCount(): Int {
-            return 1 + list.size
-        }
-
-        override fun getItem(position: Int): Any? {
-            return if (position == 0) null else list[position - 1]
-        }
-
-        override fun getItemId(position: Int): Long {
-            return 0
-        }
+        override fun getCount() = 1 + list.size
+        override fun getItemId(position: Int) = 0L
+        override fun getItem(position: Int) = if (position == 0) null else list[position - 1]
 
         override fun getView(position: Int, viewOld: View?, parent: ViewGroup): View {
             val view = viewOld ?: layoutInflater.inflate(
-                android.R.layout.simple_spinner_item,
+                R.layout.lv_spinner_wrap_text,
                 parent,
                 false
             )
             view.findViewById<TextView>(android.R.id.text1).text = when (position) {
-                0 -> getString(R.string.ask_always)
+                0 -> getString(R.string.default_post_account_default_action)
                 else -> daoAcctColor.getNickname(list[position - 1])
             }
             return view
@@ -1048,16 +1040,24 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
             val view =
                 viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
             view.findViewById<TextView>(android.R.id.text1).text = when (position) {
-                0 -> getString(R.string.ask_always)
+                0 -> getString(R.string.default_post_account_default_action)
                 else -> daoAcctColor.getNickname(list[position - 1])
             }
             return view
         }
 
+        /**
+         * 設定に保存したdbId から アダプターのインデクス値に変換
+         */
+
         // 見つからなければ0,見つかったら1以上
         internal fun getIndexFromId(dbId: Long): Int =
             1 + list.indexOfFirst { it.db_id == dbId }
 
+        /**
+         * アダプターのインデクス値から設定に保存するdbIdに変換
+         * - -1L : タブレットモードなら毎回尋ねる。スマホモードなら現在開いているカラム。
+         */
         internal fun getIdFromIndex(position: Int): Long =
             if (position > 0) list[position - 1].db_id else -1L
     }

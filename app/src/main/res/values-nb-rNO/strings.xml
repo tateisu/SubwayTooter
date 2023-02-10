@@ -293,7 +293,7 @@
     <string name="performance">Ytelse</string>
     <string name="behavior">Oppførsel</string>
     <string name="post">Post</string>
-    <string name="toot_button_default_account">Forvalgt konto når tut-knappen trykkes</string>
+    <string name="post_compose_button_default_account">Forvalgt konto når tut-knappen trykkes</string>
     <string name="url_omitted">(Nettadresse ikke tatt med)</string>
     <string name="blocked_domains">Blokkerte domener</string>
     <string name="block_domain_that">Blokker hele domenet \"%1$s\"</string>

@@ -118,13 +118,21 @@
                 android:id="@+id/etQuickToot"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:layout_marginStart="6dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:hint="@string/quick_toot_hint"
                 android:imeOptions="actionSend"
                 android:inputType="text"
                 android:scrollbars="vertical" />
+
+            <jp.juggler.subwaytooter.view.MyNetworkImageView
+                android:id="@+id/ivQuickTootAccount"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="2dp"
+                android:contentDescription="@string/quick_post_account"
+                android:scaleType="fitCenter" />
 
             <ImageButton
                 android:id="@+id/btnQuickToot"

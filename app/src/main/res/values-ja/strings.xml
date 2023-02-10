@@ -718,7 +718,7 @@
     <string name="token_exported">アプリデータのエクスポート、インポート、バックアップからの復元などでアクセストークンが他のデバイスでも使われている可能性があります。アクセストークンの更新をおすすめします。</string>
     <string name="token_not_specified">アクセストークンを入力してください</string>
     <string name="toot">トゥート</string>
-    <string name="toot_button_default_account">トゥートボタンを押した時のデフォルトアカウント</string>
+    <string name="post_compose_button_default_account">投稿作成ボタンを押した時のデフォルトアカウント</string>
     <string name="toot_context_parse_failed">会話データのデコードに失敗</string>
     <string name="toot_count">トゥート数</string>
     <string name="toot_default_text">トゥート作成時のデフォルトテキスト (簡易投稿や投稿画面でのアカウント切り替えには影響しません)</string>
@@ -1245,4 +1245,6 @@
     <string name="removing_old_unified_push_url">期限切れのUnifiedPushエンドポイントをアプリサーバから削除しています…</string>
     <string name="sending_push_distributor_info_to_app_server">アプリサーバにプッシュサービスの情報を送信しています…</string>
     <string name="push_distributor_not_available">プッシュ配送サービスを利用できません。UnifiedPush対応のプッシュ配送アプリをインストールすることで、プッシュ通知を受け取ることができます。詳細 https://unifiedpush.org/</string>
+    <string name="default_post_account_default_action">表示カラムのアカウント(スマホ),または毎回尋ねる(タブレット)</string>
+    <string name="quick_post_account">簡易投稿のアカウント</string>
 </resources>

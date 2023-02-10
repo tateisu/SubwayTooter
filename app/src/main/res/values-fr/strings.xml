@@ -359,7 +359,7 @@
     <string name="performance">Performance</string>
     <string name="tablet_mode">Mode tablette</string>
     <string name="post">Publication</string>
-    <string name="toot_button_default_account">Compte par défaut lorsque le bouton \"Pouet\" est appuyé</string>
+    <string name="post_compose_button_default_account">Compte par défaut lorsque le bouton \"Pouet\" est appuyé</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Impossible de changer de compte. Les anciennes données de brouillon n\'ont pas in_reply_to_url, ne peuvent pas convertir in_reply_to_to pour le serveur sélectionné.</string>
     <string name="in_reply_to_id_conversion_failed">La conversion de l\'ID «in-reply-to» a échoué.</string>
     <string name="prior_chrome_custom_tabs">Prioriser Google Chrome (si les «onglets personnalisés» sont activés)</string>

@@ -116,19 +116,19 @@ class MyNetworkImageView : AppCompatImageView {
 
     fun setImageUrl(
         r: Float,
-        url: String?,
-        animeUrl: String? = null,
+        urlStatic: String?,
+        urlAnime: String? = null,
     ) {
         mCornerRadius = r
         if (PrefB.bpImageAnimationEnable.value) {
-            animeUrl?.notEmpty()?.let {
+            urlAnime?.notEmpty()?.let {
                 mUrl = it
                 mMayAnime = true
                 loadImageIfNecessary()
                 return
             }
         }
-        mUrl = url
+        mUrl = urlStatic
         mMayAnime = false
         loadImageIfNecessary()
     }
@@ -148,7 +148,7 @@ class MyNetworkImageView : AppCompatImageView {
         return null
     }
 
-    fun cancelLoading(defaultDrawable: Drawable? = null) {
+    fun cancelLoading(defaultDrawable: Drawable? = mDefaultImage) {
 
         val d = drawable
         if (d is Animatable) {

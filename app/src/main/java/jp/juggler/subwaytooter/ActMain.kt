@@ -14,6 +14,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.HorizontalScrollView
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -39,6 +40,7 @@ import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyDrawerLayout
 import jp.juggler.subwaytooter.view.MyEditText
+import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.notEmpty
@@ -139,6 +141,7 @@ class ActMain : AppCompatActivity(),
     lateinit var vBottomPadding: View
     lateinit var llQuickPostBar: LinearLayout
     lateinit var etQuickPost: MyEditText
+    lateinit var ivQuickTootAccount: MyNetworkImageView
     lateinit var btnQuickToot: ImageButton
     lateinit var btnQuickPostMenu: ImageButton
     lateinit var llEmpty: View
@@ -696,11 +699,13 @@ class ActMain : AppCompatActivity(),
         svColumnStrip = findViewById(R.id.svColumnStrip)
         llQuickPostBar = findViewById(R.id.llQuickTootBar)
         etQuickPost = findViewById(R.id.etQuickToot)
+        ivQuickTootAccount=findViewById(R.id.ivQuickTootAccount)
         btnQuickToot = findViewById(R.id.btnQuickToot)
         btnQuickPostMenu = findViewById(R.id.btnQuickTootMenu)
 
         btnToot.setOnClickListener(this)
         btnMenu.setOnClickListener(this)
+        ivQuickTootAccount.setOnClickListener(this)
         btnQuickToot.setOnClickListener(this)
         btnQuickPostMenu.setOnClickListener(this)
     }

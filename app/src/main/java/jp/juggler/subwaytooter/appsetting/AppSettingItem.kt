@@ -401,6 +401,28 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
     section(R.string.post) {
 
+        item(
+            SettingType.Spinner,
+            PrefL.lpDefaultPostAccount,
+            R.string.post_compose_button_default_account
+        ) {
+            val lp = pref.cast<LongPref>()!!
+            spinnerInitializer = { spinner ->
+                launchAndShowError {
+                    val list = daoSavedAccount.loadRealAccounts()
+                        .sortedByNickname()
+                    val listAdapter = AccountAdapter(list)
+                    spinner.adapter = listAdapter
+                    spinner.setSelection(listAdapter.getIndexFromId(lp.value))
+                }
+            }
+            spinnerOnSelected = { spinner, index ->
+                spinner.adapter.cast<ActAppSetting.AccountAdapter>()
+                    ?.getIdFromIndex(index)
+                    ?.let { lp.value = it }
+            }
+        }
+
         spinner(
             PrefI.ipRefreshAfterToot,
             R.string.refresh_after_toot,
@@ -450,28 +472,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpDisableTabletMode, R.string.disable_tablet_mode)
 
         text(PrefS.spColumnWidth, R.string.minimum_column_width, InputTypeEx.number)
-
-        item(
-            SettingType.Spinner,
-            PrefL.lpTabletTootDefaultAccount,
-            R.string.toot_button_default_account
-        ) {
-            val lp = pref.cast<LongPref>()!!
-            spinnerInitializer = { spinner ->
-                launchAndShowError {
-                    val list = daoSavedAccount.loadAccountList()
-                        .sortedByNickname()
-                    val adapter = AccountAdapter(list)
-                    spinner.adapter = adapter
-                    spinner.setSelection(adapter.getIndexFromId(lp.value))
-                }
-            }
-            spinnerOnSelected = { spinner, index ->
-                spinner.adapter.cast<ActAppSetting.AccountAdapter>()
-                    ?.getIdFromIndex(index)
-                    ?.let { lp.value = it }
-            }
-        }
 
         sw(
             PrefB.bpQuickTootOmitAccountSelection,

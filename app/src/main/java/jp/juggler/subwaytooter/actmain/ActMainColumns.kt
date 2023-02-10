@@ -18,7 +18,9 @@ import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.util.AccountCache
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.clip
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
@@ -468,6 +470,19 @@ fun ActMain.scrollColumnStrip(select: Int) {
 
     val sx = iconLeft + iconWidth / 2 - svWidth / 2
     svColumnStrip.smoothScrollTo(sx, 0)
+
+    launchMain {
+        try {
+            val a = AccountCache.load(this@scrollColumnStrip, quickPostAccount())
+            ivQuickTootAccount.setImageUrl(
+                calcIconRound(ivQuickTootAccount.layoutParams.width),
+                urlStatic = a?.avatar_static,
+                urlAnime = a?.avatar,
+            )
+        } catch (ex: Throwable) {
+            log.e(ex, "load account failed.")
+        }
+    }
 }
 
 fun ActMain.updateColumnStripSelection(position: Int, positionOffset: Float) {

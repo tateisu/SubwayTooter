@@ -4,11 +4,13 @@ import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.table.sortedByNickname
+import jp.juggler.subwaytooter.util.AccountCache
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
@@ -50,6 +52,19 @@ fun ActPost.selectAccount(a: SavedAccount?) {
     }
     updateTextCount()
     updateFeaturedTags()
+
+    launchMain {
+        try {
+            val ta = AccountCache.load(this@selectAccount, a)
+            views.ivAccount.setImageUrl(
+                calcIconRound(views.ivAccount.layoutParams.width),
+                urlStatic = ta?.avatar_static,
+                urlAnime = ta?.avatar,
+            )
+        } catch (ex: Throwable) {
+            log.e(ex, "failed.")
+        }
+    }
 }
 
 fun ActPost.canSwitchAccount(): Boolean {

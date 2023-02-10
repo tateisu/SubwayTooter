@@ -6,6 +6,8 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -237,8 +239,15 @@ fun ActMain.showFooterColor() {
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
     btnQuickToot.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
+    ivQuickTootAccount.backgroundDrawable=
+        getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
     btnQuickPostMenu.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
+
+    var c = footerButtonFgColor.notZero() ?: attrColor(R.attr.colorTextContent)
+    val d = ContextCompat.getDrawable(this, R.drawable.ic_question)
+        ?.let { DrawableCompat.wrap(it).apply { setTint(c) } }
+    ivQuickTootAccount.setDefaultImage(d)
 
     val csl = ColorStateList.valueOf(
         footerButtonFgColor.notZero() ?: attrColor(R.attr.colorTextContent)
@@ -248,7 +257,7 @@ fun ActMain.showFooterColor() {
     btnQuickToot.imageTintList = csl
     btnQuickPostMenu.imageTintList = csl
 
-    val c = footerTabDividerColor.notZero() ?: colorColumnStripBackground
+    c = footerTabDividerColor.notZero() ?: colorColumnStripBackground
     vFooterDivider1.setBackgroundColor(c)
     vFooterDivider2.setBackgroundColor(c)
 

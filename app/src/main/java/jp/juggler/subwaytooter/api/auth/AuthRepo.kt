@@ -68,8 +68,8 @@ class AuthRepo(
     fun accountRemove(account: SavedAccount) {
         // if account is default account of tablet mode,
         // reset default.
-        if (account.db_id == PrefL.lpTabletTootDefaultAccount.value) {
-            PrefL.lpTabletTootDefaultAccount.value = -1L
+        if (account.db_id == PrefL.lpDefaultPostAccount.value) {
+            PrefL.lpDefaultPostAccount.value = -1L
         }
         daoSavedAccount.delete(account.db_id)
         daoPushMessage.deleteAccount(account.acct)

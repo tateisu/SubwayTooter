@@ -102,7 +102,7 @@
     <string name="enable_speech">启用语音</string>
     <string name="in_reply_to_id_conversion_failed">\"in_reply_to \"ID转换失败.</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">无法切换账号.旧的草稿数据没有in_reply_to_url，无法转换所选服务器的in_reply_to.</string>
-    <string name="toot_button_default_account">点击 \"发嘟文 \"按钮时的默认发送账户</string>
+    <string name="post_compose_button_default_account">点击 \"发嘟文 \"按钮时的默认发送账户</string>
     <string name="post">发布</string>
     <string name="notification_on_off_desc">还有一个账户设置可以关闭/开启通知.</string>
     <string name="behavior">性能</string>

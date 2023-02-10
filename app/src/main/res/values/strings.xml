@@ -388,7 +388,7 @@
     <string name="behavior">Behavior</string>
     <string name="notification_on_off_desc">There is also an account setting to turn notifications off/on.</string>
     <string name="post">Post</string>
-    <string name="toot_button_default_account">Default account when \"Toot\" button tapped</string>
+    <string name="post_compose_button_default_account">Default account when compose post button tapped</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Could not switch account. Old draft data has no in_reply_to_url, can\'t convert in_reply_to for selected server.</string>
     <string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
     <string name="prior_chrome_custom_tabs">Prioritise Google Chrome (if \"Custom Tabs\" is turned on)</string>
@@ -1262,4 +1262,6 @@
     <string name="sending_push_distributor_info_to_app_server">Sending push service information to app server…</string>
     <string name="push_distributor_not_available">Push distributor is not available. You can receive push notifications by installing a UnifiedPush compatible push delivery app. see https://unifiedpush.org/</string>
     <string name="glide_test">glide test</string>
+    <string name="default_post_account_default_action">viewing column account(phone), or ask always(tablet)</string>
+    <string name="quick_post_account">Quick post account</string>
 </resources>

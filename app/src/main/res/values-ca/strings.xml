@@ -385,7 +385,7 @@
     <string name="behavior">Comportament</string>
     <string name="notification_on_off_desc">També es poden (des)activar notificacions de comptes concrets.</string>
     <string name="post">Publica</string>
-    <string name="toot_button_default_account">Compte predeterminat en prémer \"Publica\"</string>
+    <string name="post_compose_button_default_account">Compte predeterminat en prémer \"Publica\"</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">No s\'ha pogut canviar de compte. Les dades de l\'antic esborrany no tenen in_reply_to_url i no es pot convertir in_reply_to al servidor escollit.</string>
     <string name="in_reply_to_id_conversion_failed">Ha fallat la conversió de la ID de \"in_reply_to\".</string>
     <string name="prior_chrome_custom_tabs">Prioritza Google Chrome (si està activat \"pestanyes personalitzades\")</string>

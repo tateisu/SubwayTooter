@@ -1003,7 +1003,7 @@
     <string name="url_omitted">(URL ausgelassen)</string>
     <string name="enable_speech">Aktiviert Sprachausgabe</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url" tools:ignore="Typos">Konnte Konto nicht wechseln. Alte Entwurfsdaten besitzen kein in_reply_to_url, kann für gewählten Server nicht in in_reply_to_url umgewandelt werden.</string>
-    <string name="toot_button_default_account">Standardkonto, wenn der „Toot“-Button gedrückt wird</string>
+    <string name="post_compose_button_default_account">Standardkonto, wenn der „Toot“-Button gedrückt wird</string>
     <string name="notification_on_off_desc">Es gibt auch eine Konteneinstellung, um Benachrichtigungen ein- und auszuschalten.</string>
     <string name="behavior">Verhalten</string>
     <string name="performance">Leistung</string>

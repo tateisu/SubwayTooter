@@ -5,7 +5,7 @@ import jp.juggler.subwaytooter.pref.impl.LongPref
 object PrefL {
 
     // long
-    val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", -1L)
+    val lpDefaultPostAccount = LongPref("tablet_toot_default_account", -1L)
 
     // long
     val lpThemeDefaultChangedWarnTime = LongPref("lpThemeDefaultChangedWarnTime", -1L)

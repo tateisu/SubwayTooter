@@ -267,6 +267,7 @@ class ActPost : AppCompatActivity(),
         refActPost = WeakReference(this)
         when (v.id) {
             R.id.btnAccount -> performAccountChooser()
+            R.id.ivAccount -> performAccountChooser()
             R.id.btnVisibility -> openVisibilityPicker()
             R.id.btnAttachment -> openAttachment()
             R.id.ivMedia1 -> performAttachmentClick(0)
@@ -409,6 +410,7 @@ class ActPost : AppCompatActivity(),
             views.btnPlugin,
             views.btnEmojiPicker,
             views.btnMore,
+            views.ivAccount,
         ).forEach { it.setOnClickListener(this) }
 
         ivMedia.forEach { it.setOnClickListener(this) }

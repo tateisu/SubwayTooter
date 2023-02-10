@@ -214,7 +214,7 @@ suspend fun <T : Any?, A : Context> A.runApiTask2(
     progressPrefix: String? = null,
     progressSetup: (progress: ProgressDialogEx) -> Unit = ApiTask.defaultProgressSetupCallback,
     backgroundBlock: suspend A.(client: TootApiClient) -> T,
-) = TootTaskRunner2.runApiTask(
+) :T = TootTaskRunner2.runApiTask(
     this,
     accessInfo,
     null,

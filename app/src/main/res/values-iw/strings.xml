@@ -419,7 +419,7 @@
     <string name="behavior">התנהגות</string>
     <string name="notification_on_off_desc">יש בנוסף הגדרת חשבון להדלקה/כיבוי התראות.</string>
     <string name="post">פרסום</string>
-    <string name="toot_button_default_account">חשבון ברירת מחדל לצורך לחיצה על כפתור \"תרועה\"</string>
+    <string name="post_compose_button_default_account">חשבון ברירת מחדל לצורך לחיצה על כפתור \"תרועה\"</string>
     <string name="enable_speech">אפשר דיבור</string>
     <string name="url_omitted">(כתובת URL הושמטה)</string>
     <string name="delete_this_notification">מחק התראה זו</string>

@@ -51,7 +51,8 @@
     <string name="app_data_export">アプリデータのエクスポート</string>
     <string name="app_data_import">アプリデータのインポート</string>
     <string name="app_data_import_confirm">アプリに今あるデータは消えてしまいます。よろしいですか？</string>
-    <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。カラム背景画像、タイムラインのフォント、カスタム通知音はエクスポート/インポートの対象外です。</string>
+    <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。
+\nカラム背景画像、タイムラインのフォント、カスタム通知音はエクスポート/インポートの対象外です。</string>
     <string name="app_exit">アプリを終了</string>
     <string name="app_setting">アプリ設定</string>
     <string name="app_was_muted">アプリはミュートされます</string>
@@ -144,7 +145,8 @@
     <string name="column_list_desc">スワイプで削除します。並べ替えと削除は戻るまたは選択した時に反映されます</string>
     <string name="comment_empty">通報する理由を書いてください</string>
     <string name="confirm">確認</string>
-    <string name="confirm_account_remove">アカウントをこのアプリから除去しますか？関連するカラムはすべて除去されます</string>
+    <string name="confirm_account_remove">アカウントをこのアプリから除去しますか？関連するカラムはすべて除去されます。
+\nよろしいですか？</string>
     <string name="confirm_before_boost">ブースト前に確認</string>
     <string name="confirm_block_domain">ドメイン \"%1$s\" を非表示にします。よろしいですか？</string>
     <string name="confirm_block_user">ユーザ \"%1$s\" をブロックします。よろしいですか?</string>
@@ -154,7 +156,8 @@
     <string name="confirm_close_column">このカラムを閉じますか？</string>
     <string name="confirm_close_column_all">(保護されていない)全てのカラムが閉じられます。よろしいですか?</string>
     <string name="confirm_delete_attachment">この添付データを除去しますか？</string>
-    <string name="confirm_delete_notification">対象ユーザへの通知データがサーバから削除されます。よろしいですか？</string>
+    <string name="confirm_delete_notification">対象ユーザへの通知データがサーバから削除されます。
+\nよろしいですか？</string>
     <string name="confirm_delete_status">このトゥートを削除します。よろしいですか?</string>
     <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか\? トゥートした人に通知が送られます。</string>
     <string name="confirm_follow_request_who_from">%2$s から鍵付きユーザ %1$s にフォローリクエストを送りますか？</string>
@@ -271,7 +274,7 @@
     <string name="endorse_set">プロフィールに紹介</string>
     <string name="endorse_succeeded">紹介を追加しました</string>
     <string name="endorse_unset">「プロフィールに紹介」を取り消す</string>
-    <string name="enquete_item_duplicate">アンケート項目%1$dは他の項目と重複してます</string>
+    <string name="enquete_item_duplicate">アンケート項目%1$dは他の項目と重複してます。</string>
     <string name="enquete_item_is_empty">アンケート項目%1$dがカラです</string>
     <string name="enquete_item_too_long">アンケート項目%1$dが長すぎます。あと%2$d文字削ってください</string>
     <string name="enquete_vote_failed">投票に失敗。%1$s</string>
@@ -444,8 +447,9 @@
     <string name="mention_full_acct">メンションのサーバー名部分を省略しない(カラムのリロードが必要)</string>
     <string name="mention2">返信</string>
     <string name="menu">メニュー</string>
-    <string name="mime_type_missing">MIMEタイプが不明です</string>
-    <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。対応できるMIMEタイプは image/jpeg, image/png, image/gif, video/webm, video/mp4 です</string>
+    <string name="mime_type_missing">MIMEタイプが不明です。</string>
+    <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。
+\n対応できるMIMEタイプは image/jpeg, image/png, image/gif, video/webm, video/mp4 です。</string>
     <string name="minimum_column_width">カラム最小幅(デフォルト=300(dp)、アプリ再起動が必要)</string>
     <string name="missing_available_account">この目的に使えるアカウントがありません。</string>
     <string name="missing_fcm_device_id">FCMのデバイスIDを準備できません。しばらく後に試してください。</string>
@@ -535,7 +539,7 @@
     <string name="pick_image">画像を選択</string>
     <string name="pick_images">画像を選択</string>
     <string name="pick_videos">動画を選択</string>
-    <string name="pick_audios">音声を選択</string>
+    <string name="pick_audios">音声ファイルを選択…</string>
     <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください。</string>
     <string name="please_donate">開発継続のために寄付をお願いします！</string>
     <string name="please_rate">ストアで評価やレビューをお願いします！</string>
@@ -732,7 +736,6 @@
     <string name="trend_tag">トレンドタグ</string>
     <string name="trend_link">トレンドリンク</string>
     <string name="trend_post">トレンド投稿</string>
-
     <string name="trend_tag_desc">数字は「日毎（週毎）」を示します。</string>
     <string name="ui_theme">UIテーマ(アプリ再起動が必要)</string>
     <string name="unblock">ブロック解除</string>
@@ -854,7 +857,7 @@
     <string name="user_name_hint">例: MonaLisa</string>
     <string name="username_empty">ユーザ名を指定してください.</string>
     <string name="email_hint">例: monalisa\@gmail.com</string>
-    <string name="email_empty">メールアドレスを指定してください.</string>
+    <string name="email_empty">メールアドレスを指定してください。</string>
     <string name="password">パスワード</string>
     <string name="password_hint">パスワードを入力…</string>
     <string name="password_empty">パスワードを指定してください.</string>
@@ -1156,18 +1159,13 @@
     <string name="conversation_with_reference">会話と参照</string>
     <string name="tootsearch_discontinued">Tootsearchは2022/12/25にサービス終了しました。</string>
     <string name="msp_discontinued">マストドン検索ポータルはサービス終了しました。</string>
-
     <string name="permission_rational_notifications">通知を表示するには権限が必要です。</string>
     <string name="permission_denied_notifications">通知を表示する権限がありません。</string>
-
     <string name="permission_rational_download_manager">DownloadManagerを使用するには権限が必要です。</string>
     <string name="permission_denied_download_manager">DownloadManagerを使用する権限がありません。</string>
-
     <string name="permission_rational_media_access">端末上のデータにアクセスするには権限が必要です。</string>
     <string name="permission_denied_media_access">端末上のデータにアクセスする権限がありません。</string>
     <string name="popup_background_color">ポップアップ背景色</string>
-
-
     <string name="filter_title">フィルタ名</string>
     <string name="filter_action">フィルタ処理</string>
     <string name="filter_action_warn">フィルタされたことを表示する</string>
@@ -1180,9 +1178,10 @@
     <string name="delete_confirm">「%1$s」を削除しますか?</string>
     <string name="color_theme_changed">色テーマのデフォルトが変わりました。カスタマイズ済の色設定と競合する場合があります。 アプリ設定の色セクションを確認することをお勧めします。</string>
     <string name="tablet_snap">スクロール時にカラム端と画面端を揃える （アプリ再起動が必要)</string>
-
     <string name="server_host_name">サーバのホスト名</string>
-    <string name="input_server_name_desc">\n\n・サーバのURLのホスト名部分。\n・https:// や/以降のパスを含まない。\n・サーバ一覧 https://joinmastodon.org/servers</string>
+    <string name="input_server_name_desc">・サーバのURLのホスト名部分。
+\n・https:// や/以降のパスを含まない。
+\n・サーバ一覧: https://joinmastodon.org/servers</string>
     <string name="authentication_select">認証方法の選択</string>
     <string name="authentication_select_desc">サーバにアクセスする方法を以下から選択してください。</string>
     <string name="server_host_name_cant_contains_it">ホスト名に使えない文字が含まれています。[%1$s]</string>
@@ -1190,7 +1189,6 @@
     <string name="user_creation_not_supported">[%1$s, %2$s] サーバ種別はアプリからのユーザ登録に対応していません。</string>
     <string name="confirm_remove_column_mark_as_dont_close">保護されたカラムですが、削除しますか?</string>
     <string name="post_reset_confirm">下書きに退避して、新しい投稿を編集しますか?</string>
-
     <!-- 通知チャネル -->
     <string name="alert">注意</string>
     <string name="alert_notification_desc">アプリの動作に関する注意を表示します。</string>
@@ -1203,11 +1201,9 @@
     <string name="server_timeout_desc">SNSの通知をチェックする際にサーバとの通信がタイムアウトすると表示されます。</string>
     <string name="pull_notification">SNS通知(Pull)</string>
     <string name="pull_notification_desc">定期的な通知チェックを行いSNSサーバから取得した情報を表示します。</string>
-
     <!-- アプリ設定 -->
     <string name="push_distributor">プッシュ配送サービス</string>
     <string name="push_distributor_desc">SNSサーバからのプッシュデータを中継するのに使うプッシュ配送サービスを選択します。</string>
-
     <!-- プッシュサービス選択 -->
     <string name="select_push_delivery_service">プッシュサービスの選択</string>
     <string name="firebase_cloud_messaging">Google FCM(Firebase Cloud Messaging)</string>
@@ -1247,4 +1243,13 @@
     <string name="push_distributor_not_available">プッシュ配送サービスを利用できません。UnifiedPush対応のプッシュ配送アプリをインストールすることで、プッシュ通知を受け取ることができます。詳細 https://unifiedpush.org/</string>
     <string name="default_post_account_default_action">表示カラムのアカウント(スマホ),または毎回尋ねる(タブレット)</string>
     <string name="quick_post_account">簡易投稿のアカウント</string>
+    <string name="server_configuration">サーバー設定</string>
+    <string name="glide_test">Glideのテスト</string>
+    <string name="notification_type_report">(管理者)通報</string>
+    <string name="alert_test">警告通知のテスト</string>
+    <string name="fedibird_capacities">Fedibird機能</string>
+    <string name="display_name_report">%1$s の通報。</string>
+    <string name="incorrect_chars">文字 \"%1$s\" は使えません</string>
+    <string name="approved">承認されました。</string>
+    <string name="account_list">アカウント一覧</string>
 </resources>

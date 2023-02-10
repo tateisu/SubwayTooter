@@ -5,9 +5,9 @@ import android.net.Uri
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.util.Base64
 import androidx.core.net.toUri
 import jp.juggler.util.log.LogCategory
-import org.apache.commons.codec.binary.Base64.*
 import java.security.MessageDigest
 import java.util.*
 import java.util.regex.Matcher
@@ -39,14 +39,29 @@ val SanitizeBdiMap = HashMap<Char, Char>().apply {
 ////////////////////////////////////////////////////////////////////
 // ByteArray
 
+private val reBase64UrlSafe = """[_-]""".toRegex()
+
 fun ByteArray.encodeBase64Url(): String =
-    encodeBase64URLSafeString(this)
+    Base64.encodeToString(
+        this,
+        0,
+        size,
+        Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE
+    )
 
 fun ByteArray.encodeBase64(): String =
-    encodeBase64String(this)
+    Base64.encodeToString(
+        this,
+        0,
+        size,
+        Base64.NO_WRAP
+    )
 
 fun String.decodeBase64(): ByteArray =
-    decodeBase64(this)
+    Base64.decode(
+        this,
+        if (reBase64UrlSafe.containsMatchIn(this)) Base64.URL_SAFE else Base64.DEFAULT,
+    )
 
 fun ByteArray.digestSHA256(): ByteArray {
     val digest = MessageDigest.getInstance("SHA-256")

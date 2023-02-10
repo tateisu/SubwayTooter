@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import android.os.SystemClock
+import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.auth.authRepo
 import jp.juggler.subwaytooter.api.entity.TootAccount
@@ -37,7 +38,10 @@ object AccountCache {
                             if (cached.result != null) CACHE_EXPIRE_SUCCESS else CACHE_EXPIRE_ERROR
                         if (cached.timeCached >= now - expire) return@withLock cached.result
                     }
-                    val newAccount = context.runApiTask2(src) { client ->
+                    val newAccount = context.runApiTask2(
+                        src,
+                        progressStyle = ApiTask.PROGRESS_NONE,
+                    ) { client ->
                         val json = if (src.isMisskey) {
                             val result = client.request(
                                 "/api/i",
@@ -48,7 +52,6 @@ object AccountCache {
                         } else {
                             // 承認待ち状態のチェック
                             authRepo.checkConfirmed(src, client)
-
                             val result = client.request(
                                 "/api/v1/accounts/verify_credentials"
                             ) ?: return@runApiTask2 null

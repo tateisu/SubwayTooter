@@ -1,7 +1,6 @@
 package jp.juggler.crypt
 
-import org.apache.commons.codec.binary.Base64.encodeBase64String
-import org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString
+import android.util.Base64
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
@@ -33,10 +32,15 @@ class ByteRange(
         if (pos in indices) ba.elementAtOrNull(start + pos) else null
 
     fun encodeBase64Url(): String =
-        encodeBase64URLSafeString(toByteArray())
+        Base64.encodeToString(
+            ba,
+            start,
+            size,
+            Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
+        )
 
     fun encodeBase64(): String =
-        encodeBase64String(toByteArray())
+        Base64.encodeToString(ba, start, size, Base64.NO_WRAP)
 
     fun decodeUTF8() =
         String(ba, start, size, StandardCharsets.UTF_8)

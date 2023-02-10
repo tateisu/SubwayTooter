@@ -81,7 +81,6 @@ dependencies {
     api "com.otaliastudios:transcoder:0.10.4"
     api "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
-    api "commons-codec:commons-codec:1.15"
     api "io.github.inflationx:calligraphy3:3.1.1"
     api "io.github.inflationx:viewpump:2.0.3"
     api "org.bouncycastle:bcprov-jdk15on:1.70"
@@ -91,6 +90,10 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
     api "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"
+
+    // commons-codecをapiにすると、端末上の古いjarが使われてしまう
+    // declaration of 'org.apache.commons.codec.binary.Base64' appears in /system/framework/org.apache.http.legacy.jar)
+    androidTestImplementation "commons-codec:commons-codec:1.15"
 
 
     // Koin main features for Android

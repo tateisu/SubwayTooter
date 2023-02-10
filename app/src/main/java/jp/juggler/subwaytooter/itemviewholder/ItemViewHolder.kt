@@ -692,13 +692,14 @@ class ItemViewHolder(
             repeat(MEDIA_VIEW_COUNT) {
                 tvMediaDescriptions.add(
                     button {
-                        gravity = Gravity.START
+                        gravity = Gravity.START or Gravity.CENTER_VERTICAL
                         allCaps = false
                         background =
                             ContextCompat.getDrawable(
                                 context,
                                 R.drawable.btn_bg_transparent_round6dp
                             )
+                        minHeightCompat = dip(48)
                         padding = dip(4)
                     }.lparams(matchParent, wrapContent)
                 )

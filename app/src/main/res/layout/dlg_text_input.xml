@@ -1,29 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvCaption"
+    <jp.juggler.subwaytooter.view.MaxHeightScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        android:labelFor="@+id/etInput"
-        tools:ignore="LabelFor" />
+        android:fadeScrollbars="false"
+        android:scrollbarStyle="outsideOverlay"
+        app:maxHeight="240dp">
 
-    <EditText
-        android:id="@+id/etInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:imeOptions="actionDone"
-        android:importantForAutofill="no"
-        android:inputType="text" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp">
+
+            <ImageView
+                android:id="@+id/ivBitmap"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginBottom="4dp"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:visibility="gone"
+                tools:src="@drawable/ic_face"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvCaption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:labelFor="@+id/etInput"
+                tools:ignore="LabelFor"
+                tools:text="title title title title title title title title title title title title title title title title title title title title title title title title title title title title title title title title title title title " />
+
+            <EditText
+                android:id="@+id/etInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                tools:inputType="textMultiLine"
+                tools:text="text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text " />
+        </LinearLayout>
+    </jp.juggler.subwaytooter.view.MaxHeightScrollView>
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"

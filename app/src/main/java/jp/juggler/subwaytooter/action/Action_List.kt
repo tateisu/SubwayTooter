@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.app.Dialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
@@ -14,8 +13,8 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onListListUpdated
 import jp.juggler.subwaytooter.column.onListNameUpdated
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
-import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.actionsDialog
+import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -23,7 +22,6 @@ import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.network.toPutRequestBuilder
-import jp.juggler.util.ui.dismissSafe
 import okhttp3.Request
 
 fun ActMain.clickListTl(pos: Int, accessInfo: SavedAccount, item: TimelineItem?) {
@@ -164,61 +162,54 @@ fun ActMain.listDelete(
     }
 }
 
-fun ActMain.listRename(
+suspend fun ActMain.listRename(
     accessInfo: SavedAccount,
     item: TootList,
 ) {
-
-    DlgTextInput.show(
-        this,
-        getString(R.string.rename),
-        item.title,
-        callback = object : DlgTextInput.Callback {
-            override fun onEmptyError() {
-                showToast(false, R.string.list_name_empty)
-            }
-
-            override fun onOK(dialog: Dialog, text: String) {
-                launchMain {
-                    var resultList: TootList? = null
-                    runApiTask(accessInfo) { client ->
-                        if (accessInfo.isMisskey) {
-                            client.request(
-                                "/api/users/lists/update",
-                                accessInfo.putMisskeyApiToken().apply {
-                                    put("listId", item.id)
-                                    put("title", text)
-                                }.toPostRequestBuilder()
-                            )
-                        } else {
-                            client.request(
-                                "/api/v1/lists/${item.id}",
-                                buildJsonObject {
-                                    put("title", text)
-                                }.toPutRequestBuilder()
-                            )
-                        }?.also { result ->
-                            client.publishApiProgress(getString(R.string.parsing_response))
-                            resultList = parseItem(result.jsonObject) {
-                                TootList(
-                                    TootParser(this, accessInfo),
-                                    it
-                                )
-                            }
-                        }
-                    }?.let { result ->
-                        when (val list = resultList) {
-                            null -> showToast(false, result.error)
-                            else -> {
-                                for (column in appState.columnList) {
-                                    column.onListNameUpdated(accessInfo, list)
-                                }
-                                dialog.dismissSafe()
-                            }
-                        }
-                    }
+    showTextInputDialog(
+        title = getString(R.string.rename),
+        initialText = item.title,
+        onEmptyText = { showToast(false, R.string.list_name_empty) },
+    ) { text ->
+        var resultList: TootList? = null
+        val result = runApiTask(accessInfo) { client ->
+            if (accessInfo.isMisskey) {
+                client.request(
+                    "/api/users/lists/update",
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("listId", item.id)
+                        put("title", text)
+                    }.toPostRequestBuilder()
+                )
+            } else {
+                client.request(
+                    "/api/v1/lists/${item.id}",
+                    buildJsonObject {
+                        put("title", text)
+                    }.toPutRequestBuilder()
+                )
+            }?.also { result ->
+                client.publishApiProgress(getString(R.string.parsing_response))
+                resultList = parseItem(result.jsonObject) {
+                    TootList(
+                        TootParser(this, accessInfo),
+                        it
+                    )
                 }
             }
         }
-    )
+        result ?: return@showTextInputDialog true
+        when (val list = resultList) {
+            null -> {
+                showToast(false, result.error)
+                false
+            }
+            else -> {
+                for (column in appState.columnList) {
+                    column.onListNameUpdated(accessInfo, list)
+                }
+                true
+            }
+        }
+    }
 }

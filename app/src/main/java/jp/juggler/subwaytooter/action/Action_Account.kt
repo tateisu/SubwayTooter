@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.app.Dialog
 import android.os.Build
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.addColumn
@@ -71,7 +70,7 @@ fun ActMain.accountAdd() {
                         val tootInstance = runApiTask2(apiHost) { TootInstance.getOrThrow(it) }
                         addPseudoAccount(apiHost, tootInstance)?.let { a ->
                             showToast(false, R.string.server_confirmed)
-                            addColumn(defaultInsertPosition, a, ColumnType.LOCAL,protect=true)
+                            addColumn(defaultInsertPosition, a, ColumnType.LOCAL, protect = true)
                             dialogHost.dismissSafe()
                         }
                     }
@@ -139,56 +138,49 @@ private suspend fun ActMain.createUser(
  * @param onComplete 非nullならアカウント認証が終わったタイミングで呼ばれる
  */
 // アクセストークンの手動入力(更新)
-fun ActMain.accessTokenPrompt(
+suspend fun ActMain.accessTokenPrompt(
     apiHost: Host,
     onComplete: (() -> Unit)? = null,
 ) {
-    DlgTextInput.show(
-        this,
-        getString(R.string.access_token_or_api_token),
-        null,
-        callback = object : DlgTextInput.Callback {
-            override fun onEmptyError() {
-                showToast(true, R.string.token_not_specified)
+    showTextInputDialog(
+        title = getString(R.string.access_token_or_api_token),
+        initialText = null,
+        onEmptyText = { showToast(true, R.string.token_not_specified) },
+    ) { text ->
+        try {
+            val accessToken = text.trim()
+            val auth2Result = runApiTask2(apiHost) { client ->
+                val ti = TootInstance.getExOrThrow(client, forceAccessToken = accessToken)
+
+                val tokenJson = JsonObject()
+
+                val userJson = client.verifyAccount(
+                    accessToken,
+                    outTokenInfo = tokenJson, // 更新される
+                    misskeyVersion = ti.misskeyVersionMajor
+                )
+                val parser = TootParser(this, linkHelper = LinkHelper.create(ti))
+
+                Auth2Result(
+                    tootInstance = ti,
+                    tokenJson = tokenJson,
+                    accountJson = userJson,
+                    tootAccount = parser.account(userJson)
+                        ?: error("can't parse user information."),
+                )
             }
-
-            override fun onOK(dialog: Dialog, text: String) {
-                launchMain {
-                    try {
-                        val accessToken = text.trim()
-                        val auth2Result = runApiTask2(apiHost) { client ->
-                            val ti =
-                                TootInstance.getExOrThrow(client, forceAccessToken = accessToken)
-
-                            val tokenJson = JsonObject()
-
-                            val userJson = client.verifyAccount(
-                                accessToken,
-                                outTokenInfo = tokenJson, // 更新される
-                                misskeyVersion = ti.misskeyVersionMajor
-                            )
-
-                            val parser = TootParser(this, linkHelper = LinkHelper.create(ti))
-
-                            Auth2Result(
-                                tootInstance = ti,
-                                tokenJson = tokenJson,
-                                accountJson = userJson,
-                                tootAccount = parser.account(userJson)
-                                    ?: error("can't parse user information."),
-                            )
-                        }
-                        if (afterAccountVerify(auth2Result)) {
-                            dialog.dismissSafe()
-                            onComplete?.invoke()
-                        }
-                    } catch (ex: Throwable) {
-                        showApiError(ex)
-                    }
+            when (afterAccountVerify(auth2Result)) {
+                false -> false
+                else -> {
+                    onComplete?.invoke()
+                    true
                 }
             }
+        } catch (ex: Throwable) {
+            showApiError(ex)
+            false
         }
-    )
+    }
 }
 
 // アカウント設定

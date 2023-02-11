@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.columnviewholder
 
-import android.app.Dialog
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -22,7 +21,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.databinding.LvHeaderProfileBinding
-import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.itemviewholder.DlgContextMenu
 import jp.juggler.subwaytooter.pref.PrefB
@@ -41,7 +40,7 @@ import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyTextView
-import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.data.intoStringResource
 import jp.juggler.util.data.notEmpty
@@ -49,7 +48,6 @@ import jp.juggler.util.data.notZero
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.ui.attrColor
-import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.setIconDrawableId
 import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
@@ -444,49 +442,46 @@ internal class ViewHolderHeaderProfile(
                 val who = whoRef.get()
                 val relation = this.relation
                 val lastColumn = column
-                DlgTextInput.show(
-                    activity,
-                    daoAcctColor.getStringWithNickname(
-                        activity,
-                        R.string.personal_notes_of,
-                        who.acct
-                    ),
-                    relation?.note ?: "",
-                    allowEmpty = true,
-                    callback = object : DlgTextInput.Callback {
-                        override fun onEmptyError() {
+                activity.launchAndShowError {
+                    activity.showTextInputDialog(
+                        title = daoAcctColor.getStringWithNickname(
+                            activity,
+                            R.string.personal_notes_of,
+                            who.acct
+                        ),
+                        initialText = relation?.note ?: "",
+                        allowEmpty = true,
+                        onEmptyText = {},
+                    ) { text ->
+                        val result = activity.runApiTask(column.accessInfo) { client ->
+                            when {
+                                accessInfo.isPseudo ->
+                                    TootApiResult("Personal notes is not supported on pseudo account.")
+                                accessInfo.isMisskey ->
+                                    TootApiResult("Personal notes is not supported on Misskey account.")
+                                else ->
+                                    client.request(
+                                        "/api/v1/accounts/${who.id}/note",
+                                        buildJsonObject {
+                                            put("comment", text)
+                                        }.toPostRequestBuilder()
+                                    )
+                            }
                         }
-
-                        override fun onOK(dialog: Dialog, text: String) {
-                            launchMain {
-                                activity.runApiTask(column.accessInfo) { client ->
-                                    when {
-                                        accessInfo.isPseudo ->
-                                            TootApiResult("Personal notes is not supported on pseudo account.")
-                                        accessInfo.isMisskey ->
-                                            TootApiResult("Personal notes is not supported on Misskey account.")
-                                        else ->
-                                            client.request(
-                                                "/api/v1/accounts/${who.id}/note",
-                                                buildJsonObject {
-                                                    put("comment", text)
-                                                }.toPostRequestBuilder()
-                                            )
-                                    }
-                                }?.let { result ->
-                                    when (val error = result.error) {
-                                        null -> {
-                                            relation?.note = text
-                                            dialog.dismissSafe()
-                                            if (lastColumn == column) bindData(column)
-                                        }
-                                        else -> activity.showToast(true, error)
-                                    }
-                                }
+                        result ?: return@showTextInputDialog true
+                        when (val error = result.error) {
+                            null -> {
+                                relation?.note = text
+                                if (lastColumn == column) bindData(column)
+                                true
+                            }
+                            else -> {
+                                activity.showToast(true, error)
+                                false
                             }
                         }
                     }
-                )
+                }
             }
         }
     }
@@ -496,7 +491,6 @@ internal class ViewHolderHeaderProfile(
 
             R.id.btnFollow -> {
                 activity.followFromAnotherAccount(
-
                     activity.nextPosition(column),
                     accessInfo,
                     whoRef?.get()
@@ -506,7 +500,6 @@ internal class ViewHolderHeaderProfile(
 
             R.id.btnMoved -> {
                 activity.followFromAnotherAccount(
-
                     activity.nextPosition(column),
                     accessInfo,
                     movedRef?.get()

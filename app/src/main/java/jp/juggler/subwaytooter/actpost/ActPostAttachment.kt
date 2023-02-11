@@ -1,8 +1,11 @@
 package jp.juggler.subwaytooter.actpost
 
 import android.app.Dialog
+import android.graphics.Bitmap
 import android.net.Uri
+import android.text.InputType
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
@@ -13,10 +16,12 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmen
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.calcIconRound
+import jp.juggler.subwaytooter.databinding.DlgFocusPointBinding
 import jp.juggler.subwaytooter.defaultColorIcon
-import jp.juggler.subwaytooter.dialog.DlgFocusPoint
-import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.actionsDialog
+import jp.juggler.subwaytooter.dialog.decodeAttachmentBitmap
+import jp.juggler.subwaytooter.dialog.focusPointDialog
+import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
 import jp.juggler.subwaytooter.util.PostAttachment
@@ -29,7 +34,10 @@ import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPutRequestBuilder
 import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.isLiveActivity
 import jp.juggler.util.ui.vg
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resumeWithException
 
 private val log = LogCategory("ActPostAttachment")
 
@@ -212,13 +220,10 @@ private fun ActPost.appendArrachmentUrl(a: TootAttachment) {
 
 // 添付した画像をタップ
 fun ActPost.performAttachmentClick(idx: Int) {
-    val pa = try {
-        attachmentList[idx]
-    } catch (ex: Throwable) {
-        showToast(false, ex.withCaption("can't get attachment item[$idx]."))
-        return
-    }
     launchAndShowError {
+        val pa = attachmentList.elementAtOrNull(idx)
+            ?: error("can't get attachment item[$idx].")
+
         actionsDialog(getString(R.string.media_attachment)) {
             action(getString(R.string.set_description)) {
                 editAttachmentDescription(pa)
@@ -265,11 +270,12 @@ fun ActPost.deleteAttachment(pa: PostAttachment) {
         .show()
 }
 
-fun ActPost.openFocusPoint(pa: PostAttachment) {
+suspend fun ActPost.openFocusPoint(pa: PostAttachment) {
     val attachment = pa.attachment ?: return
-    DlgFocusPoint(this, attachment)
-        .setCallback { x, y -> sendFocusPoint(pa, attachment, x, y) }
-        .show()
+    focusPointDialog(
+        attachment = attachment,
+        callback = { x, y -> sendFocusPoint(pa, attachment, x, y) }
+    )
 }
 
 fun ActPost.sendFocusPoint(pa: PostAttachment, attachment: TootAttachment, x: Float, y: Float) {
@@ -300,42 +306,65 @@ fun ActPost.sendFocusPoint(pa: PostAttachment, attachment: TootAttachment, x: Fl
     }
 }
 
-fun ActPost.editAttachmentDescription(pa: PostAttachment) {
+suspend fun ActPost.editAttachmentDescription(pa: PostAttachment) {
     val a = pa.attachment
     if (a == null) {
         showToast(true, R.string.attachment_description_cant_edit_while_uploading)
         return
     }
-
-    DlgTextInput.show(
-        this,
-        getString(R.string.attachment_description),
-        a.description,
-        callback = object : DlgTextInput.Callback {
-            override fun onEmptyError() {
-                showToast(true, R.string.description_empty)
-            }
-
-            override fun onOK(dialog: Dialog, text: String) {
-                val attachmentId = pa.attachment?.id ?: return
-                val account = this@editAttachmentDescription.account ?: return
-                launchMain {
-                    val (result, newAttachment) = attachmentUploader.setAttachmentDescription(
-                        account,
-                        attachmentId,
-                        text
-                    )
-                    when (newAttachment) {
-                        null -> result?.error?.let { showToast(true, it) }
-                        else -> {
-                            pa.attachment = newAttachment
-                            showMediaAttachment()
-                            dialog.dismissSafe()
-                        }
+    val attachmentId = pa.attachment?.id ?: return
+    val account = this.account ?: return
+    var bitmap: Bitmap? = null
+    try {
+        val url = a.preview_url
+        if (url != null) {
+            val result = runApiTask { client ->
+                try {
+                    val (result, data) = client.getHttpBytes(url)
+                    data?.let {
+                        bitmap = decodeAttachmentBitmap(it, 1024)
+                            ?: return@runApiTask TootApiResult("image decode failed.")
                     }
+                    result
+                } catch (ex: Throwable) {
+                    TootApiResult(ex.withCaption("preview loading failed."))
                 }
             }
-        })
+            result ?: return
+            if (!isLiveActivity) return
+            result.error?.let{
+                showToast(true, result.error ?: "error")
+                // not exit
+            }
+        }
+        showTextInputDialog(
+            title = getString(R.string.attachment_description),
+            bitmap = bitmap,
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+            initialText = a.description,
+            onEmptyText = { showToast(true, R.string.description_empty) },
+        ) { text ->
+            val (result, newAttachment) = attachmentUploader.setAttachmentDescription(
+                account,
+                attachmentId,
+                text
+            )
+            result ?: return@showTextInputDialog true
+            when (newAttachment) {
+                null -> {
+                    result.error?.let { showToast(true, it) }
+                    false
+                }
+                else -> {
+                    pa.attachment = newAttachment
+                    showMediaAttachment()
+                    true
+                }
+            }
+        }
+    } finally {
+        bitmap?.recycle()
+    }
 }
 
 fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: GetContentResultEntry) {

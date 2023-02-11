@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
@@ -247,30 +248,28 @@ class DlgListMember(
     }
 
     private fun openListCreator() {
-        DlgTextInput.show(
-            activity,
-            activity.getString(R.string.list_create),
-            null,
-            callback = object : DlgTextInput.Callback {
-
-                override fun onEmptyError() {
+        activity.launchAndShowError {
+            activity.showTextInputDialog(
+                title = activity.getString(R.string.list_create),
+                initialText = null,
+                onEmptyText = {
                     activity.showToast(false, R.string.list_name_empty)
-                }
-
-                override fun onOK(dialog: Dialog, text: String) {
-                    val list_owner = this@DlgListMember.listOwner
-
-                    if (list_owner == null) {
+                },
+            ) { text ->
+                when (val listOwner1 = this@DlgListMember.listOwner) {
+                    null -> {
                         activity.showToast(false, "list owner is not selected.")
-                        return
+                        false
                     }
-
-                    activity.listCreate(list_owner, text) {
-                        dialog.dismissSafe()
-                        loadLists()
+                    else -> {
+                        activity.listCreate(listOwner1, text) {
+                            loadLists()
+                        }
+                        true
                     }
                 }
-            })
+            }
+        }
     }
 
     internal class ErrorItem(val message: String)

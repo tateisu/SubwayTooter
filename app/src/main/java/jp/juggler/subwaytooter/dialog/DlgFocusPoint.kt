@@ -1,129 +1,101 @@
 package jp.juggler.subwaytooter.dialog
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.view.FocusPointView
+import jp.juggler.subwaytooter.databinding.DlgFocusPointBinding
 import jp.juggler.util.*
-import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resumeWithException
 
-@SuppressLint("InflateParams")
-class DlgFocusPoint(
-    val activity: AppCompatActivity,
-    val attachment: TootAttachment,
-) : View.OnClickListener {
+private val log = LogCategory("DlgFocusPoint")
 
-    companion object {
-
-        val log = LogCategory("DlgFocusPoint")
+fun decodeAttachmentBitmap(
+    data: ByteArray,
+    @Suppress("SameParameterValue") pixelMax: Int,
+): Bitmap? {
+    val options = BitmapFactory.Options()
+    options.inJustDecodeBounds = true
+    options.inScaled = false
+    options.outWidth = 0
+    options.outHeight = 0
+    BitmapFactory.decodeByteArray(data, 0, data.size, options)
+    var w = options.outWidth
+    var h = options.outHeight
+    if (w <= 0 || h <= 0) {
+        log.e("can't decode bounds.")
+        return null
     }
+    var bits = 0
+    while (w > pixelMax || h > pixelMax) {
+        ++bits
+        w = w shr 1
+        h = h shr 1
+    }
+    options.inJustDecodeBounds = false
+    options.inSampleSize = 1 shl bits
+    return BitmapFactory.decodeByteArray(data, 0, data.size, options)
+}
 
-    val dialog: Dialog
-    private val focusPointView: FocusPointView
+suspend fun AppCompatActivity.focusPointDialog(
+    attachment: TootAttachment,
+    callback: (x: Float, y: Float) -> Unit,
+) {
     var bitmap: Bitmap? = null
-
-    init {
-        val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_focus_point, null, false)
-        focusPointView = viewRoot.findViewById(R.id.ivFocus)
-        viewRoot.findViewById<View>(R.id.btnClose).setOnClickListener(this)
-
-        this.dialog = Dialog(activity)
-        dialog.setContentView(viewRoot)
-        dialog.setOnDismissListener {
-            bitmap?.recycle()
-        }
-    }
-
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.btnClose -> dialog.dismissSafe()
-        }
-    }
-
-    fun setCallback(callback: (x: Float, y: Float) -> Unit): DlgFocusPoint {
-        focusPointView.callback = callback
-        return this
-    }
-
-    fun show() {
+    try {
         val url = attachment.preview_url
         if (url == null) {
-            activity.showToast(false, "missing image url")
+            showToast(false, "missing image url")
             return
         }
-
-        val options = BitmapFactory.Options()
-
-        fun decodeBitmap(
-            data: ByteArray,
-            @Suppress("SameParameterValue") pixelMax: Int,
-        ): Bitmap? {
-            options.inJustDecodeBounds = true
-            options.inScaled = false
-            options.outWidth = 0
-            options.outHeight = 0
-            BitmapFactory.decodeByteArray(data, 0, data.size, options)
-            var w = options.outWidth
-            var h = options.outHeight
-            if (w <= 0 || h <= 0) {
-                log.e("can't decode bounds.")
-                return null
-            }
-            var bits = 0
-            while (w > pixelMax || h > pixelMax) {
-                ++bits
-                w = w shr 1
-                h = h shr 1
-            }
-            options.inJustDecodeBounds = false
-            options.inSampleSize = 1 shl bits
-            return BitmapFactory.decodeByteArray(data, 0, data.size, options)
-        }
-
-        launchMain {
-            var resultBitmap: Bitmap? = null
-            val result = activity.runApiTask { client ->
-                try {
-                    val (result, data) = client.getHttpBytes(url)
-                    data?.let {
-                        resultBitmap = decodeBitmap(it, 1024)
-                            ?: return@runApiTask TootApiResult("image decode failed.")
-                    }
-                    result
-                } catch (ex: Throwable) {
-                    TootApiResult(ex.withCaption("preview loading failed."))
+        val result = runApiTask { client ->
+            try {
+                val (result, data) = client.getHttpBytes(url)
+                data?.let {
+                    bitmap = decodeAttachmentBitmap(it, 1024)
+                        ?: return@runApiTask TootApiResult("image decode failed.")
                 }
-            }
-            val bitmap = resultBitmap
-            when {
-                bitmap == null -> {
-                    activity.showToast(true, result?.error ?: "?")
-                    dialog.dismissSafe()
-                }
-                activity.isFinishing -> {
-                    bitmap.recycle()
-                    dialog.dismissSafe()
-                }
-                else -> {
-                    this@DlgFocusPoint.bitmap = bitmap
-                    focusPointView.setAttachment(attachment, bitmap)
-                    dialog.window?.setLayout(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.MATCH_PARENT
-                    )
-                    dialog.show()
-                }
+                result
+            } catch (ex: Throwable) {
+                TootApiResult(ex.withCaption("preview loading failed."))
             }
         }
+        result ?: return
+        if (bitmap == null) {
+            showToast(true, result.error ?: "error")
+            return
+        } else if (!isLiveActivity) {
+            return
+        }
+        val dialog = Dialog(this)
+        val views = DlgFocusPointBinding.inflate(layoutInflater)
+        dialog.setContentView(views.root)
+        views.ivFocus.setAttachment(attachment, bitmap!!)
+        views.ivFocus.callback = callback
+        dialog.window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT
+        )
+        suspendCancellableCoroutine { cont ->
+            views.btnClose.setOnClickListener {
+                if (cont.isActive) cont.resume(Unit) {}
+                dialog.dismissSafe()
+            }
+            dialog.setOnDismissListener {
+                if (cont.isActive) cont.resumeWithException(CancellationException())
+            }
+            cont.invokeOnCancellation { dialog.dismissSafe() }
+            dialog.show()
+        }
+    } finally {
+        bitmap?.recycle()
     }
 }

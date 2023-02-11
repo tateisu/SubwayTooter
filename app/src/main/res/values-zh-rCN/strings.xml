@@ -1040,7 +1040,7 @@
     <string name="load_preference_from_web_ui">从 WebUI 加载一些首选项</string>
     <string name="mark_sensitive_by_default">总是标记媒体敏感（当发嘟时）</string>
     <string name="fixed_phrase">固定短语</string>
-    <string name="custom_emoji_separator_zwsp">使用 ZWS 而不是空格作为自定义表情符号分隔符</string>
+    <string name="custom_emoji_separator_zwsp">使用 ZWSP 而不是空格作为自定义表情符号分隔符</string>
     <string name="polls_choice_not_selected">请选择1个或更多选项。</string>
     <string name="input">输入</string>
     <string name="quick_toot_menu">快速嘟文菜单</string>
@@ -1248,4 +1248,23 @@
     <string name="view">查看</string>
     <string name="push_subscription_is_not_required">不需要推送订阅，因为未启用通知，或未启用推送分发器。</string>
     <string name="push_subscription_exists_but_not_created_by_this_device">已找到推送订阅，但不是由此设备创建的。</string>
+    <string name="manually_update">手动更新</string>
+    <string name="push_notification_use">使用推送订阅接收通知。</string>
+    <string name="pull_notification_use">定期使用拉取检查来加载通知。</string>
+    <string name="server_configuration">实例配置</string>
+    <string name="fedibird_capacities">Fedibird 容量</string>
+    <string name="push_subscription_exists_updateing">正在更新当前推送订阅…</string>
+    <string name="notification_push_distributor_disabled">未选择通知推送分发器。</string>
+    <string name="notification_accent_color">通知强调色</string>
+    <string name="pleroma_features">Pleroma 特性</string>
+    <string name="unified_push_got_new_endpoint_url">获得了新的 UnifiedPush 端点 URL…</string>
+    <string name="removing_old_unified_push_url">正在从应用服务器中移除过期的 UnifiedPush 端点 URL…</string>
+    <string name="sending_push_distributor_info_to_app_server">正在向应用服务器发送推送服务信息……</string>
+    <string name="glide_test">滑动测试</string>
+    <string name="default_post_account_default_action">查看栏目帐户（手机），或始终询问（平板电脑）</string>
+    <string name="quick_post_account">快速发嘟帐户</string>
+    <string name="removing_old_fcm_token">正在从应用服务器中移除过期的 FCM 设备令牌…</string>
+    <string name="push_distributor_not_available">推送分发器不可用。您可以通过安装兼容 UnifiedPush 的推送传递应用来接收推送通知。见 https://unifiedpush.org/</string>
+    <string name="show_username_on_filtered_post">在过滤的嘟文上显示用户名</string>
+    <string name="notification_permission_not_granted">未授予通知权限</string>
 </resources>

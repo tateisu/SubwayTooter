@@ -773,6 +773,8 @@ class PushRepo(
             PendingIntent.FLAG_IMMUTABLE
         )
 
+        val group = context.packageName + ":" + account.acct.ascii
+        val urlDeleteSummary = "${ncPushMessage.uriPrefixDelete}/summary/${account.acct.ascii}"
         val urlDelete = "${ncPushMessage.uriPrefixDelete}/${pm.id}"
         val iDelete = context.intentNotificationDelete(urlDelete.toUri())
         val piDelete = PendingIntent.getBroadcast(
@@ -790,7 +792,6 @@ class PushRepo(
                 ?.let { ContextCompat.getColor(context, it) }
                 ?: account.notificationAccentColor.notZero()
                         ?: ContextCompat.getColor(context, R.color.colorOsNotificationAccent)
-
             setSmallIcon(iconSmall)
             iconBitmapLarge?.let { setLargeIcon(it) }
             setContentTitle(pm.loginAcct?.pretty)
@@ -802,8 +803,20 @@ class PushRepo(
             pm.textExpand.notEmpty()?.let {
                 setStyle(NotificationCompat.BigTextStyle().bigText(it))
             }
+            setGroup(group)
+        }
 
-            setGroup(context.packageName + ":" + account.acct.ascii)
+        ncPushMessage.notify(context, urlDeleteSummary) {
+            setContentTitle(account.acct.pretty)
+            setContentText("notifications")
+            setWhen(pm.timestamp)
+            setSmallIcon(R.drawable.ic_notification)
+            color = account.notificationAccentColor.notZero()
+                ?: ContextCompat.getColor(context, R.color.colorOsNotificationAccent)
+            setContentIntent(piTap)
+            setAutoCancel(true)
+            setGroup(group)
+            setGroupSummary(true)
         }
     }
 

@@ -38,7 +38,7 @@ class SavedAccount(
     apiHostArg: String? = null,
     apDomainArg: String? = null,
 
-    var accountJson:JsonObject? = null,
+    var accountJson: JsonObject? = null,
     var confirmBoost: Boolean = false,
     var confirmFavourite: Boolean = false,
     var confirmFollow: Boolean = false,
@@ -471,7 +471,7 @@ class SavedAccount(
                 if (isInvalidId) error("saveSetting: missing db_id")
 
                 ContentValues().apply {
-                    put(COL_ACCOUNT,accountJson?.toString())
+                    put(COL_ACCOUNT, accountJson?.toString())
                     put(COL_CONFIRM_BOOST, confirmBoost)
                     put(COL_CONFIRM_FAVOURITE, confirmFavourite)
                     put(COL_CONFIRM_FOLLOW, confirmFollow)
@@ -503,9 +503,9 @@ class SavedAccount(
                     put(COL_NOTIFICATION_VOTE, notificationVote)
                     put(COL_PUSH_POLICY, pushPolicy)
 //                    put(COL_SOUND_URI, soundUri)
-                    put(COL_TOKEN,tokenJson?.toString())
+                    put(COL_TOKEN, tokenJson?.toString())
                     put(COL_VISIBILITY, visibility.id.toString())
-                    put(COL_MISSKEY_VERSION,misskeyVersion)
+                    put(COL_MISSKEY_VERSION, misskeyVersion)
                 }.let { db.update(table, it, "$COL_ID=?", arrayOf(db_id.toString())) }
             }
         }
@@ -612,11 +612,12 @@ class SavedAccount(
         fun loadRealAccounts() =
             ArrayList<SavedAccount>().also { result ->
                 try {
-                    db.rawQuery("select * from $table where $COL_USER not like '?%'", emptyArray()).use { cursor ->
-                        while (cursor.moveToNext()) {
-                            parse(lazyContext, cursor)?.let { result.add(it) }
+                    db.rawQuery("select * from $table where $COL_USER not like '?%'", emptyArray())
+                        .use { cursor ->
+                            while (cursor.moveToNext()) {
+                                parse(lazyContext, cursor)?.let { result.add(it) }
+                            }
                         }
-                    }
                 } catch (ex: Throwable) {
                     log.e(ex, "loadAccountList failed.")
                     lazyContext.showToast(

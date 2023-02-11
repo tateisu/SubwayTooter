@@ -188,7 +188,7 @@ class PushRepo(
                 }
             }
         }
-        val timeout = timeSwitchStart + TimeUnit.MINUTES.toMillis(30)
+
         while (true) {
             if (PushWorker.timeEndRegisterEndpoint.get() >= timeSwitchStart ||
                 PushWorker.timeEndUpEndpoint.get() >= timeSwitchStart
@@ -214,11 +214,19 @@ class PushRepo(
             }.flatten().filter { !it.state.isFinished }
 
             works.map {
-                "work tag=${it.tags.joinToString("/")} state=${it.state} id=${it.id}"
+                "work tag=${
+                    it.tags.filter { t -> !t.startsWith(PushWorker::class.java.name) }
+                        .joinToString("/")
+                } state=${it.state} id=${it.id}"
             }.let { lines.addAll(it) }
             showProgress(lines.sorted().joinToString("\n"))
 
-            val remain = min(1000L, timeout - System.currentTimeMillis())
+            val timeout = when {
+                works.isEmpty() -> TimeUnit.MINUTES.toMillis(2)
+                else -> TimeUnit.MINUTES.toMillis(30)
+            }
+
+            val remain = min(1000L, timeSwitchStart + timeout - System.currentTimeMillis())
             if (remain <= 0) {
                 showProgress("timeout")
                 delay(666L)
@@ -266,7 +274,7 @@ class PushRepo(
     suspend fun registerEndpoint(
         keepAliveMode: Boolean,
     ) {
-        if(subscriptionMutex.isLocked){
+        if (subscriptionMutex.isLocked) {
             refReporter?.get()?.invoke("registerEndpoint: waiting mutex…")
         }
         subscriptionMutex.withLock {

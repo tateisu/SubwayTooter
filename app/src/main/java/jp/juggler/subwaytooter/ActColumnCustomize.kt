@@ -29,10 +29,7 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.media.createResizedBitmap
-import jp.juggler.util.ui.ActivityResultHandler
-import jp.juggler.util.ui.hideKeyboard
-import jp.juggler.util.ui.isNotOk
-import jp.juggler.util.ui.setNavigationBack
+import jp.juggler.util.ui.*
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
@@ -323,14 +320,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 if (loadingBusy) return
                 if (!fromUser) return
                 column.columnBgImageAlpha = progress / PROGRESS_MAX.toFloat()
-                views.ivColumnBackground.alpha = column.columnBgImageAlpha
-                views.etAlpha.setText(
-                    String.format(
-                        defaultLocale(this@ActColumnCustomize),
-                        "%.4f",
-                        column.columnBgImageAlpha
-                    )
-                )
+                showAlpha(updateText = true, updateSeek = false)
             }
         })
 
@@ -342,16 +332,13 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             override fun afterTextChanged(s: Editable) {
                 if (loadingBusy) return
                 try {
-
                     var f = NumberFormat.getInstance(defaultLocale(this@ActColumnCustomize))
                         .parse(views.etAlpha.text.toString())?.toFloat()
-
                     if (f != null && !f.isNaN()) {
                         if (f < 0f) f = 0f
                         if (f > 1f) f = 1f
                         column.columnBgImageAlpha = f
-                        views.ivColumnBackground.alpha = column.columnBgImageAlpha
-                        views.sbColumnBackgroundAlpha.progress = (0.5f + f * PROGRESS_MAX).toInt()
+                        showAlpha(updateText = false, updateSeek = true)
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "alpha parse failed.")
@@ -390,21 +377,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 ViewCompat.setBackground(views.flColumnBackground, null)
             }
 
-            var alpha = column.columnBgImageAlpha
-            if (alpha.isNaN()) {
-                alpha = 1f
-                column.columnBgImageAlpha = alpha
-            }
-            views.ivColumnBackground.alpha = alpha
-            views.sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
-
-            views.etAlpha.setText(
-                String.format(
-                    defaultLocale(this@ActColumnCustomize),
-                    "%.4f",
-                    column.columnBgImageAlpha
-                )
-            )
+            showAlpha(updateText = true, updateSeek = true)
 
             loadImage(views.ivColumnBackground, column.columnBgImage)
 
@@ -412,6 +385,24 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             views.tvSampleContent.setTextColor(column.getContentColor())
         } finally {
             loadingBusy = false
+        }
+    }
+
+    private fun showAlpha(updateText: Boolean, updateSeek: Boolean) {
+        var alpha = column.columnBgImageAlpha
+        if (alpha.isNaN()) {
+            alpha = 1f
+            column.columnBgImageAlpha = alpha
+        }
+        views.ivColumnBackground.alpha = alpha
+        val hasAlphaWarning = alpha < 0.3 && column.columnBgImage.isNotEmpty()
+        views.tvBackgroundError.vg(hasAlphaWarning)?.text =
+            getString(R.string.image_alpha_too_low)
+        if (updateText) {
+            views.etAlpha.setText("%.4f".format(column.columnBgImageAlpha))
+        }
+        if (updateSeek) {
+            views.sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
         }
     }
 

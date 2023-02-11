@@ -117,7 +117,10 @@
                 style="@style/setting_row_label"
                 android:text="@string/column" />
 
-            <LinearLayout style="@style/setting_row_form">
+            <LinearLayout style="@style/setting_row_form"
+                android:orientation="vertical"
+                android:layout_marginBottom="6dp"
+                >
 
                 <FrameLayout
                     android:id="@+id/flColumnBackground"
@@ -159,7 +162,6 @@
                             android:textColor="?attr/colorTextContent" />
                     </LinearLayout>
                 </FrameLayout>
-
             </LinearLayout>
 
             <LinearLayout style="@style/setting_row_form">
@@ -251,8 +253,18 @@
                     android:paddingStart="32dp" />
             </LinearLayout>
 
-            <LinearLayout style="@style/setting_row_form">
+            <TextView
+                style="@style/setting_row_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvBackgroundError"
+                android:visibility="gone"
+                android:textColor="?attr/colorRegexFilterError"
+                tools:visibility="visible"
+                tools:text="error error error error " />
 
+
+            <LinearLayout style="@style/setting_row_form">
                 <TextView
                     style="@style/setting_row_label"
                     android:text="@string/acct_color" />

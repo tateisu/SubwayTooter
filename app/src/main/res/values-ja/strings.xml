@@ -1258,4 +1258,5 @@
     <string name="bug_report">バグ報告</string>
     <string name="bug_report_desc">アプリは過去数日間のログを保持していますが、勝手に外部に送信することはありません。ユーザが明示的にログを送信する操作した時だけ参照されます。</string>
     <string name="log_save_level_desc">ログの重要度。 この設定より重要度が低いログは収集されません。</string>
+    <string name="image_alpha_too_low">背景画像のアルファが低すぎます。 画像を見ることができますか？</string>
 </resources>

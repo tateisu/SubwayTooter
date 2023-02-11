@@ -1266,4 +1266,5 @@
     <string name="bug_report">Bug report</string>
     <string name="bug_report_desc">The app keeps logs for the past few days, but does not send them outside without permission. It is only referenced when the user explicitly sends logs.</string>
     <string name="log_save_level_desc">Log severity level. Logs with a severity less than this setting will not be collected.</string>
+    <string name="image_alpha_too_low">background image alpha is too low. can you view the image?</string>
 </resources>

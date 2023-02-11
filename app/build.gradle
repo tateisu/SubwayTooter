@@ -107,14 +107,25 @@ android {
         }
     }
 
+    // https://github.com/tateisu/SubwayTooter/issues/229
+    //    splits {
+    //        abi {
+    //            enable true
+    //            reset()
+    //            include "arm64-v8a", "x86", "x86_64"
+    //            universalApk true
+    //        }
+    //    }
+
     // Generate Signed APK のファイル名を変更
     android.applicationVariants.all { variant ->
         if (variant.buildType.name == "release") {
-            variant.outputs.all {
+            variant.outputs.all { output ->
                 // Rename APK
                 def versionCode = defaultConfig.versionCode
                 def versionName = defaultConfig.versionName
                 def flavor = variant.flavorName
+                // def abi = output.getFilter("ABI") ?: "all"
                 def date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
                 def branch = gitBranch()
                 outputFileName = "../../SubwayTooter-${branch}-${flavor}-${versionCode}-${versionName}-${date}.apk"

@@ -56,7 +56,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
             // EXPEDITED だと制約の種類が限られる
             // すぐ起動してほしいので制約は少なめにする
             val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
             val request = OneTimeWorkRequestBuilder<PushWorker>().apply {

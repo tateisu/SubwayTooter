@@ -34,28 +34,25 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
         val timeStartRegisterEndpoint = AtomicLong(0L)
         val timeEndRegisterEndpoint = AtomicLong(0L)
 
-        fun enqueueUpEndpoint(context: Context, endpoint: String) {
+        fun enqueueUpEndpoint(context: Context, endpoint: String) =
             workDataOf(
                 KEY_ACTION to ACTION_UP_ENDPOINT,
                 KEY_ENDPOINT to endpoint,
-            ).launchPushWorker(context)
-        }
+            ).launchPushWorker(context,ACTION_UP_ENDPOINT)
 
-        fun enqueueRegisterEndpoint(context: Context, keepAliveMode: Boolean = false) {
+        fun enqueueRegisterEndpoint(context: Context, keepAliveMode: Boolean = false) =
             workDataOf(
                 KEY_ACTION to ACTION_REGISTER_ENDPOINT,
                 KEY_KEEP_ALIVE_MODE to keepAliveMode,
-            ).launchPushWorker(context)
-        }
+            ).launchPushWorker(context, ACTION_REGISTER_ENDPOINT)
 
-        fun enqueuePushMessage(context: Context, messageId: Long) {
+        fun enqueuePushMessage(context: Context, messageId: Long) =
             workDataOf(
                 KEY_ACTION to ACTION_MESSAGE,
                 KEY_MESSAGE_ID to messageId,
-            ).launchPushWorker(context)
-        }
+            ).launchPushWorker(context, ACTION_MESSAGE)
 
-        fun Data.launchPushWorker(context: Context) {
+        fun Data.launchPushWorker(context: Context,tag:String?=null): Operation {
             // EXPEDITED だと制約の種類が限られる
             // すぐ起動してほしいので制約は少なめにする
             val constraints = Constraints.Builder()
@@ -66,9 +63,12 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
                 setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 setConstraints(constraints)
                 setInputData(this@launchPushWorker)
+                tag?.let{addTag(it)}
             }
-            WorkManager.getInstance(context).enqueue(request.build())
+
+            val operation = WorkManager.getInstance(context).enqueue(request.build())
             log.i("enqueued!")
+            return operation
         }
     }
 

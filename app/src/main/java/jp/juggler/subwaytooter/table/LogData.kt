@@ -93,7 +93,7 @@ class LogData private constructor() {
                 cacheDir.mkdirs()
                 val fileNamePrefix =
                     SimpleDateFormat("'log'-yyyyMMdd-HHmmss", Locale.getDefault()).format(Date())
-                val outFile = File.createTempFile(fileNamePrefix, ".zip", cacheDir)
+                val outFile = File.createTempFile("$fileNamePrefix-", ".zip", cacheDir)
                 ZipOutputStream(FileOutputStream(outFile)).use { zos ->
                     val ze = ZipEntry("$fileNamePrefix.txt")
                     zos.putNextEntry(ze)

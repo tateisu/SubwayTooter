@@ -7,6 +7,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
+import androidx.work.Operation
 import androidx.work.WorkManager
 import androidx.work.await
 import jp.juggler.crypt.*
@@ -44,6 +45,7 @@ import org.unifiedpush.android.connector.UnifiedPush
 import java.lang.ref.WeakReference
 import java.security.Provider
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
 
 private val log = LogCategory("PushRepo")
@@ -92,7 +94,7 @@ class PushRepo(
 
         private val ncPushMessage = NotificationChannels.PushMessage
 
-        var refReporter: WeakReference<SuspendProgress.Reporter>? = null
+        var refReporter: WeakReference<(String) -> Unit>? = null
 
         var subscriptionMutex = Mutex()
     }
@@ -125,13 +127,28 @@ class PushRepo(
         reporter: SuspendProgress.Reporter,
     ) {
         val timeSwitchStart = System.currentTimeMillis()
-        refReporter = WeakReference(reporter)
+
+        val workState = AtomicReference<String>(null)
+        val progress = AtomicReference<String>(null)
+        refReporter = WeakReference { progress.set(it) }
+        fun showProgress() {
+            val text = arrayOf(
+                workState.get(),
+                progress.get()
+            ).mapNotNull { it?.notEmpty() }.joinToString("\n")
+            reporter.setMessage(text)
+        }
+
+        fun showProgress(text: String) {
+            workState.set(text)
+            showProgress()
+        }
 
         log.i("switchDistributor: pushDistributor=$pushDistributor")
         prefDevice.pushDistributor = pushDistributor
 
-        withContext(Dispatchers.IO) {
-            reporter.setMessage(context.getString(R.string.removing_old_distributer))
+        var operation: Operation? = withContext(Dispatchers.IO) {
+            showProgress(context.getString(R.string.removing_old_distributer))
 
             // WorkManagerの完了済みのジョブを捨てる
             WorkManager.getInstance(context).pruneWork().await()
@@ -146,30 +163,32 @@ class PushRepo(
             when (pushDistributor) {
                 null, "" -> {
                     // 特に変更しない(アクセストークン更新時に呼ばれる
-                    reporter.setMessage("enqueueRegisterEndpoint for ${pushDistributor}…")
+                    showProgress("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
                 PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
                     // 購読解除
-                    reporter.setMessage("enqueueRegisterEndpoint for ${pushDistributor}…")
+
+                    showProgress("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
                 PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
                     // 特にイベントは来ないので、プッシュ購読をやりなおす
-                    reporter.setMessage("enqueueRegisterEndpoint for ${pushDistributor}…")
+                    showProgress("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
                 else -> {
-                    reporter.setMessage("UnifiedPush.saveDistributor")
+                    showProgress("UnifiedPush.saveDistributor")
                     UnifiedPush.saveDistributor(context, pushDistributor)
                     // 何らかの理由で登録は壊れることがあるため、登録し直す
-                    reporter.setMessage("UnifiedPush.registerApp")
+                    showProgress("UnifiedPush.registerApp")
                     UnifiedPush.registerApp(context)
                     // 少し後にonNewEndpointが発生するので、続きはそこで
+                    null
                 }
             }
         }
-        val timeout = timeSwitchStart + TimeUnit.SECONDS.toMillis(20)
+        val timeout = timeSwitchStart + TimeUnit.MINUTES.toMillis(30)
         while (true) {
             if (PushWorker.timeEndRegisterEndpoint.get() >= timeSwitchStart ||
                 PushWorker.timeEndUpEndpoint.get() >= timeSwitchStart
@@ -177,9 +196,31 @@ class PushRepo(
                 // complete
                 break
             }
+            val lines = ArrayList<String>()
+            if (operation != null) {
+                log.i("enqueue operation: ${operation.state.value}")
+                if (operation.state.value is Operation.State.SUCCESS) {
+                    operation = null
+                } else {
+                    lines.add("operation enqueing. ${operation.state.value}")
+                }
+            }
+            val works = arrayOf(
+                PushWorker.ACTION_UP_ENDPOINT,
+                PushWorker.ACTION_REGISTER_ENDPOINT
+            ).map {
+                WorkManager.getInstance(context)
+                    .getWorkInfosByTag(it).await()
+            }.flatten().filter { !it.state.isFinished }
+
+            works.map {
+                "work tag=${it.tags.joinToString("/")} state=${it.state} id=${it.id}"
+            }.let { lines.addAll(it) }
+            showProgress(lines.sorted().joinToString("\n"))
+
             val remain = min(1000L, timeout - System.currentTimeMillis())
             if (remain <= 0) {
-                reporter.setMessage("timeout")
+                showProgress("timeout")
                 delay(666L)
                 break
             }
@@ -198,7 +239,7 @@ class PushRepo(
      */
     suspend fun newUpEndpoint(upEndpoint: String) {
         refReporter?.get()
-            ?.setMessage(context.getString(R.string.unified_push_got_new_endpoint_url))
+            ?.invoke(context.getString(R.string.unified_push_got_new_endpoint_url))
 
         val upPackageName = UnifiedPush.getDistributor(context).notEmpty()
             ?: error("missing upPackageName")
@@ -225,8 +266,11 @@ class PushRepo(
     suspend fun registerEndpoint(
         keepAliveMode: Boolean,
     ) {
-        refReporter?.get()?.setMessage("registerEndpoint for ${prefDevice.pushDistributor}…")
+        if(subscriptionMutex.isLocked){
+            refReporter?.get()?.invoke("registerEndpoint: waiting mutex…")
+        }
         subscriptionMutex.withLock {
+            refReporter?.get()?.invoke("registerEndpoint for ${prefDevice.pushDistributor}…")
             log.i("registerEndpoint: keepAliveMode=$keepAliveMode")
 
             // 古いFCMトークンの情報はアプリサーバ側で勝手に消えるはず
@@ -234,7 +278,7 @@ class PushRepo(
                 // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
                 prefDevice.fcmTokenExpired.notEmpty()?.let {
                     refReporter?.get()
-                        ?.setMessage(context.getString(R.string.removing_old_fcm_token))
+                        ?.invoke(context.getString(R.string.removing_old_fcm_token))
                     log.i("remove fcmTokenExpired")
                     apiAppServer.endpointRemove(fcmToken = it)
                     prefDevice.fcmTokenExpired = null
@@ -247,7 +291,7 @@ class PushRepo(
                 // 期限切れのUPエンドポイントがあればそれ経由の中継を解除する
                 prefDevice.upEndpointExpired.notEmpty()?.let {
                     refReporter?.get()
-                        ?.setMessage(context.getString(R.string.removing_old_unified_push_url))
+                        ?.invoke(context.getString(R.string.removing_old_unified_push_url))
                     log.i("remove upEndpointExpired")
                     apiAppServer.endpointRemove(upUrl = it)
                     prefDevice.upEndpointExpired = null
@@ -276,11 +320,9 @@ class PushRepo(
                     return
                 }
             }
-
             var willRemoveSubscription = false
 
             val hasFcm = fcmHandler.hasFcm(context)
-
 
             if (!hasFcm && prefDevice.pushDistributor == PrefDevice.PUSH_DISTRIBUTOR_FCM) {
                 log.w("fmc selected, but this is noFcm build. unset distributer.")
@@ -289,7 +331,7 @@ class PushRepo(
 
             // アプリサーバにendpointを登録する
             refReporter?.get()
-                ?.setMessage(context.getString(R.string.sending_push_distributor_info_to_app_server))
+                ?.invoke(context.getString(R.string.sending_push_distributor_info_to_app_server))
 
             val acctHashList = acctHashMap.keys.toList()
 
@@ -344,12 +386,12 @@ class PushRepo(
                     override val context = this@PushRepo.context
                     override fun i(msg: String) {
                         log.i("[${account.acct}]$msg")
-                        refReporter?.get()?.setMessage("[${account.acct}]$msg")
+                        refReporter?.get()?.invoke("[${account.acct}]$msg")
                     }
 
                     override fun e(msg: String) {
                         log.e("[${account.acct}]$msg")
-                        refReporter?.get()?.setMessage("[${account.acct}]$msg")
+                        refReporter?.get()?.invoke("[${account.acct}]$msg")
                         daoAccountNotificationStatus.updateSubscriptionError(
                             account.acct,
                             msg
@@ -358,7 +400,7 @@ class PushRepo(
 
                     override fun e(ex: Throwable, msg: String) {
                         log.e(ex, "[${account.acct}]$msg")
-                        refReporter?.get()?.setMessage("[${account.acct}]$msg")
+                        refReporter?.get()?.invoke("[${account.acct}]$msg")
                         daoAccountNotificationStatus.updateSubscriptionError(
                             account.acct,
                             ex.withCaption(msg)
@@ -366,6 +408,7 @@ class PushRepo(
                     }
                 }
                 try {
+                    subLog.i("check account subscription…")
                     val errMsg = pushBase(account).updateSubscription(
                         subLog = subLog,
                         account = account,
@@ -376,6 +419,7 @@ class PushRepo(
                     if (errMsg != null) {
                         subLog.e(errMsg)
                     }
+                    subLog.i("check account subscription end.")
                 } catch (ex: Throwable) {
                     log.e(ex, "updateSubscription failed.")
                     val errMsg = ex.withCaption()
@@ -383,6 +427,7 @@ class PushRepo(
                     daoAccountNotificationStatus.updateSubscriptionError(account.acct, errMsg)
                 }
             }
+            refReporter?.get()?.invoke("all accounts checked.")
             prefDevice.timeLastEndpointRegister = System.currentTimeMillis()
         }
     }

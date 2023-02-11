@@ -65,6 +65,7 @@ class PushMastodon(
 
         if (AuthMastodon.DEBUG_AUTH) log.i("DEBUG_AUTH bearerAccessToken=${account.bearerAccessToken} ${account.acct}")
         val oldSubscription = try {
+            subLog.i("check current subscription…")
             api.getPushSubscription(account)
         } catch (ex: Throwable) {
             if ((ex as? ApiError)?.response?.code == 404) {

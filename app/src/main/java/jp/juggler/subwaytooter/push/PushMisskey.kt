@@ -57,6 +57,7 @@ class PushMisskey(
             val lastSubscription = when (lastEndpointUrl) {
                 null, "" -> null
                 else -> try {
+                    subLog.i("check current subscription…")
                     // Misskeyは2022/12/18に現在の購読を確認するAPIができた
                     api.getPushSubscription(account, lastEndpointUrl)
                     // 購読がない => 空オブジェクト (v13 drdr.club でそんな感じ)

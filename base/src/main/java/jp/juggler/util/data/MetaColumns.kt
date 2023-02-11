@@ -40,6 +40,12 @@ fun Cursor.getLong(key: String) =
     getColumnIndex(key).takeIf { it >= 0 }?.let { getLong(it) }
         ?: error("getLong: missing column named $key")
 
+fun Cursor.getLongOrNull(@IntRange(from = 0) idx: Int) = when {
+    idx < 0 -> error("getIntOrNull: invalid index $idx")
+    isNull(idx) -> null
+    else -> getLong(idx)
+}
+
 //fun Cursor.getLongOrNull(idx:Int) =
 //	if(isNull(idx)) null else getLong(idx)
 
@@ -79,7 +85,6 @@ private class ColumnMeta(
     val typeSpec: String,
 ) : Comparable<ColumnMeta> {
 
-
     val primary = typeSpec.contains("primary", ignoreCase = true)
 
     // テーブル作成時のソート
@@ -116,6 +121,7 @@ class MetaColumns(
         const val TS_TEXT_NULL = "blob default null"
         const val TS_BLOB_NULL = "blob default null"
     }
+
     private val columns = ArrayList<ColumnMeta>()
 
     val maxVersion: Int

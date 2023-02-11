@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.pref
 
 import android.graphics.Color
+import android.util.Log
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.subwaytooter.pref.impl.IntPref
 
@@ -121,4 +122,6 @@ object PrefI {
     //	const val TTCS_DAILY = 1
 
     val ipMediaBackground = IntPref("MediaBackground", 1)
+
+    val ipLogSaveLevel = IntPref("LogSaveLevel", Log.WARN)
 }

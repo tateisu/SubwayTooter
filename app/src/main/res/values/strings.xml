@@ -1254,4 +1254,16 @@
     <string name="default_post_account_default_action">viewing column account(phone), or ask always(tablet)</string>
     <string name="quick_post_account">Quick post account</string>
     <string name="show_username_on_filtered_post">Show username on filtered post</string>
+    <string name="log_save_level">Log collection level</string>
+    <string name="log_all" translatable="false">all</string>
+    <string name="log_verbose" translatable="false">verbose</string>
+    <string name="log_debug" translatable="false">debug</string>
+    <string name="log_info" translatable="false">info</string>
+    <string name="log_warn" translatable="false">warn</string>
+    <string name="log_error" translatable="false">error</string>
+    <string name="log_assert" translatable="false">assert</string>
+    <string name="send_log_email">Send logs by e-mail</string>
+    <string name="bug_report">Bug report</string>
+    <string name="bug_report_desc">The app keeps logs for the past few days, but does not send them outside without permission. It is only referenced when the user explicitly sends logs.</string>
+    <string name="log_save_level_desc">Log severity level. Logs with a severity less than this setting will not be collected.</string>
 </resources>

@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
+    <cache-path
+        name="pathCache"
+        path="." />
+    <external-cache-path
+        name="pathExternalCache"
+        path="." />
+
     <!--<files-path name="pathFiles" path="."/>-->
-    <cache-path name="pathCache" path="." />
     <!--<external-path name="pathExternal" path="." />-->
     <!--<external-files-path name="pathExternalFile" path="." />-->
-    <!--<external-cache-path name="pathExternalCache" path="." />-->
     <!--<root-path  name="pathRoot" path="." />-->
 </paths>

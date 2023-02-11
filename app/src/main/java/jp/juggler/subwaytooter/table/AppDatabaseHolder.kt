@@ -69,8 +69,8 @@ import java.util.concurrent.atomic.AtomicReference
 // 2022/1/5 62=>63 SavedAccountテーブルに項目追加
 // 2022/3/15 63=>64 SavedAccountテーブルに項目追加
 // 2023/2/2 64 => 65 PushMessage, AccountNotificationStatus,NotificationShown テーブルの追加。
-
-const val DB_VERSION = 65
+// 2023/2/11 65=>66 LogDataがなければ作る
+const val DB_VERSION = 66
 const val DB_NAME = "app_db"
 
 // テーブルのリスト
@@ -142,6 +142,7 @@ class AppDatabaseHolder(
         MediaShown.Access(db).deleteOld(now)
         PushMessage.Access(db).deleteOld(now)
         NotificationShown.Access(db).deleteOld()
+        LogData.Access(db).deleteOld(now)
     }
 }
 
@@ -157,6 +158,9 @@ class AppDatabaseHolderIniitalizer : Initializer<AppDatabaseHolder> {
         )
         EmptyScope.launch {
             try {
+                val logAccess = LogData.Access(holder.database)
+                    LogCategory.hook = { l,c,m -> logAccess.insert(l,c,m) }
+
                 holder.deleteOld()
             } catch (ex: Throwable) {
                 log.e(ex, "deleteOld failed.")
@@ -196,3 +200,4 @@ val daoSubscriptionServerKey get() = SubscriptionServerKey.Access(appDatabase)
 val daoTagHistory get() = TagHistory.Access(appDatabase)
 val daoUserRelation get() = UserRelation.Access(appDatabase)
 val daoPushMessage get() = PushMessage.Access(appDatabase)
+val daoLogData get() = LogData.Access(appDatabase)

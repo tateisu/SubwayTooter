@@ -1,10 +1,13 @@
 package jp.juggler.subwaytooter
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -44,11 +47,13 @@ import jp.juggler.subwaytooter.pref.impl.StringPref
 import jp.juggler.subwaytooter.pref.lazyPref
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.table.daoLogData
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
@@ -284,13 +289,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         if (item.type != SettingType.Section) {
                             when (item.type) {
                                 SettingType.Group -> {
-                                    var caption =getString(item.caption)
+                                    var caption = getString(item.caption)
                                     var match = caption.contains(query, ignoreCase = true)
                                     // log.d("group match=$match caption=$caption")
                                     for (child in item.items) {
                                         if (child.caption == 0) continue
                                         caption = getString(child.caption)
-                                        match = caption.contains(query,ignoreCase = true)
+                                        match = caption.contains(query, ignoreCase = true)
                                         // log.d("group.item match=$match caption=$caption")
                                         if (match) break
                                     }
@@ -303,7 +308,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                                     return
                                 }
                                 else -> {
-                                    val caption =getString(item.caption)
+                                    val caption = getString(item.caption)
                                     val match = caption.contains(query, ignoreCase = true)
                                     // log.d("item match=$match caption=$caption")
                                     if (match) {
@@ -1244,4 +1249,77 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
         tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
     }
+
+    fun exportLog() {
+        val context = this
+        launchAndShowError {
+            val logZipFile = daoLogData.createLogFile(context)
+            val uri = FileProvider.getUriForFile(context, FILE_PROVIDER_AUTHORITY, logZipFile)
+
+            val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("tateisu@gmail.com"))
+                putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter bug report")
+                val soc = if (Build.VERSION.SDK_INT >= 31) {
+                    "manufacturer=${Build.SOC_MANUFACTURER} product=${Build.SOC_MODEL}"
+                } else {
+                    "(no information)"
+                }
+                val text = """
+                    |Please write about the problem.
+                    |…
+                    |…
+                    |…
+                    |…
+                    |    
+                    |Don't rewrite below lines.
+                    |SubwayTooter version: $currentVersion $packageName
+                    |Android version: ${Build.VERSION.RELEASE}
+                    |Device: manufacturer=${Build.MANUFACTURER} product=${Build.PRODUCT} model=${Build.MODEL} device=${Build.DEVICE}
+                    |$soc
+                    """.trimMargin("|")
+
+                // ログに警告がでるが偽陽性だった。
+                // extras!!.putCharSequenceArrayList に変えると警告は出なくなるが、Gmailに本文が表示されない。
+                putExtra(Intent.EXTRA_TEXT, text)
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, arrayListOf(uri))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            // 送る前にgrantしておく
+            val chooserIntent = Intent.createChooser(intent, null)
+            grantFileProviderUri(intent, uri)
+            grantFileProviderUri(chooserIntent, uri)
+            startActivity(chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+    }
+
+    private val currentVersion: String
+        get() = try {
+            packageManager.getPackageInfoCompat(packageName)!!.versionName
+        } catch (ignored: Throwable) {
+            "??"
+        }
+
+    private fun Context.grantFileProviderUri(
+        intent: Intent,
+        uri: Uri,
+        permission: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION,
+    ) {
+        try {
+            intent.addFlags(permission)
+            packageManager.queryIntentActivitiesCompat(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            ).forEach {
+                grantUriPermission(
+                    it.activityInfo.packageName,
+                    uri,
+                    permission
+                )
+            }
+        } catch (ex: Throwable) {
+            log.e(ex, "grantFileProviderUri failed.")
+        }
+    }
 }
+

@@ -134,12 +134,14 @@ class AppSettingItem(
         return item
     }
 
-    fun spinner(
+    fun spinnerSimple(
         pref: IntPref,
         @StringRes caption: Int,
         vararg args: Int,
+        initializer: (AppSettingItem.() -> Unit)? = null,
     ) = item(SettingType.Spinner, pref, caption) {
         spinnerArgs = args
+        initializer?.invoke(this)
     }
 
     fun spinner(
@@ -260,7 +262,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         sw(PrefB.bpDontConfirmBeforeCloseColumn, R.string.dont_confirm_before_close_column)
 
-        spinner(
+        spinnerSimple(
             PrefI.ipBackButtonAction,
             R.string.back_button_action,
             R.string.ask_always,
@@ -314,13 +316,13 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         sw(PrefB.bpAllowColumnDuplication, R.string.allow_column_duplication)
         sw(PrefB.bpForceGap, R.string.force_gap_when_refresh)
-        spinner(
+        spinnerSimple(
             PrefI.ipGapHeadScrollPosition,
             R.string.scroll_position_after_read_gap_from_head,
             R.string.gap_head,
             R.string.gap_tail,
         )
-        spinner(
+        spinnerSimple(
             PrefI.ipGapTailScrollPosition,
             R.string.scroll_position_after_read_gap_from_tail,
             R.string.gap_head,
@@ -387,7 +389,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             showTextView = { showCustomShareIcon(it, target) }
         }
 
-        spinner(
+        spinnerSimple(
             PrefI.ipAdditionalButtonsPosition,
             R.string.additional_buttons_position,
             *(AdditionalButtonsPosition.values().sortedBy { it.idx }.map { it.captionId }
@@ -397,7 +399,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpEnablePixelfed, R.string.enable_connect_to_pixelfed_server)
 
         sw(PrefB.bpShowFilteredWord, R.string.show_filtered_word)
-        sw(PrefB.bpShowUsernameFilteredPost,R.string.show_username_on_filtered_post)
+        sw(PrefB.bpShowUsernameFilteredPost, R.string.show_username_on_filtered_post)
 
         sw(PrefB.bpEnableDomainTimeline, R.string.enable_domain_timeline)
     }
@@ -426,7 +428,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             }
         }
 
-        spinner(
+        spinnerSimple(
             PrefI.ipRefreshAfterToot,
             R.string.refresh_after_toot,
             R.string.refresh_scroll_to_toot,
@@ -481,7 +483,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.quick_toot_omit_account_selection
         )
 
-        spinner(
+        spinnerSimple(
             PrefI.ipJustifyWindowContentPortrait,
             R.string.justify_window_content_portrait,
             R.string.default_,
@@ -554,21 +556,21 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         text(PrefS.spAutoCWLines, R.string.auto_cw, InputTypeEx.number)
         text(PrefS.spCardDescriptionLength, R.string.card_description_length, InputTypeEx.number)
 
-        spinner(
+        spinnerSimple(
             PrefI.ipRepliesCount,
             R.string.display_replies_count,
             R.string.replies_count_simple,
             R.string.replies_count_actual,
             R.string.replies_count_none
         )
-        spinner(
+        spinnerSimple(
             PrefI.ipBoostsCount,
             R.string.display_boost_count,
             R.string.replies_count_simple,
             R.string.replies_count_actual,
             R.string.replies_count_none
         )
-        spinner(
+        spinnerSimple(
             PrefI.ipFavouritesCount,
             R.string.display_favourite_count,
             R.string.replies_count_simple,
@@ -576,7 +578,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.replies_count_none
         )
 
-        spinner(
+        spinnerSimple(
             PrefI.ipVisibilityStyle,
             R.string.visibility_style,
             R.string.visibility_style_by_account,
@@ -715,7 +717,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         text(PrefS.spBoostButtonSize, R.string.boost_button_size, InputTypeEx.numberDecimal)
 
-        spinner(
+        spinnerSimple(
             PrefI.ipBoostButtonJustify,
             R.string.boost_button_alignment,
             R.string.start,
@@ -799,7 +801,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
     section(R.string.color) {
 
-        spinner(
+        spinnerSimple(
             PrefI.ipUiTheme,
             R.string.ui_theme,
             R.string.theme_light,
@@ -1066,6 +1068,29 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         action(R.string.alert_test) {
             action = { showAlertNotification("this is a test.") }
+        }
+
+    }
+
+    section(R.string.bug_report){
+        spinnerSimple(
+            PrefI.ipLogSaveLevel,
+            R.string.log_save_level, // name
+            R.string.log_all, //0
+            R.string.log_all, //1
+            R.string.log_verbose, //2
+            R.string.log_debug, //3
+            R.string.log_info, //4
+            R.string.log_warn, //5
+            R.string.log_error, //6
+            R.string.log_assert, //7
+        ){
+            desc = R.string.log_save_level_desc
+        }
+
+        action(R.string.send_log_email) {
+            action = { exportLog() }
+            desc = R.string.bug_report_desc
         }
     }
 

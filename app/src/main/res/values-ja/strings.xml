@@ -1253,4 +1253,9 @@
     <string name="approved">承認されました。</string>
     <string name="account_list">アカウント一覧</string>
     <string name="show_username_on_filtered_post">フィルタされた投稿にユーザ名を表示する</string>
+    <string name="log_save_level" >ログ収集レベル</string>
+    <string name="send_log_email">ログを電子メールで送信する</string>
+    <string name="bug_report">バグ報告</string>
+    <string name="bug_report_desc">アプリは過去数日間のログを保持していますが、勝手に外部に送信することはありません。ユーザが明示的にログを送信する操作した時だけ参照されます。</string>
+    <string name="log_save_level_desc">ログの重要度。 この設定より重要度が低いログは収集されません。</string>
 </resources>

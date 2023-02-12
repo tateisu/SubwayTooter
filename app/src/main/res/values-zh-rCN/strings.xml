@@ -248,7 +248,7 @@
     <string name="long_side_pixel">调整大小至 %1$d 像素</string>
     <string name="resize_image">调整附件图像大小（JPEG, PNG）</string>
     <string name="dont_resize">不调整大小</string>
-    <string name="exit_app_when_close_protected_column">当试图在没有确认的情况下用“返回”按钮关闭受保护的栏目时，退出应用程序</string>
+    <string name="exit_app_when_close_protected_column">当试图在没有确认的情况下用“返回”按钮关闭受保护的栏目时，退出应用</string>
     <string name="not_available_for_mastodon_account">Mastodon 账号不可用</string>
     <string name="not_available_for_misskey_account">Misskey 账号不可用</string>
     <string name="pseudo_account">伪装账号</string>
@@ -518,7 +518,7 @@
     <string name="stop_notify_posts_from_this_user">停止通知来自此用户的嘟文</string>
     <string name="notify_posts_from_this_user">通知此用户发布的嘟文</string>
     <string name="input_sharp_itself">输入\'#\'本身</string>
-    <string name="ignore_text_in_shared_media">不要附加来自外部应用程序的共享媒体的额外文本</string>
+    <string name="ignore_text_in_shared_media">不要附加来自外部应用的共享媒体的额外文本</string>
     <string name="gap_tail">间隔的尾部</string>
     <string name="gap_head">间隔的头部</string>
     <string name="scroll_position_after_read_gap_from_tail">尾部读取间隔后的滚动位置</string>
@@ -811,7 +811,7 @@
     <string name="push_subscription_deleted">推送订阅已删除。</string>
     <string name="missing_push_scope">您的访问令牌不包含推送范围。建议更新访问令牌。</string>
     <string name="missing_push_api">此实例没有推送订阅API。</string>
-    <string name="token_exported">由于导出应用程序数据或从备份还原，其他设备也可能使用此访问令牌。由于使用推送通知需要其他设备不使用的访问令牌，因此我们建议更新访问令牌。</string>
+    <string name="token_exported">由于导出应用数据或从备份还原，其他设备也可能使用此访问令牌。由于使用推送通知需要其他设备不使用的访问令牌，因此我们建议更新访问令牌。</string>
     <string name="missing_fcm_device_id">无法准备 FCM 设备 ID，请稍后再试。</string>
     <string name="missing_install_id">无法准备安装 ID，请稍后再试。</string>
     <string name="instance_does_not_support_push_api">此实例（版本 %1$s）不支持推送订阅。</string>
@@ -1267,4 +1267,10 @@
     <string name="push_distributor_not_available">推送分发器不可用。您可以通过安装兼容 UnifiedPush 的推送传递应用来接收推送通知。见 https://unifiedpush.org/</string>
     <string name="show_username_on_filtered_post">在过滤的嘟文上显示用户名</string>
     <string name="notification_permission_not_granted">未授予通知权限</string>
+    <string name="image_alpha_too_low">背景图像透明度太低，您能查看图像吗？</string>
+    <string name="bug_report">错误报告</string>
+    <string name="log_save_level">日志采集级别</string>
+    <string name="log_save_level_desc">日志严重性级别。严重性低于此设置的日志将不会被收集。</string>
+    <string name="send_log_email">通过电子邮件发送日志</string>
+    <string name="bug_report_desc">应用保留了过去几天的日志，但不会在未经许可的情况下将其发送到外面。仅在用户显式发送日志时引用。</string>
 </resources>

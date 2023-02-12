@@ -81,13 +81,13 @@ open class TootAccount(
 
     val source: Source?,
 
-    val profile_emojis: HashMap<String, NicoProfileEmoji>?,
+    val profile_emojis: MutableMap<String, NicoProfileEmoji>?,
 
     val movedRef: TootAccountRef?,
 
     val fields: ArrayList<Field>?,
 
-    val custom_emojis: HashMap<String, CustomEmoji>?,
+    val custom_emojis: MutableMap<String, CustomEmoji>?,
 
     val bot: Boolean,
     val isCat: Boolean,
@@ -387,343 +387,265 @@ open class TootAccount(
             """\Ahttps://($reHostIdn)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])"""
                 .asciiPattern()
 
-        private val reMisskeyIoProxy = """\Ahttps://misskey\.io/proxy/""".toRegex()
+        private fun tootAccountMisskey(parser: TootParser, src: JsonObject): TootAccount {
 
-        fun tootAccount(parser: TootParser, src: JsonObject): TootAccount {
-            src["_fromStream"] = parser.fromStream
+            val custom_emojis: MutableMap<String, CustomEmoji>? =
+                when (src.jsonObject("emojis")?.values?.firstOrNull()) {
+                    // Misskey13 は ショートコード→URLの単純なマップ
+                    is String -> CustomEmoji.decodeMisskey12ReactionEmojis(src.jsonObject("emojis"))
+                    // もっと古い形式
+                    else -> parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMisskey)
+                }
+
+            val username = src.stringOrThrow("username")
+
+            // FIXME apiHostとapDomainが異なる場合はMisskeyだとどうなの…？
+            val apiHost = src.string("host")?.let { Host.parse(it) } ?: parser.apiHost
+
+            @Suppress("UnnecessaryVariable")
+            val apDomain = apiHost
+
+            @Suppress("LeakingThis")
+            val acct: Acct = when {
+                // アクセス元から見て内部ユーザなら short acct
+                parser.linkHelper.matchHost(apiHost, apDomain) -> Acct.parse(username)
+
+                // アクセス元から見て外部ユーザならfull acct
+                else -> Acct.parse(username, apDomain)
+            }
+
+            val id = EntityId.mayDefault(src.string("id"))
+
+            val created_at: String? = src.string("createdAt")
+
+            val pinnedNotes: ArrayList<TootStatus>? = if (parser.misskeyDecodeProfilePin) {
+                val list =
+                    parseList(src.jsonArray("pinnedNotes")) { tootStatus(parser, it) }
+                list.forEach { it.pinned = true }
+                list.notEmpty()
+            } else {
+                null
+            }
+
+            // this.user_hides_network = src.optBoolean("user_hides_network")
+
+            val profile = src.jsonObject("profile")
+            daoUserRelation.fromAccount(parser, src, id)
+
+            return TootAccount(
+                acct = acct,
+                apDomain = apDomain,
+                apiHost = apiHost,
+                avatar = src.string("avatarUrl"),
+                avatar_static = src.string("avatarUrl"),
+                birthday = profile?.string("birthday"),
+                bot = src.optBoolean("isBot", false),
+                created_at = created_at,
+                custom_emojis = custom_emojis,
+                display_name = src.string("name")?.notEmpty()?.sanitizeBDI() ?: username,
+                fields = parseMisskeyFields(src),
+                followers_count = src.long("followersCount") ?: -1L,
+                following_count = src.long("followingCount") ?: -1L,
+                header = src.string("bannerUrl"),
+                header_static = src.string("bannerUrl"),
+                id = id,
+                isAdmin = src.optBoolean("isAdmin", false),
+                isCat = src.optBoolean("isCat", false),
+                isPro = src.optBoolean("isPro", false),
+                json = src,
+                location = profile?.string("location"),
+                locked = src.optBoolean("isLocked"),
+                movedRef = null,
+                note = src.string("description"),
+                pinnedNoteIds = src.stringArrayList("pinnedNoteIds"),
+                pinnedNotes = pinnedNotes,
+                profile_emojis = null,
+                source = null,
+                statuses_count = src.long("notesCount") ?: -1L,
+                time_created_at = TootStatus.parseTime(created_at),
+                url = "https://${apiHost.ascii}/@$username",
+                username = username,
+                suspended = false,
+                last_status_at = 0L,
+            ).apply {
+                MisskeyAccountDetailMap.fromAccount(parser, this, id)
+            }
+        }
+
+        private fun tootAccountNoteStock(parser: TootParser, src: JsonObject): TootAccount {
+
+            // notestock はActivityPub 準拠のサービスなので、サーバ内IDというのは特にない
+            val id: EntityId = EntityId.DEFAULT
+
+            // notestockはdisplay_nameとusernameが入れ替わってる？
+            val username: String = src.stringOrThrow("display_name")
+            val display_name: String = src.stringOrThrow("username")
+
+            val tmpAcct = src.string("subject")?.let { Acct.parse(it) }
+            val url: String? = src.string("url")
+            val apDomain: Host = tmpAcct?.takeIf { it.isValidFull }?.host
+                ?: Host.parse(
+                    src.string("id").mayUri()?.authority?.notEmpty()
+                        ?: error("can't get apDomain from account's AP id.")
+                )
+            val apiHost: Host = Host.parse(
+                url.mayUri()?.authority?.notEmpty()
+                    ?: error("can't get apiHost from account's AP url.")
+            )
+
+            val apTag = APTag(parser, src.jsonArray("tag"))
+
+            return TootAccount(
+                acct = Acct.parse(username, apDomain),
+                apDomain = apDomain,
+                apiHost = apiHost,
+                avatar = src.string("avatar"),
+                avatar_static = src.string("avatar_static"),
+                birthday = null,
+                bot = false,
+                created_at = null,
+                custom_emojis = apTag.emojiList.notEmpty(),
+                display_name = display_name,
+                fields = null,
+                followers_count = null,
+                following_count = null,
+                header = src.string("header"),
+                header_static = src.string("header_static"),
+                id = id,
+                isAdmin = false,
+                isCat = false,
+                isPro = false,
+                json = src,
+                location = null,
+                locked = src.boolean("manuallyApprovesFollowers") ?: false,
+                movedRef = null,
+                note = src.string("note"),
+                pinnedNoteIds = null,
+                pinnedNotes = null,
+                profile_emojis = apTag.profileEmojiList.notEmpty(),
+                source = null,
+                statuses_count = null,
+                time_created_at = 0L,
+                url = url,
+                username = username,
+                suspended = false,
+                last_status_at = 0L,
+            )
+        }
+
+        private fun tootAccountMastodon(parser: TootParser, src: JsonObject): TootAccount {
+
+            // 絵文字データは先に読んでおく
+            val custom_emojis: HashMap<String, CustomEmoji>? =
+                parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMastodon)
+
+            val profile_emojis: HashMap<String, NicoProfileEmoji>? =
+                when (val o = src["profile_emojis"]) {
+                    is JsonArray -> parseMapOrNull(o) { NicoProfileEmoji(it) }
+                    is JsonObject -> parseProfileEmoji2(o) { j, k -> NicoProfileEmoji(j, k) }
+                    else -> null
+                }
 
             val acct: Acct
             val apDomain: Host
             val apiHost: Host
-            var avatar: String? = null
-            var avatar_static: String? = null
-            var birthday: String? = null
-            val bot: Boolean
-            val created_at: String?
-            val custom_emojis: HashMap<String, CustomEmoji>?
-            val display_name: String
-            val fields: ArrayList<Field>?
-            val followers_count: Long?
-            val following_count: Long?
-            val header: String?
-            val header_static: String?
             val id: EntityId
-            val isAdmin: Boolean
-            val isCat: Boolean
-            val isPro: Boolean
-            var location: String? = null
-            val locked: Boolean
-            val movedRef: TootAccountRef?
-            val note: String?
-            var pinnedNoteIds: ArrayList<String>? = null
-            var pinnedNotes: ArrayList<TootStatus>? = null
-            val profile_emojis: HashMap<String, NicoProfileEmoji>?
-            val source: Source?
-            val statuses_count: Long?
-            val time_created_at: Long
-            val url: String?
-            val username: String
-            var suspended = false
-            var last_status_at = 0L
+
+            // 疑似アカウントにacctとusernameだけ
+            val url: String? = src.string("url")
+
+            val username: String = src.stringOrThrow("username")
+
+            val movedRef: TootAccountRef? = tootAccountRefOrNull(
+                parser,
+                src.jsonObject("moved")?.let {
+                    tootAccount(parser, it)
+                }
+            )
+
+            val created_at: String? = src.string("created_at")
+
+            // this.user_hides_network = src.optBoolean("user_hides_network")
 
             when (parser.serviceType) {
-                ServiceType.MISSKEY -> {
-
-                    custom_emojis =
-                        parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMisskey)
-                    profile_emojis = null
-
-                    username = src.stringOrThrow("username")
-
-                    apiHost = src.string("host")?.let { Host.parse(it) } ?: parser.apiHost
-
-                    url = "https://${apiHost.ascii}/@$username"
-
-                    apDomain = apiHost // FIXME apiHostとapDomainが異なる場合はMisskeyだとどうなの…？
-
-                    @Suppress("LeakingThis")
-                    acct = when {
-                        // アクセス元から見て内部ユーザなら short acct
-                        parser.linkHelper.matchHost(apiHost, apDomain) -> Acct.parse(username)
-
-                        // アクセス元から見て外部ユーザならfull acct
-                        else -> Acct.parse(username, apDomain)
-                    }
-
-                    //
-                    val sv = src.string("name")
-                    display_name = if (sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
-
-                    //
-                    note = src.string("description")
-
-                    source = null
-                    movedRef = null
-                    locked = src.optBoolean("isLocked")
-
-                    bot = src.optBoolean("isBot", false)
-                    isCat = src.optBoolean("isCat", false)
-                    isAdmin = src.optBoolean("isAdmin", false)
-                    isPro = src.optBoolean("isPro", false)
-
-                    // this.user_hides_network = src.optBoolean("user_hides_network")
-
+                ServiceType.MASTODON -> {
                     id = EntityId.mayDefault(src.string("id"))
-
-                    followers_count = src.long("followersCount") ?: -1L
-                    following_count = src.long("followingCount") ?: -1L
-                    statuses_count = src.long("notesCount") ?: -1L
-
-                    created_at = src.string("createdAt")
-                    time_created_at = TootStatus.parseTime(created_at)
-
-                    // 画像を静止させるURLはAPIとしては提供されていない
-                    // サーバ側で実装されている方法は仕様が安定しない
-                    // クライアント側でアニメーションを止めるのが正解らしいが、
-                    // 対応できてないな…
-                    avatar = src.string("avatarUrl")
-                    avatar_static = src.string("avatarUrl")
-                    header = src.string("bannerUrl")
-                    header_static = src.string("bannerUrl")
-
-                    pinnedNoteIds = src.stringArrayList("pinnedNoteIds")
-                    if (parser.misskeyDecodeProfilePin) {
-                        val list =
-                            parseList(src.jsonArray("pinnedNotes")) { tootStatus(parser, it) }
-                        list.forEach { it.pinned = true }
-                        pinnedNotes = list.ifEmpty { null }
-                    }
-
-                    val profile = src.jsonObject("profile")
-                    location = profile?.string("location")
-                    birthday = profile?.string("birthday")
-
-                    fields = parseMisskeyFields(src)
-
-                    daoUserRelation.fromAccount(parser, src, id)
+                    val tmpAcct = src.stringOrThrow("acct")
+                    val pair = findHostFromUrl(
+                        tmpAcct,
+                        parser.linkHelper,
+                        url
+                    )
+                    apiHost = pair.first ?: error("can't get apiHost from acct or url")
+                    apDomain = pair.second ?: error("can't get apDomain from acct or url")
+                    acct = Acct.parse(username, if (tmpAcct.contains('@')) apDomain else null)
                 }
-                ServiceType.NOTESTOCK -> {
 
-                    // notestock はActivityPub 準拠のサービスなので、サーバ内IDというのは特にない
+                ServiceType.TOOTSEARCH -> {
+                    // tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
                     id = EntityId.DEFAULT
-
-                    username =
-                        src.stringOrThrow("display_name") // notestockはdisplay_nameとusernameが入れ替わってる？
-                    display_name = src.stringOrThrow("username")
-
-                    val tmpAcct = src.string("subject")?.let { Acct.parse(it) }
-                    apDomain = tmpAcct?.takeIf { it.isValidFull }?.host
-                        ?: Host.parse(
-                            src.string("id").mayUri()?.authority?.notEmpty()
-                                ?: error("can't get apDomain from account's AP id.")
-                        )
-                    url = src.string("url")
-                    apiHost = Host.parse(
-                        url.mayUri()?.authority?.notEmpty()
-                            ?: error("can't get apiHost from account's AP url.")
-                    )
-
+                    val tmpAcct = src.stringOrThrow("acct")
+                    val pair = findHostFromUrl(tmpAcct, null, url)
+                    apiHost = pair.first ?: error("can't get apiHost from acct or url")
+                    apDomain = pair.second ?: error("can't get apDomain from acct or url")
                     acct = Acct.parse(username, apDomain)
-                    avatar = src.string("avatar")
-                    avatar_static = src.string("avatar_static")
-                    header = src.string("header")
-                    header_static = src.string("header_static")
-
-                    locked = src.boolean("manuallyApprovesFollowers") ?: false
-
-                    note = src.string("note")
-
-                    val apTag = APTag(parser, src.jsonArray("tag"))
-                    custom_emojis = apTag.emojiList.notEmpty()
-                    profile_emojis = apTag.profileEmojiList.notEmpty()
-
-                    // APだと attachment にデータはあるが、検索結果に表示しないので読まない
-                    fields = null
-
-                    source = null
-                    movedRef = null
-
-                    followers_count = null
-                    following_count = null
-                    statuses_count = null
-
-                    created_at = null
-                    time_created_at = 0L
-
-                    bot = false
-                    isCat = false
-                    isAdmin = false
-                    isPro = false
                 }
 
-                else -> {
-
-                    // 絵文字データは先に読んでおく
-                    custom_emojis =
-                        parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMastodon)
-
-                    profile_emojis = when (val o = src["profile_emojis"]) {
-                        is JsonArray -> parseMapOrNull(o) { NicoProfileEmoji(it) }
-                        is JsonObject -> parseProfileEmoji2(o) { j, k -> NicoProfileEmoji(j, k) }
-                        else -> null
-                    }
-
-                    // 疑似アカウントにacctとusernameだけ
-                    url = src.string("url")
-                    username = src.stringOrThrow("username")
-
-                    //
-                    val sv = src.string("display_name")
-                    display_name = if (sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
-
-                    //
-                    note = src.string("note")
-
-                    source = parseSource(src.jsonObject("source"))
-                    movedRef = tootAccountRefOrNull(
-                        parser,
-                        src.jsonObject("moved")?.let {
-                            tootAccount(parser, it)
-                        }
-                    )
-                    locked = src.optBoolean("locked")
-
-                    fields = parseFields(src.jsonArray("fields"))
-
-                    bot = src.optBoolean("bot", false)
-                    suspended = src.optBoolean("suspended", false)
-                    isAdmin = false
-                    isCat = false
-                    isPro = false
-                    // this.user_hides_network = src.optBoolean("user_hides_network")
-
-                    last_status_at = TootStatus.parseTime(src.string("last_status_at"))
-
-                    when (parser.serviceType) {
-                        ServiceType.MASTODON -> {
-
-                            id = EntityId.mayDefault(src.string("id"))
-
-                            val tmpAcct = src.stringOrThrow("acct")
-
-                            val pair = findHostFromUrl(
-                                tmpAcct,
-                                parser.linkHelper,
-                                url
-                            )
-                            apiHost = pair.first ?: error("can't get apiHost from acct or url")
-                            apDomain = pair.second ?: error("can't get apDomain from acct or url")
-
-                            acct =
-                                Acct.parse(username, if (tmpAcct.contains('@')) apDomain else null)
-
-                            followers_count = src.long("followers_count")
-                            following_count = src.long("following_count")
-                            statuses_count = src.long("statuses_count")
-
-                            created_at = src.string("created_at")
-                            time_created_at = TootStatus.parseTime(created_at)
-
-                            avatar = src.string("avatar")
-                            avatar_static = src.string("avatar_static")
-                            header = src.string("header")
-                            header_static = src.string("header_static")
-                        }
-
-                        ServiceType.TOOTSEARCH -> {
-                            // tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
-                            id = EntityId.DEFAULT
-
-                            val tmpAcct = src.stringOrThrow("acct")
-
-                            val pair = findHostFromUrl(tmpAcct, null, url)
-                            apiHost = pair.first ?: error("can't get apiHost from acct or url")
-                            apDomain = pair.second ?: error("can't get apDomain from acct or url")
-
-                            acct = Acct.parse(username, apDomain)
-
-                            followers_count = src.long("followers_count")
-                            following_count = src.long("following_count")
-                            statuses_count = src.long("statuses_count")
-
-                            created_at = src.string("created_at")
-                            time_created_at = TootStatus.parseTime(created_at)
-
-                            avatar = src.string("avatar")
-                            avatar_static = src.string("avatar_static")
-                            header = src.string("header")
-                            header_static = src.string("header_static")
-                        }
-
-                        ServiceType.MSP -> {
-                            id = EntityId.mayDefault(src.string("id"))
-
-                            // MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
-                            val pair = findHostFromUrl(null, null, url)
-                            apiHost = pair.first ?: error("can't get apiHost from acct or url")
-                            apDomain = pair.second ?: error("can't get apDomain from acct or url")
-                            acct = Acct.parse(username, apDomain)
-
-                            followers_count = null
-                            following_count = null
-                            statuses_count = null
-
-                            created_at = null
-                            time_created_at = 0L
-
-                            avatar = src.string("avatar")
-                            avatar_static = avatar
-                            header = null
-                            header_static = null
-                        }
-
-                        ServiceType.MISSKEY, ServiceType.NOTESTOCK -> error("will not happen")
-                    }
+                ServiceType.MSP -> {
+                    id = EntityId.mayDefault(src.string("id"))
+                    // MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
+                    val pair = findHostFromUrl(null, null, url)
+                    apiHost = pair.first ?: error("can't get apiHost from acct or url")
+                    apDomain = pair.second ?: error("can't get apDomain from acct or url")
+                    acct = Acct.parse(username, apDomain)
                 }
+                else -> error("serverType missmatch: ${parser.serviceType}")
             }
             return TootAccount(
                 acct = acct,
                 apDomain = apDomain,
                 apiHost = apiHost,
-                avatar = avatar?.replace(reMisskeyIoProxy, "https://"),
-                avatar_static = avatar_static?.replace(reMisskeyIoProxy, "https://"),
-                birthday = birthday,
-                bot = bot,
+                avatar = src.string("avatar"),
+                avatar_static = src.string("avatar_static") ?: src.string("avatar"),
+                birthday = null,
+                bot = src.optBoolean("bot", false),
                 created_at = created_at,
                 custom_emojis = custom_emojis,
-                display_name = display_name,
-                fields = fields,
-                followers_count = followers_count,
-                following_count = following_count,
-                header = header,
-                header_static = header_static,
+                display_name = src.string("display_name")?.notEmpty()?.sanitizeBDI() ?: username,
+                fields = parseFields(src.jsonArray("fields")),
+                followers_count = src.long("followers_count"),
+                following_count = src.long("following_count"),
+                header = src.string("header"),
+                header_static = src.string("header_static"),
+
                 id = id,
-                isAdmin = isAdmin,
-                isCat = isCat,
-                isPro = isPro,
+                isAdmin = false,
+                isCat = false,
+                isPro = false,
                 json = src,
-                location = location,
-                locked = locked,
+                location = null,
+                locked = src.optBoolean("locked"),
                 movedRef = movedRef,
-                note = note,
-                pinnedNoteIds = pinnedNoteIds,
-                pinnedNotes = pinnedNotes,
+                note = src.string("note"),
+                pinnedNoteIds = null,
+                pinnedNotes = null,
                 profile_emojis = profile_emojis,
-                source = source,
-                statuses_count = statuses_count,
-                time_created_at = time_created_at,
+                source = parseSource(src.jsonObject("source")),
+                statuses_count = src.long("statuses_count"),
+                time_created_at = TootStatus.parseTime(created_at),
                 url = url,
                 username = username,
-                suspended = suspended,
-                last_status_at = last_status_at,
-            ).apply {
-                when (parser.serviceType) {
-                    ServiceType.MISSKEY -> {
-                        @Suppress("LeakingThis")
-                        MisskeyAccountDetailMap.fromAccount(parser, this, id)
-                    }
-                    else -> Unit
-                }
+                suspended = src.optBoolean("suspended", false),
+                last_status_at = TootStatus.parseTime(src.string("last_status_at")),
+            )
+        }
+
+        fun tootAccount(parser: TootParser, src: JsonObject): TootAccount {
+            src["_fromStream"] = parser.fromStream
+            return when (parser.serviceType) {
+                ServiceType.MISSKEY -> tootAccountMisskey(parser, src)
+                ServiceType.NOTESTOCK -> tootAccountNoteStock(parser, src)
+                else -> tootAccountMastodon(parser, src)
             }
         }
 

@@ -375,7 +375,7 @@ private fun ColumnViewHolder.showReactions(
             btn.setPadding(paddingH, paddingV, paddingH, paddingV)
 
             if (url == null) {
-                btn.text = EmojiDecoder.decodeEmojiCached(options, "${reaction.name} ${reaction.count}")
+                btn.text = EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
             } else {
                 btn.text = SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
                     sb.setSpan(

@@ -573,11 +573,19 @@ class TootStatus(
             val accountRef = tootAccountRef(parser, who)
             val account = accountRef.get()
             val created_at = src.string("createdAt")
+
             // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
             var custom_emojis: MutableMap<String, CustomEmoji>? =
-                parseMapOrNull(src.jsonArray("emojis"),CustomEmoji::decodeMisskey)
+                when (src.jsonObject("emojis")?.values?.firstOrNull()) {
+                    // Misskey13 は ショートコード→URLの単純なマップ
+                    is String -> CustomEmoji.decodeMisskey12ReactionEmojis(src.jsonObject("emojis"))
+                    // もっと古い形式
+                    else -> parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMisskey)
+                }
+
             val reactionEmojis: MutableMap<String, CustomEmoji>? =
                 CustomEmoji.decodeMisskey12ReactionEmojis(src.jsonObject("reactionEmojis"))
+
             if (reactionEmojis != null) {
                 custom_emojis = when (custom_emojis) {
                     null -> reactionEmojis
@@ -949,7 +957,7 @@ class TootStatus(
             val created_at = src.string("created_at")
 
             // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-            val custom_emojis = parseMapOrNull(src.jsonArray("emojis"),CustomEmoji::decodeMastodon)
+            val custom_emojis = parseMapOrNull(src.jsonArray("emojis"), CustomEmoji::decodeMastodon)
 
             val profile_emojis = when (val o = src["profile_emojis"]) {
                 is JsonArray -> parseMapOrNull(o) { NicoProfileEmoji(it) }

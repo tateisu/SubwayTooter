@@ -189,7 +189,7 @@ class TootReaction(
 
             // 古い形式の絵文字はUnicode絵文字にする
             misskeyOldReactions[code]?.let {
-                return EmojiDecoder.decodeEmojiCached(options, it)
+                return EmojiDecoder.decodeEmoji(options, it)
             }
 
             // カスタム絵文字
@@ -225,7 +225,7 @@ class TootReaction(
         }
         // フォールバック
         // unicode絵文字、もしくは :xxx: などのshortcode表現
-        return EmojiDecoder.decodeEmojiCached(options, code)
+        return EmojiDecoder.decodeEmoji(options, code)
     }
 
     // リアクションカラムの絵文字絞り込み用

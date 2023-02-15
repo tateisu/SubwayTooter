@@ -72,14 +72,14 @@ class LogData private constructor() {
             }
         }
 
-        fun insert(level: Int, category: String, message: String) {
+        fun insert(level: Int, category: String, message: CharSequence) {
             try {
                 if (level < PrefI.ipLogSaveLevel.value) return
                 ContentValues().apply {
                     put(COL_TIME, System.currentTimeMillis())
                     put(COL_LEVEL, level)
                     put(COL_CATEGORY, category)
-                    put(COL_MESSAGE, message)
+                    put(COL_MESSAGE, message.toString())
                 }.replaceTo(db, table)
             } catch (ex: Throwable) {
                 log.e(ex, "insert failed.")

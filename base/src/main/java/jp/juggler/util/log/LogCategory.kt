@@ -28,7 +28,7 @@ class LogCategory(val category: String) {
         private const val TAG = "SubwayTooter"
         private const val MAX_LOG_LENGTH = 4000
 
-        var hook: ((Int, String, String) -> Unit)? = null
+        var hook: ((Int, String, CharSequence) -> Unit)? = null
 
         private val hookBusy = AtomicBoolean(false)
 
@@ -68,13 +68,13 @@ class LogCategory(val category: String) {
         }
 
         private inline fun splitLines(
-            prefix: String,
+            prefixLength: Int,
             message: CharSequence,
             block: (CharSequence) -> Unit,
         ) {
-            val limit = MAX_LOG_LENGTH - prefix.length
+            val limit = MAX_LOG_LENGTH - prefixLength
             if (message.length < limit) {
-                block(prefix + message)
+                block(message)
             } else {
                 // Split by line, then ensure each line can fit into Log's maximum length.
                 val length = message.length
@@ -84,7 +84,7 @@ class LogCategory(val category: String) {
                     do {
                         val end = min(newline, i + limit)
                         val part = message.subSequence(i, end)
-                        block(prefix + part)
+                        block(part)
                         i = end
                     } while (i < newline)
                     // skip \n
@@ -124,10 +124,9 @@ class LogCategory(val category: String) {
             }
 
             // 本文の先頭に付与するprefix
-            val prefix = "$category:$callStackTag:"
-            splitLines(prefix, sb) {
-                val line = sb.toString()
-                printlnOrWtf(priority, line)
+            val prefix = "$category:"
+            splitLines(prefix.length, sb) { line ->
+                printlnOrWtf(priority, "$prefix$line")
                 if (hookBusy.compareAndSet(false, true)) {
                     try {
                         hook?.invoke(priority, category, line)
@@ -136,7 +135,6 @@ class LogCategory(val category: String) {
                     }
                 }
             }
-
             return false
         }
 

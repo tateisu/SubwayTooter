@@ -18,7 +18,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.gif.GifDrawable
-import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.Target
@@ -229,16 +228,16 @@ class MyNetworkImageView : AppCompatImageView {
         }
     }
 
-    private fun replaceGifDrawable(resource: GifDrawable): Drawable {
-        // ディスクキャッシュから読んだ画像は角丸が正しく扱われない
-        // MyGifDrawable に差し替えて描画させる
-        try {
-            return MyGifDrawable(resource, mCornerRadius)
-        } catch (ex: Throwable) {
-            log.e(ex, "replaceGifDrawable failed.")
-        }
-        return resource
-    }
+//    private fun replaceGifDrawable(resource: GifDrawable): Drawable {
+//        // ディスクキャッシュから読んだ画像は角丸が正しく扱われない
+//        // MyGifDrawable に差し替えて描画させる
+//        try {
+//            return MyGifDrawable(resource, mCornerRadius)
+//        } catch (ex: Throwable) {
+//            log.e(ex, "replaceGifDrawable failed.")
+//        }
+//        return resource
+//    }
 
     private fun replaceBitmapDrawable(resource: BitmapDrawable): Drawable {
         try {
@@ -313,7 +312,7 @@ class MyNetworkImageView : AppCompatImageView {
                         if (drawable is Animatable) {
                             when (drawable) {
                                 is GifDrawable -> drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
-                                is MyGifDrawable -> drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
+                                // is MyGifDrawable -> drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
                                 is APNGDrawable -> drawable.setLoopLimit(0)
                                 // WebPは AnimatedImageDrawable (APIレベル28以降)
                             }

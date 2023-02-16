@@ -656,12 +656,12 @@ class ActAccountSetting : AppCompatActivity(),
                 try {
                     if (oldChecked == isChecked) return@launchAndShowError
                     account.notificationPushEnable = isChecked
-                    updatePushSubscription(force = true)
-                    saveUIToData()
-                } catch (ex: Throwable) {
-                    account.notificationPushEnable = oldChecked
-                    buttonView.isChecked = oldChecked
-                    throw ex
+                    if (updatePushSubscription(force = true)) {
+                        saveUIToData()
+                    } else {
+                        account.notificationPushEnable = oldChecked
+                        buttonView.isChecked = oldChecked
+                    }
                 } finally {
                     showPushSetting()
                 }
@@ -688,8 +688,12 @@ class ActAccountSetting : AppCompatActivity(),
             R.id.btnLoadPreference -> performLoadPreference()
             R.id.btnVisibility -> performVisibility()
             R.id.btnOpenBrowser -> openBrowser("https://${account.apiHost.ascii}/")
-            R.id.btnPushSubscription -> updatePushSubscription(force = true)
-            R.id.btnPushSubscriptionNotForce -> updatePushSubscription(force = false)
+            R.id.btnPushSubscription -> launchAndShowError {
+                updatePushSubscription(force = true)
+            }
+            R.id.btnPushSubscriptionNotForce -> launchAndShowError {
+                updatePushSubscription(force = false)
+            }
             R.id.btnResetNotificationTracking ->
                 resetNotificationTracking(account)
 
@@ -1509,60 +1513,61 @@ class ActAccountSetting : AppCompatActivity(),
         )
     }
 
-    private fun updatePushSubscription(force: Boolean) {
+    private suspend fun updatePushSubscription(force: Boolean): Boolean {
         val activity = this
-        launchAndShowError {
-            val anyNotificationWanted = account.notificationBoost ||
-                    account.notificationFavourite ||
-                    account.notificationFollow ||
-                    account.notificationMention ||
-                    account.notificationReaction ||
-                    account.notificationVote ||
-                    account.notificationFollowRequest ||
-                    account.notificationPost ||
-                    account.notificationUpdate
+        val anyNotificationWanted = account.notificationBoost ||
+                account.notificationFavourite ||
+                account.notificationFollow ||
+                account.notificationMention ||
+                account.notificationReaction ||
+                account.notificationVote ||
+                account.notificationFollowRequest ||
+                account.notificationPost ||
+                account.notificationUpdate
 
-            val lines = ArrayList<String>()
-            val subLogger = object : PushBase.SubscriptionLogger {
-                override val context: Context
-                    get() = activity
+        val lines = ArrayList<String>()
+        val subLogger = object : PushBase.SubscriptionLogger {
+            override val context: Context
+                get() = activity
 
-                override fun i(msg: String) {
-                    log.w(msg)
-                    synchronized(lines) {
-                        lines.add(msg)
-                    }
-                }
-
-                override fun e(msg: String) {
-                    log.e(msg)
-                    synchronized(lines) {
-                        lines.add(msg)
-                    }
-                }
-
-                override fun e(ex: Throwable, msg: String) {
-                    log.e(ex, msg)
-                    synchronized(lines) {
-                        lines.add(ex.withCaption(msg))
-                    }
+            override fun i(msg: String) {
+                log.w(msg)
+                synchronized(lines) {
+                    lines.add(msg)
                 }
             }
-            try {
-                pushRepo.updateSubscription(
-                    subLogger,
-                    account,
-                    willRemoveSubscription = !anyNotificationWanted,
-                    forceUpdate = force,
-                )
-            } catch (ex: Throwable) {
-                subLogger.e(ex, "updateSubscription failed.")
+
+            override fun e(msg: String) {
+                log.e(msg)
+                synchronized(lines) {
+                    lines.add(msg)
+                }
             }
-            AlertDialog.Builder(activity)
-                .setMessage("${account.acct}:\n${lines.joinToString("\n")}")
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
+
+            override fun e(ex: Throwable, msg: String) {
+                log.e(ex, msg)
+                synchronized(lines) {
+                    lines.add(ex.withCaption(msg))
+                }
+            }
         }
+        val rv = try {
+            pushRepo.updateSubscription(
+                subLogger,
+                account,
+                willRemoveSubscription = !anyNotificationWanted,
+                forceUpdate = force,
+            )
+            true
+        } catch (ex: Throwable) {
+            subLogger.e(ex, "updateSubscription failed.")
+            false
+        }
+        AlertDialog.Builder(activity)
+            .setMessage("${account.acct}:\n${lines.joinToString("\n")}")
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+        return rv
     }
 
     override fun onDialogDismissed(dialogId: Int) {

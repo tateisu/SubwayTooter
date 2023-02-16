@@ -739,6 +739,8 @@ class PushRepo(
         val density = context.resources.displayMetrics.density
         val iconAndColor = pm.iconColor()
 
+        val targetName = daoAcctColor.getNicknameWithColor(account.acct)
+
         suspend fun PushMessage.loadSmallIcon(context: Context): IconCompat {
             iconSmall?.notEmpty()
                 ?.let { context.loadIcon(pm.iconSmall, (24f * density + 0.5f).toInt()) }
@@ -794,7 +796,7 @@ class PushRepo(
                         ?: ContextCompat.getColor(context, R.color.colorOsNotificationAccent)
             setSmallIcon(iconSmall)
             iconBitmapLarge?.let { setLargeIcon(it) }
-            setContentTitle(pm.loginAcct?.pretty)
+            setContentTitle(targetName)
             setContentText(pm.text)
             setWhen(pm.timestamp)
             setContentIntent(piTap)
@@ -807,7 +809,7 @@ class PushRepo(
         }
 
         ncPushMessage.notify(context, urlDeleteSummary) {
-            setContentTitle(account.acct.pretty)
+            setContentTitle(targetName)
             setContentText("notifications")
             setWhen(pm.timestamp)
             setSmallIcon(R.drawable.ic_notification)

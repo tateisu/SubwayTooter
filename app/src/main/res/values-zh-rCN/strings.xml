@@ -493,7 +493,7 @@
     <string name="device_timezone">系统时区</string>
     <string name="timezone">时区（应用需要重启）</string>
     <string name="verified_link_background_color">已验证链接背景颜色（应用需要重启）</string>
-    <string name="emoji_category_composite_tones">复合音调</string>
+    <string name="emoji_category_composite_tones">关系</string>
     <string name="in_app_unicode_emoji">使用程序内的 Unicode 表情符号（需要重新启动程序）</string>
     <string name="show_emoji_picker_other_category">显示其它类别的表情选择器</string>
     <string name="server_has_no_support_of_visibility">实例不支持可见范围 ‘%1$s’。</string>
@@ -1099,7 +1099,7 @@
     <string name="notification_type_status_reference">嘟文提及了</string>
     <string name="notification_type_status_reference_fedibird">嘟文提及了（fedibird.com）</string>
     <string name="notification_type_signup">（管理员）用户注册</string>
-    <string name="reactioned_posts">对嘟文作出了表情回应</string>
+    <string name="reactioned_posts">表情回应的嘟文</string>
     <string name="reactions">表情回应</string>
     <string name="cant_reaction_remote_custom_emoji">无法使用远程自定义表情符号 %1$s</string>
     <string name="keep_reaction_space">保持表情回应的间隔</string>

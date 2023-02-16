@@ -68,6 +68,22 @@ fun ActMain.handleIntentUri(uri: Uri) {
 fun ActMain.handleOtherUri(uri: Uri): Boolean {
     val url = uri.toString()
 
+    if( uri.scheme == "web+activitypub" && uri.authority == "post"){
+        val postUri = uri.pathSegments?.elementAtOrNull(0)
+        log.i("postUri=$postUri")
+        if(!postUri.isNullOrEmpty()){
+            conversationOtherInstance(
+                pos = defaultInsertPosition,
+                urlArg = postUri,
+                statusIdOriginal = null,
+                hostAccess = null,
+                statusIdAccess = null,
+                isReference =false,
+            )
+            return true
+        }
+    }
+
     url.findStatusIdFromUrl()?.let { statusInfo ->
         // ステータスをアプリ内で開く
         conversationOtherInstance(

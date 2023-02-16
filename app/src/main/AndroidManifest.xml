@@ -136,6 +136,17 @@
                     android:scheme="https" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="post"
+                    android:scheme="web+activitypub" />
+            </intent-filter>
+
             <!-- https://mstdn.kemono-friends.info/users/tocchi/updates/695489 -->
             <!-- URLの数字部分はstatus_id「ではない」ようだ。謎なのでまだ対応できない。。。 -->
             <!--<intent-filter>-->

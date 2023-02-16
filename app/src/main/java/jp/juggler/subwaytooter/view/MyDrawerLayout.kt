@@ -2,31 +2,36 @@ package jp.juggler.subwaytooter.view
 
 import android.content.Context
 import android.graphics.Rect
+import android.os.SystemClock
 import android.util.AttributeSet
 import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import jp.juggler.util.log.LogCategory
 
 class MyDrawerLayout : DrawerLayout {
 
     companion object {
-        // 	private val log = LogCategory("MyDrawerLayout")
+        private val log = LogCategory("MyDrawerLayout")
     }
 
     constructor(context: Context) :
-        super(context)
+            super(context)
 
     constructor(context: Context, attrs: AttributeSet?) :
-        super(context, attrs)
+            super(context, attrs)
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
-        super(context, attrs, defStyleAttr)
+            super(context, attrs, defStyleAttr)
 
     private var bottomExclusionWidth: Int = 0
     private var bottomExclusionHeight: Int = 0
     private val exclusionRects = listOf(Rect(), Rect(), Rect(), Rect())
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        val timeStart = SystemClock.elapsedRealtime()
         super.onLayout(changed, l, t, r, b)
+        val timeEnd = SystemClock.elapsedRealtime()
+        log.i("onLayout ${timeEnd - timeStart}ms changed=$changed")
 
         // 画面下部の左右にはボタンがあるので、システムジェスチャーナビゲーションの対象外にする
         val w = r - l

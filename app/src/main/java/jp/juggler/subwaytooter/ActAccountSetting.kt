@@ -646,12 +646,27 @@ class ActAccountSetting : AppCompatActivity(),
             views.cbLocked -> {
                 if (!profileBusy) sendLocked(isChecked)
             }
-            views.swNotificationPullEnabled,
-            views.swNotificationPushEnabled,
-            -> {
+            views.swNotificationPullEnabled -> {
                 saveUIToData()
                 showPushSetting()
             }
+
+            views.swNotificationPushEnabled -> launchAndShowError {
+                val oldChecked = account.notificationPushEnable
+                try {
+                    if (oldChecked == isChecked) return@launchAndShowError
+                    account.notificationPushEnable = isChecked
+                    updatePushSubscription(force = true)
+                    saveUIToData()
+                } catch (ex: Throwable) {
+                    account.notificationPushEnable = oldChecked
+                    buttonView.isChecked = oldChecked
+                    throw ex
+                } finally {
+                    showPushSetting()
+                }
+            }
+
             else -> saveUIToData()
         }
     }

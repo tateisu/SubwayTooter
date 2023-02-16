@@ -50,7 +50,7 @@
     <string name="network_error">网络错误。</string>
     <string name="error_response">响应错误。</string>
     <string name="reading_api">读取：%1$s %2$s</string>
-    <string name="column_empty">使用左下角的菜单按钮来添加一栏</string>
+    <string name="column_empty">使用左下角的菜单按钮来添加标签页</string>
     <string name="home">主页</string>
     <string name="local_timeline">本地时间线</string>
     <string name="federate_timeline">联邦时间线</string>
@@ -60,9 +60,9 @@
     <string name="account_confirmed">账号已确认。</string>
     <string name="reply">回复</string>
     <string name="more">更多</string>
-    <string name="close_column">关闭栏目</string>
+    <string name="close_column">关闭标签页</string>
     <string name="thumbnail">缩略图</string>
-    <string name="reload">重新载入</string>
+    <string name="reload">重载</string>
     <string name="favourites">收藏</string>
     <string name="notifications">通知</string>
     <string name="reports">举报</string>
@@ -102,7 +102,7 @@
     <string name="enable_speech">启用语音</string>
     <string name="in_reply_to_id_conversion_failed">“in_reply_to” ID转换失败。</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">无法切换账号。旧的草稿数据没有 in_reply_to_url，无法转换所选实例的 in_reply_to。</string>
-    <string name="post_compose_button_default_account">点击“发嘟文”按钮时的默认发嘟账号</string>
+    <string name="post_compose_button_default_account">点击“撰写嘟文”按钮时的默认发嘟账号</string>
     <string name="post">发嘟</string>
     <string name="notification_on_off_desc">还有一个账号设置可以关闭/开启通知。</string>
     <string name="behavior">行为</string>
@@ -120,7 +120,7 @@
     <string name="user_id_conversion_failed">无法转换用户ID。</string>
     <string name="app_data_import_confirm">现有数据（导入前）将被清除。您确定吗？</string>
     <string name="app_data_import_desc">您可以将数据导出到任何可以接收数据的应用，但您可能只能从设备的存储或 Google drive 导入数据。
-\n栏目背景图可能无法导出/导入到设备上。
+\n标签页背景图可能无法导出/导入到设备上。
 \n时间线字体可能无法导出/导入。
 \n自定义通知音可能无法导出/导入到设备上。</string>
     <string name="app_data_import">导入应用数据</string>
@@ -141,18 +141,18 @@
     <string name="reply_from_another_account">从另一个账号回复</string>
     <string name="account_picker_quote_toot">用来“引用嘟文”的账号？</string>
     <string name="account_picker_reply">回复自？</string>
-    <string name="disable_tablet_mode">禁用平板电脑模式（应用需要重启）</string>
+    <string name="disable_tablet_mode">禁用平板模式（应用需要重启）</string>
     <string name="media_thumbnail_height">媒体缩略图高度（默认=64dp，应用需要重启）</string>
-    <string name="minimum_column_width">最小栏目宽度（默认=300dp，应用需要重启）</string>
-    <string name="cant_close_column_by_back_button_when_multiple_column_shown">当显示多栏时您无法使用“返回”按钮关闭栏目。</string>
+    <string name="minimum_column_width">最小标签页宽度（默认=300dp，应用需要重启）</string>
+    <string name="cant_close_column_by_back_button_when_multiple_column_shown">当显示多重标签页时您无法使用“返回”按钮关闭标签页。</string>
     <string name="hide_media_default">隐藏所有媒体</string>
     <string name="dont_screen_off">使用应用时保持屏幕常亮。</string>
     <string name="already_boosted">已转嘟过。</string>
     <string name="already_bookmarked">已添加到书签过。</string>
     <string name="already_favourited">已经收藏过。</string>
     <string name="status_id_conversion_failed">无法转换状态ID。</string>
-    <string name="dont_refresh_on_activity_resume">返回应用时禁用自动刷新。</string>
-    <string name="dont_use_streaming_api">手动刷新订阅源</string>
+    <string name="dont_refresh_on_activity_resume">返回应用时禁用自动刷新</string>
+    <string name="dont_use_streaming_api">手动刷新信息源</string>
     <string name="help_translation">帮助改进翻译</string>
     <string name="open_status_from">打开状态从</string>
     <string name="tab_divider_color">标签页分隔线颜色</string>
@@ -161,7 +161,7 @@
     <string name="button_background_color">按钮背景色</string>
     <string name="footer_color">底栏颜色</string>
     <string name="copy_complete">剪贴板已更新。</string>
-    <string name="word_was_muted">该词为违规词汇。</string>
+    <string name="word_was_muted">该词已封禁。</string>
     <string name="muted_word">已封禁词汇</string>
     <string name="search_web">网页搜索</string>
     <string name="select_and_copy">选择并复制</string>
@@ -169,13 +169,13 @@
     <string name="copy_st">复制</string>
     <string name="hashtag_and_visibility_not_match">这条消息包含标签，但消息的可见范围不是公开，通常只有在公开的消息中才能搜索到标签。您确定吗？</string>
     <string name="foreground_color">前景色</string>
-    <string name="column_header">栏目顶栏</string>
+    <string name="column_header">标签页顶栏</string>
     <string name="image_alpha">图片透明度</string>
     <string name="pick_audios">选择音频文件…</string>
     <string name="pick_image">选择一张图片</string>
     <string name="pick_videos">选择视频…</string>
     <string name="pick_images">选择图片…</string>
-    <string name="column_background">栏目背景</string>
+    <string name="column_background">标签页背景</string>
     <string name="color_and_background">颜色与背景…</string>
     <string name="open_in_pseudo_account">在 %1$s 打开伪装账号</string>
     <string name="menu">菜单</string>
@@ -218,7 +218,7 @@
     <string name="confirmation">确认</string>
     <string name="follow_requested">关注请求已发送。</string>
     <string name="show_follow_button_in_button_bar">在按钮栏中显示“关注”按钮（应用需要重启）</string>
-    <string name="nickname_applied_after_reload">重新加载栏目后，昵称/颜色的更改将被应用。</string>
+    <string name="nickname_applied_after_reload">重载标签页后，昵称/颜色的更改将被应用。</string>
     <string name="nickname_and_color">昵称与颜色</string>
     <string name="nickname_and_color_and_notification_sound">昵称、颜色、通知音效</string>
     <string name="discard">丢弃</string>
@@ -248,7 +248,7 @@
     <string name="long_side_pixel">调整大小至 %1$d 像素</string>
     <string name="resize_image">调整附件图像大小（JPEG, PNG）</string>
     <string name="dont_resize">不调整大小</string>
-    <string name="exit_app_when_close_protected_column">当试图在没有确认的情况下用“返回”按钮关闭受保护的栏目时，退出应用</string>
+    <string name="exit_app_when_close_protected_column">当试图在没有确认的情况下用“返回”按钮关闭受保护的标签页时，退出应用</string>
     <string name="not_available_for_mastodon_account">Mastodon 账号不可用</string>
     <string name="not_available_for_misskey_account">Misskey 账号不可用</string>
     <string name="pseudo_account">伪装账号</string>
@@ -293,8 +293,8 @@
     <string name="theme_dark">深色</string>
     <string name="theme_light">浅色</string>
     <string name="ui_theme">UI 主题（应用需要重启）</string>
-    <string name="column_has_dont_close_option">您不能关闭此栏（检查栏目设置）。</string>
-    <string name="dont_close_column">不关闭栏目</string>
+    <string name="column_has_dont_close_option">您不能关闭此标签页（检查标签页设置）。</string>
+    <string name="dont_close_column">不关闭此标签页</string>
     <string name="send_header_url">状态链接</string>
     <string name="send_header_content_warning">内容警告</string>
     <string name="send_header_from_name">来自名称</string>
@@ -305,16 +305,16 @@
     <string name="blocked_users">屏蔽的用户</string>
     <string name="muted_users">已静音用户</string>
     <string name="read_gap">加载缺失的信息</string>
-    <string name="column_is_busy">栏目正忙</string>
+    <string name="column_is_busy">标签页正忙</string>
     <string name="with_highlight">突出显示</string>
     <string name="with_attachment">带附件</string>
     <string name="developer">开发者</string>
     <string name="delete_succeeded">已删除</string>
     <string name="disable_fast_scroller">禁用快速滚动（应用需要重启）</string>
-    <string name="prior_local_url_when_open_attachment">打开附件时，先打开本地链接</string>
+    <string name="prior_local_url_when_open_attachment">打开附件时优先用本地链接</string>
     <string name="back_button_action">“返回”按钮的动作</string>
-    <string name="open_column_list">打开栏目列表</string>
-    <string name="ask_always">总是询问</string>
+    <string name="open_column_list">打开标签页列表</string>
+    <string name="ask_always">始终询问</string>
     <string name="app_exit">关闭应用</string>
     <string name="notification_count">%1$d 通知</string>
     <string name="mention2">提及</string>
@@ -322,15 +322,15 @@
     <string name="boost">转嘟</string>
     <string name="open_instance_website">打开 https://%1$s/</string>
     <string name="version_is">版本 %1$s</string>
-    <string name="please_donate">请支持该应用。</string>
+    <string name="please_donate">请支持此应用。</string>
     <string name="rate_on_store">给应用评分</string>
-    <string name="please_rate">请您花点时间对该应用进行评分。</string>
+    <string name="please_rate">请您花点时间对此应用进行评分。</string>
     <string name="oss_license">开源软件许可</string>
     <string name="app_about">关于此应用</string>
     <string name="reaction_from_another_account">从另一个账号作出表情回应</string>
     <string name="boost_from_another_account">从另一个账号转嘟</string>
     <string name="favourite_from_another_account">以另一个账号收藏</string>
-    <string name="confirm_close_column">关闭此栏？</string>
+    <string name="confirm_close_column">关闭此标签页？</string>
     <string name="resolve_non_local_account">载入非本地账号</string>
     <string name="search">搜索</string>
     <string name="search_of">搜索“%1$s”</string>
@@ -360,29 +360,29 @@
     <string name="instance_not_need_slash">实例主机名，不含\'/\'、\'@\'符号。</string>
     <string name="conversation_around">围绕此嘟文的对话：%1$s</string>
     <string name="conversation_view">对话视图</string>
-    <string name="column">栏目</string>
+    <string name="column">标签页</string>
     <string name="cant_change_account_when_attachment_specified">当有媒体附件时您无法更换账号。</string>
     <string name="reply_to_this_status">回复此嘟文：</string>
     <string name="last_selection">最后选择</string>
-    <string name="column_list_desc">滑动删除，长按排序。更改将在重新加载视图时应用。</string>
+    <string name="column_list_desc">滑动删除，长按排序。更改将在重载视图时应用。</string>
     <string name="delete">删除</string>
     <string name="drag_handle">拖动操作</string>
     <string name="actions">操作</string>
-    <string name="dont_confirm_before_close_column">无需确认即可关闭栏目</string>
+    <string name="dont_confirm_before_close_column">无需确认即可关闭标签页</string>
     <string name="account_empty">账号未设置，请添加账号。</string>
-    <string name="back_to_column_list">按“后退”键时进入栏目列表</string>
+    <string name="back_to_column_list">按“后退”键时进入标签页列表</string>
     <string name="access_token_updated_for">%1$s 的访问令牌已更新。</string>
     <string name="user_name_not_match">用户名不匹配</string>
-    <string name="confirm_account_remove">这个账号与所有栏目都会被移除。
+    <string name="confirm_account_remove">此账号与所有标签页都会被移除。
 \n您确定吗？</string>
     <string name="user">用户</string>
-    <string name="cw_default_open">默认展开折叠标有内容警告的内容</string>
+    <string name="cw_default_open">默认展开标有内容警告的内容</string>
     <string name="sensitive_content_default_open">默认显示敏感附件</string>
     <string name="confirm_before_boost">转嘟前确认</string>
     <string name="default_status_visibility">嘟文默认可见范围</string>
     <string name="account_remove">移除此账号</string>
     <string name="update_access_token">更新访问令牌</string>
-    <string name="column_list">栏目列表</string>
+    <string name="column_list">标签页列表</string>
     <string name="app_setting">应用设置</string>
     <string name="account_setting">账号设置</string>
     <string name="account">账号</string>
@@ -432,16 +432,16 @@
     <string name="show_avatar_image">显示头像图片</string>
     <string name="conversation_from_another_account">来自另一个账号的对话视图</string>
     <string name="search_is_not_available_on_pseudo_account">搜索功能在伪装账号上不可用。</string>
-    <string name="quick_toot_hint">快速嘟文</string>
+    <string name="quick_toot_hint">快速发嘟</string>
     <string name="show_quick_toot_bar">显示“快速发嘟”栏（应用需要重启）</string>
     <string name="dont_add_duplication_check_header">不添加重复检查标题</string>
     <string name="acct_font_size">账号字体大小（单位：sp。留空为默认。需要重启应用）</string>
-    <string name="timeline_font_size">时间轴字体大小
+    <string name="timeline_font_size">时间线字体大小
 \n（单位：sp。默认留空。应用需要重启）
 \n…
 \n…</string>
     <string name="notification_sound">通知音效</string>
-    <string name="open_local_timeline_for">打开“%1$s”的时间轴</string>
+    <string name="open_local_timeline_for">打开“%1$s”的时间线</string>
     <string name="send_header_account_image_header_static">账号静态横幅图片</string>
     <string name="send_header_account_image_header">账号横幅图片</string>
     <string name="send_header_account_image_avatar_static">账号静态头像</string>
@@ -572,13 +572,13 @@
     <string name="follow_request">关注请求</string>
     <string name="justify_window_content_portrait">调整窗口内容（纵向）（应用需要重启）</string>
     <string name="developer_options">开发者选项</string>
-    <string name="always_show_language">总是显示语言</string>
+    <string name="always_show_language">始终显示语言</string>
     <string name="language_is">语言：%1$s</string>
     <string name="language_code_hint">选择预设或输入语言代码</string>
     <string name="custom">自定义</string>
     <string name="presets">预设</string>
     <string name="clear_all">清除全部</string>
-    <string name="language_filter_description">栏目需要重载以应用过滤。</string>
+    <string name="language_filter_description">标签页需要重载以应用过滤。</string>
     <string name="show_hide">显示/隐藏</string>
     <string name="language">语言</string>
     <string name="language_hide">隐藏</string>
@@ -587,7 +587,7 @@
     <string name="language_code_default">（默认）</string>
     <string name="import_">导入</string>
     <string name="export">导出</string>
-    <string name="language_filter">语言过滤</string>
+    <string name="language_filter">语言过滤器</string>
     <string name="domain_timeline_of">%1$s 实例时间线</string>
     <string name="domain_timeline">实例时间线</string>
     <string name="fedibird_domain_timeline">（fedibird）实例时间线</string>
@@ -598,10 +598,10 @@
     <string name="test">测试</string>
     <string name="release_notes_updated">发行说明 （v%1$s→v%2$s）</string>
     <string name="release_notes_latest">发行说明（v%1$s）</string>
-    <string name="always_expand_context_menu_sub_items">总是展开上下文菜单的子项目</string>
+    <string name="always_expand_context_menu_sub_items">始终展开上下文菜单的子项目</string>
     <string name="timeline_line_spacing">时间线行间距（浮点数用作行间距乘数，留空为默认值，应用需要重启）</string>
     <string name="separate_notification_group_for_reply">独立的回复通知组</string>
-    <string name="quick_toot_omit_account_selection">当使用快速嘟文时，如果可能的话省略账号选择</string>
+    <string name="quick_toot_omit_account_selection">当使用快速发嘟时，如果可能的话省略账号选择</string>
     <string name="instance_actions_for">对“%1$s”实例的操作</string>
     <string name="block_domain">屏蔽整个实例</string>
     <string name="extra_actions">更多操作</string>
@@ -652,8 +652,8 @@
     <string name="user_name_hint">例如：MonaLisa</string>
     <string name="create_account_desc">在指定实例上创建账号。</string>
     <string name="create_account">创建账号</string>
-    <string name="existing_account_desc">以现有账户登录。</string>
-    <string name="show_open_sticker">显示贴纸（栏目需要重载）</string>
+    <string name="existing_account_desc">以现有账号登录。</string>
+    <string name="show_open_sticker">显示 OpenSticker（标签页需要重载）</string>
     <string name="top_page">置顶页</string>
     <string name="about_this_instance">关于此实例</string>
     <string name="profile_directory_of">“%1$s”的目录</string>
@@ -665,13 +665,13 @@
     <string name="quote_renote">引用转贴 （Misskey）</string>
     <string name="instance_does_not_support_push_api_pleroma">此实例（也许是Pleroma）不支持推送订阅API。</string>
     <string name="dont_show_preview_card">不显示预览卡</string>
-    <string name="quick_toot_bar_background_color">快速嘟文栏背景颜色</string>
+    <string name="quick_toot_bar_background_color">快速发嘟栏背景颜色</string>
     <string name="content_text_color">文本内容颜色</string>
     <string name="content_acct_color">账号内容颜色</string>
     <string name="content_background_color">内容背景颜色</string>
     <string name="header_foreground_color">顶部前景颜色</string>
     <string name="header_background_color">顶部背景颜色</string>
-    <string name="column_color_default">栏目默认颜色</string>
+    <string name="column_color_default">标签页默认颜色</string>
     <string name="toot_background_color">嘟文背景颜色</string>
     <string name="boost_button_alpha" formatted="false">转嘟按钮不透明度（单位：% 。应用需要重启。同样影响内容文本透明度。）</string>
     <string name="mute_application_confirm">静音应用“%1$s”？</string>
@@ -699,17 +699,17 @@
     <string name="agree">我同意</string>
     <string name="privacy_policy">隐私政策</string>
     <string name="dont_use_custom_tabs">打开链接时不使用 （Chrome/Firefox）的 “自定义栏”</string>
-    <string name="missing_closeable_column">在可见范围内缺少可关闭的栏目。</string>
+    <string name="missing_closeable_column">在可见范围内缺少可关闭的标签页。</string>
     <string name="link_color">链接颜色（应用需要重启）</string>
     <string name="timeout_for_embed_media_viewer">嵌入式媒体查看器超时（单位：秒，应用需要重启（从应用历史中删除））</string>
     <string name="vote_polls">投票或结果</string>
     <string name="reaction">表情回应</string>
     <string name="confirm_cancel_follow_request_who_from">取消以 %2$s 向 %1$s 的关注请求？</string>
     <string name="follow_request_cancelled">关注请求已取消。</string>
-    <string name="remove_endorse_succeeded">未获认可。</string>
-    <string name="endorse_succeeded">已备注。</string>
-    <string name="endorse_set">在您的个人资料上备注</string>
-    <string name="endorse_unset">删除您的个人资料中的备注</string>
+    <string name="remove_endorse_succeeded">已取消推荐。</string>
+    <string name="endorse_succeeded">已推荐。</string>
+    <string name="endorse_set">在您的个人资料中推荐</string>
+    <string name="endorse_unset">移除您的个人资料中的推荐</string>
     <string name="already_voted">已投票过。</string>
     <string name="direct_only_me_visibility">‘私信给我’的可见范围</string>
     <string name="direct_with_user_visibility">‘私信给用户’的可见范围</string>
@@ -718,8 +718,8 @@
     <string name="not_reactioned">尚未作出表情回应。</string>
     <string name="already_reactioned">已表情回应过。</string>
     <string name="deleted_at">已删除于 %1$s</string>
-    <string name="reply_to">回复至%1$s</string>
-    <string name="quote_to">引用至 %1$s</string>
+    <string name="reply_to">回复了 %1$s</string>
+    <string name="quote_to">引用了 %1$s</string>
     <string name="renote_to">转贴自 %1$s</string>
     <string name="misskey_hybrid_timeline_long">社交时间线（Misskey）</string>
     <string name="misskey_hybrid_timeline">社交时间线</string>
@@ -737,7 +737,7 @@
     <string name="visibility_home">主页</string>
     <string name="misskey">Misskey</string>
     <string name="mastodon">Mastodon</string>
-    <string name="visibility_style_by_account">适合账号栏目</string>
+    <string name="visibility_style_by_account">适配当前标签页账号</string>
     <string name="visibility_style">可见范围名称和图标</string>
     <string name="cant_get_misskey_app_secret">此 Misskey 实例在/API/app/create API 的响应中不提供应用密钥，请考虑更新实例管理员的 Misskey 服务版本。</string>
     <string name="misskey_cant_show_all_descendants">在 Misskey 中，仅列举对目标嘟文的直接答复，并非所有子嘟文均可显示。</string>
@@ -747,14 +747,14 @@
     <string name="replies_count_actual">实际</string>
     <string name="replies_count_simple">0/1/1+</string>
     <string name="display_favourite_count">显示收藏次数</string>
-    <string name="display_boost_count">显示转嘟计数</string>
+    <string name="display_boost_count">显示转嘟次数</string>
     <string name="display_replies_count">显示回复次数</string>
     <string name="list_divider_color">列表分隔颜色</string>
-    <string name="toot_default_text">撰写嘟文时的默认文本（不影响快速嘟文栏，也不会影响切换帐号于嘟文撰写界面）</string>
+    <string name="toot_default_text">撰写嘟文时的默认文本（不影响快速发嘟栏，也不会影响切换账号于嘟文撰写界面）</string>
     <string name="toot_context_parse_failed">无法解析对话。</string>
     <string name="delete_succeeded_confirm">从关注建议中移除“%1$s”用户？</string>
     <string name="delete_suggestion">从关注建议中删除…</string>
-    <string name="scroll_top_from_column_strip">点击栏目条中的可见栏目时滚动到顶部</string>
+    <string name="scroll_top_from_column_strip">点击标签页条中的可见标签页时滚动到顶部</string>
     <string name="filter_expire_1week">保存后1周</string>
     <string name="filter_expire_1day">保存后1天</string>
     <string name="filter_expire_12hour">保存后12小时</string>
@@ -782,8 +782,8 @@
     <string name="keyword_filter_new">新过滤器</string>
     <string name="keyword_filter">关键词过滤器</string>
     <string name="keyword_filters">关键词过滤器</string>
-    <string name="confirm_close_column_all">确认关闭所有栏目（保护栏目除外）？</string>
-    <string name="close_all_columns">关闭所有栏目</string>
+    <string name="confirm_close_column_all">确认关闭所有标签页（受保护的除外）？</string>
+    <string name="close_all_columns">关闭所有标签页</string>
     <string name="follow_suggestion">关注建议</string>
     <string name="regex_filter_matches_empty_string">正则表达式筛选器匹配空字符串。</string>
     <string name="post_button_tapped_repeatly">发嘟按钮被重复地点击</string>
@@ -841,7 +841,7 @@
     <string name="instance_local">实例地址</string>
     <string name="thumbnails_arrange_vertically">垂直布局缩略图（应用需要重启）</string>
     <string name="changed">已更改。</string>
-    <string name="fav_muted_user_long">点赞/转嘟通知禁止的用户</string>
+    <string name="fav_muted_user_long">禁止通知点赞/转嘟的用户</string>
     <string name="fav_muted_user">禁用 FBN 的用户</string>
     <string name="show_favourite_notification_from_user">启用此用户的收藏/转嘟通知</string>
     <string name="hide_favourite_notification_from_user">禁用此用户的收藏/转嘟通知</string>
@@ -861,9 +861,9 @@
     <string name="notification_type_follow">关注</string>
     <string name="notification_type_mention">提及</string>
     <string name="system_notification_not_related">当点击系统通知时未选择</string>
-    <string name="allow_column_duplication">允许栏目重复</string>
+    <string name="allow_column_duplication">允许标签页重复</string>
     <string name="rename">重命名…</string>
-    <string name="share_view_pool">栏目之间共享视图池</string>
+    <string name="share_view_pool">标签页之间共享视图池</string>
     <string name="avatar_icon_dont_round">头像图标无圆角（应用需要重启）</string>
     <string name="avatar_icon_round_ratio" formatted="false">头像图标圆角大小（单位：%。默认：33。应用需要重启）</string>
     <string name="avatar_icon_size">头像图标大小（单位：dp。默认：48。应用需要重启）</string>
@@ -873,7 +873,7 @@
     <string name="domain_block_from_pseudo">无法在伪装账号中使用实例屏蔽。</string>
     <string name="keyword">关键词</string>
     <string name="check_sound">播放通知声音</string>
-    <string name="highlight_desc">左扫以删除。您可能需要重新加载以检查它是否被设置。</string>
+    <string name="highlight_desc">左扫以删除。您可能需要重载以检查它是否被设置。</string>
     <string name="already_exist">已存在。</string>
     <string name="word_empty">请输入关键词。</string>
     <string name="new_item">新项目…</string>
@@ -943,11 +943,11 @@
     <string name="not_muted">未静音。</string>
     <string name="not_blocked">未屏蔽。</string>
     <string name="emoji">表情</string>
-    <string name="allow_non_space_before_emoji_code">允许在表情符号短码前使用非空格字符（影响到显示和发嘟。要设置显示，请重启应用并重新加载栏目。在发嘟时转换的表情符号不能恢复为短码）</string>
+    <string name="allow_non_space_before_emoji_code">允许在表情符号短码前使用非空格字符（影响到显示和发嘟。要设置显示，请重启应用并重载标签页。在发嘟时转换的表情符号不能恢复为短码）</string>
     <string name="card_header_provider">提供者</string>
     <string name="card_header_author">作者</string>
     <string name="card_header_card">卡片</string>
-    <string name="disable_custom_emoji_animation">禁止自定义表情动画（应用需要重启且栏目需要重新载入）</string>
+    <string name="disable_custom_emoji_animation">禁止自定义表情动画（应用需要重启且标签页需要重载）</string>
     <string name="skin_tone_dark">深色皮肤色调</string>
     <string name="skin_tone_medium_dark">中等深色皮肤色调</string>
     <string name="skin_tone_medium">中等皮肤色调</string>
@@ -980,7 +980,7 @@
     <string name="parsing_response">正在解析回应…</string>
     <string name="quote_all_hashtag_of">引用所有标签“%1$s”</string>
     <string name="quote_hashtag_of">引用标签“%1$s”</string>
-    <string name="open_hashtag_column">打开标签栏</string>
+    <string name="open_hashtag_column">打开话题标签的标签页</string>
     <string name="error_notification_summary">如果账号在已损坏的实例上，请从应用中移除账号。</string>
     <string name="error_notification_title">实例超时</string>
     <string name="loading_notification_title">正在载入通知…</string>
@@ -995,7 +995,7 @@
     <string name="enquete_item_is_empty">投票中选项 %1$d 为空。</string>
     <string name="auto_cw_prefix">（自动标记内容警告）</string>
     <string name="auto_cw">自动隐藏长文本（需要设置“行数”大于0。应用需要重启）</string>
-    <string name="dont_use_action_button_with_quick_toot_bar">使用“快速嘟文”栏时禁用输入法行动按钮（应用需要重启）</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">使用“快速发嘟”栏时禁用输入法行动按钮（应用需要重启）</string>
     <string name="make_enquete">发起投票</string>
     <string name="choice4">选择4（可选）</string>
     <string name="choice3">选择3（可选）</string>
@@ -1038,17 +1038,17 @@
     <string name="notifications_from">来自 %1$s 的通知</string>
     <string name="notifications_from_acct">来自用户的通知</string>
     <string name="load_preference_from_web_ui">从 WebUI 加载一些首选项</string>
-    <string name="mark_sensitive_by_default">总是标记媒体敏感（当发嘟时）</string>
+    <string name="mark_sensitive_by_default">始终标记媒体为敏感（当发嘟时）</string>
     <string name="fixed_phrase">固定短语</string>
     <string name="custom_emoji_separator_zwsp">使用 ZWSP 而不是空格作为自定义表情符号分隔符</string>
     <string name="polls_choice_not_selected">请选择1个或更多选项。</string>
     <string name="input">输入</string>
-    <string name="quick_toot_menu">快速嘟文菜单</string>
+    <string name="quick_toot_menu">快速发嘟菜单</string>
     <string name="confirm_private_boost_from">以 %1$s 转嘟此状态？这将显示给所有关注者。</string>
     <string name="boost_with_visibility">带可见范围的转嘟</string>
     <string name="hashtag_of_from">来自 %2$s 的 #%1$s 标签</string>
     <string name="hashtag_from_acct">账号的标签</string>
-    <string name="open_hashtag_from_account">打开标签（从%1$s）栏目</string>
+    <string name="open_hashtag_from_account">打开话题标签（从%1$s）标签页</string>
     <string name="end_of_polling_from">从 %1$s 开始的投票结束</string>
     <string name="vote_button">投票</string>
     <string name="vote_count_unavailable">\?\?\? 票</string>
@@ -1062,7 +1062,7 @@
     <string name="expiration">终止日期</string>
     <string name="hide_totals">隐藏总数直到过期</string>
     <string name="allow_multiple_choice">允许多选</string>
-    <string name="dont_show_column_background_image">不显示栏目背景图片</string>
+    <string name="dont_show_column_background_image">不显示标签页背景图片</string>
     <string name="dont_remove_deleted_toot_from_timeline">不移除时间线上的已删除嘟文</string>
     <string name="follow_request_misskey">关注请求（Misskey）</string>
     <string name="unfollow_misskey">取消关注（Misskey）</string>
@@ -1078,26 +1078,26 @@
     <string name="show_acct_in_system_notification">在系统通知中显示账号（而非用户名）</string>
     <string name="open_in_admin_ui">在管理员网页UI中打开</string>
     <string name="copy_account_id">复制账号ID %1$s</string>
-    <string name="move_notifications_quick_filter_to_column_setting">在栏目设置中显示通知快速过滤（应用需要重启）</string>
+    <string name="move_notifications_quick_filter_to_column_setting">在标签页设置中显示通知快速过滤（应用需要重启）</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">定时状态需要 Mastodon 2.7.0或更新版本。</string>
     <string name="show_links_in_context_menu">在上下文菜单中显示链接</string>
     <string name="all">全部</string>
-    <string name="strip_icon_size">栏目条图标大小（单位：dp，默认：30。应用需要重启）</string>
+    <string name="strip_icon_size">标签页条图标大小（单位：dp，默认：30。应用需要重启）</string>
     <string name="header_text_size">顶部文本大小（单位：sp，默认：14。应用需要重启）</string>
     <string name="header_icon_size">顶部图标大小（单位：dp，默认：24。应用需要重启）</string>
     <string name="title">标题</string>
     <string name="uri">链接</string>
     <string name="note">备注</string>
     <string name="remote_profile_warning">远程个人配置页面上的信息可能无法正确显示。点击此处在网页浏览器中查看个人配置。</string>
-    <string name="mention_full_acct">显示提及为账号全名（栏目需要重新加载）</string>
+    <string name="mention_full_acct">显示提及为账号全名（标签页需要重载）</string>
     <string name="trend_link">热门链接</string>
     <string name="trend_post">热门嘟文</string>
     <string name="cant_change_account_when_edit">当编辑嘟文时无法更改账号。</string>
     <string name="discard_changes">丢弃更改？</string>
     <string name="no_one">无人</string>
     <string name="notification_type_update">嘟文更新</string>
-    <string name="notification_type_status_reference">嘟文提及了</string>
-    <string name="notification_type_status_reference_fedibird">嘟文提及了（fedibird.com）</string>
+    <string name="notification_type_status_reference">嘟文被引用</string>
+    <string name="notification_type_status_reference_fedibird">嘟文被引用（fedibird.com）</string>
     <string name="notification_type_signup">（管理员）用户注册</string>
     <string name="reactioned_posts">表情回应的嘟文</string>
     <string name="reactions">表情回应</string>
@@ -1109,12 +1109,12 @@
     <string name="saved">已保存。</string>
     <string name="resend_confirm_mail_requested">已请求重新发送验证邮件。</string>
     <string name="confirm_reaction">以 %2$s 表情回应 %1$s\?</string>
-    <string name="multi_window_post">嘟文活动多窗口（实验性）</string>
-    <string name="many_window_post">嘟文活动多窗口（实验性）</string>
+    <string name="multi_window_post">嘟文活动多重窗口（实验性）</string>
+    <string name="many_window_post">嘟文活动多个窗口（实验性）</string>
     <string name="mfm_decoration_enabled">（Misskey）显示文本装饰</string>
     <string name="mfm_show_unsupported_markup">（Misskey）显示不支持的装饰</string>
     <string name="background_pattern">背景样式</string>
-    <string name="open_column_from_url">从链接打开栏目…</string>
+    <string name="open_column_from_url">从链接打开标签页…</string>
     <string name="unbookmark">取消书签</string>
     <string name="attachment_handling_start">正在初始化…</string>
     <string name="attachment_handling_compress">正在压缩…</string>
@@ -1122,7 +1122,7 @@
     <string name="attachment_handling_uploading">正在上传 %1$d%%…</string>
     <string name="attachment_handling_waiting">等待应答中…</string>
     <string name="attachment_handling_waiting_async">等待应答中（异步）…</string>
-    <string name="movie_transcode">正在转码视频</string>
+    <string name="movie_transcode">视频转码</string>
     <string name="movie_transcode_mode">模式</string>
     <string name="movie_transcode_max_bitrate">最大比特率（单位：比特/秒。默认=2,000,000。也可以通过实例配置减少。）</string>
     <string name="movie_transcode_max_frame_rate">最大帧率（单位：每秒帧数。默认=30。也可以通过实例配置来减少。）</string>
@@ -1144,13 +1144,13 @@
     <string name="event_text_alpha">某些通知的文本透明度（0.0～1.0，默认=1，应用需要重启）</string>
     <string name="option_deprecated_mastodon342">（这个选项在Mastodon 3.4.2以上版本中已经废弃。应用使用来自实例的信息。）</string>
     <string name="movie_transcode_max_square_pixels">最大方形像素（默认=2304000。也可以通过实例配置减少。）</string>
-    <string name="always">总是</string>
+    <string name="always">始终</string>
     <string name="push_notification_filter">推送通知过滤（需要更新推送订阅）</string>
     <string name="not_available_for_current_accounts">当前用户不可用</string>
     <string name="confirm_mail_description">重新请求发送验证邮件后，
 \n- 请在收件箱里检查邮件。
 \n- 打开邮件中的验证链接。
-\n- 关闭此对话框并刷新栏目。</string>
+\n- 关闭此对话框并刷新标签页。</string>
     <string name="use_twemoji_emoji">使用 Twemoji 表情符号</string>
     <string name="display_name_references_post">%1$s 引用了您的嘟文</string>
     <string name="display_name_updates_post">%1$s 更新了嘟文</string>
@@ -1172,7 +1172,7 @@
     <string name="filter_action">过滤动作</string>
     <string name="filter_action_hide">隐藏。（对于旧的实例，它的作用是不可逆的）</string>
     <string name="delete_confirm">删除“%1$s”？</string>
-    <string name="tablet_snap">滚动时将栏目边缘与屏幕边缘对齐（应用需要重启）</string>
+    <string name="tablet_snap">滚动时将标签页边缘与屏幕边缘对齐（应用需要重启）</string>
     <string name="keyword_or_phrase">关键词或词组</string>
     <string name="add_keyword_or_phrase">添加关键字或词组</string>
     <string name="filter_keyword_empty">过滤器关键词为空。</string>
@@ -1188,7 +1188,7 @@
 \n・没有http://，也没有后面的/path…。
 \n・Mastodon实例列表：https://joinmastodon.org/servers</string>
     <string name="post_error_attachments_duplicated">Misskey 不允许附件重复。</string>
-    <string name="confirm_remove_column_mark_as_dont_close">移除标记为“不关闭”的栏目？</string>
+    <string name="confirm_remove_column_mark_as_dont_close">移除标记为“不关闭”的标签页？</string>
     <string name="skin_tones">皮肤色调</string>
     <string name="follow_hashtag_of">关注 %1$s</string>
     <string name="unfollow_hashtag_of">取消关注 %1$s</string>
@@ -1202,7 +1202,7 @@
     <string name="use_web_settings">（使用网页设置）</string>
     <string name="content">内容</string>
     <string name="permission_rational_media_access">访问设备媒体数据所需的权限。</string>
-    <string name="refresh_after_ummute">在取消静音项目后，重新加载栏目来刷新。</string>
+    <string name="refresh_after_ummute">在取消静音项目后，重载标签页以刷新。</string>
     <string name="fav_muted_user_desc">忽略来自此列表中的用户的通知。收藏、转嘟、关注请求、表情回应等。</string>
     <string name="server_host_name">实例主机名</string>
     <string name="display_name_report">%1$s 已举报。</string>
@@ -1261,8 +1261,8 @@
     <string name="removing_old_unified_push_url">正在从应用服务器中移除过期的 UnifiedPush 端点 URL…</string>
     <string name="sending_push_distributor_info_to_app_server">正在向应用服务器发送推送服务信息……</string>
     <string name="glide_test">滑动测试</string>
-    <string name="default_post_account_default_action">查看栏目帐户（手机），或始终询问（平板电脑）</string>
-    <string name="quick_post_account">快速发嘟帐户</string>
+    <string name="default_post_account_default_action">当前查看标签页的账号（手机），或始终询问（平板）</string>
+    <string name="quick_post_account">快速发嘟账号</string>
     <string name="removing_old_fcm_token">正在从应用服务器中移除过期的 FCM 设备令牌…</string>
     <string name="push_distributor_not_available">推送分发器不可用。您可以通过安装兼容 UnifiedPush 的推送传递应用来接收推送通知。见 https://unifiedpush.org/</string>
     <string name="show_username_on_filtered_post">在过滤的嘟文上显示用户名</string>

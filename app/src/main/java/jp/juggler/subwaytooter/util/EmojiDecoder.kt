@@ -396,17 +396,16 @@ object EmojiDecoder {
                 else -> {
                     // 存在確認せずに絵文字プロキシのURLを返す
                     // 閲覧先サーバの絵文字を探す
-                    App1.custom_emoji_lister.getCachedEmoji(apiHostAscii, name)
-                        ?.let { return it.customEmojiToUrl() }
+                    return "https://${apiHostAscii}/emoji/${ cols.elementAtOrNull(0)}.webp"
                 }
             }
             return null
         }
+
         fun findCustomEmojiUrl(name: String): String? {
             emojiMapCustom?.get(name)?.customEmojiToUrl()
-                ?.let{ return it}
-            val misskeyVersion = options.linkHelper?.misskeyVersion ?: 0
-            return if (misskeyVersion >= 13) {
+                ?.let { return it }
+            return if (options.linkHelper?.isMisskey == true) {
                 findEmojiMisskey13(name = name)
             } else {
                 null

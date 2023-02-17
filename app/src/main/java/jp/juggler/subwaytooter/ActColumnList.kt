@@ -97,7 +97,7 @@ class ActColumnList : AppCompatActivity() {
         setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
-        fixHorizontalMargin(views.llContent)
+        fixHorizontalMargin(views.listView)
 
         // ハンドル部分をドラッグで並べ替えできるRecyclerView
         views.listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
@@ -258,6 +258,8 @@ class ActColumnList : AppCompatActivity() {
             views.tvColumnName.textColor = columnColorFg
             views.ivColumnIcon.setImageResource(item.type.iconId(item.acct))
             views.ivColumnIcon.imageTintList = ColorStateList.valueOf(columnColorFg)
+            views.ivSelected.imageTintList = ColorStateList.valueOf(columnColorFg)
+
             // 背景色がテーマ次第なので、カラム設定の色を反映するとアイコンが見えなくなる可能性がある
             // よってアイコンやテキストにカラム設定の色を反映しない
         }
@@ -286,6 +288,7 @@ class ActColumnList : AppCompatActivity() {
                 textColor = columnColorFg
             }
             dragViews.ivColumnIcon.imageTintList = ColorStateList.valueOf(columnColorFg)
+            dragViews.ivSelected.imageTintList = ColorStateList.valueOf(columnColorFg)
             dragViews.llColumn.backgroundColor = item.columnColorBg
             dragViews.ivColumnIcon.setImageResource(item.type.iconId(item.acct))
             dragViews.ivSelected.visibility = clickViews.ivSelected.visibility

@@ -185,7 +185,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private fun initUi() {
         setContentView(views.root)
 
-        fixHorizontalPadding0(views.llContent)
+        fixHorizontalPadding(views.llContent, 0f)
 
         views.lvList.layoutManager = LinearLayoutManager(this)
         views.lvList.adapter = adapter

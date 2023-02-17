@@ -16,11 +16,11 @@
         android:layout_alignTop="@+id/item_layout"
         android:background="#0088ff"
         android:gravity="center"
-        android:paddingEnd="12dp"
-        android:paddingStart="12dp"
-        android:text="@string/app_name"
+        android:includeFontPadding="false"
+        android:paddingHorizontal="12dp"
         android:textColor="@android:color/white"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        tools:text="item_left" />
 
     <TextView
         android:id="@+id/item_right"
@@ -30,14 +30,14 @@
         android:layout_alignTop="@+id/item_layout"
         android:background="?attr/colorColumnListDeleteBackground"
         android:gravity="center_vertical"
-
-        android:paddingEnd="12dp"
-        android:paddingStart="12dp"
+        android:includeFontPadding="false"
+        android:paddingHorizontal="12dp"
         android:text="@string/delete"
         android:textColor="?attr/colorColumnListDeleteText"
         android:textSize="20sp" />
 
-    <LinearLayout
+    <!-- item view has contents and divider -->
+    <FrameLayout
         android:id="@id/item_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,14 +46,16 @@
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/llColumn"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
             android:baselineAligned="false"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="12dp"
-            android:paddingVertical="3dp">
+            android:paddingVertical="3dp"
+            tools:background="#ff0">
 
             <!-- minHeight の代わりにViewで賄う -->
             <View
@@ -64,8 +66,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                tools:ignore="NestedWeights">
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvAccess"
@@ -73,12 +74,12 @@
                     android:layout_height="wrap_content"
                     android:gravity="start|center_vertical"
                     android:includeFontPadding="false"
+                    android:padding="2dp"
                     android:textColor="?attr/colorColumnListItemText"
                     android:textSize="14sp"
                     tools:text="user@acct" />
 
                 <LinearLayout
-                    android:id="@+id/llColumn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:baselineAligned="false"
@@ -101,6 +102,7 @@
                         android:layout_weight="1"
                         android:gravity="start|center_vertical"
                         android:includeFontPadding="false"
+                        android:padding="2dp"
                         android:textSize="18sp"
                         tools:text="name 名前 " />
 
@@ -115,7 +117,7 @@
                 android:layout_marginStart="4dp"
                 android:contentDescription="@string/last_selection"
                 android:src="@drawable/ic_eye"
-                app:tint="?attr/colorTextContent" />
+                />
 
             <ImageView
                 android:id="@+id/ivDragHandle"
@@ -132,6 +134,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_gravity="bottom"
             android:background="?attr/colorSettingDivider" />
-    </LinearLayout>
+    </FrameLayout>
 </com.woxthebox.draglistview.swipe.ListSwipeItem>

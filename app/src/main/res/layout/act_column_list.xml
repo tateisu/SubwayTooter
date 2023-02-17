@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -15,30 +14,19 @@
         android:elevation="4dp"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
-    <LinearLayout
-        android:id="@+id/llContent"
+    <com.woxthebox.draglistview.DragListView
+        android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical">
+        tools:ignore="NestedWeights" />
 
-        <!-- Need to wrap DragListView in another layout for wrap_content to work for some reason -->
-        <com.woxthebox.draglistview.DragListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            tools:ignore="NestedWeights" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
-            android:text="@string/column_list_desc"
-            android:textSize="12sp"
-
-            />
-    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="@string/column_list_desc"
+        android:textSize="12sp" />
 </LinearLayout>

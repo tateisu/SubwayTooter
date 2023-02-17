@@ -315,14 +315,13 @@ fun fixHorizontalPadding(v: View, dpDelta: Float = 12f) {
                 v.setPaddingRelative(padLr + dm.widthPixels / 2, padT, padLr, padB)
                 return
             }
+            else -> Unit
         }
     }
 
     val padLr = getHorizontalPadding(v, dpDelta)
     v.setPaddingRelative(padLr, padT, padLr, padB)
 }
-
-fun fixHorizontalPadding0(v: View) = fixHorizontalPadding(v, 0f)
 
 fun fixHorizontalMargin(v: View) {
     val lp = v.layoutParams

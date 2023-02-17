@@ -71,14 +71,17 @@
                     android:id="@+id/tvAccess"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="start"
+                    android:gravity="start|center_vertical"
+                    android:includeFontPadding="false"
                     android:textColor="?attr/colorColumnListItemText"
                     android:textSize="14sp"
                     tools:text="user@acct" />
 
                 <LinearLayout
+                    android:id="@+id/llColumn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -92,10 +95,12 @@
                         tools:src="@drawable/ic_face" />
 
                     <TextView
-                        android:id="@+id/tvName"
+                        android:id="@+id/tvColumnName"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:gravity="start|center_vertical"
+                        android:includeFontPadding="false"
                         android:textSize="18sp"
                         tools:text="name 名前 " />
 

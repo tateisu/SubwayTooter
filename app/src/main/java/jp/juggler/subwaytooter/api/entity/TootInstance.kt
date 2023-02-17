@@ -397,19 +397,33 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         private suspend fun TootApiClient.getInstanceInformation(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-
             // misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
-            val r2 = getInstanceInformationMisskey(forceAccessToken) ?: return null
+            val r2 = getInstanceInformationMisskey(forceAccessToken)
+                ?: return null
             if (r2.jsonObject != null) return r2
-            when (r2.response?.code) {
-                null, 404 -> Unit // fall
-                else -> return r2
-            }
+
+            // https://github.com/tateisu/SubwayTooter/issues/234
+            // friendica は /api/meta に401を返す
+            // このためMisskeyのサーバ情報取得に失敗したらそれが何であれMastodonのサーバ情報取得を行う
 
             // マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
-            // インスタンス情報を読めない場合もホワイトリストモードの問題があるので
-            // マストドン側のエラーを返す
-            return getInstanceInformationMastodon(forceAccessToken)
+            val r1 = getInstanceInformationMastodon(forceAccessToken)
+                ?: return null
+            if (r1.jsonObject != null) return r1
+
+            // 両方読めなかった場合
+            return when (r1.response?.code) {
+                // Mastodon側が404を返したらMisskeyのエラー応答を返す
+                404 -> r2
+
+                // Mastodonはホワイトリストモードの際に401を返す。
+                // Mastoronのエラー結果を返す。
+                401 -> r1
+
+                // その他の場合
+                // Mastoronのエラー結果を返す。
+                else -> r1
+            }
         }
 
         /**

@@ -44,8 +44,8 @@ object ColumnEncoder {
     private const val KEY_REGEX_TEXT = "regex_text"
     private const val KEY_LANGUAGE_FILTER = "language_filter"
 
-    private const val KEY_HEADER_BACKGROUND_COLOR = "header_background_color"
-    private const val KEY_HEADER_TEXT_COLOR = "header_text_color"
+    const val KEY_HEADER_BACKGROUND_COLOR = "header_background_color"
+    const val KEY_HEADER_TEXT_COLOR = "header_text_color"
     private const val KEY_COLUMN_BACKGROUND_COLOR = "column_background_color"
     private const val KEY_COLUMN_ACCT_TEXT_COLOR = "column_acct_text_color"
     private const val KEY_COLUMN_CONTENT_TEXT_COLOR = "column_content_text_color"

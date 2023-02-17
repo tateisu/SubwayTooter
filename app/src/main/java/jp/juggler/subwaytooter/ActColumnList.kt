@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +30,8 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.setNavigationBack
 import jp.juggler.util.ui.vg
+import org.jetbrains.anko.backgroundColor
+import org.jetbrains.anko.textColor
 
 class ActColumnList : AppCompatActivity() {
 
@@ -55,10 +58,12 @@ class ActColumnList : AppCompatActivity() {
 
     private val listAdapter by lazy { MyListAdapter() }
 
-    private val defaultNameColor by lazy {
-        attrColor(R.attr.colorColumnListItemText)
+    private val defaultAcctColorFg by lazy {
+        attrColor(R.attr.colorColumnHeaderAcct)
     }
-
+    private val defaultColumnColorFg by lazy {
+        attrColor(R.attr.colorColumnHeaderName)
+    }
     private var oldSelection: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,7 +150,10 @@ class ActColumnList : AppCompatActivity() {
                     ?.objectList()
                     ?.forEachIndexed { index, src ->
                         try {
-                            val item = MyItem(src, index.toLong(), defaultNameColor)
+                            val item = MyItem(
+                                src,
+                                index.toLong(),
+                            )
                             add(item)
                             if (oldSelection == item.oldIndex) {
                                 item.setOldSelection(true)
@@ -196,16 +204,19 @@ class ActColumnList : AppCompatActivity() {
     }
 
     // リスト要素のデータ
-    internal class MyItem(val json: JsonObject, val id: Long, defaultNameColor: Int) {
-
-        val name: String = json.optString(ColumnEncoder.KEY_COLUMN_NAME)
-        val acct: Acct = Acct.parse(json.optString(ColumnEncoder.KEY_COLUMN_ACCESS_ACCT))
-        val acctName: String = json.optString(ColumnEncoder.KEY_COLUMN_ACCESS_STR)
-        val oldIndex = json.optInt(ColumnEncoder.KEY_OLD_INDEX)
-        val type = ColumnType.parse(json.optInt(ColumnEncoder.KEY_TYPE))
-        val acctColorBg = json.optInt(ColumnEncoder.KEY_COLUMN_ACCESS_COLOR_BG, 0)
-        val acctColorFg = json.optInt(ColumnEncoder.KEY_COLUMN_ACCESS_COLOR, 0)
-            .notZero() ?: defaultNameColor
+    internal inner class MyItem(
+        val json: JsonObject,
+        val id: Long,
+        val name: String = json.optString(ColumnEncoder.KEY_COLUMN_NAME),
+        val acct: Acct = Acct.parse(json.optString(ColumnEncoder.KEY_COLUMN_ACCESS_ACCT)),
+        val acctName: String = json.optString(ColumnEncoder.KEY_COLUMN_ACCESS_STR),
+        val oldIndex: Int = json.optInt(ColumnEncoder.KEY_OLD_INDEX),
+        val type: ColumnType = ColumnType.parse(json.optInt(ColumnEncoder.KEY_TYPE)),
+        val acctColorBg: Int = json.optInt(ColumnEncoder.KEY_COLUMN_ACCESS_COLOR_BG, 0),
+        val acctColorFg: Int = json.optInt(ColumnEncoder.KEY_COLUMN_ACCESS_COLOR, 0),
+        val columnColorFg: Int = json.optInt(ColumnEncoder.KEY_HEADER_TEXT_COLOR, 0),
+        val columnColorBg: Int = json.optInt(ColumnEncoder.KEY_HEADER_BACKGROUND_COLOR, 0),
+    ) {
         var bOldSelection: Boolean = false
 
         fun setOldSelection(b: Boolean) {
@@ -237,11 +248,16 @@ class ActColumnList : AppCompatActivity() {
             lastItem = item
             views.ivSelected.vg(item.bOldSelection)
             views.tvAccess.text = item.acctName
-            views.tvAccess.setTextColor(item.acctColorFg)
+            views.tvAccess.setTextColor(item.acctColorFg.notZero() ?: defaultAcctColorFg)
             views.tvAccess.setBackgroundColor(item.acctColorBg)
             views.tvAccess.setPaddingRelative(acctPadLr, 0, acctPadLr, 0)
-            views.tvName.text = item.name
+
+            val columnColorFg = item.columnColorFg.notZero() ?: defaultColumnColorFg
+            views.llColumn.backgroundColor = item.columnColorBg
+            views.tvColumnName.text = item.name
+            views.tvColumnName.textColor = columnColorFg
             views.ivColumnIcon.setImageResource(item.type.iconId(item.acct))
+            views.ivColumnIcon.imageTintList = ColorStateList.valueOf(columnColorFg)
             // 背景色がテーマ次第なので、カラム設定の色を反映するとアイコンが見えなくなる可能性がある
             // よってアイコンやテキストにカラム設定の色を反映しない
         }
@@ -261,11 +277,16 @@ class ActColumnList : AppCompatActivity() {
 
             dragViews.tvAccess.run {
                 text = item.acctName
-                setTextColor(item.acctColorFg)
-                setBackgroundColor(item.acctColorBg)
+                textColor = item.acctColorFg.notZero() ?: defaultAcctColorFg
+                backgroundColor = item.acctColorBg
             }
-
-            dragViews.tvName.text = item.name
+            val columnColorFg = item.columnColorFg.notZero() ?: defaultColumnColorFg
+            dragViews.tvColumnName.run {
+                text = item.name
+                textColor = columnColorFg
+            }
+            dragViews.ivColumnIcon.imageTintList = ColorStateList.valueOf(columnColorFg)
+            dragViews.llColumn.backgroundColor = item.columnColorBg
             dragViews.ivColumnIcon.setImageResource(item.type.iconId(item.acct))
             dragViews.ivSelected.visibility = clickViews.ivSelected.visibility
             dragViews.itemLayout.setBackgroundColor(attrColor(R.attr.list_item_bg_pressed_dragged))

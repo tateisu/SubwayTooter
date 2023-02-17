@@ -28,10 +28,10 @@ class MyDrawerLayout : DrawerLayout {
     private val exclusionRects = listOf(Rect(), Rect(), Rect(), Rect())
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        val timeStart = SystemClock.elapsedRealtime()
+//        val timeStart = SystemClock.elapsedRealtime()
         super.onLayout(changed, l, t, r, b)
-        val timeEnd = SystemClock.elapsedRealtime()
-        log.i("onLayout ${timeEnd - timeStart}ms changed=$changed")
+//        val timeEnd = SystemClock.elapsedRealtime()
+//        log.i("onLayout ${timeEnd - timeStart}ms changed=$changed")
 
         // 画面下部の左右にはボタンがあるので、システムジェスチャーナビゲーションの対象外にする
         val w = r - l

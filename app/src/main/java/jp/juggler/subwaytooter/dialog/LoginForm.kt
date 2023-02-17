@@ -40,7 +40,7 @@ class LoginForm(
         private val log = LogCategory("LoginForm")
 
         @Suppress("RegExpSimplifiable")
-        val reBadLetter = """[^A-Za-z0-9:;._-]+""".toRegex()
+        val reBadChars = """([^\p{L}\p{N}A-Za-z0-9:;._-]+)""".toRegex()
 
         fun AppCompatActivity.showLoginForm(
             onClickOk: (
@@ -192,8 +192,7 @@ class LoginForm(
             return null
         }
 
-        //
-        reBadLetter.findAll(s).joinToString("") { it.value }.notEmpty()?.let {
+        reBadChars.findAll(s).joinToString("") { it.value }.notEmpty()?.let {
             showError(activity.getString(R.string.server_host_name_cant_contains_it, it))
             return null
         }

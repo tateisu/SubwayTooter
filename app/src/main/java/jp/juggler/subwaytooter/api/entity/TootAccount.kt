@@ -477,9 +477,13 @@ open class TootAccount(
             // notestock はActivityPub 準拠のサービスなので、サーバ内IDというのは特にない
             val id: EntityId = EntityId.DEFAULT
 
+            val tmpDisplayName = src.string("display_name")
+            val tmpUserName = src.string("username")
+
             // notestockはdisplay_nameとusernameが入れ替わってる？
-            val username: String = src.stringOrThrow("display_name")
-            val display_name: String = src.stringOrThrow("username")
+            val username = tmpDisplayName ?: tmpUserName ?: error("missing username,displayname")
+            val display_name =
+                tmpUserName ?: tmpDisplayName ?: error("missing username,displayname")
 
             val tmpAcct = src.string("subject")?.let { Acct.parse(it) }
             val url: String? = src.string("url")

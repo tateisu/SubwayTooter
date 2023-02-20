@@ -794,8 +794,10 @@ class TootStatus(
             val apTag = APTag(parser, src.jsonArray("tag"))
 
             val who = parser.account(src.jsonObject("account"))
-                ?: error("missing account")
-            val accountRef = TootAccountRef.tootAccountRef(parser, who)
+            if (who == null) {
+                error("missing account")
+            }
+            val accountRef = tootAccountRef(parser, who)
             val account = accountRef.get()
 
             val uri = src.string("id") ?: error("missing uri")

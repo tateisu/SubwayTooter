@@ -602,20 +602,29 @@ class SideMenuAdapter(
         else -> null
     }
 
-    fun filterListItems() {
+    fun filterListItems(notify:Boolean=true) {
+        log.i("filterListItems notify=$notify")
         list = originalList.filter {
             when (it.itemType) {
                 ItemType.IT_NOTIFICATION_PERMISSION ->
                     notificationActionRecommend() != null
+
+                ItemType.IT_NORMAL -> when (it.title) {
+                    R.string.antenna_list_misskey,
+                    R.string.misskey_hybrid_timeline_long,
+                    -> PrefB.bpEnableDeprecatedSomething.value
+
+                    else -> true
+                }
                 else -> true
             }
         }
-        notifyDataSetChanged()
+        if(notify) notifyDataSetChanged()
     }
 
     init {
         actMain.applicationContext.checkVersion()
-        filterListItems()
+        filterListItems(notify = false)
 
         ListView(actMain).apply {
             adapter = this@SideMenuAdapter

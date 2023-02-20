@@ -367,7 +367,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             val result = TootApiResult.makeWithCaption(apiHost)
             if (result.error != null) return result
 
-            if(!PrefB.bpEnableDeprecatedSomething.value){
+            if (!PrefB.bpEnableDeprecatedSomething.value) {
                 return result.setError(context.getString(R.string.misskey_support_end))
             }
 
@@ -418,12 +418,16 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             // 両方読めなかった場合
             return when (r1.response?.code) {
-                // Mastodon側が404を返したらMisskeyのエラー応答を返す
+                // /api/v1/instance が404を返したらMisskeyのエラー応答を返す
                 404 -> r2
 
-                // Mastodonはホワイトリストモードの際に401を返す。
+                // /api/v1/instance 401を返すのはMastodonのホワイトリストモードだと思う
                 // Mastoronのエラー結果を返す。
                 401 -> r1
+
+                // /api/v1/instance が200を返すがJsonObjectではないのは、
+                // Misskeyサーバへの /api/meta にアクセスしない && Misskey は /api/v1/instance に200を返すから。
+                200 -> r2
 
                 // その他の場合
                 // Mastoronのエラー結果を返す。

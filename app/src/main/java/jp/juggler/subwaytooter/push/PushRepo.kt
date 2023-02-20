@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.api.push.ApiPushMisskey
 import jp.juggler.subwaytooter.dialog.SuspendProgress
 import jp.juggler.subwaytooter.notification.NotificationChannels
 import jp.juggler.subwaytooter.notification.NotificationDeleteReceiver.Companion.intentNotificationDelete
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.*
@@ -589,6 +590,10 @@ class PushRepo(
 
             val account = daoSavedAccount.loadAccountByAcct(acct)
                 ?: error("missing account for acct ${status.acct}")
+
+            if(account.isMisskey && !PrefB.bpEnableDeprecatedSomething.value){
+                error(context.getString(R.string.misskey_support_end))
+            }
 
             decodeMessageContent(status, pm, map)
             val messageJson = pm.messageJson

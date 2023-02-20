@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.table.daoClientInfo
 import jp.juggler.subwaytooter.table.daoSavedAccount
@@ -119,6 +120,10 @@ class AuthMisskey10(override val client: TootApiClient) : AuthBase() {
         ti: TootInstance?,
         forceUpdateClient: Boolean,
     ): Uri {
+        if(!PrefB.bpEnableDeprecatedSomething.value){
+            error(context.getString(R.string.misskey_support_end))
+        }
+
         val apiHost = apiHost ?: error("missing apiHost")
 
         val clientInfo = daoClientInfo.load(apiHost, clientName)

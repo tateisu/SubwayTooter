@@ -1030,6 +1030,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     section(R.string.developer_options) {
         sw(PrefB.bpCheckBetaVersion, R.string.check_beta_release)
 
+        sw(PrefB.bpEnableDeprecatedSomething,R.string.enable_deprecated_something)
+
         sw(PrefB.bpEmojiPickerCategoryOther, R.string.show_emoji_picker_other_category)
         action(R.string.drawable_list) {
             action = { startActivity(Intent(this, ActDrawableList::class.java)) }

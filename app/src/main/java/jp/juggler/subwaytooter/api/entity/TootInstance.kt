@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.os.SystemClock
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -365,6 +366,10 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         ): TootApiResult? {
             val result = TootApiResult.makeWithCaption(apiHost)
             if (result.error != null) return result
+
+            if(!PrefB.bpEnableDeprecatedSomething.value){
+                return result.setError(context.getString(R.string.misskey_support_end))
+            }
 
             if (sendRequest(result) {
                     buildJsonObject {

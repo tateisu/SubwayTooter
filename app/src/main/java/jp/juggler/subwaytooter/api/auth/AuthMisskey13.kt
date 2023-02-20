@@ -2,12 +2,14 @@ package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
 import jp.juggler.subwaytooter.BuildConfig
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.auth.AuthMisskey10.Companion.encodeScopeArray
 import jp.juggler.subwaytooter.api.auth.AuthMisskey10.Companion.getScopeArrayMisskey
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -57,6 +59,10 @@ class AuthMisskey13(override val client: TootApiClient) : AuthBase() {
         ti: TootInstance?,
         forceUpdateClient: Boolean,
     ): Uri {
+        if(!PrefB.bpEnableDeprecatedSomething.value){
+            error(context.getString(R.string.misskey_support_end))
+        }
+
         val apiHost = apiHost ?: error("missing apiHost")
 
         val sessionId = UUID.randomUUID().toString()

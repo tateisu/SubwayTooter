@@ -360,4 +360,8 @@ object PrefB {
         "ShowUsernameFilteredPost",
         false
     )
+    val bpEnableDeprecatedSomething = BooleanPref(
+        "EnableDeprecatedSomething",
+        false
+    )
 }

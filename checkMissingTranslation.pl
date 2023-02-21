@@ -3,7 +3,7 @@ use XML::Parser;
 use strict;
 use warnings;
 use File::Find;
-use XML::Simple;
+use XML::LibXML;
 use Data::Dump qw(dump);
 use utf8;
 use feature qw(say);
@@ -53,11 +53,6 @@ close($fh)
 @untrackedFiles and die "forgot git add?\n",map{ "- $_\n"} @untrackedFiles;
 
 
-
-
-
-my $xml = XML::Simple->new;
-
 my $default_name = "_default";
 
 my @files;
@@ -78,20 +73,16 @@ for my $file(@files){
 		$lang=$default_name;
 	}
 
-	my $data = $xml->XMLin($file);
-	if( not $data->{string} or ($data->{string}{content} and not ref $data->{string}{content} )){
-		warn "?? please make at least 2 string entries in $file\n";
-		next;
-	}
-
 	my %names;
-	while(my($name,$o)=each %{$data->{string}}){
-		if(not $o->{content}){
-			warn "$lang : $name : missing content in ",dump($o),"\n";
-		}else{
-			$names{$name}= $o->{content};
-		}
-	}
+	{
+    	my $data = eval{ XML::LibXML->load_xml(location => $file) };
+    	$@ and die "$file : $@";
+    	for my $s ($data->findnodes('./resources/string')){
+            my $name = $s->getAttribute('name');
+            my $content = $s->to_literal();
+            $names{$name}= $content;
+        }
+    }
 	$langs{ $lang } = \%names;
 }
 

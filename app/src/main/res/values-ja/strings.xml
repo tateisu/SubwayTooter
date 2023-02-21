@@ -19,8 +19,8 @@
     <string name="account_picker_open_setting">どのアカウントの設定を開きますか?</string>
     <string name="account_picker_open_user_who">どのアカウントでユーザ %1$s のプロフィールを確認しますか?</string>
     <string name="account_picker_reply">どのアカウントで返信しますか?</string>
-    <string name="account_picker_toot">どのアカウントでトゥートしますか?</string>
-    <string name="account_picker_quote_toot">どのアカウントで引用トゥートしますか?</string>
+    <string name="account_picker_toot">どのアカウントで投稿しますか?</string>
+    <string name="account_picker_quote_toot">どのアカウントで引用投稿しますか?</string>
     <string name="account_remove">アカウントの削除</string>
     <string name="account_select_please">アカウントを選択してください</string>
     <string name="account_setting">アカウント設定</string>
@@ -33,7 +33,7 @@
     <string name="action_settings">設定</string>
     <string name="actions">操作</string>
     <string name="actions_for_notification">通知へのアクション</string>
-    <string name="actions_for_status">トゥートへのアクション</string>
+    <string name="actions_for_status">投稿へのアクション</string>
     <string name="actions_for_user">ユーザへのアクション</string>
     <string name="allow_column_duplication">カラムの重複を許容する</string>
     <string name="allow_non_space_before_emoji_code">絵文字コードの手前に空白以外の文字があっても変換する (投稿と表示の両方に影響します。表示の反映にはアプリ再起動とカラムのリロードが必要です。投稿時に変換された絵文字を元のコードに戻すことはできません。)</string>
@@ -89,10 +89,10 @@
     <string name="boost_button_size">ブーストボタンの大きさ(単位:dp。デフォルト:40。アプリ再起動が必要)</string>
     <string name="boost_from_another_account">別アカウントでブースト</string>
     <string name="reaction_from_another_account">別アカウントでリアクション</string>
-    <string name="boost_private_toot_not_allowed">非公開トゥートをブーストできるのは本人だけです</string>
+    <string name="boost_private_toot_not_allowed">非公開投稿をブーストできるのは本人だけです</string>
     <string name="boost_succeeded">ブーストできました</string>
     <string name="reaction_succeeded">リアクションできました</string>
-    <string name="boosted_by">トゥートをブーストした人</string>
+    <string name="boosted_by">投稿をブーストした人</string>
     <string name="button_background_color">ボタン背景色</string>
     <string name="button_foreground_color">ボタン前景色</string>
     <string name="cancel">キャンセル</string>
@@ -110,7 +110,7 @@
     <string name="cant_get_web_setting_visibility">Webアプリの公開範囲の設定を取得できません。Mastodonサーバーのバージョンが古いです。</string>
     <string name="cant_handle_uri_of">Subway Tooter は URI \"%1$s\"を扱えません。別のアプリを選んでください。</string>
     <string name="cant_remove_boost_while_favourited">お気に入りを外さないとブーストを外せません？</string>
-    <string name="cant_sync_toot">トゥートを同期できません</string>
+    <string name="cant_sync_toot">投稿を同期できません</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_card">Card</string>
     <string name="card_header_provider">Provider</string>
@@ -150,25 +150,25 @@
     <string name="confirm_before_boost">ブースト前に確認</string>
     <string name="confirm_block_domain">ドメイン \"%1$s\" を非表示にします。よろしいですか？</string>
     <string name="confirm_block_user">ユーザ \"%1$s\" をブロックします。よろしいですか?</string>
-    <string name="confirm_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
-    <string name="confirm_boost_private_from">非公開トゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
+    <string name="confirm_boost_from">この投稿を %1$s からブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
+    <string name="confirm_boost_private_from">非公開投稿を %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
     <string name="confirm_cancel_follow_request_who_from">%2$s から %1$s へのフォローリクエストを取り消します。よろしいですか?</string>
     <string name="confirm_close_column">このカラムを閉じますか？</string>
     <string name="confirm_close_column_all">(保護されていない)全てのカラムが閉じられます。よろしいですか?</string>
     <string name="confirm_delete_attachment">この添付データを除去しますか？</string>
     <string name="confirm_delete_notification">対象ユーザへの通知データがサーバから削除されます。
 \nよろしいですか？</string>
-    <string name="confirm_delete_status">このトゥートを削除します。よろしいですか?</string>
-    <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか\? トゥートした人に通知が送られます。</string>
+    <string name="confirm_delete_status">この投稿を削除します。よろしいですか?</string>
+    <string name="confirm_favourite_from">この投稿を %1$s からお気に入りしますか\? 投稿した人に通知が送られます。</string>
     <string name="confirm_follow_request_who_from">%2$s から鍵付きユーザ %1$s にフォローリクエストを送りますか？</string>
     <string name="confirm_follow_who_from">%2$s で %1$s をフォローしますか？</string>
     <string name="confirm_mute_notification_for_user">ユーザからの通知もミュート</string>
     <string name="confirm_mute_user">ユーザ \"%1$s\" をミュートします。よろしいですか?</string>
     <string name="confirm_post_from">%1$s から投稿します。よろしいですか？</string>
     <string name="confirm_unblock_domain">ドメイン \"%1$s\" の非表示を解除しますか？</string>
-    <string name="confirm_unboost_from">このトゥートを %1$s からブースト解除しますか?</string>
-    <string name="confirm_unfavourite_from">このトゥートを %1$s からお気に入り解除しますか?</string>
-    <string name="confirm_unbookmark_from">このトゥートを %1$s からブックマーク解除しますか?</string>
+    <string name="confirm_unboost_from">この投稿を %1$s からブースト解除しますか?</string>
+    <string name="confirm_unfavourite_from">この投稿を %1$s からお気に入り解除しますか?</string>
+    <string name="confirm_unbookmark_from">この投稿を %1$s からブックマーク解除しますか?</string>
     <string name="confirm_unfollow_who_from">%2$s で %1$s をフォロー解除しますか？</string>
     <string name="confirmation">確認</string>
     <string name="contact">連絡先アカウント</string>
@@ -187,7 +187,7 @@
     <string name="copy_url">URLをクリップボードにコピー</string>
     <string name="default_status_visibility">投稿の公開範囲の既定値</string>
     <string name="delete">削除</string>
-    <string name="delete_base_status_before_toot">元トゥートを削除して投稿します。お気に入りとブーストは失われます。返信は切断されます。マストドン2.4.1未満の場合は添付メディアは維持されません。よろしいですか?</string>
+    <string name="delete_base_status_before_toot">元投稿を削除して投稿します。お気に入りとブーストは失われます。返信は切断されます。マストドン2.4.1未満の場合は添付メディアは維持されません。よろしいですか?</string>
     <string name="delete_succeeded">削除できました</string>
     <string name="delete_succeeded_confirm">ユーザ \"%1$s\" はフォロー推奨から削除されます。よろしいですか?</string>
     <string name="delete_suggestion">フォロー推奨から削除…</string>
@@ -239,8 +239,8 @@
     <string name="dont_show_boost">ブーストを表示しない</string>
     <string name="dont_show_favourite">お気に入りを表示しない</string>
     <string name="dont_show_follow">フォローを表示しない</string>
-    <string name="dont_show_normal_toot">通常トゥートを表示しない</string>
-    <string name="dont_show_non_public_toot">非公開トゥートを表示しない</string>
+    <string name="dont_show_normal_toot">通常投稿を表示しない</string>
+    <string name="dont_show_non_public_toot">非公開投稿を表示しない</string>
     <string name="dont_show_reaction">リアクションを表示しない</string>
     <string name="dont_show_reply">返信を表示しない</string>
     <string name="dont_show_timeout">\"サーバータイムアウト\"を通知しない</string>
@@ -290,7 +290,7 @@
     <string name="favourite">お気に入り</string>
     <string name="favourite_from_another_account">別アカウントでお気に入り</string>
     <string name="favourite_succeeded">お気に入りにしました</string>
-    <string name="favourited_by">トゥートをお気に入りした人</string>
+    <string name="favourited_by">投稿をお気に入りした人</string>
     <string name="favourites">お気に入り</string>
     <string name="bookmark">ブックマーク</string>
     <string name="bookmark_from_another_account">別アカウントでブックマーク</string>
@@ -319,7 +319,7 @@
     <string name="filter_expires_at">期限</string>
     <string name="filter_home">ホーム</string>
     <string name="filter_irreversible">不可逆</string>
-    <string name="filter_irreversible_long">不可逆。隠すのではなく除外する。フィルターが後で削除されても、除外されたトゥートは元に戻せなくなります。</string>
+    <string name="filter_irreversible_long">不可逆。隠すのではなく除外する。フィルターが後で削除されても、除外された投稿は元に戻せなくなります。</string>
     <string name="filter_notification">通知</string>
     <string name="filter_of">フィルタ \'%1$s\'</string>
     <string name="filter_options">オプション</string>
@@ -534,7 +534,7 @@
     <string name="oss_license">OSSライセンス</string>
     <string name="parsing_response">応答の解析中…</string>
     <string name="password_not_specified">パスワードを指定してください</string>
-    <string name="people_talking">%1$d(%2$d)人がトゥート</string>
+    <string name="people_talking">%1$d(%2$d)人が投稿</string>
     <string name="performance">性能</string>
     <string name="pick_image">画像を選択</string>
     <string name="pick_images">画像を選択…</string>
@@ -560,7 +560,7 @@
     <string name="profile_pin">プロフィールに固定表示</string>
     <string name="profile_pin_progress">固定表示の変更中…</string>
     <string name="profile_unpin">プロフィールの固定表示を解除</string>
-    <string name="progress_synchronize_toot">トゥートを同期してます…</string>
+    <string name="progress_synchronize_toot">投稿を同期してます…</string>
     <string name="pseudo_account">疑似アカウント</string>
     <string name="pseudo_account_desc">ログインせずにサーバーの公開データを読みます。</string>
     <string name="pseudo_account_not_supported">疑似アカウントでは通知を利用できません。</string>
@@ -587,7 +587,7 @@
     <string name="redraft_and_delete">削除して再編集</string>
     <string name="refresh_after_toot">投稿後の更新</string>
     <string name="refresh_no_scroll">更新するがスクロールしない</string>
-    <string name="refresh_scroll_to_toot">更新してトゥートまでスクロール</string>
+    <string name="refresh_scroll_to_toot">更新して投稿までスクロール</string>
     <string name="regex_error">正規表現エラー</string>
     <string name="regex_filter">正規表現フィルタ(上級者向け)</string>
     <string name="regex_filter_matches_empty_string">正規表現フィルタは空文字列にマッチしてしまいます</string>
@@ -617,7 +617,7 @@
     <string name="reply_from_another_account">別アカウントで返信</string>
     <string name="reply_to">%1$sへの返信</string>
     <string name="reply_to_in_draft_is_lost">下書きから参照されている返信元の投稿は失われました。以下の文脈を再現できません。in_reply_to</string>
-    <string name="reply_to_this_status">このトゥートへの返信：</string>
+    <string name="reply_to_this_status">この投稿への返信：</string>
     <string name="report">通報</string>
     <string name="report_completed">通報できました</string>
     <string name="report_forward_desc">対象ユーザは別のサーバーに所属しています。通報内容を投稿元サーバーに匿名で転送しますか?</string>
@@ -694,7 +694,7 @@
     <string name="status_id_conversion_failed">ステータスIDを変換できませんでした</string>
     <string name="statuses">投稿</string>
     <!-- プロフカラム内部のタブ表示に使われる -->
-    <string name="statuses_of">%1$s のトゥート</string>
+    <string name="statuses_of">%1$s の投稿</string>
     <string name="system_notification_not_related">システム通知をタップした時に選ばれない</string>
     <string name="tab_background_color">タブ背景色</string>
     <string name="tab_divider_color">タブ両端の区切りの色</string>
@@ -721,17 +721,17 @@
     <string name="title">名前</string>
     <string name="token_exported">アプリデータのエクスポート、インポート、バックアップからの復元などでアクセストークンが他のデバイスでも使われている可能性があります。アクセストークンの更新をおすすめします。</string>
     <string name="token_not_specified">アクセストークンを入力してください</string>
-    <string name="toot">トゥート</string>
+    <string name="toot">投稿</string>
     <string name="post_compose_button_default_account">投稿作成ボタンを押した時のデフォルトアカウント</string>
     <string name="toot_context_parse_failed">会話データのデコードに失敗</string>
-    <string name="toot_count">トゥート数</string>
-    <string name="toot_default_text">トゥート作成時のデフォルトテキスト (簡易投稿や投稿画面でのアカウント切り替えには影響しません)</string>
-    <string name="toot_search">トゥート検索</string>
-    <string name="toot_search_msp">トゥート検索(MSP)</string>
-    <string name="toot_search_msp_of">トゥート検索(MSP) \"%1$s\"</string>
-    <string name="toot_search_of">トゥート検索：%1$s</string>
-    <string name="toot_search_ts">トゥート検索(ts)</string>
-    <string name="toot_search_ts_of">トゥート検索(ts) \"%1$s\"</string>
+    <string name="toot_count">投稿数</string>
+    <string name="toot_default_text">投稿作成時のデフォルトテキスト (簡易投稿や投稿画面でのアカウント切り替えには影響しません)</string>
+    <string name="toot_search">投稿検索</string>
+    <string name="toot_search_msp">投稿検索(MSP)</string>
+    <string name="toot_search_msp_of">投稿検索(MSP) \"%1$s\"</string>
+    <string name="toot_search_of">投稿検索：%1$s</string>
+    <string name="toot_search_ts">投稿検索(ts)</string>
+    <string name="toot_search_ts_of">投稿検索(ts) \"%1$s\"</string>
     <string name="tootsearch">tootsearch</string>
     <string name="trend_tag">トレンドタグ</string>
     <string name="trend_link">トレンドリンク</string>
@@ -792,7 +792,7 @@
     <string name="word_empty">キーワードを指定してください</string>
     <string name="word_was_muted">単語をミュートしました</string>
     <string name="your_lists">マイリスト</string>
-    <string name="your_statuses">あなたのトゥート</string>
+    <string name="your_statuses">あなたの投稿</string>
     <string name="yourself_can_see_your_network">もしあなたがソーシャルグラフを隠す選択をした場合でも、あなた自身はそれを見ることができます。</string>
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
     <string name="link_color">リンクの色 (アプリ再起動が必要)</string>
@@ -820,10 +820,10 @@
     <string name="participants">会話の参加者:</string>
     <string name="participants_and_more">…他</string>
     <string name="conversation_to">送り先:</string>
-    <string name="use_quote_toot">引用トゥートにする(MisskeyまたはカスタマイズされたMastodonサーバ)</string>
+    <string name="use_quote_toot">引用投稿にする(MisskeyまたはカスタマイズされたMastodonサーバ)</string>
     <string name="mute_application_confirm">アプリ \"%1$s\" はミュートされます。よろしいですか?</string>
     <string name="boost_button_alpha" formatted="false">ブーストボタンのアルファ不透明度(単位:%。アプリの再起動が必要。本文テキスト色のアルファ値の影響も受けます)</string>
-    <string name="toot_background_color">トゥート背景色</string>
+    <string name="toot_background_color">投稿の背景色</string>
     <string name="unlisted_visibility">\'未収載\' 公開範囲</string>
     <string name="followers_visibility">\'フォロワーのみ\' 公開範囲</string>
     <string name="direct_with_user_visibility">\'誰かへのDM\' 公開範囲</string>
@@ -921,7 +921,7 @@
     <string name="open_hashtag_from_account">(%1$sからの)ハッシュタグのカラムを開く</string>
     <string name="hashtag_of_from">ハッシュタグ #%1$s (%2$sから)</string>
     <string name="boost_with_visibility">公開範囲を指定してブースト</string>
-    <string name="confirm_private_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
+    <string name="confirm_private_boost_from">この投稿を %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
     <string name="quick_toot_menu">簡易投稿メニュー</string>
     <string name="input">入力</string>
     <string name="polls_choice_not_selected">1つ以上の項目を選んでください。</string>
@@ -968,7 +968,7 @@
     <string name="reason_create_account">サーバーにアカウントを作成したい理由 (optional)</string>
     <string name="cross_account_actions">別アカ操作</string>
     <string name="account_timeline">アカウントタイムライン</string>
-    <string name="around_this_toot">このトゥート付近の</string>
+    <string name="around_this_toot">この投稿の付近の</string>
     <string name="your_toot">あなたの投稿</string>
     <string name="extra_actions">追加のアクション</string>
     <string name="block_domain">ドメイン全体をブロック</string>
@@ -1027,7 +1027,7 @@
     <string name="antenna_timeline">アンテナTL</string>
     <string name="antenna_timeline_of">アンテナTL \'%1$s\'</string>
     <string name="antenna_list_misskey">アンテナ一覧(Misskey 12+)</string>
-    <string name="quote_toot">引用トゥート(MisskeyまたはカスタマイズされたMastodonサーバ)</string>
+    <string name="quote_toot">引用投稿(カスタマイズされたサーバ)</string>
     <string name="quote">引用</string>
     <string name="promoted">宣伝</string>
     <string name="featured">紹介</string>

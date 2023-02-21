@@ -45,13 +45,13 @@
     <string name="nsfw">NSFW</string>
     <string name="tap_to_show">Tap to show</string>
     <string name="show">Show</string>
-    <string name="act_post">Posting toot</string>
+    <string name="act_post">Composite post</string>
     <string name="content_warning">Content warning</string>
-    <string name="please_add_account">You need to set an account to post a toot.</string>
+    <string name="please_add_account">You need to make an account to create post.</string>
     <string name="not_selected">(not selected)</string>
     <string name="content_warning_hint">Write your warning here</string>
-    <string name="content_hint">The content of your toot</string>
-    <string name="status">Toot</string>
+    <string name="content_hint">The content of your post</string>
+    <string name="status">Post</string>
     <string name="list_empty">List empty</string>
     <string name="post_from">Post from</string>
     <string name="choose_account">Choose your account</string>
@@ -72,8 +72,8 @@
     <string name="visibility_local_unlisted">Unlisted (local)</string>
     <string name="choose_visibility">Choose visibility</string>
     <string name="confirm_delete_attachment">Remove this attachment?</string>
-    <string name="post_error_contents_empty">Put something in your toot.</string>
-    <string name="post_error_contents_warning_empty">Your toot needs a warning.</string>
+    <string name="post_error_contents_empty">Please input content text.</string>
+    <string name="post_error_contents_warning_empty">Please input content warning text.</string>
     <string name="wait_previous_operation">Please wait until last operation is over.</string>
     <string name="cant_remove_boost_while_favourited">Can\'t remove boost while favourited</string>
     <string name="confirm">Confirm</string>
@@ -106,7 +106,7 @@
     <string name="update_access_token">Update the access token</string>
     <string name="account_remove">Remove this account</string>
     <string name="actions">Actions</string>
-    <string name="default_status_visibility">Default toot visibility</string>
+    <string name="default_status_visibility">Default visibility</string>
     <string name="confirm_before_boost">Confirm before boosting</string>
     <string name="sensitive_content_default_open">Showing sensitive attachments by default</string>
     <string name="cw_default_open">Expand CWed content by default</string>
@@ -122,11 +122,11 @@
     <string name="column_list_desc">Swipe to delete. Long press to sort. Changes will be applied when reloading the view.</string>
     <string name="last_selection">Last selection</string>
     <string name="column_index">%1$d/%2$d</string>
-    <string name="reply_to_this_status">Reply to this toot:</string>
+    <string name="reply_to_this_status">Reply to this post:</string>
     <string name="cant_change_account_when_attachment_specified">You can\'t switch accounts while there is media attachment.</string>
     <string name="column">Column</string>
     <string name="conversation_view">Conversation view</string>
-    <string name="conversation_around">Conversation around toot:%1$s</string>
+    <string name="conversation_around">Conversation around post:%1$s</string>
     <string name="instance_not_need_slash">Hostname of the server, without \'/\', \'\@\'.</string>
     <string name="mail_address_not_contains_at_mark">Use e-mails that contains \'\@\' and \'.\'</string>
     <string name="instance_hint">ex) mastodon.social</string>
@@ -252,7 +252,7 @@
     <string name="voice_capture">Capture a voice</string>
     <string name="attachment_uploading">Uploading media attachment…</string>
     <string name="attachment_uploaded">Media attachment was uploaded.</string>
-    <string name="actions_for_status">Actions for this toot</string>
+    <string name="actions_for_status">Actions for this post</string>
     <string name="actions_for_user">Actions for this user</string>
     <string name="open_profile">Open profile</string>
     <string name="send_message">Send message</string>
@@ -260,7 +260,7 @@
     <string name="open_profile_from_another_account">Open profile from another account</string>
     <string name="confirm_block_user">Block %1$s?</string>
     <string name="confirm_mute_user">Mute %1$s?</string>
-    <string name="confirm_delete_status">Delete this toot?</string>
+    <string name="confirm_delete_status">Delete this post?</string>
     <string name="nickname_label">Nickname and color (if specified, it\'s shown instead of full acct)</string>
     <string name="color">Color</string>
     <string name="reset">Reset</string>
@@ -280,7 +280,7 @@
     <string name="confirmation">Confirmation</string>
     <string name="follow_locked_user">Follow locked user</string>
     <string name="dont_confirm_again">Don\'t confirm again</string>
-    <string name="confirm_post_from">Post toot from %1$s?</string>
+    <string name="confirm_post_from">Post from %1$s?</string>
     <string name="confirm_follow_who_from">Follow %1$s from %2$s?</string>
     <string name="confirm_unfollow_who_from">Unfollow %1$s from %2$s?</string>
     <string name="confirm_follow_request_who_from">Send follow request from %2$s to the locked user %1$s?</string>
@@ -288,8 +288,8 @@
     <string name="profile">Profile</string>
     <string name="profile_of">%1$s\'s profile</string>
     <string name="it_is_you">It\'s you.</string>
-    <string name="refresh_after_toot">Refresh after tooting</string>
-    <string name="refresh_scroll_to_toot">Refresh, scroll to toot</string>
+    <string name="refresh_after_toot">Refresh after posting</string>
+    <string name="refresh_scroll_to_toot">Refresh, scroll to the post</string>
     <string name="refresh_no_scroll">Refresh, don\'t scroll</string>
     <string name="dont_refresh">Don\'t refresh</string>
     <string name="boosted_by">Boosted by…</string>
@@ -304,7 +304,7 @@
     <string name="account_picker_boost">Account to boost?</string>
     <string name="account_picker_reaction">Account to react?</string>
     <string name="account_picker_follow">Account to follow?</string>
-    <string name="account_picker_toot">Account to toot?</string>
+    <string name="account_picker_toot">Account to post?</string>
     <string name="account_picker_mute">Account to mute user %1$s?</string>
     <string name="account_picker_block">Account to block user %1$s?</string>
     <string name="qr_code">QR code</string>
@@ -312,7 +312,7 @@
     <string name="media_attachment">Media attachment</string>
     <string name="visibility">Visibility</string>
     <string name="clear">Clear</string>
-    <string name="toot">Toot</string>
+    <string name="toot">Post</string>
     <string name="clear_text">Clear text</string>
     <string name="clear_text_and_media">Clear text and media</string>
     <string name="menu">Menu</string>
@@ -357,7 +357,7 @@
     <string name="minimum_column_width">Minimum column width (default=300dp, app restart required)</string>
     <string name="media_thumbnail_height">Media Thumbnail height (default=64dp, app restart required)</string>
     <string name="account_picker_reply">Reply from?</string>
-    <string name="account_picker_quote_toot">Account to \"quote toot\"\?</string>
+    <string name="account_picker_quote_toot">Account to \"quote post\"\?</string>
     <string name="reply_from_another_account">Reply from another account</string>
     <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
     <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunately your server seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the server administrator to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
@@ -403,16 +403,16 @@
     <string name="text_to_speech_shutdown">TextToSpeech shut down…</string>
     <string name="show_post_button_bar_top">Show button bar at the top of posting screen</string>
     <string name="client_name">Client name (access token update required)</string>
-    <string name="toot_search">Toot search</string>
-    <string name="toot_search_msp">Toot search (MSP)</string>
-    <string name="toot_search_ts">Toot search (ts)</string>
+    <string name="toot_search">Post search</string>
+    <string name="toot_search_msp">Post search (MSP)</string>
+    <string name="toot_search_ts">Post search (ts)</string>
     <string name="toot_search_notestock">notestock search</string>
     <string name="mastodon_search_portal">Mastodon search portal(JP)</string>
     <string name="search_desc_mastodon_api">Account/hashtag search using Mastodon API.</string>
-    <string name="toot_search_of">Toot search \"%1$s\"</string>
-    <string name="toot_search_msp_of">Toot search (MSP) \"%1$s\"</string>
-    <string name="toot_search_ts_of">Toot search (ts) \"%1$s\"</string>
-    <string name="progress_synchronize_toot">Syncing toot…</string>
+    <string name="toot_search_of">Post search \"%1$s\"</string>
+    <string name="toot_search_msp_of">Post search (MSP) \"%1$s\"</string>
+    <string name="toot_search_ts_of">Post search (ts) \"%1$s\"</string>
+    <string name="progress_synchronize_toot">Syncing post…</string>
     <string name="send_header_account_name">Account-Name</string>
     <string name="send_header_account_acct">Account-Acct</string>
     <string name="send_header_account_url">Account-Url</string>
@@ -430,8 +430,8 @@
     <string name="timeline_font_size">Timeline font size\n(Unit:sp. leave empty to default. app restart required)\n…\n…</string>
     <string name="acct_font_size">Acct font size (Unit:sp. leave empty to default. app restart required)</string>
     <string name="dont_add_duplication_check_header">Don\'t add duplication check header</string>
-    <string name="show_quick_toot_bar">Show \"Quick Toot\" bar (app restart required.)</string>
-    <string name="quick_toot_hint">Quick Toot</string>
+    <string name="show_quick_toot_bar">Show \"Quick Post\" bar (app restart required.)</string>
+    <string name="quick_toot_hint">Quick Post</string>
     <string name="search_is_not_available_on_pseudo_account">Search function is unavailable on pseudo account .</string>
     <string name="conversation_from_another_account">Conversation view from another account</string>
     <string name="show_avatar_image">Show avatar image</string>
@@ -494,7 +494,7 @@
     <string name="choice3">choice 3 (optional)</string>
     <string name="choice4">choice 4 (optional)</string>
     <string name="make_enquete">Make enquete</string>
-    <string name="dont_use_action_button_with_quick_toot_bar">Disable IME Action button when using \"Quick Toot\" bar (app restart required)</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">Disable IME Action button when using \"Quick Post\" bar (app restart required)</string>
     <string name="auto_cw">Auto hide long text (by setting \"line counts\" greater than 0. app restart required)</string>
     <string name="auto_cw_prefix">(Auto CW)</string>
     <string name="enquete_item_is_empty">Enquete choice %1$d is empty.</string>
@@ -517,7 +517,7 @@
     <string name="cant_get_web_setting_visibility">Can\'t get visibility setting in web app.</string>
     <string name="mastodon_1_6_later">Mastodon 1.6 or later</string>
     <string name="user_count">Users</string>
-    <string name="toot_count">Toots</string>
+    <string name="toot_count">Posts</string>
     <string name="domain_count">Connected domain count</string>
     <string name="not_provided_mastodon_under_1_6">Not provided pre Mastodon 1.6</string>
     <string name="mime_type_missing">Missing media MIME type.</string>
@@ -644,8 +644,8 @@
     <string name="notification_type_status_reference_fedibird">post referenced (fedibird.com)</string>
     <string name="notification_type_signup">(admin)user signup</string>
     <string name="notification_type_report">(admin)report</string>
-    <string name="dont_show_normal_toot">Don\'t show normal toot</string>
-    <string name="dont_show_non_public_toot">Don\'t show non-public toot</string>
+    <string name="dont_show_normal_toot">Don\'t show normal posts</string>
+    <string name="dont_show_non_public_toot">Don\'t show non-public posts</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3+)</string>
     <string name="report_forward_desc">The account is from another server. Send an anonymized copy of the report there as well?</string>
     <string name="report_forward_to">Forward to %1$s</string>
@@ -681,7 +681,7 @@
     <string name="profile_metadata">Profile metadata</string>
     <string name="available_mastodon_2_4_later">(available in Mastodon 2.4+)</string>
     <string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
-    <string name="boost_private_toot_not_allowed">You can\'t boost private toots by another person.</string>
+    <string name="boost_private_toot_not_allowed">Private post can not be boost by another person.</string>
     <string name="update_push_subscription">Update push subscription</string>
     <string name="pseudo_account_not_supported">Pseudo accounts can\'t use notifications.</string>
     <string name="instance_does_not_support_push_api">Push subscription is not supported on this server (version %1$s).</string>
@@ -706,7 +706,7 @@
     <string name="people_talking">%1$d(%2$d) people talking</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'.</string>
     <string name="redraft_and_delete">Redraft and delete</string>
-    <string name="cant_sync_toot">Can\'t synchronize toot.</string>
+    <string name="cant_sync_toot">Can\'t synchronize post.</string>
     <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>
     <string name="cant_change_account_when_edit">Can\'t change account while edit the post.</string>
     <string name="delete_base_status_before_toot">Delete base status before posting.  All of favourites/boosts will be lost. Replies will be disconnected. Media attachments will not kept on Mastodon pre-2.4.1 . Are you sure?</string>
@@ -728,7 +728,7 @@
     <string name="filter_context">Filter contexts</string>
     <string name="filter_options">Options</string>
     <string name="filter_irreversible">Irreversible</string>
-    <string name="filter_irreversible_long">Irreversible. Drop instead of hide. Filtered toots will disappear irreversibly, even if the filter is removed later.</string>
+    <string name="filter_irreversible_long">Irreversible. Drop instead of hide. Filtered posts will disappear irreversibly, even if the filter is removed later.</string>
     <string name="filter_word_match">Whole word</string>
     <string name="filter_word_match_long">Whole word. Recommended to enable only phrases consisting of alphanumeric characters.</string>
     <string name="filter_expires_at">Expire</string>
@@ -749,7 +749,7 @@
     <string name="delete_suggestion">Delete from follow suggestion…</string>
     <string name="delete_succeeded_confirm">Remove the user \"%1$s\"from follow suggestion?</string>
     <string name="toot_context_parse_failed">Could not parse conversation.</string>
-    <string name="toot_default_text">Default text when composing toot. (Does not affect to quick toot bar, nor switching account in toot composition screen)</string>
+    <string name="toot_default_text">Default text when composing post. (Does not affect to quick post bar, nor switching account in toot composition screen)</string>
     <string name="list_divider_color">List divider color</string>
     <string name="display_replies_count">Show replies count</string>
     <string name="display_boost_count">Show boosts count</string>
@@ -806,13 +806,13 @@
     <string name="dont_use_custom_tabs">Don\'t use (Chrome/Firefox) \"Custom Tabs\" when opening links</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="agree">I agree</string>
-    <string name="ltl_around_toot">Local TL around this toot</string>
+    <string name="ltl_around_toot">Local TL around the post</string>
     <string name="ltl_around">Local timeline around…</string>
     <string name="ltl_around_of">Local timeline around %1$s</string>
-    <string name="ftl_around_toot">Federated TL around this toot</string>
+    <string name="ftl_around_toot">Federated TL around the post</string>
     <string name="ftl_around">Federated timeline around…</string>
     <string name="ftl_around_of">Federated timeline around %1$s</string>
-    <string name="account_tl_around_toot">Account TL around this toot</string>
+    <string name="account_tl_around_toot">Account TL around the post</string>
     <string name="account_tl_around">Account timeline around…</string>
     <string name="account_tl_around_of">Account timeline around %1$s</string>
     <string name="verified_at">verified at</string>
@@ -826,17 +826,17 @@
     <string name="participants">Participants:</string>
     <string name="participants_and_more">… and more</string>
     <string name="conversation_to">To:</string>
-    <string name="use_quote_toot">Use \"Quote Toot\". (Misskey or some customized Mastodon server)</string>
+    <string name="use_quote_toot">Use \"Quote Post\". (customized server)</string>
     <string name="mute_application_confirm">Mute the app \"%1$s\"?</string>
     <string name="boost_button_alpha" formatted="false">Boost button alpha opacity (Unit:%. app restart required. also affected of content text alpha.)</string>
-    <string name="toot_background_color">Toot background color</string>
+    <string name="toot_background_color">Post background color</string>
     <string name="column_color_default">Column color default</string>
     <string name="header_background_color">Header background color</string>
     <string name="header_foreground_color">Header foreground color</string>
     <string name="content_background_color">Content background color</string>
     <string name="content_acct_color">Content acct color</string>
     <string name="content_text_color">Content text color</string>
-    <string name="quick_toot_bar_background_color">Quick toot bar background color</string>
+    <string name="quick_toot_bar_background_color">Quick post bar background color</string>
     <string name="dont_show_preview_card">Don\'t show preview card</string>
     <string name="instance_does_not_support_push_api_pleroma">Push subscription API is not supported on this server (maybe Pleroma).</string>
     <string name="quote_renote">Quoted renote (Misskey)</string>
@@ -905,7 +905,7 @@
     <string name="event_background_color">Event background color</string>
     <string name="unfollow_misskey">Unfollow (Misskey)</string>
     <string name="follow_request_misskey">Follow request (Misskey)</string>
-    <string name="dont_remove_deleted_toot_from_timeline">Don\'t remove deleted toots from timeline</string>
+    <string name="dont_remove_deleted_toot_from_timeline">Don\'t remove deleted posts from timeline</string>
     <string name="dont_show_column_background_image">Don\'t show column background image</string>
     <string name="allow_multiple_choice">Allow multiple choice</string>
     <string name="hide_totals">Hide totals until expire</string>
@@ -928,7 +928,7 @@
     <string name="hashtag_of_from">Hashtag #%1$s from %2$s</string>
     <string name="boost_with_visibility">Boost with visibility</string>
     <string name="confirm_private_boost_from">Boost this status from %1$s ? It\'s shown to all followers.</string>
-    <string name="quick_toot_menu">Quick toot menu</string>
+    <string name="quick_toot_menu">Quick post menu</string>
     <string name="input">Input</string>
     <string name="polls_choice_not_selected">Please select 1 or more choices.</string>
     <string name="custom_emoji_separator_zwsp">use ZWSP instead of space for custom emoji separator</string>
@@ -953,7 +953,7 @@
     <string name="max_toot_chars">maximum character count in status (0:default. if server provides max_toot_chars, this setting is ignored.)</string>
     <string name="read_more_hashtag">Read more hashtags</string>
     <string name="read_more_account">Read more accounts</string>
-    <string name="read_more_status">Read more toots</string>
+    <string name="read_more_status">Read more posts</string>
     <string name="muted_users_from_pseudo_account">Muted users from pseudo account</string>
     <string name="order_active">Recently active</string>
     <string name="order_new">New arrivals</string>
@@ -973,12 +973,12 @@
     <string name="reason_create_account">Reason why you want to create an account on this server (optional)</string>
     <string name="cross_account_actions">Cross-account actions</string>
     <string name="account_timeline">Account timeline</string>
-    <string name="around_this_toot">Around this toot</string>
-    <string name="your_toot">Your toot</string>
+    <string name="around_this_toot">Around the post</string>
+    <string name="your_toot">Your post</string>
     <string name="extra_actions">Extra actions</string>
     <string name="block_domain">Block whole domain</string>
     <string name="instance_actions_for">Actions for the server \"%1$s\"</string>
-    <string name="quick_toot_omit_account_selection">When using quick toot, omit account selection if possible</string>
+    <string name="quick_toot_omit_account_selection">When using quick post, omit account selection if possible</string>
     <string name="separate_notification_group_for_reply">Separate notification groups for reply</string>
     <string name="timeline_line_spacing">Timeline line spacing (floating number is used as line spacing multiplier. leave empty to default. app restart required)</string>
     <string name="always_expand_context_menu_sub_items">Always expand sub-items of context menu</string>
@@ -1022,7 +1022,7 @@
     <string name="edited_at">Edited: %1$s</string>
     <string name="hide_followers_count">Hide followers count</string>
     <string name="emojione_shortcode_support">EmojiOne shortcode support</string>
-    <string name="emojione_shortcode_support_desc">The toots made by old Mastodon may contain emojione\'s shortcode even if the server have been updated.</string>
+    <string name="emojione_shortcode_support_desc">The posts made by old Mastodon may contain emojione\'s shortcode even if the server have been updated.</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard.</string>
     <string name="language_filter_quit_waring">Language filter is not saved. exit anyway?</string>
@@ -1033,7 +1033,7 @@
     <string name="antenna_timeline">Antenna TL</string>
     <string name="antenna_timeline_of">Antenna TL \'%1$s\'</string>
     <string name="antenna_list_misskey">Antenna list (Misskey 12+)</string>
-    <string name="quote_toot">Quote toot (Misskey or some customized Mastodon server)</string>
+    <string name="quote_toot">Quote post (customized server)</string>
     <string name="quote_toot_bt" translatable="false">Quote boost outer (debug purpose)</string>
     <string name="quote">Quote</string>
     <string name="promoted">Promoted</string>
@@ -1046,7 +1046,7 @@
     <string name="button_accent_color">Button accent color</string>
     <string name="search_bar_background_color">Search bar background color (app restart required)</string>
     <string name="announcement_background_color">Announcements background color (app restart required)</string>
-    <string name="conversation_main_toot_background_color">Conversation main toot background color</string>
+    <string name="conversation_main_toot_background_color">Focused in conversation post background color</string>
     <string name="verified_link_background_color">Verified link background color (app restart required)</string>
     <string name="verified_link_foreground_color">Verified link foreground color (app restart required)</string>
     <string name="screen_bottom_padding">Screen bottom padding (Unit: dp. Default:0. App restart required)</string>

@@ -7,6 +7,7 @@ import android.widget.TextView
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.AnimatableSpan
 import jp.juggler.subwaytooter.span.AnimatableSpanInvalidator
+import jp.juggler.util.data.clip
 import java.lang.ref.WeakReference
 
 class NetworkEmojiInvalidator(
@@ -18,7 +19,7 @@ class NetworkEmojiInvalidator(
     var text: CharSequence
         get() = view.text
         set(value) {
-            if (value is Spannable) register(value)
+            register(value as? Spannable)
             view.text = value
         }
 
@@ -68,10 +69,7 @@ class NetworkEmojiInvalidator(
     // (絵文字が多いと描画の度に大量に呼び出される)
     override fun delayInvalidate(delay: Long) {
         // あとから来たのをconflateしたいので、このタイミングでは removeCallbacks しない
-        handler.postDelayed(
-            runnableInvalidate,
-            if (delay < 10L) 10L else if (delay > 711L) 711L else delay
-        )
+        handler.postDelayed(runnableInvalidate, delay.clip(10L, 711L))
     }
 
     override fun requestLayout() {

@@ -1273,4 +1273,6 @@
     <string name="log_save_level_desc">日志严重性级别。严重性低于此设置的日志将不会被收集。</string>
     <string name="send_log_email">通过电子邮件发送日志</string>
     <string name="bug_report_desc">应用保留了过去几天的日志，但不会在未经许可的情况下将其发送到外面。仅在用户显式发送日志时引用。</string>
+    <string name="enable_deprecated_something">启用已弃用的内容</string>
+    <string name="misskey_support_end">Misskey 支持已结束</string>
 </resources>

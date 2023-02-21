@@ -68,18 +68,19 @@ class NetworkEmojiSpan constructor(
 
     private var lastWidth: Float? = null
     private var transY = 0f
-    private var baseHeight = 0f
+    private var emojiHeight = 0f
+    private var emojiWidth = 0f
 
     /**
      * lastAspect に基づいて rectDst と transY を更新する
      */
     private fun updateRect(aspectArg: Float? = null, textSize: Float, baseline: Float) {
         // テキストサイズをスケーリングした基本高さ
-        this.baseHeight = textSize * scaleRatio * scale
+        this.emojiHeight = textSize * scaleRatio * scale
 
         // ベースラインから上下方向にずらすオフセット
-        val cDescent = baseHeight * descentRatio
-        this.transY = baseline - baseHeight + cDescent
+        val cDescent = emojiHeight * descentRatio
+        this.transY = baseline - emojiHeight + cDescent
 
         val aspect = when(aspectArg){
             null ->{
@@ -93,28 +94,30 @@ class NetworkEmojiSpan constructor(
 
         when {
             // 横長画像で、それを許可するモード
-            aspect > 1f && sizeMode == EmojiSizeMode.Wide -> {
+            aspect > 1.36f && sizeMode == EmojiSizeMode.Wide -> {
                 // 絵文字のアスペクト比から描画範囲の幅と高さを決める
-                val dstWidth = min(maxEmojiWidth, aspect * baseHeight)
+                val dstWidth = min(maxEmojiWidth, aspect * emojiHeight)
                 val dstHeight = dstWidth / aspect
                 val dstX = 0f
-                val dstY = (baseHeight - dstHeight) / 2f
+                val dstY = (emojiHeight - dstHeight) / 2f
                 rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
+                emojiWidth = dstWidth
             }
 
             else -> {
+                emojiWidth = emojiHeight
                 // 絵文字のアスペクト比から描画範囲の幅と高さを決める
                 val dstWidth: Float
                 val dstHeight: Float
                 if (aspect >= 1f) {
-                    dstWidth = baseHeight
-                    dstHeight = baseHeight / aspect
+                    dstWidth = emojiHeight
+                    dstHeight = emojiHeight / aspect
                 } else {
-                    dstHeight = baseHeight
-                    dstWidth = baseHeight * aspect
+                    dstHeight = emojiHeight
+                    dstWidth = emojiHeight * aspect
                 }
-                val dstX = (baseHeight - dstWidth) / 2f
-                val dstY = (baseHeight - dstHeight) / 2f
+                val dstX = (emojiHeight - dstWidth) / 2f
+                val dstY = (emojiHeight - dstHeight) / 2f
                 rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
             }
         }
@@ -143,7 +146,7 @@ class NetworkEmojiSpan constructor(
         fm: Paint.FontMetricsInt?,
     ): Int {
         updateRect(aspectArg = null, paint.textSize, baseline = 0f)
-        val height = (baseHeight + 0.5f).toInt()
+        val height = (emojiHeight + 0.5f).toInt()
         if (fm != null) {
             val cDescent = (0.5f + height * descentRatio).toInt()
             val cAscent = cDescent - height
@@ -152,7 +155,7 @@ class NetworkEmojiSpan constructor(
             if (fm.descent < cDescent) fm.descent = cDescent
             if (fm.bottom < cDescent) fm.bottom = cDescent
         }
-        return (rectDst.width() + 0.5f).toInt()
+        return (emojiWidth + 0.5f).toInt()
     }
 
     override fun draw(

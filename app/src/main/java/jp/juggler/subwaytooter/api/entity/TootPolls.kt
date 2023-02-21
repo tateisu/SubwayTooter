@@ -126,7 +126,8 @@ class TootPolls(
                         emojiMapCustom = status.custom_emojis,
                         emojiMapProfile = status.profile_emojis,
                         mentions = status.mentions,
-                        authorDomain = status.account
+                        authorDomain = status.account,
+                        emojiSizeMode = parser.emojiSizeMode,
                     ).decodeHTML(question ?: "?"),
                 )
             }
@@ -134,7 +135,7 @@ class TootPolls(
             TootPollsType.Mastodon -> {
                 val question = status.content
                 val items = parseChoiceListMastodon(
-                    parser.context,
+                    parser,
                     status,
                     src.jsonArray("options")?.objectList()
                 )
@@ -186,7 +187,8 @@ class TootPolls(
                         emojiMapCustom = status.custom_emojis,
                         emojiMapProfile = status.profile_emojis,
                         mentions = status.mentions,
-                        authorDomain = status.account
+                        authorDomain = status.account,
+                        emojiSizeMode = parser.emojiSizeMode,
                     ).decodeHTML(question ?: "?"),
                     pollId = EntityId.mayNull(src.string("id")),
                     expired_at =
@@ -214,10 +216,11 @@ class TootPolls(
                         emojiMapCustom = status.custom_emojis,
                         emojiMapProfile = status.profile_emojis,
                         mentions = status.mentions,
-                        authorDomain = status.account
+                        authorDomain = status.account,
+                        emojiSizeMode = parser.emojiSizeMode,
                     ).decodeHTML(question ?: "?"),
                     items = parseChoiceListFriendsNico(
-                        parser.context,
+                        parser,
                         status,
                         src.stringArrayList("items")
                     ),
@@ -232,7 +235,7 @@ class TootPolls(
                 val expired_at =
                     TootStatus.parseTime(src.string("endTime")).notZero() ?: Long.MAX_VALUE
                 val items = parseChoiceListNotestock(
-                    parser.context,
+                    parser,
                     status,
                     srcArray?.objectList()
                 )
@@ -281,6 +284,7 @@ class TootPolls(
                         mentions = status.mentions,
                         authorDomain = status.account,
                         unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+                        emojiSizeMode = parser.emojiSizeMode,
                     ).decodeHTML(question ?: "?"),
                     pollId = EntityId.DEFAULT,
                     expired = expired_at >= System.currentTimeMillis(),
@@ -313,7 +317,7 @@ class TootPolls(
         }
 
         private fun parseChoiceListMastodon(
-            context: Context,
+            parser: TootParser,
             status: TootStatus,
             objectArray: List<JsonObject>?,
         ): ArrayList<TootPollsChoice>? {
@@ -321,11 +325,13 @@ class TootPolls(
                 val size = objectArray.size
                 val items = ArrayList<TootPollsChoice>(size)
                 val options = DecodeOptions(
-                    context,
+                    context = parser.context,
+                    linkHelper = parser.linkHelper,
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     decodeEmoji = true,
-                    authorDomain = status.account
+                    authorDomain = status.account,
+                    emojiSizeMode = parser.emojiSizeMode,
                 )
                 for (o in objectArray) {
                     val text = reWhitespace
@@ -347,7 +353,7 @@ class TootPolls(
         }
 
         private fun parseChoiceListNotestock(
-            context: Context,
+            parser: TootParser,
             status: TootStatus,
             objectArray: List<JsonObject>?,
         ): ArrayList<TootPollsChoice>? {
@@ -355,11 +361,13 @@ class TootPolls(
                 val size = objectArray.size
                 val items = ArrayList<TootPollsChoice>(size)
                 val options = DecodeOptions(
-                    context,
+                    context = parser.context,
+                    linkHelper = parser.linkHelper,
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     decodeEmoji = true,
-                    authorDomain = status.account
+                    authorDomain = status.account,
+                    emojiSizeMode = parser.emojiSizeMode,
                 )
                 for (o in objectArray) {
                     val text = reWhitespace
@@ -381,7 +389,7 @@ class TootPolls(
         }
 
         private fun parseChoiceListFriendsNico(
-            context: Context,
+            parser: TootParser,
             status: TootStatus,
             stringArray: ArrayList<String>?,
         ): ArrayList<TootPollsChoice>? {
@@ -389,11 +397,13 @@ class TootPolls(
                 val size = stringArray.size
                 val items = ArrayList<TootPollsChoice>(size)
                 val options = DecodeOptions(
-                    context,
+                    context = parser.context,
+                    linkHelper = parser.linkHelper,
                     emojiMapCustom = status.custom_emojis,
                     emojiMapProfile = status.profile_emojis,
                     decodeEmoji = true,
-                    authorDomain = status.account
+                    authorDomain = status.account,
+                    emojiSizeMode = parser.emojiSizeMode,
                 )
                 for (i in 0 until size) {
                     val text = reWhitespace

@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.push.PushBase
 import jp.juggler.subwaytooter.push.pushRepo
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
@@ -145,8 +146,8 @@ class ActAccountSetting : AppCompatActivity(),
     private var loadingBusy = false
     private var profileBusy = false
 
-    private lateinit var listEtFieldName: List<EditText>
-    private lateinit var listEtFieldValue: List<EditText>
+    //    private lateinit var listEtFieldName: List<EditText>
+//    private lateinit var listEtFieldValue: List<EditText>
     private lateinit var listFieldNameInvalidator: List<NetworkEmojiInvalidator>
     private lateinit var listFieldValueInvalidator: List<NetworkEmojiInvalidator>
     private lateinit var btnFields: View
@@ -334,33 +335,30 @@ class ActAccountSetting : AppCompatActivity(),
                 setDropDownViewResource(R.layout.lv_spinner_dropdown)
             }
 
-            listEtFieldName = intArrayOf(
+            listFieldNameInvalidator = intArrayOf(
                 R.id.etFieldName1,
                 R.id.etFieldName2,
                 R.id.etFieldName3,
                 R.id.etFieldName4
-            ).map { findViewById(it) }
+            ).map {
+                NetworkEmojiInvalidator(handler, findViewById<EditText>(it))
 
-            listEtFieldValue = intArrayOf(
+            }
+            listFieldValueInvalidator = intArrayOf(
                 R.id.etFieldValue1,
                 R.id.etFieldValue2,
                 R.id.etFieldValue3,
                 R.id.etFieldValue4
-            ).map { findViewById(it) }
+            ).map {
+                NetworkEmojiInvalidator(handler, findViewById<EditText>(it))
+            }
 
             // btnNotificationStyleEditReply.vg(PrefB.bpSeparateReplyNotificationGroup.value)
 
+            // invalidaterがないと描画できないので
             nameInvalidator = NetworkEmojiInvalidator(handler, etDisplayName)
             noteInvalidator = NetworkEmojiInvalidator(handler, etNote)
             defaultTextInvalidator = NetworkEmojiInvalidator(handler, etDefaultText)
-
-            listFieldNameInvalidator = listEtFieldName.map {
-                NetworkEmojiInvalidator(handler, it)
-            }
-
-            listFieldValueInvalidator = listEtFieldValue.map {
-                NetworkEmojiInvalidator(handler, it)
-            }
 
             val watcher1 = simpleTextWatcher {
                 saveUIToData()
@@ -433,7 +431,7 @@ class ActAccountSetting : AppCompatActivity(),
                 swNotificationPullEnabled.isChecked = a.notificationPullEnable
                 swNotificationPushEnabled.isChecked = a.notificationPushEnable
 
-                etDefaultText.setText(a.defaultText)
+                defaultTextInvalidator.text = a.defaultText
                 etMaxTootChars.setText(a.maxTootChars.toString())
 
                 val ti = TootInstance.getCached(a)
@@ -884,8 +882,8 @@ class ActAccountSetting : AppCompatActivity(),
             ivProfileAvatar.setErrorImage(defaultColorIcon(this@ActAccountSetting, questionId))
             ivProfileAvatar.setDefaultImage(defaultColorIcon(this@ActAccountSetting, questionId))
 
-            etDisplayName.setText(loadingText)
-            etNote.setText(loadingText)
+            nameInvalidator.text = loadingText
+            noteInvalidator.text = loadingText
 
             // 初期状態では編集不可能
             arrayOf(
@@ -898,13 +896,15 @@ class ActAccountSetting : AppCompatActivity(),
                 cbLocked,
             ).forEach { it.isEnabledAlpha = false }
 
-            for (et in listEtFieldName) {
-                et.setText(loadingText)
-                et.isEnabledAlpha = false
+
+            for (i in listFieldNameInvalidator) {
+                i.text = loadingText
+                i.view.isEnabledAlpha = false
             }
-            for (et in listEtFieldValue) {
-                et.setText(loadingText)
-                et.isEnabledAlpha = false
+
+            for (i in listFieldValueInvalidator) {
+                i.text = loadingText
+                i.view.isEnabledAlpha = false
             }
 
             // 疑似アカウントなら編集不可のまま
@@ -968,12 +968,12 @@ class ActAccountSetting : AppCompatActivity(),
                 emojiMapProfile = src.profile_emojis,
                 emojiMapCustom = src.custom_emojis,
                 authorDomain = account,
+                emojiSizeMode = account.emojiSizeMode(),
             )
 
             val displayName = src.display_name
             val name = decodeOptions.decodeEmoji(displayName)
-            views.etDisplayName.setText(name)
-            nameInvalidator.register(name)
+            nameInvalidator.text = name
 
             val noteString = src.source?.note ?: src.note
             val noteSpannable = when {
@@ -986,8 +986,7 @@ class ActAccountSetting : AppCompatActivity(),
                 }
             }
 
-            views.etNote.setText(noteSpannable)
-            noteInvalidator.register(noteSpannable)
+            noteInvalidator.text = noteSpannable
 
             views.cbLocked.isChecked = src.locked
 
@@ -1006,75 +1005,55 @@ class ActAccountSetting : AppCompatActivity(),
 
             if (src.source?.fields != null) {
                 val fields = src.source.fields
-                listEtFieldName.forEachIndexed { i, et ->
-                    val handler = et.handler // may null
-                    if (handler != null) {
-                        // いつからかfields name にもカスタム絵文字が使えるようになった
-                        // https://github.com/tootsuite/mastodon/pull/11350
-                        // しかし
-                        val text = decodeOptions.decodeEmoji(
-                            when {
-                                i >= fields.size -> ""
-                                else -> fields[i].name
-                            }
-                        )
-                        et.setText(text)
-                        et.isEnabledAlpha = true
-                        val invalidator = NetworkEmojiInvalidator(handler, et)
-                        invalidator.register(text)
-                    }
+                listFieldNameInvalidator.forEachIndexed { i, et ->
+                    // いつからかfields name にもカスタム絵文字が使えるようになった
+                    // https://github.com/tootsuite/mastodon/pull/11350
+                    // しかし
+                    val text = decodeOptions.decodeEmoji(
+                        when {
+                            i >= fields.size -> ""
+                            else -> fields[i].name
+                        }
+                    )
+                    et.text = text
+                    et.view.isEnabledAlpha = true
                 }
 
-                listEtFieldValue.forEachIndexed { i, et ->
-                    val handler = et.handler // may null
-                    if (handler != null) {
-                        val text = decodeOptions.decodeEmoji(
-                            when {
-                                i >= fields.size -> ""
-                                else -> fields[i].value
-                            }
-                        )
-                        et.setText(text)
-                        et.isEnabledAlpha = true
-                        val invalidator = NetworkEmojiInvalidator(handler, et)
-                        invalidator.register(text)
-                    }
+                listFieldValueInvalidator.forEachIndexed { i, et ->
+                    val text = decodeOptions.decodeEmoji(
+                        when {
+                            i >= fields.size -> ""
+                            else -> fields[i].value
+                        }
+                    )
+                    et.text = text
+                    et.view.isEnabledAlpha = true
                 }
             } else {
                 val fields = src.fields
 
-                listEtFieldName.forEachIndexed { i, et ->
-                    val handler = et.handler // may null
-                    if (handler != null) {
-                        // いつからかfields name にもカスタム絵文字が使えるようになった
-                        // https://github.com/tootsuite/mastodon/pull/11350
-                        val text = decodeOptions.decodeEmoji(
-                            when {
-                                fields == null || i >= fields.size -> ""
-                                else -> fields[i].name
-                            }
-                        )
-                        et.setText(text)
-                        et.isEnabledAlpha = true
-                        val invalidator = NetworkEmojiInvalidator(handler, et)
-                        invalidator.register(text)
-                    }
+                listFieldNameInvalidator.forEachIndexed { i, et ->
+                    // いつからかfields name にもカスタム絵文字が使えるようになった
+                    // https://github.com/tootsuite/mastodon/pull/11350
+                    val text = decodeOptions.decodeEmoji(
+                        when {
+                            fields == null || i >= fields.size -> ""
+                            else -> fields[i].name
+                        }
+                    )
+                    et.text = text
+                    et.view.isEnabledAlpha = true
                 }
 
-                listEtFieldValue.forEachIndexed { i, et ->
-                    val handler = et.handler // may null
-                    if (handler != null) {
-                        val text = decodeOptions.decodeHTML(
-                            when {
-                                fields == null || i >= fields.size -> ""
-                                else -> fields[i].value
-                            }
-                        )
-                        et.text = text
-                        et.isEnabledAlpha = true
-                        val invalidator = NetworkEmojiInvalidator(handler, et)
-                        invalidator.register(text)
-                    }
+                listFieldValueInvalidator.forEachIndexed { i, et ->
+                    val text = decodeOptions.decodeHTML(
+                        when {
+                            fields == null || i >= fields.size -> ""
+                            else -> fields[i].value
+                        }
+                    )
+                    et.text = text
+                    et.view.isEnabledAlpha = true
                 }
             }
         } finally {
@@ -1314,9 +1293,9 @@ class ActAccountSetting : AppCompatActivity(),
     private fun sendFields(bConfirmed: Boolean = false) {
         val args = ArrayList<Pair<String, String>>()
         var lengthLongest = -1
-        for (i in listEtFieldName.indices) {
-            val k = listEtFieldName[i].text.toString().trim()
-            val v = listEtFieldValue[i].text.toString().trim()
+        for (i in listFieldNameInvalidator.indices) {
+            val k = listFieldNameInvalidator[i].text.toString().trim()
+            val v = listFieldValueInvalidator[i].text.toString().trim()
             args.add(Pair("fields_attributes[$i][name]", k))
             args.add(Pair("fields_attributes[$i][value]", v))
 

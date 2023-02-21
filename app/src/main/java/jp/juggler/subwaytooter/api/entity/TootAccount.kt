@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.widget.TextView
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
@@ -11,6 +10,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRe
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -167,7 +167,7 @@ open class TootAccount(
             context,
             emojiMapProfile = profile_emojis,
             emojiMapCustom = custom_emojis,
-            authorDomain = this
+            authorDomain = this,
         ).decodeEmoji(sv)
     }
 
@@ -182,7 +182,7 @@ open class TootAccount(
             context,
             emojiMapProfile = profile_emojis,
             emojiMapCustom = custom_emojis,
-            authorDomain = this
+            authorDomain = this,
         ).decodeEmoji(sv)
     }
 
@@ -219,12 +219,11 @@ open class TootAccount(
 
     fun setAccountExtra(
         accessInfo: SavedAccount,
-        tv: TextView,
-        invalidator: NetworkEmojiInvalidator?,
+        invalidator: NetworkEmojiInvalidator,
         fromProfileHeader: Boolean = false,
         suggestionSource: String? = null,
     ): SpannableStringBuilder? {
-        val context = tv.context
+        val context = invalidator.view.context
 
         var sb: SpannableStringBuilder? = null
         fun prepareSb() = sb?.apply { append('\n') } ?: SpannableStringBuilder().also { sb = it }
@@ -281,6 +280,7 @@ open class TootAccount(
                     emojiMapCustom = custom_emojis,
                     unwrapEmojiImageTag = true,
                     authorDomain = this,
+                    emojiSizeMode = accessInfo.emojiSizeMode(),
                 ).decodeHTML(note)
                     .replaceAllEx(reNoteLineFeed, " ")
                     .trimEx()
@@ -296,13 +296,10 @@ open class TootAccount(
             }
         }
 
-        tv.vg(sb != null)
-            ?.apply {
-                text = sb
-                movementMethod = MyLinkMovementMethod
-                invalidator?.register(sb)
-            }
-            ?: invalidator?.clear()
+        invalidator.view.vg(sb != null)?.apply {
+            invalidator.text = sb!!
+            movementMethod = MyLinkMovementMethod
+        } ?: invalidator.clear()
 
         return sb
     }

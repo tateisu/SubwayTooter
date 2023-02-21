@@ -3,16 +3,24 @@ package jp.juggler.subwaytooter.util
 import android.os.Handler
 import android.os.SystemClock
 import android.text.Spannable
-import android.view.View
-
-import java.util.ArrayList
-
+import android.widget.TextView
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.AnimatableSpan
 import jp.juggler.subwaytooter.span.AnimatableSpanInvalidator
 import java.lang.ref.WeakReference
 
-class NetworkEmojiInvalidator(internal val handler: Handler, internal val view: View) : Runnable, AnimatableSpanInvalidator {
+class NetworkEmojiInvalidator(
+    internal val handler: Handler,
+    internal val view: TextView,
+    // val parent:View? = null,
+) : AnimatableSpanInvalidator {
+
+    var text: CharSequence
+        get() = view.text
+        set(value) {
+            if (value is Spannable) register(value)
+            view.text = value
+        }
 
     private val drawTargetList = ArrayList<WeakReference<Any>>()
 
@@ -34,6 +42,43 @@ class NetworkEmojiInvalidator(internal val handler: Handler, internal val view: 
             return now - tStart
         }
 
+    // Handler経由で遅延実行される
+    private val runnableInvalidate = object : Runnable {
+        override fun run() {
+            // 後から来たのをこのタイミングで重複排除する
+            handler.removeCallbacks(this)
+            if (view.isAttachedToWindow) {
+                view.postInvalidateOnAnimation()
+            }
+        }
+    }
+
+    // Handler経由で遅延実行される
+    private val runnableRequestLayout = object : Runnable {
+        override fun run() {
+            // 後から来たのをこのタイミングで重複排除する
+            handler.removeCallbacks(this)
+            if (view.isAttachedToWindow) {
+                view.requestLayout()
+            }
+        }
+    }
+
+    // 絵文字スパンを描画した直後に呼ばれる
+    // (絵文字が多いと描画の度に大量に呼び出される)
+    override fun delayInvalidate(delay: Long) {
+        // あとから来たのをconflateしたいので、このタイミングでは removeCallbacks しない
+        handler.postDelayed(
+            runnableInvalidate,
+            if (delay < 10L) 10L else if (delay > 711L) 711L else delay
+        )
+    }
+
+    override fun requestLayout() {
+        // あとから来たのをconflateしたいので、このタイミングでは removeCallbacks しない
+        handler.postDelayed(runnableRequestLayout, 10L)
+    }
+
     fun clear() {
         for (o in drawTargetList) {
             App1.custom_emoji_cache.cancelRequest(o)
@@ -51,20 +96,6 @@ class NetworkEmojiInvalidator(internal val handler: Handler, internal val view: 
                 drawTargetList.add(tag)
                 span.setInvalidateCallback(tag, this)
             }
-        }
-    }
-
-    // 絵文字スパンを描画した直後に呼ばれる
-    // (絵文字が多いと描画の度に大量に呼び出される)
-    override fun delayInvalidate(delay: Long) {
-        handler.postDelayed(this, if (delay < 10L) 10L else if (delay > 711L) 711L else delay)
-    }
-
-    // Handler経由で遅延実行される
-    override fun run() {
-        handler.removeCallbacks(this)
-        if (view.isAttachedToWindow) {
-            view.postInvalidateOnAnimation()
         }
     }
 }

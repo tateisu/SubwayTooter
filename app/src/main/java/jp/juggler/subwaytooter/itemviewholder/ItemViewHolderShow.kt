@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -268,14 +269,12 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
         accessInfo.supplyBaseUrl(who.avatar)
     )
 
-    tvFollowerName.text = whoRef.decoded_display_name
-    followInvalidator.register(whoRef.decoded_display_name)
+    followInvalidator.text = whoRef.decoded_display_name
 
     setAcct(tvFollowerAcct, accessInfo, who)
 
     who.setAccountExtra(
         accessInfo,
-        tvLastStatusAt,
         lastActiveInvalidator,
         suggestionSource = if (column.type == ColumnType.FOLLOW_SUGGESTION) {
             SuggestionSource.get(accessInfo.db_id, who.acct)
@@ -356,7 +355,8 @@ fun ItemViewHolder.showBoost(
             accessInfo,
             decodeEmoji = true,
             enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f
+            enlargeCustomEmoji = 1.5f,
+            emojiSizeMode = accessInfo.emojiSizeMode(),
         )
         val ssb = reaction.toSpannableStringBuilder(options, boostStatus)
         ssb.append(" ")
@@ -364,15 +364,11 @@ fun ItemViewHolder.showBoost(
             who.decodeDisplayNameCached(activity)
                 .intoStringResource(activity, stringId)
         )
-        val text: Spannable =ssb
-        tvBoosted.text = text
-        boostInvalidator.register(text)
+        boostInvalidator.text = ssb
     } else {
-        val text: Spannable =
+        boostInvalidator.text =
             who.decodeDisplayNameCached(activity)
-            .intoStringResource(activity, stringId)
-        tvBoosted.text = text
-        boostInvalidator.register(text)
+                .intoStringResource(activity, stringId)
     }
 }
 
@@ -501,8 +497,7 @@ fun ItemViewHolder.showReply(
         )
     }
 
-    tvReply.text = text
-    replyInvalidator.register(text)
+    replyInvalidator.text = text
 }
 
 fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, iconId: Int, stringId: Int) {
@@ -738,8 +733,8 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
 
         setAcct(tvAcct, accessInfo, who)
 
-        tvName.text = whoRef.decoded_display_name
-        nameInvalidator.register(whoRef.decoded_display_name)
+        nameInvalidator.text = whoRef.decoded_display_name
+
         ivAvatar.setImageUrl(
             calcIconRound(ivAvatar.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
@@ -750,8 +745,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
 
         tvMentions.visibility = View.GONE
 
-        tvContent.text = content
-        contentInvalidator.register(content)
+        contentInvalidator.text = content
 
         tvContent.minLines = -1
 
@@ -760,8 +754,7 @@ fun ItemViewHolder.showScheduled(item: TootScheduled) {
             decodedSpoilerText.isNotEmpty() -> {
                 // 元データに含まれるContent Warning を使う
                 llContentWarning.visibility = View.VISIBLE
-                tvContentWarning.text = decodedSpoilerText
-                spoilerInvalidator.register(decodedSpoilerText)
+                spoilerInvalidator.text = decodedSpoilerText
                 val cwShown = daoContentWarning.isShown(item.uri, accessInfo.expandCw)
                 setContentVisibility(cwShown)
             }

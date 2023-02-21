@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
@@ -55,6 +56,7 @@ class TootAnnouncement(
                 // attachmentList = media_attachments,
                 highlightTrie = parser.highlightTrie,
                 mentions = mentions,
+                emojiSizeMode =  parser.emojiSizeMode,
             )
             val content = src.string("content") ?: ""
             return TootAnnouncement(

@@ -5,7 +5,6 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.EmojiMap
@@ -143,7 +142,11 @@ object EmojiDecoder {
             sb.append(text)
             val end = sb.length
             sb.setSpan(
-                NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
+                NetworkEmojiSpan(
+                    url,
+                    scale = options.enlargeCustomEmoji,
+                    sizeMode = options.emojiSizeMode
+                ),
                 start,
                 end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -396,7 +399,7 @@ object EmojiDecoder {
                 else -> {
                     // 存在確認せずに絵文字プロキシのURLを返す
                     // 閲覧先サーバの絵文字を探す
-                    return "https://${apiHostAscii}/emoji/${ cols.elementAtOrNull(0)}.webp"
+                    return "https://${apiHostAscii}/emoji/${cols.elementAtOrNull(0)}.webp"
                 }
             }
             return null

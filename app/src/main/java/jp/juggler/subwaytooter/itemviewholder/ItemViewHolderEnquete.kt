@@ -129,13 +129,11 @@ fun ItemViewHolder.makeEnqueteChoiceView(
 
         val b = AppCompatTextView(activity)
         b.layoutParams = lp
+        b.padding = (activity.density * 3f + 0.5f).toInt()
 
-        b.text = text
         val invalidator = NetworkEmojiInvalidator(activity.handler, b)
         extraInvalidatorList.add(invalidator)
-        invalidator.register(text)
-
-        b.padding = (activity.density * 3f + 0.5f).toInt()
+        invalidator.text = text
 
         val ratio = when (enquete.pollType) {
             TootPollsType.Mastodon -> {
@@ -173,10 +171,11 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         val b = CheckBox(activity)
         b.layoutParams = lp
         b.isAllCaps = false
-        b.text = text
+
         val invalidator = NetworkEmojiInvalidator(activity.handler, b)
         extraInvalidatorList.add(invalidator)
-        invalidator.register(text)
+        invalidator.text = text
+
         if (!canVote) {
             b.isEnabledAlpha = false
         } else {
@@ -190,10 +189,11 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         val b = AppCompatButton(activity)
         b.layoutParams = lp
         b.isAllCaps = false
-        b.text = text
+
         val invalidator = NetworkEmojiInvalidator(activity.handler, b)
         extraInvalidatorList.add(invalidator)
-        invalidator.register(text)
+        invalidator.text = text
+
         if (!canVote) {
             b.isEnabled = false
         } else {

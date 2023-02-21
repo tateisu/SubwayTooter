@@ -126,15 +126,22 @@ class TootReaction(
         fun encodeEmojiQuery(src: List<TootReaction>): String =
             JsonArray(src.map { it.jsonFedibird() } as Collection<JsonObject>).toString()
 
-        fun urlToSpan(options: DecodeOptions, code: String, url: String) =
-            SpannableStringBuilder(code).apply {
-                setSpan(
-                    NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
-                    0,
-                    length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+        fun urlToSpan(
+            options: DecodeOptions,
+            code: String,
+            url: String,
+        ) = SpannableStringBuilder(code).apply {
+            setSpan(
+                NetworkEmojiSpan(
+                    url = url,
+                    scale = options.enlargeCustomEmoji,
+                    sizeMode = options.emojiSizeMode
+                ),
+                0,
+                length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
 
         fun toSpannableStringBuilder(
             options: DecodeOptions,

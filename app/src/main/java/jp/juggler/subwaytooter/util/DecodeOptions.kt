@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.span.EmojiSizeMode
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.data.WordTrieTree
 import org.jetbrains.anko.collections.forEachReversedByIndex
@@ -33,6 +34,7 @@ class DecodeOptions(
     // Account.note などmentionsがない状況でメンションリンクをfull acct化するにはアカウント等からapDomainを補う必要がある
     // MFMはメンションのホスト名を補うのに閲覧者ではなく投稿作者のホスト名を必要とする
     var authorDomain: HostAndDomain? = null,
+    var emojiSizeMode: EmojiSizeMode = EmojiSizeMode.Square,
 ) {
 
     internal fun isMediaAttachment(url: String?): Boolean =

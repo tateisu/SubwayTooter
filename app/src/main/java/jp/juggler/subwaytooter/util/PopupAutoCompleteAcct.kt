@@ -117,7 +117,7 @@ internal class PopupAutoCompleteAcct(
             v.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
             v.text = acct
             if (acct is Spannable) {
-                NetworkEmojiInvalidator(handler, v).register(acct)
+                NetworkEmojiInvalidator(handler, v).text = acct
             }
             v.setOnClickListener { handleItemClick(et, selStart, selEnd, acct) }
             llItems.addView(v)

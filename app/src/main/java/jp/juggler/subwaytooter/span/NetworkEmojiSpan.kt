@@ -6,29 +6,51 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.text.style.ReplacementSpan
-import androidx.annotation.DrawableRes
 import androidx.annotation.IntRange
+import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
 import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.lazyContext
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.log.LogCategory
 import java.lang.ref.WeakReference
+import kotlin.math.min
 
-class NetworkEmojiSpan internal constructor(
+enum class EmojiSizeMode {
+    Square,
+    Wide,
+}
+
+fun SavedAccount?.emojiSizeMode(): EmojiSizeMode {
+    val ti = this?.let { TootInstance.getCached(it) }
+    return when {
+        ti == null -> EmojiSizeMode.Square
+        ti.isMisskey || !ti.fedibirdCapabilities.isNullOrEmpty() -> EmojiSizeMode.Wide
+        else -> EmojiSizeMode.Square
+    }
+}
+
+class NetworkEmojiSpan constructor(
     private val url: String,
+    private val sizeMode: EmojiSizeMode,
     private val scale: Float = 1f,
-    @DrawableRes private val errorDrawableId: Int = R.drawable.outline_broken_image_24,
+    private val errorDrawableId: Int = R.drawable.outline_broken_image_24,
 ) : ReplacementSpan(), AnimatableSpan {
 
     companion object {
-
         internal val log = LogCategory("NetworkEmojiSpan")
-
         private const val scaleRatio = 1.14f
         private const val descentRatio = 0.211f
+
+        // 最大幅
+        var maxEmojiWidth = Float.MAX_VALUE
+
+        // ImageWidthCache
+        val imageAspectCache = LruCache<String, Float>(1024)
     }
 
     private val mPaint = Paint().apply { isFilterBitmap = true }
@@ -43,6 +65,67 @@ class NetworkEmojiSpan internal constructor(
     private var refDrawTarget: WeakReference<Any>? = null
 
     private var errorDrawableCache: Drawable? = null
+
+    private var lastWidth: Float? = null
+    private var transY = 0f
+    private var baseHeight = 0f
+
+    /**
+     * lastAspect に基づいて rectDst と transY を更新する
+     */
+    private fun updateRect(aspectArg: Float? = null, textSize: Float, baseline: Float) {
+        // テキストサイズをスケーリングした基本高さ
+        this.baseHeight = textSize * scaleRatio * scale
+
+        // ベースラインから上下方向にずらすオフセット
+        val cDescent = baseHeight * descentRatio
+        this.transY = baseline - baseHeight + cDescent
+
+        val aspect = when(aspectArg){
+            null ->{
+                imageAspectCache[url] ?: 1f
+            }
+            else->{
+                imageAspectCache.put(url,aspectArg)
+                aspectArg
+            }
+        }.takeIf { it>0f }?:1f
+
+        when {
+            // 横長画像で、それを許可するモード
+            aspect > 1f && sizeMode == EmojiSizeMode.Wide -> {
+                // 絵文字のアスペクト比から描画範囲の幅と高さを決める
+                val dstWidth = min(maxEmojiWidth, aspect * baseHeight)
+                val dstHeight = dstWidth / aspect
+                val dstX = 0f
+                val dstY = (baseHeight - dstHeight) / 2f
+                rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
+            }
+
+            else -> {
+                // 絵文字のアスペクト比から描画範囲の幅と高さを決める
+                val dstWidth: Float
+                val dstHeight: Float
+                if (aspect >= 1f) {
+                    dstWidth = baseHeight
+                    dstHeight = baseHeight / aspect
+                } else {
+                    dstHeight = baseHeight
+                    dstWidth = baseHeight * aspect
+                }
+                val dstX = (baseHeight - dstWidth) / 2f
+                val dstY = (baseHeight - dstHeight) / 2f
+                rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
+            }
+        }
+        // 出力サイズが変化したならrequestLayout
+        val newWidth = rectDst.width()
+        if (lastWidth != null && lastWidth != newWidth) {
+            log.i("updateRect: width changed. $lastWidth → $newWidth")
+            invalidateCallback?.requestLayout()
+        }
+        lastWidth = newWidth
+    }
 
     override fun setInvalidateCallback(
         drawTargetTag: Any,
@@ -59,16 +142,17 @@ class NetworkEmojiSpan internal constructor(
         @IntRange(from = 0) end: Int,
         fm: Paint.FontMetricsInt?,
     ): Int {
-        val size = (paint.textSize * scaleRatio * scale + 0.5f).toInt()
+        updateRect(aspectArg = null, paint.textSize, baseline = 0f)
+        val height = (baseHeight + 0.5f).toInt()
         if (fm != null) {
-            val cDescent = (0.5f + size * descentRatio).toInt()
-            val cAscent = cDescent - size
+            val cDescent = (0.5f + height * descentRatio).toInt()
+            val cAscent = cDescent - height
             if (fm.ascent > cAscent) fm.ascent = cAscent
             if (fm.top > cAscent) fm.top = cAscent
             if (fm.descent < cDescent) fm.descent = cDescent
             if (fm.bottom < cDescent) fm.bottom = cDescent
         }
-        return size
+        return (rectDst.width() + 0.5f).toInt()
     }
 
     override fun draw(
@@ -123,28 +207,11 @@ class NetworkEmojiSpan internal constructor(
             return false
         }
         rectSrc.set(0, 0, srcWidth, srcHeight)
-
-        // 絵文字の正方形のサイズ
-        val dstSize = textPaint.textSize * scaleRatio * scale
-
-        // ベースラインから上下方向にずらすオフセット
-        val cDescent = dstSize * descentRatio
-        val transY = baseline - dstSize + cDescent
-
-        // 絵文字のアスペクト比から描画範囲の幅と高さを決める
-        val dstWidth: Float
-        val dstHeight: Float
-        val aspectSrc = srcWidth.toFloat() / srcHeight.toFloat()
-        if (aspectSrc >= 1f) {
-            dstWidth = dstSize
-            dstHeight = dstSize / aspectSrc
-        } else {
-            dstHeight = dstSize
-            dstWidth = dstSize * aspectSrc
-        }
-        val dstX = (dstSize - dstWidth) / 2f
-        val dstY = (dstSize - dstHeight) / 2f
-        rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
+        updateRect(
+            aspectArg = srcWidth.toFloat() / srcHeight.toFloat(),
+            textPaint.textSize,
+            baseline.toFloat()
+        )
 
         canvas.save()
         try {
@@ -184,38 +251,23 @@ class NetworkEmojiSpan internal constructor(
                 ?.also { errorDrawableCache = it }
 
         drawable ?: return
-        val srcWidth = drawable.intrinsicWidth
-        val srcHeight = drawable.intrinsicHeight
+        val srcWidth = drawable.intrinsicWidth.toFloat()
+        val srcHeight = drawable.intrinsicHeight.toFloat()
 
-        // 絵文字の正方形のサイズ
-        val dstSize = textPaint.textSize * scaleRatio * scale
+        updateRect(
+            aspectArg = srcWidth / srcHeight,
+            textSize = textPaint.textSize,
+            baseline = baseline.toFloat()
+        )
 
-        // ベースラインから上下方向にずらすオフセット
-        val cDescent = dstSize * descentRatio
-        val transY = baseline - dstSize + cDescent
-
-        // 絵文字のアスペクト比から描画範囲の幅と高さを決める
-        val dstWidth: Float
-        val dstHeight: Float
-        val aspectSrc = srcWidth.toFloat() / srcHeight.toFloat()
-        if (aspectSrc >= 1f) {
-            dstWidth = dstSize
-            dstHeight = dstSize / aspectSrc
-        } else {
-            dstHeight = dstSize
-            dstWidth = dstSize * aspectSrc
-        }
-        val dstX = (dstSize - dstWidth) / 2f
-        val dstY = (dstSize - dstHeight) / 2f
-        // rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
         canvas.save()
         try {
             canvas.translate(x, transY)
             drawable.setBounds(
-                dstX.toInt(),
-                dstY.toInt(),
-                (dstX + dstWidth).toInt(),
-                (dstY + dstHeight).toInt()
+                rectDst.left.toInt(),
+                rectDst.top.toInt(),
+                rectDst.right.plus(0.5f).toInt(),
+                rectDst.bottom.plus(0.5f).toInt(),
             )
             drawable.draw(canvas)
         } catch (ex: Throwable) {

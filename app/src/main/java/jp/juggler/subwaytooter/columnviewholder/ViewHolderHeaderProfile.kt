@@ -26,10 +26,7 @@ import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.itemviewholder.DlgContextMenu
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.span.EmojiImageSpan
-import jp.juggler.subwaytooter.span.LinkInfo
-import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.span.createSpan
+import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.daoAcctColor
@@ -251,9 +248,9 @@ internal class ViewHolderHeaderProfile(
 
             tvAcct.text = "@"
 
-            tvDisplayName.text = ""
+            nameInvalidator1.text = ""
 
-            tvNote.text = ""
+            noteInvalidator.text = ""
             tvMisskeyExtra.text = ""
 
             btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
@@ -276,8 +273,7 @@ internal class ViewHolderHeaderProfile(
 
             who.setAccountExtra(
                 accessInfo,
-                tvLastStatusAt,
-                invalidator = null,
+                NetworkEmojiInvalidator(activity.handler ,tvLastStatusAt),
                 fromProfileHeader = true
             )
 
@@ -296,16 +292,14 @@ internal class ViewHolderHeaderProfile(
             )
 
             val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
-            tvDisplayName.text = name
-            nameInvalidator1.register(name)
+            nameInvalidator1.text = name
 
             tvRemoteProfileWarning.vg(column.accessInfo.isRemoteUser(who))
 
             tvAcct.text = encodeAcctText(who, whoDetail)
 
             val note = whoRef.decoded_note
-            tvNote.text = note
-            noteInvalidator.register(note)
+            noteInvalidator.text = note
 
             tvMisskeyExtra.text = encodeMisskeyExtra(whoDetail)
             tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
@@ -361,8 +355,7 @@ internal class ViewHolderHeaderProfile(
             val caption = who.decodeDisplayName(activity)
                 .intoStringResource(activity, R.string.account_moved_to)
 
-            tvMoved.text = caption
-            movedCaptionInvalidator.register(caption)
+            movedCaptionInvalidator.text = caption
 
             ivMoved.layoutParams.width = activity.avatarIconSize
             ivMoved.setImageUrl(
@@ -370,8 +363,7 @@ internal class ViewHolderHeaderProfile(
                 accessInfo.supplyBaseUrl(moved.avatar_static)
             )
 
-            tvMovedName.text = movedRef.decoded_display_name
-            movedNameInvalidator.register(movedRef.decoded_display_name)
+            movedNameInvalidator.text = movedRef.decoded_display_name
 
             setAcct(tvMovedAcct, accessInfo, moved)
 
@@ -633,7 +625,8 @@ internal class ViewHolderHeaderProfile(
             short = true,
             emojiMapCustom = who.custom_emojis,
             emojiMapProfile = who.profile_emojis,
-            authorDomain = who
+            authorDomain = who,
+            emojiSizeMode = accessInfo.emojiSizeMode(),
         )
 
         val nameTypeface = ActMain.timelineFontBold
@@ -648,16 +641,16 @@ internal class ViewHolderHeaderProfile(
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             val nameText = fieldDecodeOptions.decodeEmoji(item.name)
-            val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
-            nameInvalidator.register(nameText)
 
             nameLp.topMargin = (density * 6f).toInt()
             nameView.layoutParams = nameLp
-            nameView.text = nameText
             nameView.setTextColor(colorTextContent)
             nameView.typeface = nameTypeface
             nameView.movementMethod = MyLinkMovementMethod
             views.llFields.addView(nameView)
+
+            val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
+            nameInvalidator.text = nameText
 
             // 値の方はHTMLエンコードされている
             val valueView = MyTextView(activity)
@@ -687,15 +680,15 @@ internal class ViewHolderHeaderProfile(
                 )
             }
 
-            val valueInvalidator = NetworkEmojiInvalidator(activity.handler, valueView)
-            valueInvalidator.register(valueText)
 
             valueLp.startMargin = (density * 32f).toInt()
             valueView.layoutParams = valueLp
-            valueView.text = valueText
             valueView.setTextColor(colorTextContent)
             valueView.typeface = valueTypeface
             valueView.movementMethod = MyLinkMovementMethod
+
+            val valueInvalidator = NetworkEmojiInvalidator(activity.handler, valueView)
+            valueInvalidator.text = valueText
 
             if (item.verified_at > 0L) {
                 val linkBgColor = PrefI.ipVerifiedLinkBgColor.value.notZero()

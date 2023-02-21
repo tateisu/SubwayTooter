@@ -319,9 +319,11 @@ class CustomEmojiCache(
         private fun decodeAPNG(data: ByteArray, url: String): ApngFrames? {
             val errors = ArrayList<Throwable>()
 
+            val maxSize = 256
+
             try {
                 // APNGをデコード AWebPも
-                val x = ApngFrames.parse(64) { ByteArrayInputStream(data) }
+                val x = ApngFrames.parse(maxSize) { ByteArrayInputStream(data) }
                 if (x != null) return x
                 error("ApngFrames.parse returns null.")
             } catch (ex: Throwable) {
@@ -331,7 +333,7 @@ class CustomEmojiCache(
 
             // 通常のビットマップでのロードを試みる
             try {
-                val b = decodeBitmap(data, 128)
+                val b = decodeBitmap(data, maxSize)
                 if (b != null) return ApngFrames(b)
                 error("decodeBitmap returns null.")
             } catch (ex: Throwable) {
@@ -341,7 +343,7 @@ class CustomEmojiCache(
 
             // SVGのロードを試みる
             try {
-                val b = decodeSVG(url, data, 128.toFloat())
+                val b = decodeSVG(url, data, maxSize.toFloat())
                 if (b != null) return ApngFrames(b)
                 error("decodeSVG returns null.")
             } catch (ex: Throwable) {

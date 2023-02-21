@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.databinding.ActGlideTestBinding
 import jp.juggler.subwaytooter.databinding.LvGlideTestBinding
+import jp.juggler.subwaytooter.span.EmojiSizeMode
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.util.coroutine.AppDispatchers
@@ -98,13 +99,13 @@ class ActGlideTest : AppCompatActivity() {
                 val span = NetworkEmojiSpan(
                     url = item.url,
                     scale = 2f,
+                    sizeMode = EmojiSizeMode.Square,
                 )
                 setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 append(" ")
                 append(item.name)
             }
-            nameInvalidator.register(text)
-            views.tvName.text = text
+            nameInvalidator.text = text
         }
     }
 

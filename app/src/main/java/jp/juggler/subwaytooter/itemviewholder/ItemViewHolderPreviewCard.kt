@@ -6,6 +6,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.isConversation
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.daoMediaShown
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
@@ -68,7 +69,8 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             val text = DecodeOptions(
                 activity, accessInfo,
                 forceHtml = true,
-                authorDomain = status.account
+                authorDomain = status.account,
+                emojiSizeMode =  accessInfo.emojiSizeMode(),
             ).decodeHTML(sb.toString())
 
             if (text.isNotEmpty()) {

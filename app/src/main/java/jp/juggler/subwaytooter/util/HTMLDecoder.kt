@@ -528,7 +528,11 @@ object HTMLDecoder {
                         append(alt)
                         val end = length
                         setSpan(
-                            NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
+                            NetworkEmojiSpan(
+                                url,
+                                scale = options.enlargeCustomEmoji,
+                                sizeMode = options.emojiSizeMode
+                            ),
                             start,
                             end,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

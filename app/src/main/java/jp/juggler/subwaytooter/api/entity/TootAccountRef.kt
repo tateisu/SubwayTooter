@@ -49,6 +49,7 @@ class TootAccountRef private constructor(
                     emojiMapCustom = account.custom_emojis,
                     unwrapEmojiImageTag = true,
                     authorDomain = account,
+                    emojiSizeMode = parser.emojiSizeMode,
                 ).decodeHTML(account.note),
             )
     }

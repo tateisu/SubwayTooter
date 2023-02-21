@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.util
 
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.span.EmojiSizeMode
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.findOrNull
 import jp.juggler.util.data.groupEx
 
@@ -69,7 +71,7 @@ fun LinkHelper.matchHost(src: TootAccount) =
     apiHost == src.apiHost || apDomain == src.apDomain ||
             apDomain == src.apiHost || apiHost == src.apDomain
 
-fun LinkHelper.matchHost(srcApiHost:Host,srcApDomain:Host) =
+fun LinkHelper.matchHost(srcApiHost: Host, srcApDomain: Host) =
     apiHost == srcApiHost ||
             apDomain == srcApDomain ||
             apDomain == srcApiHost ||

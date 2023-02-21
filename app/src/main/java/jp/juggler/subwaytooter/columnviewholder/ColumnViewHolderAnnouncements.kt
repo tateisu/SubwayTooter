@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -225,9 +226,8 @@ private fun ColumnViewHolder.showAnnouncementContent(item: TootAnnouncement, con
     val sb = periods
     tvAnnouncementPeriod.vg(sb != null)?.text = sb
     tvAnnouncementContent.textColor = contentColor
-    tvAnnouncementContent.text = item.decoded_content
     tvAnnouncementContent.tag = this
-    announcementContentInvalidator.register(item.decoded_content)
+    announcementContentInvalidator.text = item.decoded_content
 }
 
 private fun ColumnViewHolder.showReactionBox(
@@ -333,7 +333,8 @@ private fun ColumnViewHolder.showReactions(
         column.accessInfo,
         decodeEmoji = true,
         enlargeEmoji = 1.5f,
-        authorDomain = column.accessInfo
+        authorDomain = column.accessInfo,
+        emojiSizeMode = column.accessInfo.emojiSizeMode(),
     )
 
     val actMain = activity
@@ -377,18 +378,16 @@ private fun ColumnViewHolder.showReactions(
             if (url == null) {
                 btn.text = EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
             } else {
-                btn.text = SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
+                val invalidator = NetworkEmojiInvalidator(actMain.handler, btn)
+                invalidator.text = SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
                     sb.setSpan(
-                        NetworkEmojiSpan(url, scale = 1.5f),
+                        NetworkEmojiSpan(url, scale = 1.5f, sizeMode = options.emojiSizeMode),
                         0,
                         reaction.name.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
-                    val invalidator =
-                        NetworkEmojiInvalidator(actMain.handler, btn)
-                    invalidator.register(sb)
-                    extraInvalidatorList.add(invalidator)
                 }
+                extraInvalidatorList.add(invalidator)
             }
 
             btn.setOnClickListener {

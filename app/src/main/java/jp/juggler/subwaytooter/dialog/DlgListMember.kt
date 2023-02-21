@@ -80,11 +80,11 @@ class DlgListMember(
             who.avatar_static,
             who.avatar
         )
-        val userNameInvalidator = NetworkEmojiInvalidator(activity.handler, tvUserName)
-        val name = who.decodeDisplayName(activity)
-        tvUserName.text = name
-        userNameInvalidator.register(name)
         tvUserAcct.text = targetUserFullAcct.pretty
+
+        val name = who.decodeDisplayName(activity)
+        val userNameInvalidator = NetworkEmojiInvalidator(activity.handler, tvUserName)
+        userNameInvalidator.text = name
 
         setListOwner(listOwner)
 

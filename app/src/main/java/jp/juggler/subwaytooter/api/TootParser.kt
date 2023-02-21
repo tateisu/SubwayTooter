@@ -4,6 +4,9 @@ import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootAccount.Companion.tootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
+import jp.juggler.subwaytooter.span.EmojiSizeMode
+import jp.juggler.subwaytooter.span.emojiSizeMode
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.JsonArray
@@ -67,4 +70,7 @@ class TootParser(
             else -> null
         }
     }
+
+    val emojiSizeMode: EmojiSizeMode
+        get()= (linkHelper as? SavedAccount).emojiSizeMode()
 }

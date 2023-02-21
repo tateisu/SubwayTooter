@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.emoji.EmojiBase
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
@@ -274,7 +275,7 @@ class CompletionHelper(
             val sb = SpannableStringBuilder()
             sb.append(' ')
             sb.setSpan(
-                NetworkEmojiSpan(item.url),
+                NetworkEmojiSpan(item.url, sizeMode = accessInfo.emojiSizeMode()),
                 0,
                 sb.length,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -407,12 +408,12 @@ class CompletionHelper(
         // et.setCustomSelectionActionModeCallback( action_mode_callback );
     }
 
-    private suspend fun SpannableStringBuilder.appendEmoji(
+    private fun SpannableStringBuilder.appendEmoji(
         emoji: EmojiBase,
         bInstanceHasCustomEmoji: Boolean,
     ) = appendEmoji(bInstanceHasCustomEmoji, emoji)
 
-    private suspend fun SpannableStringBuilder.appendEmoji(
+    private fun SpannableStringBuilder.appendEmoji(
         bInstanceHasCustomEmoji: Boolean,
         emoji: EmojiBase,
     ): SpannableStringBuilder {

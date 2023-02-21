@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.accountListCanReaction
 import jp.juggler.subwaytooter.table.daoAcctColor
@@ -120,7 +121,8 @@ fun ActMain.reactionAdd(
                 accessInfo,
                 decodeEmoji = true,
                 enlargeEmoji = 1.5f,
-                enlargeCustomEmoji = 1.5f
+                enlargeCustomEmoji = 1.5f,
+                emojiSizeMode =  accessInfo.emojiSizeMode(),
             )
             val emojiSpan = TootReaction.toSpannableStringBuilder(options, code, urlArg)
             confirm(
@@ -218,7 +220,8 @@ fun ActMain.reactionRemove(
                 accessInfo,
                 decodeEmoji = true,
                 enlargeEmoji = 1.5f,
-                enlargeCustomEmoji = 1.5f
+                enlargeCustomEmoji = 1.5f,
+                emojiSizeMode =  accessInfo.emojiSizeMode(),
             )
             val emojiSpan = reaction.toSpannableStringBuilder(options, status)
             confirm(R.string.reaction_remove_confirm, emojiSpan)
@@ -328,7 +331,8 @@ private fun ActMain.reactionWithoutUi(
         accessInfo,
         decodeEmoji = true,
         enlargeEmoji = 1.5f,
-        enlargeCustomEmoji = 1.5f
+        enlargeCustomEmoji = 1.5f,
+        emojiSizeMode =  accessInfo.emojiSizeMode(),
     )
     val emojiSpan = TootReaction.toSpannableStringBuilder(options, reactionCode, reactionImage)
     val isCustomEmoji = TootReaction.isCustomEmoji(reactionCode)

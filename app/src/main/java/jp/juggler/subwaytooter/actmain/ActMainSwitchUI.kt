@@ -37,7 +37,7 @@ fun ActMain.initPhoneTablet() {
         phoneViews = ActMainPhoneViews(this).apply {
             initUI(tmpPhonePager)
         }
-        resizeAutoCW(sw)
+        saveContentTextWidth(sw)
     } else {
         tmpPhonePager.visibility = View.GONE
         tabletViews = ActMainTabletViews(this).apply {

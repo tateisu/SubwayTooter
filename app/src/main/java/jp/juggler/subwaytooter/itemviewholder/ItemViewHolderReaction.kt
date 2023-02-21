@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.minWidthCompat
@@ -74,6 +75,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         decodeEmoji = true,
         enlargeEmoji = imageScale,
         enlargeCustomEmoji = imageScale,
+        emojiSizeMode = accessInfo.emojiSizeMode(),
     )
 
     reactionSet?.forEachIndexed { index, reaction ->
@@ -132,15 +134,12 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             // カスタム絵文字の場合、アニメーション等のコールバックを処理する必要がある
             val invalidator = NetworkEmojiInvalidator(act.handler, this)
             extraInvalidatorList.add(invalidator)
-            try {
-                val ssb =
-                    reaction.toSpannableStringBuilder(options, status)
-                        .also { it.append(" ${reaction.count}") }
-                text = ssb
-                invalidator.register(ssb)
+            invalidator.text = try {
+                reaction.toSpannableStringBuilder(options, status)
+                    .also { it.append(" ${reaction.count}") }
             } catch (ex: Throwable) {
                 log.e(ex, "can't decode reaction emoji.")
-                text = "${reaction.name} ${reaction.count}"
+                "${reaction.name} ${reaction.count}"
             }
         }
         box.addView(b)

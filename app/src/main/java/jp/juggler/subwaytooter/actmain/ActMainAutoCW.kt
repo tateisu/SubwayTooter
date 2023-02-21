@@ -7,18 +7,31 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.view.MyTextView
 import java.lang.ref.WeakReference
 
-// AutoCWの基準幅を計算する
-fun ActMain.resizeAutoCW(columnW: Int) {
+/**
+ * 各カラムの各投稿のコンテンツ部分の幅を覚える
+ */
+fun ActMain.saveContentTextWidth(columnW: Int) {
+    val lvPad = (0.5f + 12 * density).toInt()
+    val iconWidth = avatarIconSize
+    val iconEnd = (0.5f + 4 * density).toInt()
+
+    val contentTextWidth = columnW - lvPad * 2 - iconWidth - iconEnd
+
+    // CW部分の絵文字とか、リアクションなら数字と枠を避けたサイズとか
+    val maxEmojiWidth = contentTextWidth - (64f * density+ 0.5f )
+
+    // NetworkEmojiSpanに覚える
+    NetworkEmojiSpan.maxEmojiWidth = maxEmojiWidth
+
+    // 自動CW用の値に覚える
     val sv = PrefS.spAutoCWLines.value
     nAutoCwLines = sv.toIntOrNull() ?: -1
     if (nAutoCwLines > 0) {
-        val lvPad = (0.5f + 12 * density).toInt()
-        val iconWidth = avatarIconSize
-        val iconEnd = (0.5f + 4 * density).toInt()
-        nAutoCwCellWidth = columnW - lvPad * 2 - iconWidth - iconEnd
+        nAutoCwCellWidth = contentTextWidth
     }
     // この後各カラムは再描画される
 }

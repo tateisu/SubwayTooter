@@ -445,7 +445,7 @@ fun ActMain.resizeColumnWidth(views: ActMainTabletViews) {
     views.tabletPagerAdapter.columnWidth = columnW // dividerの幅を含まない
     // env.tablet_snap_helper.columnWidth = column_w //使われていない
 
-    resizeAutoCW(columnW) // dividerの幅を含まない
+    saveContentTextWidth(columnW) // dividerの幅を含まない
 
     // 並べ直す
     views.tabletPagerAdapter.notifyDataSetChanged()

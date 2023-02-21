@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.filterNotEmpty
@@ -58,6 +59,7 @@ class TootCard(
                             context = parser.context,
                             decodeEmoji = true,
                             authorDomain = src.account,
+                            emojiSizeMode =  parser.emojiSizeMode,
                         ).decodeHTML(src.content ?: "").toString()
                     },
                 image = src.media_attachments

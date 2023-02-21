@@ -104,8 +104,8 @@ fun ItemViewHolder.showStatus(
 
     setAcct(tvAcct, accessInfo, who)
 
-    tvName.text = whoRef.decoded_display_name
-    nameInvalidator.register(whoRef.decoded_display_name)
+    nameInvalidator.text = whoRef.decoded_display_name
+
     ivAvatar.setImageUrl(
         calcIconRound(ivAvatar.layoutParams),
         accessInfo.supplyBaseUrl(who.avatar_static),
@@ -147,8 +147,7 @@ fun ItemViewHolder.showStatus(
 
     tvMentions.textOrGone = status.decoded_mentions
 
-    tvContent.text = modifiedContent
-    contentInvalidator.register(modifiedContent)
+    contentInvalidator.text = modifiedContent
 
     activity.checkAutoCW(status, modifiedContent)
     val r = status.auto_cw
@@ -183,21 +182,20 @@ private fun ItemViewHolder.showPoll(status: TootStatus): Spannable? {
 private fun ItemViewHolder.showSpoilerTextAndContent(status: TootStatus) {
     val r = status.auto_cw
     val decodedSpoilerText = status.decoded_spoiler_text
+    val autoCwText = r?.decodedSpoilerText
     when {
         decodedSpoilerText.isNotEmpty() -> {
             // 元データに含まれるContent Warning を使う
             llContentWarning.visibility = View.VISIBLE
-            tvContentWarning.text = status.decoded_spoiler_text
-            spoilerInvalidator.register(status.decoded_spoiler_text)
+            spoilerInvalidator.text = status.decoded_spoiler_text
             val cwShown = daoContentWarning.isShown(status, accessInfo.expandCw)
             setContentVisibility(cwShown)
         }
 
-        r?.decodedSpoilerText != null -> {
+        autoCwText != null -> {
             // 自動CW
             llContentWarning.visibility = View.VISIBLE
-            tvContentWarning.text = r.decodedSpoilerText
-            spoilerInvalidator.register(r.decodedSpoilerText)
+            spoilerInvalidator.text = autoCwText
             val cwShown = daoContentWarning.isShown(status, accessInfo.expandCw)
             setContentVisibility(cwShown)
         }
@@ -221,10 +219,11 @@ fun ItemViewHolder.setContentVisibility(shown: Boolean) {
     statusShowing?.let { status ->
         val r = status.auto_cw
         tvContent.minLines = r?.originalLineCount ?: -1
-        if (r?.decodedSpoilerText != null) {
+        val autoCwText = r?.decodedSpoilerText
+        if (autoCwText != null) {
             // 自動CWの場合はContentWarningのテキストを切り替える
-            tvContentWarning.text =
-                if (shown) activity.getString(R.string.auto_cw_prefix) else r.decodedSpoilerText
+            spoilerInvalidator.text =
+                if (shown) activity.getString(R.string.auto_cw_prefix) else autoCwText
         }
     }
 }

@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoPostDraft
 import jp.juggler.subwaytooter.table.daoSavedAccount
@@ -39,6 +40,7 @@ suspend fun ActPost.appendContentText(
         context = this,
         decodeEmoji = true,
         authorDomain = account ?: unknownHostAndDomain,
+        emojiSizeMode =  account.emojiSizeMode(),
     ).decodeEmoji(src)
     if (svEmoji.isEmpty()) return
 

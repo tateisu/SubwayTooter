@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.auth.CreateUserParams
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openCustomTab
@@ -69,7 +70,7 @@ class DlgCreateAccount(
                 linkHelper = LinkHelper.create(
                     apiHost,
                     misskeyVersion = instanceInfo?.misskeyVersionMajor ?: 0
-                )
+                ),
             ).decodeHTML(
                 instanceInfo?.short_description?.notBlank()
                     ?: instanceInfo?.description?.notBlank()

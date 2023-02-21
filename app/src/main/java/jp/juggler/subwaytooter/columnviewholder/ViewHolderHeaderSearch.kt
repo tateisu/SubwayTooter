@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.column.getHeaderDesc
 import jp.juggler.subwaytooter.databinding.LvHeaderSearchDescBinding
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import org.jetbrains.anko.textColor
@@ -35,7 +36,8 @@ internal class ViewHolderHeaderSearch(
             tvSearchDesc.textColor = column.getContentColor()
             tvSearchDesc.text = DecodeOptions(
                 activity, accessInfo, decodeEmoji = true,
-                authorDomain = accessInfo
+                authorDomain = accessInfo,
+                emojiSizeMode =  accessInfo.emojiSizeMode(),
             ).decodeHTML(column.getHeaderDesc())
         }
     }

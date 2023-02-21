@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.minWidthCompat
@@ -65,7 +66,8 @@ fun ColumnViewHolder.updateReactionQueryView() {
             column.accessInfo,
             decodeEmoji = true,
             enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f
+            enlargeCustomEmoji = 1.5f,
+            emojiSizeMode = column.accessInfo.emojiSizeMode(),
         )
 
         val buttonHeight = ActMain.boostButtonSize
@@ -93,8 +95,6 @@ fun ColumnViewHolder.updateReactionQueryView() {
                 setTextColor(contentColor)
                 setPadding(paddingH, paddingV, paddingH, paddingV)
 
-                text = ssb
-
                 allCaps = false
                 tag = reaction
 
@@ -104,7 +104,7 @@ fun ColumnViewHolder.updateReactionQueryView() {
                 }
                 // カスタム絵文字の場合、アニメーション等のコールバックを処理する必要がある
                 val invalidator = NetworkEmojiInvalidator(act.handler, this)
-                invalidator.register(ssb)
+                invalidator.text = ssb
                 emojiQueryInvalidatorList.add(invalidator)
             }
             flEmoji.addView(b)

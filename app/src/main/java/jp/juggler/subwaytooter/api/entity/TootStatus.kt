@@ -618,7 +618,8 @@ class TootStatus(
                 attachmentList = media_attachments,
                 highlightTrie = parser.highlightTrie,
                 mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
-                authorDomain = accountRef.get()
+                authorDomain = accountRef.get(),
+                emojiSizeMode = parser.emojiSizeMode,
             )
             // ハイライト検出のためにDecodeOptionsを作り直す？
             val options2 = DecodeOptions(
@@ -631,7 +632,8 @@ class TootStatus(
                 attachmentList = media_attachments,
                 highlightTrie = parser.highlightTrie,
                 mentions = null, // MisskeyはMFMをパースし終わるまでメンションが分からない
-                authorDomain = accountRef.get()
+                authorDomain = accountRef.get(),
+                emojiSizeMode = parser.emojiSizeMode,
             )
 
             val content = src.string("text")
@@ -834,6 +836,7 @@ class TootStatus(
                 mentions = mentions,
                 authorDomain = account,
                 unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+                emojiSizeMode = parser.emojiSizeMode,
             )
 
             // ハイライト検出のためにDecodeOptionsを作り直す？
@@ -845,6 +848,7 @@ class TootStatus(
                 mentions = mentions,
                 authorDomain = account,
                 unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+                emojiSizeMode = parser.emojiSizeMode,
             )
 
             val content = src.string("content")
@@ -971,7 +975,7 @@ class TootStatus(
 
             val who = parser.account(src.jsonObject("account"))
                 ?: error("missing account")
-            val accountRef = TootAccountRef.tootAccountRef(parser, who)
+            val accountRef = tootAccountRef(parser, who)
             val account = accountRef.get()
 
             val readerApDomain: Host?
@@ -1093,7 +1097,8 @@ class TootStatus(
                 attachmentList = media_attachments,
                 highlightTrie = parser.highlightTrie,
                 mentions = mentions,
-                authorDomain = account
+                authorDomain = account,
+                emojiSizeMode = parser.emojiSizeMode,
             )
 
             val decoded_content = options1.decodeHTML(content)
@@ -1115,7 +1120,8 @@ class TootStatus(
                 emojiMapProfile = profile_emojis,
                 highlightTrie = parser.highlightTrie,
                 mentions = mentions,
-                authorDomain = account
+                authorDomain = account,
+                emojiSizeMode = parser.emojiSizeMode,
             )
             val decoded_spoiler_text = options2.decodeEmoji(spoiler_text)
             if (highlightSound == null) highlightSound = options2.highlightSound

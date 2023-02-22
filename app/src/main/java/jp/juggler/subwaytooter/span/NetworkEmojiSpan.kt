@@ -21,6 +21,7 @@ class NetworkEmojiSpan constructor(
     private val url: String,
     sizeMode: EmojiSizeMode,
     scale: Float = 1f,
+    private val initialAspect:Float? = null,
     private val errorDrawableId: Int = R.drawable.outline_broken_image_24,
 ) : ReplacementSpan(), AnimatableSpan {
 
@@ -71,7 +72,7 @@ class NetworkEmojiSpan constructor(
         fm: Paint.FontMetricsInt?,
     ): Int {
         emojiImageRect.updateRect(
-            url = url, aspectArg = null, paint.textSize, baseline = 0f
+            url = url, aspectArg = initialAspect, paint.textSize, baseline = 0f
         )
         val height = (emojiImageRect.emojiHeight + 0.5f).toInt()
         if (fm != null) {

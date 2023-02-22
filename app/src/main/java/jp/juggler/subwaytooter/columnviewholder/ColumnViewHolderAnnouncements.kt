@@ -381,7 +381,12 @@ private fun ColumnViewHolder.showReactions(
                 val invalidator = NetworkEmojiInvalidator(actMain.handler, btn)
                 invalidator.text = SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
                     sb.setSpan(
-                        NetworkEmojiSpan(url, scale = 1.5f, sizeMode = options.emojiSizeMode),
+                        NetworkEmojiSpan(
+                            url,
+                            scale = 1.5f,
+                            sizeMode = options.emojiSizeMode,
+                            initialAspect = reaction.aspect,
+                        ),
                         0,
                         reaction.name.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

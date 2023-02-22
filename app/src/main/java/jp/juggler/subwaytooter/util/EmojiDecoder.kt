@@ -136,7 +136,7 @@ object EmojiDecoder {
             }
         }
 
-        fun addNetworkEmojiSpan(text: String, url: String) {
+        fun addNetworkEmojiSpan(text: String, url: String, initialAspect: Float?) {
             closeNormalText()
             val start = sb.length
             sb.append(text)
@@ -145,7 +145,8 @@ object EmojiDecoder {
                 NetworkEmojiSpan(
                     url,
                     scale = options.enlargeCustomEmoji,
-                    sizeMode = options.emojiSizeMode
+                    sizeMode = options.emojiSizeMode,
+                    initialAspect = initialAspect,
                 ),
                 start,
                 end,
@@ -405,15 +406,7 @@ object EmojiDecoder {
             return null
         }
 
-        fun findCustomEmojiUrl(name: String): String? {
-            emojiMapCustom?.get(name)?.customEmojiToUrl()
-                ?.let { return it }
-            return if (options.linkHelper?.isMisskey == true) {
-                findEmojiMisskey13(name = name)
-            } else {
-                null
-            }
-        }
+
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
             override fun onString(part: String) {
                 builder.addUnicodeString(part)
@@ -426,15 +419,24 @@ object EmojiDecoder {
                     if (emojiProfile != null) {
                         val url = emojiProfile.url
                         if (url.isNotEmpty()) {
-                            builder.addNetworkEmojiSpan(part, url)
+                            builder.addNetworkEmojiSpan(part, url, initialAspect = null)
                             return
                         }
                     }
                 }
 
-                val url = findCustomEmojiUrl(name)
+                emojiMapCustom?.get(name)?.let {
+                    val url = it.customEmojiToUrl()
+                    builder.addNetworkEmojiSpan(part, url, initialAspect = it.aspect)
+                    return
+                }
+                val url = if (options.linkHelper?.isMisskey == true) {
+                    findEmojiMisskey13(name = name)
+                } else {
+                    null
+                }
                 if (url != null) {
-                    builder.addNetworkEmojiSpan(part, url)
+                    builder.addNetworkEmojiSpan(part, url, initialAspect = null)
                     return
                 }
 

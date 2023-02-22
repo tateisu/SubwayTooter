@@ -15,11 +15,11 @@ import jp.juggler.subwaytooter.emoji.EmojiBase
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.subwaytooter.util.PopupAutoCompleteAcct
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
@@ -275,7 +275,11 @@ class CompletionHelper(
             val sb = SpannableStringBuilder()
             sb.append(' ')
             sb.setSpan(
-                NetworkEmojiSpan(item.url, sizeMode = accessInfo.emojiSizeMode()),
+                NetworkEmojiSpan(
+                    item.url,
+                    sizeMode = accessInfo.emojiSizeMode(),
+                    initialAspect = item.aspect,
+                ),
                 0,
                 sb.length,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

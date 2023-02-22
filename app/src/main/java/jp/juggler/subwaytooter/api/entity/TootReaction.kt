@@ -33,6 +33,9 @@ class TootReaction(
 
     // (fedibird絵文字リアクション) userストリームのemoji_reactionイベントで設定される。
     val status_id: EntityId? = null,
+
+    // (fedibird絵文字リアクション)
+    val aspect: Float? = null,
 ) {
     companion object {
 
@@ -53,6 +56,14 @@ class TootReaction(
             me = src.boolean("me") ?: false,
             announcement_id = EntityId.mayNull(src.string("announcement_id")),
             status_id = EntityId.mayNull(src.string("status_id")),
+            aspect = src.run {
+                val w = double("width")
+                val h = double("height")
+                when {
+                    w == null || h == null || w < 1.0 || h < 1.0 -> null
+                    else -> (w / h).toFloat()
+                }
+            }
         )
 
         // Misskeyの通知にあるreaction文字列
@@ -130,12 +141,14 @@ class TootReaction(
             options: DecodeOptions,
             code: String,
             url: String,
+            initialAspect: Float? = null,
         ) = SpannableStringBuilder(code).apply {
             setSpan(
                 NetworkEmojiSpan(
                     url = url,
                     scale = options.enlargeCustomEmoji,
-                    sizeMode = options.emojiSizeMode
+                    sizeMode = options.emojiSizeMode,
+                    initialAspect = initialAspect,
                 ),
                 0,
                 length,
@@ -206,7 +219,7 @@ class TootReaction(
                 status?.custom_emojis?.get(customCode)
                     ?.chooseUrl()
                     ?.notEmpty()
-                    ?.let { return urlToSpan(options, code, it) }
+                    ?.let { return urlToSpan(options, code, it, initialAspect = aspect) }
 
                 // ストリーミングからきた絵文字などの場合は情報がない
                 val accessInfo = options.linkHelper as? SavedAccount

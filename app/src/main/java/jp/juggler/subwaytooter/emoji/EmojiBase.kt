@@ -84,7 +84,7 @@ class CustomEmoji(
             val w = src.double("width")
             val h = src.double("height")
             val aspect = when {
-                w == null || h == null || w < 1f || h < 1f -> null
+                w == null || h == null || w < 1.0 || h < 1.0 -> null
                 else -> (w / h).toFloat()
             }
             return CustomEmoji(

@@ -10,7 +10,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRe
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.span.emojiSizeMode
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions

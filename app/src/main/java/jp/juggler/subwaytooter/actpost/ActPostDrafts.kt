@@ -10,7 +10,6 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker
-import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoPostDraft
 import jp.juggler.subwaytooter.table.daoSavedAccount

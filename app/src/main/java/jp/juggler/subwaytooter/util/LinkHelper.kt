@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter.util
 
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.span.EmojiSizeMode
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.findOrNull
 import jp.juggler.util.data.groupEx
 

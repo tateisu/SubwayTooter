@@ -31,7 +31,7 @@ import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.push.PushBase
 import jp.juggler.subwaytooter.push.pushRepo
-import jp.juggler.subwaytooter.span.emojiSizeMode
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount

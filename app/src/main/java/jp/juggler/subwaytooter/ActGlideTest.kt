@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.databinding.ActGlideTestBinding
 import jp.juggler.subwaytooter.databinding.LvGlideTestBinding
-import jp.juggler.subwaytooter.span.EmojiSizeMode
+import jp.juggler.subwaytooter.util.EmojiSizeMode
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.util.coroutine.AppDispatchers

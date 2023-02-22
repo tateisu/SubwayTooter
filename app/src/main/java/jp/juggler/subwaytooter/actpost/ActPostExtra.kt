@@ -13,15 +13,11 @@ import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoPostDraft
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.table.sortedByNickname
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.PostAttachment
-import jp.juggler.subwaytooter.util.PostImpl
-import jp.juggler.subwaytooter.util.PostResult
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.CharacterGroup
@@ -31,7 +27,7 @@ import jp.juggler.util.ui.vg
 
 private val log = LogCategory("ActPostExtra")
 
-suspend fun ActPost.appendContentText(
+fun ActPost.appendContentText(
     src: String?,
     selectBefore: Boolean = false,
 ) {
@@ -40,7 +36,7 @@ suspend fun ActPost.appendContentText(
         context = this,
         decodeEmoji = true,
         authorDomain = account ?: unknownHostAndDomain,
-        emojiSizeMode =  account.emojiSizeMode(),
+        emojiSizeMode = account.emojiSizeMode(),
     ).decodeEmoji(src)
     if (svEmoji.isEmpty()) return
 
@@ -79,7 +75,7 @@ suspend fun ActPost.appendContentText(
     }
 }
 
-suspend fun ActPost.appendContentText(src: Intent) {
+fun ActPost.appendContentText(src: Intent) {
     val list = ArrayList<String>()
 
     var sv: String?
@@ -107,7 +103,7 @@ fun ActPost.hasContent(): Boolean {
     }
 }
 
-suspend fun ActPost.resetText() {
+fun ActPost.resetText() {
     isPostComplete = false
 
     resetReply()
@@ -213,7 +209,7 @@ suspend fun ActPost.updateText(
     afterUpdateText()
 }
 
-suspend fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
+fun ActPost.initializeFromSharedIntent(sharedIntent: Intent) {
     try {
         val hasUri = when (sharedIntent.action) {
             Intent.ACTION_VIEW -> {

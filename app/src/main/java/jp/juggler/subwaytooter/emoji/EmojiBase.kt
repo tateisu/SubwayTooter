@@ -60,6 +60,7 @@ class CustomEmoji(
     val alias: String? = null,
     val visibleInPicker: Boolean = true,
     val category: String? = null,
+    val aspect: Float? = null,
 ) : EmojiBase, Mappable<String> {
 
     fun makeAlias(alias: String) = CustomEmoji(
@@ -80,12 +81,19 @@ class CustomEmoji(
     companion object {
 
         fun decodeMastodon(src: JsonObject): CustomEmoji {
+            val w = src.double("width")
+            val h = src.double("height")
+            val aspect = when {
+                w == null || h == null || w < 1f || h < 1f -> null
+                else -> (w / h).toFloat()
+            }
             return CustomEmoji(
                 shortcode = src.stringOrThrow("shortcode"),
                 url = src.stringOrThrow("url"),
                 staticUrl = src.string("static_url"),
                 visibleInPicker = src.optBoolean("visible_in_picker", true),
-                category = src.string("category")
+                category = src.string("category"),
+                aspect = aspect,
             )
         }
 

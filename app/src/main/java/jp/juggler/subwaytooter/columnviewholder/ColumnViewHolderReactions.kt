@@ -10,11 +10,7 @@ import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
-import jp.juggler.subwaytooter.span.emojiSizeMode
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.minWidthCompat
-import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import org.jetbrains.anko.allCaps
 

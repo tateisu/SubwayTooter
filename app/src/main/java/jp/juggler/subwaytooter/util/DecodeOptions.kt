@@ -9,7 +9,7 @@ import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.emoji.CustomEmoji
-import jp.juggler.subwaytooter.span.EmojiSizeMode
+import jp.juggler.subwaytooter.util.EmojiSizeMode
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.data.WordTrieTree
 import org.jetbrains.anko.collections.forEachReversedByIndex

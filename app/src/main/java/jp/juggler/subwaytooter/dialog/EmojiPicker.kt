@@ -1,12 +1,13 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.app.Dialog
-import android.graphics.Rect
+import android.content.Context
 import android.graphics.drawable.PictureDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.*
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -15,18 +16,19 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.bumptech.glide.Glide
-import com.google.android.flexbox.FlexboxLayout
+import com.google.android.flexbox.*
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.EmojiPickerDialogBinding
 import jp.juggler.subwaytooter.emoji.*
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.minHeightCompat
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.view.NetworkEmojiView
@@ -35,6 +37,7 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
+import org.jetbrains.anko.wrapContent
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -51,7 +54,6 @@ private class EmojiPicker(
         private const val VT_CUSTOM_EMOJI = 1
         private const val VT_TWEMOJI = 2
         private const val VT_COMPAT_EMOJI = 3
-        private const val VT_SPACE = 4
 
         private const val gridCols = 6
 
@@ -64,7 +66,6 @@ private class EmojiPicker(
     }
 
     private sealed interface PickerItem
-    private object PickerItemSpace : PickerItem
     private class PickerItemUnicode(val unicodeEmoji: UnicodeEmoji) : PickerItem
     private class PickerItemCustom(val customEmoji: CustomEmoji) : PickerItem
 
@@ -192,65 +193,78 @@ private class EmojiPicker(
     }
 
     private inner class VhCategory(
-        val view: AppCompatTextView = AppCompatTextView(activity),
+        view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
+        val tv = AppCompatTextView(activity).apply {
+            layoutParams = FrameLayout.LayoutParams(headerWidth, gridSize)
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            includeFontPadding = false
+        }
+
         init {
-            view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
-            view.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            view.includeFontPadding = false
+            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
+            view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
+            view.addView(tv)
         }
 
         override fun bind(item: PickerItem) {
             if (item is PickerItemCategory) {
-                view.text = item.name
+                tv.text = item.name
             }
         }
     }
 
-    private inner class VhSpace(
-        view: View = View(activity),
-    ) : ViewHolderBase(view) {
-        init {
-            view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
-        }
-
-        override fun bind(item: PickerItem) {
-        }
-    }
-
     private inner class VhCustomEmoji(
-        val view: NetworkEmojiView = NetworkEmojiView(activity),
+        val view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
+        val niv = NetworkEmojiView(
+            context = activity,
+            sizeMode = accessInfo.emojiSizeMode(),
+            maxEmojiWidth = NetworkEmojiSpan.maxEmojiWidth,
+        ).apply {
+            layoutParams = FrameLayout.LayoutParams(gridSize, gridSize)
+        }
 
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
+            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
+            view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
+            view.addView(niv)
         }
 
         override fun bind(item: PickerItem) {
             if (activity.isDestroyed) return
             if (item is PickerItemCustom) {
                 view.setTag(R.id.btnAbout, item)
-                view.setEmoji(
-                    if (disableAnimation) {
+                niv.setEmoji(
+                    url = if (disableAnimation) {
                         item.customEmoji.staticUrl
                     } else {
                         item.customEmoji.url
-                    }
+                    },
+                    initialAspect = item.customEmoji.aspect,
+                    defaultWidth = gridSize,
+                    defaultHeight = gridSize,
                 )
             }
         }
     }
 
     private inner class VhTwemoji(
-        val view: AppCompatImageView = AppCompatImageView(activity),
+        val view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
+        val iv = AppCompatImageView(activity).apply {
+            layoutParams = FrameLayout.LayoutParams(gridSize, gridSize)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
-            view.scaleType = ImageView.ScaleType.FIT_CENTER
+            view.layoutParams = RecyclerView.LayoutParams(gridSize, gridSize)
+            view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
+            view.addView(iv)
         }
 
         override fun bind(item: PickerItem) {
@@ -262,27 +276,32 @@ private class EmojiPicker(
                     Glide.with(activity)
                         .`as`(PictureDrawable::class.java)
                         .load("file:///android_asset/${emoji.assetsName}")
-                        .into(view)
+                        .into(iv)
                 } else {
                     Glide.with(activity)
                         .load(emoji.drawableId)
-                        .into(view)
+                        .into(iv)
                 }
             }
         }
     }
 
     private inner class VhAppCompatEmoji(
-        val view: AppCompatTextView = AppCompatTextView(activity),
+        val view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
+        val tv = AppCompatTextView(activity).apply {
+            layoutParams = FrameLayout.LayoutParams(gridSize, gridSize)
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setLineSpacing(0f, 0f)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, gridSize.toFloat() * 0.7f)
+        }
+
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(matchParent, gridSize)
-            view.gravity = Gravity.CENTER
-            view.setLineSpacing(0f, 0f)
-            view.setTextSize(TypedValue.COMPLEX_UNIT_PX, gridSize.toFloat() * 0.7f)
-            view.includeFontPadding = false
+            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
+            view.addView(tv)
         }
 
         override fun bind(item: PickerItem) {
@@ -290,27 +309,14 @@ private class EmojiPicker(
             if (item is PickerItemUnicode) {
                 view.setTag(R.id.btnAbout, item)
                 val unicodeEmoji = applySkinTone(item.unicodeEmoji)
-                view.text = unicodeEmoji.unifiedCode
+                tv.text = unicodeEmoji.unifiedCode
             }
         }
     }
 
-    class GridDecoration(private val space: Int) : ItemDecoration() {
-        override fun getItemOffsets(
-            outRect: Rect,
-            view: View,
-            parent: RecyclerView,
-            state: RecyclerView.State,
-        ) {
-            outRect.left = space
-            outRect.right = space
-            outRect.bottom = space
-            // Add top margin only for the first item to avoid double space between items
-            outRect.top = if (parent.getChildLayoutPosition(view) == 0) {
-                space
-            } else {
-                0
-            }
+    class FlexboxLayoutManagerWrapper(context: Context) : FlexboxLayoutManager(context) {
+        override fun generateLayoutParams(lp: ViewGroup.LayoutParams): RecyclerView.LayoutParams {
+            return LayoutParams(lp)
         }
     }
 
@@ -323,19 +329,10 @@ private class EmojiPicker(
                 notifyDataSetChanged()
             }
 
-        val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int) =
-                when {
-                    list[position] is PickerItemCategory -> gridCols
-                    else -> 1
-                }
-        }
-
         override fun getItemCount() = list.size
 
         override fun getItemViewType(position: Int) =
             when (list[position]) {
-                is PickerItemSpace -> VT_SPACE
                 is PickerItemCategory -> VT_CATEGORY
                 is PickerItemCustom -> VT_CUSTOM_EMOJI
                 is PickerItemUnicode -> when {
@@ -350,7 +347,6 @@ private class EmojiPicker(
                 VT_CUSTOM_EMOJI -> VhCustomEmoji()
                 VT_TWEMOJI -> VhTwemoji()
                 VT_COMPAT_EMOJI -> VhAppCompatEmoji()
-                VT_SPACE -> VhSpace()
                 else -> error("unknown viewType=$viewType")
             }
 
@@ -390,7 +386,6 @@ private class EmojiPicker(
         }
     }
 
-    private val gridSize = (0.5f + 48f * activity.resources.displayMetrics.density).toInt()
     private val matchParent = RecyclerView.LayoutParams.MATCH_PARENT
 
     private val useTwemoji = PrefB.bpUseTwemoji.value
@@ -408,6 +403,9 @@ private class EmojiPicker(
     private var recentCategory: PickerItemCategoryRecent? = null
 
     private val density = activity.resources.displayMetrics.density
+    val cellMargin = (density * 1f + 0.5f).toInt()
+    val gridSize = (density * 48f + 0.5f).toInt()
+    val headerWidth = gridSize *6
     private val cancelY = 16f
     private val interceptX = 40f
     private var tracker: VelocityTracker? = null
@@ -579,12 +577,12 @@ private class EmojiPicker(
             }.forEach {
                 if (it.category == EmojiCategory.Custom || selectedCategory == null) add(it)
                 addAll(it.items)
-                val mod = it.items.size % gridCols
-                if (mod > 0) {
-                    repeat(gridCols - mod) {
-                        add(PickerItemSpace)
-                    }
-                }
+//                val mod = it.items.size % gridCols
+//                if (mod > 0) {
+//                    repeat(gridCols - mod) {
+//                        add(PickerItemSpace)
+//                    }
+//                }
             }
         }
         for (it in views.llCategories.children) {
@@ -748,23 +746,25 @@ private class EmojiPicker(
 
         showFiltered(null, null)
 
-        val density = activity.resources.displayMetrics.density
-
         views.giGrid.intercept = { handleTouch(it, wasIntercept = false) }
         views.giGrid.touch = { handleTouch(it, wasIntercept = true) }
 
         views.rvGrid.adapter = adapter
-        views.rvGrid.layoutManager = GridLayoutManager(
-            activity,
-            gridCols,
-            RecyclerView.VERTICAL,
-            false
-        ).also {
-            it.spanSizeLookup = adapter.spanSizeLookup
+
+        views.rvGrid.layoutManager = FlexboxLayoutManagerWrapper(activity).apply {
+            flexDirection = FlexDirection.ROW
+            flexWrap = FlexWrap.WRAP
+            justifyContent = JustifyContent.FLEX_START
         }
 
-        val cellSpacing = (density * 1f + 0.5f).toInt()
-        views.rvGrid.addItemDecoration(GridDecoration(cellSpacing))
+//
+//            gridCols,
+//            RecyclerView.VERTICAL,
+//            false
+//        ).also {
+//            it.spanSizeLookup = adapter.spanSizeLookup
+//        }
+
         showSkinTone()
 
         this.dialog = Dialog(activity)

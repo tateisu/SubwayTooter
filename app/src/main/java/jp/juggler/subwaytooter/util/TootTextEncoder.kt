@@ -7,7 +7,6 @@ import jp.juggler.subwaytooter.ActText
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.span.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.notEmpty
 import java.util.*
@@ -73,7 +72,7 @@ object TootTextEncoder {
                 accessInfo,
                 mentions = status.mentions,
                 authorDomain = status.account,
-                emojiSizeMode =  accessInfo.emojiSizeMode(),
+                emojiSizeMode = accessInfo.emojiSizeMode(),
             ).decodeHTML(status.content)
         )
 
@@ -105,7 +104,7 @@ object TootTextEncoder {
                 accessInfo,
                 mentions = status.mentions,
                 authorDomain = status.account,
-                emojiSizeMode =  accessInfo.emojiSizeMode(),
+                emojiSizeMode = accessInfo.emojiSizeMode(),
             ).decodeHTML(status.content)
         )
 
@@ -274,7 +273,7 @@ object TootTextEncoder {
                 context,
                 accessInfo,
                 authorDomain = who,
-                emojiSizeMode =  accessInfo.emojiSizeMode(),
+                emojiSizeMode = accessInfo.emojiSizeMode(),
             ).decodeHTML(who.note)
         )
 

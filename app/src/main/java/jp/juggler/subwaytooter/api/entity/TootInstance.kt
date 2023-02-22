@@ -393,40 +393,64 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             return result
         }
 
+        /*
+        Misskeyは昔/api/v1/instance に応答していたことがある。
+        - Oct 16, 2018 https://github.com/misskey-dev/misskey/pull/2913
+        - Oct 31, 2018 https://github.com/misskey-dev/misskey/pull/3045 ここから
+        - Jan 31, 2019 https://github.com/misskey-dev/misskey/pull/4061 ここまで
+        */
+        private val reOldMisskeyCompatible = """\A[\d.]+:compatible:misskey:""".toRegex()
+
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformation(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-            // misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
-            val r2 = getInstanceInformationMisskey(forceAccessToken)
-                ?: return null
-            if (r2.jsonObject != null) return r2
-
-            // https://github.com/tateisu/SubwayTooter/issues/234
-            // friendica は /api/meta に401を返す
-            // このためMisskeyのサーバ情報取得に失敗したらそれが何であれMastodonのサーバ情報取得を行う
-
-            // マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
+            // /api/v1/instance を読む(mastodon)
             val r1 = getInstanceInformationMastodon(forceAccessToken)
-                ?: return null
-            if (r1.jsonObject != null) return r1
+                ?: return null // cancelled
 
-            // 両方読めなかった場合
-            return when (r1.response?.code) {
-                // /api/v1/instance が404を返したらMisskeyのエラー応答を返す
-                404 -> r2
+            // /api/meta を読む (misskey)
+            val r2 = getInstanceInformationMisskey(forceAccessToken)
+                ?: return null // cancelled
 
-                // /api/v1/instance 401を返すのはMastodonのホワイトリストモードだと思う
-                // Mastoronのエラー結果を返す。
-                401 -> r1
+            val r1Json = r1.jsonObject
+            val r2Json = r2.jsonObject
+            return when {
+                r1Json != null && r2Json != null -> when {
+                    // 両方のAPIに応答するサーバは非常に限られる
 
-                // /api/v1/instance が200を返すがJsonObjectではないのは、
-                // Misskeyサーバへの /api/meta にアクセスしない && Misskey は /api/v1/instance に200を返すから。
-                200 -> r2
+                    // 古いMisskeyがMastodon互換APIを返す事があるが、それはMastodon互換だと思ってはいけない
+                    r1Json.string("version")?.let {
+                        reOldMisskeyCompatible.containsMatchIn(it)
+                    } == true -> r2
 
-                // その他の場合
-                // Mastoronのエラー結果を返す。
-                else -> r1
+                    // 他には kids.0px.io が存在する
+                    // これはMisskey有効トグルで結果を切り替えたいらしい
+                    // https://mastodon.juggler.jp/@cutls@kids.0px.io/109856255448109956
+                    PrefB.bpEnableDeprecatedSomething.value -> r2
+                    else -> r1
+                }
+
+                r1Json != null -> r1
+                r2Json != null -> r2
+
+                // 両方読めなかった場合
+                else -> when (r1.response?.code) {
+                    // /api/v1/instance が404を返したらMisskeyのエラー応答を返す
+                    404 -> r2
+
+                    // /api/v1/instance が200を返すがJsonObjectではないというのは、
+                    // Misskeyサーバへの /api/meta にアクセスしない && Misskey は /api/v1/instance に200を返すから。
+                    200 -> r2
+
+                    // /api/v1/instance 401を返すのはMastodonのホワイトリストモードだと思う
+                    // Mastoronのエラー結果を返す。
+                    401 -> r1
+
+                    // その他の場合
+                    // Mastoronのエラー結果を返す。
+                    else -> r1
+                }
             }
         }
 

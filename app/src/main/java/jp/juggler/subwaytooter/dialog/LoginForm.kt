@@ -224,7 +224,7 @@ class LoginForm(
                 var error: String? = null
                 val tootInstance = try {
                     runApiTask2(host) {
-                        TootInstance.getOrThrow(it)
+                        TootInstance.getExOrThrow(it, forceUpdate =true)
                     }
                 } catch (ex: Throwable) {
                     error = ex.message

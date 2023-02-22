@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util
 
 import android.graphics.RectF
-import androidx.collection.LruCache
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.log.LogCategory
@@ -26,17 +25,16 @@ fun SavedAccount?.emojiSizeMode(): EmojiSizeMode {
  */
 class EmojiImageRect(
     private val sizeMode: EmojiSizeMode,
-    val scale: Float =1f,
-    val scaleRatio: Float=1f,
-    val descentRatio: Float=0f,
+    val scale: Float = 1f,
+    val scaleRatio: Float = 1f,
+    val descentRatio: Float = 0f,
     val maxEmojiWidth: Float,
     val layout: (Int, Int) -> Unit,
 ) {
     companion object {
         private val log = LogCategory("EmojiImageRect")
 
-        // ImageWidthCache
-        val imageAspectCache = LruCache<String, Float>(1024)
+        val imageAspectCache = HashMap<String, Float>()
     }
 
     val rectDst = RectF()
@@ -44,7 +42,7 @@ class EmojiImageRect(
     var emojiHeight = 0f
     var transY = 0f
 
-    private var lastWidth: Float? = null
+    var lastWidth: Float? = null
 
     /**
      * lastAspect に基づいて rectDst と transY を更新する
@@ -71,9 +69,7 @@ class EmojiImageRect(
     ) {
         this.emojiHeight = h
         val aspect = when (aspectArg) {
-            null -> {
-                imageAspectCache[url] ?: 1f
-            }
+            null -> imageAspectCache[url] ?: 1f
             else -> {
                 imageAspectCache.put(url, aspectArg)
                 aspectArg

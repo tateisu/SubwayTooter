@@ -60,6 +60,7 @@ class NetworkEmojiView(
             lp.width = w
             lp.height = h
             layoutParams = lp
+            requestLayout()
         },
     )
 
@@ -72,19 +73,16 @@ class NetworkEmojiView(
         this.url = url
         mPaint.isFilterBitmap = true
         invalidate()
-        if (url != null && initialAspect != null) {
-            emojiImageRect.updateRect(
-                url = url,
-                aspectArg = initialAspect,
-                h = defaultHeight.toFloat(),
-                // may call layout callback
-            )
-        } else {
-            val lp = layoutParams
-            lp.width = defaultWidth
-            lp.height = defaultHeight
-            layoutParams = lp
-        }
+        emojiImageRect.lastWidth = null
+        emojiImageRect.updateRect(
+            url = url ?: "",
+            aspectArg = initialAspect,
+            h = defaultHeight.toFloat(),
+        )
+        val lp = layoutParams
+        lp.width = (emojiImageRect.emojiWidth + 0.5f).toInt()
+        lp.height = (emojiImageRect.emojiHeight + 0.5f).toInt()
+        layoutParams = lp
     }
 
     override fun onDraw(canvas: Canvas) {

@@ -32,8 +32,8 @@ android {
         targetSdkVersion stTargetSdkVersion
         minSdkVersion stMinSdkVersion
 
-        versionCode 521
-        versionName "5.521"
+        versionCode 522
+        versionName "5.522"
         applicationId "jp.juggler.subwaytooter"
         vectorDrawables.useSupportLibrary = true
 

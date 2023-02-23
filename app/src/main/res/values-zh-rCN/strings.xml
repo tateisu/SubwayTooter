@@ -82,11 +82,11 @@
     <string name="api_error">API 错误。%1$s</string>
     <string name="request_access_token">正在获取访问令牌…</string>
     <string name="register_app_to_server">在 %1$s 注册此应用 …</string>
-    <string name="act_post">发布嘟文</string>
+    <string name="act_post">撰写帖文</string>
     <string name="content_warning">内容警告</string>
-    <string name="please_add_account">您需要设置账号才能发布嘟文。</string>
+    <string name="please_add_account">您需要创建账号才能发布帖文。</string>
     <string name="not_selected">（未选中）</string>
-    <string name="content_hint">您嘟文的内容</string>
+    <string name="content_hint">您帖文的内容</string>
     <string name="list_empty">列表为空</string>
     <string name="choose_account">选择您的账号</string>
     <string name="response_not_json">API 响应不是 JSON。</string>
@@ -95,14 +95,14 @@
     <string name="account_select_please">选择账号</string>
     <string name="attachment_too_many">最多允许4个文件。</string>
     <string name="post_from">发嘟自</string>
-    <string name="status">嘟文</string>
+    <string name="status">帖文</string>
     <string name="content_warning_hint">在此填写内容警示</string>
     <string name="request_api">正在请求：%1$s %2$s</string>
     <string name="prior_chrome_custom_tabs">优先使用 Google Chrome 浏览器（如果“自定义标签”已启用）</string>
     <string name="enable_speech">启用语音</string>
     <string name="in_reply_to_id_conversion_failed">“in_reply_to” ID转换失败。</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">无法切换账号。旧的草稿数据没有 in_reply_to_url，无法转换所选实例的 in_reply_to。</string>
-    <string name="post_compose_button_default_account">点击“撰写嘟文”按钮时的默认发嘟账号</string>
+    <string name="post_compose_button_default_account">点击“撰写帖文”按钮时的默认发嘟账号</string>
     <string name="post">发嘟</string>
     <string name="notification_on_off_desc">还有一个账号设置可以关闭/开启通知。</string>
     <string name="behavior">行为</string>
@@ -139,7 +139,7 @@
 \n另请参见 https://code.google.com/p/android/issues/detail\?id=224438</string>
     <string name="launcher_icon_by">感谢フタバ提供的应用图标。</string>
     <string name="reply_from_another_account">从另一个账号回复</string>
-    <string name="account_picker_quote_toot">用来“引用嘟文”的账号？</string>
+    <string name="account_picker_quote_toot">用以“引用帖文”的账号？</string>
     <string name="account_picker_reply">回复自？</string>
     <string name="disable_tablet_mode">禁用平板模式（应用需要重启）</string>
     <string name="media_thumbnail_height">媒体缩略图高度（默认=64dp，应用需要重启）</string>
@@ -147,7 +147,7 @@
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">当显示多重标签页时您无法使用“返回”按钮关闭标签页。</string>
     <string name="hide_media_default">隐藏所有媒体</string>
     <string name="dont_screen_off">使用应用时保持屏幕常亮。</string>
-    <string name="already_boosted">已转嘟过。</string>
+    <string name="already_boosted">已转发过。</string>
     <string name="already_bookmarked">已添加到书签过。</string>
     <string name="already_favourited">已经收藏过。</string>
     <string name="status_id_conversion_failed">无法转换状态ID。</string>
@@ -181,7 +181,7 @@
     <string name="menu">菜单</string>
     <string name="clear_text_and_media">清除文本和媒体</string>
     <string name="clear_text">清除文本</string>
-    <string name="toot">嘟文</string>
+    <string name="toot">帖文</string>
     <string name="clear">清除</string>
     <string name="visibility">可见范围</string>
     <string name="media_attachment">媒体附件</string>
@@ -189,10 +189,10 @@
     <string name="qr_code">二维码</string>
     <string name="account_picker_block">用来屏蔽用户 %1$s 的账号？</string>
     <string name="account_picker_mute">用来静音用户 %1$s 的账号？</string>
-    <string name="account_picker_toot">用来发布嘟文的账号？</string>
+    <string name="account_picker_toot">用于发布帖文的账号？</string>
     <string name="account_picker_follow">用来关注的账号？</string>
     <string name="account_picker_reaction">用来表情回应的账号？</string>
-    <string name="account_picker_boost">用来转嘟的账号？</string>
+    <string name="account_picker_boost">用来转发的账号？</string>
     <string name="account_picker_bookmark">用来添加书签的账号？</string>
     <string name="account_picker_favourite">用来收藏的账号？</string>
     <string name="account_picker_open_user_who">用来打开用户 %1$s 的账号？</string>
@@ -201,18 +201,18 @@
     <string name="conversation">对话</string>
     <string name="hashtag">标签</string>
     <string name="favourited_by">收藏自…</string>
-    <string name="boosted_by">转嘟自…</string>
+    <string name="boosted_by">转发自…</string>
     <string name="dont_refresh">不刷新</string>
     <string name="refresh_no_scroll">刷新，不滚动</string>
-    <string name="refresh_scroll_to_toot">刷新，滚动到嘟文</string>
-    <string name="refresh_after_toot">发表嘟文后刷新</string>
+    <string name="refresh_scroll_to_toot">刷新，滚动到帖文</string>
+    <string name="refresh_after_toot">发表帖文后刷新</string>
     <string name="profile_of">%1$s 的个人资料</string>
     <string name="profile">个人资料</string>
     <string name="follow_request_cant_remove_by_sender">似乎关注请求不能被发送者删除……</string>
     <string name="confirm_follow_request_who_from">以 %2$s 向锁嘟的用户 %1$s 发送关注请求？</string>
     <string name="confirm_unfollow_who_from">以 %2$s 取消对 %1$s 的关注？</string>
     <string name="confirm_follow_who_from">以 %2$s 关注 %1$s？</string>
-    <string name="confirm_post_from">以 %1$s 发布嘟文？</string>
+    <string name="confirm_post_from">以 %1$s 发布帖文？</string>
     <string name="dont_confirm_again">不要再确认</string>
     <string name="follow_locked_user">关注锁嘟的用户</string>
     <string name="confirmation">确认</string>
@@ -230,7 +230,7 @@
     <string name="edit">编辑</string>
     <string name="reset">重置</string>
     <string name="nickname_label">昵称和颜色（如果指定，则显示为账号全名）</string>
-    <string name="confirm_delete_status">删除此嘟文？</string>
+    <string name="confirm_delete_status">删除此帖文？</string>
     <string name="confirm_mute_user">静音 %1$s？</string>
     <string name="confirm_block_user">屏蔽 %1$s？</string>
     <string name="open_profile_from_another_account">从另一个账号打开个人资料</string>
@@ -238,7 +238,7 @@
     <string name="send_message_from_another_account">从另一个账号发送消息</string>
     <string name="send_message">发送消息</string>
     <string name="actions_for_user">对此用户的操作</string>
-    <string name="actions_for_status">对此嘟文的操作</string>
+    <string name="actions_for_status">对此帖文的操作</string>
     <string name="attachment_uploaded">媒体附件已上传。</string>
     <string name="attachment_uploading">正在上传媒体附件……</string>
     <string name="permission_denied_media_access">缺少访问设备媒体数据的应用权限。</string>
@@ -265,8 +265,8 @@
     <string name="sound">声音</string>
     <string name="notification_option">通知选项</string>
     <string name="reaction_succeeded">已做出表情回应</string>
-    <string name="unboost_succeeded">已取消转嘟</string>
-    <string name="boost_succeeded">已转嘟</string>
+    <string name="unboost_succeeded">已取消转发</string>
+    <string name="boost_succeeded">已转发</string>
     <string name="unbookmark_succeeded">已取消书签</string>
     <string name="bookmark">添加书签</string>
     <string name="bookmarks">书签</string>
@@ -289,7 +289,7 @@
     <string name="regex_error">正则表达式错误</string>
     <string name="regex_filter">正则表达式过滤</string>
     <string name="dont_show_reply">不显示回复</string>
-    <string name="dont_show_boost">不显示转嘟</string>
+    <string name="dont_show_boost">不显示转发</string>
     <string name="theme_dark">深色</string>
     <string name="theme_light">浅色</string>
     <string name="ui_theme">UI 主题（应用需要重启）</string>
@@ -319,7 +319,7 @@
     <string name="notification_count">%1$d 通知</string>
     <string name="mention2">提及</string>
     <string name="favourite">收藏</string>
-    <string name="boost">转嘟</string>
+    <string name="boost">转发</string>
     <string name="open_instance_website">打开 https://%1$s/</string>
     <string name="version_is">版本 %1$s</string>
     <string name="please_donate">请支持此应用。</string>
@@ -328,7 +328,7 @@
     <string name="oss_license">开源软件许可</string>
     <string name="app_about">关于此应用</string>
     <string name="reaction_from_another_account">从另一个账号作出表情回应</string>
-    <string name="boost_from_another_account">从另一个账号转嘟</string>
+    <string name="boost_from_another_account">从另一个账号转发</string>
     <string name="favourite_from_another_account">以另一个账号收藏</string>
     <string name="confirm_close_column">关闭此标签页？</string>
     <string name="resolve_non_local_account">载入非本地账号</string>
@@ -358,11 +358,11 @@
     <string name="instance_hint">例：mastodon.social</string>
     <string name="mail_address_not_contains_at_mark">使用包含\'@\'和\'.\'符号的电子邮件地址</string>
     <string name="instance_not_need_slash">实例主机名，不含\'/\'、\'@\'符号。</string>
-    <string name="conversation_around">围绕此嘟文的对话：%1$s</string>
+    <string name="conversation_around">围绕此帖文的对话：%1$s</string>
     <string name="conversation_view">对话视图</string>
     <string name="column">标签页</string>
     <string name="cant_change_account_when_attachment_specified">当有媒体附件时您无法更换账号。</string>
-    <string name="reply_to_this_status">回复此嘟文：</string>
+    <string name="reply_to_this_status">回复此帖文：</string>
     <string name="last_selection">最后选择</string>
     <string name="column_list_desc">滑动删除，长按排序。更改将在重载视图时应用。</string>
     <string name="delete">删除</string>
@@ -378,8 +378,8 @@
     <string name="user">用户</string>
     <string name="cw_default_open">默认展开标有内容警告的内容</string>
     <string name="sensitive_content_default_open">默认显示敏感附件</string>
-    <string name="confirm_before_boost">转嘟前确认</string>
-    <string name="default_status_visibility">嘟文默认可见范围</string>
+    <string name="confirm_before_boost">转发前确认</string>
+    <string name="default_status_visibility">默认可见范围</string>
     <string name="account_remove">移除此账号</string>
     <string name="update_access_token">更新访问令牌</string>
     <string name="column_list">标签页列表</string>
@@ -397,8 +397,8 @@
     <string name="display_name_mentioned_by">%1$s 提及了</string>
     <string name="display_name_replied_by">%1$s 回复了</string>
     <string name="display_name_favourited_by">%1$s 收藏了</string>
-    <string name="display_name_boosted_by">%1$s 转嘟了</string>
-    <string name="cant_remove_boost_while_favourited">当嘟文已收藏时无法移除转嘟</string>
+    <string name="display_name_boosted_by">%1$s 转发了</string>
+    <string name="cant_remove_boost_while_favourited">当嘟文已收藏时无法移除转发</string>
     <string name="confirm_unbookmark_from">以 %1$s 移除此嘟文的书签？</string>
     <string name="confirm_unfavourite_from">以 %1$s 取消收藏此状态？</string>
     <string name="web_browser">网页浏览器</string>
@@ -413,11 +413,11 @@
     <string name="visibility_unlisted">不公开</string>
     <string name="visibility_local_public">公开（本地）</string>
     <string name="confirm_favourite_from">收藏这条来自 %1$s 的状态？将会向其作者发出通知。</string>
-    <string name="confirm_unboost_from">以 %1$s 取消此状态的转嘟？</string>
-    <string name="confirm_boost_from">以 %1$s 转嘟此状态？这将显示给所有关注者，并显示在您的个人资料页面上。</string>
+    <string name="confirm_unboost_from">以 %1$s 取消此状态的转发？</string>
+    <string name="confirm_boost_from">以 %1$s 转发此状态？这将显示给所有关注者，并显示在您的个人资料页面上。</string>
     <string name="wait_previous_operation">请等待最后操作结束。</string>
-    <string name="post_error_contents_warning_empty">您的嘟文需要设置警告的内容。</string>
-    <string name="post_error_contents_empty">嘟文内容不能为空。</string>
+    <string name="post_error_contents_warning_empty">请输入内容警告文本。</string>
+    <string name="post_error_contents_empty">请输入内容文本。</string>
     <string name="confirm_delete_attachment">移除此附件？</string>
     <string name="quote_name">引用名称…</string>
     <string name="token_not_specified">请输入访问令牌。</string>
@@ -432,8 +432,8 @@
     <string name="show_avatar_image">显示头像图片</string>
     <string name="conversation_from_another_account">来自另一个账号的对话视图</string>
     <string name="search_is_not_available_on_pseudo_account">搜索功能在伪装账号上不可用。</string>
-    <string name="quick_toot_hint">快速发嘟</string>
-    <string name="show_quick_toot_bar">显示“快速发嘟”栏（应用需要重启）</string>
+    <string name="quick_toot_hint">快速发帖</string>
+    <string name="show_quick_toot_bar">显示“快速发帖”栏（应用需要重启）</string>
     <string name="dont_add_duplication_check_header">不添加重复检查标题</string>
     <string name="acct_font_size">账号字体大小（单位：sp。留空为默认。需要重启应用）</string>
     <string name="timeline_font_size">时间线字体大小
@@ -454,16 +454,16 @@
     <string name="send_header_account_url">账号链接</string>
     <string name="send_header_account_acct">账号</string>
     <string name="send_header_account_name">账号名称</string>
-    <string name="progress_synchronize_toot">正在同步嘟文…</string>
-    <string name="toot_search_ts_of">嘟文搜索（ts）“%1$s”</string>
-    <string name="toot_search_msp_of">嘟文搜索（MSP） “%1$s”</string>
-    <string name="toot_search_of">嘟文搜索“%1$s”</string>
+    <string name="progress_synchronize_toot">正在同步帖文…</string>
+    <string name="toot_search_ts_of">帖文搜索（ts）“%1$s”</string>
+    <string name="toot_search_msp_of">帖文搜索（MSP）“%1$s”</string>
+    <string name="toot_search_of">帖文搜索“%1$s”</string>
     <string name="search_desc_mastodon_api">使用 Mastodon API 搜索账号/标签。</string>
     <string name="mastodon_search_portal">Mastodon 搜索门户（JP）</string>
     <string name="toot_search_notestock">notestock 搜索</string>
-    <string name="toot_search_ts">嘟文搜索（ts）</string>
-    <string name="toot_search">嘟文搜索</string>
-    <string name="toot_search_msp">嘟文搜索（MSP）</string>
+    <string name="toot_search_ts">帖文搜索（ts）</string>
+    <string name="toot_search">帖文搜索</string>
+    <string name="toot_search_msp">帖文搜索（MSP）</string>
     <string name="client_name">客户端名称（需要更新访问令牌）</string>
     <string name="show_post_button_bar_top">在发嘟界面顶部显示按钮栏</string>
     <string name="text_to_speech_shutdown">关闭文字转语音…</string>
@@ -515,8 +515,8 @@
     <string name="speech">讲话</string>
     <string name="powered_by_open_sticker">使用 OpenSticker API。</string>
     <string name="gap">间隔</string>
-    <string name="stop_notify_posts_from_this_user">停止通知来自此用户的嘟文</string>
-    <string name="notify_posts_from_this_user">通知此用户发布的嘟文</string>
+    <string name="stop_notify_posts_from_this_user">停止通知来自此用户的帖文</string>
+    <string name="notify_posts_from_this_user">通知此用户发布的帖文</string>
     <string name="input_sharp_itself">输入\'#\'本身</string>
     <string name="ignore_text_in_shared_media">不要附加来自外部应用的共享媒体的额外文本</string>
     <string name="gap_tail">间隔的尾部</string>
@@ -536,7 +536,7 @@
     <string name="personal_notes">个人备注</string>
     <string name="screen_bottom_padding">屏幕底部填充（单位：dp。默认：0。 应用需要重启）</string>
     <string name="verified_link_foreground_color">已验证链接前景颜色（应用需要重启）</string>
-    <string name="conversation_main_toot_background_color">对话嘟文主背景颜色</string>
+    <string name="conversation_main_toot_background_color">对话视图中主要帖文背景颜色</string>
     <string name="announcement_background_color">公告背景颜色（应用需要重启）</string>
     <string name="search_bar_background_color">搜索栏背景颜色（应用需要重启）</string>
     <string name="button_accent_color">按钮强调色</string>
@@ -548,7 +548,7 @@
     <string name="featured">精选</string>
     <string name="promoted">提升</string>
     <string name="quote">引用</string>
-    <string name="quote_toot">引用嘟文（Misskey 或一些定制的 Mastodon 实例）</string>
+    <string name="quote_toot">引用帖文（定制化实例）</string>
     <string name="antenna_list_misskey">天线列表（Misskey 12+）</string>
     <string name="antenna_timeline_of">天线时间线 ‘%1$s’</string>
     <string name="antenna_timeline">天线时间线</string>
@@ -558,7 +558,7 @@
     <string name="language_filter_quit_waring">语言过滤器没有保存。仍然退出？</string>
     <string name="copied_to_clipboard">已复制到剪贴板。</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
-    <string name="emojione_shortcode_support_desc">即使实例已经更新，旧的Mastodon发出的嘟文也可以包含表情符号短码。</string>
+    <string name="emojione_shortcode_support_desc">即使实例已经更新，旧的Mastodon发出的帖文也可以包含表情符号短码。</string>
     <string name="emojione_shortcode_support">支持 EmojiOne 短码</string>
     <string name="hide_followers_count">隐藏关注者账号</string>
     <string name="edited_at">编辑于：%1$s</string>
@@ -601,12 +601,12 @@
     <string name="always_expand_context_menu_sub_items">始终展开上下文菜单的子项目</string>
     <string name="timeline_line_spacing">时间线行间距（浮点数用作行间距乘数，留空为默认值，应用需要重启）</string>
     <string name="separate_notification_group_for_reply">独立的回复通知组</string>
-    <string name="quick_toot_omit_account_selection">当使用快速发嘟时，如果可能的话省略账号选择</string>
+    <string name="quick_toot_omit_account_selection">当使用快速发帖时，如果可能的话省略账号选择</string>
     <string name="instance_actions_for">对“%1$s”实例的操作</string>
     <string name="block_domain">屏蔽整个实例</string>
     <string name="extra_actions">更多操作</string>
-    <string name="your_toot">您的嘟文</string>
-    <string name="around_this_toot">此嘟文附近</string>
+    <string name="your_toot">您的帖文</string>
+    <string name="around_this_toot">此帖文附近</string>
     <string name="account_timeline">账号时间线</string>
     <string name="cross_account_actions">跨账号操作</string>
     <string name="reason_create_account">要在此实例上创建账号的原因（可选）</string>
@@ -626,7 +626,7 @@
     <string name="order_new">新来的人</string>
     <string name="order_active">最近活跃</string>
     <string name="muted_users_from_pseudo_account">来自伪装账号的已静音用户</string>
-    <string name="read_more_status">读取更多嘟文</string>
+    <string name="read_more_status">读取更多帖文</string>
     <string name="read_more_account">读取更多账号</string>
     <string name="reply_icon_size">回复图标大小（单位：dp，默认：24。应用需要重启）</string>
     <string name="delete_scheduled_status_before_update">在发嘟前删除定时状态。您确定吗？</string>
@@ -636,7 +636,7 @@
     <string name="scheduled_status_delete_confirm">删除此定时状态吗？</string>
     <string name="scheduled_status_sent">定时状态已发送。</string>
     <string name="unspecified">未指定</string>
-    <string name="scheduled_status">定时嘟文</string>
+    <string name="scheduled_status">定时帖文</string>
     <string name="reaction_remove_confirm">移除您的表情回应“%1$s”？</string>
     <string name="pseudo_account_cant_get_follow_list">无法从伪装账号中读取关注列表。</string>
     <string name="username_not_need_atmark">用户名不能包含 \"@\" or \"/\"。</string>
@@ -665,17 +665,17 @@
     <string name="quote_renote">引用转贴 （Misskey）</string>
     <string name="instance_does_not_support_push_api_pleroma">此实例（也许是Pleroma）不支持推送订阅API。</string>
     <string name="dont_show_preview_card">不显示预览卡</string>
-    <string name="quick_toot_bar_background_color">快速发嘟栏背景颜色</string>
+    <string name="quick_toot_bar_background_color">快速发帖栏背景颜色</string>
     <string name="content_text_color">文本内容颜色</string>
     <string name="content_acct_color">账号内容颜色</string>
     <string name="content_background_color">内容背景颜色</string>
     <string name="header_foreground_color">顶部前景颜色</string>
     <string name="header_background_color">顶部背景颜色</string>
     <string name="column_color_default">标签页默认颜色</string>
-    <string name="toot_background_color">嘟文背景颜色</string>
-    <string name="boost_button_alpha" formatted="false">转嘟按钮不透明度（单位：% 。应用需要重启。同样影响内容文本透明度。）</string>
+    <string name="toot_background_color">帖文背景颜色</string>
+    <string name="boost_button_alpha" formatted="false">转发按钮不透明度（单位：% 。应用需要重启。同样影响内容文本透明度。）</string>
     <string name="mute_application_confirm">静音应用“%1$s”？</string>
-    <string name="use_quote_toot">使用“引用嘟文”。（Misskey 或其他定制的 Mastodon 实例）</string>
+    <string name="use_quote_toot">使用“引用帖文”。（定制化实例）</string>
     <string name="conversation_to">至：</string>
     <string name="participants_and_more">…与其他人</string>
     <string name="participants">参加者:</string>
@@ -689,13 +689,13 @@
     <string name="verified_at">认证于</string>
     <string name="account_tl_around_of">%1$s 附近的账号时间线</string>
     <string name="account_tl_around">附近的账号时间线…</string>
-    <string name="account_tl_around_toot">此嘟文附近的账号时间线</string>
+    <string name="account_tl_around_toot">此帖文附近的账号时间线</string>
     <string name="ftl_around_of">%1$s 附近的联邦时间线</string>
     <string name="ftl_around">附近的联邦时间线…</string>
-    <string name="ftl_around_toot">此嘟文附近的联邦时间线</string>
+    <string name="ftl_around_toot">此帖文附近的联邦时间线</string>
     <string name="ltl_around_of">%1$s 附近的本地时间线</string>
     <string name="ltl_around">附近的本地时间线…</string>
-    <string name="ltl_around_toot">此嘟文附近的本地时间线</string>
+    <string name="ltl_around_toot">此帖文附近的本地时间线</string>
     <string name="agree">我同意</string>
     <string name="privacy_policy">隐私政策</string>
     <string name="dont_use_custom_tabs">打开链接时不使用 （Chrome/Firefox）的 “自定义栏”</string>
@@ -725,8 +725,8 @@
     <string name="misskey_hybrid_timeline">社交时间线</string>
     <string name="end">底部</string>
     <string name="center">居中</string>
-    <string name="boost_button_alignment">转嘟按钮对齐（应用需要重启）</string>
-    <string name="boost_button_size">转嘟按钮大小（单位：dp，默认=40，应用需要重启）</string>
+    <string name="boost_button_alignment">转发按钮对齐（应用需要重启）</string>
+    <string name="boost_button_size">转发按钮大小（单位：dp，默认=40，应用需要重启）</string>
     <string name="dont_show_vote">不显示投票</string>
     <string name="dont_show_reaction">不显示表情回应</string>
     <string name="unknown_notification_from">来自 %1$s 的未知通知</string>
@@ -747,10 +747,10 @@
     <string name="replies_count_actual">实际</string>
     <string name="replies_count_simple">0/1/1+</string>
     <string name="display_favourite_count">显示收藏次数</string>
-    <string name="display_boost_count">显示转嘟次数</string>
+    <string name="display_boost_count">显示转发次数</string>
     <string name="display_replies_count">显示回复次数</string>
     <string name="list_divider_color">列表分隔颜色</string>
-    <string name="toot_default_text">撰写嘟文时的默认文本（不影响快速发嘟栏，也不会影响切换账号于嘟文撰写界面）</string>
+    <string name="toot_default_text">撰写帖文时的默认文本（不影响快速发帖栏，也不会影响切换账号于帖文撰写界面）</string>
     <string name="toot_context_parse_failed">无法解析对话。</string>
     <string name="delete_succeeded_confirm">从关注建议中移除“%1$s”用户？</string>
     <string name="delete_suggestion">从关注建议中删除…</string>
@@ -770,7 +770,7 @@
     <string name="filter_expires_at">过期</string>
     <string name="filter_word_match_long">整个单词，建议只启用由字母数字字符组成的短语。</string>
     <string name="filter_word_match">整个单词</string>
-    <string name="filter_irreversible_long">无法复原。下拉代替隐藏。过滤的嘟文将不可逆地消失，即使过滤器稍后被移除。</string>
+    <string name="filter_irreversible_long">无法复原。下拉代替隐藏。过滤的帖文将不可逆地消失，即使过滤器稍后被移除。</string>
     <string name="filter_irreversible">无法复原</string>
     <string name="filter_options">选项</string>
     <string name="filter_context">过滤上下文</string>
@@ -792,9 +792,9 @@
 \n（单位：sp，留空为默认，应用需要重启）
 \n…
 \n…</string>
-    <string name="delete_base_status_before_toot">在发嘟前删除基本状态，所有收藏/转嘟都将丢失，回复将中断，媒体附件在Mastodon pre-2.4.1将不会被保留。您确定吗？</string>
+    <string name="delete_base_status_before_toot">在发嘟前删除基本状态，所有收藏/转发都将丢失，回复将中断，媒体附件在Mastodon pre-2.4.1将不会被保留。您确定吗？</string>
     <string name="cant_change_account_when_redraft">当重新编辑时无法更改账号。</string>
-    <string name="cant_sync_toot">无法同步嘟文。</string>
+    <string name="cant_sync_toot">无法同步帖文。</string>
     <string name="redraft_and_delete">重新编辑和删除</string>
     <string name="trend_tag_desc">数字表示 \'每日（每周）\'。</string>
     <string name="people_talking">%1$d(%2$d) 人正在讨论</string>
@@ -817,8 +817,8 @@
     <string name="instance_does_not_support_push_api">此实例（版本 %1$s）不支持推送订阅。</string>
     <string name="pseudo_account_not_supported">伪装账号无法使用通知。</string>
     <string name="update_push_subscription">更新推送订阅</string>
-    <string name="boost_private_toot_not_allowed">您不能转嘟他人的私密嘟文。</string>
-    <string name="confirm_boost_private_from">以 %1$s 转嘟私密状态？这将显示给所有关注者。</string>
+    <string name="boost_private_toot_not_allowed">私密帖文不能由他人转发。</string>
+    <string name="confirm_boost_private_from">以 %1$s 转发私密状态？这将显示给所有关注者。</string>
     <string name="available_mastodon_2_4_later">（Mastodon 2.4+ 中可用）</string>
     <string name="profile_metadata">个人资料元数据</string>
     <string name="field_value4">值4</string>
@@ -830,7 +830,7 @@
     <string name="field_name2">标签2</string>
     <string name="field_name1">标签1</string>
     <string name="dont_retrieve_preview_card">不检索预览卡</string>
-    <string name="unboost">取消转嘟</string>
+    <string name="unboost">取消转发</string>
     <string name="unfavourite">取消收藏</string>
     <string name="direct_messages">私信</string>
     <string name="follow_deny_confirm">拒绝来自 %1$s 的关注请求？</string>
@@ -841,23 +841,23 @@
     <string name="instance_local">实例地址</string>
     <string name="thumbnails_arrange_vertically">垂直布局缩略图（应用需要重启）</string>
     <string name="changed">已更改。</string>
-    <string name="fav_muted_user_long">禁止通知点赞/转嘟的用户</string>
+    <string name="fav_muted_user_long">禁止通知点赞/转发的用户</string>
     <string name="fav_muted_user">禁用 FBN 的用户</string>
-    <string name="show_favourite_notification_from_user">启用此用户的收藏/转嘟通知</string>
-    <string name="hide_favourite_notification_from_user">禁用此用户的收藏/转嘟通知</string>
+    <string name="show_favourite_notification_from_user">启用此用户的收藏/转发通知</string>
+    <string name="hide_favourite_notification_from_user">禁用此用户的收藏/转发通知</string>
     <string name="append_attachment_url_to_content">将附件链接附加到内容文本</string>
     <string name="contact">联系账号</string>
     <string name="locked_account">锁嘟账号</string>
     <string name="report_forward_to">转发给 %1$s</string>
     <string name="report_forward_desc">此账号来自另一实例，也向那里发送此报告的匿名副本？</string>
     <string name="set_focus_point">设置聚焦点（Mastodon 2.3+）</string>
-    <string name="dont_show_non_public_toot">不显示未公开嘟文</string>
-    <string name="dont_show_normal_toot">不显示正常嘟文</string>
+    <string name="dont_show_non_public_toot">不显示未公开帖文</string>
+    <string name="dont_show_normal_toot">不显示正常帖文</string>
     <string name="notification_type_post">发嘟</string>
     <string name="notification_type_vote">投票</string>
     <string name="notification_type_reaction">表情回应</string>
     <string name="notification_type_favourite">收藏</string>
-    <string name="notification_type_boost">转嘟</string>
+    <string name="notification_type_boost">转发</string>
     <string name="notification_type_follow">关注</string>
     <string name="notification_type_mention">提及</string>
     <string name="system_notification_not_related">当点击系统通知时未选择</string>
@@ -932,8 +932,8 @@
     <string name="lists">列表</string>
     <string name="list_member_add_remove">从列表中添加/移除…</string>
     <string name="operation_succeeded">完成。</string>
-    <string name="show_boost_in_home">在您的主页时间线上显示此用户的转嘟</string>
-    <string name="hide_boost_in_home">从您的主页时间线上隐藏此用户的转嘟</string>
+    <string name="show_boost_in_home">在您的主页时间线上显示此用户的转发</string>
+    <string name="hide_boost_in_home">从您的主页时间线上隐藏此用户的转发</string>
     <string name="attachment_description_sending">正在发送附件描述…</string>
     <string name="description_empty">未指定描述。</string>
     <string name="attachment_description">附件描述</string>
@@ -971,7 +971,7 @@
     <string name="mime_type_missing">缺少媒体 MIME 类型。</string>
     <string name="not_provided_mastodon_under_1_6">未提供于 Mastodon 1.6之前版本</string>
     <string name="domain_count">已连接实例数</string>
-    <string name="toot_count">嘟文数</string>
+    <string name="toot_count">帖文数</string>
     <string name="user_count">用户数</string>
     <string name="mastodon_1_6_later">Mastodon 1.6或更高版本</string>
     <string name="cant_get_web_setting_visibility">无法在网页应用中获得可见范围设置。</string>
@@ -995,7 +995,7 @@
     <string name="enquete_item_is_empty">投票中选项 %1$d 为空。</string>
     <string name="auto_cw_prefix">（自动标记内容警告）</string>
     <string name="auto_cw">自动隐藏长文本（需要设置“行数”大于0。应用需要重启）</string>
-    <string name="dont_use_action_button_with_quick_toot_bar">使用“快速发嘟”栏时禁用输入法行动按钮（应用需要重启）</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">使用“快速发帖”栏时禁用输入法行动按钮（应用需要重启）</string>
     <string name="make_enquete">发起投票</string>
     <string name="choice4">选择4（可选）</string>
     <string name="choice3">选择3（可选）</string>
@@ -1043,9 +1043,9 @@
     <string name="custom_emoji_separator_zwsp">使用 ZWSP 而不是空格作为自定义表情符号分隔符</string>
     <string name="polls_choice_not_selected">请选择1个或更多选项。</string>
     <string name="input">输入</string>
-    <string name="quick_toot_menu">快速发嘟菜单</string>
-    <string name="confirm_private_boost_from">以 %1$s 转嘟此状态？这将显示给所有关注者。</string>
-    <string name="boost_with_visibility">带可见范围的转嘟</string>
+    <string name="quick_toot_menu">快速发帖菜单</string>
+    <string name="confirm_private_boost_from">以 %1$s 转发此状态？这将显示给所有关注者。</string>
+    <string name="boost_with_visibility">带可见范围的转发</string>
     <string name="hashtag_of_from">来自 %2$s 的 #%1$s 标签</string>
     <string name="hashtag_from_acct">账号的标签</string>
     <string name="open_hashtag_from_account">打开话题标签（从%1$s）标签页</string>
@@ -1063,7 +1063,7 @@
     <string name="hide_totals">隐藏总数直到过期</string>
     <string name="allow_multiple_choice">允许多选</string>
     <string name="dont_show_column_background_image">不显示标签页背景图片</string>
-    <string name="dont_remove_deleted_toot_from_timeline">不移除时间线上的已删除嘟文</string>
+    <string name="dont_remove_deleted_toot_from_timeline">不移除时间线上的已删除帖文</string>
     <string name="follow_request_misskey">关注请求（Misskey）</string>
     <string name="unfollow_misskey">取消关注（Misskey）</string>
     <string name="event_background_color">事件背景颜色</string>
@@ -1091,15 +1091,15 @@
     <string name="remote_profile_warning">远程个人配置页面上的信息可能无法正确显示。点击此处在网页浏览器中查看个人配置。</string>
     <string name="mention_full_acct">显示提及为账号全名（标签页需要重载）</string>
     <string name="trend_link">热门链接</string>
-    <string name="trend_post">热门嘟文</string>
-    <string name="cant_change_account_when_edit">当编辑嘟文时无法更改账号。</string>
+    <string name="trend_post">热门帖文</string>
+    <string name="cant_change_account_when_edit">当编辑帖文时无法更改账号。</string>
     <string name="discard_changes">丢弃更改？</string>
     <string name="no_one">无人</string>
-    <string name="notification_type_update">嘟文更新</string>
-    <string name="notification_type_status_reference">嘟文被引用</string>
-    <string name="notification_type_status_reference_fedibird">嘟文被引用（fedibird.com）</string>
+    <string name="notification_type_update">帖文更新</string>
+    <string name="notification_type_status_reference">帖文被引用</string>
+    <string name="notification_type_status_reference_fedibird">帖文被引用（fedibird.com）</string>
     <string name="notification_type_signup">（管理员）用户注册</string>
-    <string name="reactioned_posts">表情回应的嘟文</string>
+    <string name="reactioned_posts">表情回应的帖文</string>
     <string name="reactions">表情回应</string>
     <string name="cant_reaction_remote_custom_emoji">无法使用远程自定义表情符号 %1$s</string>
     <string name="keep_reaction_space">保持表情回应的间隔</string>
@@ -1109,8 +1109,8 @@
     <string name="saved">已保存。</string>
     <string name="resend_confirm_mail_requested">已请求重新发送验证邮件。</string>
     <string name="confirm_reaction">以 %2$s 表情回应 %1$s\?</string>
-    <string name="multi_window_post">嘟文活动多重窗口（实验性）</string>
-    <string name="many_window_post">嘟文活动多个窗口（实验性）</string>
+    <string name="multi_window_post">帖文活动多重窗口（实验性）</string>
+    <string name="many_window_post">帖文活动多个窗口（实验性）</string>
     <string name="mfm_decoration_enabled">（Misskey）显示文本装饰</string>
     <string name="mfm_show_unsupported_markup">（Misskey）显示不支持的装饰</string>
     <string name="background_pattern">背景样式</string>
@@ -1152,8 +1152,8 @@
 \n- 打开邮件中的验证链接。
 \n- 关闭此对话框并刷新标签页。</string>
     <string name="use_twemoji_emoji">使用 Twemoji 表情符号</string>
-    <string name="display_name_references_post">%1$s 引用了您的嘟文</string>
-    <string name="display_name_updates_post">%1$s 更新了嘟文</string>
+    <string name="display_name_references_post">%1$s 引用了您的帖文</string>
+    <string name="display_name_updates_post">%1$s 更新了帖文</string>
     <string name="show_media_description">显示媒体描述</string>
     <string name="enable_misskey_notification_check">为 Misskey 实例启用通知检查（不稳定）</string>
     <string name="skin_tone_unspecified">未指定</string>
@@ -1203,7 +1203,7 @@
     <string name="content">内容</string>
     <string name="permission_rational_media_access">访问设备媒体数据所需的权限。</string>
     <string name="refresh_after_ummute">在取消静音项目后，重载标签页以刷新。</string>
-    <string name="fav_muted_user_desc">忽略来自此列表中的用户的通知。收藏、转嘟、关注请求、表情回应等。</string>
+    <string name="fav_muted_user_desc">忽略来自此列表中的用户的通知。收藏、转发、关注请求、表情回应等。</string>
     <string name="server_host_name">实例主机名</string>
     <string name="display_name_report">%1$s 已举报。</string>
     <string name="alert_notification_desc">显示多种警告</string>
@@ -1220,7 +1220,7 @@
     <string name="push_subscription_keep_using">继续当前订阅。</string>
     <string name="incorrect_chars">不正确的字符 \"%1$s\"</string>
     <string name="account_list">账号列表</string>
-    <string name="post_reset_confirm">保存到草稿并编辑新嘟文？</string>
+    <string name="post_reset_confirm">保存到草稿并编辑新帖文？</string>
     <string name="removing_old_distributer">正在移除旧分发器…</string>
     <string name="server_timeout_desc">显示有关检查来自 SNS 的通知的错误</string>
     <string name="notification_type_report">（管理员）举报</string>
@@ -1265,7 +1265,7 @@
     <string name="quick_post_account">快速发嘟账号</string>
     <string name="removing_old_fcm_token">正在从应用服务器中移除过期的 FCM 设备令牌…</string>
     <string name="push_distributor_not_available">推送分发器不可用。您可以通过安装兼容 UnifiedPush 的推送传递应用来接收推送通知。见 https://unifiedpush.org/</string>
-    <string name="show_username_on_filtered_post">在过滤的嘟文上显示用户名</string>
+    <string name="show_username_on_filtered_post">在过滤的帖文上显示用户名</string>
     <string name="notification_permission_not_granted">未授予通知权限</string>
     <string name="image_alpha_too_low">背景图像透明度太低，您能查看图像吗？</string>
     <string name="bug_report">错误报告</string>

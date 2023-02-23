@@ -308,7 +308,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(gridSize, gridSize)
+            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(iv)
         }

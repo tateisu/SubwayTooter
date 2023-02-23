@@ -419,7 +419,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     // 他には kids.0px.io が存在する
                     // https://kids.0px.io/notes/9b628dpesb
                     // Misskey有効トグルで結果を切り替えたいらしい
-                    PrefB.bpEnableDeprecatedSomething.value -> Unit
+                    version.contains("misskey", ignoreCase = true) &&
+                            PrefB.bpEnableDeprecatedSomething.value -> Unit
 
                     // 両方のAPIに応答するサーバは他にないと思う。
                     // /api/v1/instance でJSONデータを読めてるならそれを返す
@@ -430,6 +431,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             // /api/meta を読む (misskey)
             val r2 = getInstanceInformationMisskey(forceAccessToken)
                 ?: return null // cancelled
+
             r2.jsonObject?.let { return r2 }
 
             // 両方読めなかった場合

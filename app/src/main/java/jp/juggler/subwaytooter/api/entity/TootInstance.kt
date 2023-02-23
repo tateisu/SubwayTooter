@@ -416,7 +416,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     // 古いMisskeyがMastodon互換APIを返す事があるが、Mastodon互換だと思ってはいけない
                     reOldMisskeyCompatible.containsMatchIn(version) -> Unit
 
-                    // 他には kids.0px.io が存在する
+                    // 他、Mastodonではない場合は kids.0px.io が存在する
                     // https://kids.0px.io/notes/9b628dpesb
                     // Misskey有効トグルで結果を切り替えたいらしい
                     version.contains("misskey", ignoreCase = true) &&

@@ -48,17 +48,17 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                         "Hashtag" -> hashtags.add(TootTag.parse(parser, it))
 
                         "Mention" ->
-                            Acct.parse(it.string("name")!!)
-                                .let { acct ->
-                                    mentions.add(
-                                        TootMention(
-                                            id = EntityId.DEFAULT,
-                                            url = it.string("href")!!,
-                                            acct = acct,  // may local
-                                            username = acct.username
-                                        )
+                            it.string("name")?.trimStart('@')?.let { rawAcct ->
+                                val acct = Acct.parse(rawAcct)
+                                mentions.add(
+                                    TootMention(
+                                        id = EntityId.DEFAULT,
+                                        url = it.string("href")!!,
+                                        acct = acct,  // may local
+                                        username = acct.username
                                     )
-                                }
+                                )
+                            }
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "APTag ctor failed.")

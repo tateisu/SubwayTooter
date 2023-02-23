@@ -619,7 +619,7 @@ private class EmojiPicker(
         this.canCollapse =
             keywordLower.isNullOrEmpty() && (selectedCategory == null || selectedCategory == EmojiCategory.Custom)
 
-        val list = buildList {
+        adapter.list = buildList {
             val filteredCategories = pickerCategries.filter {
                 selectedCategory == null || it.category == selectedCategory
             }.mapNotNull { category ->
@@ -648,13 +648,14 @@ private class EmojiPicker(
                 }
             }
         }
-        adapter.list = list
-        if (scrollToCategory) {
-            val idx =
-                list.indexOfFirst { (it as? PickerItemCategory)?.original == lastExpandCategory }
-            if (idx != -1) {
-                views.rvGrid.smoothScrollToPosition(idx)
-            }
+
+        val targetCategory = lastExpandCategory
+        if (scrollToCategory && targetCategory != null) {
+            views.root.handler?.postDelayed({
+                adapter.list.indexOfFirst { (it as? PickerItemCategory)?.original == targetCategory }
+                    .takeIf { it != -1 }
+                    ?.let { views.rvGrid.smoothScrollToPosition(it) }
+            }, 100L)
         }
 
         for (it in views.llCategories.children) {

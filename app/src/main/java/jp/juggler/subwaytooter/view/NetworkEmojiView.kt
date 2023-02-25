@@ -55,25 +55,23 @@ class NetworkEmojiView(
         scaleRatio = 1f,
         descentRatio = 0f,
         maxEmojiWidth = maxEmojiWidth,
-        layout = { w, h ->
-            val lp = layoutParams
-            lp.width = w
-            lp.height = h
-            layoutParams = lp
-            requestLayout()
-        },
+//        layout = { w, h ->
+//            val lp = layoutParams
+//            lp.width = w
+//            lp.height = h
+//            layoutParams = lp
+//            requestLayout()
+//        },
     )
 
     fun setEmoji(
         url: String?,
         initialAspect: Float?,
-        defaultWidth: Int,
         defaultHeight: Int,
     ) {
         this.url = url
         mPaint.isFilterBitmap = true
         invalidate()
-        emojiImageRect.lastWidth = null
         emojiImageRect.updateRect(
             url = url ?: "",
             aspectArg = initialAspect,
@@ -130,6 +128,13 @@ class NetworkEmojiView(
             aspectArg = srcAspect,
             h = dstHeight,
         )
+        val width = (emojiImageRect.emojiWidth + 0.5f).toInt()
+        if (width != layoutParams.width) {
+            val lp = layoutParams
+            lp.width = width
+            lp.height = (emojiImageRect.emojiHeight + 0.5f).toInt()
+            layoutParams = lp
+        }
 
         canvas.drawBitmap(b, rectSrc, emojiImageRect.rectDst, mPaint)
 

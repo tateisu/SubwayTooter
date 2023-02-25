@@ -53,4 +53,10 @@ object PrefS {
     val spTimelineSpacing = StringPref("TimelineSpacing", "")
 
     val spEventTextAlpha = StringPref("EventTextAlpha", "")
+
+    val spEmojiSizeMastodon = StringPref("EmojiSizeMastodon", "100")
+    val spEmojiSizeMisskey = StringPref("EmojiSizeMisskey", "250")
+    val spEmojiSizeReaction = StringPref("EmojiSizeReaction", "150")
+    val spEmojiSizeUserName = StringPref("EmojiSizeUserName", "100")
+    val spEmojiPixels = StringPref("spEmojiPixels", "128")
 }

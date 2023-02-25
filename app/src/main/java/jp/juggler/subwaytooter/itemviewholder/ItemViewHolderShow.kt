@@ -354,8 +354,8 @@ fun ItemViewHolder.showBoost(
             activity,
             accessInfo,
             decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f,
+            enlargeEmoji = DecodeOptions.emojiScaleReaction,
+            enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
             emojiSizeMode = accessInfo.emojiSizeMode(),
         )
         val ssb = reaction.toSpannableStringBuilder(options, boostStatus)

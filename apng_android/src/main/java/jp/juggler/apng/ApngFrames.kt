@@ -236,6 +236,9 @@ class ApngFrames private constructor(
             }
         }
 
+    val aspect:Float?
+        get() = if( width<=0 || height<=0) null else width.toFloat().div(height)
+
     constructor(bitmap: Bitmap) : this() {
         defaultImage = bitmap
     }

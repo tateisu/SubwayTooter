@@ -10,6 +10,7 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.ActMain.Companion.boostButtonSize
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.reactionAdd
 import jp.juggler.subwaytooter.action.reactionFromAnotherAccount
@@ -18,6 +19,7 @@ import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
@@ -29,6 +31,7 @@ import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.dip
+import org.jetbrains.anko.wrapContent
 
 private val log = LogCategory("ItemViewHolderReaction")
 
@@ -42,11 +45,10 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
     fun Float.round() = (this + 0.5f).toInt()
 
-    val imageScale = 1.5f
-    val buttonHeight = ActMain.boostButtonSize // px
-    val marginBetween = (buttonHeight * 0.05f).round()
-    val paddingH = (buttonHeight * 0.1f).round()
-    val textHeight = (buttonHeight * 0.7f) / imageScale
+    val imageScale = DecodeOptions.emojiScaleReaction
+    val textHeight = (boostButtonSize.toFloat()/2)
+    val marginBetween = (boostButtonSize * 0.05f).round()
+    val paddingH = (boostButtonSize * 0.1f).round()
 
     val act = this@makeReactionsView.activity // not Button(View).getActivity()
 
@@ -63,7 +65,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
     if (reactionSet?.isEmpty() != false) {
         val v = View(act).apply {
-            layoutParams = FlexboxLayout.LayoutParams(0, buttonHeight)
+            layoutParams = FlexboxLayout.LayoutParams(0, wrapContent)
             setPadding(paddingH, 0, paddingH, 0)
         }
         box.addView(v)
@@ -85,13 +87,13 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         val b = AppCompatButton(act).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                buttonHeight,
+                wrapContent,
             ).apply {
                 if (index > 0) startMargin = marginBetween
                 bottomMargin = dip(3)
             }
             gravity = Gravity.CENTER
-            minWidthCompat = buttonHeight
+            minWidthCompat = textHeight.round()
 
             background = if (reactionSet.isMyReaction(reaction)) {
                 // 自分がリアクションしたやつは背景を変える

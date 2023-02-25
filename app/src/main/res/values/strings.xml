@@ -1269,4 +1269,12 @@
     <string name="image_alpha_too_low">background image alpha is too low. can you view the image?</string>
     <string name="enable_deprecated_something">Enable deprecated something</string>
     <string name="misskey_support_end">Misskey support has ended</string>
+    <string name="emoji_size_mastodon">(Mastodon)Custom emoji scaling(Unit:%. default:100)</string>
+    <string name="emoji_size_misskey">(Misskey)Custom emoji scaling(Unit:%。default:250)</string>
+    <string name="emoji_size_reaction">Reaction emoji scaling(Unit:%。default:150)</string>
+    <string name="emoji_size_user_name">User name emoji scaling(Unit:%。default:100)</string>
+    <string name="emoji_wide_mode">Wide custom emoji</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="emoji_texture_pixels">Emoji texture max pixels(Unix:pixels, default: 256. task kill required. reduce to 64 if your device\'s RAM is not enough)</string>
 </resources>

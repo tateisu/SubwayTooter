@@ -380,11 +380,11 @@ object EmojiDecoder {
             val userHost = cols.elementAtOrNull(1)
                 ?: options.authorDomain?.apiHost?.ascii
                 ?: apiHostAscii
-            log.i(
-                "decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
-                    cols.elementAtOrNull(1)
-                } apiHostAscii=$apiHostAscii, userHost=$userHost"
-            )
+//            log.i(
+//                "decodeEmoji Misskey13 c0=${cols.elementAtOrNull(0)} c1=${
+//                    cols.elementAtOrNull(1)
+//                } apiHostAscii=$apiHostAscii, userHost=$userHost"
+//            )
 
             when {
                 // 絵文字プロクシを利用できない

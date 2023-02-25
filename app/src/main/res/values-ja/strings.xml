@@ -1253,7 +1253,7 @@
     <string name="approved">承認されました。</string>
     <string name="account_list">アカウント一覧</string>
     <string name="show_username_on_filtered_post">フィルタされた投稿にユーザ名を表示する</string>
-    <string name="log_save_level" >ログ収集レベル</string>
+    <string name="log_save_level">ログ収集レベル</string>
     <string name="send_log_email">ログを電子メールで送信する</string>
     <string name="bug_report">バグ報告</string>
     <string name="bug_report_desc">アプリは過去数日間のログを保持していますが、勝手に外部に送信することはありません。ユーザが明示的にログを送信する操作した時だけ参照されます。</string>
@@ -1261,4 +1261,12 @@
     <string name="image_alpha_too_low">背景画像のアルファが低すぎます。 画像を見ることができますか？</string>
     <string name="enable_deprecated_something">陳腐化した何かを有効にする</string>
     <string name="misskey_support_end">Misskeyサポートは終了しました</string>
+    <string name="emoji_size_mastodon">(Mastodon)カスタム絵文字の大きさ(単位:%、デフォルト:100)</string>
+    <string name="emoji_size_misskey">(Misskey)カスタム絵文字の大きさ(単位:%、デフォルト:250)</string>
+    <string name="emoji_size_reaction">リアクションの絵文字の大きさ(単位:%、デフォルト:150)</string>
+    <string name="emoji_size_user_name">ユーザ名の絵文字の大きさ(単位:%、デフォルト:100)</string>
+    <string name="emoji_wide_mode">ワイドカスタム絵文字</string>
+    <string name="enabled">有効</string>
+    <string name="disabled">無効</string>
+    <string name="emoji_texture_pixels">絵文字テクスチャの最大ピクセル数(単位:ピクセル、デフォルト: 256。 タスクキルが必要。端末のRAMが少ない場合は64程度まで下げることをお勧めします)</string>
 </resources>

@@ -10,10 +10,14 @@ import android.os.SystemClock
 import com.caverock.androidsvg.SVG
 import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.EmojiCacheDbOpenHelper
+import jp.juggler.subwaytooter.table.daoImageAspect
+import jp.juggler.util.coroutine.EmptyScope
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
 import java.util.*
@@ -45,7 +49,7 @@ class CustomEmojiCache(
     private class Request(
         val refTarget: WeakReference<Any>,
         val url: String,
-        val onLoadComplete: () -> Unit,
+        val onLoadComplete: (ApngFrames?) -> Unit,
     )
 
     // APNGデコード済のキャッシュデータ
@@ -115,7 +119,7 @@ class CustomEmojiCache(
     fun getFrames(
         refDrawTarget: WeakReference<Any>?,
         url: String,
-        onLoadComplete: () -> Unit,
+        onLoadComplete: (ApngFrames?) -> Unit,
     ): ApngFrames? {
         try {
             if (refDrawTarget?.get() == null) {
@@ -200,7 +204,7 @@ class CustomEmojiCache(
                         val item = getCached(now, request.url)
                         if (item != null) {
                             if (item.frames != null) {
-                                fireCallback(request)
+                                fireCallback(request, item.frames)
                             }
                             return@synchronized true
                         }
@@ -231,7 +235,7 @@ class CustomEmojiCache(
                         data = try {
                             App1.getHttpCached(request.url)
                         } catch (ex: Throwable) {
-                            log.w( "get failed. url=${request.url}")
+                            log.w("get failed. url=${request.url}")
                             null
                         }
                         te = elapsedTime
@@ -267,7 +271,7 @@ class CustomEmojiCache(
                                 item.frames?.dispose()
                                 item.frames = frames
                             }
-                            fireCallback(request)
+                            fireCallback(request, item.frames)
                         }
                     }
                     te = elapsedTime
@@ -285,8 +289,15 @@ class CustomEmojiCache(
             }
         }
 
-        private fun fireCallback(request: Request) {
-            handler.post { request.onLoadComplete() }
+        private fun fireCallback(request: Request, frames: ApngFrames?) {
+            handler.post { request.onLoadComplete(frames) }
+            EmptyScope.launch {
+                try {
+                    frames?.aspect?.let { daoImageAspect.save(request.url, it) }
+                } catch (ex: Throwable) {
+                    log.e(ex, "aspect save failed.")
+                }
+            }
         }
 
         private fun sweepCache(now: Long) {
@@ -295,7 +306,7 @@ class CustomEmojiCache(
             val over = cache.size - CACHE_MAX
 
             // 超過した数がある程度大きくなるまで掃除しない
-            if (over <= 64) return
+            if (over <= CACHE_MAX / 2) return
 
             // 掃除する候補
             val list = ArrayList<CacheItem>()
@@ -319,7 +330,7 @@ class CustomEmojiCache(
         private fun decodeAPNG(data: ByteArray, url: String): ApngFrames? {
             val errors = ArrayList<Throwable>()
 
-            val maxSize = 256
+            val maxSize = PrefS.spEmojiPixels.toInt().clip(16, 1024)
 
             try {
                 // APNGをデコード AWebPも

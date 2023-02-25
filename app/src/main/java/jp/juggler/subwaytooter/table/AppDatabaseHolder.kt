@@ -70,7 +70,9 @@ import java.util.concurrent.atomic.AtomicReference
 // 2022/3/15 63=>64 SavedAccountテーブルに項目追加
 // 2023/2/2 64 => 65 PushMessage, AccountNotificationStatus,NotificationShown テーブルの追加。
 // 2023/2/11 65=>66 LogDataがなければ作る
-const val DB_VERSION = 66
+// 2023/2/26 66=>67 ImageAspect テーブルの追加
+
+const val DB_VERSION = 67
 const val DB_NAME = "app_db"
 
 // テーブルのリスト
@@ -96,6 +98,7 @@ val TABLE_LIST = arrayOf(
     PushMessage.Companion, // v65
     AccountNotificationStatus.Companion, // v65,
     NotificationShown.Companion, // v65
+    ImageAspect.Companion, // v67
 )
 
 private val log = LogCategory("AppDatabaseHolder")
@@ -201,3 +204,6 @@ val daoTagHistory get() = TagHistory.Access(appDatabase)
 val daoUserRelation get() = UserRelation.Access(appDatabase)
 val daoPushMessage get() = PushMessage.Access(appDatabase)
 val daoLogData get() = LogData.Access(appDatabase)
+val daoImageAspect by lazy{
+    ImageAspect.Access(appDatabase)
+}

@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoUserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.DecodeOptions.Companion.emojiScaleUserName
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.matchHost
@@ -168,6 +169,8 @@ open class TootAccount(
             emojiMapProfile = profile_emojis,
             emojiMapCustom = custom_emojis,
             authorDomain = this,
+            enlargeCustomEmoji = emojiScaleUserName,
+            enlargeEmoji = emojiScaleUserName,
         ).decodeEmoji(sv)
     }
 

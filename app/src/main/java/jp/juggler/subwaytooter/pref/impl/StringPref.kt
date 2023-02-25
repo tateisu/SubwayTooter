@@ -19,4 +19,5 @@ class StringPref(
         defVal != pref.getString(key, defVal)
 
     fun toInt() = value.toIntOrNull() ?: defVal.toInt()
+    fun toFloat() = value.toFloatOrNull() ?: defVal.toFloat()
 }

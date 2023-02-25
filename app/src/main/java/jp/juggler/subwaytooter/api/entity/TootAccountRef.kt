@@ -4,6 +4,8 @@ import android.text.Spannable
 import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.DecodeOptions.Companion.emojiScaleMastodon
+import jp.juggler.subwaytooter.util.DecodeOptions.Companion.emojiScaleMisskey
 
 class TootAccountRef private constructor(
     val mapId: Int,
@@ -50,6 +52,8 @@ class TootAccountRef private constructor(
                     unwrapEmojiImageTag = true,
                     authorDomain = account,
                     emojiSizeMode = parser.emojiSizeMode,
+                    enlargeEmoji = if(parser.linkHelper.isMisskey) emojiScaleMisskey else emojiScaleMastodon,
+                    enlargeCustomEmoji =  if(parser.linkHelper.isMisskey) emojiScaleMisskey else emojiScaleMastodon,
                 ).decodeHTML(account.note),
             )
     }

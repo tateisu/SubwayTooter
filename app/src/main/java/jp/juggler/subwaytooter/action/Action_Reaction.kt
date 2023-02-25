@@ -120,8 +120,8 @@ fun ActMain.reactionAdd(
                 activity,
                 accessInfo,
                 decodeEmoji = true,
-                enlargeEmoji = 1.5f,
-                enlargeCustomEmoji = 1.5f,
+                enlargeEmoji = DecodeOptions.emojiScaleReaction,
+                enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
                 emojiSizeMode =  accessInfo.emojiSizeMode(),
             )
             val emojiSpan = TootReaction.toSpannableStringBuilder(options, code, urlArg)
@@ -219,8 +219,8 @@ fun ActMain.reactionRemove(
                 activity,
                 accessInfo,
                 decodeEmoji = true,
-                enlargeEmoji = 1.5f,
-                enlargeCustomEmoji = 1.5f,
+                enlargeEmoji = DecodeOptions.emojiScaleReaction,
+                enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
                 emojiSizeMode =  accessInfo.emojiSizeMode(),
             )
             val emojiSpan = reaction.toSpannableStringBuilder(options, status)
@@ -330,8 +330,8 @@ private fun ActMain.reactionWithoutUi(
         activity,
         accessInfo,
         decodeEmoji = true,
-        enlargeEmoji = 1.5f,
-        enlargeCustomEmoji = 1.5f,
+        enlargeEmoji = DecodeOptions.emojiScaleReaction,
+        enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
         emojiSizeMode =  accessInfo.emojiSizeMode(),
     )
     val emojiSpan = TootReaction.toSpannableStringBuilder(options, reactionCode, reactionImage)

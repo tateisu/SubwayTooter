@@ -9,9 +9,10 @@ import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.emoji.CustomEmoji
-import jp.juggler.subwaytooter.util.EmojiSizeMode
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.data.WordTrieTree
+import jp.juggler.util.data.clip
 import org.jetbrains.anko.collections.forEachReversedByIndex
 
 class DecodeOptions(
@@ -25,8 +26,8 @@ class DecodeOptions(
     var emojiMapProfile: Map<String, NicoProfileEmoji>? = null,
     var highlightTrie: WordTrieTree? = null,
     var unwrapEmojiImageTag: Boolean = false,
-    var enlargeCustomEmoji: Float = 1f,
-    var enlargeEmoji: Float = 1f,
+    var enlargeCustomEmoji: Float = emojiScaleMastodon,
+    var enlargeEmoji: Float = emojiScaleMastodon,
     // force use HTML instead of Misskey Markdown
     var forceHtml: Boolean = false,
     var mentionFullAcct: Boolean = false,
@@ -36,6 +37,18 @@ class DecodeOptions(
     var authorDomain: HostAndDomain? = null,
     var emojiSizeMode: EmojiSizeMode = EmojiSizeMode.Square,
 ) {
+    companion object {
+        var emojiScaleMastodon = 1f
+        var emojiScaleMisskey = 1f
+        var emojiScaleReaction = 1f
+        var emojiScaleUserName = 1f
+        fun reloadEmojiScale() {
+            emojiScaleMastodon = PrefS.spEmojiSizeMastodon.toFloat().div(100f).clip(0.5f, 5f)
+            emojiScaleMisskey = PrefS.spEmojiSizeMisskey.toFloat().div(100f).clip(0.5f, 5f)
+            emojiScaleReaction = PrefS.spEmojiSizeReaction.toFloat().div(100f).clip(0.5f, 5f)
+            emojiScaleUserName = PrefS.spEmojiSizeUserName.toFloat().div(100f).clip(0.5f, 5f)
+        }
+    }
 
     internal fun isMediaAttachment(url: String?): Boolean =
         url?.let { u -> attachmentList?.any { it.hasUrl(u) } } ?: false

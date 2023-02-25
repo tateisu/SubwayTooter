@@ -38,6 +38,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions.Companion.reloadEmojiScale
 import jp.juggler.subwaytooter.view.MyDrawerLayout
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -370,6 +371,7 @@ class ActMain : AppCompatActivity(),
 
         acctPadLr = (0.5f + 4f * density).toInt()
         reloadTextSize()
+        reloadEmojiScale()
 
         initUI()
 
@@ -455,6 +457,7 @@ class ActMain : AppCompatActivity(),
         super.onStart()
         galaxyBackgroundWorkaround()
         benchmark("onStart total") {
+            reloadEmojiScale()
             benchmark("reload color") { reloadColors() }
             benchmark("reload timezone") { reloadTimeZone() }
 

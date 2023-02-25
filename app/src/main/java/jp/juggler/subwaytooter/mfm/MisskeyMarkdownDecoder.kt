@@ -61,7 +61,7 @@ object MisskeyMarkdownDecoder {
     fun decodeMarkdown(options: DecodeOptions, src: String?) =
         SpannableStringBuilderEx().apply {
             val save = options.enlargeCustomEmoji
-            options.enlargeCustomEmoji = 2.5f
+            options.enlargeCustomEmoji = DecodeOptions.emojiScaleMisskey
             try {
                 val env = SpanOutputEnv(options, this)
 

@@ -61,8 +61,8 @@ fun ColumnViewHolder.updateReactionQueryView() {
             act,
             column.accessInfo,
             decodeEmoji = true,
-            enlargeEmoji = 1.5f,
-            enlargeCustomEmoji = 1.5f,
+            enlargeEmoji = DecodeOptions.emojiScaleReaction,
+            enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
             emojiSizeMode = column.accessInfo.emojiSizeMode(),
         )
 

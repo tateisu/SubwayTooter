@@ -624,6 +624,8 @@ internal class ViewHolderHeaderProfile(
             emojiMapProfile = who.profile_emojis,
             authorDomain = who,
             emojiSizeMode = accessInfo.emojiSizeMode(),
+            enlargeCustomEmoji = DecodeOptions.emojiScaleUserName,
+            enlargeEmoji = DecodeOptions.emojiScaleUserName,
         )
 
         val nameTypeface = ActMain.timelineFontBold

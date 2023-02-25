@@ -290,7 +290,6 @@ private class EmojiPicker(
                         item.customEmoji.url
                     },
                     initialAspect = item.customEmoji.aspect,
-                    defaultWidth = gridSize,
                     defaultHeight = gridSize,
                 )
             }

@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.AnimatableSpan
 import jp.juggler.subwaytooter.span.AnimatableSpanInvalidator
 import jp.juggler.util.data.clip
+import jp.juggler.util.log.LogCategory
 import java.lang.ref.WeakReference
 
 class NetworkEmojiInvalidator(
@@ -15,6 +16,9 @@ class NetworkEmojiInvalidator(
     internal val view: TextView,
     // val parent:View? = null,
 ) : AnimatableSpanInvalidator {
+    companion object {
+        private val log = LogCategory("NetworkEmojiInvalidator")
+    }
 
     var text: CharSequence
         get() = view.text

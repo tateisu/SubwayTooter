@@ -124,4 +124,9 @@ object PrefI {
     val ipMediaBackground = IntPref("MediaBackground", 1)
 
     val ipLogSaveLevel = IntPref("LogSaveLevel", Log.WARN)
+
+    const val EMOJI_WIDE_AUTO = 0
+    const val EMOJI_WIDE_ENABLE = 1
+    const val EMOJI_WIDE_DISABLE = 2
+    val ipEmojiWideMode = IntPref("EmojiWideMode", EMOJI_WIDE_AUTO)
 }

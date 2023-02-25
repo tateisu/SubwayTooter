@@ -2,7 +2,9 @@ package jp.juggler.subwaytooter.util
 
 import android.graphics.RectF
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.daoImageAspect
 import jp.juggler.util.log.LogCategory
 import kotlin.math.min
 
@@ -11,14 +13,19 @@ enum class EmojiSizeMode {
     Wide,
 }
 
-fun SavedAccount?.emojiSizeMode(): EmojiSizeMode {
-    val ti = this?.let { TootInstance.getCached(it) }
-    return when {
-        ti == null -> EmojiSizeMode.Square
-        ti.isMisskey || !ti.fedibirdCapabilities.isNullOrEmpty() -> EmojiSizeMode.Wide
-        else -> EmojiSizeMode.Square
+fun SavedAccount?.emojiSizeMode(): EmojiSizeMode =
+    when (PrefI.ipEmojiWideMode.value) {
+        PrefI.EMOJI_WIDE_ENABLE -> EmojiSizeMode.Wide
+        PrefI.EMOJI_WIDE_DISABLE -> EmojiSizeMode.Square
+        else /* PrefI.EMOJI_WIDE_AUTO */ -> {
+            val ti = this?.let { TootInstance.getCached(it) }
+            when {
+                ti == null -> EmojiSizeMode.Square
+                ti.isMisskey || !ti.fedibirdCapabilities.isNullOrEmpty() -> EmojiSizeMode.Wide
+                else -> EmojiSizeMode.Square
+            }
+        }
     }
-}
 
 /**
  * カスタム絵文字のSpanやビューの描画領域やサイズを計算する
@@ -29,7 +36,7 @@ class EmojiImageRect(
     val scaleRatio: Float = 1f,
     val descentRatio: Float = 0f,
     val maxEmojiWidth: Float,
-    val layout: (Int, Int) -> Unit,
+//    val layout: (Int, Int) -> Unit,
 ) {
     companion object {
         private val log = LogCategory("EmojiImageRect")
@@ -41,8 +48,6 @@ class EmojiImageRect(
     var emojiWidth = 0f
     var emojiHeight = 0f
     var transY = 0f
-
-    var lastWidth: Float? = null
 
     /**
      * lastAspect に基づいて rectDst と transY を更新する
@@ -69,9 +74,13 @@ class EmojiImageRect(
     ) {
         this.emojiHeight = h
         val aspect = when (aspectArg) {
-            null -> imageAspectCache[url] ?: 1f
+            null -> {
+                imageAspectCache[url]
+                    ?: daoImageAspect.load(url)?.also { imageAspectCache[url] = it }
+                    ?: 1f
+            }
             else -> {
-                imageAspectCache.put(url, aspectArg)
+                if (url.isNotEmpty()) imageAspectCache[url] = aspectArg
                 aspectArg
             }
         }.takeIf { it > 0f } ?: 1f
@@ -89,7 +98,6 @@ class EmojiImageRect(
             }
 
             else -> {
-                emojiWidth = emojiHeight
                 // 絵文字のアスペクト比から描画範囲の幅と高さを決める
                 val dstWidth: Float
                 val dstHeight: Float
@@ -103,14 +111,8 @@ class EmojiImageRect(
                 val dstX = (emojiHeight - dstWidth) / 2f
                 val dstY = (emojiHeight - dstHeight) / 2f
                 rectDst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
+                emojiWidth = emojiHeight
             }
         }
-        // 出力サイズが変化したならrequestLayout
-        val newWidth = emojiWidth
-        if (lastWidth != null && lastWidth != newWidth) {
-            log.i("updateRect: width changed. $lastWidth → $newWidth")
-            layout((emojiWidth + 0.5f).toInt(), (emojiHeight + 0.5f).toInt())
-        }
-        lastWidth = newWidth
     }
 }

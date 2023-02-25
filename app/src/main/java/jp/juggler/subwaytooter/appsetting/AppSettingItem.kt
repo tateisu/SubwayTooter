@@ -343,7 +343,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         sw(PrefB.bpDontRemoveDeletedToot, R.string.dont_remove_deleted_toot_from_timeline)
-        sw(PrefB.bpCustomEmojiSeparatorZwsp, R.string.custom_emoji_separator_zwsp)
         sw(PrefB.bpShowTranslateButton, R.string.show_translate_button)
 
         item(
@@ -464,10 +463,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.warn_hashtag_ascii_and_non_ascii
         )
 
-        sw(
-            PrefB.bpEmojiPickerCloseOnSelected,
-            R.string.close_emoji_picker_when_selected
-        )
 
         sw(PrefB.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
     }
@@ -523,6 +518,58 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     section(R.string.animation) {
         sw(PrefB.bpImageAnimationEnable, R.string.image_animation_enable)
         sw(PrefB.bpDisableEmojiAnimation, R.string.disable_custom_emoji_animation)
+    }
+
+    section(R.string.emoji){
+
+        sw(PrefB.bpUseTwemoji, R.string.use_twemoji_emoji)
+
+        sw(PrefB.bpEmojioneShortcode, R.string.emojione_shortcode_support) {
+            desc = R.string.emojione_shortcode_support_desc
+        }
+
+        sw(PrefB.bpEmojiPickerCategoryOther, R.string.show_emoji_picker_other_category)
+
+        sw(
+            PrefB.bpEmojiPickerCloseOnSelected,
+            R.string.close_emoji_picker_when_selected
+        )
+
+        sw(PrefB.bpCustomEmojiSeparatorZwsp, R.string.custom_emoji_separator_zwsp)
+
+        text(
+            PrefS.spEmojiSizeMastodon,
+            R.string.emoji_size_mastodon,
+            InputTypeEx.number
+        )
+        text(
+            PrefS.spEmojiSizeMisskey,
+            R.string.emoji_size_misskey,
+            InputTypeEx.number
+        )
+        text(
+            PrefS.spEmojiSizeReaction,
+            R.string.emoji_size_reaction,
+            InputTypeEx.number
+        )
+        text(
+            PrefS.spEmojiSizeUserName,
+            R.string.emoji_size_user_name,
+            InputTypeEx.number
+        )
+
+        spinnerSimple(
+            PrefI.ipEmojiWideMode,
+            R.string.emoji_wide_mode,
+            R.string.auto,
+            R.string.enabled,
+            R.string.disabled,
+        )
+        text(
+            PrefS.spEmojiPixels,
+            R.string.emoji_texture_pixels,
+            InputTypeEx.number
+        )
     }
 
     section(R.string.appearance) {
@@ -789,10 +836,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         )
         sw(PrefB.bpShowBookmarkButton, R.string.show_bookmark_button)
         sw(PrefB.bpHideFollowCount, R.string.hide_followers_count)
-        sw(PrefB.bpEmojioneShortcode, R.string.emojione_shortcode_support) {
-            desc = R.string.emojione_shortcode_support_desc
-        }
-        sw(PrefB.bpUseTwemoji, R.string.use_twemoji_emoji)
 
         sw(PrefB.bpKeepReactionSpace, R.string.keep_reaction_space)
 
@@ -1032,7 +1075,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
         sw(PrefB.bpEnableDeprecatedSomething,R.string.enable_deprecated_something)
 
-        sw(PrefB.bpEmojiPickerCategoryOther, R.string.show_emoji_picker_other_category)
         action(R.string.drawable_list) {
             action = { startActivity(Intent(this, ActDrawableList::class.java)) }
         }

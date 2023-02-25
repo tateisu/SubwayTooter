@@ -21,13 +21,13 @@ class NetworkEmojiSpan constructor(
     private val url: String,
     sizeMode: EmojiSizeMode,
     scale: Float = 1f,
-    private val initialAspect:Float? = null,
+    private val initialAspect: Float? = null,
     private val errorDrawableId: Int = R.drawable.outline_broken_image_24,
 ) : ReplacementSpan(), AnimatableSpan {
 
     companion object {
         internal val log = LogCategory("NetworkEmojiSpan")
-        private const val scaleRatio = 1.14f
+        const val scaleRatio = 1.14f
         private const val descentRatio = 0.211f
 
         // 最大幅
@@ -47,13 +47,23 @@ class NetworkEmojiSpan constructor(
 
     private val rectSrc = Rect()
 
+    private var lastMeasuredWidth = 0f
+
     private val emojiImageRect = EmojiImageRect(
         sizeMode = sizeMode,
         scale = scale,
         scaleRatio = scaleRatio,
         descentRatio = descentRatio,
         maxEmojiWidth = maxEmojiWidth,
-        layout = { _,_-> invalidateCallback?.requestLayout() },
+//        layout = { _, _ ->
+//            when (val cb = invalidateCallback) {
+//                null -> log.w("layoutCb is null")
+//                else -> {
+//                    log.i("layoutCb requestLayout. url=$url")
+//                    cb.requestLayout()
+//                }
+//            }
+//        }
     )
 
     override fun setInvalidateCallback(
@@ -72,8 +82,12 @@ class NetworkEmojiSpan constructor(
         fm: Paint.FontMetricsInt?,
     ): Int {
         emojiImageRect.updateRect(
-            url = url, aspectArg = initialAspect, paint.textSize, baseline = 0f
+            url = url,
+            aspectArg = initialAspect,
+            paint.textSize,
+            baseline = 0f
         )
+
         val height = (emojiImageRect.emojiHeight + 0.5f).toInt()
         if (fm != null) {
             val cDescent = (0.5f + height * descentRatio).toInt()
@@ -83,7 +97,10 @@ class NetworkEmojiSpan constructor(
             if (fm.descent < cDescent) fm.descent = cDescent
             if (fm.bottom < cDescent) fm.bottom = cDescent
         }
-        return (emojiImageRect.emojiWidth + 0.5f).toInt()
+
+        val width = emojiImageRect.emojiWidth
+        lastMeasuredWidth = width
+        return (width + 0.5f).toInt()
     }
 
     override fun draw(
@@ -115,6 +132,7 @@ class NetworkEmojiSpan constructor(
 
         // APNGデータの取得
         val frames = App1.custom_emoji_cache.getFrames(refDrawTarget, url) {
+            handleFrameLoaded(it)
             invalidateCallback.delayInvalidate(0L)
         } ?: return false
 
@@ -144,6 +162,17 @@ class NetworkEmojiSpan constructor(
             textPaint.textSize,
             baseline.toFloat()
         )
+        val clipBounds = canvas.clipBounds
+        val clipWidth = clipBounds.width()
+        // 最後にgetSizeで返した幅と異なるか、現在のTextViewのClip幅より大きいなら
+        // 再レイアウトを要求する
+        if (emojiImageRect.emojiWidth != lastMeasuredWidth ){
+            log.i("requestLayout by width changed")
+            invalidateCallback.requestLayout()
+        }else if(emojiImageRect.emojiWidth > clipWidth) {
+            log.i("requestLayout by clipWidth ${emojiImageRect.emojiWidth}/${clipWidth}")
+            invalidateCallback.requestLayout()
+        }
 
         canvas.save()
         try {
@@ -172,6 +201,12 @@ class NetworkEmojiSpan constructor(
         return true
     }
 
+    private fun handleFrameLoaded(frames: ApngFrames?) {
+        frames?.aspect?.let {
+            invalidateCallback?.requestLayout()
+        }
+    }
+
     private fun drawError(
         canvas: Canvas,
         x: Float,
@@ -190,7 +225,7 @@ class NetworkEmojiSpan constructor(
             url = "",
             aspectArg = srcWidth / srcHeight,
             textSize = textPaint.textSize,
-            baseline = baseline.toFloat()
+            baseline = baseline.toFloat(),
         )
 
         canvas.save()

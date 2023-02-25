@@ -32,7 +32,7 @@ fun SavedAccount?.emojiSizeMode(): EmojiSizeMode =
  */
 class EmojiImageRect(
     private val sizeMode: EmojiSizeMode,
-    val scale: Float = 1f,
+    var scale: Float = 1f,
     val scaleRatio: Float = 1f,
     val descentRatio: Float = 0f,
     val maxEmojiWidth: Float,

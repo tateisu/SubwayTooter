@@ -166,10 +166,10 @@ class NetworkEmojiSpan constructor(
         val clipWidth = clipBounds.width()
         // 最後にgetSizeで返した幅と異なるか、現在のTextViewのClip幅より大きいなら
         // 再レイアウトを要求する
-        if (emojiImageRect.emojiWidth != lastMeasuredWidth ){
+        if (emojiImageRect.emojiWidth != lastMeasuredWidth) {
             log.i("requestLayout by width changed")
             invalidateCallback.requestLayout()
-        }else if(emojiImageRect.emojiWidth > clipWidth) {
+        } else if (emojiImageRect.emojiWidth > clipWidth) {
             log.i("requestLayout by clipWidth ${emojiImageRect.emojiWidth}/${clipWidth}")
             invalidateCallback.requestLayout()
         }
@@ -252,5 +252,9 @@ class NetworkEmojiSpan constructor(
         } finally {
             canvas.restore()
         }
+    }
+
+    fun setScale(s: Float) {
+        emojiImageRect.scale = s
     }
 }

@@ -25,9 +25,9 @@ import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import jp.juggler.util.data.*
@@ -349,7 +349,7 @@ fun ItemViewHolder.showBoost(
     setAcct(tvBoostedAcct, accessInfo, who)
 
     // フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-    if (reaction != null) {
+    boostInvalidator.text = if (reaction != null) {
         val options = DecodeOptions(
             activity,
             accessInfo,
@@ -358,17 +358,16 @@ fun ItemViewHolder.showBoost(
             enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
             emojiSizeMode = accessInfo.emojiSizeMode(),
         )
-        val ssb = reaction.toSpannableStringBuilder(options, boostStatus)
-        ssb.append(" ")
-        ssb.append(
-            who.decodeDisplayNameCached(activity)
-                .intoStringResource(activity, stringId)
-        )
-        boostInvalidator.text = ssb
+        reaction.toSpannableStringBuilder(options, boostStatus).apply {
+            append(" ")
+            append(
+                who.decodeDisplayNameCached(activity)
+                    .intoStringResource(activity, stringId)
+            )
+        }
     } else {
-        boostInvalidator.text =
-            who.decodeDisplayNameCached(activity)
-                .intoStringResource(activity, stringId)
+        who.decodeDisplayNameCached(activity)
+            .intoStringResource(activity, stringId)
     }
 }
 

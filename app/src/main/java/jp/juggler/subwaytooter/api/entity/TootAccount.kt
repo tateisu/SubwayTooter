@@ -186,6 +186,8 @@ open class TootAccount(
             emojiMapProfile = profile_emojis,
             emojiMapCustom = custom_emojis,
             authorDomain = this,
+            enlargeCustomEmoji = emojiScaleUserName,
+            enlargeEmoji = emojiScaleUserName,
         ).decodeEmoji(sv)
     }
 
@@ -284,6 +286,8 @@ open class TootAccount(
                     unwrapEmojiImageTag = true,
                     authorDomain = this,
                     emojiSizeMode = accessInfo.emojiSizeMode(),
+                    enlargeCustomEmoji = emojiScaleUserName,
+                    enlargeEmoji = emojiScaleUserName,
                 ).decodeHTML(note)
                     .replaceAllEx(reNoteLineFeed, " ")
                     .trimEx()

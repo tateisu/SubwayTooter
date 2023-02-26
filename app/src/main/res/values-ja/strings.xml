@@ -1268,5 +1268,5 @@
     <string name="emoji_wide_mode">ワイドカスタム絵文字</string>
     <string name="enabled">有効</string>
     <string name="disabled">無効</string>
-    <string name="emoji_texture_pixels">絵文字テクスチャの最大ピクセル数(単位:ピクセル、デフォルト: 256。 タスクキルが必要。端末のRAMが少ない場合は64程度まで下げることをお勧めします)</string>
+    <string name="emoji_texture_pixels">絵文字テクスチャの最大ピクセル数(単位:ピクセル、デフォルト: 128。 タスクキルが必要。端末のRAMが少ない場合は64程度まで下げることをお勧めします)</string>
 </resources>

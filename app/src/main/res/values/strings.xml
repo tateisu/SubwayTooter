@@ -1276,5 +1276,5 @@
     <string name="emoji_wide_mode">Wide custom emoji</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="emoji_texture_pixels">Emoji texture max pixels(Unix:pixels, default: 256. task kill required. reduce to 64 if your device\'s RAM is not enough)</string>
+    <string name="emoji_texture_pixels">Emoji texture max pixels(Unix:pixels, default: 128. task kill required. reduce to 64 if your device\'s RAM is not enough)</string>
 </resources>

@@ -1275,4 +1275,12 @@
     <string name="bug_report_desc">应用保留了过去几天的日志，但不会在未经许可的情况下将其发送到外面。仅在用户显式发送日志时引用。</string>
     <string name="enable_deprecated_something">启用已弃用的内容</string>
     <string name="misskey_support_end">Misskey 支持已结束</string>
+    <string name="emoji_size_reaction">表情回应缩放（单位：%。默认：150）</string>
+    <string name="emoji_size_user_name">用户名表情符号缩放（单位：%。默认：100）</string>
+    <string name="emoji_wide_mode">广泛自定义表情符号</string>
+    <string name="enabled">已启用</string>
+    <string name="emoji_texture_pixels">表情符号纹理最大像素（单位：像素，默认：128。任务需要终止。如果设备的 RAM 不够，请减少到 64）</string>
+    <string name="emoji_size_mastodon">（Mastodon）自定义表情符号缩放（单位：%。默认：100）</string>
+    <string name="emoji_size_misskey">（Misskey）自定义表情符号缩放（单位：%。默认：250）</string>
+    <string name="disabled">已禁用</string>
 </resources>

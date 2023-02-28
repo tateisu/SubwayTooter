@@ -80,13 +80,13 @@ class TootAnnouncement(
             val now = System.currentTimeMillis()
             return src
                 ?.filter {
-
                     when {
                         // 期間の大小が入れ替わってる場合はフィルタしない
                         it.starts_at > it.ends_at -> true
 
-                        // まだ開始していない
-                        it.starts_at > 0L && now < it.starts_at -> false
+                        // https://github.com/tateisu/SubwayTooter/issues/235
+                        // 告知開始時刻とイベント開始時刻は異なる
+                        // APIで受け取れるのは告知開始以後のイベントだけなので、開始時刻によるフィルタは行わない
 
                         // 終了した後
                         it.ends_at > 0L && now > it.ends_at -> false

@@ -364,4 +364,8 @@ object PrefB {
         "EnableDeprecatedSomething",
         false
     )
+    val bpCollapseEmojiPickerCategory = BooleanPref(
+        "CollapseEmojiPickerCategory",
+        true
+    )
 }

@@ -10,13 +10,12 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -38,7 +37,6 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
-import org.jetbrains.anko.image
 import org.jetbrains.anko.wrapContent
 import kotlin.math.abs
 import kotlin.math.sign
@@ -199,20 +197,22 @@ private class EmojiPicker(
         abstract fun bind(item: PickerItem)
     }
 
-    private var lastExpandCategory: PickerItemCategory? = null
-    private var canCollapse = true
-
     private inner class VhCategory(
-        view: LinearLayout = LinearLayout(activity),
+        view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
         var lastItem: PickerItemCategory? = null
 
-        val ibExpand = AppCompatImageButton(activity).apply {
-            layoutParams = LinearLayout.LayoutParams(gridSize, matchParent)
+        val tv = AppCompatTextView(activity).apply {
+            layoutParams = FrameLayout.LayoutParams(headerWidth, wrapContent)
+            minHeightCompat = (density * 48f + 0.5f).toInt()
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            includeFontPadding = false
             background = ContextCompat.getDrawable(
                 this@EmojiPicker.activity,
                 R.drawable.btn_bg_transparent_round6dp
             )
+            compoundDrawablePadding = (density * 4f + 0.5f).toInt()
+
             setOnClickListener {
                 val orig = lastItem?.original
                     ?: return@setOnClickListener
@@ -227,36 +227,29 @@ private class EmojiPicker(
             }
         }
 
-        val tv = AppCompatTextView(activity).apply {
-            layoutParams = LinearLayout.LayoutParams(0, wrapContent).apply {
-                weight = 1f
-            }
-            minHeightCompat = (density * 48f + 0.5f).toInt()
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            includeFontPadding = false
-        }
-
         init {
             view.layoutParams = RecyclerView.LayoutParams(headerWidth, wrapContent)
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
-            view.isBaselineAligned = false
-            view.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            view.addView(ibExpand)
             view.addView(tv)
         }
 
         override fun bind(item: PickerItem) {
-            if (item is PickerItemCategory) {
-                lastItem = item
-                tv.text = item.name
-                ibExpand.vg(canCollapse)?.let {
-                    val drawableId = when (lastExpandCategory == item.original) {
-                        true -> R.drawable.ic_arrow_drop_down
-                        else -> R.drawable.ic_arrow_drop_up
-                    }
-                    it.image = ContextCompat.getDrawable(activity, drawableId)
+            if (item !is PickerItemCategory) return
+            lastItem = item
+            tv.text = item.name
+
+            val drawable = when {
+                !canCollapse -> null
+                lastExpandCategory == item.original -> R.drawable.ic_arrow_drop_down
+                else -> R.drawable.ic_arrow_drop_up
+            }?.let {
+                ContextCompat.getDrawable(activity, it)
+            }?.let {
+                DrawableCompat.wrap(it).also { d ->
+                    DrawableCompat.setTint(d, activity.attrColor(R.attr.colorTextContent))
                 }
             }
+            tv.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
         }
     }
 
@@ -447,6 +440,9 @@ private class EmojiPicker(
 
     private var recentCategory: PickerItemCategoryRecent? = null
 
+    private var lastExpandCategory: PickerItemCategory? = null
+    private var canCollapse = true
+
     private val density = activity.resources.displayMetrics.density
     val cellMargin = (density * 1f + 0.5f).toInt()
     val gridSize = (density * 48f + 0.5f).toInt()
@@ -615,8 +611,9 @@ private class EmojiPicker(
         lastSelectedCategory = selectedCategory
         lastSelectedKeyword = selectedKeyword
         val keywordLower = selectedKeyword?.lowercase()?.trim()
-        this.canCollapse =
-            keywordLower.isNullOrEmpty() && (selectedCategory == null || selectedCategory == EmojiCategory.Custom)
+        this.canCollapse = PrefB.bpCollapseEmojiPickerCategory.value &&
+                keywordLower.isNullOrEmpty() &&
+                (selectedCategory == null || selectedCategory == EmojiCategory.Custom)
 
         adapter.list = buildList {
             val filteredCategories = pickerCategries.filter {

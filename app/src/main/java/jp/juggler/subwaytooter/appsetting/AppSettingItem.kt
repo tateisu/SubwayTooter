@@ -520,7 +520,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpDisableEmojiAnimation, R.string.disable_custom_emoji_animation)
     }
 
-    section(R.string.emoji){
+    section(R.string.emoji) {
 
         sw(PrefB.bpUseTwemoji, R.string.use_twemoji_emoji)
 
@@ -569,6 +569,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             PrefS.spEmojiPixels,
             R.string.emoji_texture_pixels,
             InputTypeEx.number
+        )
+        sw(
+            PrefB.bpCollapseEmojiPickerCategory,
+            R.string.emoji_picker_category_collapse
         )
     }
 
@@ -1073,7 +1077,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     section(R.string.developer_options) {
         sw(PrefB.bpCheckBetaVersion, R.string.check_beta_release)
 
-        sw(PrefB.bpEnableDeprecatedSomething,R.string.enable_deprecated_something)
+        sw(PrefB.bpEnableDeprecatedSomething, R.string.enable_deprecated_something)
 
         action(R.string.drawable_list) {
             action = { startActivity(Intent(this, ActDrawableList::class.java)) }
@@ -1116,7 +1120,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
     }
 
-    section(R.string.bug_report){
+    section(R.string.bug_report) {
         spinnerSimple(
             PrefI.ipLogSaveLevel,
             R.string.log_save_level, // name
@@ -1128,7 +1132,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.log_warn, //5
             R.string.log_error, //6
             R.string.log_assert, //7
-        ){
+        ) {
             desc = R.string.log_save_level_desc
         }
 

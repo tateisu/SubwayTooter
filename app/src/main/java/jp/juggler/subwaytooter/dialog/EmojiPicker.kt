@@ -66,8 +66,14 @@ private class EmojiPicker(
     }
 
     private sealed interface PickerItem
-    private class PickerItemUnicode(val unicodeEmoji: UnicodeEmoji) : PickerItem
-    private class PickerItemCustom(val customEmoji: CustomEmoji) : PickerItem
+
+    private class PickerItemUnicode(val unicodeEmoji: UnicodeEmoji) : PickerItem {
+        var isWrapBefore = false
+    }
+
+    private class PickerItemCustom(val customEmoji: CustomEmoji) : PickerItem {
+        var isWrapBefore = false
+    }
 
     private open class PickerItemCategory(
         var name: String,
@@ -198,6 +204,7 @@ private class EmojiPicker(
     }
 
     private inner class VhCategory(
+        parent: ViewGroup,
         view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
         var lastItem: PickerItemCategory? = null
@@ -228,9 +235,11 @@ private class EmojiPicker(
         }
 
         init {
-            view.layoutParams = FlexboxLayoutManager.LayoutParams(0, wrapContent).apply {
-                flexBasisPercent = 100f
-            }
+            view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
+                .apply {
+                    flexGrow = 1f
+                    isWrapBefore = true
+                }
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(tv)
         }
@@ -255,6 +264,12 @@ private class EmojiPicker(
         }
     }
 
+    private fun View.updateWrapBefore(isWrapBefore:Boolean){
+        val lp = layoutParams as FlexboxLayoutManager.LayoutParams
+        lp.isWrapBefore = isWrapBefore
+        layoutParams = lp
+    }
+
     private inner class VhCustomEmoji(
         val view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
@@ -277,6 +292,7 @@ private class EmojiPicker(
         override fun bind(item: PickerItem) {
             if (activity.isDestroyed) return
             if (item is PickerItemCustom) {
+                view.updateWrapBefore(item.isWrapBefore)
                 view.setTag(R.id.btnAbout, item)
                 niv.setEmoji(
                     url = if (disableAnimation) {
@@ -310,6 +326,7 @@ private class EmojiPicker(
         override fun bind(item: PickerItem) {
             if (activity.isDestroyed) return
             if (item is PickerItemUnicode) {
+                view.updateWrapBefore(item.isWrapBefore)
                 view.setTag(R.id.btnAbout, item)
                 val emoji = applySkinTone(item.unicodeEmoji)
                 if (emoji.isSvg) {
@@ -347,6 +364,7 @@ private class EmojiPicker(
         override fun bind(item: PickerItem) {
             if (activity.isDestroyed) return
             if (item is PickerItemUnicode) {
+                view.updateWrapBefore(item.isWrapBefore)
                 view.setTag(R.id.btnAbout, item)
                 val unicodeEmoji = applySkinTone(item.unicodeEmoji)
                 tv.text = unicodeEmoji.unifiedCode
@@ -383,7 +401,7 @@ private class EmojiPicker(
 
         override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int) =
             when (viewType) {
-                VT_CATEGORY -> VhCategory()
+                VT_CATEGORY -> VhCategory(viewGroup)
                 VT_CUSTOM_EMOJI -> VhCustomEmoji()
                 VT_TWEMOJI -> VhTwemoji()
                 VT_COMPAT_EMOJI -> VhAppCompatEmoji()
@@ -616,7 +634,7 @@ private class EmojiPicker(
                 keywordLower.isNullOrEmpty() &&
                 (selectedCategory == null || selectedCategory == EmojiCategory.Custom)
 
-        adapter.list = buildList {
+        val list = buildList {
             val filteredCategories = pickerCategries.filter {
                 selectedCategory == null || it.category == selectedCategory
             }.mapNotNull { category ->
@@ -645,6 +663,16 @@ private class EmojiPicker(
                 }
             }
         }
+        list.forEachIndexed { i,v->
+            fun isPreviousHeader()=list.elementAtOrNull(i-1) is PickerItemCategory
+            when(v) {
+                is PickerItemUnicode -> v.isWrapBefore = isPreviousHeader()
+                is PickerItemCustom -> v.isWrapBefore = isPreviousHeader()
+                else -> Unit
+            }
+        }
+
+        adapter.list = list
 
         val targetCategory = lastExpandCategory
         if (scrollToCategory && targetCategory != null) {

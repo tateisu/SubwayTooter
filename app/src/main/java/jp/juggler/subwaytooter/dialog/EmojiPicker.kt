@@ -203,7 +203,7 @@ private class EmojiPicker(
         var lastItem: PickerItemCategory? = null
 
         val tv = AppCompatTextView(activity).apply {
-            layoutParams = FrameLayout.LayoutParams(headerWidth, wrapContent)
+            layoutParams = FrameLayout.LayoutParams(matchParent, wrapContent)
             minHeightCompat = (density * 48f + 0.5f).toInt()
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
             includeFontPadding = false
@@ -228,7 +228,9 @@ private class EmojiPicker(
         }
 
         init {
-            view.layoutParams = RecyclerView.LayoutParams(headerWidth, wrapContent)
+            view.layoutParams = FlexboxLayoutManager.LayoutParams(0, wrapContent).apply {
+                flexBasisPercent = 100f
+            }
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(tv)
         }
@@ -267,7 +269,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
+            view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(niv)
         }
@@ -300,7 +302,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
+            view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(iv)
         }
@@ -338,7 +340,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
-            view.layoutParams = RecyclerView.LayoutParams(wrapContent, wrapContent)
+            view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
             view.addView(tv)
         }
 
@@ -446,7 +448,6 @@ private class EmojiPicker(
     private val density = activity.resources.displayMetrics.density
     val cellMargin = (density * 1f + 0.5f).toInt()
     val gridSize = (density * 48f + 0.5f).toInt()
-    val headerWidth = gridSize * 6
     private val cancelY = 16f
     private val interceptX = 40f
     private var tracker: VelocityTracker? = null

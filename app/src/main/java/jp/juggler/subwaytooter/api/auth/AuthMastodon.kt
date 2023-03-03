@@ -104,51 +104,53 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
         // スコープ一覧を取得する
         val scopeString = mastodonScope(tootInstance)
 
-        when {
-            // 古いクライアント情報は使わない。削除もしない。
-            AUTH_VERSION != clientInfo?.int(KEY_AUTH_VERSION) -> Unit
+        try {
+            when {
+                // 古いクライアント情報は使わない。削除もしない。
+                AUTH_VERSION != clientInfo?.int(KEY_AUTH_VERSION) -> Unit
 
-            // Misskeyにはclient情報をまだ利用できるかどうか調べる手段がないので、再利用しない
-            clientInfo.boolean(KEY_IS_MISSKEY) == true -> Unit
+                // Misskeyにはclient情報をまだ利用できるかどうか調べる手段がないので、再利用しない
+                clientInfo.boolean(KEY_IS_MISSKEY) == true -> Unit
 
-            else -> {
-                val clientCredential = prepareClientCredential(apiHost, clientInfo, clientName)
-                // client_credential があるならcredentialがまだ使えるか確認する
-                if (!clientCredential.isNullOrEmpty()) {
+                else -> {
+                    val clientCredential = prepareClientCredential(apiHost, clientInfo, clientName)
+                    // client_credential があるならcredentialがまだ使えるか確認する
+                    if (!clientCredential.isNullOrEmpty()) {
 
-                    // 存在確認するだけで、結果は使ってない
-                    api.verifyClientCredential(apiHost, clientCredential)
+                        // 存在確認するだけで、結果は使ってない
+                        api.verifyClientCredential(apiHost, clientCredential)
 
-                    // 過去にはスコープを+で連結したものを保存していた
-                    val oldScope = clientInfo.string(KEY_CLIENT_SCOPE)
-                        ?.replace("+", " ")
+                        // 過去にはスコープを+で連結したものを保存していた
+                        val oldScope = clientInfo.string(KEY_CLIENT_SCOPE)
+                            ?.replace("+", " ")
 
-                    when {
-                        // クライアント情報を再利用する
-                        !forceUpdateClient && oldScope == scopeString -> return clientInfo
+                        when {
+                            // クライアント情報を再利用する
+                            !forceUpdateClient && oldScope == scopeString -> return clientInfo
 
-                        else -> try {
-                            // マストドン2.4でスコープが追加された
-                            // 取得時のスコープ指定がマッチしない(もしくは記録されていない)ならクライアント情報を再利用してはいけない
-                            daoClientInfo.delete(apiHost, clientName)
+                            else -> {
+                                // マストドン2.4でスコープが追加された
+                                // 取得時のスコープ指定がマッチしない(もしくは記録されていない)ならクライアント情報を再利用してはいけない
+                                daoClientInfo.delete(apiHost, clientName)
 
-                            // クライアントアプリ情報そのものはまだサーバに残っているが、明示的に消す方法は現状存在しない
-                            // client credential だけは消せる
-                            api.revokeClientCredential(
-                                apiHost = apiHost,
-                                clientId = clientInfo.string("client_id")
-                                    ?: error("revokeClientCredential: missing client_id"),
-                                clientSecret = clientInfo.string("client_secret")
-                                    ?: error("revokeClientCredential: missing client_secret"),
-                                clientCredential = clientCredential,
-                            )
-                        } catch (ex: Throwable) {
-                            // クライアント情報の削除処理はエラーが起きても無視する
-                            log.w(ex, "can't delete client information.")
+                                // クライアントアプリ情報そのものはまだサーバに残っているが、明示的に消す方法は現状存在しない
+                                // client credential だけは消せる
+                                api.revokeClientCredential(
+                                    apiHost = apiHost,
+                                    clientId = clientInfo.string("client_id")
+                                        ?: error("revokeClientCredential: missing client_id"),
+                                    clientSecret = clientInfo.string("client_secret")
+                                        ?: error("revokeClientCredential: missing client_secret"),
+                                    clientCredential = clientCredential,
+                                )
+                            }
                         }
                     }
                 }
             }
+        } catch (ex: Throwable) {
+            // クライアント再利用チェックやクライアント情報の削除処理はエラーが起きても無視する
+            log.w(ex, "can't verify/delete client information.")
         }
 
         clientInfo = api.registerClient(apiHost, scopeString, clientName, callbackUrl).apply {
@@ -156,7 +158,7 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
             put(KEY_AUTH_VERSION, AUTH_VERSION)
             put(KEY_CLIENT_SCOPE, scopeString)
         }
-        if(DEBUG_AUTH) log.i("DEBUG_AUTH client_id=${clientInfo.string("client_id")}")
+        if (DEBUG_AUTH) log.i("DEBUG_AUTH client_id=${clientInfo.string("client_id")}")
         // client credentialを取得して保存する
         // この時点ではまだ client credential がないので、必ず更新と保存が行われる
         prepareClientCredential(apiHost, clientInfo, clientName)
@@ -295,7 +297,7 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
 
         val accessToken = tokenInfo.string("access_token")
             ?.notEmpty() ?: error("can't parse access token.")
-        if(DEBUG_AUTH) log.i("DEBUG_AUTH accessToken=${accessToken}")
+        if (DEBUG_AUTH) log.i("DEBUG_AUTH accessToken=${accessToken}")
 
         val accountJson = verifyAccount(
             accessToken = accessToken,

@@ -204,7 +204,6 @@ private class EmojiPicker(
     }
 
     private inner class VhCategory(
-        parent: ViewGroup,
         view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
         var lastItem: PickerItemCategory? = null
@@ -212,12 +211,15 @@ private class EmojiPicker(
         val tv = AppCompatTextView(activity).apply {
             layoutParams = FrameLayout.LayoutParams(matchParent, wrapContent)
             minHeightCompat = (density * 48f + 0.5f).toInt()
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            includeFontPadding = false
             background = ContextCompat.getDrawable(
                 this@EmojiPicker.activity,
                 R.drawable.btn_bg_transparent_round6dp
             )
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            includeFontPadding = false
+            val paddingH = (density * 4f + 0.5f).toInt()
+            val paddingV = (density * 2f + 0.5f).toInt()
+            setPadding(paddingH,paddingV,paddingH,paddingV)
             compoundDrawablePadding = (density * 4f + 0.5f).toInt()
 
             setOnClickListener {
@@ -401,7 +403,7 @@ private class EmojiPicker(
 
         override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int) =
             when (viewType) {
-                VT_CATEGORY -> VhCategory(viewGroup)
+                VT_CATEGORY -> VhCategory()
                 VT_CUSTOM_EMOJI -> VhCustomEmoji()
                 VT_TWEMOJI -> VhTwemoji()
                 VT_COMPAT_EMOJI -> VhAppCompatEmoji()

@@ -6,11 +6,12 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.isConversation
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.daoMediaShown
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.util.data.ellipsize
+import jp.juggler.util.data.ellipsizeDot3
 import jp.juggler.util.ui.textOrGone
 import jp.juggler.util.ui.vg
 
@@ -63,6 +64,8 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
 
     var bShowOuter = false
 
+    val limit = PrefS.spCardDescriptionLength.toInt().takeIf { it > 0 } ?: 64
+
     val sb = StringBuilder()
     fun showString() {
         if (sb.isNotEmpty()) {
@@ -70,7 +73,7 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
                 activity, accessInfo,
                 forceHtml = true,
                 authorDomain = status.account,
-                emojiSizeMode =  accessInfo.emojiSizeMode(),
+                emojiSizeMode = accessInfo.emojiSizeMode(),
             ).decodeHTML(sb.toString())
 
             if (text.isNotEmpty()) {
@@ -93,37 +96,27 @@ fun ItemViewHolder.showPreviewCard(status: TootStatus) {
             sb,
             activity.getString(R.string.card_header_card),
             card.url,
-            card.title
+            card.title?.ellipsizeDot3(limit)
         )
 
         addLinkAndCaption(
             sb,
             activity.getString(R.string.card_header_author),
             card.author_url,
-            card.author_name
+            card.author_name?.ellipsizeDot3(limit)
         )
 
         addLinkAndCaption(
             sb,
             activity.getString(R.string.card_header_provider),
             card.provider_url,
-            card.provider_name
+            card.provider_name?.ellipsizeDot3(limit)
         )
 
         val description = card.description
         if (description != null && description.isNotEmpty()) {
             if (sb.isNotEmpty()) sb.append("<br>")
-
-            val limit = PrefS.spCardDescriptionLength.toInt()
-
-            sb.append(
-                HTMLDecoder.encodeEntity(
-                    ellipsize(
-                        description,
-                        if (limit <= 0) 64 else limit
-                    )
-                )
-            )
+            sb.append(HTMLDecoder.encodeEntity(ellipsize(description, limit)))
         }
 
         showString()

@@ -16,13 +16,12 @@ import kotlin.math.min
  */
 class BlockQuoteSpan(
     context: Context,
-    private val margin: Int = (context.resources.displayMetrics.density * 24f + 0.5f).toInt(),
     private val quoteWidth: Int = (context.resources.displayMetrics.density * 4f + 0.5f).toInt(),
     private val blockQuoteColor: Int = context.attrColor(R.attr.colorTextHint),
 ) : LeadingMarginSpan {
     private val rect = Rect()
     private val paint = Paint()
-    override fun getLeadingMargin(first: Boolean): Int = margin
+    override fun getLeadingMargin(first: Boolean): Int = quoteWidth*2
 
     override fun drawLeadingMargin(
         c: Canvas,

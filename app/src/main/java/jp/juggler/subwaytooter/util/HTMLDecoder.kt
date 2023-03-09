@@ -17,6 +17,7 @@ import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.daoAcctColor
@@ -321,13 +322,15 @@ object HTMLDecoder {
         val nestLevelDefinition: Int,
         val nestLevelQuote: Int,
         var order: Int = 0,
+        val listOrders: List<String>? = null,
     ) {
-        fun subOrdered() = ListContext(
+        fun subOrdered(listOrders:List<String>) = ListContext(
             type = ListType.Ordered,
             nestLevelOrdered + 1,
             nestLevelUnordered,
             nestLevelDefinition,
-            nestLevelQuote
+            nestLevelQuote,
+            listOrders= listOrders,
         )
 
         fun subUnordered() = ListContext(
@@ -354,12 +357,7 @@ object HTMLDecoder {
             nestLevelQuote + 1
         )
 
-        fun increment() = when (type) {
-            ListType.Ordered -> "${++order}. "
-            ListType.Unordered -> "${listMarkers[nestLevelUnordered % listMarkers.size]} "
-            ListType.Definition -> ""
-            else -> ""
-        }
+        fun increment() = ++order
 
         fun inList() = nestLevelOrdered + nestLevelUnordered + nestLevelDefinition > 0
 
@@ -369,43 +367,6 @@ object HTMLDecoder {
         }
     }
 
-    // SpannableStringBuilderを行ごとに分解する
-    // 行末の改行文字は各行の末尾に残る
-    // 最終行の長さが0(改行文字もなし)だった場合は出力されない
-    fun SpannableStringBuilder.splitLines() =
-        ArrayList<SpannableStringBuilder>().also { dst ->
-            // 入力の末尾のtrim
-            var end = this.length
-            while (end > 0 && CharacterGroup.isWhitespace(this[end - 1].code)) --end
-
-            // 入力の最初の非空白文字の位置を調べておく
-            var firstNonSpace = 0
-            while (firstNonSpace < end && CharacterGroup.isWhitespace(this[firstNonSpace].code)) ++firstNonSpace
-
-            var i = 0
-            while (i < end) {
-                val lineStart = i
-                while (i < end && this[i] != '\n') ++i
-                val lineEnd = if (i >= end) end else i + 1
-                ++i
-
-                // 行頭の空白を削る
-//                while (lineStart < lineEnd &&
-//                    this[lineStart] != '\n' &&
-//                    CharacterGroup.isWhitespace(this[lineStart].toInt())
-//                ) ++lineStart
-
-                // 最初の非空白文字以降の行を出力する
-                if (lineEnd > firstNonSpace) {
-                    dst.add(this.subSequence(lineStart, lineEnd) as SpannableStringBuilder)
-                }
-            }
-            if (dst.isEmpty()) {
-                // ブロック要素は最低1行は存在するので、1行だけの要素を作る
-                dst.add(SpannableStringBuilder())
-            }
-        }
-
     private val reLastLine = """(?:\A|\n)([^\n]*)\z""".toRegex()
 
     private class Node {
@@ -413,7 +374,7 @@ object HTMLDecoder {
         val child_nodes = ArrayList<Node>()
 
         val tag: String
-        val text: String
+        var text: String
 
         private val href: String?
             get() {
@@ -569,11 +530,13 @@ object HTMLDecoder {
         class EncodeSpanEnv(
             val options: DecodeOptions,
             val listContext: ListContext,
-            val tag: String,
+            val node: Node,
             val sb: SpannableStringBuilder,
             val sbTmp: SpannableStringBuilder,
             val spanStart: Int,
-        )
+        ){
+            val tag = node.tag
+        }
 
         val originalFlusher: EncodeSpanEnv.() -> Unit = {
             when (tag) {
@@ -692,41 +655,31 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
-                "pre" -> {
-                    sb.setSpan(
-                        BackgroundColorSpan(0x40808080),
-                        spanStart,
-                        sb.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    sb.setSpan(
-                        RelativeSizeSpan(0.7f),
-                        spanStart,
-                        sb.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    sb.setSpan(
-                        fontSpan(Typeface.MONOSPACE),
-                        spanStart,
-                        sb.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                }
                 "code" -> {
+                    // インラインコード用の装飾
+//                    sb.setSpan(
+//                        BackgroundColorSpan(0x40808080),
+//                        spanStart,
+//                        sb.length,
+//                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+//                    )
                     sb.setSpan(
-                        BackgroundColorSpan(0x40808080),
-                        spanStart,
-                        sb.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    sb.setSpan(
-                        fontSpan(Typeface.MONOSPACE),
+                        InlineCodeSpan(),
                         spanStart,
                         sb.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
-                "hr" -> sb.append("----------")
+                "hr" -> {
+                    val start =sb.length
+                    sb.append("-")
+                    sb.setSpan(
+                        HrSpan(lazyContext),
+                        spanStart,
+                        sb.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
             }
         }
 
@@ -734,6 +687,17 @@ object HTMLDecoder {
 
             fun add(vararg tags: String, block: EncodeSpanEnv.() -> Unit) {
                 for (tag in tags) this[tag] = block
+            }
+
+            fun SpannableStringBuilder.deleteLastSpaces() {
+                // 最低でも1文字は残す
+                var last = length - 1
+                while (last > 0) {
+                    if (!CharacterGroup.isWhitespace(get(last).code)) break
+                    --last
+                }
+                // 末尾の空白を除去
+                if (last != length - 1) delete(last + 1, length)
             }
 
             add("a") {
@@ -780,67 +744,115 @@ object HTMLDecoder {
             }
 
             add("blockquote") {
-                val bg_color = listContext.quoteColor()
-
-                // TextView の文字装飾では「ブロック要素の入れ子」を表現できない
-                // 内容の各行の始端に何か追加するというのがまずキツい
-                // しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
-
-                val startItalic = sb.length
-                sbTmp.splitLines().forEach { line ->
-                    val lineStart = sb.length
-                    sb.append("> ")
-                    sb.setSpan(
-                        BackgroundColorSpan(bg_color),
-                        lineStart,
-                        lineStart + 1,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    sb.append(line)
-                }
+                val start = sb.length
+                sbTmp.deleteLastSpaces()
+                sb.append(sbTmp)
+                sb.setSpan(
+                    BlockQuoteSpan(
+                        context = lazyContext,
+                        blockQuoteColor = listContext.quoteColor()
+                    ),
+                    start,
+                    sb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
                 sb.setSpan(
                     fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
-                    startItalic,
+                    start,
+                    sb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+            add("pre") {
+                val start = sb.length
+                sbTmp.deleteLastSpaces()
+                // インラインコード用の装飾を除去する
+                sbTmp.getSpans(0, sbTmp.length, Any::class.java).forEach { span ->
+                    if (span is BackgroundColorSpan && span.backgroundColor == 0x40808080) {
+                        sbTmp.removeSpan(span)
+                    } else if (span is InlineCodeSpan) {
+                        sbTmp.removeSpan(span)
+                    }
+                }
+                sb.append(sbTmp)
+                sb.setSpan(
+                    BlockCodeSpan(),
+                    start,
                     sb.length,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
-
             add("li") {
-                val lineHeader1 = listContext.increment()
-                val lineHeader2 = " ".repeat(lineHeader1.length)
-                sbTmp.splitLines().forEachIndexed { i, line ->
-                    sb.append(if (i == 0) lineHeader1 else lineHeader2)
-                    sb.append(line)
+                sbTmp.deleteLastSpaces()
+                val start = sb.length
+                sb.append(sbTmp)
+                when (listContext.type) {
+                    ListType.Unordered -> {
+                        sb.setSpan(
+                            UnorderedListItemSpan(
+                                level = listContext.nestLevelOrdered,
+                            ),
+                            start,
+                            sb.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    ListType.Ordered -> {
+                        sb.setSpan(
+                            OrderedListItemSpan(
+                                order = node.text,
+                                orders = listContext.listOrders?: listOf(node.text),
+                            ),
+                            start,
+                            sb.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    else ->Unit
                 }
             }
 
             add("dt") {
-                val prefix = listContext.increment()
-                val startBold = sb.length
-                sbTmp.splitLines().forEach { line ->
-                    sb.append(prefix)
-                    sb.append(line)
-                }
+                sbTmp.deleteLastSpaces()
+                val start = sb.length
+                sb.append(sbTmp)
+                sb.setSpan(
+                    DdSpan(lazyContext, marginDp = 3f),
+                    start,
+                    sb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
                 sb.setSpan(
                     fontSpan(Typeface.defaultFromStyle(Typeface.BOLD)),
-                    startBold,
+                    start,
                     sb.length,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
 
             add("dd") {
-                val prefix = listContext.increment() + "　　"
-                sbTmp.splitLines().forEach { line ->
-                    sb.append(prefix)
-                    sb.append(line)
-                }
+                sbTmp.deleteLastSpaces()
+                val start = sb.length
+                sb.append(sbTmp)
+                sb.setSpan(
+                    DdSpan(lazyContext, marginDp = 24f),
+                    start,
+                    sb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
         }
 
-        fun childListContext(tag: String, outerContext: ListContext) = when (tag) {
-            "ol" -> outerContext.subOrdered()
+        fun childListContext(node:Node, outerContext: ListContext) = when (node.tag) {
+            "ol" -> {
+                var n = 1
+                val reversed = false
+                val listItems = node.child_nodes.filter { it.tag == "li" }
+                (if(reversed ) listItems.reversed() else listItems).forEach { v ->
+                    v.text = (n++).toString()
+                }
+                outerContext.subOrdered(listItems.map { it.text })
+            }
             "ul" -> outerContext.subUnordered()
             "dl" -> outerContext.subDefinition()
             "blockquote" -> outerContext.subQuote()
@@ -881,7 +893,7 @@ object HTMLDecoder {
                 EncodeSpanEnv(
                     options = options,
                     listContext = listContext,
-                    tag = tag,
+                    node = this,
                     sb = sb,
                     sbTmp = SpannableStringBuilder(),
                     spanStart = 0,
@@ -892,14 +904,14 @@ object HTMLDecoder {
                 EncodeSpanEnv(
                     options = options,
                     listContext = listContext,
-                    tag = tag,
+                    node = this,
                     sb = sb,
                     sbTmp = sb,
                     spanStart = sb.length
                 )
             }
 
-            val childListContext = childListContext(tag, listContext)
+            val childListContext = childListContext(this, listContext)
 
             child_nodes.forEachIndexed { i, child ->
                 if (!canSkipEncode(

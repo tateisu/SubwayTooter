@@ -44,6 +44,8 @@
     <!-- カスタマイズしない画面のImageButtonの図柄のtint -->
     <attr name="colorTextContent" format="color"/>
 
+    <attr name="colorTextHint" format="color"/>
+
     <attr name="colorRefreshErrorBg" format="color"/>
 
     <!-- プロフ背景を薄くするマスク #C0FFFFFF -->

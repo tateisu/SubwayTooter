@@ -1,5 +1,8 @@
 package jp.juggler.subwaytooter.mfm
 
+import android.graphics.Typeface
+import jp.juggler.subwaytooter.span.BlockCodeSpan
+import jp.juggler.subwaytooter.span.BlockQuoteSpan
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.data.notEmpty
@@ -51,7 +54,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(start, sb.length, android.text.style.BackgroundColorSpan(0x40808080))
             spanList.addLast(
                 start, sb.length,
-                fontSpan(android.graphics.Typeface.MONOSPACE)
+                fontSpan(Typeface.MONOSPACE)
             )
         }
     }),
@@ -72,12 +75,8 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             val sp = MisskeySyntaxHighlighter.parse(text)
             appendText(text)
             spanList.addWithOffset(sp, start)
-            spanList.addLast(start, sb.length, android.text.style.BackgroundColorSpan(0x40808080))
-            spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(0.7f))
-            spanList.addLast(
-                start, sb.length,
-                fontSpan(android.graphics.Typeface.MONOSPACE)
-            )
+
+            spanList.addLast(start, sb.length, BlockCodeSpan())
             closeBlock()
         }
     }),
@@ -96,7 +95,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(
                 start,
                 sb.length,
-                fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+                fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
             )
         }
     }),
@@ -189,7 +188,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             fireRenderChildNodes(it)
             spanList.addLast(
                 start, sb.length,
-                fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+                fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
             )
         }
     }),
@@ -310,34 +309,21 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
 
             val bgColor =
                 MisskeyMarkdownDecoder.quoteNestColors[it.quoteNest % MisskeyMarkdownDecoder.quoteNestColors.size]
-            // TextView の文字装飾では「ブロック要素の入れ子」を表現できない
-            // 内容の各行の始端に何か追加するというのがまずキツい
-            // しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
-            val tmp = sb.toString()
-            //log.d("QUOTE_BLOCK tmp=${tmp} start=$start end=${tmp.length}")
-            for (i in tmp.length - 1 downTo start) {
-                val prevChar = when (i) {
-                    start -> '\n'
-                    else -> tmp[i - 1]
-                }
-                //log.d("QUOTE_BLOCK prevChar=${ String.format("%x",prevChar.toInt())}")
-                if (prevChar == '\n') {
-                    //log.d("QUOTE_BLOCK insert! i=$i")
-                    sb.insert(i, "> ")
-                    spanList.insert(i, 2)
-                    spanList.addLast(
-                        i, i + 1,
-                        android.text.style.BackgroundColorSpan(bgColor)
-                    )
-                }
-            }
 
             spanList.addLast(
                 start,
                 sb.length,
-                fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+                BlockQuoteSpan(context = context, blockQuoteColor = bgColor)
             )
-
+            spanList.addLast(
+                start,
+                sb.length,
+                fontSpan(
+                    Typeface.defaultFromStyle(
+                        Typeface.ITALIC
+                    )
+                )
+            )
             closeBlock()
         }
     }),

@@ -36,7 +36,6 @@
 
         <!-- AppCompat ここまで ============================================ -->
 
-        <item name="colorTextHelp">@color/Light_colorTextHelp</item>
         <item name="colorLink">@color/Light_colorLink</item>
         <item name="list_item_bg_pressed_dragged">@color/Light_colotListItemDrag</item>
         <item name="color_column_header">@color/Light_colorColumnHeaderBg</item>
@@ -54,6 +53,9 @@
         <item name="colorColumnListItemText">@color/Light_colorTextColumnListItem</item>
         <item name="colorTimeSmall">@color/Light_colorTextTimeSmall</item>
         <item name="colorTextContent">@color/Light_colorTextContent</item>
+        <item name="colorTextHint">@color/Light_colorTextHint</item>
+        <item name="colorTextHelp">@color/Light_colorTextHelp</item>
+
         <item name="colorProfileBackgroundMask">@color/Light_colorProfileBackgroundMask</item>
         <item name="colorShowMediaBackground">@color/Light_colorShowMediaBackground</item>
         <item name="colorShowMediaText">@color/Light_colorShowMediaText</item>
@@ -131,8 +133,6 @@
 
         <!-- AppCompat ここまで ============================================ -->
 
-        <item name="colorTextHelp">@color/Dark_colorTextHelp</item>
-
         <item name="colorLink">@color/Dark_colorLink</item>
         <item name="list_item_bg_pressed_dragged">@color/Dark_colorListItemDrag</item>
         <item name="color_column_header">@color/Dark_colorColumnHeader</item>
@@ -151,6 +151,8 @@
         <item name="colorColumnListItemText">@color/Dark_colorTextColumnListItem</item>
         <item name="colorTimeSmall">@color/Dark_colorTextTimeSmall</item>
         <item name="colorTextContent">@color/Dark_colorTextContent</item>
+        <item name="colorTextHint">@color/Dark_colorTextHint</item>
+        <item name="colorTextHelp">@color/Dark_colorTextHelp</item>
 
         <item name="colorProfileBackgroundMask">@color/Dark_colorProfileBackgroundMask</item>
         <item name="colorShowMediaBackground">@color/Dark_colorShowMediaBackground</item>
@@ -233,7 +235,6 @@
 
         <!-- AppCompat ここまで ============================================ -->
 
-        <item name="colorTextHelp">@color/Mastodon_colorTextHelp</item>
 
         <item name="colorLink">@color/Mastodon_colorLink</item>
         <item name="list_item_bg_pressed_dragged">@color/Mastodon_colorListItemDrag</item>
@@ -253,6 +254,8 @@
         <item name="colorColumnListItemText">@color/Mastodon_colorTextColumnListItem</item>
         <item name="colorTimeSmall">@color/Mastodon_colorTextTimeSmall</item>
         <item name="colorTextContent">@color/Mastodon_colorTextContent</item>
+        <item name="colorTextHint">@color/Mastodon_colorTextHint</item>
+        <item name="colorTextHelp">@color/Mastodon_colorTextHelp</item>
 
         <item name="colorProfileBackgroundMask">@color/Mastodon_colorProfileBackgroundMask</item>
         <item name="colorShowMediaBackground">@color/Mastodon_colorShowMediaBackground</item>

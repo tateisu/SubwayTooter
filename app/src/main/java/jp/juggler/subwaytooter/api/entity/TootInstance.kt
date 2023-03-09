@@ -401,6 +401,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         */
         private val reOldMisskeyCompatible = """\A[\d.]+:compatible:misskey:""".toRegex()
 
+        private val reBothCompatible = """\b(?:misskey|calckey)\b""".toRegex(RegexOption.IGNORE_CASE)
+
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformation(
             forceAccessToken: String? = null,
@@ -419,7 +421,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     // 他、Mastodonではない場合は kids.0px.io が存在する
                     // https://kids.0px.io/notes/9b628dpesb
                     // Misskey有効トグルで結果を切り替えたいらしい
-                    version.contains("misskey", ignoreCase = true) &&
+                    //
+                    // Calckey.jp は調査中
+                    reBothCompatible.containsMatchIn(version) &&
                             PrefB.bpEnableDeprecatedSomething.value -> Unit
 
                     // 両方のAPIに応答するサーバは他にないと思う。

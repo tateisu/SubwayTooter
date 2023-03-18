@@ -10,6 +10,7 @@ import androidx.core.widget.addTextChangedListener
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.getApiHostFromWebFinger
 import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.databinding.DlgAccountAddBinding
 import jp.juggler.subwaytooter.databinding.LvAuthTypeBinding
@@ -219,16 +220,25 @@ class LoginForm(
     private fun nextPage() {
         activity.run {
             launchAndShowError {
-                val hostname = validateAndShow() ?: return@launchAndShowError
-                val host = Host.parse(hostname)
+                var host = Host.parse(validateAndShow() ?: return@launchAndShowError)
                 var error: String? = null
-                val tootInstance = try {
-                    runApiTask2(host) {
-                        TootInstance.getExOrThrow(it, forceUpdate =true)
+                val tootInstance = runApiTask2(host) { client ->
+                    try {
+                        // ユーザの入力がホスト名かドメイン名かは分からない。
+                        // WebFingerでホストを調べる
+                        client.getApiHostFromWebFinger(host)?.let {
+                            if (it != host) {
+                                host = it
+                                client.apiHost = it
+                            }
+                        }
+
+                        // サーバ情報を読む
+                        TootInstance.getExOrThrow(client, forceUpdate = true)
+                    } catch (ex: Throwable) {
+                        error = ex.message
+                        null
                     }
-                } catch (ex: Throwable) {
-                    error = ex.message
-                    null
                 }
                 if (isDestroyed || isFinishing) return@launchAndShowError
                 targetServer = host

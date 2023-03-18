@@ -45,11 +45,7 @@ class Host private constructor(
             val cached = hostSet[srcArg]
             if (cached != null) return cached
             val src = srcArg.removeUrlSchema()
-            val ascii = if( """[^A-Za-z0-9._-]""".toRegex().find(src)!=null){
-                IDN.toASCII(src, IDN.ALLOW_UNASSIGNED).lowercase()
-            }else{
-                IDN.toASCII(src, IDN.ALLOW_UNASSIGNED).lowercase()
-            }
+            val ascii = IDN.toASCII(src, IDN.ALLOW_UNASSIGNED).lowercase()
             val pretty = IDN.toUnicode(src, IDN.ALLOW_UNASSIGNED)
             val host = if (ascii == pretty) Host(ascii) else Host(ascii, pretty)
             hostSet[src] = host

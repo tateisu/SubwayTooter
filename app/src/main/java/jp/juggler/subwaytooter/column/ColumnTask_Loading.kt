@@ -31,23 +31,25 @@ class ColumnTask_Loading(
 
     internal var listPinned: ArrayList<TimelineItem>? = null
 
+    private fun fireProgress(s:String){
+        runOnMainLooper {
+            if (isCancelled) return@runOnMainLooper
+            column.taskProgress = s
+            column.fireShowContent(reason = "loading progress", changeList = ArrayList())
+        }
+    }
+
     override suspend fun background(): TootApiResult? {
         ctStarted.set(true)
 
         if (PrefB.bpOpenSticker.value) {
+            fireProgress("loading openSticker")
             OpenSticker.loadAndWait()
         }
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
             override suspend fun isApiCancelled() = isCancelled || column.isDispose.get()
-
-            override suspend fun publishApiProgress(s: String) {
-                runOnMainLooper {
-                    if (isCancelled) return@runOnMainLooper
-                    column.taskProgress = s
-                    column.fireShowContent(reason = "loading progress", changeList = ArrayList())
-                }
-            }
+            override suspend fun publishApiProgress(s: String) = fireProgress(s)
         })
 
         client.account = accessInfo

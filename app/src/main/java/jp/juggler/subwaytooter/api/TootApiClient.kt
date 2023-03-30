@@ -489,7 +489,7 @@ class TootApiClient(
     }
 
     suspend fun webSocket(
-        path: String,
+        urlArg: String,
         wsListener: WebSocketListener,
     ): Pair<TootApiResult?, WebSocket?> {
         var ws: WebSocket? = null
@@ -497,10 +497,8 @@ class TootApiClient(
         if (result.error != null) return Pair(result, null)
         val account = this.account ?: return Pair(TootApiResult("account is null"), null)
         try {
-            var url = "wss://${apiHost?.ascii}$path"
-
             val requestBuilder = Request.Builder()
-
+            var url = urlArg
             if (account.isMisskey) {
                 val accessToken = account.misskeyApiToken
                 if (accessToken?.isNotEmpty() == true) {
@@ -515,7 +513,7 @@ class TootApiClient(
             }
 
             val request = requestBuilder.url(url).build()
-            publishApiProgress(context.getString(R.string.request_api, request.method, path))
+            publishApiProgress(context.getString(R.string.request_api, request.method, urlArg))
             ws = httpClient.getWebSocket(request, wsListener)
             if (isApiCancelled()) {
                 ws.cancel()

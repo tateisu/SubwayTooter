@@ -166,7 +166,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
     var configuration: JsonObject? = null
 
-    // XXX: urls をパースしてない。使ってないから…
+    var urls: JsonObject? = null
 
     init {
         if (parser.serviceType == ServiceType.MISSKEY) {
@@ -252,6 +252,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     ?.stringList()?.toSet()
 
             this.configuration = src.jsonObject("configuration")
+            this.urls = src.jsonObject("urls")
         }
     }
 

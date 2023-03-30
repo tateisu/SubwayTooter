@@ -507,13 +507,24 @@ class StreamConnection(
 
         status = StreamStatus.Connecting
 
-        val path = group?.spec?.path ?: when {
-            acctGroup.account.isMisskey -> "/streaming"
-            else -> "/api/v1/streaming/"
+        val url = when {
+            acctGroup.account.isMisskey ->
+                "wss://${acctGroup.account.apiHost.ascii}${group?.spec?.misskeyPath ?: "/streaming"}"
+            else -> {
+                val ti = TootInstance.getCached(acctGroup.account.apiHost)
+                val prefix = ti?.urls?.string("streaming_api")
+                    ?: "wss://${acctGroup.account.apiHost}"
+                val path = when (val query = group?.spec?.mastodonQuery) {
+                    null, "" -> "/api/v1/streaming/"
+                    else -> "/api/v1/streaming/?${query}"
+                }
+                "$prefix$path"
+            }
         }
 
         val (result, ws) = try {
-            client.webSocket(path, this)
+            log.i("webSocket $url")
+            client.webSocket(url, this)
         } catch (ex: Throwable) {
             Pair(TootApiResult(ex.withCaption("can't create WebSocket.")), null)
         }

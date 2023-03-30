@@ -1190,20 +1190,20 @@ class TestTootApiClient {
 
     @Test
     fun testGetInstanceInformation() = runTest {
-            val callback = ProgressRecordTootApiCallback()
-            val client = TootApiClient(
-                appContext,
-                httpClient = createHttpClientMock(),
-                callback = callback
-            )
-            val instance = Host.parse("unit-test")
-            client.apiHost = instance
-            val (instanceInfo, instanceResult) = TootInstance.get(client)
-            assertNull("no error", instanceResult?.error)
-            assertNotNull("instance info", instanceInfo)
-            val json = instanceResult?.jsonObject
-            if (json != null) println(json.toString())
-        }
+        val callback = ProgressRecordTootApiCallback()
+        val client = TootApiClient(
+            appContext,
+            httpClient = createHttpClientMock(),
+            callback = callback
+        )
+        val instance = Host.parse("unit-test")
+        client.apiHost = instance
+        val (instanceInfo, instanceResult) = TootInstance.get(client)
+        assertNull("no error", instanceResult?.error)
+        assertNotNull("instance info", instanceInfo)
+        val json = instanceResult?.jsonObject
+        if (json != null) println(json.toString())
+    }
 
     @Test
     fun testGetHttp() = runTest {
@@ -1265,7 +1265,7 @@ class TestTootApiClient {
         )
         client.account = accessInfo
         val (_, ws) = client.webSocket(
-            "/api/v1/streaming/?stream=public:local",
+            "wss://${accessInfo.apiHost.ascii}/api/v1/streaming/?stream=public:local",
             object : WebSocketListener() {}
         )
         assertNotNull(ws)

@@ -32,16 +32,16 @@ android {
         targetSdkVersion stTargetSdkVersion
         minSdkVersion stMinSdkVersion
 
-        versionCode 524
-        versionName "5.524"
+        versionCode 525
+        versionName "5.525"
         applicationId "jp.juggler.subwaytooter"
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding true
     }
 
     kotlinOptions {

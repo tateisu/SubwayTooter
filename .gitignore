@@ -137,3 +137,5 @@ app/detekt-*.xml
 
 keystore.properties
 
+
+app/fcm/release/output-metadata.json

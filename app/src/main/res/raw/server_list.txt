@@ -22582,7 +22582,7 @@ stream.agilemind.blog
 stream.jubes.io
 stream.tacocode.com
 stream.void.garden
-streaming.kmy.blue
+kmy.blue
 streams.larlet.fr
 streamsource.video
 streamz.ca

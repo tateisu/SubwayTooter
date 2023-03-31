@@ -55,6 +55,7 @@ inline fun ViewGroup.firstChildOrNull(predicate: (View) -> Boolean): View? {
  */
 fun View.childrenRecursiveSequence(): Sequence<View> = ViewChildrenRecursiveSequence(this)
 
+@Suppress("UnusedPrivateClass")
 private class ViewChildrenSequence(private val view: View) : Sequence<View> {
     override fun iterator(): Iterator<View> {
         if (view !is ViewGroup) return emptyList<View>().iterator()

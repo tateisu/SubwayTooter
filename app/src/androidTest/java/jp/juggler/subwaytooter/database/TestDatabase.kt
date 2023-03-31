@@ -27,7 +27,7 @@ class TestDatabase {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val dbName = "testUpgrade"
         context.deleteDatabase(dbName)
-        for( v in 1 .. DB_VERSION){
+        for (v in 1..DB_VERSION) {
             run {
                 val holder = AppDatabaseHolder(context, dbName, v)
                 assertEquals("db version", v, holder.database.version)

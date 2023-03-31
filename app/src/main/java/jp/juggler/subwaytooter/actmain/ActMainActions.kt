@@ -118,15 +118,14 @@ fun ActMain.onClickImpl(v: View) {
                 R.string.account_picker_add_timeline_of,
                 ColumnType.PROFILE.name1(this)
             )
-        ){ openProfileQuickPostAccount(it)}
-        R.id.btnQuickToot -> quickPostAccountDialog{ performQuickPost(it)}
+        ) { openProfileQuickPostAccount(it) }
+        R.id.btnQuickToot -> quickPostAccountDialog { performQuickPost(it) }
         R.id.btnQuickTootMenu -> toggleQuickPostMenu()
         R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.openDrawer(GravityCompat.START)
         }
     }
 }
-
 
 fun ActMain.onMyClickableSpanClickedImpl(viewClicked: View, span: MyClickableSpan) {
     // ビュー階層を下から辿って文脈を取得する
@@ -263,8 +262,8 @@ fun ActMain.launchDialogs() {
 
         // 画面を作成したあと一度だけ行う
         // 画像ビューアから戻ってきたときなどは行わない
-        if(!subscriptionUpdaterCalled){
-            subscriptionUpdaterCalled=true
+        if (!subscriptionUpdaterCalled) {
+            subscriptionUpdaterCalled = true
             afterNotificationGranted()
         }
     }

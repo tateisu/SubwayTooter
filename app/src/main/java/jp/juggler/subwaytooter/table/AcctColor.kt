@@ -50,13 +50,13 @@ class AcctColor(
         private const val COL_NOTIFICATION_SOUND = "notification_sound"
 
         val columnList = MetaColumns(table, 9).apply {
-            column( 0, COL_ID, "INTEGER PRIMARY KEY")
-            column( 0, COL_TIME_SAVE, "integer not null")
-            column( 0, COL_ACCT, "text not null")
-            column( 0, COL_COLOR_FG, "integer")
-            column( 0, COL_COLOR_BG, "integer")
-            column( 0, COL_NICKNAME, "text")
-            column( 17, COL_NOTIFICATION_SOUND, "text default ''")
+            column(0, COL_ID, "INTEGER PRIMARY KEY")
+            column(0, COL_TIME_SAVE, "integer not null")
+            column(0, COL_ACCT, "text not null")
+            column(0, COL_COLOR_FG, "integer")
+            column(0, COL_COLOR_BG, "integer")
+            column(0, COL_NICKNAME, "text")
+            column(17, COL_NOTIFICATION_SOUND, "text default ''")
             createExtra = {
                 arrayOf(
                     "create unique index if not exists ${table}_acct on $table($COL_ACCT)",

@@ -21,7 +21,7 @@ class BlockQuoteSpan(
 ) : LeadingMarginSpan {
     private val rect = Rect()
     private val paint = Paint()
-    override fun getLeadingMargin(first: Boolean): Int = quoteWidth*2
+    override fun getLeadingMargin(first: Boolean): Int = quoteWidth * 2
 
     override fun drawLeadingMargin(
         c: Canvas,

@@ -297,7 +297,7 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
 
         val accessToken = tokenInfo.string("access_token")
             ?.notEmpty() ?: error("can't parse access token.")
-        if (DEBUG_AUTH) log.i("DEBUG_AUTH accessToken=${accessToken}")
+        if (DEBUG_AUTH) log.i("DEBUG_AUTH accessToken=$accessToken")
 
         val accountJson = verifyAccount(
             accessToken = accessToken,

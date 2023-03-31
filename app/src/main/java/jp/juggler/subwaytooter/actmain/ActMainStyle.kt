@@ -239,7 +239,7 @@ fun ActMain.showFooterColor() {
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
     btnQuickToot.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
-    ivQuickTootAccount.backgroundDrawable=
+    ivQuickTootAccount.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
     btnQuickPostMenu.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)

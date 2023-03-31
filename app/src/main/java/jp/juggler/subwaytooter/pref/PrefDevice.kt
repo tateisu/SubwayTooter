@@ -26,7 +26,8 @@ class PrefDevice(context: Context) {
         private const val PREF_UP_ENDPOINT_EXPIRED = "upEndpointExpired"
         private const val PREF_PUSH_DISTRIBUTOR = "pushDistributor"
         private const val PREF_TIME_LAST_ENDPOINT_REGISTER = "timeLastEndpointRegister"
-        private const val PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION = "supressRequestNotificationPermission"
+        private const val PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION =
+            "supressRequestNotificationPermission"
 
         const val PUSH_DISTRIBUTOR_FCM = "fcm"
         const val PUSH_DISTRIBUTOR_NONE = "none"
@@ -86,6 +87,7 @@ class PrefDevice(context: Context) {
     @Suppress("SameParameterValue")
     private fun Int?.saveTo(key: String) =
         edit { it.putIntNullable(key, this) }
+
     @Suppress("SameParameterValue")
     private fun Boolean?.saveTo(key: String) =
         edit { it.putBooleanNullable(key, this) }
@@ -146,7 +148,7 @@ class PrefDevice(context: Context) {
         }
 
     var supressRequestNotificationPermission: Boolean
-        get() = boolean(PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION)?:false
+        get() = boolean(PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION) ?: false
         set(value) {
             value.saveTo(PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION)
         }

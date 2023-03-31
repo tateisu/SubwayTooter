@@ -401,7 +401,7 @@ class TootApiClient(
 
         val account = this.account // may null
 
-        if( account?.isMisskey == true && !PrefB.bpEnableDeprecatedSomething.value){
+        if (account?.isMisskey == true && !PrefB.bpEnableDeprecatedSomething.value) {
             return result.setError(context.getString(R.string.misskey_support_end))
         }
 

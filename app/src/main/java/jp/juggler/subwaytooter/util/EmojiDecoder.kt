@@ -406,7 +406,6 @@ object EmojiDecoder {
             return null
         }
 
-
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
             override fun onString(part: String) {
                 builder.addUnicodeString(part)

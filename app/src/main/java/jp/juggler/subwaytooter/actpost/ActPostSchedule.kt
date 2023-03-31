@@ -3,7 +3,10 @@ package jp.juggler.subwaytooter.actpost
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.api.entity.TootScheduled
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.DlgDateTime
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.PostAttachment
@@ -35,9 +38,9 @@ fun ActPost.resetSchedule() {
 
 suspend fun ActPost.initializeFromScheduledStatus(account: SavedAccount, jsonText: String) {
     try {
-        val item = parseItem(jsonText.decodeJsonObject()){
-            val parser =TootParser(this, account)
-            TootScheduled(parser,it)
+        val item = parseItem(jsonText.decodeJsonObject()) {
+            val parser = TootParser(this, account)
+            TootScheduled(parser, it)
         } ?: error("initializeFromScheduledStatus: parse failed.")
 
         scheduledStatus = item

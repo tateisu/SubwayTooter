@@ -342,8 +342,8 @@ class ActAccountSetting : AppCompatActivity(),
                 R.id.etFieldName4
             ).map {
                 NetworkEmojiInvalidator(handler, findViewById<EditText>(it))
-
             }
+
             listFieldValueInvalidator = intArrayOf(
                 R.id.etFieldValue1,
                 R.id.etFieldValue2,
@@ -895,7 +895,6 @@ class ActAccountSetting : AppCompatActivity(),
                 btnNote,
                 cbLocked,
             ).forEach { it.isEnabledAlpha = false }
-
 
             for (i in listFieldNameInvalidator) {
                 i.text = loadingText

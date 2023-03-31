@@ -4,6 +4,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.*
 
+@Suppress("LongParameterList")
 class TootAttachment private constructor(
     //	ID of the attachment
     val id: EntityId,

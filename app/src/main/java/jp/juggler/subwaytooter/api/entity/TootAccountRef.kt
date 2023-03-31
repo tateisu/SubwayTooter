@@ -52,8 +52,8 @@ class TootAccountRef private constructor(
                     unwrapEmojiImageTag = true,
                     authorDomain = account,
                     emojiSizeMode = parser.emojiSizeMode,
-                    enlargeEmoji = if(parser.linkHelper.isMisskey) emojiScaleMisskey else emojiScaleMastodon,
-                    enlargeCustomEmoji =  if(parser.linkHelper.isMisskey) emojiScaleMisskey else emojiScaleMastodon,
+                    enlargeEmoji = if (parser.linkHelper.isMisskey) emojiScaleMisskey else emojiScaleMastodon,
+                    enlargeCustomEmoji = if (parser.linkHelper.isMisskey) emojiScaleMisskey else emojiScaleMastodon,
                 ).decodeHTML(account.note),
             )
     }

@@ -602,7 +602,7 @@ class SideMenuAdapter(
         else -> null
     }
 
-    fun filterListItems(notify:Boolean=true) {
+    fun filterListItems(notify: Boolean = true) {
         log.i("filterListItems notify=$notify")
         list = originalList.filter {
             when (it.itemType) {
@@ -619,7 +619,7 @@ class SideMenuAdapter(
                 else -> true
             }
         }
-        if(notify) notifyDataSetChanged()
+        if (notify) notifyDataSetChanged()
     }
 
     init {

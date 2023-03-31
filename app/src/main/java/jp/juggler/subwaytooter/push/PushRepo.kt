@@ -23,7 +23,6 @@ import jp.juggler.subwaytooter.notification.NotificationDeleteReceiver.Companion
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
-import jp.juggler.subwaytooter.push.*
 import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueuePushMessage
 import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueueRegisterEndpoint
 import jp.juggler.subwaytooter.table.*
@@ -591,7 +590,7 @@ class PushRepo(
             val account = daoSavedAccount.loadAccountByAcct(acct)
                 ?: error("missing account for acct ${status.acct}")
 
-            if(account.isMisskey && !PrefB.bpEnableDeprecatedSomething.value){
+            if (account.isMisskey && !PrefB.bpEnableDeprecatedSomething.value) {
                 error(context.getString(R.string.misskey_support_end))
             }
 

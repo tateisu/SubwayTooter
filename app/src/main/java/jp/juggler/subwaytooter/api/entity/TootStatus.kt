@@ -35,7 +35,7 @@ class FilterTrees(
     val treeAll: WordTrieTree = WordTrieTree(),
 )
 
-@Suppress("MemberVisibilityCanPrivate")
+@Suppress("MemberVisibilityCanPrivate", "LongParameterList")
 class TootStatus(
     parser: TootParser,
 
@@ -867,7 +867,6 @@ class TootStatus(
             if (highlightSound == null) highlightSound = options2.highlightSound
             if (highlightSpeech == null) highlightSpeech = options2.highlightSpeech
             if (highlightAny == null) highlightAny = options2.highlightAny
-
 
             return TootStatus(
                 accountRef = accountRef,

@@ -10,14 +10,10 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRe
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoUserRelation
-import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.util.DecodeOptions.Companion.emojiScaleUserName
-import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
 import jp.juggler.util.data.*
@@ -26,6 +22,7 @@ import jp.juggler.util.ui.vg
 import java.util.*
 import java.util.regex.Pattern
 
+@Suppress("LongParameterList")
 open class TootAccount(
     //URL of the user's profile page (can be remote)
     // https://mastodon.juggler.jp/@tateisu

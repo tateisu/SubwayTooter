@@ -324,13 +324,13 @@ object HTMLDecoder {
         var order: Int = 0,
         val listOrders: List<String>? = null,
     ) {
-        fun subOrdered(listOrders:List<String>) = ListContext(
+        fun subOrdered(listOrders: List<String>) = ListContext(
             type = ListType.Ordered,
             nestLevelOrdered + 1,
             nestLevelUnordered,
             nestLevelDefinition,
             nestLevelQuote,
-            listOrders= listOrders,
+            listOrders = listOrders,
         )
 
         fun subUnordered() = ListContext(
@@ -534,7 +534,7 @@ object HTMLDecoder {
             val sb: SpannableStringBuilder,
             val sbTmp: SpannableStringBuilder,
             val spanStart: Int,
-        ){
+        ) {
             val tag = node.tag
         }
 
@@ -671,7 +671,7 @@ object HTMLDecoder {
                     )
                 }
                 "hr" -> {
-                    val start =sb.length
+                    val start = sb.length
                     sb.append("-")
                     sb.setSpan(
                         HrSpan(lazyContext),
@@ -801,14 +801,14 @@ object HTMLDecoder {
                         sb.setSpan(
                             OrderedListItemSpan(
                                 order = node.text,
-                                orders = listContext.listOrders?: listOf(node.text),
+                                orders = listContext.listOrders ?: listOf(node.text),
                             ),
                             start,
                             sb.length,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
                     }
-                    else ->Unit
+                    else -> Unit
                 }
             }
 
@@ -843,12 +843,12 @@ object HTMLDecoder {
             }
         }
 
-        fun childListContext(node:Node, outerContext: ListContext) = when (node.tag) {
+        fun childListContext(node: Node, outerContext: ListContext) = when (node.tag) {
             "ol" -> {
                 var n = 1
                 val reversed = false
                 val listItems = node.child_nodes.filter { it.tag == "li" }
-                (if(reversed ) listItems.reversed() else listItems).forEach { v ->
+                (if (reversed) listItems.reversed() else listItems).forEach { v ->
                     v.text = (n++).toString()
                 }
                 outerContext.subOrdered(listItems.map { it.text })

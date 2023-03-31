@@ -14,8 +14,8 @@ import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.LvHeaderInstanceBinding
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
@@ -130,7 +130,7 @@ internal class ViewHolderHeaderInstance(
                     accessInfo,
                     decodeEmoji = true,
                     authorDomain = accessInfo,
-                    emojiSizeMode =  accessInfo.emojiSizeMode(),
+                    emojiSizeMode = accessInfo.emojiSizeMode(),
                 )
 
                 tvShortDescription.text = options
@@ -166,7 +166,7 @@ internal class ViewHolderHeaderInstance(
                     instance.configuration?.toString(1, sort = true) ?: ""
                 tvFedibirdCapacities.text =
                     instance.fedibirdCapabilities?.sorted()?.joinToString("\n") ?: ""
-                tvPlelomaFeatures.text=
+                tvPlelomaFeatures.text =
                     instance.pleromaFeatures?.sorted()?.joinToString("\n") ?: ""
             }
 

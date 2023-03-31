@@ -124,7 +124,6 @@ class ActKeywordFilter : AppCompatActivity() {
             }
             account = a
 
-
             showAccount()
 
             if (savedInstanceState == null) {

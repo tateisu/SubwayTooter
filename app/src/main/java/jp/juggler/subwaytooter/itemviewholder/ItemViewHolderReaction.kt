@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMain.Companion.boostButtonSize
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.reactionAdd
@@ -19,12 +18,7 @@ import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.span.NetworkEmojiSpan
-import jp.juggler.subwaytooter.util.emojiSizeMode
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.minWidthCompat
-import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
@@ -46,7 +40,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     fun Float.round() = (this + 0.5f).toInt()
 
     val imageScale = DecodeOptions.emojiScaleReaction
-    val textHeight = (boostButtonSize.toFloat()/2)
+    val textHeight = (boostButtonSize.toFloat() / 2)
     val marginBetween = (boostButtonSize * 0.05f).round()
     val paddingH = (boostButtonSize * 0.1f).round()
 

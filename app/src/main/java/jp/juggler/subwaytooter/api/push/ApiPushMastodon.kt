@@ -80,7 +80,7 @@ class ApiPushMastodon(
             })
         })
         put("data", buildJsonObject {
-            put("alerts",alerts)
+            put("alerts", alerts)
         })
         put("policy", policy)
     }.toPostRequestBuilder()

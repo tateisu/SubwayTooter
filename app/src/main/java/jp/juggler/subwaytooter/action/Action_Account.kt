@@ -224,4 +224,3 @@ fun ActMain.accountResendConfirmMail(accessInfo: SavedAccount) {
         }
     }.show()
 }
-

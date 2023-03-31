@@ -34,8 +34,7 @@ private fun StringWriter.appendValue(v: Any?) {
 
 class StreamSpec(
     val params: JsonObject,
-    val misskeyPath: String? = null,
-    val mastodonQuery: String? = null,
+    val path: String,
     val name: String,
     val streamFilter: Column.(JsonArray, TimelineItem) -> Boolean = { _, _ -> true },
 ) {
@@ -46,7 +45,7 @@ class StreamSpec(
     }
 
     val keyString =
-        "${misskeyPath ?: mastodonQuery}?${params.toString(indentFactor = 0, sort = true)}"
+        "$path?${params.toString(indentFactor = 0, sort = true)}"
 
     val channelId = keyString.digestSHA256Base64Url()
 
@@ -84,7 +83,7 @@ private fun Column.streamSpecMastodon(): StreamSpec? {
 
     return StreamSpec(
         params = root,
-        mastodonQuery = root.encodeQuery(),
+        path = "/api/v1/streaming/?${root.encodeQuery()}",
         name = encodeStreamNameMastodon(root),
         streamFilter = type.streamFilterMastodon
     )
@@ -135,7 +134,7 @@ fun Column.streamSpecMisskey(): StreamSpec? {
 
     return StreamSpec(
         params = root,
-        misskeyPath = path,
+        path = path,
         name = encodeStreamNameMisskey(root),
         // no stream filter
     )

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.view
 
 import android.content.Context
 import android.graphics.Rect
-import android.os.SystemClock
 import android.util.AttributeSet
 import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout

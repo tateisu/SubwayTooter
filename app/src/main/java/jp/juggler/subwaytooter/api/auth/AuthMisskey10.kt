@@ -120,7 +120,7 @@ class AuthMisskey10(override val client: TootApiClient) : AuthBase() {
         ti: TootInstance?,
         forceUpdateClient: Boolean,
     ): Uri {
-        if(!PrefB.bpEnableDeprecatedSomething.value){
+        if (!PrefB.bpEnableDeprecatedSomething.value) {
             error(context.getString(R.string.misskey_support_end))
         }
 

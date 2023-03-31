@@ -1,9 +1,7 @@
 package jp.juggler.subwaytooter.span
 
-
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Typeface
@@ -20,7 +18,7 @@ import kotlin.math.min
 /**
  * コードブロック用の装飾スパン
  */
-class BlockCodeSpan (
+class BlockCodeSpan(
     context: Context = lazyContext,
     private var typeface: Typeface = Typeface.MONOSPACE,
     private var relativeTextSize: Float = 0.7f,
@@ -62,18 +60,18 @@ class BlockCodeSpan (
         start: Int,
         end: Int,
         first: Boolean,
-        layout: Layout
+        layout: Layout,
     ) {
         paint.style = Paint.Style.FILL
         paint.color = backgroundColor
 
         val line = layout.getLineForOffset(start)
-        val left =  layout.getParagraphLeft(line)
+        val left = layout.getParagraphLeft(line)
         val right = layout.getParagraphRight(line)
         rect.set(
-            min(left,right),
+            min(left, right),
             top,
-            max(left,right),
+            max(left, right),
             bottom,
         )
         c.drawRect(rect, paint)

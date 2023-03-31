@@ -219,7 +219,7 @@ private class EmojiPicker(
             includeFontPadding = false
             val paddingH = (density * 4f + 0.5f).toInt()
             val paddingV = (density * 2f + 0.5f).toInt()
-            setPadding(paddingH,paddingV,paddingH,paddingV)
+            setPadding(paddingH, paddingV, paddingH, paddingV)
             compoundDrawablePadding = (density * 4f + 0.5f).toInt()
 
             setOnClickListener {
@@ -266,7 +266,7 @@ private class EmojiPicker(
         }
     }
 
-    private fun View.updateWrapBefore(isWrapBefore:Boolean){
+    private fun View.updateWrapBefore(isWrapBefore: Boolean) {
         val lp = layoutParams as FlexboxLayoutManager.LayoutParams
         lp.isWrapBefore = isWrapBefore
         layoutParams = lp
@@ -665,9 +665,9 @@ private class EmojiPicker(
                 }
             }
         }
-        list.forEachIndexed { i,v->
-            fun isPreviousHeader()=list.elementAtOrNull(i-1) is PickerItemCategory
-            when(v) {
+        list.forEachIndexed { i, v ->
+            fun isPreviousHeader() = list.elementAtOrNull(i - 1) is PickerItemCategory
+            when (v) {
                 is PickerItemUnicode -> v.isWrapBefore = isPreviousHeader()
                 is PickerItemCustom -> v.isWrapBefore = isPreviousHeader()
                 else -> Unit

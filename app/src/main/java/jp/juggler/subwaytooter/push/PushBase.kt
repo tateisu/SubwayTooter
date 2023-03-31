@@ -52,6 +52,6 @@ abstract class PushBase {
 
     fun snsCallbackUrl(a: SavedAccount): String? =
         daoStatus.appServerHash(a.acct)?.notEmpty()?.let {
-            "$appServerUrlPrefix/a_${it}/dh_${deviceHash(a)}"
+            "$appServerUrlPrefix/a_$it/dh_${deviceHash(a)}"
         }
 }

@@ -70,7 +70,6 @@ data class PushMessage(
             formatJson[JSON_ERROR] = value
         }
 
-
     companion object : TableCompanion {
         private val log = LogCategory("PushMessage")
         const val TABLE = "push_message"
@@ -151,7 +150,7 @@ data class PushMessage(
         fun readRow(cursor: Cursor) =
             PushMessage(
                 id = cursor.getLong(idxId),
-                loginAcct = cursor.getStringOrNull(idxLoginAcct)?.let{Acct.parse(it)},
+                loginAcct = cursor.getStringOrNull(idxLoginAcct)?.let { Acct.parse(it) },
                 timestamp = cursor.getLong(idxTimestamp),
                 timeSave = cursor.getLong(idxTimeSave),
                 timeDismiss = cursor.getLong(idxTimeDismiss),

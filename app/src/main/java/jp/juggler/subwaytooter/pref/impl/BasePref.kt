@@ -24,15 +24,15 @@ abstract class BasePref<T>(val key: String, val defVal: T) {
     abstract fun put(editor: SharedPreferences.Editor, v: T)
     abstract fun readFrom(pref: SharedPreferences): T
 
-    var value : T
-        get()= readFrom(lazyPref)
-        set(value){
+    var value: T
+        get() = readFrom(lazyPref)
+        set(value) {
             val e = lazyPref.edit()
-            put(e,value)
+            put(e, value)
             e.apply()
         }
 
-    fun removeValue(pref:SharedPreferences = lazyPref){
+    fun removeValue(pref: SharedPreferences = lazyPref) {
         pref.edit().remove(key).apply()
     }
 
@@ -52,5 +52,5 @@ abstract class BasePref<T>(val key: String, val defVal: T) {
             false
         }
 
-    abstract fun hasNonDefaultValue(pref: SharedPreferences= lazyPref): Boolean
+    abstract fun hasNonDefaultValue(pref: SharedPreferences = lazyPref): Boolean
 }

@@ -4,11 +4,11 @@ import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootAccount.Companion.tootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.tootStatus
-import jp.juggler.subwaytooter.util.EmojiSizeMode
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.EmojiSizeMode
 import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.WordTrieTree
@@ -46,9 +46,12 @@ class TootParser(
 
     fun status(src: JsonObject?) =
         parseItem(src) { tootStatus(this, it) }
+
     fun statusList(array: JsonArray?) = parseList(array) { tootStatus(this, it) }
 
-    fun notification(src: JsonObject?) = parseItem(src) { TootNotification.tootNotification(this, it) }
+    fun notification(src: JsonObject?) =
+        parseItem(src) { TootNotification.tootNotification(this, it) }
+
     fun notificationList(array: JsonArray?) =
         parseList(array) { TootNotification.tootNotification(this, it) }
 
@@ -57,6 +60,7 @@ class TootParser(
 
     fun results(src: JsonObject?) =
         parseItem(src) { TootResults(this, it) }
+
     fun instance(src: JsonObject?) =
         parseItem(src) { TootInstance(this, it) }
 
@@ -72,5 +76,5 @@ class TootParser(
     }
 
     val emojiSizeMode: EmojiSizeMode
-        get()= (linkHelper as? SavedAccount).emojiSizeMode()
+        get() = (linkHelper as? SavedAccount).emojiSizeMode()
 }

@@ -1,11 +1,9 @@
 package jp.juggler.subwaytooter.actpost
 
-import android.app.Dialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.text.InputType
 import android.view.View
-import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
@@ -16,7 +14,6 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmen
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.calcIconRound
-import jp.juggler.subwaytooter.databinding.DlgFocusPointBinding
 import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.decodeAttachmentBitmap
@@ -33,11 +30,8 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPutRequestBuilder
-import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.isLiveActivity
 import jp.juggler.util.ui.vg
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resumeWithException
 
 private val log = LogCategory("ActPostAttachment")
 
@@ -332,7 +326,7 @@ suspend fun ActPost.editAttachmentDescription(pa: PostAttachment) {
             }
             result ?: return
             if (!isLiveActivity) return
-            result.error?.let{
+            result.error?.let {
                 showToast(true, result.error ?: "error")
                 // not exit
             }

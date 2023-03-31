@@ -38,7 +38,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
             workDataOf(
                 KEY_ACTION to ACTION_UP_ENDPOINT,
                 KEY_ENDPOINT to endpoint,
-            ).launchPushWorker(context,ACTION_UP_ENDPOINT)
+            ).launchPushWorker(context, ACTION_UP_ENDPOINT)
 
         fun enqueueRegisterEndpoint(context: Context, keepAliveMode: Boolean = false) =
             workDataOf(
@@ -52,7 +52,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
                 KEY_MESSAGE_ID to messageId,
             ).launchPushWorker(context, ACTION_MESSAGE)
 
-        fun Data.launchPushWorker(context: Context,tag:String?=null): Operation {
+        fun Data.launchPushWorker(context: Context, tag: String? = null): Operation {
             // EXPEDITED だと制約の種類が限られる
             // すぐ起動してほしいので制約は少なめにする
             val constraints = Constraints.Builder()
@@ -63,7 +63,7 @@ class PushWorker(appContext: Context, workerParams: WorkerParameters) :
                 setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 setConstraints(constraints)
                 setInputData(this@launchPushWorker)
-                tag?.let{addTag(it)}
+                tag?.let { addTag(it) }
             }
 
             val operation = WorkManager.getInstance(context).enqueue(request.build())

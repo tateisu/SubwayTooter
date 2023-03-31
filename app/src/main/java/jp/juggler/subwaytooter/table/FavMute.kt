@@ -75,8 +75,7 @@ class FavMute(
                 }
             } ?: emptyList()
 
-
-        fun acctSet() :Set<Acct> = buildSet {
+        fun acctSet(): Set<Acct> = buildSet {
             try {
                 db.query(table, null, null, null, null, null, null)
                     .use { cursor ->

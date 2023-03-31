@@ -31,7 +31,7 @@ class ColumnTask_Loading(
 
     internal var listPinned: ArrayList<TimelineItem>? = null
 
-    private fun fireProgress(s:String){
+    private fun fireProgress(s: String) {
         runOnMainLooper {
             if (isCancelled) return@runOnMainLooper
             column.taskProgress = s

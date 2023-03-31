@@ -594,7 +594,7 @@ class AppState(
     }
 
     fun onMuteUpdated() {
-        TootStatus.updateMuteData(force=true)
+        TootStatus.updateMuteData(force = true)
         columnList.forEach { it.onMuteUpdated() }
     }
 }

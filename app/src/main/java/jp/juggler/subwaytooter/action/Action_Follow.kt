@@ -586,7 +586,6 @@ fun ActMain.followRequestDelete(
                             it.id,
                             parser
                         )
-
                     }
                 }
             }

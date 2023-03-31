@@ -39,9 +39,9 @@ class PrivacyPolicyChecker(val context: Context) {
         }
 }
 
-suspend fun ActMain.checkPrivacyPolicy() :Boolean {
+suspend fun ActMain.checkPrivacyPolicy(): Boolean {
     // 既に表示中かもしれない
-    if (dlgPrivacyPolicy?.get()?.isShowing == true){
+    if (dlgPrivacyPolicy?.get()?.isShowing == true) {
         throw CancellationException()
     }
 
@@ -49,21 +49,21 @@ suspend fun ActMain.checkPrivacyPolicy() :Boolean {
     val checker = PrivacyPolicyChecker(this)
     if (checker.agreed) return true
 
-    return suspendCancellableCoroutine {cont->
-        val dialog =  AlertDialog.Builder(this)
+    return suspendCancellableCoroutine { cont ->
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.privacy_policy)
             .setMessage(checker.text)
             .setOnCancelListener { finish() }
             .setNegativeButton(R.string.cancel) { _, _ ->
                 finish()
-                if(cont.isActive) cont.resume(false){}
+                if (cont.isActive) cont.resume(false) {}
             }
             .setPositiveButton(R.string.agree) { _, _ ->
                 PrefS.spAgreedPrivacyPolicyDigest.value = checker.digest
-                if(cont.isActive) cont.resume(true){}
+                if (cont.isActive) cont.resume(true) {}
             }
             .setOnDismissListener {
-                if(cont.isActive) cont.resumeWithException(CancellationException())
+                if (cont.isActive) cont.resumeWithException(CancellationException())
             }
             .create()
         dlgPrivacyPolicy = WeakReference(dialog)

@@ -1,9 +1,10 @@
 package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import jp.juggler.util.data.*
+import jp.juggler.util.data.MetaColumns
+import jp.juggler.util.data.TableCompanion
+import jp.juggler.util.data.replaceTo
 import jp.juggler.util.log.LogCategory
 import kotlin.math.abs
 
@@ -24,37 +25,38 @@ class ImageAspect(
             column(0, COL_ID, "INTEGER PRIMARY KEY")
             column(0, COL_URL, "text not null")
             column(0, COL_ASPECT, "real not null")
-            createExtra={
+            createExtra = {
                 arrayOf(
                     "create unique index if not exists ${table}_u on $table($COL_URL)",
                 )
             }
         }
+
         override fun onDBCreate(db: SQLiteDatabase) {
             log.d("onDBCreate!")
             columnList.onDBCreate(db)
         }
 
         override fun onDBUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            columnList.onDBUpgrade(db,oldVersion,newVersion)
+            columnList.onDBUpgrade(db, oldVersion, newVersion)
         }
     }
 
     class Access(val db: SQLiteDatabase) {
-        fun load(url:String) :Float?=
+        fun load(url: String): Float? =
             db.rawQuery(
                 "select $COL_ASPECT from $table where $COL_URL=?",
                 arrayOf(url),
-            ).use { cursor->
+            ).use { cursor ->
                 when {
                     cursor.moveToNext() -> cursor.getFloat(0)
                     else -> null
                 }
             }
 
-        fun save(url:String,aspect:Float) {
+        fun save(url: String, aspect: Float) {
             val oldAspect = load(url)
-            if( oldAspect != null && abs(oldAspect-aspect) <= 1.4E-40F) return
+            if (oldAspect != null && abs(oldAspect - aspect) <= 1.4E-40F) return
             ContentValues().apply {
                 put(COL_URL, url)
                 put(COL_ASPECT, aspect)

@@ -25,14 +25,14 @@ class ApiPushAppServer(
     suspend fun endpointRemove(
         upUrl: String? = null,
         fcmToken: String? = null,
-        hashId:String? = null,
+        hashId: String? = null,
     ): JsonObject = buildJsonObject {
         upUrl?.let { put("upUrl", it) }
         fcmToken?.let { put("fcmToken", it) }
-        hashId?.let{  put("hashId", it) }
+        hashId?.let { put("hashId", it) }
     }.encodeQuery().let {
         Request.Builder()
-            .url("${appServerPrefix}/endpoint/remove?$it")
+            .url("$appServerPrefix/endpoint/remove?$it")
     }.delete().build()
         .await(okHttp)
         .readJsonObject()
@@ -50,16 +50,16 @@ class ApiPushAppServer(
             fcmToken?.let { put("fcmToken", it) }
             put("acctHashList", jsonArrayOf(*(acctHashList.toTypedArray())))
         }.toPostRequestBuilder()
-            .url("${appServerPrefix}/endpoint/upsert")
+            .url("$appServerPrefix/endpoint/upsert")
             .build()
             .await(okHttp)
             .readJsonObject()
 
     suspend fun getLargeObject(
-        largeObjectId: String
+        largeObjectId: String,
     ): ByteArray? = withContext(AppDispatchers.IO) {
         Request.Builder()
-            .url("${appServerPrefix}/l/$largeObjectId")
+            .url("$appServerPrefix/l/$largeObjectId")
             .build()
             .await(okHttp)
             .body?.bytes()

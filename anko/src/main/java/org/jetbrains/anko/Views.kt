@@ -17,6 +17,7 @@ import android.webkit.WebView
 import androidx.appcompat.widget.SearchView
 
 @PublishedApi
+@Suppress("MatchingDeclarationName")
 internal object `$$Anko$Factories$Sdk28View` {
     val MEDIA_ROUTE_BUTTON = { ctx: Context -> MediaRouteButton(ctx) }
     val GESTURE_OVERLAY_VIEW = { ctx: Context -> GestureOverlayView(ctx) }

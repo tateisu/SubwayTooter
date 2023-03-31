@@ -463,7 +463,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.warn_hashtag_ascii_and_non_ascii
         )
 
-
         sw(PrefB.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
     }
 
@@ -1117,7 +1116,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         action(R.string.alert_test) {
             action = { showAlertNotification("this is a test.") }
         }
-
     }
 
     section(R.string.bug_report) {

@@ -3,14 +3,11 @@ package jp.juggler.subwaytooter.notification
 import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
-import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActAlert.Companion.intentActAlert
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.notification.NotificationDeleteReceiver.Companion.intentNotificationDelete
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.log.withCaption
-import kotlinx.coroutines.CancellationException
 
 private val log = LogCategory("AlertNotification")
 
@@ -35,7 +32,7 @@ fun Context.showAlertNotification(
     val piDelete =
         PendingIntent.getBroadcast(this, nc.pircDelete, iDelete, PendingIntent.FLAG_IMMUTABLE)
 
-    nc.notify(this, tag){
+    nc.notify(this, tag) {
         setWhen(now)
         setContentIntent(piTap)
         setDeleteIntent(piDelete)

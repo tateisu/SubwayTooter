@@ -1,11 +1,8 @@
 package jp.juggler.subwaytooter.push
 
 import android.content.Context
-import androidx.work.workDataOf
 import jp.juggler.subwaytooter.notification.dialogOrAlert
-import jp.juggler.subwaytooter.notification.showAlertNotification
 import jp.juggler.subwaytooter.push.PushWorker.Companion.enqueueUpEndpoint
-import jp.juggler.subwaytooter.push.PushWorker.Companion.launchPushWorker
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.os.checkAppForeground
 import kotlinx.coroutines.runBlocking
@@ -28,7 +25,7 @@ class UpMessageReceiver : MessagingReceiver() {
      */
     override fun onNewEndpoint(context: Context, endpoint: String, instance: String) {
         try {
-            enqueueUpEndpoint(context,endpoint)
+            enqueueUpEndpoint(context, endpoint)
         } catch (ex: Throwable) {
             log.e(ex, "onNewEndpoint failed.")
         }

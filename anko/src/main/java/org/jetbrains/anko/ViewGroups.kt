@@ -13,6 +13,7 @@ import androidx.appcompat.widget.Toolbar
 import org.jetbrains.anko.custom.*
 
 @PublishedApi
+@Suppress("MatchingDeclarationName")
 internal object `$$Anko$Factories$Sdk28ViewGroup` {
     val APP_WIDGET_HOST_VIEW = { ctx: Context -> _AppWidgetHostView(ctx) }
 

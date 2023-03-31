@@ -48,7 +48,7 @@ class UnorderedListItemSpan(
             @Suppress("UnnecessaryVariable")
             val marginWidth = textLineHeight
             this.marginWidth = marginWidth
-            val marginHalf = marginWidth/2
+            val marginHalf = marginWidth / 2
 
             // ドットの直径
             val bulletWidth = textLineHeight / 2
@@ -62,7 +62,7 @@ class UnorderedListItemSpan(
             } else {
                 layout.getParagraphRight(line)
             }
-            val l = edge - dir * marginHalf - bulletWidth/2
+            val l = edge - dir * marginHalf - bulletWidth / 2
             val t =
                 baseline + ((paint.descent() + paint.ascent()) / 2f + .5f).toInt() - bulletWidth / 2
             val r = l + bulletWidth

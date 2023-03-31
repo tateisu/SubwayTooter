@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api.entity
 
-import android.content.SharedPreferences
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.notBlank
 

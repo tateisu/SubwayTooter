@@ -22,7 +22,7 @@ fun ActMain.saveContentTextWidth(columnW: Int) {
     val contentTextWidth = columnW - lvPad * 2 - iconWidth - iconEnd
 
     // CW部分の絵文字とか、リアクションなら数字と枠を避けたサイズとか
-    val maxEmojiWidth = contentTextWidth - (64f * density+ 0.5f )
+    val maxEmojiWidth = contentTextWidth - (64f * density + 0.5f)
 
     // NetworkEmojiSpanに覚える
     NetworkEmojiSpan.maxEmojiWidth = maxEmojiWidth

@@ -143,7 +143,7 @@ class PushMastodon(
             return null
         }
 
-        log.i("${account.acct} oldSubscription=${oldSubscription}")
+        log.i("${account.acct} oldSubscription=$oldSubscription")
 
         if (newUrl == oldEndpointUrl) {
             subLog.i(R.string.push_subscription_exists_updateing)

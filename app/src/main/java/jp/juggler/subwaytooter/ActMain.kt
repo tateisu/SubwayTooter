@@ -14,7 +14,6 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.HorizontalScrollView
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -33,12 +32,17 @@ import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
-import jp.juggler.subwaytooter.pref.*
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.daoSavedAccount
-import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.util.DecodeOptions.Companion.reloadEmojiScale
+import jp.juggler.subwaytooter.util.EmojiDecoder
+import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.subwaytooter.util.permissionSpecNotification
+import jp.juggler.subwaytooter.util.requester
 import jp.juggler.subwaytooter.view.MyDrawerLayout
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -702,7 +706,7 @@ class ActMain : AppCompatActivity(),
         svColumnStrip = findViewById(R.id.svColumnStrip)
         llQuickPostBar = findViewById(R.id.llQuickTootBar)
         etQuickPost = findViewById(R.id.etQuickToot)
-        ivQuickTootAccount=findViewById(R.id.ivQuickTootAccount)
+        ivQuickTootAccount = findViewById(R.id.ivQuickTootAccount)
         btnQuickToot = findViewById(R.id.btnQuickToot)
         btnQuickPostMenu = findViewById(R.id.btnQuickTootMenu)
 

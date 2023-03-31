@@ -162,7 +162,7 @@ class AppDatabaseHolderIniitalizer : Initializer<AppDatabaseHolder> {
         EmptyScope.launch {
             try {
                 val logAccess = LogData.Access(holder.database)
-                    LogCategory.hook = { l,c,m -> logAccess.insert(l,c,m) }
+                LogCategory.hook = { l, c, m -> logAccess.insert(l, c, m) }
 
                 holder.deleteOld()
             } catch (ex: Throwable) {
@@ -204,6 +204,6 @@ val daoTagHistory get() = TagHistory.Access(appDatabase)
 val daoUserRelation get() = UserRelation.Access(appDatabase)
 val daoPushMessage get() = PushMessage.Access(appDatabase)
 val daoLogData get() = LogData.Access(appDatabase)
-val daoImageAspect by lazy{
+val daoImageAspect by lazy {
     ImageAspect.Access(appDatabase)
 }

@@ -136,10 +136,10 @@ private suspend fun Response.readString(): String? {
             bodyString
         }
     } catch (ex: Throwable) {
+        log.e(ex, "readString failed.")
         when (ex) {
             is CancellationException, is ApiError -> throw ex
             else -> {
-                log.e(ex, "readString failed.")
                 throw ApiError(
                     response = response,
                     message = parseErrorResponse(

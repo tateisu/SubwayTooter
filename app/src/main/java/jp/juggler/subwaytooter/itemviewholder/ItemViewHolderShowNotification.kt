@@ -40,7 +40,6 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
         TootNotification.TYPE_ADMIN_REPORT ->
             showNotificationReport(n, nAccountRef)
 
-
         TootNotification.TYPE_MENTION,
         TootNotification.TYPE_REPLY,
         -> showNotificationMention(n, nAccountRef, nStatus)

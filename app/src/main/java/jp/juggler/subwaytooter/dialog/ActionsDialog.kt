@@ -9,6 +9,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
 import kotlin.coroutines.resumeWithException
 
+@Suppress("MatchingDeclarationName")
 class ActionsDialogInitializer(
     val title: CharSequence? = null,
 ) {

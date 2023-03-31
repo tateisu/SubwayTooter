@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.jetbrains.anko.custom
 
 import android.app.Activity

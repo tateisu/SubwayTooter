@@ -18,7 +18,6 @@ package org.jetbrains.anko
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -26,7 +25,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
-import androidx.preference.PreferenceManager
 
 inline val AnkoContext<*>.resources: Resources
     get() = ctx.resources

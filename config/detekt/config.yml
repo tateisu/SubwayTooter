@@ -207,7 +207,8 @@ exceptions:
     active: true
     ignoreLabeled: false
   SwallowedException:
-    active: true
+    # 誤検出が多いので無効にする
+    active: false
     ignoredExceptionTypes:
      - InterruptedException
      - NumberFormatException
@@ -386,7 +387,8 @@ formatting:
     active: false
     autoCorrect: true
   StringTemplate:
-    active: true
+    # 誤検出があるので無効化
+    active: false
     autoCorrect: true
 
 naming:
@@ -444,7 +446,8 @@ naming:
     excludes: ['*.kts']
     rootPackage: ''
   MatchingDeclarationName:
-    active: true
+    # 誤検出がありSuppressできないので無効にする
+    active: false
     mustBeFirst: true
   MemberNameEqualsClassName:
     active: false

@@ -8,7 +8,7 @@ import jp.juggler.subwaytooter.table.daoSavedAccount
 
 // デフォルトの投稿先アカウントを探す。アカウント選択が必要な状況ならnull
 val ActMain.currentPostTarget: SavedAccount?
-    get(){
+    get() {
         val dbId = PrefL.lpDefaultPostAccount.value
         if (dbId != -1L) {
             val a = daoSavedAccount.loadAccount(dbId)

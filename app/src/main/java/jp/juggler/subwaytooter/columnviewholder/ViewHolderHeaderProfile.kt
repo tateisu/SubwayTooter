@@ -26,7 +26,10 @@ import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.itemviewholder.DlgContextMenu
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.span.*
+import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.LinkInfo
+import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.daoAcctColor
@@ -116,7 +119,6 @@ internal class ViewHolderHeaderProfile(
             btnFollow.setOnLongClickListener(holder)
 
             tvNote.movementMethod = MyLinkMovementMethod
-
 
             ivBackground.measureProfileBg = true
         }
@@ -270,7 +272,7 @@ internal class ViewHolderHeaderProfile(
 
             who.setAccountExtra(
                 accessInfo,
-                NetworkEmojiInvalidator(activity.handler ,tvLastStatusAt),
+                NetworkEmojiInvalidator(activity.handler, tvLastStatusAt),
                 fromProfileHeader = true
             )
 
@@ -319,7 +321,6 @@ internal class ViewHolderHeaderProfile(
                 hideFollowCount -> caption
                 else -> "${caption}\n${whoDetail?.followers_count ?: who.followers_count}"
             }
-
 
             setFollowIcon(
                 activity,
@@ -678,7 +679,6 @@ internal class ViewHolderHeaderProfile(
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
-
 
             valueLp.startMargin = (density * 32f).toInt()
             valueView.layoutParams = valueLp

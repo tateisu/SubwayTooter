@@ -1322,4 +1322,3 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         }
     }
 }
-

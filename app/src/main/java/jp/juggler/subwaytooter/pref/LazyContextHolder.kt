@@ -21,7 +21,7 @@ val lazyPref
         ?: LazyContextHolder.prefNullable
         ?: error("LazyContextHolder not initialized")
 
-const val FILE_PROVIDER_AUTHORITY ="${BuildConfig.APPLICATION_ID}.FileProvider"
+const val FILE_PROVIDER_AUTHORITY = "${BuildConfig.APPLICATION_ID}.FileProvider"
 
 @SuppressLint("StaticFieldLeak")
 object LazyContextHolder {
@@ -46,4 +46,3 @@ class LazyContextInitializer : Initializer<LazyContextHolder> {
         return LazyContextHolder
     }
 }
-

@@ -158,7 +158,7 @@ class PollingWorker2(
 
     private fun messageToForegroundInfo(
         text: String,
-        force:Boolean =false
+        force: Boolean = false,
     ): ForegroundInfo? {
         // テキストが変化していないなら更新しない
         if (!force && (text.isEmpty() || text == lastMessage)) return null
@@ -192,5 +192,5 @@ class PollingWorker2(
      * - ダミーメッセージを仕込んだForegroundInfoを返す
      */
     override suspend fun getForegroundInfo(): ForegroundInfo =
-        messageToForegroundInfo("initializing…",force=true)!!
+        messageToForegroundInfo("initializing…", force = true)!!
 }

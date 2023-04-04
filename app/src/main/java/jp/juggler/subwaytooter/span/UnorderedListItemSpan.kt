@@ -54,7 +54,7 @@ class UnorderedListItemSpan(
             val bulletWidth = textLineHeight / 2
 
             // 行頭からドットの開始端までの距離
-            val marginLeft = (marginWidth - bulletWidth) / 2
+            // val marginLeft = (marginWidth - bulletWidth) / 2
 
             val line = layout.getLineForOffset(start)
             val edge = if (dir > 0) {

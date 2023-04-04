@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.onTagFollowChanged
+import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
@@ -253,6 +254,7 @@ fun ActMain.followHashTag(
 ) {
     val activity = this
     launchMain {
+        if (!isSet) confirm(R.string.unfollow_hashtag_confirm, tagWithoutSharp)
         runApiTask(accessInfo) { client ->
             client.request(
                 "/api/v1/tags/${tagWithoutSharp.encodePercent()}/${if (isSet) "follow" else "unfollow"}",

@@ -1156,6 +1156,7 @@
     <string name="followed_tags">フォロー中のハッシュタグ</string>
     <string name="follow_hashtag_of">\"%1$s\"のフォロー</string>
     <string name="unfollow_hashtag_of">\"%1$s\"のフォロー解除</string>
+    <string name="unfollow_hashtag_confirm">\"%1$s\"のフォローを解除しますか？</string>
     <string name="conversation_with_reference">会話と参照</string>
     <string name="tootsearch_discontinued">Tootsearchは2022/12/25にサービス終了しました。</string>
     <string name="msp_discontinued">マストドン検索ポータルはサービス終了しました。</string>

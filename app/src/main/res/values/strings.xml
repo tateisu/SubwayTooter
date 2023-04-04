@@ -1278,4 +1278,5 @@
     <string name="disabled">Disabled</string>
     <string name="emoji_texture_pixels">Emoji texture max pixels(Unix:pixels, default: 128. task kill required. reduce to 64 if your device\'s RAM is not enough)</string>
     <string name="emoji_picker_category_collapse">Collapse emoji picker categories (turning off it will very slow if your servers has a lot of emojis)</string>
+    <string name="unfollow_hashtag_confirm">unfollow hashtag \"%1$s\"?</string>
 </resources>

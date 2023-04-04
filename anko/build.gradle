@@ -1,7 +1,7 @@
 plugins {
     id "com.android.library"
     id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.kapt"
+//    id "org.jetbrains.kotlin.kapt"
 }
 
 android {
@@ -33,16 +33,13 @@ android {
 }
 
 dependencies {
-
-    implementation "androidx.core:core-ktx:$coreKtxVersion"
-    implementation "androidx.appcompat:appcompat:$appcompatVersion"
-    implementation "com.google.android.material:material:$materialVersion"
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxTestExtJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxTestEspressoCoreVersion"
 
-    implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "androidx.appcompat:appcompat:$appcompatVersion"
+    implementation "androidx.core:core-ktx:$coreKtxVersion"
     implementation "androidx.preference:preference-ktx:$preferenceVersion"
-
-    kapt "androidx.annotation:annotation:$androidxAnnotationVersion"
+    implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "com.google.android.material:material:$materialVersion"
 }

@@ -672,10 +672,10 @@ object HTMLDecoder {
                 }
                 "hr" -> {
                     val start = sb.length
-                    sb.append("-")
+                    sb.append(" ")
                     sb.setSpan(
                         HrSpan(lazyContext),
-                        spanStart,
+                        start,
                         sb.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )

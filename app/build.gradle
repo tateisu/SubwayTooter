@@ -7,7 +7,7 @@ import java.util.regex.Pattern
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
+//    id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp").version("1.8.0-1.0.9")
     id("io.gitlab.arturbosch.detekt")
@@ -162,9 +162,9 @@ static def gitBranch() {
     branch
 }
 
-kapt {
-    useBuildCache = true
-}
+//kapt {
+//    useBuildCache = true
+//}
 
 dependencies {
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
@@ -189,9 +189,6 @@ dependencies {
     def apng4AndroidVersion = "2.24.0"
     implementation "com.github.penfeizhou.android.animation:apng:$apng4AndroidVersion"
 
-    kapt "androidx.annotation:annotation:$androidxAnnotationVersion"
-
-    //kapt "com.github.bumptech.glide:compiler:$glideVersion"
     ksp "com.github.bumptech.glide:ksp:$glideVersion"
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")

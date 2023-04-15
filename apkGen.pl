@@ -21,5 +21,7 @@ cmd "./gradlew clean";
 cmd "./gradlew assembleNoFcmRelease";
 cmd "./gradlew assembleFcmRelease";
 cmd "./gradlew --stop";
-cmd "mv app/build/outputs/apk/SubwayTooter*.apk app/";
-cmd " ls -1t app/SubwayTooter*.apk |head -n 5";
+
+cmd "mkdir -p _apk";
+cmd "mv `find app/build/outputs/apk/ -path '*.apk'` _apk/";
+cmd "ls -1t _apk/SubwayTooter*.apk |head -n 5";

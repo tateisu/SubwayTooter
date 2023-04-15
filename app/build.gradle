@@ -128,7 +128,7 @@ android {
                 // def abi = output.getFilter("ABI") ?: "all"
                 def date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
                 def branch = gitBranch()
-                outputFileName = "../../SubwayTooter-${branch}-${flavor}-${versionCode}-${versionName}-${date}.apk"
+                outputFileName = "SubwayTooter-${branch}-${flavor}-${versionCode}-${versionName}-${date}.apk"
             }
         }
     }

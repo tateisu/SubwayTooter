@@ -1284,4 +1284,5 @@
     <string name="emoji_size_misskey">（Misskey）自定义表情符号缩放（单位：%。默认：250）</string>
     <string name="disabled">已禁用</string>
     <string name="emoji_picker_category_collapse">折叠表情符号选择器类别（如果您所在实例有很多表情符号，关闭它将会很慢）</string>
+    <string name="unfollow_hashtag_confirm">取消关注标签 \"%1$s\"？</string>
 </resources>

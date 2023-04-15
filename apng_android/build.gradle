@@ -6,8 +6,8 @@ android {
     buildToolsVersion stBuildToolsVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
     }
 
     namespace "jp.juggler.apng"
@@ -35,6 +35,16 @@ android {
                 // "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
                 // "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
+    }
+}
+
+kotlin {
+    jvmToolchain(kotlinJvmToolchain)
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = kotlinJvmTarget
     }
 }
 

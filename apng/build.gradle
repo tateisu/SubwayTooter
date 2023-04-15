@@ -1,13 +1,13 @@
 apply plugin: "java-library"
 apply plugin: "kotlin"
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = javaSourceCompatibility
+targetCompatibility = javaTargetCompatibility
 
 compileKotlin {
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = javaSourceCompatibility
+    targetCompatibility = javaTargetCompatibility
 
     kotlinOptions {
         jvmTarget = kotlinJvmTarget

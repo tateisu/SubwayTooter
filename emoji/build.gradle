@@ -6,8 +6,8 @@ android {
     buildToolsVersion stBuildToolsVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
     }
 
     defaultConfig {
@@ -27,4 +27,14 @@ android {
         jvmTarget = kotlinJvmTarget
     }
     namespace 'jp.juggler.emoji'
+}
+
+kotlin {
+    jvmToolchain(kotlinJvmToolchain)
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = kotlinJvmTarget
+    }
 }

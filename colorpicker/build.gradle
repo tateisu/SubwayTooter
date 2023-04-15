@@ -5,6 +5,12 @@ android {
     compileSdkVersion stCompileSdkVersion
     buildToolsVersion stBuildToolsVersion
 
+    compileOptions {
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
+        coreLibraryDesugaringEnabled true
+    }
+
     defaultConfig {
         targetSdkVersion stTargetSdkVersion
         minSdkVersion stMinSdkVersion
@@ -12,13 +18,8 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    namespace 'com.jrummyapps.android.colorpicker'
     resourcePrefix "cpv_"
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-        coreLibraryDesugaringEnabled true
-    }
 
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
@@ -33,7 +34,16 @@ android {
     lint {
         abortOnError false
     }
-    namespace 'com.jrummyapps.android.colorpicker'
+}
+
+kotlin {
+    jvmToolchain(kotlinJvmToolchain)
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = kotlinJvmTarget
+    }
 }
 
 dependencies {

@@ -5,7 +5,6 @@ import io.github.inflationx.calligraphy3.CalligraphyConfig
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor
 import io.github.inflationx.calligraphy3.CalligraphyTypefaceSpan
 import io.github.inflationx.viewpump.ViewPump
-import jp.juggler.base.R
 
 fun initializeFont() {
     ViewPump.init(
@@ -13,7 +12,9 @@ fun initializeFont() {
             .addInterceptor(
                 CalligraphyInterceptor(
                     CalligraphyConfig.Builder()
-                        .setFontAttrId(R.attr.fontPath)
+                        // AGP8で参照するRクラスが分割されてエラーになる。
+                        // 指定する必要もないと思う…
+                        // .setFontAttrId(R.attr.fontPath)
                         .build()
                 )
             )

@@ -6,8 +6,8 @@ android {
     buildToolsVersion stBuildToolsVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
     }
 
     defaultConfig {
@@ -46,6 +46,16 @@ android {
         ]
     }
     namespace 'jp.juggler.apng.sample'
+}
+
+kotlin {
+    jvmToolchain(kotlinJvmToolchain)
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = kotlinJvmTarget
+    }
 }
 
 dependencies {

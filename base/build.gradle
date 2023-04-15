@@ -15,6 +15,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -23,8 +27,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
         coreLibraryDesugaringEnabled true
     }
 
@@ -38,6 +42,16 @@ android {
         resources {
             excludes += ["META-INF/LICENSE*"]
         }
+    }
+}
+
+kotlin {
+    jvmToolchain(kotlinJvmToolchain)
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = kotlinJvmTarget
     }
 }
 

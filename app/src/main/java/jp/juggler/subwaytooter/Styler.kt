@@ -484,7 +484,7 @@ fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
         var c = when {
             forceDark -> Color.BLACK
             else -> PrefI.ipStatusBarColor.value.notZero()
-                ?: attrColor(R.attr.colorPrimaryDark)
+                ?: attrColor(android.R.attr.colorPrimaryDark)
         }
         setStatusBarColorCompat(c)
 

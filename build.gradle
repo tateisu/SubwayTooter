@@ -34,7 +34,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:7.4.2'
 
         // room のバージョンの影響で google-services を上げられない場合がある
         classpath "com.google.gms:google-services:4.3.15"

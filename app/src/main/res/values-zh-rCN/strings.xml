@@ -109,7 +109,6 @@
     <string name="performance">性能</string>
     <string name="appearance">外观</string>
     <string name="tablet_mode">平板模式</string>
-    <string name="recommended_plugin">推荐的插件</string>
     <string name="plugin_not_installed">插件未安装。</string>
     <string name="select_plugin">选择插件</string>
     <string name="plugin">插件</string>

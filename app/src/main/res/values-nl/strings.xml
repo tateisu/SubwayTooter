@@ -368,7 +368,6 @@
     <string name="select_plugin">Selecteer plugin</string>
     <string name="plugin_not_installed">Plugin is niet geïnstalleerd.</string>
     <string name="language_code">nl</string>
-    <string name="recommended_plugin">Aanbevolen plugin</string>
     <string name="tablet_mode">Tabletmodus</string>
     <string name="appearance">Vormgeving</string>
     <string name="performance">Prestaties</string>

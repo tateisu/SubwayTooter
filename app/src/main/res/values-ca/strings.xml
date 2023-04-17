@@ -378,7 +378,6 @@
     <string name="select_plugin">Selecciona el connector</string>
     <string name="plugin_not_installed">El connector no s\'ha instal·lat.</string>
     <string name="language_code">ca</string>
-    <string name="recommended_plugin">Connector recomanat</string>
     <string name="tablet_mode">Mode de tauleta</string>
     <string name="appearance">Aspecte</string>
     <string name="performance">Rendiment</string>

@@ -583,7 +583,6 @@
     <string name="reaction_remove">リアクションの削除</string>
     <string name="read_gap">ギャップを読む</string>
     <string name="reading_api">読込中: %1$s %2$s</string>
-    <string name="recommended_plugin">おすすめプラグイン</string>
     <string name="redraft_and_delete">削除して再編集</string>
     <string name="refresh_after_toot">投稿後の更新</string>
     <string name="refresh_no_scroll">更新するがスクロールしない</string>
@@ -1271,4 +1270,5 @@
     <string name="disabled">無効</string>
     <string name="emoji_texture_pixels">絵文字テクスチャの最大ピクセル数(単位:ピクセル、デフォルト: 128。 タスクキルが必要。端末のRAMが少ない場合は64程度まで下げることをお勧めします)</string>
     <string name="emoji_picker_category_collapse">絵文字ピッカーのカテゴリを折りたたむ（サーバーに多くの絵文字がある場合はオフにすると非常に遅くなります）</string>
+    <string name="plugin_app_intro">プラグインアプリの紹介</string>
 </resources>

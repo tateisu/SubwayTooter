@@ -473,7 +473,6 @@
     <string name="copy_account_id">انسح معرّف الحساب %1$s</string>
     <string name="open_in_admin_ui">افتحه على واجهة الويب الإدارية</string>
     <string name="visibility_account_setting">تتبّع إعداد الحساب</string>
-    <string name="recommended_plugin">الإضافات المستحسَنة</string>
     <string name="not_blocked">غير محجوب.</string>
     <string name="profile_directory">دليل الحسابات</string>
     <string name="unspecified">غير محدد</string>

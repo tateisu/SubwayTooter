@@ -2,19 +2,21 @@ package jp.juggler.subwaytooter.actpost
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.TextPaint
 import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.EditText
-import android.widget.TextView
-import androidx.annotation.RawRes
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.data.decodeUTF8
-import jp.juggler.util.data.loadRawResource
+import jp.juggler.subwaytooter.databinding.DlgPluginMissingBinding
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.attrColor
 
 private val log = LogCategory("ActPostMushroom")
 
@@ -24,42 +26,38 @@ fun ActPost.resetMushroom() {
     states.mushroomEnd = 0
 }
 
-@SuppressLint("InflateParams")
-suspend fun ActPost.showRecommendedPlugin(title: String?) {
-
-    @RawRes val resId = when (getString(R.string.language_code)) {
-        "ja" -> R.raw.recommended_plugin_ja
-        "fr" -> R.raw.recommended_plugin_fr
-        else -> R.raw.recommended_plugin_en
-    }
-
-    this.loadRawResource(resId).let { data ->
-        val text = data.decodeUTF8()
-        val viewRoot = layoutInflater.inflate(R.layout.dlg_plugin_missing, null, false)
-
-        val tvText = viewRoot.findViewById<TextView>(R.id.tvText)
-
-        val sv = DecodeOptions(this, linkHelper = LinkHelper.unknown).decodeHTML(text)
-
-        tvText.text = sv
-        tvText.movementMethod = LinkMovementMethod.getInstance()
-
-        val tvTitle = viewRoot.findViewById<TextView>(R.id.tvTitle)
-        if (title?.isEmpty() != false) {
-            tvTitle.visibility = View.GONE
-        } else {
-            tvTitle.text = title
-        }
-
-        AlertDialog.Builder(this)
-            .setView(viewRoot)
-            .setCancelable(true)
-            .setNeutralButton(R.string.close, null)
-            .show()
-    }
+fun ActPost.openPluginList(){
+    val url = "https://github.com/tateisu/SubwayTooter/wiki/Simeji-Mushroom-Plugins"
+    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }
 
-suspend fun ActPost.openMushroom() {
+fun ActPost.showRecommendedPlugin(@StringRes titleId: Int) {
+    val linkCaption = getString(R.string.plugin_app_intro)
+    val linkSpan = object : ClickableSpan() {
+        override fun onClick(view: View) = openPluginList()
+        override fun updateDrawState(ds: TextPaint) {
+            super.updateDrawState(ds)
+            ds.color = attrColor(R.attr.colorLink)
+        }
+    }
+
+    val views = DlgPluginMissingBinding.inflate(layoutInflater)
+    views.tvText.movementMethod = LinkMovementMethod.getInstance()
+    views.tvText.text = SpannableStringBuilder().apply {
+        val spanStart = length
+        append(linkCaption)
+        val spanEnd = length
+        setSpan(linkSpan, spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
+    AlertDialog.Builder(this).apply {
+        setTitle(titleId)
+        setView(views.root)
+        setCancelable(true)
+        setPositiveButton(R.string.ok, null)
+    }.show()
+}
+
+fun ActPost.openMushroom() {
     try {
         var text: String? = null
         when {
@@ -94,14 +92,14 @@ suspend fun ActPost.openMushroom() {
 
         // Verify the intent will resolve to at least one activity
         if (intent.resolveActivity(packageManager) == null) {
-            showRecommendedPlugin(getString(R.string.plugin_not_installed))
+            showRecommendedPlugin(R.string.plugin_not_installed)
             return
         }
 
         arMushroom.launch(chooser)
     } catch (ex: Throwable) {
         log.e(ex, "openMushroom failed.")
-        showRecommendedPlugin(getString(R.string.plugin_not_installed))
+        showRecommendedPlugin(R.string.plugin_not_installed)
     }
 }
 

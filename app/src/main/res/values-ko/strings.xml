@@ -361,7 +361,6 @@
     <string name="select_plugin">플러그인 선택</string>
     <string name="plugin_not_installed">플러그인 설치 안 됨.</string>
     <string name="language_code">ko</string>
-    <string name="recommended_plugin">추천 플러그인</string>
     <string name="tablet_mode">태블릿 모드</string>
     <string name="appearance">모양새</string>
     <string name="performance">성능</string>

@@ -281,8 +281,8 @@ fun ActPost.performMore() {
                 openDraftPicker()
             }
 
-            action(getString(R.string.recommended_plugin)) {
-                showRecommendedPlugin(null)
+            action(getString(R.string.plugin_app_intro)) {
+                openPluginList()
             }
         }
     }

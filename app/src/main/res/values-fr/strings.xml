@@ -352,7 +352,6 @@
     <string name="select_plugin">Sélection du plugin</string>
     <string name="plugin_not_installed">Plugin non installé.</string>
     <string name="language_code">fr</string>
-    <string name="recommended_plugin">Plugins recommandés</string>
     <string name="appearance">Apparence</string>
     <string name="behavior">Comportement</string>
     <string name="notification_on_off_desc">Il existe également un paramètre de compte pour activer ou désactiver les notifications.</string>

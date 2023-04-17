@@ -1009,7 +1009,6 @@
     <string name="performance">Leistung</string>
     <string name="appearance">Aussehen</string>
     <string name="tablet_mode">Tabletmodus</string>
-    <string name="recommended_plugin">Empfohlenes Plugin</string>
     <string name="language_code">en</string>
     <string name="plugin_not_installed">Plugin ist nicht installiert.</string>
     <string name="select_plugin">Plugin auswählen</string>

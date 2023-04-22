@@ -24,10 +24,14 @@ class Benchmark(
     val caption: String,
     private val minMs: Long = 33L,
 ) {
-    private val timeStart = SystemClock.elapsedRealtime()
+    private var timeStart = SystemClock.elapsedRealtime()
 
     fun report() {
         val duration = SystemClock.elapsedRealtime() - timeStart
         if (duration >= minMs) log.d("$caption ${duration}ms")
+    }
+
+    fun start() {
+        timeStart = SystemClock.elapsedRealtime()
     }
 }

@@ -89,6 +89,8 @@ class ItemViewHolder(
 
     internal lateinit var listAdapter: ItemListAdapter
 
+    val bindBenchmark = Benchmark(log, "Item-bind", 40L)
+
     lateinit var llBoosted: View
     lateinit var ivBoostAvatar: MyNetworkImageView
     lateinit var ivBoosted: ImageView

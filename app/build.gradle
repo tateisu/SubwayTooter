@@ -7,9 +7,8 @@ import java.util.regex.Pattern
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-//    id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.devtools.ksp").version("1.8.0-1.0.9")
+    id("com.google.devtools.ksp").version("$kspVersion")
     id("io.gitlab.arturbosch.detekt")
 }
 

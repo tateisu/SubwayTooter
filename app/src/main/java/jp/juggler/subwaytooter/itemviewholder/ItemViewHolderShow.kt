@@ -46,7 +46,7 @@ fun ItemViewHolder.bind(
     bSimpleList: Boolean,
     item: TimelineItem,
 ) {
-    val b = Benchmark(ItemViewHolder.log, "Item-bind", 40L)
+    bindBenchmark.start()
 
     this.listAdapter = listAdapter
     this.column = column
@@ -72,6 +72,7 @@ fun ItemViewHolder.bind(
                             v === tvConversationIconsMore ||
                             v === tvConversationParticipants ||
                             v === tvFilterPhrase -> fontBold
+
                     else -> fontNormal
                 }
             }
@@ -132,64 +133,66 @@ fun ItemViewHolder.bind(
     this.viewRoot.setBackgroundColor(0)
     this.boostedAction = defaultBoostedAction
 
-    llOpenSticker.visibility = View.GONE
-    llBoosted.visibility = View.GONE
-    llReply.visibility = View.GONE
-    llFollow.visibility = View.GONE
-    llStatus.visibility = View.GONE
-    llSearchTag.visibility = View.GONE
     btnGapHead.visibility = View.GONE
     btnGapTail.visibility = View.GONE
-    llList.visibility = View.GONE
-    llFollowRequest.visibility = View.GONE
-    tvMessageHolder.visibility = View.GONE
-    llTrendTag.visibility = View.GONE
-    llFilter.visibility = View.GONE
-    tvMediaDescriptions.forEach { it.visibility = View.GONE }
-    llCardOuter.visibility = View.GONE
-    tvCardText.visibility = View.GONE
     flCardImage.visibility = View.GONE
+    llBoosted.visibility = View.GONE
+    llCardOuter.visibility = View.GONE
     llConversationIcons.visibility = View.GONE
+    llFilter.visibility = View.GONE
+    llFollow.visibility = View.GONE
+    llFollowRequest.visibility = View.GONE
+    llList.visibility = View.GONE
+    llOpenSticker.visibility = View.GONE
+    llReply.visibility = View.GONE
+    llSearchTag.visibility = View.GONE
+    llStatus.visibility = View.GONE
+    llTrendTag.visibility = View.GONE
+    tvCardText.visibility = View.GONE
+    tvMediaCount.visibility = View.GONE
+    tvMessageHolder.visibility = View.GONE
+
+    tvMediaDescriptions.forEach { it.visibility = View.GONE }
 
     removeExtraView()
 
-    var c: Int
-    c = column.getContentColor()
-    this.colorTextContent = c
-    this.contentColorCsl = ColorStateList.valueOf(c)
+    val colorTextContent = column.getContentColor()
+    this.colorTextContent = colorTextContent
+    this.contentColorCsl = ColorStateList.valueOf(colorTextContent)
 
-    tvBoosted.setTextColor(c)
-    tvReply.setTextColor(c)
-    tvFollowerName.setTextColor(c)
-    tvName.setTextColor(c)
-    tvMentions.setTextColor(c)
-    tvContentWarning.setTextColor(c)
-    tvContent.setTextColor(c)
-    //NSFWは文字色固定 btnShowMedia.setTextColor( c );
-    tvApplication.setTextColor(c)
-    tvMessageHolder.setTextColor(c)
-    tvTrendTagName.setTextColor(c)
-    tvTrendTagCount.setTextColor(c)
-    cvTagHistory.setColor(c)
-    tvFilterPhrase.setTextColor(c)
-    tvMediaDescriptions.forEach { it.setTextColor(c) }
-    tvCardText.setTextColor(c)
-    tvConversationIconsMore.setTextColor(c)
-    tvConversationParticipants.setTextColor(c)
+    tvApplication.setTextColor(colorTextContent)
+    tvBoosted.setTextColor(colorTextContent)
+    tvCardText.setTextColor(colorTextContent)
+    tvContent.setTextColor(colorTextContent)
+    tvContentWarning.setTextColor(colorTextContent)
+    tvConversationIconsMore.setTextColor(colorTextContent)
+    tvConversationParticipants.setTextColor(colorTextContent)
+    tvFilterPhrase.setTextColor(colorTextContent)
+    tvFollowerName.setTextColor(colorTextContent)
+    tvMediaCount.setTextColor(colorTextContent)
+    tvMentions.setTextColor(colorTextContent)
+    tvMessageHolder.setTextColor(colorTextContent)
+    tvName.setTextColor(colorTextContent)
+    tvReply.setTextColor(colorTextContent)
+    tvTrendTagCount.setTextColor(colorTextContent)
+    tvTrendTagName.setTextColor(colorTextContent)
 
-    (llCardOuter.background as? PreviewCardBorder)?.let {
-        val rgb = c and 0xffffff
-        val alpha = max(1, c ushr (24 + 1)) // 本来の値の半分にする
-        it.color = rgb or (alpha shl 24)
-    }
+    tvMediaDescriptions.forEach { it.setTextColor(colorTextContent) }
+    cvTagHistory.setColor(colorTextContent)
 
-    c = column.getAcctColor()
-    this.acctColor = c
-    tvBoostedTime.setTextColor(c)
-    tvTime.setTextColor(c)
-    tvTrendTagDesc.setTextColor(c)
-    tvFilterDetail.setTextColor(c)
-    tvFilterPhrase.setTextColor(c)
+    //NSFWは文字色固定 btnShowMedia.setTextColor( colorTextContent );
+
+    (llCardOuter.background as? PreviewCardBorder)?.color =
+        colorPreviewCardBorder(colorTextContent)
+
+    val colorTextAcct = column.getAcctColor()
+    this.acctColor = colorTextAcct
+
+    tvBoostedTime.setTextColor(colorTextAcct)
+    tvFilterDetail.setTextColor(colorTextAcct)
+    tvFilterPhrase.setTextColor(colorTextAcct)
+    tvTime.setTextColor(colorTextAcct)
+    tvTrendTagDesc.setTextColor(colorTextAcct)
 
     // 以下のビューの文字色はsetAcct() で設定される
     //		tvBoostedAcct.setTextColor(c)
@@ -239,9 +242,17 @@ fun ItemViewHolder.bind(
             showStatusOrReply(item.last_status)
             showConversationIcons(item)
         }
+
         is TootScheduled -> showScheduled(item)
     }
-    b.report()
+    bindBenchmark.report()
+}
+
+// プレビューカードの枠の色はテキストより薄め
+private fun colorPreviewCardBorder(src: Int): Int {
+    val rgb = src and 0xffffff
+    val alpha = max(1, src ushr (24 + 1)) // 本来の値の半分にする
+    return rgb or (alpha shl 24)
 }
 
 fun ItemViewHolder.removeExtraView() {
@@ -428,6 +439,7 @@ fun ItemViewHolder.showSearchTag(tag: TootTag) {
                 tvTrendTagName.text = tag.url?.ellipsizeDot3(256)
                 tvTrendTagDesc.text = tag.name + "\n" + tag.description
             }
+
             TootTag.TagType.Tag -> {
                 tvTrendTagName.text = "#${tag.name.ellipsizeDot3(256)}"
                 tvTrendTagDesc.text = listOf(
@@ -703,6 +715,7 @@ val Column.canRelativeTime
         ColumnType.CONVERSATION_WITH_REFERENCE,
         ColumnType.STATUS_HISTORY,
         -> false
+
         else -> true
     }
 

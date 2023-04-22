@@ -29,10 +29,12 @@ class TootAttachment private constructor(
     val text_url: String?,
 
     // ALT text (Mastodon 2.0.0 or later)
-    override val description: String?,
+    // Mastodon 4.0で既存投稿の添付データの説明文を編集可能になる
+    override var description: String?,
 
-    override val focusX: Float,
-    override val focusY: Float,
+    // Mastodon 4.0で既存投稿の添付データのフォーカス位置を編集可能になる
+    override var focusX: Float,
+    override var focusY: Float,
 
     // MisskeyはメディアごとにNSFWフラグがある
     val isSensitive: Boolean,
@@ -43,6 +45,11 @@ class TootAttachment private constructor(
 
     // 内部フラグ: 再編集で引き継いだ添付メディアなら真
     var redraft: Boolean = false
+
+    // 内部フラグ：編集投稿時にメディア属性を更新するなら、その値を指定する
+    var updateDescription: String? = null
+    var updateThumbnail: String? = null
+    var updateFocus: String? = null
 
     override val urlForDescription: String?
         get() = remote_url.notEmpty() ?: url
@@ -74,6 +81,9 @@ class TootAttachment private constructor(
         private const val KEY_X = "x"
         private const val KEY_Y = "y"
         private const val KEY_BLURHASH = "blurhash"
+        private const val KEY_UPDATE_DESCRIPTION = "updateDescription"
+        private const val KEY_UPDATE_THUMBNAIL = "updateThumbnail"
+        private const val KEY_UPDATE_FOCUS = "updateFocus"
 
         private val ext_audio = arrayOf(".mpga", ".mp3", ".aac", ".ogg")
 
@@ -99,6 +109,7 @@ class TootAttachment private constructor(
                 null, TootAttachmentType.Unknown -> {
                     guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
                 }
+
                 else -> tmpType
             }
             val focus = src.jsonObject(KEY_META)?.jsonObject(KEY_FOCUS)
@@ -115,7 +126,11 @@ class TootAttachment private constructor(
                 text_url = src.string(KEY_TEXT_URL),
                 type = type,
                 url = url,
-            )
+            ).apply {
+                updateDescription = src.string(KEY_UPDATE_DESCRIPTION)
+                updateThumbnail = src.string(KEY_UPDATE_THUMBNAIL)
+                updateFocus = src.string(KEY_UPDATE_FOCUS)
+            }
         }
 
         private fun tootAttachmentMisskey(src: JsonObject): TootAttachment {
@@ -142,7 +157,11 @@ class TootAttachment private constructor(
                 text_url = url,
                 type = type,
                 url = url,
-            )
+            ).apply {
+                updateDescription = src.string(KEY_UPDATE_DESCRIPTION)
+                updateThumbnail = src.string(KEY_UPDATE_THUMBNAIL)
+                updateFocus = src.string(KEY_UPDATE_FOCUS)
+            }
         }
 
         private fun tootAttachmentNoteStock(src: JsonObject): TootAttachment {
@@ -266,6 +285,9 @@ class TootAttachment private constructor(
         put(KEY_DESCRIPTION, description)
         put(KEY_IS_SENSITIVE, isSensitive)
         put(KEY_BLURHASH, blurhash)
+        put(KEY_UPDATE_DESCRIPTION, updateDescription)
+        put(KEY_UPDATE_THUMBNAIL, updateThumbnail)
+        put(KEY_UPDATE_FOCUS, updateFocus)
 
         if (focusX != 0f || focusY != 0f) {
             put(KEY_META, buildJsonObject {

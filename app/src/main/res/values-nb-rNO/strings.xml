@@ -669,7 +669,7 @@
     <string name="media_attachment_type_error">Mediavedleggstypen er \"%1$s\". ST kan ikke håndtere den, men du kan prøve å åpne den i en nettleser.</string>
     <string name="video_buffering">Mellomlagrer…</string>
     <string name="dont_repeat_download_to_same_url">Kan ikke laste ned samme nettadresse i løpet av et par sekunder.</string>
-    <string name="zooming_of">×%3$.1f
+    <string name="zooming_of">(%4$d/%5$d) ×%3$.1f
 \n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">Media har ikke blitt lastet opp enda.</string>
     <string name="highlight_word">Framhev nøkkelord</string>

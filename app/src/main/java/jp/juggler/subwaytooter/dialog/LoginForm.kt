@@ -16,11 +16,14 @@ import jp.juggler.subwaytooter.databinding.DlgAccountAddBinding
 import jp.juggler.subwaytooter.databinding.LvAuthTypeBinding
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.notBlank
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
+import kotlinx.coroutines.withContext
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.textResource
 import java.io.BufferedReader
@@ -53,8 +56,6 @@ class LoginForm(
         ) = LoginForm(this, onClickOk)
     }
 
-    private class StringArray : ArrayList<String>()
-
     enum class Action(
         val pos: Int,
         @StringRes val idName: Int,
@@ -65,6 +66,9 @@ class LoginForm(
         Create(2, R.string.create_account, R.string.create_account_desc),
         Token(3, R.string.input_access_token, R.string.input_access_token_desc),
     }
+
+    // 実行時キャストのためGenericsを含まない型を定義する
+    private class StringArrayList : ArrayList<String>()
 
     val views = DlgAccountAddBinding.inflate(activity.layoutInflater)
     val dialog = Dialog(activity)
@@ -93,7 +97,7 @@ class LoginForm(
         views.etInstance.addTextChangedListener { validateAndShow() }
 
         showPage(0)
-        initServerNameList()
+
         validateAndShow()
 
         dialog.setContentView(views.root)
@@ -102,67 +106,82 @@ class LoginForm(
             WindowManager.LayoutParams.WRAP_CONTENT
         )
         dialog.show()
+
+        initServerNameList()
     }
 
     private fun initServerNameList() {
-        val instanceList = HashSet<String>().apply {
+        val progress = ProgressDialogEx(activity)
+        progress.setMessageEx(activity.getString(R.string.autocomplete_list_loading))
+        progress.show()
+        launchMain {
             try {
-                activity.resources.openRawResource(R.raw.server_list).use { inStream ->
-                    val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
-                    while (true) {
-                        val s: String =
-                            br.readLine()?.trim { it <= ' ' }?.lowercase() ?: break
-                        if (s.isEmpty()) continue
-                        add(s)
-                        add(IDN.toASCII(s, IDN.ALLOW_UNASSIGNED))
-                        add(IDN.toUnicode(s, IDN.ALLOW_UNASSIGNED))
-                    }
-                }
-            } catch (ex: Throwable) {
-                log.e(ex, "can't load server list.")
-            }
-        }.toList().sorted()
-
-        val adapter = object : ArrayAdapter<String>(
-            activity, R.layout.lv_spinner_dropdown, ArrayList()
-        ) {
-            val nameFilter: Filter = object : Filter() {
-                override fun convertResultToString(value: Any) =
-                    value as String
-
-                override fun performFiltering(constraint: CharSequence?) =
-                    FilterResults().also { result ->
-                        if (constraint?.isNotEmpty() == true) {
-                            val key = constraint.toString().lowercase()
-                            // suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
-                            val suggestions = StringArray()
-                            for (s in instanceList) {
-                                if (s.contains(key)) {
-                                    suggestions.add(s)
-                                    if (suggestions.size >= 20) break
+                val instanceList = HashSet<String>().apply {
+                    try {
+                        withContext(AppDispatchers.IO) {
+                            activity.resources.openRawResource(R.raw.server_list).use { inStream ->
+                                val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
+                                while (true) {
+                                    (br.readLine() ?: break)
+                                        .trim { it <= ' ' }
+                                        .notEmpty()
+                                        ?.lowercase()
+                                        ?.let {
+                                            add(it)
+                                            add(IDN.toASCII(it, IDN.ALLOW_UNASSIGNED))
+                                            add(IDN.toUnicode(it, IDN.ALLOW_UNASSIGNED))
+                                        }
                                 }
                             }
-                            result.values = suggestions
-                            result.count = suggestions.size
                         }
+                    } catch (ex: Throwable) {
+                        log.e(ex, "can't load server list.")
                     }
+                }.toList().sorted()
 
-                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                    clear()
-                    val values = results?.values
-                    if (values is StringArray) {
-                        for (s in values) {
-                            add(s)
+                val adapter = object : ArrayAdapter<String>(
+                    activity, R.layout.lv_spinner_dropdown, ArrayList()
+                ) {
+                    override fun getFilter(): Filter = nameFilter
+
+                    val nameFilter: Filter = object : Filter() {
+                        override fun convertResultToString(value: Any) =
+                            value as String
+
+                        override fun performFiltering(constraint: CharSequence?) =
+                            FilterResults().also { result ->
+                                constraint?.notEmpty()?.toString()?.lowercase()?.let { key ->
+                                    // suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
+                                    val suggestions = StringArrayList()
+                                    for (s in instanceList) {
+                                        if (s.contains(key)) {
+                                            suggestions.add(s)
+                                            if (suggestions.size >= 20) break
+                                        }
+                                    }
+                                    result.values = suggestions
+                                    result.count = suggestions.size
+                                }
+                            }
+
+                        override fun publishResults(
+                            constraint: CharSequence?,
+                            results: FilterResults?,
+                        ) {
+                            clear()
+                            (results?.values as? StringArrayList)?.let { addAll(it) }
+                            notifyDataSetChanged()
                         }
                     }
-                    notifyDataSetChanged()
                 }
+                adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
+                views.etInstance.setAdapter<ArrayAdapter<String>>(adapter)
+            } catch (ex: Throwable) {
+                activity.showToast(ex, "initServerNameList failed.")
+            } finally {
+                progress.dismissSafe()
             }
-
-            override fun getFilter(): Filter = nameFilter
         }
-        adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-        views.etInstance.setAdapter<ArrayAdapter<String>>(adapter)
     }
 
     // return validated name. else null
@@ -250,6 +269,7 @@ class LoginForm(
                             textColor = attrColor(R.attr.colorRegexFilterError)
                             text = error
                         }
+
                         else -> {
                             textColor = attrColor(R.attr.colorTextContent)
                             text = (tootInstance.short_description.notBlank()

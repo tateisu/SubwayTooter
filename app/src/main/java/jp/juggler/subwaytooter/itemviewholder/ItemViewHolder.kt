@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.content.ContextCompat
@@ -29,13 +28,44 @@ import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
-import jp.juggler.subwaytooter.view.*
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.blurhashView
+import jp.juggler.subwaytooter.util.compatButton
+import jp.juggler.subwaytooter.util.endMargin
+import jp.juggler.subwaytooter.util.minHeightCompat
+import jp.juggler.subwaytooter.util.myNetworkImageView
+import jp.juggler.subwaytooter.util.myTextView
+import jp.juggler.subwaytooter.util.setPaddingStartEnd
+import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.subwaytooter.util.startPadding
+import jp.juggler.subwaytooter.util.trendTagHistoryView
+import jp.juggler.subwaytooter.view.BlurhashView
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod
+import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.subwaytooter.view.MyTextView
+import jp.juggler.subwaytooter.view.TagHistoryView
 import jp.juggler.util.log.Benchmark
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.applyAlphaMultiplier
 import jp.juggler.util.ui.attrColor
-import org.jetbrains.anko.*
+import org.jetbrains.anko.UI
+import org.jetbrains.anko._LinearLayout
+import org.jetbrains.anko.allCaps
+import org.jetbrains.anko.backgroundDrawable
+import org.jetbrains.anko.backgroundResource
+import org.jetbrains.anko.bottomPadding
+import org.jetbrains.anko.dip
+import org.jetbrains.anko.frameLayout
+import org.jetbrains.anko.imageButton
+import org.jetbrains.anko.imageResource
+import org.jetbrains.anko.imageView
+import org.jetbrains.anko.linearLayout
+import org.jetbrains.anko.matchParent
+import org.jetbrains.anko.padding
+import org.jetbrains.anko.textColor
+import org.jetbrains.anko.verticalLayout
+import org.jetbrains.anko.verticalMargin
+import org.jetbrains.anko.wrapContent
 
 class ItemViewHolder(
     val activity: ActMain,
@@ -96,7 +126,8 @@ class ItemViewHolder(
     lateinit var llMedia: View
     lateinit var btnShowMedia: BlurhashView
     lateinit var btnHideMedia: ImageButton
-    val tvMediaDescriptions = ArrayList<TextView>()
+    lateinit var tvMediaCount: MyTextView
+    val tvMediaDescriptions = ArrayList<MyTextView>()
     val ivMediaThumbnails = ArrayList<MyNetworkImageView>()
 
     lateinit var statusButtonsViewHolder: StatusButtonsViewHolder
@@ -150,6 +181,7 @@ class ItemViewHolder(
     lateinit var ivOpenSticker: MyNetworkImageView
     lateinit var tvOpenSticker: MyTextView
 
+    @Suppress("MemberVisibilityCanBePrivate")
     lateinit var tvLastStatusAt: MyTextView
 
     lateinit var accessInfo: SavedAccount
@@ -513,8 +545,8 @@ class ItemViewHolder(
             }.lparams(matchParent, thumbnailHeight)
         }
 
-    private fun _LinearLayout.inflateHorizontalMedia(thumbnailHeight: Int): View {
-        return frameLayout {
+    private fun _LinearLayout.inflateHorizontalMedia(thumbnailHeight: Int) =
+        frameLayout {
             lparams(matchParent, thumbnailHeight) { topMargin = dip(3) }
             llMedia = linearLayout {
                 lparams(matchParent, matchParent)
@@ -532,8 +564,10 @@ class ItemViewHolder(
                 }
 
                 btnHideMedia = imageButton {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                    background = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.btn_bg_transparent_round6dp
+                    )
                     contentDescription = context.getString(R.string.hide)
                     imageResource = R.drawable.ic_close
                 }.lparams(dip(32), matchParent) {
@@ -547,7 +581,6 @@ class ItemViewHolder(
                 gravity = Gravity.CENTER
             }.lparams(matchParent, matchParent)
         }
-    }
 
     private fun _LinearLayout.inflateCard(actMain: ActMain) {
         llCardOuter = verticalLayout {
@@ -688,10 +721,17 @@ class ItemViewHolder(
                 else -> inflateHorizontalMedia(thumbnailHeight)
             }
 
+            tvMediaCount = myTextView {
+                gravity = Gravity.END
+                includeFontPadding = false
+            }.lparams(matchParent, wrapContent) {
+                verticalMargin = dip(3)
+            }
+
             tvMediaDescriptions.clear()
             repeat(MEDIA_VIEW_COUNT) {
                 tvMediaDescriptions.add(
-                    button {
+                    myTextView {
                         gravity = Gravity.START or Gravity.CENTER_VERTICAL
                         allCaps = false
                         background =

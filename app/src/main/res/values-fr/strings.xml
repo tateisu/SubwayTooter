@@ -584,7 +584,7 @@
     <string name="media_attachment_type_error">Le type de pièce jointe est \"%1$s\". ST ne peut pas le gérer mais vous pouvez essayer de l’ouvrir dans un navigateur.</string>
     <string name="video_buffering">Mise en mémoire tampon …</string>
     <string name="dont_repeat_download_to_same_url">Impossible de re-télécharger de la même URL en l’espace de quelques secondes.</string>
-    <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
+    <string name="zooming_of">(%4$d/%5$d) ×%3$.1f\n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">En cours de téléchargement de médias.</string>
     <string name="highlight_word">Mettre en évidence le mot-clé</string>
     <string name="new_item">Nouvel élément …</string>

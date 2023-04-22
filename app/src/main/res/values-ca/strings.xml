@@ -615,7 +615,7 @@
     <string name="media_attachment_type_error">El mèdia adjunt és de tipus \"%1$s\". ST no el pot processar, però pots provar d\'obrir-lo en un navegador.</string>
     <string name="video_buffering">Dosificant…</string>
     <string name="dont_repeat_download_to_same_url">No es pot repetir la descàrrega del mateix URL en pocs segons.</string>
-    <string name="zooming_of">×%3$.1f
+    <string name="zooming_of">(%4$d/%5$d) ×%3$.1f
 \n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">Encara s\'està carregant el mèdia.</string>
     <string name="highlight_word">Ressalta una paraula clau</string>

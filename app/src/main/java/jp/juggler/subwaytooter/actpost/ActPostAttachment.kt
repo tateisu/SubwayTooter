@@ -9,9 +9,13 @@ import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.ServiceType
+import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
+import jp.juggler.subwaytooter.api.entity.TootAttachmentType
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.defaultColorIcon
@@ -25,7 +29,11 @@ import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
-import jp.juggler.util.data.*
+import jp.juggler.util.data.CharacterGroup
+import jp.juggler.util.data.GetContentResultEntry
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.decodeJsonArray
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
@@ -90,6 +98,7 @@ fun ActPost.showMediaAttachmentOne(iv: MyNetworkImageView, idx: Int) {
                     TootAttachmentType.Video,
                     TootAttachmentType.GIFV,
                     -> R.drawable.ic_videocam
+
                     TootAttachmentType.Audio -> R.drawable.ic_music_note
                     else -> R.drawable.ic_clip
                 }
@@ -272,35 +281,62 @@ suspend fun ActPost.openFocusPoint(pa: PostAttachment) {
     )
 }
 
-fun ActPost.sendFocusPoint(pa: PostAttachment, attachment: TootAttachment, x: Float, y: Float) {
-    val account = this.account ?: return
-    launchMain {
-        var resultAttachment: TootAttachment? = null
-        runApiTask(account, progressStyle = ApiTask.PROGRESS_NONE) { client ->
-            try {
-                client.request(
-                    "/api/v1/media/${attachment.id}",
-                    buildJsonObject {
-                        put("focus", "%.2f,%.2f".format(x, y))
-                    }.toPutRequestBuilder()
-                )?.also { result ->
-                    resultAttachment = parseItem(result.jsonObject) {
-                        tootAttachment(ServiceType.MASTODON, it)
-                    }
+suspend fun ActPost.sendFocusPoint(
+    pa: PostAttachment,
+    attachment: TootAttachment,
+    x: Float,
+    y: Float,
+): Boolean {
+    val account = this.account ?: error("missing account")
+    val isEdit = states.editStatusId != null
+    if (isEdit) {
+        attachment.focusX = x
+        attachment.focusY = y
+        attachment.updateFocus = formatFocusParameter(x, y)
+        showToast(false, R.string.applied_when_post)
+        showMediaAttachment()
+        return true
+    }
+
+    var resultAttachment: TootAttachment? = null
+    val result = runApiTask(account, progressStyle = ApiTask.PROGRESS_NONE) { client ->
+        try {
+            client.request(
+                "/api/v1/media/${attachment.id}",
+                buildJsonObject {
+                    put("focus", formatFocusParameter(x, y))
+                }.toPutRequestBuilder()
+            )?.also { result ->
+                resultAttachment = parseItem(result.jsonObject) {
+                    tootAttachment(ServiceType.MASTODON, it)
                 }
-            } catch (ex: Throwable) {
-                TootApiResult(ex.withCaption("set focus point failed."))
             }
-        }?.let { result ->
-            when (val newAttachment = resultAttachment) {
-                null -> showToast(true, result.error)
-                else -> pa.attachment = newAttachment
-            }
+        } catch (ex: Throwable) {
+            TootApiResult(ex.withCaption("set focus point failed."))
+        }
+    }
+    result ?: return true
+    return when (val newAttachment = resultAttachment) {
+        null -> {
+            showToast(true, result.error)
+            false
+        }
+
+        else -> {
+            pa.attachment = newAttachment
+            true
         }
     }
 }
 
-suspend fun ActPost.editAttachmentDescription(pa: PostAttachment) {
+private fun formatFocusParameter(x: Float, y: Float) = "%.2f,%.2f".format(x, y)
+
+suspend fun ActPost.editAttachmentDescription(
+    pa: PostAttachment,
+) {
+    // 既存の投稿を編集中なら真
+    val isEdit = states.editStatusId != null
+
     val a = pa.attachment
     if (a == null) {
         showToast(true, R.string.attachment_description_cant_edit_while_uploading)
@@ -310,6 +346,7 @@ suspend fun ActPost.editAttachmentDescription(pa: PostAttachment) {
     val account = this.account ?: return
     var bitmap: Bitmap? = null
     try {
+        // サムネイルをロード
         val url = a.preview_url
         if (url != null) {
             val result = runApiTask { client ->
@@ -331,6 +368,7 @@ suspend fun ActPost.editAttachmentDescription(pa: PostAttachment) {
                 // not exit
             }
         }
+        // ダイアログを表示
         showTextInputDialog(
             title = getString(R.string.attachment_description),
             bitmap = bitmap,
@@ -338,21 +376,30 @@ suspend fun ActPost.editAttachmentDescription(pa: PostAttachment) {
             initialText = a.description,
             onEmptyText = { showToast(true, R.string.description_empty) },
         ) { text ->
-            val (result, newAttachment) = attachmentUploader.setAttachmentDescription(
-                account,
-                attachmentId,
-                text
-            )
-            result ?: return@showTextInputDialog true
-            when (newAttachment) {
-                null -> {
-                    result.error?.let { showToast(true, it) }
-                    false
-                }
-                else -> {
-                    pa.attachment = newAttachment
-                    showMediaAttachment()
-                    true
+            if (isEdit) {
+                a.description = text
+                a.updateDescription = text
+                showToast(false, R.string.applied_when_post)
+                showMediaAttachment()
+                true
+            } else {
+                val (result, newAttachment) = attachmentUploader.setAttachmentDescription(
+                    account,
+                    attachmentId,
+                    text
+                )
+                when {
+                    result == null -> true
+                    newAttachment == null -> {
+                        result.error?.let { showToast(true, it) }
+                        false
+                    }
+
+                    else -> {
+                        pa.attachment = newAttachment
+                        showMediaAttachment()
+                        true
+                    }
                 }
             }
         }

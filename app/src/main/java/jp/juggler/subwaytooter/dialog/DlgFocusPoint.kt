@@ -9,12 +9,12 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.databinding.DlgFocusPointBinding
 import jp.juggler.util.*
+import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.resume
 
 private val log = LogCategory("DlgFocusPoint")
 
@@ -47,13 +47,13 @@ fun decodeAttachmentBitmap(
 
 suspend fun AppCompatActivity.focusPointDialog(
     attachment: TootAttachment,
-    callback: (x: Float, y: Float) -> Unit,
+    callback: suspend (x: Float, y: Float) -> Boolean,
 ) {
     var bitmap: Bitmap? = null
     try {
         val url = attachment.preview_url
         if (url == null) {
-            showToast(false, "missing image url")
+            showToast(false, "missing preview_url")
             return
         }
         val result = runApiTask { client ->
@@ -79,23 +79,36 @@ suspend fun AppCompatActivity.focusPointDialog(
         val views = DlgFocusPointBinding.inflate(layoutInflater)
         dialog.setContentView(views.root)
         views.ivFocus.setAttachment(attachment, bitmap!!)
-        views.ivFocus.callback = callback
         dialog.window?.setLayout(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT
         )
+        views.btnCancel.setOnClickListener {
+            dialog.dismissSafe()
+        }
+        views.btnOk.setOnClickListener {
+            launchMain {
+                try {
+                    if (callback(views.ivFocus.focusX, views.ivFocus.focusY)) {
+                        dialog.dismissSafe()
+                    }
+                } catch (ex: Throwable) {
+                    showToast(ex, "can't set focus point.")
+                }
+            }
+        }
+        // dialogが閉じるまで待ってからbitmapをリサイクルする
         suspendCancellableCoroutine { cont ->
-            views.btnClose.setOnClickListener {
-                if (cont.isActive) cont.resume(Unit) {}
+            dialog.setOnDismissListener {
+                if (cont.isActive) cont.resume(Unit)
+            }
+            cont.invokeOnCancellation {
                 dialog.dismissSafe()
             }
-            dialog.setOnDismissListener {
-                if (cont.isActive) cont.resumeWithException(CancellationException())
-            }
-            cont.invokeOnCancellation { dialog.dismissSafe() }
             dialog.show()
         }
     } finally {
         bitmap?.recycle()
+        bitmap = null
     }
 }

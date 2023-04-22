@@ -4,18 +4,35 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.ImageView
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.checkAutoCW
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
+import jp.juggler.subwaytooter.api.entity.TootAttachmentType
+import jp.juggler.subwaytooter.api.entity.TootMessageHolder
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootPolls
+import jp.juggler.subwaytooter.api.entity.TootPollsType
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.isConversation
+import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.stylerBoostAlpha
 import jp.juggler.subwaytooter.table.daoContentWarning
 import jp.juggler.subwaytooter.table.daoMediaShown
 import jp.juggler.subwaytooter.util.OpenSticker
-import jp.juggler.util.data.*
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.ellipsizeDot3
+import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.setIconDrawableId
@@ -262,6 +279,7 @@ private fun ItemViewHolder.showOpenSticker(who: TootAccount) {
             ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
                 if (host == accessInfo.apDomain) return
             }
+
             else -> Unit
         }
 
@@ -300,12 +318,15 @@ private fun ItemViewHolder.showOpenSticker(who: TootAccount) {
 
 private fun ItemViewHolder.showAttachments(status: TootStatus) {
     val mediaAttachments = status.media_attachments
-    if (mediaAttachments == null || mediaAttachments.isEmpty()) {
+    if (mediaAttachments.isNullOrEmpty()) {
         flMedia.visibility = View.GONE
         llMedia.visibility = View.GONE
         btnShowMedia.visibility = View.GONE
     } else {
         flMedia.visibility = View.VISIBLE
+        tvMediaCount.vg(mediaAttachments.size > 4)?.let {
+            it.text = activity.getString(R.string.media_count, mediaAttachments.size)
+        }
 
         // hide sensitive media
         val defaultShown = when {

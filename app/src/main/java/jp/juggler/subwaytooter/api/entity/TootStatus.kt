@@ -305,6 +305,7 @@ class TootStatus(
             TootVisibility.DirectPrivate,
             TootVisibility.DirectSpecified,
             -> hasReceipt(accessInfo)
+
             else -> visibility
         }
 
@@ -642,6 +643,7 @@ class TootStatus(
                 spoilerRaw == null -> "" // CWなし
                 spoilerRaw.replace('\u0323', ' ').isBlank() ->
                     parser.context.getString(R.string.blank_cw)
+
                 else -> spoilerRaw
             }
 
@@ -681,6 +683,7 @@ class TootStatus(
                 reply != null -> {
                     TootCard.tootCard(parser, reply)
                 }
+
                 else -> null
             }
 
@@ -1002,6 +1005,18 @@ class TootStatus(
                         parseListOrNull(src.jsonArray("media_attachments")) {
                             tootAttachment(parser, it)
                         }
+
+                    // kmy.blue拡張
+                    // https://github.com/kmycode/mastodon/wiki/%E3%83%A1%E3%83%87%E3%82%A3%E3%82%A2%E6%8B%A1%E5%BC%B5API
+                    parseListOrNull(  src.jsonArray("media_attachments_ex")) {
+                        tootAttachment(parser, it)
+                    }?.notEmpty()?.let {
+                        when (val list = media_attachments) {
+                            null -> media_attachments = ArrayList<TootAttachmentLike>(it)
+                            else -> list.addAll(it)
+                        }
+                    }
+
                     val visibilityString = when {
                         src.boolean("limited") == true -> "limited"
                         else -> src.string("visibility")
@@ -1082,6 +1097,7 @@ class TootStatus(
                             log.d("removeQt? after = $after")
                         }
                     }
+
                     else -> sv
                 }
             }
@@ -1398,18 +1414,21 @@ class TootStatus(
                     // Z or missing hour part
                     0
                 }
+
                 mArg != null && mArg.isNotEmpty() -> {
                     // HH:mm or H:m
                     val h = hArg.toInt()
                     val m = mArg.toInt()
                     h * 60 + m
                 }
+
                 hArg.length >= 3 -> {
                     // HHmm or Hmm
                     val h = hArg.substring(0, hArg.length - 2).toInt()
                     val m = hArg.substring(hArg.length - 2).toInt()
                     h * 60 + m
                 }
+
                 else -> {
                     // HH or H
                     val h = hArg.toInt()
@@ -1530,6 +1549,7 @@ class TootStatus(
                     R.string.relative_time_unit_day1,
                     R.string.relative_time_unit_days
                 )
+
                 else ->
                     formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
             }

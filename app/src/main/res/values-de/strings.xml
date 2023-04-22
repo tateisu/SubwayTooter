@@ -800,7 +800,7 @@
     <string name="new_item">Neuer Eintrag…</string>
     <string name="highlight_word">Schlüsselwort hervorheben</string>
     <string name="media_attachment_still_uploading">Immer noch beim Hochladen der Medienelemente.</string>
-    <string name="zooming_of">×%3$.1f
+    <string name="zooming_of">(%4$d/%5$d) ×%3$.1f
 \n%1$d×%2$d</string>
     <string name="dont_repeat_download_to_same_url">Dieselbe URL kann innerhalb weniger Sekunden nicht mehrmals geladen werden.</string>
     <string name="video_buffering">Zwischenspeichern…</string>

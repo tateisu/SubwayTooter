@@ -350,17 +350,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 ty: Float,
                 scale: Float,
             ) {
-                App1.getAppState(this@ActMediaViewer).handler.post(Runnable {
-                    if (isDestroyed) return@Runnable
-                    if (views.tvStatus.visibility == View.VISIBLE) {
-                        views.tvStatus.text = getString(
-                            R.string.zooming_of,
-                            bitmapW.toInt(),
-                            bitmapH.toInt(),
-                            scale
-                        )
-                    }
-                })
+                App1.getAppState(this@ActMediaViewer).handler.post {
+                    showZoom(bitmapW.toInt(), bitmapH.toInt(), scale)
+                }
             }
         })
 
@@ -874,5 +866,26 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             return true
         }
         return false
+    }
+
+    /**
+     * 画面下部の情報テキストの表示を更新する
+     */
+    private fun showZoom(
+        w: Int,
+        h: Int,
+        scale: Float,
+    ) {
+        if (isDestroyed) return
+        if (views.tvStatus.visibility == View.VISIBLE) {
+            views.tvStatus.text = getString(
+                R.string.zooming_of,
+                w,
+                h,
+                scale,
+                idx + 1,
+                mediaList.size
+            )
+        }
     }
 }

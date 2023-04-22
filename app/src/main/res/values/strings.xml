@@ -611,7 +611,7 @@
     <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>
     <string name="video_buffering">Buffering…</string>
     <string name="dont_repeat_download_to_same_url">Can\'t repeat downloading same URL in a few seconds.</string>
-    <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
+    <string name="zooming_of">(%4$d/%5$d) ×%3$.1f\n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">Still uploading media.</string>
     <string name="highlight_word">Highlight keyword</string>
     <string name="new_item">New item…</string>
@@ -1279,4 +1279,7 @@
     <string name="emoji_picker_category_collapse">Collapse emoji picker categories (turning off it will very slow if your servers has a lot of emojis)</string>
     <string name="unfollow_hashtag_confirm">unfollow hashtag \"%1$s\"?</string>
     <string name="plugin_app_intro">Introduction to plug-in apps</string>
+    <string name="autocomplete_list_loading">loading autocomplete list…</string>
+    <string name="media_count">%1$d attachments (tap to see all)</string>
+    <string name="applied_when_post">applied when post.</string>
 </resources>

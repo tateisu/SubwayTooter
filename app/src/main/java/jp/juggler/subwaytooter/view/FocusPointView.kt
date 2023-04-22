@@ -36,10 +36,9 @@ class FocusPointView : View {
     private var crossRadius: Float = 0f
     private var attachment: TootAttachment? = null
     private var bitmap: Bitmap? = null
-    var callback: (x: Float, y: Float) -> Unit = { _, _ -> }
 
-    private var focusX: Float = 0f
-    private var focusY: Float = 0f
+    var focusX = Float.NaN
+    var focusY = Float.NaN
 
     private fun init(context: Context) {
 
@@ -136,18 +135,9 @@ class FocusPointView : View {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                updateFocusPoint(event)
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                updateFocusPoint(event)
-            }
-
-            MotionEvent.ACTION_UP -> {
-                updateFocusPoint(event)
-                callback(focusX, focusY)
-            }
+            MotionEvent.ACTION_DOWN -> updateFocusPoint(event)
+            MotionEvent.ACTION_MOVE -> updateFocusPoint(event)
+            MotionEvent.ACTION_UP -> updateFocusPoint(event)
         }
         return true
     }

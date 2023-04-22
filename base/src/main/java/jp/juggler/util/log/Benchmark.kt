@@ -1,11 +1,11 @@
 package jp.juggler.util.log
 
 import android.os.SystemClock
-import jp.juggler.base.BuildConfig
+import jp.juggler.base.IS_DEBUG_BUILD
 
 val benchmarkLog = LogCategory("Benchmark")
 
-val benchmarkLimitDefault = if (BuildConfig.DEBUG) 10L else 100L
+val benchmarkLimitDefault = if (IS_DEBUG_BUILD) 10L else 100L
 
 inline fun <T : Any?> benchmark(
     caption: String,

@@ -130,7 +130,7 @@ android {
                 def branch = providers.exec {
                     commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
                 }.standardOutput.asText.get()?.trim() ?: "(no branch)"
-                
+
                 outputFileName = "SubwayTooter-${branch}-${flavor}-${versionCode}-${versionName}-${date}.apk"
             }
         }

@@ -75,10 +75,11 @@ class NotificationShown(
                     log.i("$acct size=$size")
                     // 掃除する頻度を下げるため、ここのしきい値は倍にする
                     if (size <= keep * 2) continue
-                    while (true) {
+                    var deleteCount = 0
+                    while (deleteCount++ < 3) {
                         // 一度に削除したい数
                         val step = min(100, size - keep)
-                        if (step <= 0) continue
+                        if (step <= 0) break
                         // 古いものからstep件目の時刻を読む
                         val time = db.rawQuery(
                             "select $COL_TIME_CREATE from $table where $COL_ACCT=? order by $COL_TIME_CREATE asc limit ?",

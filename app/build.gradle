@@ -127,7 +127,10 @@ android {
                 def flavor = variant.flavorName
                 // def abi = output.getFilter("ABI") ?: "all"
                 def date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
-                def branch = gitBranch()
+                def branch = providers.exec {
+                    commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+                }.standardOutput.asText.get()?.trim() ?: "(no branch)"
+                
                 outputFileName = "SubwayTooter-${branch}-${flavor}-${versionCode}-${versionName}-${date}.apk"
             }
         }
@@ -160,17 +163,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     }
 }
 
-static def gitBranch() {
-    def branch = "(no branch)"
-    def proc = "git status".execute()
-    proc.in.eachLine { line ->
-        def matcher = line =~ /\AOn branch (\S+)/
-        if (matcher) branch = matcher.group(1)
-    }
-    proc.err.eachLine { line -> println line }
-    proc.waitFor()
-    branch
-}
 
 //kapt {
 //    useBuildCache = true

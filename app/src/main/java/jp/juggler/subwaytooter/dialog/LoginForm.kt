@@ -57,14 +57,13 @@ class LoginForm(
     }
 
     enum class Action(
-        val pos: Int,
         @StringRes val idName: Int,
         @StringRes val idDesc: Int,
     ) {
-        Login(0, R.string.existing_account, R.string.existing_account_desc),
-        Pseudo(1, R.string.pseudo_account, R.string.pseudo_account_desc),
-        Create(2, R.string.create_account, R.string.create_account_desc),
-        Token(3, R.string.input_access_token, R.string.input_access_token_desc),
+        Login(R.string.existing_account, R.string.existing_account_desc),
+        Pseudo(R.string.pseudo_account, R.string.pseudo_account_desc),
+    //    Create(2, R.string.create_account, R.string.create_account_desc),
+        Token(R.string.input_access_token, R.string.input_access_token_desc),
     }
 
     // 実行時キャストのためGenericsを含まない型を定義する

@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.actpost
 import android.os.SystemClock
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.api.ApiTask
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.api.runApiTask
@@ -43,15 +44,26 @@ fun ActPost.updateFeaturedTags() {
                             FeaturedTagCache(list, SystemClock.elapsedRealtime())
                     }
                 } else {
-                    client.request("/api/v1/featured_tags")?.also { result ->
-                        val list = TootTag.parseList(
-                            TootParser(this@runApiTask, account),
-                            result.jsonArray
-                        )
+                    val parser = TootParser(this@runApiTask, account)
+                    val list = buildSet {
+                        arrayOf(
+                            "/api/v1/featured_tags",
+                            "/api/v1/followed_tags",
+                        ).forEach { path ->
+                            client.request(path)?.also { result ->
+                                addAll(TootTag.parseList(parser, result.jsonArray))
+                            }
+                        }
+                    }
+                    if (list.isNotEmpty()) {
                         featuredTagCache[account.acct.ascii] =
-                            FeaturedTagCache(list, SystemClock.elapsedRealtime())
+                            FeaturedTagCache(
+                                list.sortedBy { it.name },
+                                SystemClock.elapsedRealtime()
+                            )
                     }
                 }
+                TootApiResult()
             }
             if (isFinishing || isDestroyed) return@launchMain
             updateFeaturedTags()

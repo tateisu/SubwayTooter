@@ -3,8 +3,12 @@ package jp.juggler.subwaytooter.api.entity
 import android.net.Uri
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
-import jp.juggler.util.*
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.decodePercent
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import java.util.regex.Pattern
 
@@ -12,6 +16,8 @@ open class TootTag constructor(
 
     // The hashtag, not including the preceding #
     val name: String,
+
+    val nameLower: String = name.lowercase(),
 
     var type: TagType = TagType.Tag,
 
@@ -28,7 +34,7 @@ open class TootTag constructor(
     // Mastodon /api/v2/search provides history.
     val history: ArrayList<History>? = null,
 
-    ) : TimelineItem() {
+    ) : TimelineItem(), Comparable<TootTag> {
 
     enum class TagType {
         Tag,
@@ -79,6 +85,7 @@ open class TootTag constructor(
                         url = "https://${parser.apiHost}/tags/${Uri.encode(name)}",
                     )
                 }
+
                 src.string("type") == "link" -> {
                     TootTag(
                         type = TagType.Link,
@@ -88,6 +95,7 @@ open class TootTag constructor(
                         history = parseHistories(src.jsonArray("history"))
                     )
                 }
+
                 else -> {
                     // /api/v1/accounts/$id/featured_tags の場合、
                     // name部分は先頭に#がついているかもしれない。必要なら除去するべき。
@@ -241,4 +249,13 @@ open class TootTag constructor(
             return null
         }
     }
+
+    override fun compareTo(other: TootTag) =
+        name.compareTo(other.nameLower)
+
+    override fun equals(other: Any?) =
+        (other is TootTag) && nameLower.equals(other.nameLower)
+
+    override fun hashCode() =
+        nameLower.hashCode()
 }

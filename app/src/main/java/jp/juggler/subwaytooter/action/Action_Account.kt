@@ -66,6 +66,7 @@ fun ActMain.accountAdd() {
                         openBrowser(authUri)
                         dialogHost.dismissSafe()
                     }
+
                     LoginForm.Action.Pseudo -> {
                         val tootInstance = runApiTask2(apiHost) { TootInstance.getOrThrow(it) }
                         addPseudoAccount(apiHost, tootInstance)?.let { a ->
@@ -74,8 +75,8 @@ fun ActMain.accountAdd() {
                             dialogHost.dismissSafe()
                         }
                     }
-                    LoginForm.Action.Create ->
-                        createUser(apiHost, serverInfo) { dialogHost.dismissSafe() }
+//                    LoginForm.Action.Create ->
+//                        createUser(apiHost, serverInfo) { dialogHost.dismissSafe() }
                     LoginForm.Action.Token ->
                         accessTokenPrompt(apiHost) { dialogHost.dismissSafe() }
                 }

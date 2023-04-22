@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.actpost
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.text.Spannable
@@ -26,7 +25,7 @@ fun ActPost.resetMushroom() {
     states.mushroomEnd = 0
 }
 
-fun ActPost.openPluginList(){
+fun ActPost.openPluginList() {
     val url = "https://github.com/tateisu/SubwayTooter/wiki/Simeji-Mushroom-Plugins"
     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }

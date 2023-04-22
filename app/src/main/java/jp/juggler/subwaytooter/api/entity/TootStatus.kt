@@ -1008,7 +1008,9 @@ class TootStatus(
 
                     // kmy.blue拡張
                     // https://github.com/kmycode/mastodon/wiki/%E3%83%A1%E3%83%87%E3%82%A3%E3%82%A2%E6%8B%A1%E5%BC%B5API
-                    parseListOrNull(  src.jsonArray("media_attachments_ex")) {
+                    // そのうちなくなるらしい
+                    // https://kmy.blue/@askyq/110241555669354847
+                    parseListOrNull(src.jsonArray("media_attachments_ex")) {
                         tootAttachment(parser, it)
                     }?.notEmpty()?.let {
                         when (val list = media_attachments) {

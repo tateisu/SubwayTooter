@@ -243,6 +243,7 @@ class PostImpl(
                         json["visibleUserIds"] = userIds
                         "specified"
                     }
+
                     account.misskeyVersion >= 11 -> "specified"
                     else -> "private"
                 }
@@ -322,15 +323,15 @@ class PostImpl(
                     add(a.id.toString())
                 }
             }
-            attachmentList.mapNotNull {a->
+            attachmentList.mapNotNull { a ->
                 buildJsonObject {
-                    put("id",a.id.toString())
-                    a.updateDescription?.let{ put("description",it)}
-                    a.updateThumbnail?.let{ put("thumbnail",it)}
-                    a.updateFocus?.let{ put("focus",it)}
-                }.takeIf { it.keys.size >= 2  }
-            }.let{
-                json["media_attributes"] = it.toJsonArray()
+                    put("id", a.id.toString())
+                    a.updateDescription?.let { put("description", it) }
+                    a.updateThumbnail?.let { put("thumbnail", it) }
+                    a.updateFocus?.let { put("focus", it) }
+                }.takeIf { it.keys.size >= 2 }
+            }.notEmpty()?.toJsonArray()?.let {
+                json["media_attributes"] = it
             }
         }
 
@@ -586,6 +587,7 @@ class PostImpl(
                                 when {
                                     account.isMisskey -> jsonObject?.jsonObject("createdNote")
                                         ?: jsonObject
+
                                     else -> jsonObject
                                 }
                             )

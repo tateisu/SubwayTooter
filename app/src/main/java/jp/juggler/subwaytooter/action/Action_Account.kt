@@ -56,6 +56,7 @@ fun isAndroid7TlsBug(errorText: String) =
  * - 選択されたアクションに応じて分岐する。
  */
 fun ActMain.accountAdd() {
+    @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     showLoginForm { dialogHost, apiHost, serverInfo, action ->
         launchMain {
             try {

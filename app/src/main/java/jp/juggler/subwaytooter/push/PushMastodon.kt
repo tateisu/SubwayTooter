@@ -9,7 +9,11 @@ import jp.juggler.subwaytooter.api.ApiError
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.auth.AuthMastodon
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootPushSubscription
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.lazyContext
@@ -18,7 +22,13 @@ import jp.juggler.subwaytooter.table.AccountNotificationStatus
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.appDatabase
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.decodeBase64
+import jp.juggler.util.data.digestSHA256Base64Url
+import jp.juggler.util.data.ellipsizeDot3
+import jp.juggler.util.data.encodeBase64Url
+import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.time.parseTimeIso8601
 import kotlinx.coroutines.isActive
@@ -57,6 +67,7 @@ class PushMastodon(
                     subLog.i(msg)
                     null
                 }
+
                 else -> lazyContext.getString(
                     R.string.push_subscription_app_server_hash_missing_error
                 )
@@ -106,6 +117,7 @@ class PushMastodon(
                 null -> {
                     subLog.i(R.string.push_subscription_is_not_required)
                 }
+
                 else -> {
                     subLog.i(R.string.push_subscription_delete_current)
                     api.deletePushSubscription(account)
@@ -261,9 +273,9 @@ class PushMastodon(
         // fedibird拡張
         // https://github.com/fedibird/mastodon/blob/fedibird/app/controllers/api/v1/push/subscriptions_controller.rb#L55
         // https://github.com/fedibird/mastodon/blob/fedibird/app/models/notification.rb
-        if (!ti.pleromaFeatures.isNullOrEmpty()) {
+        if (ti.pleromaFeatures?.contains("pleroma_emoji_reactions") == true) {
             dst[TootNotification.TYPE_EMOJI_REACTION_PLEROMA] = notificationReaction
-        } else if (!ti.fedibirdCapabilities.isNullOrEmpty()) {
+        } else if (ti.fedibirdCapabilities?.contains("emoji_reaction") == true) {
             dst[TootNotification.TYPE_EMOJI_REACTION] = notificationReaction
         }
         dst[TootNotification.TYPE_SCHEDULED_STATUS] = notificationPost // 設定項目不足
@@ -293,11 +305,11 @@ class PushMastodon(
             // Fedibird拡張
 
             TootNotification.TYPE_EMOJI_REACTION,
-            -> InstanceCapability.emojiReaction(account, ti)
+            -> InstanceCapability.canReaction(account, ti)
 
             // pleromaの絵文字リアクションはalertに指定できない
             TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-            -> InstanceCapability.emojiReaction(account, ti)
+            -> InstanceCapability.canReaction(account, ti)
 
             TootNotification.TYPE_SCHEDULED_STATUS,
             -> InstanceCapability.scheduledStatus(account, ti)
@@ -368,6 +380,7 @@ class PushMastodon(
 
                 pm.iconSmall = a.supplyBaseUrl(json.string("badge"))
             }
+
             else -> {
                 // Mastodon 4.0
                 // {

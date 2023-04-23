@@ -400,7 +400,7 @@ class TootStatus(
         return list
     }
 
-    fun updateReactionMastodon(newReactionSet: TootReactionSet) {
+    fun updateReactionMastodon(newReactionSet: TootReactionSet?) {
         synchronized(this) {
             this.reactionSet = newReactionSet
         }

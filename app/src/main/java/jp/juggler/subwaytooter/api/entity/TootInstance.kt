@@ -12,7 +12,11 @@ import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.util.coroutine.AppDispatchers.withTimeoutSafe
 import jp.juggler.util.coroutine.launchDefault
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPostRequestBuilder
@@ -55,15 +59,6 @@ object InstanceCapability {
     fun visibilityLimited(ti: TootInstance?) =
         ti?.fedibirdCapabilities?.contains("visibility_limited") == true
 
-    fun emojiReaction(ai: SavedAccount, ti: TootInstance?) =
-        when {
-            ai.isPseudo -> false
-            ai.isMisskey -> true
-            else ->
-                ti?.fedibirdCapabilities?.contains("emoji_reaction") == true ||
-                        ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
-        }
-
     fun statusReference(ai: SavedAccount, ti: TootInstance?) =
         when {
             ai.isPseudo -> false
@@ -79,12 +74,47 @@ object InstanceCapability {
             else -> ti?.fedibirdCapabilities != null && ti.versionGE(TootInstance.VERSION_2_7_0_rc1)
         }
 
-    fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
+    fun canReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
         when {
             ai.isPseudo -> false
-            ai.isMisskey -> false
-            else -> ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
+            ai.isMisskey -> true
+            ti?.fedibirdCapabilities?.contains("emoji_reaction") == true -> true
+            ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true -> true
+            else -> false
         }
+
+    fun canCustomEmojiReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
+        when {
+            ai.isPseudo -> false
+            ai.isMisskey -> true
+            ti?.fedibirdCapabilities?.contains("emoji_reaction") == true -> true
+            ti?.pleromaFeatures?.contains("custom_emoji_reactions") == true -> true
+            else -> false
+        }
+
+    fun maxReactionPerAccount(
+        ai: SavedAccount,
+        ti: TootInstance? = TootInstance.getCached(ai),
+    ): Int =
+        when {
+            !canReaction(ai, ti) -> 0
+            ai.isMisskey -> 1
+            ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true -> Int.MAX_VALUE - 10
+            else ->
+                ti?.configuration?.jsonObject("emoji_reactions")
+                    ?.int("max_reactions_per_account")
+                    ?: ti?.configuration?.int("emoji_reactions_per_account")
+                    ?: 1
+        }
+
+//    fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
+//        when {
+//            ai.isPseudo -> false
+//            ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true -> true
+//            (ti?.configuration?.int("emoji_reactions_per_account") ?: 1) > 1 -> true
+//            ai.isMisskey -> false
+//            else -> false
+//        }
 
     fun listMyReactions(ai: SavedAccount, ti: TootInstance?) =
         when {
@@ -92,6 +122,7 @@ object InstanceCapability {
             ai.isMisskey ->
                 // m544 extension
                 ti?.misskeyEndpoints?.contains("i/reactions") == true
+
             else ->
                 // fedibird extension
                 ti?.fedibirdCapabilities?.contains("emoji_reaction") == true
@@ -402,7 +433,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         */
         private val reOldMisskeyCompatible = """\A[\d.]+:compatible:misskey:""".toRegex()
 
-        private val reBothCompatible = """\b(?:misskey|calckey)\b""".toRegex(RegexOption.IGNORE_CASE)
+        private val reBothCompatible =
+            """\b(?:misskey|calckey)\b""".toRegex(RegexOption.IGNORE_CASE)
 
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformation(
@@ -496,6 +528,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                             !PrefB.bpEnablePixelfed.value &&
                             !req.allowPixelfed ->
                         tiError("currently Pixelfed instance is not supported.")
+
                     else -> qrr
                 }
             } catch (ex: Throwable) {

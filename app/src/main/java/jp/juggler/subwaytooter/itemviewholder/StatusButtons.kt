@@ -13,9 +13,29 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.action.bookmarkFromAnotherAccount
+import jp.juggler.subwaytooter.action.boostFromAnotherAccount
+import jp.juggler.subwaytooter.action.clickBookmark
+import jp.juggler.subwaytooter.action.clickBoost
+import jp.juggler.subwaytooter.action.clickConversation
+import jp.juggler.subwaytooter.action.clickFavourite
+import jp.juggler.subwaytooter.action.clickFollow
+import jp.juggler.subwaytooter.action.clickQuote
+import jp.juggler.subwaytooter.action.clickReaction
+import jp.juggler.subwaytooter.action.clickReply
+import jp.juggler.subwaytooter.action.conversationOtherInstance
+import jp.juggler.subwaytooter.action.favouriteFromAnotherAccount
+import jp.juggler.subwaytooter.action.followFromAnotherAccount
+import jp.juggler.subwaytooter.action.quoteFromAnotherAccount
+import jp.juggler.subwaytooter.action.reactionFromAnotherAccount
+import jp.juggler.subwaytooter.action.replyFromAnotherAccount
 import jp.juggler.subwaytooter.actmain.nextPosition
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootReaction
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
 import jp.juggler.subwaytooter.pref.PrefB
@@ -30,9 +50,20 @@ import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.ui.*
-import org.jetbrains.anko.*
+import jp.juggler.util.ui.applyAlphaMultiplier
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.createColoredDrawable
+import jp.juggler.util.ui.setIconDrawableId
+import jp.juggler.util.ui.vg
+import org.jetbrains.anko.UI
 import org.jetbrains.anko.custom.customView
+import org.jetbrains.anko.dip
+import org.jetbrains.anko.frameLayout
+import org.jetbrains.anko.imageButton
+import org.jetbrains.anko.imageResource
+import org.jetbrains.anko.imageView
+import org.jetbrains.anko.matchParent
+import org.jetbrains.anko.wrapContent
 
 enum class AdditionalButtonsPosition(
     val idx: Int, // spinner index start from 0
@@ -177,6 +208,7 @@ class StatusButtons(
                         repliesCount == 1L -> "1"
                         else -> ""
                     }
+
                     PrefI.RC_ACTUAL -> repliesCount.toString()
                     else -> ""
                 }
@@ -216,6 +248,7 @@ class StatusButtons(
                     status.reblogged ->
                         PrefI.ipButtonBoostedColor.value.notZero()
                             ?: activity.attrColor(R.attr.colorButtonAccentBoost)
+
                     else ->
                         colorTextContent
                 },
@@ -228,6 +261,7 @@ class StatusButtons(
                             boostsCount == 1L -> "1"
                             else -> ""
                         }
+
                         PrefI.RC_ACTUAL -> boostsCount.toString()
                         else -> ""
                     }
@@ -251,16 +285,26 @@ class StatusButtons(
 
     private fun bindReactionButton(status: TootStatus) {
         btnReaction.vg(TootReaction.canReaction(accessInfo, ti))?.let {
-            val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo, ti)
-            val hasMyReaction = status.reactionSet?.hasMyReaction() == true
-            val bRemoveButton = hasMyReaction && !canMultipleReaction
+            val myReactionCount: Int = status.reactionSet?.myReactionCount ?: 0
+            val maxReactionPerAccount: Int =
+                InstanceCapability.maxReactionPerAccount(accessInfo, ti)
             setButton(
                 it,
                 true,
-                colorTextContent,
-                if (bRemoveButton) R.drawable.ic_remove else R.drawable.ic_add,
+                when (myReactionCount) {
+                    0 -> colorTextContent
+                    else -> PrefI.ipButtonReactionedColor.value.notZero()
+                        ?: activity.attrColor(R.attr.colorButtonAccentReaction)
+                },
+                when (myReactionCount >= maxReactionPerAccount) {
+                    true -> R.drawable.outline_face_retouching_off
+                    else -> R.drawable.outline_face
+                },
                 activity.getString(
-                    if (bRemoveButton) R.string.reaction_remove else R.string.reaction_add
+                    when (myReactionCount >= maxReactionPerAccount) {
+                        true -> R.string.reaction_remove
+                        else -> R.string.reaction_add
+                    },
                 )
             )
         }
@@ -286,6 +330,7 @@ class StatusButtons(
                         status.favourited ->
                             PrefI.ipButtonFavoritedColor.value.notZero()
                                 ?: activity.attrColor(R.attr.colorButtonAccentFavourite)
+
                         else -> colorTextContent
                     },
                     when {
@@ -300,6 +345,7 @@ class StatusButtons(
                                 favouritesCount == 1L -> "1"
                                 else -> ""
                             }
+
                             PrefI.RC_ACTUAL -> favouritesCount.toString()
                             else -> ""
                         }
@@ -330,6 +376,7 @@ class StatusButtons(
                                 status.bookmarked ->
                                     PrefI.ipButtonBookmarkedColor.value.notZero()
                                         ?: activity.attrColor(R.attr.colorButtonAccentBookmark)
+
                                 else ->
                                     colorTextContent
                             },
@@ -536,6 +583,7 @@ class StatusButtons(
                     itemViewHolder.listAdapter,
                     status = status
                 )
+
                 btnReply -> clickReply(accessInfo, status)
                 btnQuote -> clickQuote(accessInfo, status)
                 btnBoost -> clickBoost(accessInfo, status, willToast = bSimpleList)
@@ -836,6 +884,7 @@ class StatusButtonsViewHolder(
                         additionalButtons()
                         normalButtons()
                     }
+
                     else -> {
                         normalButtons()
                         additionalButtons()

@@ -130,7 +130,7 @@ suspend fun Context.accountListCanReaction(pickupHost: Host? = null) =
                 if (ti == null) {
                     ri?.error?.let { log.w(it) }
                     false
-                } else InstanceCapability.emojiReaction(a, ti)
+                } else InstanceCapability.canReaction(a, ti)
             }
         }
     }

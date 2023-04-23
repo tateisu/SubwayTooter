@@ -351,7 +351,7 @@ private fun Column.scanStatusById(
 // ストリーミングイベント受信時、該当アカウントのカラム全て対して呼ばれる
 fun Column.updateEmojiReactionByApiResponse(newStatus: TootStatus?) {
     newStatus ?: return
-    val newReactionSet = newStatus.reactionSet ?: TootReactionSet(isMisskey = false)
+    val newReactionSet = newStatus.reactionSet // Reaction削除の場合、nullは正常ケース
     scanStatusById("updateEmojiReactionByApiResponse", newStatus.id) { s ->
         s.updateReactionMastodon(newReactionSet)
         true

@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
+import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMain.Companion.boostButtonSize
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.reactionAdd
@@ -16,9 +17,17 @@ import jp.juggler.subwaytooter.action.reactionFromAnotherAccount
 import jp.juggler.subwaytooter.action.reactionRemove
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.copyToClipboard
+import jp.juggler.subwaytooter.util.emojiSizeMode
+import jp.juggler.subwaytooter.util.minWidthCompat
+import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
@@ -89,7 +98,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             gravity = Gravity.CENTER
             minWidthCompat = textHeight.round()
 
-            background = if (reactionSet.isMyReaction(reaction)) {
+            background = if (reaction.me) {
                 // 自分がリアクションしたやつは背景を変える
                 getAdaptiveRippleDrawableRound(
                     act,
@@ -112,19 +121,15 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             tag = reaction
             setOnClickListener {
                 val taggedReaction = it.tag as? TootReaction
-                if (status.reactionSet?.isMyReaction(taggedReaction) == true) {
+                if (taggedReaction?.me == true) {
                     act.reactionRemove(column, status, taggedReaction)
                 } else {
                     act.reactionAdd(column, status, taggedReaction?.name, taggedReaction?.staticUrl)
                 }
             }
-            setOnLongClickListener {
-                val taggedReaction = it.tag as? TootReaction
-                act.reactionFromAnotherAccount(
-                    accessInfo,
-                    statusShowing,
-                    taggedReaction
-                )
+            setOnLongClickListener { v ->
+                (v.tag as? TootReaction)
+                    ?.let { act.reactionLongClick(accessInfo, statusShowing, it) }
                 true
             }
             // カスタム絵文字の場合、アニメーション等のコールバックを処理する必要がある
@@ -142,4 +147,24 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     }
 
     llExtra.addView(box)
+}
+
+fun ActMain.reactionLongClick(
+    accessInfo: SavedAccount,
+    statusShowing: TootStatus?,
+    reaction: TootReaction?,
+) = launchAndShowError {
+    reaction ?: return@launchAndShowError
+    actionsDialog(getString(R.string.reaction) + " " + reaction.name) {
+        action(getString(R.string.reaction_from_another_account)) {
+            reactionFromAnotherAccount(
+                accessInfo,
+                statusShowing,
+                reaction
+            )
+        }
+        action(getString(R.string.copy_reaction_name)) {
+            reaction.name.copyToClipboard(this@reactionLongClick)
+        }
+    }
 }

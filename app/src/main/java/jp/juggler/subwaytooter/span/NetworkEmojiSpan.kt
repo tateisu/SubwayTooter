@@ -4,6 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.os.SystemClock
 import android.text.style.ReplacementSpan
 import androidx.annotation.IntRange
 import androidx.core.content.ContextCompat
@@ -16,6 +17,8 @@ import jp.juggler.subwaytooter.util.EmojiImageRect
 import jp.juggler.subwaytooter.util.EmojiSizeMode
 import jp.juggler.util.log.LogCategory
 import java.lang.ref.WeakReference
+import kotlin.math.max
+import kotlin.math.min
 
 class NetworkEmojiSpan constructor(
     private val url: String,
@@ -48,6 +51,7 @@ class NetworkEmojiSpan constructor(
     private val rectSrc = Rect()
 
     private var lastMeasuredWidth = 0f
+    private var lastRequestTime = 0L
 
     private val emojiImageRect = EmojiImageRect(
         sizeMode = sizeMode,
@@ -156,22 +160,35 @@ class NetworkEmojiSpan constructor(
             return false
         }
         rectSrc.set(0, 0, srcWidth, srcHeight)
+        val aspect = srcWidth.toFloat() / srcHeight.toFloat()
         emojiImageRect.updateRect(
             url = url,
-            aspectArg = srcWidth.toFloat() / srcHeight.toFloat(),
+            aspectArg = aspect,
             textPaint.textSize,
             baseline.toFloat()
         )
         val clipBounds = canvas.clipBounds
         val clipWidth = clipBounds.width()
-        // 最後にgetSizeで返した幅と異なるか、現在のTextViewのClip幅より大きいなら
-        // 再レイアウトを要求する
-        if (emojiImageRect.emojiWidth != lastMeasuredWidth) {
-            log.i("requestLayout by width changed")
-            invalidateCallback.requestLayout()
-        } else if (emojiImageRect.emojiWidth > clipWidth) {
-            log.i("requestLayout by clipWidth ${emojiImageRect.emojiWidth}/${clipWidth}")
-            invalidateCallback.requestLayout()
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastRequestTime >= 1000L) {
+            // 最後にgetSizeで返した幅と異なるか、現在のTextViewのClip幅より大きいなら
+            // 再レイアウトを要求する
+
+            val willLayout = when {
+
+                !equalsEmojiWidth(emojiImageRect.emojiWidth, lastMeasuredWidth) -> true
+
+                emojiImageRect.emojiWidth > clipWidth -> {
+                    log.i("requestLayout by clipWidth ${emojiImageRect.emojiWidth}/${clipWidth}")
+                    true
+                }
+
+                else -> false
+            }
+            if (willLayout) {
+                invalidateCallback.requestLayout()
+                lastRequestTime = now
+            }
         }
 
         canvas.save()
@@ -199,6 +216,19 @@ class NetworkEmojiSpan constructor(
             invalidateCallback.delayInvalidate(delay)
         }
         return true
+    }
+
+    // getSizeで使うinitialAspectはリサイズの影響を受けないため、誤差が出る
+    // 数%の誤差を許容するような比較を行う
+    private fun equalsEmojiWidth(a: Float, b: Float): Boolean {
+        if (a == b) return true
+        val max = max(a, b)
+        val min = min(a, b)
+        if (min < 1f) return false
+        val scale = max / min
+        if (scale in 0.95f..1.05f) return true
+        log.i("equalsEmojiWidth: a=$a b=$b scale=$scale")
+        return false
     }
 
     private fun handleFrameLoaded(frames: ApngFrames?) {

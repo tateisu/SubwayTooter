@@ -1274,4 +1274,6 @@
     <string name="autocomplete_list_loading">入力補完リストの読み込み中…</string>
     <string name="media_count">%1$d個の添付データ (タップで全て表示)</string>
     <string name="applied_when_post">投稿送信時に反映されます</string>
+    <string name="exceed_reaction_per_account">リアクション個数の制限(%1$d)</string>
+    <string name="copy_reaction_name">Copy reaction name</string>
 </resources>

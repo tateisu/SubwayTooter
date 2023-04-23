@@ -9,8 +9,13 @@ import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.util.data.*
-import java.util.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.decodeJsonArray
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
+import java.util.LinkedList
 
 class TootReaction(
     // (fedibird絵文字リアクション)  unicode絵文字はunicodeそのまま、 カスタム絵文字はコロンなしのshortcode
@@ -122,7 +127,7 @@ class TootReaction(
         fun canReaction(
             accessInfo: SavedAccount,
             ti: TootInstance? = TootInstance.getCached(accessInfo),
-        ) = InstanceCapability.emojiReaction(accessInfo, ti)
+        ) = InstanceCapability.canReaction(accessInfo, ti)
 
         fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
             jsonText.notEmpty()?.let { src ->
@@ -256,23 +261,21 @@ class TootReaction(
         putNotNull("url", url)
         putNotNull("static_url", staticUrl)
     }
+
+    val isMyReaction get() = me
 }
 
 class TootReactionSet(val isMisskey: Boolean) : LinkedList<TootReaction>() {
 
-    fun isMyReaction(reaction: TootReaction?): Boolean {
-        return reaction?.me == true
-    }
-
     fun hasReaction() = any { it.count > 0 }
 
-    fun hasMyReaction() = any { it.count > 0 && isMyReaction(it) }
+    val myReactionCount get() = count { it.count > 0 && it.me }
 
     private fun getRaw(name: String?): TootReaction? =
         find { it.name == name }
 
     operator fun get(name: String?): TootReaction? = when {
-        name == null || name.isEmpty() -> null
+        name.isNullOrEmpty() -> null
         isMisskey -> getRaw(name) ?: getRaw(TootReaction.getAnotherExpression(name))
         else -> getRaw(name)
     }

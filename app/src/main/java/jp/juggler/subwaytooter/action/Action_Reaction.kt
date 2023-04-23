@@ -6,6 +6,7 @@ import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.runApiTask
@@ -18,17 +19,21 @@ import jp.juggler.subwaytooter.dialog.launchEmojiPicker
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.accountListCanReaction
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.log.showToast
-import jp.juggler.util.network.*
+import jp.juggler.util.network.toDelete
+import jp.juggler.util.network.toFormRequestBody
+import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.network.toPut
+import okhttp3.Request
 
 private val rePleromaStatusUrl = """/objects/""".toRegex()
 
@@ -51,10 +56,14 @@ fun ActMain.reactionAdd(
 ) {
     val activity = this@reactionAdd
     val accessInfo = column.accessInfo
+    val ti = TootInstance.getCached(accessInfo)
 
-    val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
-    val hasMyReaction = status.reactionSet?.hasMyReaction() == true
-    if (hasMyReaction && !canMultipleReaction) {
+    val maxReactionPerAccount = InstanceCapability.maxReactionPerAccount(accessInfo, ti)
+    val myReactionCount = status.reactionSet?.myReactionCount ?: 0
+
+    if (maxReactionPerAccount <= 0) {
+        return
+    } else if (myReactionCount >= maxReactionPerAccount) {
         showToast(false, R.string.already_reactioned)
         return
     }
@@ -108,7 +117,11 @@ fun ActMain.reactionAdd(
         }
     }
 
-    if (canMultipleReaction && TootReaction.isCustomEmoji(code)) {
+    if (TootReaction.isCustomEmoji(code) && !InstanceCapability.canCustomEmojiReaction(
+            accessInfo,
+            ti
+        )
+    ) {
         showToast(false, "can't reaction with custom emoji from this account")
         return
     }
@@ -122,7 +135,7 @@ fun ActMain.reactionAdd(
                 decodeEmoji = true,
                 enlargeEmoji = DecodeOptions.emojiScaleReaction,
                 enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
-                emojiSizeMode =  accessInfo.emojiSizeMode(),
+                emojiSizeMode = accessInfo.emojiSizeMode(),
             )
             val emojiSpan = TootReaction.toSpannableStringBuilder(options, code, urlArg)
             confirm(
@@ -149,7 +162,7 @@ fun ActMain.reactionAdd(
                     }.toPostRequestBuilder()
                 ) // 成功すると204 no content
 
-                canMultipleReaction -> client.request(
+                ti?.pleromaFeatures != null -> client.request(
                     "/api/v1/pleroma/statuses/${status.id}/reactions/${code.encodePercent("@")}",
                     "".toFormRequestBody().toPut()
                 )?.also { result ->
@@ -198,12 +211,11 @@ fun ActMain.reactionRemove(
     column: Column,
     status: TootStatus,
     reactionArg: TootReaction? = null,
-    confirmed: Boolean = false,
 ) {
     val activity = this
     val accessInfo = column.accessInfo
 
-    val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
+    val ti = TootInstance.getCached(accessInfo)
 
     // 指定されたリアクションまたは自分がリアクションした最初のもの
     val reaction = reactionArg ?: status.reactionSet?.find { it.count > 0 && it.me }
@@ -213,19 +225,18 @@ fun ActMain.reactionRemove(
     }
 
     launchAndShowError {
-
-        if (!confirmed) {
-            val options = DecodeOptions(
-                activity,
-                accessInfo,
-                decodeEmoji = true,
-                enlargeEmoji = DecodeOptions.emojiScaleReaction,
-                enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
-                emojiSizeMode =  accessInfo.emojiSizeMode(),
-            )
-            val emojiSpan = reaction.toSpannableStringBuilder(options, status)
-            confirm(R.string.reaction_remove_confirm, emojiSpan)
-        }
+        // 確認
+        val options = DecodeOptions(
+            activity,
+            accessInfo,
+            decodeEmoji = true,
+            enlargeEmoji = DecodeOptions.emojiScaleReaction,
+            enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
+            emojiSizeMode = accessInfo.emojiSizeMode(),
+        )
+        val emojiSpan = reaction.toSpannableStringBuilder(options, status)
+        confirm(R.string.reaction_remove_confirm, emojiSpan)
+        // 削除
         var resultStatus: TootStatus? = null
         runApiTask(accessInfo) { client ->
             when {
@@ -236,7 +247,7 @@ fun ActMain.reactionRemove(
                     }.toPostRequestBuilder()
                 ) // 成功すると204 no content
 
-                canMultipleReaction -> client.request(
+                ti?.pleromaFeatures != null -> client.request(
                     "/api/v1/pleroma/statuses/${status.id}/reactions/${reaction.name.encodePercent("@")}",
                     "".toFormRequestBody().toDelete()
                 )?.also { result ->
@@ -245,8 +256,8 @@ fun ActMain.reactionRemove(
                 }
 
                 else -> client.request(
-                    "/api/v1/statuses/${status.id}/emoji_unreaction",
-                    "".toFormRequestBody().toPost()
+                    "/api/v1/statuses/${status.id}/emoji_reactions/${reaction.name.encodePercent("@")}",
+                    Request.Builder().delete(),
                 )?.also { result ->
                     // 成功すると新しいステータス
                     resultStatus = TootParser(activity, accessInfo).status(result.jsonObject)
@@ -324,7 +335,7 @@ private fun ActMain.reactionWithoutUi(
         return
     }
 
-    val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
+    val ti = TootInstance.getCached(accessInfo)
 
     val options = DecodeOptions(
         activity,
@@ -332,7 +343,7 @@ private fun ActMain.reactionWithoutUi(
         decodeEmoji = true,
         enlargeEmoji = DecodeOptions.emojiScaleReaction,
         enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
-        emojiSizeMode =  accessInfo.emojiSizeMode(),
+        emojiSizeMode = accessInfo.emojiSizeMode(),
     )
     val emojiSpan = TootReaction.toSpannableStringBuilder(options, reactionCode, reactionImage)
     val isCustomEmoji = TootReaction.isCustomEmoji(reactionCode)
@@ -340,8 +351,8 @@ private fun ActMain.reactionWithoutUi(
 
     launchAndShowError {
         when {
-            isCustomEmoji && canMultipleReaction ->
-                error("can't reaction with custom emoji from this account")
+            isCustomEmoji && !InstanceCapability.canCustomEmojiReaction(accessInfo, ti) ->
+                error("can't use custom emoji for reaction from this account.")
 
             isCustomEmoji && url?.likePleromaStatusUrl() == true -> confirm(
                 R.string.confirm_reaction_to_pleroma,
@@ -374,7 +385,7 @@ private fun ActMain.reactionWithoutUi(
                     }.toPostRequestBuilder()
                 ) // 成功すると204 no content
 
-                canMultipleReaction -> client.request(
+                ti?.pleromaFeatures != null -> client.request(
                     "/api/v1/pleroma/statuses/${resolvedStatus.id}/reactions/${
                         reactionCode.encodePercent("@")
                     }",
@@ -510,18 +521,29 @@ fun ActMain.reactionFromAnotherAccount(
 }
 
 fun ActMain.clickReaction(accessInfo: SavedAccount, column: Column, status: TootStatus) {
-    val canMultipleReaction = InstanceCapability.canMultipleReaction(accessInfo)
-    val hasMyReaction = status.reactionSet?.hasMyReaction() == true
-    val bRemoveButton = hasMyReaction && !canMultipleReaction
-    when {
-        !TootReaction.canReaction(accessInfo) ->
-            reactionFromAnotherAccount(
-                accessInfo,
-                status
-            )
-        bRemoveButton ->
-            reactionRemove(column, status)
-        else ->
-            reactionAdd(column, status)
+    val activity = this
+    launchMain {
+        try {
+            val myReactionCount = status.reactionSet?.myReactionCount ?: 0
+            val maxReactionPerAccount = InstanceCapability.maxReactionPerAccount(accessInfo)
+            when {
+                !TootReaction.canReaction(accessInfo) ->
+                    reactionFromAnotherAccount(
+                        accessInfo,
+                        status
+                    )
+
+                myReactionCount >= maxReactionPerAccount ->
+                    activity.showToast(
+                        true,
+                        getString(R.string.exceed_reaction_per_account, maxReactionPerAccount)
+                    )
+
+                else ->
+                    reactionAdd(column, status)
+            }
+        } catch (ex: Throwable) {
+            showToast(ex, "clickReaction failed.")
+        }
     }
 }

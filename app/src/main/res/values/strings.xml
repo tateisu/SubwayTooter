@@ -1282,4 +1282,6 @@
     <string name="autocomplete_list_loading">loading autocomplete list…</string>
     <string name="media_count">%1$d attachments (tap to see all)</string>
     <string name="applied_when_post">applied when post.</string>
+    <string name="exceed_reaction_per_account">Reaction limit is %1$d.</string>
+    <string name="copy_reaction_name">Copy reaction name</string>
 </resources>

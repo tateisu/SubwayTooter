@@ -54,6 +54,7 @@ import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.bottomPadding
+import org.jetbrains.anko.button
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.frameLayout
 import org.jetbrains.anko.imageButton
@@ -129,7 +130,7 @@ class ItemViewHolder(
     lateinit var btnShowMedia: BlurhashView
     lateinit var btnHideMedia: ImageButton
     lateinit var tvMediaCount: MyTextView
-    val tvMediaDescriptions = ArrayList<MyTextView>()
+    val tvMediaDescriptions = ArrayList<AppCompatButton>()
     val ivMediaThumbnails = ArrayList<MyNetworkImageView>()
 
     lateinit var statusButtonsViewHolder: StatusButtonsViewHolder
@@ -733,7 +734,7 @@ class ItemViewHolder(
             tvMediaDescriptions.clear()
             repeat(MEDIA_VIEW_COUNT) {
                 tvMediaDescriptions.add(
-                    myTextView {
+                    button {
                         gravity = Gravity.START or Gravity.CENTER_VERTICAL
                         allCaps = false
                         background =

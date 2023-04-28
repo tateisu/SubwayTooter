@@ -60,7 +60,10 @@ fun ItemViewHolder.bind(
         try {
             when (v) {
                 // ボタンは太字なので触らない
-                is Button, is CountImageButton -> Unit
+                is Button, is CountImageButton ->
+                    if(v is Button && tvMediaDescriptions.contains(v)){
+                        v.typeface = fontNormal
+                    }
 
                 is TextView -> v.typeface = when {
                     v === tvName ||

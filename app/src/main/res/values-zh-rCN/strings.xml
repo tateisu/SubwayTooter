@@ -965,8 +965,7 @@
     <string name="emoji_category_activity">活动</string>
     <string name="emoji_category_nature">自然</string>
     <string name="dont_show_timeout">不显示“实例超时”通知</string>
-    <string name="mime_type_not_acceptable">%1$s 的媒体 MIME 类型未被接受。
-\n支持的 MIME 类型为 image/jpeg、image/png、image/gif、video/webm和video/mp4。</string>
+    <string name="mime_type_not_acceptable">%1$s 的媒体 MIME 类型未被接受。</string>
     <string name="mime_type_missing">缺少媒体 MIME 类型。</string>
     <string name="not_provided_mastodon_under_1_6">未提供于 Mastodon 1.6之前版本</string>
     <string name="domain_count">已连接实例数</string>

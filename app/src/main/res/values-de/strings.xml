@@ -906,8 +906,7 @@
     <string name="keyword_filters">Schlüsselwort-Filter</string>
     <string name="close_all_columns">Alle Spalten schließen</string>
     <string name="post_button_tapped_repeatly">Der Post-Button wurde mehrfach gedrückt</string>
-    <string name="mime_type_not_acceptable">Der Media-MIME-Typ %1$s wird nicht unterstützt.
-\nUnterstützte Formate sind Bild/jpeg, Bild/png, Bild/gif, Video/webm und Video/mp4.</string>
+    <string name="mime_type_not_acceptable">Der Media-MIME-Typ %1$s wird nicht unterstützt.</string>
     <string name="mime_type_missing">Media-MIME-Typ fehlt.</string>
     <string name="not_provided_mastodon_under_1_6">Steht bei vor Mastodon-Version 1.6 nicht zur Verfügung</string>
     <string name="toot_count">Toots</string>

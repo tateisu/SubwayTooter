@@ -523,8 +523,7 @@
     <string name="domain_count">Nombre de dominis connectats</string>
     <string name="not_provided_mastodon_under_1_6">No existia abans de Mastodont 1.6</string>
     <string name="mime_type_missing">Falta mèdia tipus MIME.</string>
-    <string name="mime_type_not_acceptable">Aquest tipus de mèdia MIME %1$s no s\'accepta. 
-\nEls tipus MIME processables són imatge/jpeg, imatge/png, imatge/gif, vídeo/webm and vídeo/mp4.</string>
+    <string name="mime_type_not_acceptable">Aquest tipus de mèdia MIME %1$s no s\'accepta.</string>
     <string name="dont_show_timeout">No mostris la notificació \"S\'ha superat el temps d\'espera del servidor\"</string>
     <string name="emoji_category_people">Gent</string>
     <string name="emoji_category_nature">Natura</string>

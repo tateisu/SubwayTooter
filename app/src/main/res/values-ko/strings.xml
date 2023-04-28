@@ -501,8 +501,7 @@
     <string name="domain_count">연결된 도메인 수</string>
     <string name="not_provided_mastodon_under_1_6">마스토돈 1.6 이전 버전 지원 안 함</string>
     <string name="mime_type_missing">MIME 유형 없음.</string>
-    <string name="mime_type_not_acceptable">MIME 유형 %1$s 을(를) 불러올 수 없습니다. 
-\n지원되는 MIME 유형은 image/jpeg, image/png, image/gif, video/webm, video/mp4입니다.</string>
+    <string name="mime_type_not_acceptable">MIME 유형 %1$s 을(를) 불러올 수 없습니다.</string>
     <string name="dont_show_timeout">\"서버 시간제한 초과\" 알림 보이지 않기</string>
     <string name="emoji_category_people">사람들</string>
     <string name="emoji_category_nature">자연</string>

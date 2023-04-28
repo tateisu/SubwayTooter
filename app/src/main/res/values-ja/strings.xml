@@ -448,8 +448,7 @@
     <string name="mention2">返信</string>
     <string name="menu">メニュー</string>
     <string name="mime_type_missing">MIMEタイプが不明です。</string>
-    <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。
-\n対応できるMIMEタイプは image/jpeg, image/png, image/gif, video/webm, video/mp4 です。</string>
+    <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。</string>
     <string name="minimum_column_width">カラム最小幅(デフォルト=300(dp)、アプリ再起動が必要)</string>
     <string name="missing_available_account">この目的に使えるアカウントがありません。</string>
     <string name="missing_fcm_device_id">FCMのデバイスIDを準備できません。しばらく後に試してください。</string>

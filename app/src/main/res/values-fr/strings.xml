@@ -490,8 +490,7 @@
     <string name="domain_count">Nombre de domaines connectés</string>
     <string name="not_provided_mastodon_under_1_6">Non fourni sous Mastodon avant la 1.6</string>
     <string name="mime_type_missing">Type MIME média manquant.</string>
-    <string name="mime_type_not_acceptable">Type MIME du média %1$s n’est pas acceptable. 
-\nTypes MIME pris en charge sont les suivants : image/jpeg, image/png, image/gif, video/webm et video/mp4.</string>
+    <string name="mime_type_not_acceptable">Type MIME du média %1$s n’est pas acceptable.</string>
     <string name="dont_show_timeout">Ne pas afficher la notification \"Délai d’expiration du serveur\"</string>
     <string name="emoji_category_people">People</string>
     <string name="emoji_category_nature">Nature</string>

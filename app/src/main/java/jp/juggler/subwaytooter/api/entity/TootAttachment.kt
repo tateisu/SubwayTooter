@@ -44,7 +44,10 @@ class TootAttachment private constructor(
 ) : TootAttachmentLike {
 
     // 内部フラグ: 再編集で引き継いだ添付メディアなら真
-    var redraft: Boolean = false
+    var redraft = false
+
+    // 内部フラグ：編集時に既存投稿から引き継いだ添付データなら真
+    var isEdit = false
 
     // 内部フラグ：編集投稿時にメディア属性を更新するなら、その値を指定する
     var updateDescription: String? = null
@@ -84,6 +87,7 @@ class TootAttachment private constructor(
         private const val KEY_UPDATE_DESCRIPTION = "updateDescription"
         private const val KEY_UPDATE_THUMBNAIL = "updateThumbnail"
         private const val KEY_UPDATE_FOCUS = "updateFocus"
+        private const val KEY_IS_EDIT = "isEdit"
 
         private val ext_audio = arrayOf(".mpga", ".mp3", ".aac", ".ogg")
 
@@ -130,6 +134,7 @@ class TootAttachment private constructor(
                 updateDescription = src.string(KEY_UPDATE_DESCRIPTION)
                 updateThumbnail = src.string(KEY_UPDATE_THUMBNAIL)
                 updateFocus = src.string(KEY_UPDATE_FOCUS)
+                isEdit = src.boolean(KEY_IS_EDIT) ?: false
             }
         }
 
@@ -161,6 +166,7 @@ class TootAttachment private constructor(
                 updateDescription = src.string(KEY_UPDATE_DESCRIPTION)
                 updateThumbnail = src.string(KEY_UPDATE_THUMBNAIL)
                 updateFocus = src.string(KEY_UPDATE_FOCUS)
+                isEdit = src.boolean(KEY_IS_EDIT) ?: false
             }
         }
 
@@ -288,6 +294,7 @@ class TootAttachment private constructor(
         put(KEY_UPDATE_DESCRIPTION, updateDescription)
         put(KEY_UPDATE_THUMBNAIL, updateThumbnail)
         put(KEY_UPDATE_FOCUS, updateFocus)
+        put(KEY_IS_EDIT, isEdit)
 
         if (focusX != 0f || focusY != 0f) {
             put(KEY_META, buildJsonObject {

@@ -17,7 +17,35 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.action.saveWindowSize
-import jp.juggler.subwaytooter.actpost.*
+import jp.juggler.subwaytooter.actpost.ActPostStates
+import jp.juggler.subwaytooter.actpost.CompletionHelper
+import jp.juggler.subwaytooter.actpost.FeaturedTagCache
+import jp.juggler.subwaytooter.actpost.addAttachment
+import jp.juggler.subwaytooter.actpost.applyMushroomText
+import jp.juggler.subwaytooter.actpost.onPickCustomThumbnailImpl
+import jp.juggler.subwaytooter.actpost.onPostAttachmentCompleteImpl
+import jp.juggler.subwaytooter.actpost.openAttachment
+import jp.juggler.subwaytooter.actpost.openMushroom
+import jp.juggler.subwaytooter.actpost.openVisibilityPicker
+import jp.juggler.subwaytooter.actpost.performAccountChooser
+import jp.juggler.subwaytooter.actpost.performAttachmentClick
+import jp.juggler.subwaytooter.actpost.performMore
+import jp.juggler.subwaytooter.actpost.performPost
+import jp.juggler.subwaytooter.actpost.performSchedule
+import jp.juggler.subwaytooter.actpost.removeReply
+import jp.juggler.subwaytooter.actpost.resetSchedule
+import jp.juggler.subwaytooter.actpost.restoreState
+import jp.juggler.subwaytooter.actpost.saveDraft
+import jp.juggler.subwaytooter.actpost.saveState
+import jp.juggler.subwaytooter.actpost.showContentWarningEnabled
+import jp.juggler.subwaytooter.actpost.showMediaAttachment
+import jp.juggler.subwaytooter.actpost.showMediaAttachmentProgress
+import jp.juggler.subwaytooter.actpost.showPoll
+import jp.juggler.subwaytooter.actpost.showQuotedRenote
+import jp.juggler.subwaytooter.actpost.showReplyTo
+import jp.juggler.subwaytooter.actpost.showVisibility
+import jp.juggler.subwaytooter.actpost.updateText
+import jp.juggler.subwaytooter.actpost.updateTextCount
 import jp.juggler.subwaytooter.api.entity.TootScheduled
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.databinding.ActPostBinding
@@ -25,7 +53,11 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.AttachmentPicker
+import jp.juggler.subwaytooter.util.AttachmentUploader
+import jp.juggler.subwaytooter.util.PostAttachment
+import jp.juggler.subwaytooter.util.loadLanguageList
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.backPressed
@@ -282,6 +314,7 @@ class ActPost : AppCompatActivity(),
             R.id.btnFeaturedTag -> completionHelper.openFeaturedTagList(
                 featuredTagCache[account?.acct?.ascii ?: ""]?.list
             )
+
             R.id.ibSchedule -> performSchedule()
             R.id.ibScheduleReset -> resetSchedule()
         }
@@ -294,6 +327,7 @@ class ActPost : AppCompatActivity(),
                 views.btnPost.performClick()
                 true
             }
+
             else -> false
         }
     }

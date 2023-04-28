@@ -7,8 +7,12 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
+import jp.juggler.subwaytooter.api.entity.TootPolls
+import jp.juggler.subwaytooter.api.entity.TootPollsType
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoPostDraft
@@ -19,6 +23,7 @@ import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.JsonException
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.toJsonArray
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.isActive
@@ -329,7 +334,7 @@ fun ActPost.restoreDraft(draft: JsonObject) {
     )
 }
 
-suspend fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String) {
+fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String) {
     try {
         val baseStatus =
             TootParser(this, account).status(jsonText.decodeJsonObject())
@@ -424,7 +429,7 @@ suspend fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText:
     }
 }
 
-suspend fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
+fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
     try {
         val baseStatus =
             TootParser(this, account).status(jsonText.decodeJsonObject())
@@ -434,23 +439,23 @@ suspend fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: St
 
         states.visibility = baseStatus.visibility
 
-        val srcAttachments = baseStatus.media_attachments
-        if (srcAttachments?.isNotEmpty() == true) {
-            saveAttachmentList()
-            this.attachmentList.clear()
-            try {
+        baseStatus.media_attachments
+            ?.mapNotNull { it as? TootAttachment }
+            ?.notEmpty()
+            ?.let { srcAttachments ->
+                saveAttachmentList()
+                this.attachmentList.clear()
                 for (src in srcAttachments) {
-                    if (src is TootAttachment) {
-                        src.redraft = true
+                    try {
+                        src.isEdit = true
                         val pa = PostAttachment(src)
                         pa.status = PostAttachment.Status.Ok
                         this.attachmentList.add(pa)
+                    } catch (ex: Throwable) {
+                        log.e(ex, "can't initialize attachments from edit status")
                     }
                 }
-            } catch (ex: Throwable) {
-                log.e(ex, "can't initialize attachments from edit status")
             }
-        }
 
         views.cbNSFW.isChecked = baseStatus.sensitive == true
 

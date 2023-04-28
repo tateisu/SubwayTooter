@@ -1,15 +1,19 @@
 package jp.juggler.subwaytooter.api
 
-import android.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.isAndroid7TlsBug
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.util.coroutine.AppDispatchers
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.decodeJsonArray
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.jsonObjectOf
+import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.log.showToast
+import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.log.withCaption
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
@@ -205,6 +209,7 @@ class ResponseBeforeRead(
                             message = parseErrorResponse(body = errorBody),
                         )
                     }
+
                     callback != null ->
                         ProgressResponseBody.bytes(response, callback)
 
@@ -325,18 +330,6 @@ suspend fun ResponseWith<String?>.stringToJsonObject(): JsonObject =
         }
     }
 
-fun AppCompatActivity.dialogOrToast(message: String?) {
-    if (message.isNullOrBlank()) return
-    try {
-        AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton(R.string.close, null)
-            .show()
-    } catch (_: Throwable) {
-        showToast(true, message)
-    }
-}
-
 fun AppCompatActivity.showApiError(ex: Throwable) {
     try {
         log.e(ex, "showApiError")
@@ -352,6 +345,7 @@ fun AppCompatActivity.showApiError(ex: Throwable) {
                 null -> dialogOrToast(ex.message ?: "(??)")
                 else -> dialogOrToast(ex.withCaption())
             }
+
             else -> dialogOrToast(ex.withCaption())
         }
     } catch (ignored: Throwable) {

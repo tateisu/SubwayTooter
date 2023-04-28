@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiTask
 import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
@@ -25,6 +26,7 @@ import jp.juggler.subwaytooter.dialog.focusPointDialog
 import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
+import jp.juggler.subwaytooter.util.AttachmentUploader
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.coroutine.launchAndShowError
@@ -35,11 +37,13 @@ import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.data.decodeJsonArray
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPutRequestBuilder
 import jp.juggler.util.ui.isLiveActivity
 import jp.juggler.util.ui.vg
+import kotlin.math.min
 
 private val log = LogCategory("ActPostAttachment")
 
@@ -124,31 +128,64 @@ fun ActPost.addAttachment(
 //    onUploadEnd: () -> Unit = {},
 ) {
     val account = this.account
-    val mimeType = attachmentUploader.getMimeType(uri, mimeTypeArg)
+    val mimeType = attachmentUploader.getMimeType(uri, mimeTypeArg)?.notEmpty()
     val isReply = states.inReplyToId != null
     val instance = account?.let { TootInstance.getCached(it) }
 
     when {
-        attachmentList.size >= 4 -> showToast(false, R.string.attachment_too_many)
-        account == null -> showToast(false, R.string.account_select_please)
-        mimeType?.isEmpty() != false -> showToast(false, R.string.mime_type_missing)
-        !attachmentUploader.isAcceptableMimeType(
-            instance,
-            mimeType,
-            isReply
-        ) -> Unit // エラーメッセージ出力済み
+        attachmentList.size >= 4 -> {
+            dialogOrToast(R.string.attachment_too_many)
+            return
+        }
+
+        account == null -> {
+            dialogOrToast(R.string.account_select_please)
+            return
+        }
+
+        mimeType == null -> {
+            dialogOrToast(R.string.mime_type_missing)
+            return
+        }
+
+        instance == null -> {
+            dialogOrToast("missing instance information")
+            return
+        }
+
+        instance.instanceType == InstanceType.Pixelfed && isReply -> {
+            AttachmentUploader.log.e("pixelfed_does_not_allow_reply_with_media")
+            dialogOrToast(R.string.pixelfed_does_not_allow_reply_with_media)
+            return
+        }
+
         else -> {
             saveAttachmentList()
             val pa = PostAttachment(this)
             attachmentList.add(pa)
             showMediaAttachment()
+            val mediaConfig = instance.configuration?.jsonObject("media_attachments")
             attachmentUploader.addRequest(
                 AttachmentRequest(
-                    account,
-                    pa,
-                    uri,
-                    mimeType,
-                    isReply = isReply,
+                    context = applicationContext,
+                    account = account,
+                    pa = pa,
+                    uri = uri,
+                    mimeType = mimeType,
+                    instance = instance,
+                    mediaConfig = mediaConfig,
+                    serverMaxSqPixel = mediaConfig?.int("image_matrix_limit")?.takeIf { it > 0 },
+                    imageResizeConfig = account.getResizeConfig(),
+                    maxBytesVideo = min(
+                        account.getMovieMaxBytes(instance),
+                        mediaConfig?.int("video_size_limit")
+                            ?.takeIf { it > 0 } ?: Int.MAX_VALUE,
+                    ),
+                    maxBytesImage = min(
+                        account.getImageMaxBytes(instance),
+                        mediaConfig?.int("image_size_limit")
+                            ?.takeIf { it > 0 } ?: Int.MAX_VALUE,
+                    ),
                     //      onUploadEnd = onUploadEnd
                 )
             )
@@ -237,7 +274,11 @@ fun ActPost.performAttachmentClick(idx: Int) {
                 }
             }
             if (account?.isMastodon == true) {
-                when (pa.attachment?.type) {
+                if (pa.attachment?.isEdit == true) {
+                    // https://github.com/tateisu/SubwayTooter/issues/237
+                    // 既存の投稿の編集時にサムネイルを更新できるようにするのが著しく面倒くさい
+                    // 一旦未対応とする
+                } else when (pa.attachment?.type) {
                     TootAttachmentType.Audio,
                     TootAttachmentType.GIFV,
                     TootAttachmentType.Video,
@@ -288,8 +329,7 @@ suspend fun ActPost.sendFocusPoint(
     y: Float,
 ): Boolean {
     val account = this.account ?: error("missing account")
-    val isEdit = states.editStatusId != null
-    if (isEdit) {
+    if (attachment.isEdit) {
         attachment.focusX = x
         attachment.focusY = y
         attachment.updateFocus = formatFocusParameter(x, y)
@@ -334,16 +374,16 @@ private fun formatFocusParameter(x: Float, y: Float) = "%.2f,%.2f".format(x, y)
 suspend fun ActPost.editAttachmentDescription(
     pa: PostAttachment,
 ) {
-    // 既存の投稿を編集中なら真
-    val isEdit = states.editStatusId != null
+    val account = this.account ?: return
 
     val a = pa.attachment
     if (a == null) {
         showToast(true, R.string.attachment_description_cant_edit_while_uploading)
         return
     }
-    val attachmentId = pa.attachment?.id ?: return
-    val account = this.account ?: return
+    // 既存の投稿を編集中なら真
+    val isEdit = a.isEdit
+    val attachmentId = a.id
     var bitmap: Bitmap? = null
     try {
         // サムネイルをロード
@@ -412,9 +452,16 @@ fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: GetContentResultE
     when (val account = this.account) {
         null -> showToast(false, R.string.account_select_please)
         else -> launchMain {
-            val result = attachmentUploader.uploadCustomThumbnail(account, src, pa)
-            result?.error?.let { showToast(true, it) }
-            showMediaAttachment()
+            if (pa.attachment?.isEdit == true) {
+                showToast(
+                    true,
+                    "Sorry, updateing thumbnail is not yet supported in case of editing post."
+                )
+            } else {
+                val result = attachmentUploader.uploadCustomThumbnail(account, src, pa)
+                result?.error?.let { showToast(true, it) }
+                showMediaAttachment()
+            }
         }
     }
 }

@@ -654,8 +654,7 @@
     <string name="parsing_response">Tolker svar…</string>
     <string name="cant_get_web_setting_visibility">Kan ikke hente synlighetsinnstilling i nettprogram.</string>
     <string name="not_provided_mastodon_under_1_6">Tilbys ikke i Mastodon 1.6</string>
-    <string name="mime_type_not_acceptable">Mediatypen %1$s godtas ikke. 
-\nStøttede mediatyper: image/jpeg, image/png, image/gif, video/webm og video/mp4.</string>
+    <string name="mime_type_not_acceptable">Mediatypen %1$s godtas ikke.</string>
     <string name="disable_custom_emoji_animation">Skru av egendefinert emoji-animasjon (programomstart og gjeninnlasting av kolonne kreves)</string>
     <string name="list_member_add_remove">Legg til/fjern fra lister…</string>
     <string name="cant_add_list_follow_requesting">Kan ikke legge til bruker i liste:

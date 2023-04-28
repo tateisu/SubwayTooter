@@ -37,6 +37,7 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.media.imageOrientation

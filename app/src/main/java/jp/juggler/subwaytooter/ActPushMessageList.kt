@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import jp.juggler.subwaytooter.api.dialogOrToast
 import jp.juggler.subwaytooter.databinding.ActPushMessageListBinding
 import jp.juggler.subwaytooter.databinding.LvPushMessageBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
@@ -34,6 +33,7 @@ import jp.juggler.util.data.encodeBase64Url
 import jp.juggler.util.data.notBlank
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.os.saveToDownload
 import jp.juggler.util.time.formatLocalTime
 import jp.juggler.util.ui.setNavigationBack
@@ -124,7 +124,7 @@ class ActPushMessageList : AppCompatActivity() {
             }
         }
         if (!path.isNullOrEmpty()) {
-            dialogOrToast(getString(R.string.saved_to, path))
+            dialogOrToast(R.string.saved_to, path)
         }
     }
 

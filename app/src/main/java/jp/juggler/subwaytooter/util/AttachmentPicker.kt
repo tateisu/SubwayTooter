@@ -217,11 +217,11 @@ class AttachmentPicker(
     // Mastodon's custom thumbnail
 
     fun openCustomThumbnail(pa: PostAttachment) {
-        states.customThumbnailTargetId = pa.attachment?.id?.toString()
-        if (!prPickCustomThumbnail.checkOrLaunch()) return
-
-        // SAFのIntentで開く
         try {
+            states.customThumbnailTargetId = pa.attachment?.id?.toString()
+                ?: return
+            if (!prPickCustomThumbnail.checkOrLaunch()) return
+            // SAFのIntentで開く
             arCustomThumbnail.launch(
                 intentGetContent(
                     false,

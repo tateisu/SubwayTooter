@@ -152,11 +152,26 @@ fun Context.showToast(bLong: Boolean, caption: String?): Boolean =
 fun Context.showToast(ex: Throwable, caption: String? = null): Boolean =
     showToastImpl(this, true, ex.withCaption(caption))
 
-fun Context.showToast(bLong: Boolean, stringId: Int, vararg args: Any): Boolean =
+fun Context.showToast(bLong: Boolean, @StringRes stringId: Int, vararg args: Any): Boolean =
     showToastImpl(this, bLong, getString(stringId, *args))
 
-fun Context.showToast(ex: Throwable, stringId: Int, vararg args: Any): Boolean =
+fun Context.showToast(ex: Throwable, @StringRes stringId: Int, vararg args: Any): Boolean =
     showToastImpl(this, true, ex.withCaption(resources, stringId, *args))
+
+fun Activity.dialogOrToast(message: String?) {
+    if (message.isNullOrBlank()) return
+    try {
+        android.app.AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    } catch (_: Throwable) {
+        showToast(true, message)
+    }
+}
+
+fun Activity.dialogOrToast(@StringRes stringId: Int, vararg args: Any) =
+    dialogOrToast(getString(stringId, *args))
 
 fun AppCompatActivity.showError(ex: Throwable, caption: String? = null) {
     log.e(ex, caption ?: "(showError)")
@@ -179,8 +194,6 @@ fun AppCompatActivity.showError(ex: Throwable, caption: String? = null) {
                     .filter { !it.isNullOrBlank() }
                     .joinToString("\n")
             )
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
     } catch (ignored: Throwable) {
         showToast(ex, caption)
     }

@@ -270,7 +270,13 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.description = src.string("description")
             this.short_description = src.string("short_description")
-            this.approval_required = src.boolean("approval_required") ?: false
+            this.approval_required =
+                    // mastodon /api/v2/instance
+                src.jsonObject("registrations")?.boolean("approval_required")
+                        // mastodon /api/v1/instance
+                    ?: src.boolean("approval_required")
+                            // default    
+                            ?: false
 
             this.feature_quote = src.boolean("feature_quote") ?: false
 

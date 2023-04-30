@@ -233,7 +233,11 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             this.apDomain = src.string("uri")?.let { Host.parse(it) } ?: parser.apDomain
             this.title = src.string("title")
 
-            val sv = src.string("email")
+            val sv =
+                // mastodon /api/v2/instance
+                src.jsonObject("contact")?.string("email")
+                // mastodon /api/v1/instance
+                    ?: src.string("email")
             this.email = when {
                 sv?.startsWith("mailto:") == true -> sv.substring(7)
                 else -> sv

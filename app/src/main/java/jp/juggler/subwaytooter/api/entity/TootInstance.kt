@@ -400,24 +400,27 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         private suspend fun TootApiClient.getInstanceInformationMastodon(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-            val result = TootApiResult.makeWithCaption(apiHost)
-            if (result.error != null) return result
+            var lastError: TootApiResult? = null
             for (path in arrayOf("/api/v2/instance", "/api/v1/instance")) {
+                val result = TootApiResult.makeWithCaption(apiHost)
+                if (result.error != null) return result
                 val url = "https://${apiHost?.ascii}$path"
-                if (!sendRequest(result) {
+                if (sendRequest(result) {
                         val builder = Request.Builder().url(url)
                         (forceAccessToken ?: account?.bearerAccessToken)?.notEmpty()?.let {
                             builder.header("Authorization", "Bearer $it")
                         }
                         builder.build()
-                    }) continue
-                parseJson(result) ?: return null // cancelled.
-                result.jsonObject?.let { json ->
-                    json.jsonObject("configuration")?.put("!instanceApiUrl", url)
-                    return result
+                    }) {
+                    parseJson(result) ?: return null // cancelled.
+                    result.jsonObject?.let { json ->
+                        json.jsonObject("configuration")?.put("!instanceApiUrl", url)
+                        return result
+                    }
                 }
+                lastError = result
             }
-            return result
+            return lastError!!
         }
 
         private suspend fun TootApiClient.getMisskeyEndpoints(

@@ -230,7 +230,13 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.invites_enabled = null
         } else {
-            this.apDomain = src.string("uri")?.let { Host.parse(it) } ?: parser.apDomain
+            this.apDomain =
+                    // mastodon /api/v2/instance
+                src.string("domain")?.let { Host.parse(it) }
+                        // mastodon /api/v1/instance
+                    ?: src.string("uri")?.let { Host.parse(it) }
+                            ?: parser.apDomain
+
             this.title = src.string("title")
 
             val sv =

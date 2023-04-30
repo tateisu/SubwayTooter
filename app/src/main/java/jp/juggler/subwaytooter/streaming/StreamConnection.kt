@@ -4,15 +4,28 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate
 import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate.Companion.misskeyNoteUpdate
+import jp.juggler.subwaytooter.api.entity.TimelineItem
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootPayload
+import jp.juggler.subwaytooter.api.entity.TootReaction
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.onStatusRemoved
 import jp.juggler.subwaytooter.column.reloadFilter
 import jp.juggler.subwaytooter.column.replaceStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.coroutine.runOnMainLooper
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.jsonObjectOf
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
 import okhttp3.Response
@@ -301,6 +314,7 @@ class StreamConnection(
 
                             fireTimelineItem(payload, stream = stream)
                         }
+
                         else -> log.d("$name unsupported payload type. $payload")
                     }
                 }
@@ -509,8 +523,13 @@ class StreamConnection(
 
         val ti = TootInstance.getCached(acctGroup.account.apiHost)
 
-        val prefix = ti?.urls?.string("streaming_api")
-            ?: "wss://${acctGroup.account.apiHost}"
+        val prefix =
+            // mastodon /api/v2/instance
+            ti?.configuration?.jsonObject("urls")?.string("streaming")
+            // mastodon /api/v1/instance
+                ?: ti?.urls?.string("streaming_api")
+                // misskey or old mastodon
+                ?: "wss://${acctGroup.account.apiHost}"
 
         val path = group?.spec?.path ?: when {
             acctGroup.account.isMisskey -> "/streaming"

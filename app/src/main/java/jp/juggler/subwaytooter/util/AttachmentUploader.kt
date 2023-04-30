@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.SystemClock
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.MimeTypes
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -295,15 +296,15 @@ class AttachmentUploader(
             val isAccepteble = instance.configuration
                 ?.jsonObject("media_attachments")
                 ?.jsonArray("supported_mime_types")
-                ?.contains(mimeType)
+                ?.contains(opener.mimeType)
                 ?: when (instance.instanceType) {
                     InstanceType.Pixelfed -> acceptableMimeTypesPixelfed
                     else -> acceptableMimeTypes
-                }.contains(mimeType)
+                }.contains(opener.mimeType)
 
             if (!isAccepteble) {
                 return TootApiResult(
-                    safeContext.getString(R.string.mime_type_not_acceptable, mimeType)
+                    safeContext.getString(R.string.mime_type_not_acceptable, opener.mimeType)
                 )
             }
 

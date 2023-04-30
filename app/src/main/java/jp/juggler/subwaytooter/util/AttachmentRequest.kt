@@ -3,6 +3,8 @@ package jp.juggler.subwaytooter.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import jp.juggler.media.generateTempFile
+import jp.juggler.media.transcodeAudio
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
@@ -32,14 +34,26 @@ class AttachmentRequest(
 ) {
     companion object {
         private val log = LogCategory("AttachmentRequest")
-    }
 
-    fun hasServerSupport(mimeType: String) =
-        mediaConfig?.jsonArray("supported_mime_types")?.contains(mimeType)
-            ?: when (instance.instanceType) {
-                InstanceType.Pixelfed -> AttachmentUploader.acceptableMimeTypesPixelfed
-                else -> AttachmentUploader.acceptableMimeTypes
-            }.contains(mimeType)
+        private val goodAudioType = setOf(
+            "audio/flac",
+            "audio/mp3",
+            "audio/ogg",
+            "audio/vnd.wave",
+            "audio/vorbis",
+            "audio/wav",
+            "audio/wave",
+            "audio/webm",
+            "audio/x-pn-wave",
+            "audio/x-wav",
+            "audio/3gpp",
+        )
+//    val badAudioType = setOf(
+//        "audio/mpeg","audio/aac",
+//        "audio/m4a","audio/x-m4a","audio/mp4",
+//        "video/x-ms-asf",
+//    )
+    }
 
     suspend fun createOpener(): InputStreamOpener {
 
@@ -122,39 +136,50 @@ class AttachmentRequest(
         )
     }
 
+    private fun hasServerSupport(mimeType: String) =
+        mediaConfig?.jsonArray("supported_mime_types")?.contains(mimeType)
+            ?: when (instance.instanceType) {
+                InstanceType.Pixelfed -> AttachmentUploader.acceptableMimeTypesPixelfed
+                else -> AttachmentUploader.acceptableMimeTypes
+            }.contains(mimeType)
+
     private fun createResizedImageOpener(
         forcePng: Boolean = false,
     ): InputStreamOpener {
-        val cacheDir = context.externalCacheDir
-            ?.apply { mkdirs() }
-            ?: error("getExternalCacheDir returns null.")
-
-        val outputMimeType = if (forcePng || mimeType == AttachmentUploader.MIME_TYPE_PNG) {
-            AttachmentUploader.MIME_TYPE_PNG
-        } else {
-            AttachmentUploader.MIME_TYPE_JPEG
-        }
-
-        val tempFile = File(cacheDir, "tmp." + Thread.currentThread().id)
-        val bitmap = createResizedBitmap(
-            context,
-            uri,
-            imageResizeConfig,
-            skipIfNoNeedToResizeAndRotate = !forcePng,
-            serverMaxSqPixel = serverMaxSqPixel
-        ) ?: error("createResizedBitmap returns null.")
-        pa.progress = context.getString(R.string.attachment_handling_compress)
+        val tempFile = context.generateTempFile("createResizedImageOpener")
         try {
-            FileOutputStream(tempFile).use { os ->
-                if (outputMimeType == AttachmentUploader.MIME_TYPE_PNG) {
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
-                } else {
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
+            pa.progress = context.getString(R.string.attachment_handling_compress)
+
+            val bitmap = createResizedBitmap(
+                context,
+                uri,
+                imageResizeConfig,
+                skipIfNoNeedToResizeAndRotate = !forcePng,
+                serverMaxSqPixel = serverMaxSqPixel
+            ) ?: error("createResizedBitmap returns null.")
+            try {
+                val outputMimeType = when {
+                    forcePng || mimeType == AttachmentUploader.MIME_TYPE_PNG ->
+                        AttachmentUploader.MIME_TYPE_PNG
+
+                    else -> AttachmentUploader.MIME_TYPE_JPEG
                 }
+                FileOutputStream(tempFile).use { outStream ->
+                    when (outputMimeType) {
+                        AttachmentUploader.MIME_TYPE_PNG ->
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+
+                        else ->
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outStream)
+                    }
+                }
+                return tempFileOpener(tempFile, outputMimeType, isImage = true)
+            } finally {
+                bitmap.recycle()
             }
-            return tempFileOpener(tempFile, outputMimeType, isImage = true)
-        } finally {
-            bitmap.recycle()
+        } catch (ex: Throwable) {
+            tempFile.delete()
+            throw ex
         }
     }
 
@@ -168,13 +193,13 @@ class AttachmentRequest(
         val outFile = File(cacheDir, "movie." + Thread.currentThread().id + ".mp4")
         var resultFile: File? = null
 
-        // 入力ファイルをコピーする
-        (context.contentResolver.openInputStream(uri)
-            ?: error("openInputStream returns null.")).use { inStream ->
-            FileOutputStream(tempFile).use { inStream.copyTo(it) }
-        }
-
         try {
+            // 入力ファイルをコピーする
+            (context.contentResolver.openInputStream(uri)
+                ?: error("openInputStream returns null.")).use { inStream ->
+                FileOutputStream(tempFile).use { inStream.copyTo(it) }
+            }
+
             // 動画のメタデータを調べる
             val info = tempFile.videoInfo
 
@@ -224,27 +249,34 @@ class AttachmentRequest(
         }
     }
 
-    private val aacMimeTypes = listOf(
-        "audio/aac", "audio/aacp", "audio/3gpp", "audio/3gpp2",
-        "audio/mp4", "audio/MP4A-LATM", "audio/mpeg4-generic"
-    ).map { it.lowercase() }.toSet()
-
-    private fun createResizedAudioOpener(
-        originalBytes: Long,
-    ): InputStreamOpener {
-        if (hasServerSupport("audio/aac") && aacMimeTypes.contains(mimeType.lowercase())) {
-            mimeType = "audio/aac"
-        }
-
-        // サーバ側がサポートしてる形式でサイズ以内なら
-        if (hasServerSupport(mimeType) && originalBytes <= maxBytesVideo) {
-            return contentUriOpener(
+    private suspend fun createResizedAudioOpener(srcBytes: Long): InputStreamOpener =
+        when {
+            hasServerSupport(mimeType) &&
+                    goodAudioType.contains(mimeType) &&
+                    srcBytes <= maxBytesVideo -> contentUriOpener(
                 context.contentResolver,
                 uri,
                 mimeType,
                 isImage = false,
             )
+
+            else -> {
+                pa.progress = context.getString(R.string.attachment_handling_compress)
+                val (tempFile, outMimeType) = transcodeAudio(
+                    context,
+                    uri,
+                    mimeType
+                )
+                // このワークアラウンドはうまくいかなかった
+//                outMimeType = when (outMimeType) {
+//                    "audio/mp4" -> "audio/x-m4a"
+//                    else -> outMimeType
+//                }
+                tempFileOpener(
+                    tempFile,
+                    outMimeType,
+                    isImage = false,
+                )
+            }
         }
-        error("audio conversion is not yet supported.")
-    }
 }

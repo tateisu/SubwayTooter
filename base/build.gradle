@@ -98,7 +98,9 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
     api "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"
-
+    api "androidx.media3:media3-transformer:1.0.1"
+    api "androidx.media3:media3-effect:1.0.1"
+    api "androidx.media3:media3-common:1.0.1"
     // commons-codecをapiにすると、端末上の古いjarが使われてしまう
     // declaration of 'org.apache.commons.codec.binary.Base64' appears in /system/framework/org.apache.http.legacy.jar)
     androidTestImplementation "commons-codec:commons-codec:1.15"

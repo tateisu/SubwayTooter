@@ -61,7 +61,7 @@ internal class ViewHolderHeaderInstance(
         }
 
         views.tvDescription.movementMethod = MyLinkMovementMethod
-        views.tvShortDescription.movementMethod = MyLinkMovementMethod
+        views.tvDescriptionLong.movementMethod = MyLinkMovementMethod
     }
 
     override fun showColor() {
@@ -81,7 +81,7 @@ internal class ViewHolderHeaderInstance(
                 btnEmail.text = "?"
                 btnEmail.isEnabledAlpha = false
                 tvDescription.text = "?"
-                tvShortDescription.text = "?"
+                tvDescriptionLong.text = "?"
                 ivThumbnail.setImageUrl(0f, null)
                 tvLanguages.text = "?"
                 tvInvitesEnabled.text = "?"
@@ -133,12 +133,12 @@ internal class ViewHolderHeaderInstance(
                     emojiSizeMode = accessInfo.emojiSizeMode(),
                 )
 
-                tvShortDescription.text = options
-                    .decodeHTML("<p>${instance.short_description ?: ""}</p>")
-                    .neatSpaces()
-
                 tvDescription.text = options
                     .decodeHTML("<p>${instance.description ?: ""}</p>")
+                    .neatSpaces()
+
+                tvDescriptionLong.text = options
+                    .decodeHTML("<p>${instance.descriptionOld ?: ""}</p>")
                     .neatSpaces()
 
                 val stats = instance.stats

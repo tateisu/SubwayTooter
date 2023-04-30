@@ -466,7 +466,6 @@
     <string name="title">Títol</string>
     <string name="email">Correu-e</string>
     <string name="description">Descripció</string>
-    <string name="short_description">Descripció curta</string>
     <string name="version">Versió</string>
     <string name="instance_information_of">Informació al servidor de \"%1$s\"</string>
     <string name="instance_information">Informació del servidor</string>

@@ -160,20 +160,20 @@
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/short_description" />
+        android:text="@string/description" />
 
     <jp.juggler.subwaytooter.view.MyTextView
-        android:id="@+id/tvShortDescription"
+        android:id="@+id/tvDescription"
         style="@style/setting_row_form" />
 
     <View style="@style/setting_divider" />
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/description" />
+        android:text="@string/description_long" />
 
     <jp.juggler.subwaytooter.view.MyTextView
-        android:id="@+id/tvDescription"
+        android:id="@+id/tvDescriptionLong"
         style="@style/setting_row_form" />
 
     <View style="@style/setting_divider" />

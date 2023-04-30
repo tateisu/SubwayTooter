@@ -1015,7 +1015,6 @@
     <string name="instance_information">实例信息</string>
     <string name="instance_information_of">“%1$s”的实例信息</string>
     <string name="version">版本</string>
-    <string name="short_description">简要描述</string>
     <string name="description">描述</string>
     <string name="email">电子邮件</string>
     <string name="read_more_hashtag">读取更多标签</string>

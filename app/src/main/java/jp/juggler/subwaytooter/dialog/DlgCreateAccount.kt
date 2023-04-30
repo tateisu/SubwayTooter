@@ -71,8 +71,8 @@ class DlgCreateAccount(
                     misskeyVersion = instanceInfo?.misskeyVersionMajor ?: 0
                 ),
             ).decodeHTML(
-                instanceInfo?.short_description?.notBlank()
-                    ?: instanceInfo?.description?.notBlank()
+                instanceInfo?.description?.notBlank()
+                    ?: instanceInfo?.descriptionOld?.notBlank()
                     ?: TootInstance.DESCRIPTION_DEFAULT
             ).neatSpaces()
 

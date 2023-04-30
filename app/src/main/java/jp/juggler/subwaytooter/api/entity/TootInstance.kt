@@ -150,11 +150,11 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     //	A description for the instance
     // (HTML)
     // (Mastodon: 3.0.0より後のWebUIでは全く使われなくなる見込み。 https://github.com/tootsuite/mastodon/pull/12119)
-    val description: String?
+    val descriptionOld: String?
 
     // (Mastodon 3.0.0以降)
     // (HTML)
-    val short_description: String?
+    val description: String?
 
     // An email address which can be used to contact the instance administrator
     // misskeyの場合はURLらしい
@@ -223,7 +223,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             this.contact_account = null
 
             this.description = src.string("description")
-            this.short_description = null
+            this.descriptionOld = null
             this.approval_required = false
 
             this.feature_quote = true
@@ -246,7 +246,15 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             this.version = src.string("version")
             this.decoded_version = VersionString(version)
             this.stats = parseItem(src.jsonObject("stats")) { Stats(it) }
-            this.thumbnail = src.string("thumbnail")
+            this.thumbnail =
+                    // mastodon  /api/v2/instance
+                src.jsonObject("thumbnail")
+                    ?.jsonObject("versions")?.string("@2x")
+                        // mastodon  /api/v2/instance
+                    ?: src.jsonObject("thumbnail")
+                        ?.string("url")
+                            // mastodon  /api/v1/instance
+                            ?: src.string("thumbnail")
 
             this.max_toot_chars = src.int("max_toot_chars")
 
@@ -277,8 +285,19 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 )
             }
 
-            this.description = src.string("description")
-            this.short_description = src.string("short_description")
+            when (val shortDesc = src.string("short_description")) {
+                // /api/v2/instance
+                null -> {
+                    this.descriptionOld = null
+                    this.description = src.string("description")
+                }
+                // /api/v1/instance
+                else -> {
+                    this.descriptionOld = src.string("description")
+                    this.description = shortDesc
+                }
+            }
+
             this.approval_required =
                     // mastodon /api/v2/instance
                 src.jsonObject("registrations")?.boolean("approval_required")
@@ -289,7 +308,10 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.feature_quote = src.boolean("feature_quote") ?: false
 
-            this.invites_enabled = src.boolean("invites_enabled")
+            this.invites_enabled =
+                    // removed on /api/v2/instance
+                    // mastodon /api/v1/instance 3.1.4
+                src.boolean("invites_enabled")
 
             this.fedibirdCapabilities =
                 src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()

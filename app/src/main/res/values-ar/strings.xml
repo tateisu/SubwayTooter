@@ -490,7 +490,6 @@
     <string name="domain_count">عدد النطاقات المتصلة</string>
     <string name="dont_show_timeout">لا تُظهر إشعار \"انتهاء مهلة الخادم\"</string>
     <string name="default_">افتراضي</string>
-    <string name="short_description">وصف قصير</string>
     <string name="acct_sample">(مثال) username@server</string>
     <string name="background_image_alpha">شفافية صورة الخلفية</string>
     <string name="dont_show_follow">إخفاء المتابِعين</string>

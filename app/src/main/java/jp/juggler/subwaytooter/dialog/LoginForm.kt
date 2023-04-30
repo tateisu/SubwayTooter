@@ -271,8 +271,8 @@ class LoginForm(
 
                         else -> {
                             textColor = attrColor(R.attr.colorTextContent)
-                            text = (tootInstance.short_description.notBlank()
-                                ?: tootInstance.description.notBlank()
+                            text = (tootInstance.description.notBlank()
+                                ?: tootInstance.descriptionOld.notBlank()
                                 ?: "(empty server description)"
                                     ).let {
                                     DecodeOptions(

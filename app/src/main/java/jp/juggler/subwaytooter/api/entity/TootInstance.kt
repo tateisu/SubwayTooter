@@ -254,7 +254,12 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             languages = src.jsonArray("languages")?.stringArrayList()
 
-            contact_account = parseItem(src.jsonObject("contact_account")) {
+            contact_account = parseItem(
+                // mastodon /api/v2/instance
+                src.jsonObject("contact")?.jsonObject("account")
+                // mastodon /api/v1/instance
+                    ?: src.jsonObject("contact_account")
+            ) {
                 tootAccount(
                     TootParser(
                         parser.context,
@@ -275,7 +280,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 src.jsonObject("registrations")?.boolean("approval_required")
                         // mastodon /api/v1/instance
                     ?: src.boolean("approval_required")
-                            // default    
+                            // default
                             ?: false
 
             this.feature_quote = src.boolean("feature_quote") ?: false

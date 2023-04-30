@@ -320,7 +320,11 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     ?.stringList()?.toSet()
 
             this.configuration = src.jsonObject("configuration")
-            this.urls = src.jsonObject("urls")
+            this.urls =
+                    // mastodon /api/v2/instance
+                src.jsonObject("configuration")?.jsonObject("urls")
+                        //  mastodon /api/v1/instance
+                    ?: src.jsonObject("urls")
         }
     }
 
@@ -392,19 +396,21 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         ): TootApiResult? {
             val result = TootApiResult.makeWithCaption(apiHost)
             if (result.error != null) return result
-
-            if (sendRequest(result) {
-                    val builder = Request.Builder().url("https://${apiHost?.ascii}/api/v1/instance")
-
-                    (forceAccessToken ?: account?.bearerAccessToken)?.notEmpty()?.let {
-                        builder.header("Authorization", "Bearer $it")
-                    }
-                    builder.build()
+            for (path in arrayOf("/api/v2/instance", "/api/v1/instance")) {
+                val url = "https://${apiHost?.ascii}$path"
+                if (!sendRequest(result) {
+                        val builder = Request.Builder().url(url)
+                        (forceAccessToken ?: account?.bearerAccessToken)?.notEmpty()?.let {
+                            builder.header("Authorization", "Bearer $it")
+                        }
+                        builder.build()
+                    }) continue
+                parseJson(result) ?: return null // cancelled.
+                result.jsonObject?.let { json ->
+                    json.jsonObject("configuration")?.put("!instanceApiUrl", url)
+                    return result
                 }
-            ) {
-                parseJson(result) ?: return null
             }
-
             return result
         }
 

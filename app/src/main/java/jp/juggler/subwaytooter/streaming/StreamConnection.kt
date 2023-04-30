@@ -525,7 +525,7 @@ class StreamConnection(
 
         val prefix =
             // mastodon /api/v2/instance
-            ti?.configuration?.jsonObject("urls")?.string("streaming")
+            ti?.urls?.string("streaming")
             // mastodon /api/v1/instance
                 ?: ti?.urls?.string("streaming_api")
                 // misskey or old mastodon

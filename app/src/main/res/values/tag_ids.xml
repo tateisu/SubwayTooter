@@ -2,4 +2,8 @@
 <resources>
     <!-- ビューのタグのキーに使うID -->
     <item type="id" name="text" />
+
+    <!-- ビューのタグのキーに使うID -->
+    <item type="id" name="custom_share_target" />
+
 </resources>

@@ -360,49 +360,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpDontRemoveDeletedToot, R.string.dont_remove_deleted_toot_from_timeline)
         sw(PrefB.bpShowTranslateButton, R.string.show_translate_button)
 
-        item(
-            SettingType.TextWithSelector,
-            PrefS.spTranslateAppComponent,
-            R.string.translation_app
-        ) {
-            val target = CustomShareTarget.Translate
-            onClickEdit = { openCustomShareChooser(this@item, target) }
-            onClickReset = { setCustomShare(this@item, target, "") }
-            showTextView = { showCustomShareIcon(it, target) }
-        }
-
-        item(
-            SettingType.TextWithSelector,
-            PrefS.spCustomShare1,
-            R.string.custom_share_button_1
-        ) {
-            val target = CustomShareTarget.CustomShare1
-            onClickEdit = { openCustomShareChooser(this@item, target) }
-            onClickReset = { setCustomShare(this@item, target, "") }
-            showTextView = { showCustomShareIcon(it, target) }
-        }
-
-        item(
-            SettingType.TextWithSelector,
-            PrefS.spCustomShare2,
-            R.string.custom_share_button_2
-        ) {
-            val target = CustomShareTarget.CustomShare2
-            onClickEdit = { openCustomShareChooser(this@item, target) }
-            onClickReset = { setCustomShare(this@item, target, "") }
-            showTextView = { showCustomShareIcon(it, target) }
-        }
-        item(
-            SettingType.TextWithSelector,
-            PrefS.spCustomShare3,
-            R.string.custom_share_button_3
-        ) {
-            val target = CustomShareTarget.CustomShare3
-            onClickEdit = { openCustomShareChooser(this@item, target) }
-            onClickReset = { setCustomShare(this@item, target, "") }
-            showTextView = { showCustomShareIcon(it, target) }
-        }
-
         spinnerSimple(
             PrefI.ipAdditionalButtonsPosition,
             R.string.additional_buttons_position,
@@ -416,6 +373,20 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpShowUsernameFilteredPost, R.string.show_username_on_filtered_post)
 
         sw(PrefB.bpEnableDomainTimeline, R.string.enable_domain_timeline)
+    }
+
+    section(R.string.translate_or_custom_share){
+        CustomShareTarget.values().forEach{ target->
+            item(
+                SettingType.TextWithSelector,
+                target.pref,
+                target.captionId,
+            ) {
+                onClickEdit = { openCustomShareChooser(this@item, target) }
+                onClickReset = { setCustomShare(this@item, target, "") }
+                showTextView = { showCustomShareIcon(it, target) }
+            }
+        }
     }
 
     section(R.string.post) {

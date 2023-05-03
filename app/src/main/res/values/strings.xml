@@ -943,6 +943,14 @@
     <string name="custom_share_button_1">Custom share button 1</string>
     <string name="custom_share_button_2">Custom share button 2</string>
     <string name="custom_share_button_3">Custom share button 3</string>
+    <string name="custom_share_button_4">Custom share button 4</string>
+    <string name="custom_share_button_5">Custom share button 5</string>
+    <string name="custom_share_button_6">Custom share button 6</string>
+    <string name="custom_share_button_7">Custom share button 7</string>
+    <string name="custom_share_button_8">Custom share button 8</string>
+    <string name="custom_share_button_9">Custom share button 9</string>
+    <string name="custom_share_button_10">Custom share button 10</string>
+
     <string name="custom_share_app_not_found">the share target app is not installed. please configure it in \"App setting/behavior\".</string>
     <string name="additional_buttons_position">Additional buttons position (app restart required)</string>
     <string name="top">Top</string>
@@ -1286,4 +1294,5 @@
     <string name="send_to_other_app">Send to other app</string>
     <string name="save_to_local_folder">Save to local folder</string>
     <string name="app_data_export_import">Export/Import app data</string>
+    <string name="translate_or_custom_share">Translate/Custom share buttons</string>
 </resources>

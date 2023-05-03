@@ -48,6 +48,14 @@ object PrefS {
     val spCustomShare1 = StringPref("CustomShare1", "")
     val spCustomShare2 = StringPref("CustomShare2", "")
     val spCustomShare3 = StringPref("CustomShare3", "")
+    val spCustomShare4 = StringPref("CustomShare4", "")
+    val spCustomShare5 = StringPref("CustomShare5", "")
+    val spCustomShare6 = StringPref("CustomShare6", "")
+    val spCustomShare7 = StringPref("CustomShare7", "")
+    val spCustomShare8 = StringPref("CustomShare8", "")
+    val spCustomShare9 = StringPref("CustomShare9", "")
+    val spCustomShare10 = StringPref("CustomShare10", "")
+
     // val spWebBrowser = StringPref("WebBrowser", "")
 
     val spTimelineSpacing = StringPref("TimelineSpacing", "")

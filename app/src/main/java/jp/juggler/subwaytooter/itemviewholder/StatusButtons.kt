@@ -112,10 +112,7 @@ class StatusButtons(
     private val llFollow2 = holder.llFollow2
     private val btnFollow2 = holder.btnFollow2
     private val ivFollowedBy2 = holder.ivFollowedBy2
-    private val btnTranslate = holder.btnTranslate
-    private val btnCustomShare1 = holder.btnCustomShare1
-    private val btnCustomShare2 = holder.btnCustomShare2
-    private val btnCustomShare3 = holder.btnCustomShare3
+    private val btnCustomShares = holder.btnCustomShares
     private val btnMore = holder.btnMore
 
     private val colorTextContent = column.getContentColor()
@@ -136,11 +133,11 @@ class StatusButtons(
             btnFollow2,
             btnConversation,
             btnReply,
-            btnTranslate,
-            btnCustomShare1,
-            btnCustomShare2,
-            btnCustomShare3,
         ).forEach {
+            it.setOnClickListener(this)
+            it.setOnLongClickListener(this)
+        }
+        btnCustomShares.forEach {
             it.setOnClickListener(this)
             it.setOnLongClickListener(this)
         }
@@ -414,41 +411,38 @@ class StatusButtons(
     private fun bindAdditionalButtons() {
         optionalButtonFirst = null
         optionalButtonCount = 0
+        btnCustomShares.forEach { btn ->
+            val target = btn.getTag(R.id.custom_share_target) as CustomShareTarget
+            val (label, icon) = CustomShare.getCache(target)
+                ?: error("showCustomShare: invalid target")
 
-        btnTranslate.vg(PrefB.bpShowTranslateButton.value)
-            ?.showCustomShare(CustomShareTarget.Translate)
-        btnCustomShare1.showCustomShare(CustomShareTarget.CustomShare1)
-        btnCustomShare2.showCustomShare(CustomShareTarget.CustomShare2)
-        btnCustomShare3.showCustomShare(CustomShareTarget.CustomShare3)
+            val isShown = when {
+                target == CustomShareTarget.Translate && !PrefB.bpShowTranslateButton.value -> false
+                else -> label != null || icon != null
+            }
+            btn.vg(isShown)?.apply {
+                isEnabled = true
+                contentDescription = label ?: "?"
+                setImageDrawable(
+                    icon ?: createColoredDrawable(
+                        this@StatusButtons.activity,
+                        R.drawable.ic_question,
+                        colorTextContent,
+                        stylerBoostAlpha
+                    )
+                )
+                ++optionalButtonCount
+                if (optionalButtonFirst == null) {
+                    optionalButtonFirst = this
+                }
+            }
+        }
 
         val updateAdditionalButton: (btn: ImageButton) -> Unit =
             getUpdateAdditionalButton(optionalButtonCount, optionalButtonFirst)
 
-        updateAdditionalButton(btnTranslate)
-        updateAdditionalButton(btnCustomShare1)
-        updateAdditionalButton(btnCustomShare2)
-        updateAdditionalButton(btnCustomShare3)
-    }
-
-    private fun ImageButton.showCustomShare(target: CustomShareTarget) {
-        val (label, icon) = CustomShare.getCache(target)
-            ?: error("showCustomShare: invalid target")
-
-        vg(label != null || icon != null)?.apply {
-            isEnabled = true
-            contentDescription = label ?: "?"
-            setImageDrawable(
-                icon ?: createColoredDrawable(
-                    this@StatusButtons.activity,
-                    R.drawable.ic_question,
-                    colorTextContent,
-                    stylerBoostAlpha
-                )
-            )
-            ++optionalButtonCount
-            if (optionalButtonFirst == null) {
-                optionalButtonFirst = this
-            }
+        btnCustomShares.forEach { btn ->
+            updateAdditionalButton(btn)
         }
     }
 
@@ -591,10 +585,14 @@ class StatusButtons(
                 btnBookmark -> clickBookmark(accessInfo, status, willToast = bSimpleList)
                 btnReaction -> clickReaction(accessInfo, column, status)
                 btnFollow2 -> clickFollow(pos, accessInfo, status.accountRef, relation)
-                btnTranslate -> shareStatusText(status, CustomShareTarget.Translate)
-                btnCustomShare1 -> shareStatusText(status, CustomShareTarget.CustomShare1)
-                btnCustomShare2 -> shareStatusText(status, CustomShareTarget.CustomShare2)
-                btnCustomShare3 -> shareStatusText(status, CustomShareTarget.CustomShare3)
+
+                else -> {
+                    btnCustomShares.find { it == v }?.let {
+                        val target = it.getTag(R.id.custom_share_target) as CustomShareTarget
+                        shareStatusText(status, target)
+                        return
+                    }
+                }
             }
         }
     }
@@ -620,11 +618,13 @@ class StatusButtons(
                     status.account
                 )
 
-                // 以下、長押し
-                btnTranslate -> shareStatusUrl(status, CustomShareTarget.Translate)
-                btnCustomShare1 -> shareStatusUrl(status, CustomShareTarget.CustomShare1)
-                btnCustomShare2 -> shareStatusUrl(status, CustomShareTarget.CustomShare2)
-                btnCustomShare3 -> shareStatusUrl(status, CustomShareTarget.CustomShare3)
+                else -> {
+                    btnCustomShares.find { it == v }?.let {
+                        val target = it.getTag(R.id.custom_share_target) as CustomShareTarget
+                        shareStatusUrl(status, target)
+                        return true
+                    }
+                }
             }
         }
         return true
@@ -691,10 +691,8 @@ class StatusButtonsViewHolder(
     lateinit var llFollow2: View
     lateinit var btnFollow2: ImageButton
     lateinit var ivFollowedBy2: ImageView
-    lateinit var btnTranslate: ImageButton
+    lateinit var btnCustomShares: List<ImageButton>
     lateinit var btnCustomShare1: ImageButton
-    lateinit var btnCustomShare2: ImageButton
-    lateinit var btnCustomShare3: ImageButton
     lateinit var btnMore: ImageButton
 
     private fun AnkoFlexboxLayout.normalButtons() {
@@ -823,48 +821,18 @@ class StatusButtonsViewHolder(
     }
 
     private fun AnkoFlexboxLayout.additionalButtons() {
-        btnTranslate = imageButton {
-            background = ContextCompat.getDrawable(
-                context,
-                R.drawable.btn_bg_transparent_round6dp
-            )
-            setPadding(paddingH, paddingV, paddingH, paddingV)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-        }.lparams(buttonHeight, buttonHeight) {
-            startMargin = marginBetween
-        }
-
-        btnCustomShare1 = imageButton {
-            background = ContextCompat.getDrawable(
-                context,
-                R.drawable.btn_bg_transparent_round6dp
-            )
-            setPadding(paddingH, paddingV, paddingH, paddingV)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-        }.lparams(buttonHeight, buttonHeight) {
-            startMargin = marginBetween
-        }
-
-        btnCustomShare2 = imageButton {
-            background = ContextCompat.getDrawable(
-                context,
-                R.drawable.btn_bg_transparent_round6dp
-            )
-            setPadding(paddingH, paddingV, paddingH, paddingV)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-        }.lparams(buttonHeight, buttonHeight) {
-            startMargin = marginBetween
-        }
-
-        btnCustomShare3 = imageButton {
-            background = ContextCompat.getDrawable(
-                context,
-                R.drawable.btn_bg_transparent_round6dp
-            )
-            setPadding(paddingH, paddingV, paddingH, paddingV)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-        }.lparams(buttonHeight, buttonHeight) {
-            startMargin = marginBetween
+        btnCustomShares = CustomShareTarget.values().map { target ->
+            imageButton {
+                background = ContextCompat.getDrawable(
+                    context,
+                    R.drawable.btn_bg_transparent_round6dp
+                )
+                setPadding(paddingH, paddingV, paddingH, paddingV)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setTag(R.id.custom_share_target, target)
+            }.lparams(buttonHeight, buttonHeight) {
+                startMargin = marginBetween
+            }
         }
     }
 

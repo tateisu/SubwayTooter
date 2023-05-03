@@ -1,23 +1,53 @@
 package jp.juggler.subwaytooter.util
 
-import android.content.*
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.impl.StringPref
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
-import jp.juggler.util.data.*
-import jp.juggler.util.log.*
-import jp.juggler.util.ui.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.queryIntentActivitiesCompat
+import jp.juggler.util.resolveActivityCompat
+import jp.juggler.util.systemService
+import jp.juggler.util.ui.attrColor
 
-enum class CustomShareTarget {
-    Translate,
-    CustomShare1,
-    CustomShare2,
-    CustomShare3,
+enum class CustomShareTarget(val pref: StringPref, @StringRes val captionId: Int) {
+    Translate(PrefS.spTranslateAppComponent, R.string.translation_app),
+    CustomShare1(PrefS.spCustomShare1, R.string.custom_share_button_1),
+    CustomShare2(PrefS.spCustomShare2, R.string.custom_share_button_2),
+    CustomShare3(PrefS.spCustomShare3, R.string.custom_share_button_3),
+    CustomShare4(PrefS.spCustomShare4, R.string.custom_share_button_4),
+    CustomShare5(PrefS.spCustomShare5, R.string.custom_share_button_5),
+    CustomShare6(PrefS.spCustomShare6, R.string.custom_share_button_6),
+    CustomShare7(PrefS.spCustomShare7, R.string.custom_share_button_7),
+    CustomShare8(PrefS.spCustomShare8, R.string.custom_share_button_8),
+    CustomShare9(PrefS.spCustomShare9, R.string.custom_share_button_9),
+    CustomShare10(PrefS.spCustomShare10, R.string.custom_share_button_10),
+
+    ;
+
+    val defaultComponentName
+        get() = when (this) {
+            Translate ->
+                "com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
+
+            else -> null
+        }
+
+    val customShareComponentName
+        get() = pref.value.cn() ?: defaultComponentName?.cn()
 }
 
 object CustomShare {
@@ -25,38 +55,6 @@ object CustomShare {
     val log = LogCategory("CustomShare")
 
     const val CN_CLIPBOARD = "<InApp>/CopyToClipboard"
-
-    private const val translate_app_component_default =
-        "com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
-
-    fun getCustomShareComponentName(
-        target: CustomShareTarget,
-    ): ComponentName? {
-        val src: String
-        val defaultComponentName: String?
-        when (target) {
-            CustomShareTarget.Translate -> {
-                src = PrefS.spTranslateAppComponent.value
-                defaultComponentName = translate_app_component_default
-            }
-
-            CustomShareTarget.CustomShare1 -> {
-                src = PrefS.spCustomShare1.value
-                defaultComponentName = null
-            }
-
-            CustomShareTarget.CustomShare2 -> {
-                src = PrefS.spCustomShare2.value
-                defaultComponentName = null
-            }
-
-            CustomShareTarget.CustomShare3 -> {
-                src = PrefS.spCustomShare3.value
-                defaultComponentName = null
-            }
-        }
-        return src.cn() ?: defaultComponentName?.cn()
-    }
 
     fun getInfo(context: Context, cn: ComponentName?): Pair<CharSequence?, Drawable?> {
         var label: CharSequence? = null
@@ -74,7 +72,19 @@ object CustomShare {
                     }
                 } else {
                     val pm = context.packageManager
-                    val ri = pm.resolveActivityCompat(Intent().apply { component = cn })
+                    var queryIntent = Intent().apply { component = cn }
+                    var ri = pm.resolveActivityCompat(queryIntent, PackageManager.MATCH_ALL)
+                    if( ri ==null){
+                        queryIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.content_sample))
+                        }
+                        val listResolveInfo = pm.queryIntentActivitiesCompat(queryIntent, PackageManager.MATCH_ALL)
+                        ri = listResolveInfo.find {
+                            "${it.activityInfo.packageName}/${it.activityInfo.name}" == cnStr
+                        }
+                    }
                     if (ri != null) {
                         try {
                             label = ri.loadLabel(pm)
@@ -101,7 +111,7 @@ object CustomShare {
         text: String,
     ) {
         // convert "pkgName/className" string to ComponentName object.
-        val cn = getCustomShareComponentName(target)
+        val cn = target.customShareComponentName
         if (cn == null) {
             context.showToast(true, R.string.custom_share_app_not_found)
             return
@@ -153,7 +163,7 @@ object CustomShare {
         status ?: return
         try {
             // convert "pkgName/className" string to ComponentName object.
-            val cn = getCustomShareComponentName(target)
+            val cn = target.customShareComponentName
             if (cn == null) {
                 context.showToast(true, R.string.custom_share_app_not_found)
                 return
@@ -174,7 +184,7 @@ object CustomShare {
         target: CustomShareTarget,
         context: Context,
     ) = try {
-        getCustomShareComponentName(target)?.let { cn ->
+        target.customShareComponentName?.let { cn ->
             val cnStr = "${cn.packageName}/${cn.className}"
             if (cnStr == CN_CLIPBOARD) {
                 false
@@ -198,7 +208,7 @@ object CustomShare {
 
     fun reloadCache(context: Context) {
         CustomShareTarget.values().forEach { target ->
-            val cn = getCustomShareComponentName(target)
+            val cn = target.customShareComponentName
             val pair = getInfo(context, cn)
             cache[target] = pair
         }
@@ -218,7 +228,6 @@ fun String.cn(): ComponentName? {
 
 fun ComponentName.exists(context: Context): Boolean {
     return try {
-        @Suppress("DEPRECATION")
         context.packageManager.resolveActivityCompat(Intent().apply { component = this@exists })
             ?.activityInfo?.exported ?: false
     } catch (_: Throwable) {

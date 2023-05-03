@@ -938,6 +938,13 @@
     <string name="custom_share_button_1">カスタム共有ボタン1</string>
     <string name="custom_share_button_2">カスタム共有ボタン2</string>
     <string name="custom_share_button_3">カスタム共有ボタン3</string>
+    <string name="custom_share_button_4">カスタム共有ボタン4</string>
+    <string name="custom_share_button_5">カスタム共有ボタン5</string>
+    <string name="custom_share_button_6">カスタム共有ボタン6</string>
+    <string name="custom_share_button_7">カスタム共有ボタン7</string>
+    <string name="custom_share_button_8">カスタム共有ボタン8</string>
+    <string name="custom_share_button_9">カスタム共有ボタン9</string>
+    <string name="custom_share_button_10">カスタム共有ボタン10</string>
     <string name="custom_share_app_not_found">共有先のアプリがインストールされていません。「アプリ設定/挙動」を確認してください</string>
     <string name="additional_buttons_position">追加ボタンの位置(アプリ再起動が必要)</string>
     <string name="top">上</string>
@@ -1278,5 +1285,6 @@
     <string name="send_to_other_app">外部アプリに送信</string>
     <string name="save_to_local_folder">ローカルフォルダに保存</string>
     <string name="app_data_export_import">アプリデータのエクスポート/インポート</string>
+    <string name="translate_or_custom_share">翻訳ボタン / カスタム共有ボタン</string>
 
 </resources>

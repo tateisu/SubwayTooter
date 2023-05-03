@@ -1274,5 +1274,9 @@
     <string name="media_count">%1$d個の添付データ (タップで全て表示)</string>
     <string name="applied_when_post">投稿送信時に反映されます</string>
     <string name="exceed_reaction_per_account">リアクション個数の制限(%1$d)</string>
-    <string name="copy_reaction_name">Copy reaction name</string>
+    <string name="copy_reaction_name">リアクション名をコピー</string>
+    <string name="send_to_other_app">外部アプリに送信</string>
+    <string name="save_to_local_folder">ローカルフォルダに保存</string>
+    <string name="app_data_export_import">アプリデータのエクスポート/インポート</string>
+
 </resources>

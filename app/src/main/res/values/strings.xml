@@ -1283,4 +1283,7 @@
     <string name="applied_when_post">applied when post.</string>
     <string name="exceed_reaction_per_account">Reaction limit is %1$d.</string>
     <string name="copy_reaction_name">Copy reaction name</string>
+    <string name="send_to_other_app">Send to other app</string>
+    <string name="save_to_local_folder">Save to local folder</string>
+    <string name="app_data_export_import">Export/Import app data</string>
 </resources>

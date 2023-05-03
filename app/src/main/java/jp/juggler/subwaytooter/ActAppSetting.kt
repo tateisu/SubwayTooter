@@ -22,6 +22,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import android.widget.TextView.OnEditorActionListener
 import androidx.annotation.ColorInt
+import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -57,9 +58,12 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.log.showToast
+import jp.juggler.util.log.withCaption
 import jp.juggler.util.ui.*
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStreamWriter
@@ -92,6 +96,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         val reLinefeed = Regex("[\\x0d\\x0a]+")
     }
 
+    // states
     private var customShareTarget: CustomShareTarget? = null
 
     lateinit var handler: Handler
@@ -156,6 +161,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         arImportAppData.register(this)
         arTimelineFont.register(this)
         arTimelineFontBold.register(this)
+        arSaveAppData.register(this)
 
         App1.setActivityTheme(this)
 
@@ -168,8 +174,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
         if (savedInstanceState != null) {
             try {
-                val sv = savedInstanceState.getString(STATE_CHOOSE_INTENT_TARGET)
-                customShareTarget = CustomShareTarget.values().firstOrNull { it.name == sv }
+                savedInstanceState.getString(STATE_CHOOSE_INTENT_TARGET)?.let { target ->
+                    customShareTarget = CustomShareTarget.values().firstOrNull { it.name == target }
+                }
             } catch (ex: Throwable) {
                 log.e(ex, "can't restore customShareTarget.")
             }
@@ -231,8 +238,9 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        val sv = customShareTarget?.name
-        if (sv != null) outState.putString(STATE_CHOOSE_INTENT_TARGET, sv)
+        customShareTarget?.name?.let {
+            outState.putString(STATE_CHOOSE_INTENT_TARGET, it)
+        }
     }
 
     override fun dispatchKeyEvent(event: KeyEvent) = try {
@@ -307,6 +315,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                                     }
                                     return
                                 }
+
                                 else -> {
                                     val caption = getString(item.caption)
                                     val match = caption.contains(query, ignoreCase = true)
@@ -671,8 +680,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             val text = when (val pi = item.pref) {
                                 is FloatPref ->
                                     item.fromFloat.invoke(actAppSetting, pi.value)
+
                                 is StringPref ->
                                     pi.value
+
                                 else -> error("EditText has incorrect pref $pi")
                             }
 
@@ -829,52 +840,95 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     ///////////////////////////////////////////////////////////////
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    fun exportAppData() {
+    fun sendAppData() {
         val activity = this
         launchProgress(
             "export app data",
-            doInBackground = {
-                val cacheDir = activity.cacheDir
-
-                cacheDir.mkdir()
-
-                val file = File(
-                    cacheDir,
-                    "SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
-                )
-
-                // ZipOutputStreamオブジェクトの作成
-                ZipOutputStream(FileOutputStream(file)).use { zipStream ->
-
-                    // アプリデータjson
-                    zipStream.putNextEntry(ZipEntry("AppData.json"))
-                    try {
-                        val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
-                        AppDataExporter.encodeAppData(activity, jw)
-                        jw.flush()
-                    } finally {
-                        zipStream.closeEntry()
-                    }
-
-                    // カラム背景画像
-                    val appState = App1.getAppState(activity)
-                    for (column in appState.columnList) {
-                        AppDataExporter.saveBackgroundImage(activity, zipStream, column)
-                    }
-                }
-
-                file
-            },
+            doInBackground = { encodeAppData() },
             afterProc = {
-                val uri = FileProvider.getUriForFile(activity, FILE_PROVIDER_AUTHORITY, it)
-                val intent = Intent(Intent.ACTION_SEND)
-                intent.type = contentResolver.getType(uri)
-                intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
-                intent.putExtra(Intent.EXTRA_STREAM, uri)
-                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                arNoop.launch(intent)
+                try {
+                    val uri =
+                        FileProvider.getUriForFile(activity, FILE_PROVIDER_AUTHORITY, it)
+                    Intent(Intent.ACTION_SEND).apply {
+                        type = contentResolver.getType(uri)
+                        putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }.launch(arNoop)
+                } catch (ex: Throwable) {
+                    log.e(ex, "exportAppData failed.")
+                    dialogOrToast(ex.withCaption(getString(R.string.missing_app_can_receive_action_send)))
+                }
             }
         )
+    }
+
+    fun saveAppData() {
+        try {
+            Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                putExtra(Intent.EXTRA_TITLE, "SubwayTooter app data.zip")
+            }.launch(arSaveAppData)
+        } catch (ex: Throwable) {
+            log.e(ex, "can't find app that can handle ACTION_CREATE_DOCUMENT.")
+            dialogOrToast(ex.withCaption("can't find app that can handle ACTION_CREATE_DOCUMENT."))
+        }
+    }
+
+    private val arSaveAppData = ActivityResultHandler(log) { r ->
+        launchAndShowError {
+            if (r.resultCode != RESULT_OK) return@launchAndShowError
+            val outUri = r.data?.data ?: error("missing result.data.data")
+            launchProgress(
+                "save app data",
+                doInBackground = {
+                    val tempFile = encodeAppData()
+                    try {
+                        FileInputStream(tempFile).use { inStream ->
+                            (contentResolver.openOutputStream(outUri)
+                                ?: error("contentResolver.openOutputStream returns null : $outUri"))
+                                .use { inStream.copyTo(it) }
+                        }
+                    } finally {
+                        tempFile.delete()
+                    }
+                }
+            )
+        }
+    }
+
+    /**
+     * アプリデータを一時ファイルに保存する
+     * -
+     */
+    @WorkerThread
+    private fun encodeAppData(): File {
+        val activity = this
+
+        val cacheDir = externalCacheDir ?: cacheDir ?: error("missing cache directory")
+        cacheDir.mkdirs()
+
+        val name = "SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
+        val file = File(cacheDir, name)
+
+        ZipOutputStream(FileOutputStream(file)).use { zipStream ->
+            zipStream.putNextEntry(ZipEntry("AppData.json"))
+            try {
+                val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
+                AppDataExporter.encodeAppData(activity, jw)
+                jw.flush()
+            } finally {
+                zipStream.closeEntry()
+            }
+            // カラム背景画像
+            val appState = App1.getAppState(activity)
+            for (column in appState.columnList) {
+                AppDataExporter.saveBackgroundImage(activity, zipStream, column)
+            }
+        }
+
+        return file
     }
 
     // open data picker

@@ -9,14 +9,29 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActAppSetting
+import jp.juggler.subwaytooter.ActDrawableList
+import jp.juggler.subwaytooter.ActExitReasons
+import jp.juggler.subwaytooter.ActGlideTest
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.selectPushDistributor
 import jp.juggler.subwaytooter.dialog.runInProgress
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.subwaytooter.notification.showAlertNotification
-import jp.juggler.subwaytooter.pref.*
-import jp.juggler.subwaytooter.pref.impl.*
+import jp.juggler.subwaytooter.pref.PrefB
+import jp.juggler.subwaytooter.pref.PrefF
+import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.pref.PrefL
+import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.subwaytooter.pref.impl.BasePref
+import jp.juggler.subwaytooter.pref.impl.BooleanPref
+import jp.juggler.subwaytooter.pref.impl.FloatPref
+import jp.juggler.subwaytooter.pref.impl.IntPref
+import jp.juggler.subwaytooter.pref.impl.LongPref
+import jp.juggler.subwaytooter.pref.impl.StringPref
+import jp.juggler.subwaytooter.setStatusBarColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.CustomShareTarget
@@ -1140,12 +1155,18 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
     }
 
-    action(R.string.app_data_export) {
-        action = { exportAppData() }
-    }
-
-    action(R.string.app_data_import) {
-        action = { importAppData1() }
-        desc = R.string.app_data_import_desc
+    section(R.string.app_data_export_import) {
+        group(R.string.app_data_export) {
+            action(R.string.save_to_local_folder) {
+                action = { saveAppData() }
+            }
+            action(R.string.send_to_other_app) {
+                action = { sendAppData() }
+            }
+        }
+        action(R.string.app_data_import) {
+            action = { importAppData1() }
+            desc = R.string.app_data_import_desc
+        }
     }
 }

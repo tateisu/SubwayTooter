@@ -368,6 +368,8 @@ class ActivityResultHandler(
     }
 }
 
+fun Intent.launch(ar: ActivityResultHandler) = ar.launch(this)
+
 val AppCompatActivity.isLiveActivity: Boolean
     get() = !(isFinishing || isDestroyed)
 

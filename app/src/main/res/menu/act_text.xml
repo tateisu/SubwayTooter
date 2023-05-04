@@ -3,47 +3,47 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/btnCopy"
+        android:id="@+id/miCopy"
         android:title="@string/copy_st"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/btnSend"
+        android:id="@+id/miSend"
         android:title="@string/send"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/btnSearch"
+        android:id="@+id/miSearch"
         android:title="@string/search_web"
         app:showAsAction="never" />
 
-<!--    <item-->
-<!--        android:id="@+id/btnSearchTS"-->
-<!--        android:title="@string/toot_search_ts"-->
-<!--        app:showAsAction="never" />-->
+    <!--    <item-->
+    <!--        android:id="@+id/btnSearchTS"-->
+    <!--        android:title="@string/toot_search_ts"-->
+    <!--        app:showAsAction="never" />-->
 
     <item
-        android:id="@+id/btnSearchNotestock"
+        android:id="@+id/miSearchNotestock"
         android:title="@string/toot_search_notestock"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/btnTranslate"
+        android:id="@+id/miTranslate"
         android:title="@string/translate"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/btnMuteWord"
+        android:id="@+id/miMuteWord"
         android:title="@string/mute_word"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/btnKeywordFilter"
+        android:id="@+id/miKeywordFilter"
         android:title="@string/keyword_filter"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/btnHighlight"
+        android:id="@+id/miHighlight"
         android:title="@string/highlight_word"
         app:showAsAction="never" />
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -10,8 +11,79 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@drawable/action_bar_bg"
-        app:navigationIcon="?attr/homeAsUpIndicator"
-        android:elevation="4dp" />
+        android:elevation="4dp"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSearchFormBackground"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <jp.juggler.subwaytooter.view.MyEditText
+                android:id="@+id/etSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/search"
+                android:inputType="text" />
+
+
+            <ImageButton
+                android:id="@+id/btnSearchClear"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="@string/clear"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/colorTextContent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llSearchResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvSearchCount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                tools:text="12/345" />
+
+            <ImageButton
+                android:id="@+id/btnSearchPrev"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="@string/previous"
+                android:src="@drawable/ic_arrow_drop_up"
+                app:tint="?attr/colorTextContent" />
+
+            <ImageButton
+                android:id="@+id/btnSearchNext"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="@string/next"
+                android:src="@drawable/ic_arrow_drop_down"
+                app:tint="?attr/colorTextContent" />
+
+        </LinearLayout>
+    </LinearLayout>
 
     <jp.juggler.subwaytooter.view.MyEditText
         android:id="@+id/etText"

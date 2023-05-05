@@ -6,9 +6,11 @@ import jp.juggler.util.data.encodeUTF8
 import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
+import kotlin.math.sqrt
 
 class ApngFrames private constructor(
-    private val pixelSizeMax: Int = 0,
+    private val pixelSizeMax: Float = 0f,
     private val debug: Boolean = false,
 ) : ApngDecoderCallback, MyGifDecoderCallback {
 
@@ -29,43 +31,64 @@ class ApngFrames private constructor(
             color = 0
         }
 
+        // return w,h
+        fun scaleEmojiSize(
+            srcW: Float,
+            srcH: Float,
+            maxSize: Float,
+        ): Pair<Float, Float> = when {
+            // 入力サイズの情報がない
+            srcW <= 0f || srcH <= 0f -> Pair(maxSize, maxSize)
+            else -> {
+                val sqMax = maxSize * maxSize
+                val sqOriginal = srcW * srcH
+                val aspect = srcW / srcH
+                when {
+                    // 既に十分小さい
+                    sqOriginal <= sqMax -> Pair(srcW, srcH)
+                    // アスペクト比に応じたスケーリング
+                    else -> Pair(
+                        sqrt(sqMax * aspect),
+                        sqrt(sqMax / aspect),
+                    )
+                }
+            }
+        }
+
         private fun createBlankBitmap(w: Int, h: Int) =
             Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
 
-        private fun scale(max: Int, num: Int, den: Int) =
-            (max.toFloat() * num.toFloat() / den.toFloat() + 0.5f).toInt()
-
         private fun scaleBitmap(
-            sizeMax: Int,
+            sizeMax: Float,
             src: Bitmap,
             recycleSrc: Boolean = true, // true: ownership of "src" will be moved or recycled.
         ): Bitmap {
-
+            if (sizeMax <= 0) {
+                return when {
+                    recycleSrc -> src
+                    else -> src.copy(Bitmap.Config.ARGB_8888, false)
+                }
+            }
             val wSrc = src.width
             val hSrc = src.height
-            if (sizeMax <= 0 || (wSrc <= sizeMax && hSrc <= sizeMax)) {
-                return if (recycleSrc) {
-                    src
-                } else {
-                    src.copy(Bitmap.Config.ARGB_8888, false)
+            val (wDst, hDst) = scaleEmojiSize(
+                wSrc.toFloat(),
+                hSrc.toFloat(),
+                sizeMax,
+            )
+            val wDstInt = max(1, round(wDst).toInt())
+            val hDstInt = max(1, round(hDst).toInt())
+            if (wSrc <= wDstInt && hSrc <= hDstInt ) {
+                return when {
+                    recycleSrc -> src
+                    else -> src.copy(Bitmap.Config.ARGB_8888, false)
                 }
             }
 
-            val wDst: Int
-            val hDst: Int
-            if (wSrc >= hSrc) {
-                wDst = sizeMax
-                hDst = max(1, scale(sizeMax, hSrc, wSrc))
-            } else {
-                hDst = sizeMax
-                wDst = max(1, scale(sizeMax, wSrc, hSrc))
-            }
-            //Log.v(TAG,"scaleBitmap: $wSrc,$hSrc => $wDst,$hDst")
-
-            val b2 = createBlankBitmap(wDst, hDst)
+            val b2 = createBlankBitmap(wDstInt, hDstInt)
             val canvas = Canvas(b2)
             val rectSrc = Rect(0, 0, wSrc, hSrc)
-            val rectDst = Rect(0, 0, wDst, hDst)
+            val rectDst = Rect(0, 0, wDstInt, hDstInt)
             canvas.drawBitmap(src, rectSrc, rectDst, sPaintDontBlend)
 
             if (recycleSrc) src.recycle()
@@ -83,12 +106,12 @@ class ApngFrames private constructor(
                 Bitmap.Config.ARGB_8888
             )
 
-        private fun toAndroidBitmap(src: ApngBitmap, sizeMax: Int) =
+        private fun toAndroidBitmap(src: ApngBitmap, sizeMax: Float) =
             scaleBitmap(sizeMax, toAndroidBitmap(src))
 
         private fun parseApng(
             inStream: InputStream,
-            pixelSizeMax: Int,
+            pixelSizeMax: Float,
             debug: Boolean = false,
         ): ApngFrames {
             val result = ApngFrames(pixelSizeMax, debug)
@@ -105,7 +128,7 @@ class ApngFrames private constructor(
 
         private fun parseWebP(
             inStream: InputStream,
-            pixelSizeMax: Int,
+            pixelSizeMax: Float,
             debug: Boolean = false,
         ): ApngFrames {
             val result = ApngFrames(pixelSizeMax, debug)
@@ -122,7 +145,7 @@ class ApngFrames private constructor(
 
         private fun parseGif(
             inStream: InputStream,
-            pixelSizeMax: Int,
+            pixelSizeMax: Float,
             debug: Boolean = false,
         ): ApngFrames {
             val result = ApngFrames(pixelSizeMax, debug)
@@ -166,7 +189,7 @@ class ApngFrames private constructor(
         }
 
         fun parse(
-            pixelSizeMax: Int,
+            pixelSizeMax: Float,
             debug: Boolean = false,
             opener: () -> InputStream?,
         ): ApngFrames? {
@@ -284,7 +307,7 @@ class ApngFrames private constructor(
         val animationControl = this.animationControl
         val frames = this.frames
 
-        if (animationControl == null || frames == null || frames.isEmpty()) {
+        if (animationControl == null || frames.isNullOrEmpty()) {
             // ここは通らないはず…
             result.bitmap = null
             result.delay = Long.MAX_VALUE
@@ -409,6 +432,7 @@ class ApngFrames private constructor(
                 frameControl.width,
                 frameControl.height
             )
+
             else -> null
         }
 

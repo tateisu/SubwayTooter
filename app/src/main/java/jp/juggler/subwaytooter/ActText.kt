@@ -72,7 +72,7 @@ class ActText : AppCompatActivity() {
         }
     }
 
-    class SearchHilightSpan(color: Int) : BackgroundColorSpan(color)
+    class SearchResultSpan(color: Int) : BackgroundColorSpan(color)
 
     private var account: SavedAccount? = null
 
@@ -360,7 +360,7 @@ class ActText : AppCompatActivity() {
 
     private fun searchHighlight(newPos: Int?) {
         views.etText.text?.let { e ->
-            for (span in e.getSpans(0, e.length, SearchHilightSpan::class.java)) {
+            for (span in e.getSpans(0, e.length, SearchResultSpan::class.java)) {
                 try {
                     e.removeSpan(span)
                 } catch (ignored: Throwable) {
@@ -372,7 +372,7 @@ class ActText : AppCompatActivity() {
                     else -> R.attr.colorButtonBgCw
                 }
                 e.setSpan(
-                    SearchHilightSpan(attrColor(attrId)),
+                    SearchResultSpan(attrColor(attrId)),
                     pos,
                     pos + searchKeywordLength,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,

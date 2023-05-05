@@ -181,7 +181,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
 
                         val job = async(AppDispatchers.IO) {
                             try {
-                                ApngFrames.parse(128) { resources?.openRawResource(resId) }
+                                ApngFrames.parse(128f) { resources?.openRawResource(resId) }
                             } catch (ex: Throwable) {
                                 ex.printStackTrace()
                                 null

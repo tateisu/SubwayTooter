@@ -9,21 +9,23 @@ import android.os.Handler
 import android.os.SystemClock
 import com.caverock.androidsvg.SVG
 import jp.juggler.apng.ApngFrames
+import jp.juggler.apng.ApngFrames.Companion.scaleEmojiSize
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.table.EmojiCacheDbOpenHelper
 import jp.juggler.subwaytooter.table.daoImageAspect
 import jp.juggler.util.coroutine.EmptyScope
-import jp.juggler.util.data.*
-import jp.juggler.util.log.*
+import jp.juggler.util.data.clip
+import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.LinkedList
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
+import kotlin.math.max
 
 class CustomEmojiCache(
     val context: Context,
@@ -248,7 +250,7 @@ class CustomEmojiCache(
 
                     ts = elapsedTime
                     val frames = try {
-                        data?.let { decodeAPNG(it, request.url) }
+                        data?.let { decodeImage(it, request.url) }
                     } catch (ex: Throwable) {
                         log.e(ex, "decode failed.")
                         null
@@ -327,13 +329,13 @@ class CustomEmojiCache(
             }
         }
 
-        private fun decodeAPNG(data: ByteArray, url: String): ApngFrames? {
+        private fun decodeImage(data: ByteArray, url: String): ApngFrames? {
             val errors = ArrayList<Throwable>()
 
-            val maxSize = PrefS.spEmojiPixels.toInt().clip(16, 1024)
+            val maxSize = PrefS.spEmojiPixels.toInt().clip(16, 1024).toFloat()
 
             try {
-                // APNGをデコード AWebPも
+                // APNG,AWebP,AGIF
                 val x = ApngFrames.parse(maxSize) { ByteArrayInputStream(data) }
                 if (x != null) return x
                 error("ApngFrames.parse returns null.")
@@ -354,7 +356,7 @@ class CustomEmojiCache(
 
             // SVGのロードを試みる
             try {
-                val b = decodeSVG(url, data, maxSize.toFloat())
+                val b = decodeSVG(url, data, maxSize)
                 if (b != null) return ApngFrames(b)
                 error("decodeSVG returns null.")
             } catch (ex: Throwable) {
@@ -373,22 +375,27 @@ class CustomEmojiCache(
 
         private fun decodeBitmap(
             data: ByteArray,
-            @Suppress("SameParameterValue") pixelMax: Int,
+            maxPixels: Float,
         ): Bitmap? {
             options.inJustDecodeBounds = true
             options.inScaled = false
             options.outWidth = 0
             options.outHeight = 0
             BitmapFactory.decodeByteArray(data, 0, data.size, options)
-            var w = options.outWidth
-            var h = options.outHeight
-            if (w <= 0 || h <= 0) error("decodeBitmap: can't decode bounds.")
+            var srcW = options.outWidth
+            var srcH = options.outHeight
+            if (srcW <= 0 || srcH <= 0) error("decodeBitmap: can't decode bounds.")
 
+            val (preferW, preferH) = scaleEmojiSize(
+                srcW.toFloat(),
+                srcH.toFloat(),
+                maxPixels
+            )
             var bits = 0
-            while (w > pixelMax || h > pixelMax) {
+            while (srcW > preferW || srcW > preferH) {
                 ++bits
-                w = w shr 1
-                h = h shr 1
+                srcW = srcW shr 1
+                srcH = srcH shr 1
             }
             options.inJustDecodeBounds = false
             options.inSampleSize = 1 shl bits
@@ -398,33 +405,20 @@ class CustomEmojiCache(
         private fun decodeSVG(
             url: String,
             data: ByteArray,
-            @Suppress("SameParameterValue") pixelMax: Float,
+            maxSize: Float,
         ): Bitmap? {
             try {
                 val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
 
-                // the width in pixels, or -1 if there is no width available.
-                // the height in pixels, or -1 if there is no height available.
-                val srcW = svg.documentWidth
-                val srcH = svg.documentHeight
-                val aspect = if (srcW <= 0f || srcH <= 0f) {
-                    // widthやheightの情報がない
-                    1f
-                } else {
-                    srcW / srcH
-                }
-
-                val dstW: Float
-                val dstH: Float
-                if (aspect >= 1f) {
-                    dstW = pixelMax
-                    dstH = pixelMax / aspect
-                } else {
-                    dstH = pixelMax
-                    dstW = pixelMax * aspect
-                }
-                val wCeil = ceil(dstW)
-                val hCeil = ceil(dstH)
+                val (wDst, hDst) = scaleEmojiSize(
+                    // the width in pixels, or -1 if there is no width available.
+                    svg.documentWidth,
+                    // the height in pixels, or -1 if there is no height available.
+                    svg.documentHeight,
+                    maxSize
+                )
+                val wCeil = max(1f, ceil(wDst))
+                val hCeil = max(1f, ceil(hDst))
 
                 // Create a Bitmap to render our SVG to
                 val b = Bitmap.createBitmap(wCeil.toInt(), hCeil.toInt(), Bitmap.Config.ARGB_8888)
@@ -433,10 +427,10 @@ class CustomEmojiCache(
 
                 svg.renderToCanvas(
                     canvas,
-                    if (aspect >= 1f) {
-                        RectF(0f, hCeil - dstH, dstW, dstH) // 後半はw,hを指定する
+                    if (wDst >= hDst) {
+                        RectF(0f, hCeil - hDst, wDst, hDst) // 後半はw,hを指定する
                     } else {
-                        RectF(wCeil - dstW, 0f, dstW, dstH) // 後半はw,hを指定する
+                        RectF(wCeil - wDst, 0f, wDst, hDst) // 後半はw,hを指定する
                     }
                 )
                 return b

@@ -62,7 +62,7 @@ class ActViewer : AsyncActivity() {
                 apngFrames = withContext(AppDispatchers.IO) {
                     try {
                         ApngFrames.parse(
-                            1024,
+                            1024f,
                             debug = true
                         ) { resources?.openRawResource(resId) }
                     } catch (ex: Throwable) {

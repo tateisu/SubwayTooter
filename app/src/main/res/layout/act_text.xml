@@ -20,7 +20,7 @@
         android:background="?attr/colorSearchFormBackground"
         android:orientation="vertical"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="4dp">
+        android:paddingVertical="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -41,7 +41,6 @@
                 android:id="@+id/btnToggleRegex"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="2dp"
                 android:disabledAlpha="0.3"
                 android:elevation="0dp"
                 android:minHeight="48dp"
@@ -58,7 +57,6 @@
                 android:id="@+id/btnSearchClear"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="2dp"
                 android:contentDescription="@string/clear"
                 android:src="@drawable/ic_close"
                 app:tint="?attr/colorTextContent" />
@@ -68,7 +66,8 @@
             android:id="@+id/tvSearchError"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?attr/colorRegexFilterError" />
+            android:textColor="?attr/colorRegexFilterError"
+            tools:text="regex error" />
 
         <LinearLayout
             android:id="@+id/llSearchResult"
@@ -84,13 +83,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
+                android:includeFontPadding="false"
                 tools:text="12/345" />
 
             <ImageButton
                 android:id="@+id/btnSearchPrev"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="4dp"
+                android:background="@drawable/btn_bg_transparent_round6dp"
                 android:contentDescription="@string/previous"
                 android:src="@drawable/ic_arrow_drop_up"
                 app:tint="?attr/colorTextContent" />
@@ -99,7 +99,7 @@
                 android:id="@+id/btnSearchNext"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="4dp"
+                android:background="@drawable/btn_bg_transparent_round6dp"
                 android:contentDescription="@string/next"
                 android:src="@drawable/ic_arrow_drop_down"
                 app:tint="?attr/colorTextContent" />

@@ -115,7 +115,7 @@ class ActText : AppCompatActivity() {
                 ?.let { daoSavedAccount.loadAccount(it) }
 
             if (savedInstanceState == null) {
-                views.llSearchResult.gone()
+                searchHighlight(null)
 
                 val sv = intent.string(EXTRA_TEXT) ?: ""
                 val contentStart = intent.int(EXTRA_CONTENT_START) ?: 0
@@ -309,16 +309,8 @@ class ActText : AppCompatActivity() {
             }
         }
         this.searchResult = searchResult
-
-        views.btnSearchClear.isEnabledAlpha = keyword.isNotEmpty()
-        views.btnSearchPrev.isEnabledAlpha = searchResult.isNotEmpty()
-        views.btnSearchNext.isEnabledAlpha = searchResult.isNotEmpty()
         when {
-            searchResult.isEmpty() -> {
-                views.llSearchResult.gone()
-                searchHighlight(null)
-            }
-
+            searchResult.isEmpty() -> searchHighlight(null)
             else -> searchNext(byTextUpdate = true)
         }
     }
@@ -350,28 +342,40 @@ class ActText : AppCompatActivity() {
     }
 
     private fun searchJump(newPos: IntRange?) {
-        val idx = when (newPos) {
-            null -> null
-            else -> {
-                val end = views.etText.text?.length ?: 0
-                views.etText.setSelection(
-                    newPos.first.clip(0, end),
-                    (newPos.last + 1).clip(0, end),
-                )
-                searchResult.indexOf(newPos).takeIf { it >= 0 }?.plus(1)
-            }
-        }
-        views.llSearchResult.visible()
-        views.tvSearchCount.text = getString(
-            R.string.search_result,
-            idx?.toString() ?: "?",
-            searchResult.size
-        )
         searchHighlight(newPos)
     }
 
     private fun searchHighlight(newPos: IntRange?) {
-        views.tvSearchError.vg(!searchError.isNullOrBlank())?.text = searchError
+        val hasKeyword = !views.etSearch.text.isNullOrEmpty()
+
+        views.btnSearchClear.isEnabledAlpha = hasKeyword
+
+        views.llSearchResult.vg(hasKeyword)?.let {
+            views.btnSearchPrev.isEnabledAlpha = searchResult.size > 1
+            views.btnSearchNext.isEnabledAlpha = searchResult.size > 1
+
+            val idx = when (newPos) {
+                null -> null
+                else -> {
+                    val end = views.etText.text?.length ?: 0
+                    views.etText.setSelection(
+                        newPos.first.clip(0, end),
+                        (newPos.last + 1).clip(0, end),
+                    )
+                    searchResult.indexOf(newPos).takeIf { it >= 0 }?.plus(1)
+                }
+            }
+
+            views.tvSearchCount.text = getString(
+                R.string.search_result,
+                idx?.toString() ?: "0",
+                searchResult.size
+            )
+        }
+
+        views.tvSearchError.vg(hasKeyword && !searchError.isNullOrBlank())
+            ?.text = searchError
+
         views.etText.text?.let { e ->
             for (span in e.getSpans(0, e.length, SearchResultSpan::class.java)) {
                 try {

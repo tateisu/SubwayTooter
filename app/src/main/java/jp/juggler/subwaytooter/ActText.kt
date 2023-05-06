@@ -362,13 +362,13 @@ class ActText : AppCompatActivity() {
                         newPos.first.clip(0, end),
                         (newPos.last + 1).clip(0, end),
                     )
-                    searchResult.indexOf(newPos).takeIf { it >= 0 }?.plus(1)
+                    searchResult.indexOf(newPos).takeIf { it >= 0 }
                 }
             }
 
             views.tvSearchCount.text = getString(
                 R.string.search_result,
-                idx?.toString() ?: "0",
+                idx?.plus(1) ?: 0,
                 searchResult.size
             )
         }

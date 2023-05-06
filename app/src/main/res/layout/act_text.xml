@@ -49,6 +49,9 @@
                 android:stateListAnimator="@null"
                 android:textOff="@string/toggle_regexp"
                 android:textOn="@string/toggle_regexp"
+                android:textSize="14dp"
+                android:textStyle="bold"
+                tools:ignore="SpUsage"
                 tools:isChecked="true" />
 
             <ImageButton
@@ -62,11 +65,10 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/tvSearchError"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/tvSearchError"
-            android:textColor="?attr/colorRegexFilterError"
-            />
+            android:textColor="?attr/colorRegexFilterError" />
 
         <LinearLayout
             android:id="@+id/llSearchResult"

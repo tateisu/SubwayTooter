@@ -354,16 +354,13 @@ class ActText : AppCompatActivity() {
             views.btnSearchPrev.isEnabledAlpha = searchResult.size > 1
             views.btnSearchNext.isEnabledAlpha = searchResult.size > 1
 
-            val idx = when (newPos) {
-                null -> null
-                else -> {
-                    val end = views.etText.text?.length ?: 0
-                    views.etText.setSelection(
-                        newPos.first.clip(0, end),
-                        (newPos.last + 1).clip(0, end),
-                    )
-                    searchResult.indexOf(newPos).takeIf { it >= 0 }
-                }
+            val idx = newPos?.let {
+                val end = views.etText.text?.length ?: 0
+                views.etText.setSelection(
+                    newPos.first.clip(0, end),
+                    (newPos.last + 1).clip(0, end),
+                )
+                searchResult.indexOf(newPos).takeIf { it >= 0 }
             }
 
             views.tvSearchCount.text = getString(

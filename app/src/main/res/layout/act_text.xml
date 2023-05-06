@@ -37,16 +37,36 @@
                 android:hint="@string/search"
                 android:inputType="text" />
 
+            <ToggleButton
+                android:id="@+id/btnToggleRegex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:disabledAlpha="0.3"
+                android:elevation="0dp"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:stateListAnimator="@null"
+                android:textOff="@string/toggle_regexp"
+                android:textOn="@string/toggle_regexp"
+                tools:isChecked="true" />
 
             <ImageButton
                 android:id="@+id/btnSearchClear"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:contentDescription="@string/clear"
                 android:src="@drawable/ic_close"
                 app:tint="?attr/colorTextContent" />
         </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvSearchError"
+            android:textColor="?attr/colorRegexFilterError"
+            />
 
         <LinearLayout
             android:id="@+id/llSearchResult"

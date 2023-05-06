@@ -4,8 +4,6 @@ import android.app.SearchManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.os.SystemClock
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
@@ -72,33 +70,19 @@ class ActText : AppCompatActivity() {
         }
     }
 
-    class SearchResultSpan(color: Int) : BackgroundColorSpan(color)
-
-    private var account: SavedAccount? = null
+    private class SearchResultSpan(color: Int) : BackgroundColorSpan(color)
 
     private val views by lazy {
         ActTextBinding.inflate(layoutInflater)
     }
 
-    private val selection: String
-        get() {
-            val et = views.etText
-            val s = et.selectionStart
-            val e = et.selectionEnd
-            val text = et.text.toString()
-            return if (s == e) {
-                text
-            } else {
-                text.substring(s, e)
-            }
-        }
-
     private val searchTextChannel = Channel<Long>(capacity = Channel.CONFLATED)
 
-    private var searchResult: List<Int> = emptyList()
-    private var searchKeywordLength = 0
+    private var account: SavedAccount? = null
 
-    private val handler = Handler(Looper.getMainLooper())
+    private var searchResult: List<IntRange> = emptyList()
+
+    private var searchError: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,6 +96,7 @@ class ActText : AppCompatActivity() {
         views.btnSearchClear.setOnClickListener { views.etSearch.setText("") }
         views.btnSearchPrev.setOnClickListener { searchPrev() }
         views.btnSearchNext.setOnClickListener { searchNext() }
+        views.btnToggleRegex.setOnCheckedChangeListener { _, _ -> postSearchText() }
 
         lifecycleScope.launch {
             while (true) {
@@ -161,7 +146,7 @@ class ActText : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.miCopy -> selection.copyToClipboard(this)
+            R.id.miCopy -> selectionOrAll.copyToClipboard(this)
             R.id.miSearch -> search()
             R.id.miSend -> send()
             R.id.miMuteWord -> muteWord()
@@ -174,7 +159,7 @@ class ActText : AppCompatActivity() {
             R.id.miTranslate -> CustomShare.invokeText(
                 CustomShareTarget.Translate,
                 this,
-                selection,
+                selectionOrAll,
             )
 
             else -> return super.onOptionsItemSelected(item)
@@ -182,8 +167,23 @@ class ActText : AppCompatActivity() {
         return true
     }
 
+    /**
+     * 選択範囲、またはテキスト全体
+     */
+    private val selectionOrAll: String
+        get() {
+            val et = views.etText
+            val s = et.selectionStart
+            val e = et.selectionEnd
+            val text = et.text.toString()
+            return when (s) {
+                e -> text
+                else -> text.substring(s, e)
+            }
+        }
+
     private fun send() {
-        selection.trim().notEmpty()?.let {
+        selectionOrAll.trim().notEmpty()?.let {
             try {
 
                 val intent = Intent()
@@ -199,7 +199,7 @@ class ActText : AppCompatActivity() {
     }
 
     private fun search() {
-        selection.trim().notEmpty()?.also {
+        selectionOrAll.trim().notEmpty()?.also {
             try {
                 val intent = Intent(Intent.ACTION_WEB_SEARCH)
                 intent.putExtra(SearchManager.QUERY, it)
@@ -214,7 +214,7 @@ class ActText : AppCompatActivity() {
     }
 
     private fun searchToot(@Suppress("SameParameterValue") resultCode: Int) {
-        selection.trim().notEmpty()?.let {
+        selectionOrAll.trim().notEmpty()?.let {
             try {
                 val data = Intent()
                 data.putExtra(Intent.EXTRA_TEXT, it)
@@ -229,7 +229,7 @@ class ActText : AppCompatActivity() {
 
     private fun muteWord() {
         launchAndShowError {
-            selection.trim().notEmpty()?.let {
+            selectionOrAll.trim().notEmpty()?.let {
                 daoMutedWord.save(it)
                 App1.getAppState(this@ActText).onMuteUpdated()
                 showToast(false, R.string.word_was_muted)
@@ -238,7 +238,7 @@ class ActText : AppCompatActivity() {
     }
 
     private fun keywordFilter() {
-        selection.trim().notEmpty()?.let { text ->
+        selectionOrAll.trim().notEmpty()?.let { text ->
             val account = this.account
             if (account?.isPseudo == false && account.isMastodon) {
                 ActKeywordFilter.open(this, account, initialPhrase = text)
@@ -258,7 +258,7 @@ class ActText : AppCompatActivity() {
     }
 
     private fun highlight() {
-        selection.trim().notEmpty()?.let {
+        selectionOrAll.trim().notEmpty()?.let {
             startActivity(ActHighlightWordEdit.createIntent(this, it))
         }
     }
@@ -276,11 +276,23 @@ class ActText : AppCompatActivity() {
     private suspend fun searchTextImpl() {
         val keyword = views.etSearch.text?.toString() ?: ""
         val content = views.etText.text?.toString() ?: ""
-        val searchResult: List<Int> = withContext(AppDispatchers.IO) {
-            if (keyword.isEmpty()) {
-                emptyList()
-            } else {
-                buildList {
+        val useRegex = views.btnToggleRegex.isChecked
+        val searchResult: List<IntRange> = withContext(AppDispatchers.IO) {
+            buildList {
+                searchError = null
+                if (keyword.isEmpty()) {
+                    // nothing to do.
+                } else if (useRegex) {
+                    try {
+                        val re = keyword.toRegex(RegexOption.IGNORE_CASE)
+                        re.findAll(content).forEach { mr ->
+                            add(mr.range)
+                        }
+                    } catch (ex: Throwable) {
+                        log.e(ex, "search error.")
+                        searchError = ex.message
+                    }
+                } else {
                     var nextStart = 0
                     while (nextStart < content.length) {
                         val pos = content.indexOf(
@@ -289,14 +301,14 @@ class ActText : AppCompatActivity() {
                             ignoreCase = true
                         )
                         if (pos == -1) break
-                        add(pos)
-                        nextStart = pos + keyword.length
+                        val end = pos + keyword.length
+                        add(pos until end)
+                        nextStart = end
                     }
                 }
             }
         }
         this.searchResult = searchResult
-        this.searchKeywordLength = keyword.length
 
         views.btnSearchClear.isEnabledAlpha = keyword.isNotEmpty()
         views.btnSearchPrev.isEnabledAlpha = searchResult.isNotEmpty()
@@ -307,16 +319,16 @@ class ActText : AppCompatActivity() {
                 searchHighlight(null)
             }
 
-            else -> searchNext(byTextUpdate=true)
+            else -> searchNext(byTextUpdate = true)
         }
     }
 
-    private fun searchNext(byTextUpdate: Boolean=false) {
+    private fun searchNext(byTextUpdate: Boolean = false) {
         try {
             val curPos = views.etText.selectionStart
             val newPos = when {
-                byTextUpdate -> searchResult.find { it >= curPos }
-                else -> searchResult.find { it > curPos }
+                byTextUpdate -> searchResult.find { it.first >= curPos }
+                else -> searchResult.find { it.first > curPos }
             } ?: searchResult.firstOrNull()
             searchJump(newPos)
         } catch (ex: Throwable) {
@@ -329,7 +341,7 @@ class ActText : AppCompatActivity() {
             val curPos = views.etText.selectionStart.takeIf { it >= 0 }
                 ?: views.etText.text?.length
                 ?: return
-            val newPos = searchResult.findLast { it < curPos }
+            val newPos = searchResult.findLast { it.first < curPos }
                 ?: searchResult.lastOrNull()
             searchJump(newPos)
         } catch (ex: Throwable) {
@@ -337,14 +349,14 @@ class ActText : AppCompatActivity() {
         }
     }
 
-    private fun searchJump(newPos: Int?) {
+    private fun searchJump(newPos: IntRange?) {
         val idx = when (newPos) {
             null -> null
             else -> {
                 val end = views.etText.text?.length ?: 0
                 views.etText.setSelection(
-                    newPos.clip(0, end),
-                    (newPos + searchKeywordLength).clip(0, end),
+                    newPos.first.clip(0, end),
+                    (newPos.last + 1).clip(0, end),
                 )
                 searchResult.indexOf(newPos).takeIf { it >= 0 }?.plus(1)
             }
@@ -358,7 +370,8 @@ class ActText : AppCompatActivity() {
         searchHighlight(newPos)
     }
 
-    private fun searchHighlight(newPos: Int?) {
+    private fun searchHighlight(newPos: IntRange?) {
+        views.tvSearchError.vg(!searchError.isNullOrBlank())?.text = searchError
         views.etText.text?.let { e ->
             for (span in e.getSpans(0, e.length, SearchResultSpan::class.java)) {
                 try {
@@ -373,8 +386,8 @@ class ActText : AppCompatActivity() {
                 }
                 e.setSpan(
                     SearchResultSpan(attrColor(attrId)),
-                    pos,
-                    pos + searchKeywordLength,
+                    pos.first,
+                    pos.last + 1,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }

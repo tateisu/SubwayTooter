@@ -72,6 +72,71 @@ class ActText : AppCompatActivity() {
 
     private class SearchResultSpan(color: Int) : BackgroundColorSpan(color)
 
+    private class SearchResult(
+        val items: List<IntRange> = emptyList(),
+        val hasMore: Boolean = false,
+        val error: String? = null,
+    ) {
+        val size = items.size
+
+        fun findNext(curPos: Int, allowEqual: Boolean = false): IntRange? {
+            var start = 0
+            var end = items.size
+            while (end > start) {
+                val mid = (end + start) shr 1
+                val item = items[mid]
+                if (curPos in item) return when {
+                    allowEqual -> item
+                    else -> items.elementAtOrNull(mid + 1)
+                }
+                items.elementAtOrNull(mid - 1)?.let { prev ->
+                    if (curPos in prev.last + 1 until item.first) return item
+                }
+                when {
+                    curPos > item.first -> start = mid + 1
+                    else -> end = mid
+                }
+            }
+            return null
+        }
+
+        fun findPrev(curPos: Int, allowEqual: Boolean = false): IntRange? {
+            var start = 0
+            var end = items.size
+            while (end > start) {
+                val mid = (end + start) shr 1
+                val item = items[mid]
+                if (curPos in item) return when {
+                    allowEqual -> item
+                    else -> items.elementAtOrNull(mid - 1)
+                }
+                items.elementAtOrNull(mid + 1)?.let { next ->
+                    if (curPos in item.last + 1 until next.first) return item
+                }
+                when {
+                    curPos > item.first -> start = mid + 1
+                    else -> end = mid
+                }
+            }
+            return null
+        }
+
+        fun index(curPos: Int): Int? {
+            var start = 0
+            var end = items.size
+            while (end > start) {
+                val mid = (end + start) shr 1
+                val item = items[mid]
+                when {
+                    curPos in item -> return mid
+                    curPos > item.first -> start = mid + 1
+                    else -> end = mid
+                }
+            }
+            return null
+        }
+    }
+
     private val views by lazy {
         ActTextBinding.inflate(layoutInflater)
     }
@@ -80,9 +145,7 @@ class ActText : AppCompatActivity() {
 
     private var account: SavedAccount? = null
 
-    private var searchResult: List<IntRange> = emptyList()
-
-    private var searchError: String? = null
+    private var searchResult = SearchResult()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,7 +178,7 @@ class ActText : AppCompatActivity() {
                 ?.let { daoSavedAccount.loadAccount(it) }
 
             if (savedInstanceState == null) {
-                searchHighlight(null)
+                showSearchResult(null)
 
                 val sv = intent.string(EXTRA_TEXT) ?: ""
                 val contentStart = intent.int(EXTRA_CONTENT_START) ?: 0
@@ -277,75 +340,83 @@ class ActText : AppCompatActivity() {
         val keyword = views.etSearch.text?.toString() ?: ""
         val content = views.etText.text?.toString() ?: ""
         val useRegex = views.btnToggleRegex.isChecked
-        val searchResult: List<IntRange> = withContext(AppDispatchers.IO) {
-            buildList {
-                searchError = null
-                if (keyword.isEmpty()) {
-                    // nothing to do.
-                } else if (useRegex) {
-                    try {
-                        val re = keyword.toRegex(RegexOption.IGNORE_CASE)
-                        re.findAll(content).forEach { mr ->
-                            add(mr.range)
+        this.searchResult = withContext(AppDispatchers.IO) {
+            try {
+                val limit = 1000
+                var hasMore = false
+                val items = buildList {
+                    when {
+                        // 空欄
+                        keyword.isEmpty() -> Unit
+
+                        // 正規表現
+                        useRegex -> {
+                            val re = keyword.toRegex(RegexOption.IGNORE_CASE)
+                            var nextStart = 0
+                            while (nextStart < content.length) {
+                                val mr = re.find(content, startIndex = nextStart) ?: break
+                                if (size >= limit) {
+                                    hasMore = true
+                                    break
+                                }
+                                add(mr.range)
+                                nextStart = mr.range.last + 1
+                            }
                         }
-                    } catch (ex: Throwable) {
-                        log.e(ex, "search error.")
-                        searchError = ex.message
-                    }
-                } else {
-                    var nextStart = 0
-                    while (nextStart < content.length) {
-                        val pos = content.indexOf(
-                            keyword,
-                            startIndex = nextStart,
-                            ignoreCase = true
-                        )
-                        if (pos == -1) break
-                        val end = pos + keyword.length
-                        add(pos until end)
-                        nextStart = end
+                        // 生テキスト
+                        else -> {
+                            var nextStart = 0
+                            while (nextStart < content.length) {
+                                val pos = content.indexOf(
+                                    keyword,
+                                    startIndex = nextStart,
+                                    ignoreCase = true
+                                )
+                                if (pos == -1) break
+                                if (size >= limit) {
+                                    hasMore = true
+                                    break
+                                }
+                                val end = pos + keyword.length
+                                add(pos until end)
+                                nextStart = end
+                            }
+                        }
                     }
                 }
+                SearchResult(items = items, hasMore = hasMore)
+            } catch (ex: Throwable) {
+                log.e(ex, "search error.")
+                SearchResult(error = ex.message)
             }
         }
-        this.searchResult = searchResult
-        when {
-            searchResult.isEmpty() -> searchHighlight(null)
-            else -> searchNext(byTextUpdate = true)
+        showSearchResult {
+            searchResult.findNext(views.etText.selectionStart, allowEqual = true)
+                ?: searchResult.items.firstOrNull()
         }
     }
 
-    private fun searchNext(byTextUpdate: Boolean = false) {
-        try {
-            val curPos = views.etText.selectionStart
-            val newPos = when {
-                byTextUpdate -> searchResult.find { it.first >= curPos }
-                else -> searchResult.find { it.first > curPos }
-            } ?: searchResult.firstOrNull()
-            searchJump(newPos)
-        } catch (ex: Throwable) {
-            log.e(ex, "searchNext failed.")
+    private fun searchNext() {
+        showSearchResult {
+            searchResult.findNext(views.etText.selectionStart, allowEqual = false)
+                ?: searchResult.items.firstOrNull()
         }
     }
 
     private fun searchPrev() {
-        try {
-            val curPos = views.etText.selectionStart.takeIf { it >= 0 }
-                ?: views.etText.text?.length
-                ?: return
-            val newPos = searchResult.findLast { it.first < curPos }
-                ?: searchResult.lastOrNull()
-            searchJump(newPos)
-        } catch (ex: Throwable) {
-            log.e(ex, "searchPrev failed.")
+        showSearchResult {
+            searchResult.findPrev(views.etText.selectionStart, allowEqual = false)
+                ?: searchResult.items.lastOrNull()
         }
     }
 
-    private fun searchJump(newPos: IntRange?) {
-        searchHighlight(newPos)
-    }
-
-    private fun searchHighlight(newPos: IntRange?) {
+    private fun showSearchResult(newPosFinder: (() -> IntRange?)?) {
+        val newPos: IntRange? = try {
+            newPosFinder?.invoke()
+        } catch (ex: Throwable) {
+            log.e(ex, "newPosFinder failed.")
+            null
+        }
         val hasKeyword = !views.etSearch.text.isNullOrEmpty()
 
         views.btnSearchClear.isEnabledAlpha = hasKeyword
@@ -357,21 +428,23 @@ class ActText : AppCompatActivity() {
             val idx = newPos?.let {
                 val end = views.etText.text?.length ?: 0
                 views.etText.setSelection(
-                    newPos.first.clip(0, end),
-                    (newPos.last + 1).clip(0, end),
+                    it.first.clip(0, end),
+                    (it.last + 1).clip(0, end),
                 )
-                searchResult.indexOf(newPos).takeIf { it >= 0 }
+                searchResult.index(it.first)
             }
 
             views.tvSearchCount.text = getString(
                 R.string.search_result,
                 idx?.plus(1) ?: 0,
-                searchResult.size
+                searchResult.size,
+                if (searchResult.hasMore) "+" else ""
             )
         }
 
-        views.tvSearchError.vg(hasKeyword && !searchError.isNullOrBlank())
-            ?.text = searchError
+        val error = searchResult.error
+        views.tvSearchError.vg(hasKeyword && !error.isNullOrBlank())
+            ?.text = error
 
         views.etText.text?.let { e ->
             for (span in e.getSpans(0, e.length, SearchResultSpan::class.java)) {
@@ -380,7 +453,7 @@ class ActText : AppCompatActivity() {
                 } catch (ignored: Throwable) {
                 }
             }
-            for (pos in searchResult) {
+            for (pos in searchResult.items) {
                 val attrId = when (newPos) {
                     pos -> R.attr.colorSearchFormBackground
                     else -> R.attr.colorButtonBgCw

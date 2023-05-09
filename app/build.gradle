@@ -163,11 +163,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     }
 }
 
-
-//kapt {
-//    useBuildCache = true
-//}
-
 dependencies {
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
     //noinspection GradleDependency

@@ -32,7 +32,7 @@ you can find APK files in assets section in release pages.
 by adding IzzyOnDroid repo, you can find Subway Tooter on F-droid app.
 - F-Droid https://www.f-droid.org/
 - IzzyOnDroid repo. https://apt.izzysoft.de/fdroid/index/info
-- ST's page on IzzyOnDroid repo https://android.izzysoft.de/repo/apk/jp.juggler.subwaytooter
+- ST's page on IzzyOnDroid repo https://android.izzysoft.de/repo/apk/jp.juggler.subwaytooter.noFcm (noFcm variant)
 
 ## Author
 <ul>

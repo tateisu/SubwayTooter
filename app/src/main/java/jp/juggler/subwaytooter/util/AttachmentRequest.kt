@@ -3,12 +3,17 @@ package jp.juggler.subwaytooter.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import jp.juggler.media.generateTempFile
 import jp.juggler.media.transcodeAudio
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_JPEG
+import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_PNG
+import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_WEBP
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.getStreamSize
 import jp.juggler.util.log.LogCategory
@@ -18,6 +23,7 @@ import jp.juggler.util.media.createResizedBitmap
 import jp.juggler.util.media.transcodeVideo
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.math.min
 
 class AttachmentRequest(
     val context: Context,
@@ -62,20 +68,9 @@ class AttachmentRequest(
             return contentUriOpener(context.contentResolver, uri, mimeType, isImage = true)
         }
 
+        // 静止画
         if (mimeType.startsWith("image")) {
-            // 静止画(失敗したらオリジナルデータにフォールバックする)
-            if (mimeType == AttachmentUploader.MIME_TYPE_JPEG ||
-                mimeType == AttachmentUploader.MIME_TYPE_PNG
-            ) try {
-                // 回転対応が必要かもしれない
-                return createResizedImageOpener()
-            } catch (ex: Throwable) {
-                log.w(ex, "createResizedImageOpener failed. fall back to original image.")
-            }
-
-            // 静止画(変換必須)
-            // 例外を投げるかもしれない
-            return createResizedImageOpener(forcePng = true)
+            return createResizedImageOpener()
         }
 
         // 音声と動画のファイル区分は曖昧なので
@@ -143,44 +138,120 @@ class AttachmentRequest(
                 else -> AttachmentUploader.acceptableMimeTypes
             }.contains(mimeType)
 
-    private fun createResizedImageOpener(
-        forcePng: Boolean = false,
-    ): InputStreamOpener {
-        val tempFile = context.generateTempFile("createResizedImageOpener")
+    private fun createResizedImageOpener(): InputStreamOpener {
         try {
             pa.progress = context.getString(R.string.attachment_handling_compress)
-
-            val bitmap = createResizedBitmap(
+            createResizedBitmap(
                 context,
                 uri,
                 imageResizeConfig,
-                skipIfNoNeedToResizeAndRotate = !forcePng,
+                skipIfNoNeedToResizeAndRotate = true,
                 serverMaxSqPixel = serverMaxSqPixel
-            ) ?: error("createResizedBitmap returns null.")
-            try {
-                val outputMimeType = when {
-                    forcePng || mimeType == AttachmentUploader.MIME_TYPE_PNG ->
-                        AttachmentUploader.MIME_TYPE_PNG
+            )?.let { bitmap ->
+                try {
+                    val canUseWebP = hasServerSupport(MIME_TYPE_WEBP) &&
+                            PrefB.bpUseWebP.value
+                    if (canUseWebP) {
+                        try {
+                            val format = when {
+                                Build.VERSION.SDK_INT >= 30 ->
+                                    Bitmap.CompressFormat.WEBP_LOSSY
 
-                    else -> AttachmentUploader.MIME_TYPE_JPEG
-                }
-                FileOutputStream(tempFile).use { outStream ->
-                    when (outputMimeType) {
-                        AttachmentUploader.MIME_TYPE_PNG ->
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
-
-                        else ->
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outStream)
+                                else ->
+                                    @Suppress("DEPRECATION")
+                                    Bitmap.CompressFormat.WEBP
+                            }
+                            return bitmap.compressToTempFileOpener(MIME_TYPE_WEBP, format, 90)
+                        } catch (ex: Throwable) {
+                            log.w(ex, "compress to WebP lossy failed.")
+                            // 失敗したらJPEG or PNG にフォールバック
+                        }
                     }
+                    try {
+                        // check bitmap has translucent pixels
+                        val hasAlpha = when {
+                            mimeType == MIME_TYPE_JPEG -> false
+                            !bitmap.hasAlpha() -> false
+                            else -> bitmap.scanAlpha()
+                        }
+                        return when (hasAlpha) {
+                            true -> bitmap.compressToTempFileOpener(
+                                MIME_TYPE_PNG,
+                                Bitmap.CompressFormat.PNG,
+                                100
+                            )
+
+                            else -> bitmap.compressToTempFileOpener(
+                                MIME_TYPE_JPEG,
+                                Bitmap.CompressFormat.JPEG,
+                                95
+                            )
+                        }
+                    } catch (ex: Throwable) {
+                        log.w(ex, "compress to JPEG/PNG failed.")
+                    }
+                } finally {
+                    bitmap.recycle()
                 }
-                return tempFileOpener(tempFile, outputMimeType, isImage = true)
-            } finally {
-                bitmap.recycle()
             }
+            // nullを返す場合もここを通る
+        } catch (ex: Throwable) {
+            log.w(ex, "createResizedBitmap failed.")
+        }
+
+        // 元のデータを返す
+        return contentUriOpener(context.contentResolver, uri, mimeType, isImage = true)
+    }
+
+    /**
+     * Bitmapを指定フォーマットで圧縮して tempFileOpener を返す
+     * 失敗したら例外を投げる
+     */
+    private fun Bitmap.compressToTempFileOpener(
+        outMimeType: String,
+        format: Bitmap.CompressFormat,
+        quality: Int,
+    ): InputStreamOpener {
+        val tempFile = context.generateTempFile("createResizedImageOpener")
+        try {
+            FileOutputStream(tempFile).use { compress(format, quality, it) }
+            return tempFileOpener(tempFile, outMimeType, isImage = true)
         } catch (ex: Throwable) {
             tempFile.delete()
             throw ex
         }
+    }
+
+    /**
+     * ビットマップのアルファ値が0xFFではないピクセルがあれば真
+     */
+    private fun Bitmap.scanAlpha(): Boolean {
+        try {
+            val w = this.width
+            val h = this.height
+            if (w > 0 && h > 0) {
+                val hStep = 64
+                val pixels = IntArray(w * min(hStep, h))
+                for (y in 0 until h step hStep) {
+                    val hPart = min(hStep, h - y)
+                    getPixels(
+                        /* pixels */ pixels,
+                        /* offset */ 0,
+                        /* stride */ w,
+                        /* x */ 0,
+                        /* y */ y,
+                        /* width */ w,
+                        /* height */ hPart,
+                    )
+                    for (i in 0 until (w * hPart)) {
+                        if (pixels[i].ushr(24) != 0xff) return true
+                    }
+                }
+            }
+        } catch (ex: Throwable) {
+            log.w(ex, "scanAlpha failed.")
+        }
+        return false
     }
 
     private suspend fun createResizedVideoOpener(): InputStreamOpener {

@@ -1297,4 +1297,5 @@
     <string name="translate_or_custom_share">Translate/Custom share buttons</string>
     <string name="search_result" translatable="false">%1$d/%2$d%3$s</string>
     <string name="toggle_regexp">.+\?</string>
+    <string name="use_webp_format_if_server_accepts">Use WebP format if server accepts.</string>
 </resources>

@@ -450,6 +450,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         )
 
         sw(PrefB.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
+
+        sw(
+            PrefB.bpUseWebP,
+            R.string.use_webp_format_if_server_accepts,
+        )
     }
 
     section(R.string.tablet_mode) {

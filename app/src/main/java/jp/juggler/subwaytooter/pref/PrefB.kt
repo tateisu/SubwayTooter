@@ -368,4 +368,8 @@ object PrefB {
         "CollapseEmojiPickerCategory",
         true
     )
+    val bpUseWebP = BooleanPref(
+        "UseWebP",
+        true
+    )
 }

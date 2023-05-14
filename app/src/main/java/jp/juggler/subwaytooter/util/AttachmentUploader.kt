@@ -48,6 +48,7 @@ class AttachmentUploader(
         internal const val MIME_TYPE_JPEG = "image/jpeg"
         internal const val MIME_TYPE_PNG = "image/png"
         internal const val MIME_TYPE_GIF = "image/gif"
+        internal const val MIME_TYPE_WEBP = "image/webp"
 
         val acceptableMimeTypes = HashSet<String>().apply {
             //
@@ -289,7 +290,7 @@ class AttachmentUploader(
             }
             if (opener.contentLength > maxBytes) {
                 return TootApiResult(
-                    safeContext.getString(R.string.file_size_too_big, maxBytes / 1000000)
+                    safeContext.getString(R.string.file_size_too_big, maxBytes / 1_000_000)
                 )
             }
 

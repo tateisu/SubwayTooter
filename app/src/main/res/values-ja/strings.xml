@@ -1286,5 +1286,6 @@
     <string name="save_to_local_folder">ローカルフォルダに保存</string>
     <string name="app_data_export_import">アプリデータのエクスポート/インポート</string>
     <string name="translate_or_custom_share">翻訳ボタン / カスタム共有ボタン</string>
+    <string name="use_webp_format_if_server_accepts">可能ならWebPフォーマットを使う</string>
 
 </resources>

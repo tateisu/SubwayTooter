@@ -138,7 +138,7 @@ fun ActPost.addAttachment(
         dialogOrToast("missing instance imformation.")
         return
     }
-    val mimeType = uri.resolveMimeType(mimeTypeArg, this, instance)
+    val mimeType = uri.resolveMimeType(mimeTypeArg, this)
         ?.notEmpty()
 
     val isReply = states.inReplyToId != null

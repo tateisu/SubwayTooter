@@ -133,7 +133,7 @@ class AttachmentRequest(
             pa.progress = context.getString(R.string.attachment_handling_compress)
 
             val canUseWebP = try {
-                MIME_TYPE_WEBP.mimeTypeIsSupported(instance) && PrefB.bpUseWebP.value
+                PrefB.bpUseWebP.value && MIME_TYPE_WEBP.mimeTypeIsSupported(instance)
             } catch (ex: Throwable) {
                 log.w(ex, "can't check canUseWebP")
                 false
@@ -153,7 +153,7 @@ class AttachmentRequest(
                 context,
                 uri,
                 imageResizeConfig,
-                skipIfNoNeedToResizeAndRotate = canUseOriginal,
+                canSkip = canUseOriginal,
                 serverMaxSqPixel = serverMaxSqPixel
             )?.let { bitmap ->
                 try {

@@ -228,27 +228,36 @@ private fun findMimeTypeByFileHeader(
     return null
 }
 
-private fun String.isProblematicImageType(instance: TootInstance) = when (instance.instanceType) {
-    InstanceType.Mastodon -> when (this) {
-        // https://github.com/mastodon/mastodon/issues/23588
-        "image/heic", "image/heif" -> true
-        // https://github.com/mastodon/mastodon/issues/20834
-        "image/avif" -> true
+/**
+ * issueを抱えたmimeTypeなら真
+ * - サーバ情報にある利用可能mimeTypeリストがアテにならん…
+ */
+private fun String.isProblematicImageType(instance: TootInstance) =
+    when (instance.instanceType) {
+        InstanceType.Mastodon -> when (this) {
+            // https://github.com/mastodon/mastodon/issues/23588
+            "image/heic", "image/heif" -> true
+            // https://github.com/mastodon/mastodon/issues/20834
+            "image/avif" -> true
 
+            else -> false
+        }
+
+        InstanceType.Pixelfed -> when (this) {
+            // Pixelfed は PC Web UI で画像を開くダイアログの時点でHEIC,HEIF,AVIF を選択できない
+            "image/heic", "image/heif", "image/avif" -> true
+            else -> false
+        }
+        // PleromaやMisskeyでの問題は調べてない
         else -> false
     }
 
-    InstanceType.Pixelfed -> when (this) {
-        // Pixelfed は PC Web UI で画像を開くダイアログの時点でHEIC,HEIF,AVIF を選択できない
-        "image/heic", "image/heif", "image/avif" -> true
-        else -> false
-    }
-    // PleromaやMisskeyでの問題は調べてない
-    else -> false
-}
-
-fun String.mimeTypeIsSupportedByServer(instance: TootInstance) =
-    instance.configuration
+/**
+ * サーバに送信できるmimeTypeなら真
+ */
+fun String.mimeTypeIsSupported(instance: TootInstance) = when {
+    isProblematicImageType(instance) -> false
+    else -> instance.configuration
         ?.jsonObject("media_attachments")
         ?.jsonArray("supported_mime_types")
         ?.contains(this)
@@ -256,24 +265,15 @@ fun String.mimeTypeIsSupportedByServer(instance: TootInstance) =
             InstanceType.Pixelfed -> acceptableMimeTypesPixelfed
             else -> acceptableMimeTypes
         }.contains(this)
-
-fun String.mimeTypeIsSupported(instance: TootInstance) = when {
-    isProblematicImageType(instance) -> false
-    else -> mimeTypeIsSupportedByServer(instance)
 }
 
-fun Uri.resolveMimeType(
-    mimeTypeArg1: String?,
-    context: Context,
-    instance: TootInstance,
-): String? {
+fun Uri.resolveMimeType(mimeTypeArg1: String?, context: Context): String? {
+    // BitmapFactory で静止画の mimeType を調べる
     // image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
     // application/octet-stream などが誤設定されてることもある
-    // Androidが静止画を読めるならそのmimeType
     bitmapMimeType(context.contentResolver)?.notEmpty()?.let { return it }
 
-    // 動画の一部は音声かもしれない
-    // データに動画や音声が含まれるか調べる
+    // MediaMetadataRetriever で動画/音声の  mimeType を調べる
     try {
         MediaMetadataRetriever().use { mmr ->
             mmr.setDataSource(context, this)
@@ -283,37 +283,40 @@ fun Uri.resolveMimeType(
         log.w(ex, "not video or audio.")
     }
 
-    // 引数のmimeTypeがサーバでサポートされているならソレ
-    try {
-        mimeTypeArg1
-            ?.notEmpty()
-            ?.takeIf { it.mimeTypeIsSupportedByServer(instance) }
-            ?.let { return it }
-    } catch (ex: Throwable) {
-        AttachmentUploader.log.w(ex, "mimeTypeArg1 check failed.")
-    }
     // ContentResolverに尋ねる
     try {
         context.contentResolver.getType(this)
             ?.notEmpty()
-            ?.takeIf { it.mimeTypeIsSupportedByServer(instance) }
             ?.let { return it }
     } catch (ex: Throwable) {
-        AttachmentUploader.log.w(ex, "contentResolver.getType failed.")
+        log.w(ex, "contentResolver.getType failed.")
     }
+
     // gboardのステッカーではUriのクエリパラメータにmimeType引数がある
     try {
         getQueryParameter("mimeType")
             ?.notEmpty()
-            ?.takeIf { it.mimeTypeIsSupportedByServer(instance) }
             ?.let { return it }
     } catch (ex: Throwable) {
         log.w(ex, "getQueryParameter(mimeType) failed.")
     }
 
-    // ファイルヘッダを読んで判定する
-    findMimeTypeByFileHeader(context.contentResolver, this)
-        ?.notEmpty()?.let { return it }
+    // 引数のmimeTypeがサーバでサポートされているならソレ
+    try {
+        mimeTypeArg1
+            ?.notEmpty()
+            ?.let { return it }
+    } catch (ex: Throwable) {
+        log.w(ex, "mimeTypeArg1 check failed.")
+    }
+
+    try {
+        // ファイルヘッダを読んで判定する
+        findMimeTypeByFileHeader(context.contentResolver, this)
+            ?.notEmpty()?.let { return it }
+    } catch (ex: Throwable) {
+        log.w(ex, "findMimeTypeByFileHeader check failed.")
+    }
 
     return null
 }

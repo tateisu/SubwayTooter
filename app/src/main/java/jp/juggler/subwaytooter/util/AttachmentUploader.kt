@@ -349,7 +349,7 @@ class AttachmentUploader(
             val (ti, ri) = TootInstance.get(client)
             ti ?: return@runApiTask ri
 
-            val mimeType = src.uri.resolveMimeType(src.mimeType, safeContext, ti)
+            val mimeType = src.uri.resolveMimeType(src.mimeType, safeContext)
             if (mimeType.isNullOrEmpty()) {
                 return@runApiTask TootApiResult(safeContext.getString(R.string.mime_type_missing))
             }

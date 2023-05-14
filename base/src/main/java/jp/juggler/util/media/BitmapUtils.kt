@@ -123,7 +123,7 @@ fun createResizedBitmap(
         else -> ResizeConfig(ResizeType.LongSide, sizeLongSide)
     },
     serverMaxSqPixel = serverMaxSqPixel,
-    skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
+    canSkip = skipIfNoNeedToResizeAndRotate
 )
 
 fun Uri.bitmapMimeType(contentResolver: ContentResolver): String? =
@@ -153,9 +153,8 @@ fun createResizedBitmap(
     serverMaxSqPixel: Int? = null,
 
     // 真の場合、リサイズも回転も必要ないならnullを返す
-    skipIfNoNeedToResizeAndRotate: Boolean = false,
+    canSkip: Boolean = false,
 ): Bitmap? {
-
     try {
         val orientation: Int? = context.contentResolver.openInputStream(uri)?.use {
             it.imageOrientation()
@@ -184,24 +183,16 @@ fun createResizedBitmap(
         /// 出力サイズの計算
         val sizeSpec = resizeConfig.size.toFloat()
         var dstSize: PointF = when (resizeConfig.type) {
-
             ResizeType.None -> srcSize
+
+            ResizeType.SquarePixel ->
+                srcSize.limitBySqPixel(aspect, sizeSpec * sizeSpec)
 
             ResizeType.LongSide -> when {
                 max(srcSize.x, srcSize.y) <= resizeConfig.size -> srcSize
-
-                aspect >= 1f -> PointF(
-                    resizeConfig.size.toFloat(),
-                    sizeSpec / aspect
-                )
-
-                else -> PointF(
-                    sizeSpec * aspect,
-                    resizeConfig.size.toFloat()
-                )
+                aspect >= 1f -> PointF(sizeSpec, sizeSpec / aspect)
+                else -> PointF(sizeSpec * aspect, sizeSpec)
             }
-
-            ResizeType.SquarePixel -> srcSize.limitBySqPixel(aspect, sizeSpec * sizeSpec)
         }
 
         if (serverMaxSqPixel != null && serverMaxSqPixel > 0) {
@@ -230,9 +221,9 @@ fun createResizedBitmap(
         )
 
         // リサイズも回転も必要がない場合
-        if (skipIfNoNeedToResizeAndRotate &&
-            (orientation == null || orientation == 1) &&
-            !resizeRequired
+        if (canSkip &&
+            !resizeRequired &&
+            (orientation == null || orientation == 1)
         ) {
             log.w("createResizedBitmap: no need to resize or rotate.")
             return null
@@ -256,10 +247,10 @@ fun createResizedBitmap(
 
         // inSampleSizeを計算
         var bits = 0
-        var x = max(srcSize.x, srcSize.y).toInt()
-        while (x > 4096 || (x > 512 && x > dstMax * 2)) {
+        var n = max(srcSize.x, srcSize.y).toInt()
+        while (n > 4096 || (n > 512 && n > dstMax * 2)) {
             ++bits
-            x = x shr 1
+            n = n shr 1
         }
         options.inJustDecodeBounds = false
         options.inSampleSize = 1 shl bits
@@ -277,7 +268,6 @@ fun createResizedBitmap(
             // サンプル数が変化している
             srcWidth = options.outWidth
             srcHeight = options.outHeight
-            val scale = dstMax.toFloat() / max(srcWidth, srcHeight)
 
             val matrix = Matrix().apply {
                 reset()
@@ -286,6 +276,7 @@ fun createResizedBitmap(
                 postTranslate(srcWidth * -0.5f, srcHeight * -0.5f)
 
                 // スケーリング
+                val scale = dstMax.toFloat() / max(srcWidth, srcHeight)
                 postScale(scale, scale)
 
                 // 回転情報があれば回転
@@ -296,24 +287,21 @@ fun createResizedBitmap(
             }
 
             // 出力用Bitmap作成
-            var dst: Bitmap? =
-                Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
+            val dst = Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
             try {
-                return if (dst == null) {
+                if (dst == null) {
                     context.showToast(false, "bitmap creation failed.")
-                    null
                 } else {
                     val canvas = Canvas(dst)
                     val paint = Paint()
                     paint.isFilterBitmap = true
                     canvas.drawBitmap(sourceBitmap, matrix, paint)
                     log.d("createResizedBitmap: resized to ${dstSizeInt.x}x${dstSizeInt.y}")
-                    val tmp = dst
-                    dst = null
-                    tmp
+                    return dst
                 }
-            } finally {
+            } catch (ex: Throwable) {
                 dst?.recycle()
+                throw ex
             }
         } finally {
             sourceBitmap.recycle()

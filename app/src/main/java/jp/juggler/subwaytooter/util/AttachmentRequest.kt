@@ -7,13 +7,9 @@ import android.os.Build
 import jp.juggler.media.generateTempFile
 import jp.juggler.media.transcodeAudio
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_JPEG
-import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_PNG
-import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_WEBP
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.getStreamSize
 import jp.juggler.util.log.LogCategory
@@ -65,7 +61,7 @@ class AttachmentRequest(
     suspend fun createOpener(): InputStreamOpener {
 
         // GIFはそのまま投げる
-        if (mimeType == AttachmentUploader.MIME_TYPE_GIF) {
+        if (mimeType == MIME_TYPE_GIF) {
             return contentUriOpener(context.contentResolver, uri, mimeType, isImage = true)
         }
 
@@ -132,28 +128,26 @@ class AttachmentRequest(
         )
     }
 
-    private fun hasServerSupport(mimeType: String) =
-        mediaConfig?.jsonArray("supported_mime_types")?.contains(mimeType)
-            ?: when (instance.instanceType) {
-                InstanceType.Pixelfed -> AttachmentUploader.acceptableMimeTypesPixelfed
-                else -> AttachmentUploader.acceptableMimeTypes
-            }.contains(mimeType)
-
     private fun createResizedImageOpener(): InputStreamOpener {
         try {
             pa.progress = context.getString(R.string.attachment_handling_compress)
 
             val canUseWebP = try {
-                hasServerSupport(MIME_TYPE_WEBP) && PrefB.bpUseWebP.value
+                MIME_TYPE_WEBP.mimeTypeIsSupported(instance) && PrefB.bpUseWebP.value
             } catch (ex: Throwable) {
                 log.w(ex, "can't check canUseWebP")
                 false
             }
 
-            // サーバが読めない形式の画像なら強制的に再圧縮をかける
-            // もしくは、PNG画像も可能ならWebPに変換したい
-            val canUseOriginal = hasServerSupport(mimeType) &&
-                    !(mimeType == MIME_TYPE_PNG && canUseWebP)
+            val canUseOriginal = when {
+                // WebPを使っていい場合、PNG画像をWebPに変換したい
+                canUseWebP && mimeType == MIME_TYPE_PNG -> false
+                // WebPを使わない場合、入力がWebPなら強制的にPNGかJPEGにする
+                !canUseWebP && mimeType == MIME_TYPE_WEBP -> false
+                // ほか、サーバが受け入れる形式でリサイズ不要ならオリジナルのまま送信
+                // ただしHEICやHEIFはサーバ側issueが落ち着くまで変換必須とする
+                else -> mimeType.mimeTypeIsSupported(instance)
+            }
 
             createResizedBitmap(
                 context,
@@ -338,7 +332,7 @@ class AttachmentRequest(
 
     private suspend fun createResizedAudioOpener(srcBytes: Long): InputStreamOpener =
         when {
-            hasServerSupport(mimeType) &&
+            mimeType.mimeTypeIsSupported(instance) &&
                     goodAudioType.contains(mimeType) &&
                     srcBytes <= maxBytesVideo -> contentUriOpener(
                 context.contentResolver,

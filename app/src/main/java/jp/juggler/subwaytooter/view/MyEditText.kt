@@ -32,8 +32,6 @@ class MyEditText @JvmOverloads constructor(
     ///////////////////////////////////////////////////////
     // IMEから画像を送られてくることがあるらしい
 
-    var contentMineTypeArray: Array<String>? = null
-
     private val receiveContentListener =
         OnReceiveContentListener { _: View, payload: ContentInfoCompat ->
             // コールバックが設定されていないなら何も受け取らない

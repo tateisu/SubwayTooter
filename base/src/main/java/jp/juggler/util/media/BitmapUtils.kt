@@ -1,6 +1,7 @@
 package jp.juggler.util.media
 
 //import it.sephiroth.android.library.exif2.ExifInterface
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -12,6 +13,7 @@ import android.graphics.PointF
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.exifinterface.media.ExifInterface
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import java.io.FileNotFoundException
@@ -123,6 +125,20 @@ fun createResizedBitmap(
     serverMaxSqPixel = serverMaxSqPixel,
     skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
 )
+
+fun Uri.bitmapMimeType(contentResolver: ContentResolver): String? =
+    try {
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        options.inScaled = false
+        contentResolver.openInputStream(this)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+        options.outMimeType?.notEmpty()
+    } catch (ex: Throwable) {
+        log.w(ex, "bitmapMimeType: can't check bitmap mime type.")
+        null
+    }
 
 fun createResizedBitmap(
     context: Context,

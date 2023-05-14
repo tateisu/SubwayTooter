@@ -28,6 +28,7 @@ import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
 import jp.juggler.subwaytooter.util.AttachmentUploader
 import jp.juggler.subwaytooter.util.PostAttachment
+import jp.juggler.subwaytooter.util.resolveMimeType
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -128,9 +129,19 @@ fun ActPost.addAttachment(
 //    onUploadEnd: () -> Unit = {},
 ) {
     val account = this.account
-    val mimeType = attachmentUploader.getMimeType(uri, mimeTypeArg)?.notEmpty()
+    if (account == null) {
+        dialogOrToast(R.string.account_select_please)
+        return
+    }
+    val instance = TootInstance.getCached(account)
+    if (instance == null) {
+        dialogOrToast("missing instance imformation.")
+        return
+    }
+    val mimeType = uri.resolveMimeType(mimeTypeArg, this, instance)
+        ?.notEmpty()
+
     val isReply = states.inReplyToId != null
-    val instance = account?.let { TootInstance.getCached(it) }
 
     when {
         attachmentList.size >= 4 -> {
@@ -138,18 +149,8 @@ fun ActPost.addAttachment(
             return
         }
 
-        account == null -> {
-            dialogOrToast(R.string.account_select_please)
-            return
-        }
-
         mimeType == null -> {
             dialogOrToast(R.string.mime_type_missing)
-            return
-        }
-
-        instance == null -> {
-            dialogOrToast("missing instance information")
             return
         }
 

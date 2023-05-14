@@ -483,7 +483,6 @@ class ActPost : AppCompatActivity(),
 
         views.scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
 
-        views.etContent.contentMineTypeArray = AttachmentUploader.acceptableMimeTypes.toTypedArray()
         views.etContent.contentCallback = { addAttachment(it) }
 
         views.spLanguage.adapter = ArrayAdapter(

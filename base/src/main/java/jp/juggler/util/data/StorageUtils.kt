@@ -11,6 +11,8 @@ import jp.juggler.util.log.LogCategory
 import okhttp3.internal.closeQuietly
 import java.io.InputStream
 
+private val log = LogCategory("StorageUtils")
+
 // internal object StorageUtils{
 //
 //	private val log = LogCategory("StorageUtils")
@@ -285,8 +287,14 @@ data class GetContentResultEntry(
 fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<GetContentResultEntry> {
     val urlList = ArrayList<GetContentResultEntry>()
     // 単一選択
-    this.data?.let {
-        urlList.add(GetContentResultEntry(it, this.type))
+    data?.let {
+        val mimeType = try {
+            type ?: contentResolver.getType(it)
+        } catch (ex: Throwable) {
+            log.w(ex, "contentResolver.getType failed. uri=$it")
+            null
+        }
+        urlList.add(GetContentResultEntry(it, mimeType))
     }
     // 複数選択
     this.clipData?.let { clipData ->

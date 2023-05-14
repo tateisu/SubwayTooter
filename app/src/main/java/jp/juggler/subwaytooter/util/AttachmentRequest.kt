@@ -17,6 +17,7 @@ import jp.juggler.subwaytooter.util.AttachmentUploader.Companion.MIME_TYPE_WEBP
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.getStreamSize
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.errorEx
 import jp.juggler.util.media.ResizeConfig
 import jp.juggler.util.media.VideoInfo.Companion.videoInfo
 import jp.juggler.util.media.createResizedBitmap
@@ -141,55 +142,28 @@ class AttachmentRequest(
     private fun createResizedImageOpener(): InputStreamOpener {
         try {
             pa.progress = context.getString(R.string.attachment_handling_compress)
+
+            val canUseWebP = try {
+                hasServerSupport(MIME_TYPE_WEBP) && PrefB.bpUseWebP.value
+            } catch (ex: Throwable) {
+                log.w(ex, "can't check canUseWebP")
+                false
+            }
+
+            // サーバが読めない形式の画像なら強制的に再圧縮をかける
+            // もしくは、PNG画像も可能ならWebPに変換したい
+            val canUseOriginal = hasServerSupport(mimeType) &&
+                    !(mimeType == MIME_TYPE_PNG && canUseWebP)
+
             createResizedBitmap(
                 context,
                 uri,
                 imageResizeConfig,
-                skipIfNoNeedToResizeAndRotate = true,
+                skipIfNoNeedToResizeAndRotate = canUseOriginal,
                 serverMaxSqPixel = serverMaxSqPixel
             )?.let { bitmap ->
                 try {
-                    val canUseWebP = hasServerSupport(MIME_TYPE_WEBP) &&
-                            PrefB.bpUseWebP.value
-                    if (canUseWebP) {
-                        try {
-                            val format = when {
-                                Build.VERSION.SDK_INT >= 30 ->
-                                    Bitmap.CompressFormat.WEBP_LOSSY
-
-                                else ->
-                                    @Suppress("DEPRECATION")
-                                    Bitmap.CompressFormat.WEBP
-                            }
-                            return bitmap.compressToTempFileOpener(MIME_TYPE_WEBP, format, 90)
-                        } catch (ex: Throwable) {
-                            log.w(ex, "compress to WebP lossy failed.")
-                            // 失敗したらJPEG or PNG にフォールバック
-                        }
-                    }
-                    try {
-                        // check bitmap has translucent pixels
-                        val hasAlpha = when {
-                            mimeType == MIME_TYPE_JPEG -> false
-                            !bitmap.hasAlpha() -> false
-                            else -> bitmap.scanAlpha()
-                        }
-                        return when (hasAlpha) {
-                            true -> bitmap.compressToTempFileOpener(
-                                MIME_TYPE_PNG,
-                                Bitmap.CompressFormat.PNG,
-                                100
-                            )
-
-                            else -> bitmap.compressToTempFileOpener(
-                                MIME_TYPE_JPEG,
-                                Bitmap.CompressFormat.JPEG,
-                                95
-                            )
-                        }
-                    } catch (ex: Throwable) {
-                        log.w(ex, "compress to JPEG/PNG failed.")
-                    }
+                    return bitmap.compressAutoType(canUseWebP)
                 } finally {
                     bitmap.recycle()
                 }
@@ -201,6 +175,48 @@ class AttachmentRequest(
 
         // 元のデータを返す
         return contentUriOpener(context.contentResolver, uri, mimeType, isImage = true)
+    }
+
+    private fun Bitmap.compressAutoType(canUseWebP: Boolean): InputStreamOpener {
+        if (canUseWebP) {
+            try {
+                val format = when {
+                    Build.VERSION.SDK_INT >= 30 ->
+                        Bitmap.CompressFormat.WEBP_LOSSY
+
+                    else ->
+                        @Suppress("DEPRECATION")
+                        Bitmap.CompressFormat.WEBP
+                }
+                return compressToTempFileOpener(MIME_TYPE_WEBP, format, 90)
+            } catch (ex: Throwable) {
+                log.w(ex, "compress to WebP lossy failed.")
+                // 失敗したらJPEG or PNG にフォールバック
+            }
+        }
+        try {
+            // check bitmap has translucent pixels
+            val hasAlpha = when {
+                mimeType == MIME_TYPE_JPEG -> false
+                !hasAlpha() -> false
+                else -> scanAlpha()
+            }
+            return when (hasAlpha) {
+                true -> compressToTempFileOpener(
+                    MIME_TYPE_PNG,
+                    Bitmap.CompressFormat.PNG,
+                    100
+                )
+
+                else -> compressToTempFileOpener(
+                    MIME_TYPE_JPEG,
+                    Bitmap.CompressFormat.JPEG,
+                    95
+                )
+            }
+        } catch (ex: Throwable) {
+            errorEx(ex, "compress to JPEG/PNG failed.")
+        }
     }
 
     /**

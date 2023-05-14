@@ -2,7 +2,13 @@ package jp.juggler.util.media
 
 //import it.sephiroth.android.library.exif2.ExifInterface
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Point
+import android.graphics.PointF
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.exifinterface.media.ExifInterface
@@ -11,6 +17,7 @@ import jp.juggler.util.log.showToast
 import java.io.FileNotFoundException
 import java.io.InputStream
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 private val log = LogCategory("BitmapUtils")
@@ -131,11 +138,9 @@ fun createResizedBitmap(
 
     // 真の場合、リサイズも回転も必要ないならnullを返す
     skipIfNoNeedToResizeAndRotate: Boolean = false,
-
-    ): Bitmap? {
+): Bitmap? {
 
     try {
-
         val orientation: Int? = context.contentResolver.openInputStream(uri)?.use {
             it.imageOrientation()
         }
@@ -149,7 +154,6 @@ fun createResizedBitmap(
         context.contentResolver.openInputStream(uri)?.use {
             BitmapFactory.decodeStream(it, null, options)
         }
-
         var srcWidth = options.outWidth
         var srcHeight = options.outHeight
         if (srcWidth <= 0 || srcHeight <= 0) {
@@ -167,22 +171,19 @@ fun createResizedBitmap(
 
             ResizeType.None -> srcSize
 
-            ResizeType.LongSide ->
-                if (max(srcSize.x, srcSize.y) <= resizeConfig.size) {
-                    srcSize
-                } else {
-                    if (aspect >= 1f) {
-                        PointF(
-                            resizeConfig.size.toFloat(),
-                            sizeSpec / aspect
-                        )
-                    } else {
-                        PointF(
-                            sizeSpec * aspect,
-                            resizeConfig.size.toFloat()
-                        )
-                    }
-                }
+            ResizeType.LongSide -> when {
+                max(srcSize.x, srcSize.y) <= resizeConfig.size -> srcSize
+
+                aspect >= 1f -> PointF(
+                    resizeConfig.size.toFloat(),
+                    sizeSpec / aspect
+                )
+
+                else -> PointF(
+                    sizeSpec * aspect,
+                    resizeConfig.size.toFloat()
+                )
+            }
 
             ResizeType.SquarePixel -> srcSize.limitBySqPixel(aspect, sizeSpec * sizeSpec)
         }
@@ -191,7 +192,7 @@ fun createResizedBitmap(
             dstSize = dstSize.limitBySqPixel(aspect, serverMaxSqPixel.toFloat())
         }
 
-        val dstSizeInt = Point(
+        var dstSizeInt = Point(
             max(1, (dstSize.x + 0.5f).toInt()),
             max(1, (dstSize.y + 0.5f).toInt())
         )
@@ -221,13 +222,26 @@ fun createResizedBitmap(
             return null
         }
 
+        // リサイズする場合、ビットマップサイズ上限の成約がある
+        if (max(dstSizeInt.x, dstSizeInt.y) > 4096) {
+            val scale = 4096f / max(dstSizeInt.x, dstSizeInt.y).toFloat()
+            dstSize = PointF(
+                min(4096f, dstSize.x * scale),
+                min(4096f, dstSize.y * scale),
+            )
+            dstSizeInt = Point(
+                max(1, (dstSize.x + 0.5f).toInt()),
+                max(1, (dstSize.y + 0.5f).toInt())
+            )
+        }
+
         // 長辺
-        val dstMax = max(dstSize.x, dstSize.y).toInt()
+        val dstMax = min(4096, max(dstSize.x, dstSize.y).toInt())
 
         // inSampleSizeを計算
         var bits = 0
         var x = max(srcSize.x, srcSize.y).toInt()
-        while (x > 512 && x > dstMax * 2) {
+        while (x > 4096 || (x > 512 && x > dstMax * 2)) {
             ++bits
             x = x shr 1
         }

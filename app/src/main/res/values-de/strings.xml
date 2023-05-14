@@ -45,7 +45,7 @@
     <string name="nsfw">NSFW</string>
     <string name="tap_to_show">Tippen zum Anzeigen</string>
     <string name="show">Anzeigen</string>
-    <string name="act_post">Beitrag veröffentlichen</string>
+    <string name="act_post">Zusammengesetzter Beitrag</string>
     <string name="content_warning">Inhaltswarnung</string>
     <string name="please_add_account">Du musst ein Konto hinterlegen, um einen Beitrag veröffentlichen zu können.</string>
     <string name="not_selected">(nicht ausgewählt)</string>
@@ -72,8 +72,8 @@
     <string name="visibility_local_unlisted">Ungelistet (lokal)</string>
     <string name="choose_visibility">Sichtbarkeit auswählen</string>
     <string name="confirm_delete_attachment">Diesen Anhang entfernen\?</string>
-    <string name="post_error_contents_empty">Füge etwas deinem Beitrag hinzu.</string>
-    <string name="post_error_contents_warning_empty">Dein Beitrag benötigt eine Warnung.</string>
+    <string name="post_error_contents_empty">Bitte füge etwas deinem Beitrag hinzu.</string>
+    <string name="post_error_contents_warning_empty">Bitte füge einen Inhaltswarntext hinzu.</string>
     <string name="wait_previous_operation">Bitte warte bis die letzte Aktion abgeschlossen wurde.</string>
     <string name="cant_remove_boost_while_favourited">Konnte geteilten Beitrag nicht entfernen solange er favorisiert ist</string>
     <string name="confirm">Bestätigen</string>
@@ -1078,4 +1078,6 @@
     <string name="reset_notification_tracking_status">Benachrichtigungs-Trackingstatus zurücksetzen</string>
     <string name="toot_search_notestock_of">Notestock-Suche nach \"%1$s\"</string>
     <string name="toot_search_notestock">Notestock-Suche</string>
+    <string name="display_name_references_post">%1$s verweist auf deinen Beitrag</string>
+    <string name="display_name_updates_post">%1$s aktualisiert den Beitrag</string>
 </resources>

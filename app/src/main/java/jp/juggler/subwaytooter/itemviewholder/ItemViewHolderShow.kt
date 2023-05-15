@@ -61,7 +61,7 @@ fun ItemViewHolder.bind(
             when (v) {
                 // ボタンは太字なので触らない
                 is Button, is CountImageButton ->
-                    if(v is Button && tvMediaDescriptions.contains(v)){
+                    if (v is Button && tvMediaDescriptions.contains(v)) {
                         v.typeface = fontNormal
                     }
 

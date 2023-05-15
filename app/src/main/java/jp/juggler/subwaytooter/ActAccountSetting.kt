@@ -31,7 +31,6 @@ import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.*
 import jp.juggler.subwaytooter.push.PushBase
 import jp.juggler.subwaytooter.push.pushRepo
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
@@ -182,7 +181,7 @@ class ActAccountSetting : AppCompatActivity(),
                 uploadImage(
                     state.propName,
                     it.uri,
-                    it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
+                    it.uri.resolveMimeType(it.mimeType, this),
                 )
             }
     }
@@ -198,8 +197,11 @@ class ActAccountSetting : AppCompatActivity(),
             // 画像のURL
             val uri = r.data?.data ?: state.uriCameraImage
             if (uri != null) {
-                val type = contentResolver.getType(uri)
-                uploadImage(state.propName, uri, type)
+                uploadImage(
+                    state.propName,
+                    uri,
+                    uri.resolveMimeType(null, this),
+                )
             }
         }
     }
@@ -374,15 +376,19 @@ class ActAccountSetting : AppCompatActivity(),
                             }
                         }
                     )
+
                     is EditText ->
                         it.addTextChangedListener(watcher1)
+
                     is Spinner ->
                         it.onItemSelectedListener = this@ActAccountSetting
                     // CompoundButton はButtonでもあるので上に置く
                     is CompoundButton ->
                         it.setOnCheckedChangeListener(this@ActAccountSetting)
+
                     is ImageButton ->
                         it.setOnClickListener(this@ActAccountSetting)
+
                     is Button ->
                         it.setOnClickListener(this@ActAccountSetting)
                 }
@@ -644,6 +650,7 @@ class ActAccountSetting : AppCompatActivity(),
             views.cbLocked -> {
                 if (!profileBusy) sendLocked(isChecked)
             }
+
             views.swNotificationPullEnabled -> {
                 saveUIToData()
                 showPushSetting()
@@ -689,9 +696,11 @@ class ActAccountSetting : AppCompatActivity(),
             R.id.btnPushSubscription -> launchAndShowError {
                 updatePushSubscription(force = true)
             }
+
             R.id.btnPushSubscriptionNotForce -> launchAndShowError {
                 updatePushSubscription(force = false)
             }
+
             R.id.btnResetNotificationTracking ->
                 resetNotificationTracking(account)
 
@@ -1558,6 +1567,7 @@ class ActAccountSetting : AppCompatActivity(),
                 showNotificationColor()
                 saveUIToData()
             }
+
             else -> Unit
         }
     }

@@ -74,13 +74,14 @@ object CustomShare {
                     val pm = context.packageManager
                     var queryIntent = Intent().apply { component = cn }
                     var ri = pm.resolveActivityCompat(queryIntent, PackageManager.MATCH_ALL)
-                    if( ri ==null){
+                    if (ri == null) {
                         queryIntent = Intent().apply {
                             action = Intent.ACTION_SEND
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, context.getString(R.string.content_sample))
                         }
-                        val listResolveInfo = pm.queryIntentActivitiesCompat(queryIntent, PackageManager.MATCH_ALL)
+                        val listResolveInfo =
+                            pm.queryIntentActivitiesCompat(queryIntent, PackageManager.MATCH_ALL)
                         ri = listResolveInfo.find {
                             "${it.activityInfo.packageName}/${it.activityInfo.name}" == cnStr
                         }

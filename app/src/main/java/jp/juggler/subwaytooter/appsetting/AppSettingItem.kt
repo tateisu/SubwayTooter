@@ -375,8 +375,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpEnableDomainTimeline, R.string.enable_domain_timeline)
     }
 
-    section(R.string.translate_or_custom_share){
-        CustomShareTarget.values().forEach{ target->
+    section(R.string.translate_or_custom_share) {
+        CustomShareTarget.values().forEach { target ->
             item(
                 SettingType.TextWithSelector,
                 target.pref,

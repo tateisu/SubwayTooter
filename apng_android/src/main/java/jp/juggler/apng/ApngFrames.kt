@@ -78,7 +78,7 @@ class ApngFrames private constructor(
             )
             val wDstInt = max(1, round(wDst).toInt())
             val hDstInt = max(1, round(hDst).toInt())
-            if (wSrc <= wDstInt && hSrc <= hDstInt ) {
+            if (wSrc <= wDstInt && hSrc <= hDstInt) {
                 return when {
                     recycleSrc -> src
                     else -> src.copy(Bitmap.Config.ARGB_8888, false)

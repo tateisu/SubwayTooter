@@ -31,8 +31,8 @@ android {
         targetSdkVersion stTargetSdkVersion
         minSdkVersion stMinSdkVersion
 
-        versionCode 531
-        versionName "5.531"
+        versionCode 532
+        versionName "5.532"
         applicationId "jp.juggler.subwaytooter"
         vectorDrawables.useSupportLibrary = true
 
@@ -232,19 +232,14 @@ repositories {
 
 def willApplyGoogleService() {
     Gradle gradle = getGradle()
-    String tskReqStr = gradle.getStartParameter().getTaskRequests().toString()
-    Matcher matcher
+    String taskRequestsString = gradle.getStartParameter().getTaskRequests().toString()
 
-    matcher = Pattern.compile(
+    def isMatch = Pattern.compile(
             "(assemble|generate|connected)Fcm",
-    ).matcher(tskReqStr)
-    if (!matcher.find()) {
-        println "willApplyGoogleService=false. $tskReqStr"
-        return false
-    } else {
-        println "willApplyGoogleService=true. $tskReqStr"
-        return true
-    }
+    ).matcher(taskRequestsString).find()
+
+    println "willApplyGoogleService=$isMatch. $taskRequestsString"
+    return isMatch
 }
 
 if (willApplyGoogleService()) apply plugin: "com.google.gms.google-services"

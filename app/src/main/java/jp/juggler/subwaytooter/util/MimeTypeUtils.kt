@@ -21,13 +21,10 @@ const val MIME_TYPE_WEBP = "image/webp"
 
 private val acceptableMimeTypes = HashSet<String>().apply {
     //
-    add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-    add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-    add("audio/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-    //
     add("image/jpeg")
     add("image/png")
     add("image/gif")
+    //
     add("video/webm")
     add("video/mp4")
     add("video/quicktime")
@@ -51,12 +48,10 @@ private val acceptableMimeTypes = HashSet<String>().apply {
 
 private val acceptableMimeTypesPixelfed = HashSet<String>().apply {
     //
-    add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-    add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-    //
     add("image/jpeg")
     add("image/png")
     add("image/gif")
+    //
     add("video/mp4")
     add("video/m4v")
 }
@@ -120,7 +115,7 @@ private val sigM4a = arrayOf(
     "M4P "
 ).map { it.toCharArray().toLowerByteArray() }
 
-private const val wild = '?'.code.toByte()
+private const val BYTE_QUESTION = '?'.code.toByte()
 
 private val sigFtyp = "ftyp".toCharArray().toLowerByteArray()
 
@@ -148,7 +143,7 @@ private fun ByteArray.startWithWildcard(
     for (i in 0 until length) {
         val cThis = this[i + thisOffset]
         val cKey = key[i + keyOffset]
-        if (cKey != wild && cKey != cThis) return false
+        if (cKey != BYTE_QUESTION && cKey != cThis) return false
     }
     return true
 }
@@ -267,7 +262,7 @@ fun String.mimeTypeIsSupported(instance: TootInstance) = when {
         }.contains(this)
 }
 
-fun Uri.resolveMimeType(mimeTypeArg1: String?, context: Context): String? {
+fun Uri.resolveMimeType(mimeTypeArg: String?, context: Context): String? {
     // BitmapFactory で静止画の mimeType を調べる
     // image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
     // application/octet-stream などが誤設定されてることもある
@@ -286,8 +281,7 @@ fun Uri.resolveMimeType(mimeTypeArg1: String?, context: Context): String? {
     // ContentResolverに尋ねる
     try {
         context.contentResolver.getType(this)
-            ?.notEmpty()
-            ?.let { return it }
+            ?.notEmpty()?.let { return it }
     } catch (ex: Throwable) {
         log.w(ex, "contentResolver.getType failed.")
     }
@@ -295,17 +289,14 @@ fun Uri.resolveMimeType(mimeTypeArg1: String?, context: Context): String? {
     // gboardのステッカーではUriのクエリパラメータにmimeType引数がある
     try {
         getQueryParameter("mimeType")
-            ?.notEmpty()
-            ?.let { return it }
+            ?.notEmpty()?.let { return it }
     } catch (ex: Throwable) {
         log.w(ex, "getQueryParameter(mimeType) failed.")
     }
 
-    // 引数のmimeTypeがサーバでサポートされているならソレ
+    // 引数のmimeType
     try {
-        mimeTypeArg1
-            ?.notEmpty()
-            ?.let { return it }
+        mimeTypeArg?.notEmpty()?.let { return it }
     } catch (ex: Throwable) {
         log.w(ex, "mimeTypeArg1 check failed.")
     }

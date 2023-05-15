@@ -263,10 +263,17 @@ fun String.mimeTypeIsSupported(instance: TootInstance) = when {
 }
 
 fun Uri.resolveMimeType(mimeTypeArg: String?, context: Context): String? {
-    // BitmapFactory で静止画の mimeType を調べる
-    // image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
-    // application/octet-stream などが誤設定されてることもある
-    bitmapMimeType(context.contentResolver)?.notEmpty()?.let { return it }
+
+    // GIFはそのまま通す
+    if (mimeTypeArg == MIME_TYPE_GIF) return MIME_TYPE_GIF
+
+    // 動画ではないなら
+    if (mimeTypeArg?.startsWith("video") != true) {
+        // BitmapFactory で静止画の mimeType を調べる
+        // image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
+        // application/octet-stream などが誤設定されてることもある
+        bitmapMimeType(context.contentResolver)?.notEmpty()?.let { return it }
+    }
 
     // MediaMetadataRetriever で動画/音声の  mimeType を調べる
     try {

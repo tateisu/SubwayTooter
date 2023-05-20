@@ -21,7 +21,7 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
     init {
         jsonArray
             ?.mapNotNull { it.cast<JsonObject>() }
-            ?.forEach { it ->
+            ?.forEach {
                 try {
                     when (it.string("type")) {
 
@@ -41,6 +41,7 @@ class APTag(parser: TootParser, jsonArray: JsonArray?) {
                                     shortcode = shortcode,
                                     url = iconUrl,
                                     staticUrl = iconUrl,
+                                    json = it,
                                 )
                             }
                         }

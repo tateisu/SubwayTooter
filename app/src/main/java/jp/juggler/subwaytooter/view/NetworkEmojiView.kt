@@ -20,15 +20,15 @@ import jp.juggler.subwaytooter.util.EmojiSizeMode
 import java.lang.ref.WeakReference
 
 @SuppressLint("ViewConstructor")
-class NetworkEmojiView(
+class NetworkEmojiView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    sizeMode: EmojiSizeMode,
-    maxEmojiWidth: Float,
-    scale: Float = 1f,
-    private val errorDrawableId: Int = R.drawable.outline_broken_image_24,
+    sizeMode: EmojiSizeMode = EmojiSizeMode.Square,
+    maxEmojiWidth: Float = NetworkEmojiSpan.maxEmojiWidth,
 ) : View(context, attrs, defStyleAttr) {
+    private var errorDrawableId: Int = R.drawable.outline_broken_image_24
+    var scale: Float = 1f
 
     private var url: String? = null
 

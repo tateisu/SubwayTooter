@@ -4,8 +4,8 @@ import androidx.annotation.DrawableRes
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.Mappable
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.jsonObjectOf
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.toMutableMap
 
@@ -56,18 +56,20 @@ class CustomEmoji(
     val shortcode: String, // shortcode (コロンを含まない)
     val url: String, // 画像URL
     val staticUrl: String?, // アニメーションなしの画像URL
-    val aliases: ArrayList<String>? = null,
+    val aliases: List<String>? = null,
     val alias: String? = null,
     val visibleInPicker: Boolean = true,
     val category: String? = null,
     val aspect: Float? = null,
+    val json: JsonObject,
 ) : EmojiBase, Mappable<String> {
 
     fun makeAlias(alias: String) = CustomEmoji(
         shortcode = shortcode,
         url = url,
         staticUrl = staticUrl,
-        alias = alias
+        alias = alias,
+        json = json,
     )
 
     override val mapKey: String
@@ -94,6 +96,7 @@ class CustomEmoji(
                 visibleInPicker = src.optBoolean("visible_in_picker", true),
                 category = src.string("category"),
                 aspect = aspect,
+                json = src,
             )
         }
 
@@ -104,6 +107,7 @@ class CustomEmoji(
                 url = url,
                 staticUrl = url,
                 category = src.string("category"),
+                json = src,
             )
         }
 
@@ -114,8 +118,10 @@ class CustomEmoji(
                 shortcode = name,
                 url = url,
                 staticUrl = url,
-                aliases = parseAliases(src.jsonArray("aliases")),
+                aliases = src.jsonArray("aliases")?.stringList()?.filter { it.isNotEmpty() }
+                    ?.notEmpty(),
                 category = src.string("category"),
+                json = src,
             )
         }
 
@@ -129,23 +135,9 @@ class CustomEmoji(
                         shortcode = k,
                         url = url,
                         staticUrl = url + (if (url.contains('?')) '&' else '?') + "static=1",
+                        json = jsonObjectOf("name" to k, "url" to url)
                     )
                 }
             }?.notEmpty()?.toMutableMap()
-
-        private fun parseAliases(src: JsonArray?): ArrayList<String>? {
-            var dst = null as ArrayList<String>?
-            if (src != null) {
-                val size = src.size
-                if (size > 0) {
-                    dst = ArrayList(size)
-                    src.forEach {
-                        val str = it?.toString()?.notEmpty()
-                        if (str != null) dst.add(str)
-                    }
-                }
-            }
-            return if (dst?.isNotEmpty() == true) dst else null
-        }
     }
 }

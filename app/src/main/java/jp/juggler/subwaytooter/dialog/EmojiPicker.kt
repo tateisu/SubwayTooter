@@ -26,7 +26,6 @@ import jp.juggler.subwaytooter.databinding.EmojiPickerDialogBinding
 import jp.juggler.subwaytooter.emoji.*
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefS
-import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.minHeightCompat
@@ -95,9 +94,14 @@ private class EmojiPicker(
                         items.filter {
                             when (it) {
                                 is PickerItemCustom ->
-                                    it.customEmoji.shortcode.contains(keywordLower)
+                                    it.customEmoji.shortcode.contains(keywordLower) ||
+                                            it.customEmoji.aliases?.any { a ->
+                                                a.contains(keywordLower, ignoreCase = true)
+                                            } == true
+
                                 is PickerItemUnicode ->
                                     it.unicodeEmoji.namesLower.any { n -> n.contains(keywordLower) }
+
                                 else -> false
                             }
                         }
@@ -130,6 +134,7 @@ private class EmojiPicker(
                     null -> EmojiMap.shortNameMap[name]?.let {
                         return PickerItemUnicode(unicodeEmoji = it)
                     }
+
                     accessInfo?.apiHost?.ascii ->
                         customEmojiMap?.get(name)?.let {
                             return PickerItemCustom(customEmoji = it)
@@ -276,9 +281,8 @@ private class EmojiPicker(
         val view: FrameLayout = FrameLayout(activity),
     ) : ViewHolderBase(view) {
         val niv = NetworkEmojiView(
-            context = activity,
+            activity,
             sizeMode = accessInfo.emojiSizeMode(),
-            maxEmojiWidth = NetworkEmojiSpan.maxEmojiWidth,
         ).apply {
             layoutParams = FrameLayout.LayoutParams(gridSize, gridSize)
         }
@@ -286,6 +290,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
+            view.setOnLongClickListener(pickerItemLongClickListener)
             view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(niv)
@@ -320,6 +325,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
+            view.setOnLongClickListener(pickerItemLongClickListener)
             view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
             view.setPadding(cellMargin, cellMargin, cellMargin, cellMargin)
             view.addView(iv)
@@ -359,6 +365,7 @@ private class EmojiPicker(
         init {
             view.setButtonBackground()
             view.setOnClickListener(pickerItemClickListener)
+            view.setOnLongClickListener(pickerItemLongClickListener)
             view.layoutParams = FlexboxLayoutManager.LayoutParams(wrapContent, wrapContent)
             view.addView(tv)
         }
@@ -493,11 +500,13 @@ private class EmojiPicker(
                 targetName = targetEmoji.unifiedName
                 targetInstance = null
             }
+
             is PickerItemCustom -> {
                 targetEmoji = item.customEmoji
                 targetName = item.customEmoji.shortcode
                 targetInstance = accessInfo!!.apiHost.ascii
             }
+
             else -> return@OnClickListener
         }
 
@@ -515,6 +524,59 @@ private class EmojiPicker(
         activity.launchAndShowError {
             onPicked(targetEmoji, bInstanceHasCustomEmoji)
         }
+    }
+
+    private val pickerItemLongClickListener = View.OnLongClickListener { v ->
+        when (val item = v.getTag(R.id.btnAbout)) {
+            is PickerItemCustom -> {
+                activity.showEmojiDetailDialog(
+                    detail = item.customEmoji.json.toString(indentFactor = 2, sort = true),
+                    initialzeNiv = {
+                        setEmoji(
+                            url = when {
+                                disableAnimation -> item.customEmoji.staticUrl
+                                else -> item.customEmoji.url
+                            },
+                            initialAspect = item.customEmoji.aspect,
+                            defaultHeight = layoutParams.height,
+                        )
+                    }
+                )
+            }
+
+            is PickerItemUnicode -> when {
+                useTwemoji -> {
+                    activity.showEmojiDetailDialog(
+                        detail = item.unicodeEmoji.namesLower.joinToString("\n"),
+                        initializeImage = {
+                            val emoji = applySkinTone(item.unicodeEmoji)
+                            if (emoji.isSvg) {
+                                Glide.with(this@EmojiPicker.activity)
+                                    .`as`(PictureDrawable::class.java)
+                                    .load("file:///android_asset/${emoji.assetsName}")
+                                    .into(this)
+                            } else {
+                                Glide.with(this@EmojiPicker.activity)
+                                    .load(emoji.drawableId)
+                                    .into(this)
+                            }
+                        }
+                    )
+                }
+
+                else -> {
+                    activity.showEmojiDetailDialog(
+                        detail = item.unicodeEmoji.namesLower.joinToString("\n"),
+                        initializeText = {
+                            this.text = applySkinTone(item.unicodeEmoji).unifiedCode
+                        }
+                    )
+                }
+            }
+
+            else -> Unit
+        }
+        true
     }
 
     private suspend fun createCustomEmojiCategories(): List<PickerItemCategory> {
@@ -544,6 +606,7 @@ private class EmojiPicker(
                         context.getString(R.string.others)
                     )
                 }
+
                 else ->
                     context.getString(R.string.emoji_picker_custom_of, it.name)
             }
@@ -699,6 +762,7 @@ private class EmojiPicker(
                 when {
                     oldScrollX > it.left ->
                         views.svCategories.smoothScrollTo(it.left, 0)
+
                     oldScrollX + visibleWidth < it.right ->
                         views.svCategories.smoothScrollTo(it.right - visibleWidth, 0)
                 }
@@ -756,6 +820,7 @@ private class EmojiPicker(
                     dragging = FlickStatus.None
                     wasIntercept
                 }
+
                 MotionEvent.ACTION_UP -> {
                     try {
                         log.i("ACTION_UP wasIntercept=$wasIntercept")
@@ -782,6 +847,7 @@ private class EmojiPicker(
                     }
                     wasIntercept
                 }
+
                 MotionEvent.ACTION_DOWN -> {
                     log.i("ACTION_DOWN wasIntercept=$wasIntercept")
                     // ドラッグ開始
@@ -794,6 +860,7 @@ private class EmojiPicker(
                     startY = ev.y
                     wasIntercept
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     if (dragging == FlickStatus.None) {
                         wasIntercept
@@ -819,6 +886,7 @@ private class EmojiPicker(
                                 dragging = FlickStatus.Intercepted
                                 true
                             }
+
                             else -> {
                                 log.d("not yet intercept. $deltaX, $deltaY")
                                 false
@@ -826,6 +894,7 @@ private class EmojiPicker(
                         }
                     }
                 }
+
                 else -> log.w("handleTouch else $ev")
             }
         } catch (ex: Throwable) {

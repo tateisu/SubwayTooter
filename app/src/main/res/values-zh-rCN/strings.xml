@@ -1283,4 +1283,23 @@
     <string name="emoji_picker_category_collapse">折叠表情符号选择器类别（如果您所在实例有很多表情符号，关闭它将会很慢）</string>
     <string name="unfollow_hashtag_confirm">取消关注标签 \"%1$s\"？</string>
     <string name="plugin_app_intro">插件应用简介</string>
+    <string name="use_webp_format_if_server_accepts">如果服务器接受则使用 WebP 格式。</string>
+    <string name="custom_share_button_5">自定义分享按钮5</string>
+    <string name="copy_reaction_name">复制表情回应名称</string>
+    <string name="send_to_other_app">发送到其它应用</string>
+    <string name="translate_or_custom_share">翻译/自定义分享按钮</string>
+    <string name="description_long">描述（旧版本 Mastodon）</string>
+    <string name="save_to_local_folder">保存到本地文件夹</string>
+    <string name="app_data_export_import">导出/导入应用数据</string>
+    <string name="custom_share_button_4">自定义分享按钮4</string>
+    <string name="custom_share_button_6">自定义分享按钮6</string>
+    <string name="custom_share_button_7">自定义分享按钮7</string>
+    <string name="custom_share_button_8">自定义分享按钮8</string>
+    <string name="custom_share_button_9">自定义分享按钮9</string>
+    <string name="custom_share_button_10">自定义分享按钮10</string>
+    <string name="exceed_reaction_per_account">表情回应限制为 %1$d 。</string>
+    <string name="toggle_regexp">.+\?</string>
+    <string name="autocomplete_list_loading">正在加载自动补全列表…</string>
+    <string name="media_count">%1$d 附件（点击查看全部）</string>
+    <string name="applied_when_post">发布时应用。</string>
 </resources>

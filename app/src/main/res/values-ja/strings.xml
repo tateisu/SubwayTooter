@@ -1287,7 +1287,7 @@
     <string name="app_data_export_import">アプリデータのエクスポート/インポート</string>
     <string name="translate_or_custom_share">翻訳ボタン / カスタム共有ボタン</string>
     <string name="use_webp_format_if_server_accepts">可能ならWebPフォーマットを使う</string>
-    <string name="detail">Detail</string>
+    <string name="detail">詳細</string>
     <string name="emoji_detail">絵文字の詳細</string>
 
 </resources>

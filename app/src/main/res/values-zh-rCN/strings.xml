@@ -1302,4 +1302,6 @@
     <string name="autocomplete_list_loading">正在加载自动补全列表…</string>
     <string name="media_count">%1$d 附件（点击查看全部）</string>
     <string name="applied_when_post">发布时应用。</string>
+    <string name="detail">详情</string>
+    <string name="emoji_detail">表情符号详情</string>
 </resources>

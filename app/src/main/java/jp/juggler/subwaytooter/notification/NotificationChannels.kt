@@ -1,10 +1,12 @@
 package jp.juggler.subwaytooter.notification
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -23,12 +25,15 @@ import jp.juggler.util.log.LogCategory
 
 private val log = LogCategory("NotificationChannels")
 
+@SuppressLint("InlinedApi")
 enum class NotificationChannels(
     val id: String,
     @StringRes val titleId: Int,
     @StringRes val descId: Int,
     val importance: Int,
     val priority: Int,
+    // foreground service type,
+    val foregroundServiceType: Int,
     // 通知ID。(ID+tagでユニーク)
     val notificationId: Int,
     // PendingIntentのrequestCode。(ID+intentのdata Uriでユニーク)
@@ -47,6 +52,7 @@ enum class NotificationChannels(
         descId = R.string.pull_notification_desc,
         importance = NotificationManagerCompat.IMPORTANCE_DEFAULT,
         priority = NotificationCompat.PRIORITY_DEFAULT,
+        foregroundServiceType = FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         notificationId = 1,
         pircTap = 1,
         pircDelete = 1, // uriでtapとdeleteを区別している
@@ -59,6 +65,7 @@ enum class NotificationChannels(
         descId = R.string.polling_foregrounder_desc,
         importance = NotificationManagerCompat.IMPORTANCE_LOW,
         priority = NotificationCompat.PRIORITY_MIN,
+        foregroundServiceType = FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         notificationId = 2,
         pircTap = 2,
         pircDelete = -1,
@@ -71,6 +78,7 @@ enum class NotificationChannels(
         descId = R.string.server_timeout_desc,
         importance = NotificationManagerCompat.IMPORTANCE_LOW,
         priority = NotificationCompat.PRIORITY_LOW,
+        foregroundServiceType = FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         notificationId = 3,
         pircTap = 3,
         pircDelete = 4,
@@ -83,6 +91,7 @@ enum class NotificationChannels(
         descId = R.string.push_message_desc,
         importance = NotificationManagerCompat.IMPORTANCE_HIGH,
         priority = NotificationCompat.PRIORITY_HIGH,
+        foregroundServiceType = FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         notificationId = 5,
         pircTap = 5,
         pircDelete = 6,
@@ -95,6 +104,7 @@ enum class NotificationChannels(
         descId = R.string.alert_notification_desc,
         importance = NotificationManagerCompat.IMPORTANCE_HIGH,
         priority = NotificationCompat.PRIORITY_HIGH,
+        foregroundServiceType = FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         notificationId = 7,
         pircTap = 7,
         pircDelete = 8,
@@ -107,6 +117,7 @@ enum class NotificationChannels(
         descId = R.string.push_worker_desc,
         importance = NotificationManagerCompat.IMPORTANCE_LOW,
         priority = NotificationCompat.PRIORITY_LOW,
+        foregroundServiceType = FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         notificationId = 9,
         pircTap = 9,
         pircDelete = 10,
@@ -118,7 +129,7 @@ enum class NotificationChannels(
 
     fun isDisabled(context: Context) = !isEnabled(context)
 
-    fun isEnabled(context: Context): Boolean {
+    private fun isEnabled(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= 33) {
             if (ActivityCompat.checkSelfPermission(
                     context,
@@ -202,7 +213,11 @@ enum class NotificationChannels(
             setWhen(System.currentTimeMillis())
             setOngoing(true)
         }
-        return ForegroundInfo(nc.notificationId, builder.build())
+        return ForegroundInfo(
+            nc.notificationId,
+            builder.build(),
+            nc.foregroundServiceType,
+        )
     }
 
     fun cancel(context: Context, tag: String? = null) {

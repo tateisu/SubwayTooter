@@ -759,7 +759,7 @@
     <string name="user_agent_error">User-Agentには非ASCII文字を使えません。[%1$s]</string>
     <string name="user_count">ユーザー数</string>
     <string name="user_id_conversion_failed">ユーザIDを変換できません</string>
-    <string name="user_mail_address">メールアドレス</string>
+    <string name="user_mail_address">メール</string>
     <string name="user_name_not_match">ユーザ名が一致しません</string>
     <string name="user_password">パスワード</string>
     <string name="version">バージョン</string>
@@ -1289,5 +1289,4 @@
     <string name="use_webp_format_if_server_accepts">可能ならWebPフォーマットを使う</string>
     <string name="detail">詳細</string>
     <string name="emoji_detail">絵文字の詳細</string>
-
 </resources>

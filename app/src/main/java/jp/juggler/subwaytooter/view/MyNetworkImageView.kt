@@ -1,7 +1,11 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -14,6 +18,7 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.HttpException
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
@@ -49,26 +54,48 @@ class MyNetworkImageView : AppCompatImageView {
             return false // Allow calling onResourceReady on the Target.
         }
 
+        /**
+         * @return false to allow calling onLoadFailed on the Target.
+         */
         override fun onLoadFailed(
             e: GlideException?,
             model: Any?,
             target: Target<T>?,
             isFirstResource: Boolean,
-        ): Boolean {
-            e?.let {
-                log.e(it, "onLoadFailed")
-                it.rootCauses?.forEach { cause ->
+        ) = false.apply {
+            e ?: return@apply
+            val httpException = when (
+                val exceptions = e.rootCauses?.mapNotNull { it as? HttpException }
+            ) {
+                null -> null
+                // 複数ある場合、causeつきのを優先する
+                else -> exceptions.find { it.cause != null }
+                    ?: exceptions.firstOrNull()
+            }
+            if (httpException != null) {
+                val statusCode = httpException.statusCode
+                when (httpException.cause) {
+                    null -> log.e(httpException, "onLoadFailed")
+                    else -> {
+                        val causeName = httpException.cause?.javaClass?.simpleName
+                        val causeMessage = httpException.cause?.message
+                        log.e("onLoadFailed: HttpException $statusCode $causeName $causeMessage")
+                    }
+                }
+            } else {
+                log.e(e, "onLoadFailed")
+                e.rootCauses?.forEach { cause ->
                     val message = cause?.message
                     when {
                         cause == null -> Unit
                         message?.contains("setDataSource failed: status") == true ||
                                 message?.contains("etDataSourceCallback failed: status") == true
                         -> log.w(message)
+
                         else -> log.e(cause, "caused by")
                     }
                 }
             }
-            return false // Allow calling onLoadFailed on the Target.
         }
     }
 

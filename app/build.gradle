@@ -1,7 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 
 import java.text.SimpleDateFormat
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 plugins {
@@ -168,7 +167,7 @@ dependencies {
     //noinspection GradleDependency
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarLibVersion"
 
-    implementation(project(":base"))
+    implementation project(":base")
     implementation project(":colorpicker")
     implementation project(":emoji")
     implementation project(":apng_android")
@@ -183,7 +182,7 @@ dependencies {
     implementation "com.github.UnifiedPush:android-connector:2.1.1"
     implementation "jp.wasabeef:glide-transformations:4.3.0"
 
-    def apng4AndroidVersion = "2.24.0"
+    def apng4AndroidVersion = '2.25.0'
     implementation "com.github.penfeizhou.android.animation:apng:$apng4AndroidVersion"
 
     ksp "com.github.bumptech.glide:ksp:$glideVersion"
@@ -200,11 +199,11 @@ dependencies {
     androidTestApi "androidx.test:core-ktx:$testKtxVersion"
     androidTestApi "androidx.test:core:$androidxTestVersion"
     androidTestApi "androidx.test:runner:1.5.2"
-    androidTestApi "org.jetbrains.kotlin:kotlin-test"
+    androidTestApi "org.jetbrains.kotlin:kotlin-test:$kotlinTestVersion"
     androidTestApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion"
     testApi "androidx.arch.core:core-testing:$archVersion"
     testApi "junit:junit:$junitVersion"
-    testApi "org.jetbrains.kotlin:kotlin-test"
+    testApi "org.jetbrains.kotlin:kotlin-test:$kotlinTestVersion"
     testApi "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion"
 
     // To use android test orchestrator
@@ -231,7 +230,7 @@ repositories {
 }
 
 def willApplyGoogleService() {
-    Gradle gradle = getGradle()
+    def gradle = getGradle()
     String taskRequestsString = gradle.getStartParameter().getTaskRequests().toString()
 
     def isMatch = Pattern.compile(

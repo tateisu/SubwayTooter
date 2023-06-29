@@ -10,7 +10,6 @@ import jp.juggler.util.*
 import jp.juggler.util.data.digestSHA256Hex
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
-import okhttp3.internal.toHexString
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -48,7 +47,7 @@ class ActCallback : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        log.d("onCreate flags=0x${intent.flags.toHexString()}")
+        log.d("onCreate flags=0x${intent.flags.toString(radix = 16)}")
         super.onCreate(savedInstanceState)
 
         var intent: Intent? = intent

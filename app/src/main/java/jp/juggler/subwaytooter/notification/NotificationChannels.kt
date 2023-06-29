@@ -213,11 +213,20 @@ enum class NotificationChannels(
             setWhen(System.currentTimeMillis())
             setOngoing(true)
         }
-        return ForegroundInfo(
-            nc.notificationId,
-            builder.build(),
-            nc.foregroundServiceType,
-        )
+        return if (Build.VERSION.SDK_INT >= 34) {
+            ForegroundInfo(
+                nc.notificationId,
+                builder.build(),
+                nc.foregroundServiceType,
+            )
+        } else {
+            // WorkManagerのサービスにforegroundServiceTypeが定義されてないので、
+            // foregroundServiceTypeを渡すと怒られる
+            ForegroundInfo(
+                nc.notificationId,
+                builder.build(),
+            )
+        }
     }
 
     fun cancel(context: Context, tag: String? = null) {

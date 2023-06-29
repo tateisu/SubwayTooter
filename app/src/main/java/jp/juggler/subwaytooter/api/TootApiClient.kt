@@ -48,7 +48,7 @@ class TootApiClient(
         fun simplifyErrorHtml(
             response: Response,
             caption: String = "?",
-            bodyString: String = response.body?.string() ?: "",
+            bodyString: String = response.body.string(),
             jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER,
         ) = TootApiResult(
             response = response,
@@ -186,7 +186,7 @@ class TootApiClient(
                 )
             )
 
-            val bodyString = response.body?.string()
+            val bodyString = response.body.string()
             if (isApiCancelled()) return null
 
             // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
@@ -210,7 +210,7 @@ class TootApiClient(
                 bodyString
             }
         } finally {
-            response.body?.closeQuietly()
+            response.body.closeQuietly()
         }
     }
 
@@ -235,7 +235,7 @@ class TootApiClient(
             )
         )
 
-        val bodyBytes = response.body?.bytes()
+        val bodyBytes = response.body.bytes()
         if (isApiCancelled()) return null
 
         if (!response.isSuccessful || bodyBytes?.isEmpty() != false) {
@@ -323,7 +323,7 @@ class TootApiClient(
                     val response = result.response!! // nullにならないはず
 
                     // HTMLならタグを除去する
-                    val ct = response.body?.contentType()
+                    val ct = response.body.contentType()
                     if (ct?.subtype == "html") {
                         val decoded = DecodeOptions().decodeHTML(bodyString).toString()
                             .replace("""[\s　]+""".toRegex(), " ")

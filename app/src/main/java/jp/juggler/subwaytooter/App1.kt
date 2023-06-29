@@ -144,6 +144,7 @@ class App1 : Application() {
             return when {
                 userAgentCustom.isNotEmpty() && !reNotAllowedInUserAgent.matcher(userAgentCustom)
                     .find() -> userAgentCustom
+
                 else -> userAgentDefault
             }
         }
@@ -232,8 +233,6 @@ class App1 : Application() {
                 Conscrypt.newProvider(),
                 1 /* 1 means first position */
             )
-
-            initializeFont()
 
             // We want at least 2 threads and at most 4 threads in the core pool,
             // preferring to have 1 less than the CPU count to avoid saturating
@@ -468,7 +467,7 @@ class App1 : Application() {
             }
 
             return try {
-                response.body?.bytes()
+                response.body.bytes()
             } catch (ex: Throwable) {
                 log.e(ex, "getHttp content error. $url")
                 null
@@ -489,6 +488,7 @@ class App1 : Application() {
                         accessInfo.putMisskeyApiToken().toPostRequestBuilder()
                             .url(url)
                             .cacheControl(CACHE_CONTROL)
+
                     else ->
                         Request.Builder()
                             .url(url)
@@ -513,7 +513,7 @@ class App1 : Application() {
             }
 
             return try {
-                response.body?.string()
+                response.body.string()
             } catch (ex: Throwable) {
                 log.e(ex, "getHttp content error. $url")
                 null

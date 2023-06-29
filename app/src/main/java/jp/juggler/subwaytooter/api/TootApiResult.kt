@@ -130,7 +130,7 @@ open class TootApiResult(
         }
 
         // HTMLならタグの除去を試みる
-        val ct = response.body?.contentType()
+        val ct = response.body.contentType()
         if (ct?.subtype == "html") {
             val decoded = DecodeOptions().decodeHTML(sv).toString()
             return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
@@ -154,7 +154,7 @@ open class TootApiResult(
                 sb.append(simplifyErrorHtml(bodyString, jsonErrorParser))
             } else {
                 try {
-                    val string = response.body?.string()
+                    val string = response.body.string()
                     if (string != null) {
                         sb.append(simplifyErrorHtml(string, jsonErrorParser))
                     }

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Typeface
@@ -21,14 +22,66 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
+import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import jp.juggler.subwaytooter.action.accessTokenPrompt
 import jp.juggler.subwaytooter.action.timeline
-import jp.juggler.subwaytooter.actmain.*
+import jp.juggler.subwaytooter.actmain.ActMainPhoneViews
+import jp.juggler.subwaytooter.actmain.ActMainTabletViews
+import jp.juggler.subwaytooter.actmain.ColumnStripLinearLayout
+import jp.juggler.subwaytooter.actmain.SideMenuAdapter
+import jp.juggler.subwaytooter.actmain.afterNotificationGranted
+import jp.juggler.subwaytooter.actmain.closePopup
+import jp.juggler.subwaytooter.actmain.defaultInsertPosition
+import jp.juggler.subwaytooter.actmain.handleIntentUri
+import jp.juggler.subwaytooter.actmain.handleSharedIntent
+import jp.juggler.subwaytooter.actmain.importAppData
+import jp.juggler.subwaytooter.actmain.initPhoneTablet
+import jp.juggler.subwaytooter.actmain.initUIQuickPost
+import jp.juggler.subwaytooter.actmain.isOrderChanged
+import jp.juggler.subwaytooter.actmain.justifyWindowContentPortrait
+import jp.juggler.subwaytooter.actmain.launchDialogs
+import jp.juggler.subwaytooter.actmain.onBackPressedImpl
+import jp.juggler.subwaytooter.actmain.onClickImpl
+import jp.juggler.subwaytooter.actmain.onCompleteActPost
+import jp.juggler.subwaytooter.actmain.onMyClickableSpanClickedImpl
+import jp.juggler.subwaytooter.actmain.phoneTab
+import jp.juggler.subwaytooter.actmain.refreshAfterPost
+import jp.juggler.subwaytooter.actmain.reloadAccountSetting
+import jp.juggler.subwaytooter.actmain.reloadBoostAlpha
+import jp.juggler.subwaytooter.actmain.reloadColors
+import jp.juggler.subwaytooter.actmain.reloadFonts
+import jp.juggler.subwaytooter.actmain.reloadIconSize
+import jp.juggler.subwaytooter.actmain.reloadMediaHeight
+import jp.juggler.subwaytooter.actmain.reloadRoundRatio
+import jp.juggler.subwaytooter.actmain.reloadTextSize
+import jp.juggler.subwaytooter.actmain.reloadTimeZone
+import jp.juggler.subwaytooter.actmain.resizeColumnWidth
+import jp.juggler.subwaytooter.actmain.scrollColumnStrip
+import jp.juggler.subwaytooter.actmain.scrollToColumn
+import jp.juggler.subwaytooter.actmain.scrollToLastColumn
+import jp.juggler.subwaytooter.actmain.searchFromActivityResult
+import jp.juggler.subwaytooter.actmain.setColumnsOrder
+import jp.juggler.subwaytooter.actmain.showFooterColor
+import jp.juggler.subwaytooter.actmain.showQuickPostVisibility
+import jp.juggler.subwaytooter.actmain.tabOnly
+import jp.juggler.subwaytooter.actmain.updateColumnStrip
+import jp.juggler.subwaytooter.actmain.updateColumnStripSelection
 import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootVisibility
-import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.fireColumnColor
+import jp.juggler.subwaytooter.column.fireRelativeTime
+import jp.juggler.subwaytooter.column.fireShowColumnHeader
+import jp.juggler.subwaytooter.column.fireShowContent
+import jp.juggler.subwaytooter.column.onActivityStart
+import jp.juggler.subwaytooter.column.onLanguageFilterChanged
+import jp.juggler.subwaytooter.column.removeColumnViewHolderByActivity
+import jp.juggler.subwaytooter.column.saveScrollPosition
+import jp.juggler.subwaytooter.column.startLoading
+import jp.juggler.subwaytooter.column.viewHolder
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
@@ -58,12 +111,12 @@ import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.viewPumpFonts
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.internal.toHexString
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.LinkedList
 
 class ActMain : AppCompatActivity(),
     View.OnClickListener,
@@ -685,6 +738,7 @@ class ActMain : AppCompatActivity(),
                 btnToot.performClick()
                 true
             }
+
             else -> false
         }
     }
@@ -756,10 +810,18 @@ class ActMain : AppCompatActivity(),
         window.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.window_background))
 
         val color = attrColor(R.attr.colorWindowBackground)
-        log.i("Build MANUFACTURER=${Build.MANUFACTURER}, BRAND=${Build.BRAND}, MODEL=${Build.MODEL}, bgColor=${color.toHexString()}")
+        log.i(
+            "Build MANUFACTURER=${Build.MANUFACTURER}, BRAND=${Build.BRAND}, MODEL=${Build.MODEL}, bgColor=${
+                color.toString(radix = 16)
+            }"
+        )
         if (Build.MANUFACTURER?.contains("samsung", ignoreCase = true) == true) {
             // 余計なオーバードローを一回追加する
             window.decorView.rootView.setBackgroundColor(color)
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase, viewPumpFonts))
     }
 }

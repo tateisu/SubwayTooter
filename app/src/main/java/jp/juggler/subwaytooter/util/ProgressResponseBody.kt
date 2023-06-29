@@ -23,12 +23,8 @@ class ProgressResponseBody private constructor(
 
         fun makeInterceptor(): Interceptor = Interceptor { chain ->
             val originalResponse = chain.proceed(chain.request())
-
-            val originalBody = originalResponse.body
-                ?: error("makeInterceptor: originalResponse.body() returns null.")
-
             originalResponse.newBuilder()
-                .body(ProgressResponseBody(originalBody))
+                .body(ProgressResponseBody(originalResponse.body))
                 .build()
         }
 
@@ -37,8 +33,7 @@ class ProgressResponseBody private constructor(
             response: Response,
             callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit,
         ): ByteArray {
-            val body = response.body ?: error("response.body() is null.")
-            return bytes(body, callback)
+            return bytes(response.body, callback)
         }
 
         @Suppress("MemberVisibilityCanPrivate")
@@ -47,9 +42,7 @@ class ProgressResponseBody private constructor(
             body: ResponseBody,
             callback: suspend (bytesRead: Long, bytesTotal: Long) -> Unit,
         ): ByteArray {
-            if (body is ProgressResponseBody) {
-                body.callback = callback
-            }
+            (body as? ProgressResponseBody)?.callback = callback
             return body.bytes()
         }
     }
@@ -143,7 +136,7 @@ class ProgressResponseBody private constructor(
             get() = originalSource.buffer
 
         @Deprecated("use val buffer.", replaceWith = ReplaceWith("buffer"))
-        @Suppress("DEPRECATION", "OverridingDeprecatedMember")
+        @Suppress("OverridingDeprecatedMember")
         override fun buffer() = buffer
 
         override fun peek(): BufferedSource = originalSource.peek()

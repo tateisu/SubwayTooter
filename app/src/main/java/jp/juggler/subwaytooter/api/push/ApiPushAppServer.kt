@@ -62,6 +62,6 @@ class ApiPushAppServer(
             .url("$appServerPrefix/l/$largeObjectId")
             .build()
             .await(okHttp)
-            .body?.bytes()
+            .body.bytes()
     }
 }

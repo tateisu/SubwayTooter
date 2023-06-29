@@ -17,8 +17,11 @@ buildscript {
     ext.detektVersion = '1.23.0'
     ext.emoji2Version = "1.3.0"
     ext.exoplayerVersion = '2.18.7'
-    ext.glideVersion = "4.15.1"
+
+    // webpDecoder が 2.3.4.14.2 までなのでglideを上げられない
+    ext.glideVersion = "4.14.2"
     ext.webpDecoderVersion = "2.3.$glideVersion"
+
     ext.javaSourceCompatibility = JavaVersion.VERSION_1_8
     ext.javaTargetCompatibility = JavaVersion.VERSION_1_8
     ext.junitVersion = "4.13.2"

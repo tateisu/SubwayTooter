@@ -52,7 +52,7 @@ abstract class ResponseWithBase {
 
         // HTMLならタグの除去を試みる
         try {
-            val ct = response.body?.contentType()
+            val ct = response.body.contentType()
             if (ct?.subtype == "html") {
                 val decoded = DecodeOptions().decodeHTML(body).toString()
                 return TootApiResult.reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
@@ -144,7 +144,7 @@ class ResponseBeforeRead(
                 )
             )
             withContext(AppDispatchers.IO) {
-                val bodyString = response.body?.string()
+                val bodyString = response.body.string()
                 if (bodyString.isNullOrEmpty()) {
                     if (response.code in 200 until 300) {
                         // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
@@ -173,7 +173,7 @@ class ResponseBeforeRead(
                 }
             }
         } finally {
-            response.body?.closeQuietly()
+            response.body.closeQuietly()
         }
     }
 
@@ -214,7 +214,7 @@ class ResponseBeforeRead(
                         ProgressResponseBody.bytes(response, callback)
 
                     else ->
-                        response.body?.bytes() ?: error("missing response body.")
+                        response.body.bytes()
                 }
             }
         } catch (ex: Throwable) {
@@ -231,7 +231,7 @@ class ResponseBeforeRead(
                 }
             }
         } finally {
-            response.body?.closeQuietly()
+            response.body.closeQuietly()
         }
     }
 

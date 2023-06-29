@@ -5,6 +5,7 @@
     <application tools:ignore="MissingApplicationIcon">
         <service
             android:name="jp.juggler.subwaytooter.push.MyFcmService"
+            android:foregroundServiceType="dataSync"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

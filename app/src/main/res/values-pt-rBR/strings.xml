@@ -613,4 +613,6 @@
     <string name="cant_add_list_follow_requesting">Não pôde adicionar usuário à lista:
 \nPor favor tente novamente 2, 3 vezes. Ou se o usuário estiver \"trancado\", por favor aguarde até a aceitação do pedido para seguir.</string>
     <string name="tootsearch">tootsearch (JP)</string>
+    <string name="always_show_application">Mostrar (via) nome do aplicativo se possível</string>
+    <string name="avatar_icon_size">Tamanho do ícone de avatar (unidade: dp. padrão: 48. requer reiniciar o app)</string>
 </resources>

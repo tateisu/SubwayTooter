@@ -43,7 +43,8 @@ class DownloadReceiver : BroadcastReceiver() {
                                 context.getString(R.string.download_complete, title)
                             } else {
                                 context.getString(R.string.download_failed, title)
-                            }
+                            },
+                            forceToast = true,
                         )
                         /*
                             ダウンロード完了通知がシステムからのものと重複することがある

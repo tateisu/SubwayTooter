@@ -104,9 +104,14 @@ suspend fun Animation.startAndAwait(duration: Long, v: View) =
         Unit
     }
 
-internal fun showToastImpl(context: Context, bLong: Boolean, message: String): Boolean {
+internal fun showToastImpl(
+    context: Context,
+    bLong: Boolean,
+    message: String,
+    forceToast:Boolean = false,
+): Boolean {
     runOnMainLooper {
-        if (message.length >= 32 || message.count { it == '\n' } > 1) {
+        if (!forceToast && (message.length >= 32 || message.count { it == '\n' } > 1)) {
             // Android 12以降はトーストを全文表示しない
             // 長いメッセージの場合は可能ならダイアログを使う
             lastActivity?.get()?.let {
@@ -146,8 +151,11 @@ internal fun showToastImpl(context: Context, bLong: Boolean, message: String): B
     return false
 }
 
-fun Context.showToast(bLong: Boolean, caption: String?): Boolean =
-    showToastImpl(this, bLong, caption ?: "(null)")
+fun Context.showToast(
+    bLong: Boolean,
+    caption: String?,
+    forceToast:Boolean = false,
+): Boolean = showToastImpl(this, bLong, caption ?: "(null)" ,forceToast = forceToast)
 
 fun Context.showToast(ex: Throwable, caption: String? = null): Boolean =
     showToastImpl(this, true, ex.withCaption(caption))

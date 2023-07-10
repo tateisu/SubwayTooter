@@ -1,4 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
@@ -49,6 +50,7 @@ android {
                 "-opt-in=kotlin.ExperimentalStdlibApi",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-opt-in=androidx.media3.common.util.UnstableApi"
                 //      "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
                 //      "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
@@ -156,7 +158,7 @@ kotlin {
     jvmToolchain(kotlinJvmToolchain)
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+tasks.withType(KotlinCompile).configureEach {
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
     }
@@ -181,6 +183,8 @@ dependencies {
     api "org.conscrypt:conscrypt-android:$conscryptVersion"
     implementation "com.github.UnifiedPush:android-connector:2.1.1"
     implementation "jp.wasabeef:glide-transformations:4.3.0"
+
+    implementation 'com.github.androidmads:QRGenerator:1.0.1'
 
     def apng4AndroidVersion = '2.25.0'
     implementation "com.github.penfeizhou.android.animation:apng:$apng4AndroidVersion"

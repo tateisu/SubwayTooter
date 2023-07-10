@@ -155,9 +155,7 @@ open class TootApiResult(
             } else {
                 try {
                     val string = response.body.string()
-                    if (string != null) {
-                        sb.append(simplifyErrorHtml(string, jsonErrorParser))
-                    }
+                    sb.append(simplifyErrorHtml(string, jsonErrorParser))
                 } catch (ex: Throwable) {
                     log.e(ex, "missing response body.")
                     sb.append("(missing response body)")

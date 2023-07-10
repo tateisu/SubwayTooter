@@ -6,7 +6,7 @@ import jp.juggler.subwaytooter.span.BlockQuoteSpan
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.data.notEmpty
-import jp.juggler.util.ui.fontSpan
+import jp.juggler.util.ui.FontSpan
 
 // ノード種別および種別ごとのレンダリング関数
 enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
@@ -54,7 +54,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(start, sb.length, android.text.style.BackgroundColorSpan(0x40808080))
             spanList.addLast(
                 start, sb.length,
-                fontSpan(Typeface.MONOSPACE)
+                FontSpan(Typeface.MONOSPACE)
             )
         }
     }),
@@ -95,7 +95,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(
                 start,
                 sb.length,
-                fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
+                FontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
             )
         }
     }),
@@ -143,7 +143,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
         } else {
             val start = this.start
             fireRenderChildNodes(it)
-            spanList.addLast(start, sb.length, fontSpan(fontBold))
+            spanList.addLast(start, sb.length, FontSpan(fontBold))
         }
     }),
 
@@ -188,7 +188,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             fireRenderChildNodes(it)
             spanList.addLast(
                 start, sb.length,
-                fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
+                FontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
             )
         }
     }),
@@ -318,7 +318,7 @@ enum class NodeType(val render: SpanOutputEnv.(Node) -> Unit) {
             spanList.addLast(
                 start,
                 sb.length,
-                fontSpan(
+                FontSpan(
                     Typeface.defaultFromStyle(
                         Typeface.ITALIC
                     )

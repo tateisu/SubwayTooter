@@ -22,7 +22,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import jp.juggler.subwaytooter.action.accessTokenPrompt
 import jp.juggler.subwaytooter.action.timeline
 import jp.juggler.subwaytooter.actmain.ActMainPhoneViews
@@ -111,7 +110,6 @@ import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
-import jp.juggler.util.ui.viewPumpFonts
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -819,9 +817,5 @@ class ActMain : AppCompatActivity(),
             // 余計なオーバードローを一回追加する
             window.decorView.rootView.setBackgroundColor(color)
         }
-    }
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase, viewPumpFonts))
     }
 }

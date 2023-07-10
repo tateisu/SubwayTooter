@@ -7,7 +7,7 @@ import android.util.SparseBooleanArray
 import jp.juggler.util.data.asciiPattern
 import jp.juggler.util.data.firstNonNull
 import jp.juggler.util.data.groupEx
-import jp.juggler.util.ui.fontSpan
+import jp.juggler.util.ui.FontSpan
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -154,7 +154,7 @@ object MisskeySyntaxHighlighter {
                     spanList.addLast(
                         start,
                         end,
-                        fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
+                        FontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
                     )
                 }
             }

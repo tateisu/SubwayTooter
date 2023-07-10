@@ -3,16 +3,21 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidmads.library.qrgenearator.QRGContents
+import androidmads.library.qrgenearator.QRGEncoder
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.util.coroutine.launchProgress
-import net.glxn.qrgen.android.QRCode
+import jp.juggler.util.log.LogCategory
 
 @SuppressLint("StaticFieldLeak")
 object DlgQRCode {
+
+    private val log = LogCategory("DlgQRCode")
 
     internal interface QrCodeCallback {
         fun onQrCode(bitmap: Bitmap?)
@@ -30,7 +35,22 @@ object DlgQRCode {
                 it.setMessageEx(activity.getString(R.string.generating_qr_code))
             },
             doInBackground = {
-                QRCode.from(url).withSize(size, size).bitmap()
+                try {
+                    QRGEncoder(
+                        /* data */ url,
+                        /* bundle */ null,
+                        QRGContents.Type.TEXT,
+                        /* dimension */ size,
+                    ).apply {
+                        // 背景色
+                        colorBlack = Color.WHITE
+                        // 図柄の色
+                        colorWhite = Color.BLACK
+                    }.bitmap
+                } catch (ex: Throwable) {
+                    log.e(ex, "QR generation failed.")
+                    null
+                }
             },
             afterProc = {
                 if (it != null) callback.onQrCode(it)

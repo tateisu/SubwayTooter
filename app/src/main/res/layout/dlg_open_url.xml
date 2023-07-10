@@ -19,14 +19,14 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
             android:layout_weight="1"
-            android:labelFor="@+id/etInput"
+            android:labelFor="@id/etInput"
             android:text="@string/url_of_user_or_status"
             tools:ignore="LabelFor" />
 
         <ImageButton
             android:id="@+id/btnPaste"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="4dp"
             android:contentDescription="@android:string/paste"
@@ -42,9 +42,9 @@
         android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
         android:imeOptions="actionDone"
+        android:minHeight="48dp"
         android:importantForAutofill="no"
         android:inputType="text" />
-
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"

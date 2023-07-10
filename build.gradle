@@ -16,10 +16,9 @@ buildscript {
     ext.desugarLibVersion = '2.0.3'
     ext.detektVersion = '1.23.0'
     ext.emoji2Version = "1.3.0"
-    ext.exoplayerVersion = '2.18.7'
+    ext.media3Version = "1.1.0"
 
-    // webpDecoder が 2.3.4.14.2 までなのでglideを上げられない
-    ext.glideVersion = "4.14.2"
+    ext.glideVersion = '4.15.1'
     ext.webpDecoderVersion = "2.3.$glideVersion"
 
     ext.javaSourceCompatibility = JavaVersion.VERSION_1_8
@@ -28,10 +27,10 @@ buildscript {
     ext.koinVersion = '3.4.2'
     ext.kotlinJvmTarget = "1.8"
     ext.kotlinJvmToolchain = 17
-    ext.kotlinVersion = "1.8.21"
-    ext.kotlinTestVersion = "1.8.21"
-    ext.kotlinxCoroutinesVersion = '1.7.1'
-    ext.kspVersion = "1.8.21-1.0.11"
+    ext.kotlinVersion = '1.9.0'
+    ext.kotlinTestVersion = '1.9.0'
+    ext.kotlinxCoroutinesVersion = '1.7.2'
+    ext.kspVersion = "1.9.0-1.0.11"
     ext.lifecycleVersion = "2.6.1"
     ext.materialVersion = "1.9.0"
     ext.okhttpVersion = '5.0.0-alpha.11'
@@ -68,13 +67,10 @@ buildscript {
 allprojects {
     repositories {
         google()
-        maven { url "https://maven.google.com" }
-        maven { url "https://jitpack.io" }
-
         mavenCentral()
 
-        maven { url "https://dl.bintray.com/google/exoplayer/" }
-        maven { url "https://dl.bintray.com/google/flexbox-layout/" }
+        // com.github.androidmads:QRGenerator
+        maven { url 'https://jitpack.io' }
     }
 }
 

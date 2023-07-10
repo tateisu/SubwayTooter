@@ -42,7 +42,7 @@ abstract class ResponseWithBase {
     /**
      * 応答ボディのHTMLやテキストを整形する
      */
-    private suspend fun simplifyErrorHtml(body: String): String {
+    private fun simplifyErrorHtml(body: String): String {
         // JsonObjectとして解釈できるならエラーメッセージを検出する
         try {
             val json = body.decodeJsonObject()
@@ -75,7 +75,7 @@ abstract class ResponseWithBase {
     /**
      * エラー応答のステータス部分や本文を文字列にする
      */
-    suspend fun parseErrorResponse(body: String? = null): String =
+    fun parseErrorResponse(body: String? = null): String =
         try {
             StringBuilder().apply {
                 // 応答ボディのテキストがあれば追加
@@ -145,7 +145,7 @@ class ResponseBeforeRead(
             )
             withContext(AppDispatchers.IO) {
                 val bodyString = response.body.string()
-                if (bodyString.isNullOrEmpty()) {
+                if (bodyString.isEmpty()) {
                     if (response.code in 200 until 300) {
                         // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
                         return@withContext newContent("")
@@ -199,7 +199,7 @@ class ResponseBeforeRead(
                 when {
                     !response.isSuccessful -> {
                         val errorBody = try {
-                            response.body?.string()
+                            response.body.string()
                         } catch (ignored: Throwable) {
                             null
                         }

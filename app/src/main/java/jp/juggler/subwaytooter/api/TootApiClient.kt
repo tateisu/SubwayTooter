@@ -190,14 +190,14 @@ class TootApiClient(
             if (isApiCancelled()) return null
 
             // Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
-            if (bodyString?.isEmpty() != false && response.code in 200 until 300) {
+            if (bodyString.isEmpty() && response.code in 200 until 300) {
                 result.bodyString = ""
                 return ""
             }
 
-            if (!response.isSuccessful || bodyString?.isEmpty() != false) {
+            if (!response.isSuccessful || bodyString.isEmpty()) {
                 result.parseErrorResponse(
-                    bodyString?.notEmpty() ?: NO_INFORMATION,
+                    bodyString.notEmpty() ?: NO_INFORMATION,
                     jsonErrorParser
                 )
             }
@@ -238,9 +238,9 @@ class TootApiClient(
         val bodyBytes = response.body.bytes()
         if (isApiCancelled()) return null
 
-        if (!response.isSuccessful || bodyBytes?.isEmpty() != false) {
+        if (!response.isSuccessful || bodyBytes.isEmpty()) {
             result.parseErrorResponse(
-                bodyBytes?.notEmpty()?.decodeUTF8() ?: NO_INFORMATION,
+                bodyBytes.notEmpty()?.decodeUTF8() ?: NO_INFORMATION,
                 jsonErrorParser
             )
         }

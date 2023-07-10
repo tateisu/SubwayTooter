@@ -18,15 +18,50 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.mfm.MisskeyMarkdownDecoder
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.lazyContext
-import jp.juggler.subwaytooter.span.*
+import jp.juggler.subwaytooter.span.BlockCodeSpan
+import jp.juggler.subwaytooter.span.BlockQuoteSpan
+import jp.juggler.subwaytooter.span.DdSpan
+import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.HighlightSpan
+import jp.juggler.subwaytooter.span.HrSpan
+import jp.juggler.subwaytooter.span.InlineCodeSpan
+import jp.juggler.subwaytooter.span.LinkInfo
+import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
+import jp.juggler.subwaytooter.span.OrderedListItemSpan
+import jp.juggler.subwaytooter.span.SvgEmojiSpan
+import jp.juggler.subwaytooter.span.UnorderedListItemSpan
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoHighlightWord
-import jp.juggler.util.data.*
+import jp.juggler.util.data.CharacterGroup
+import jp.juggler.util.data.asciiPattern
+import jp.juggler.util.data.decodePercent
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.removeEndWhitespaces
+import jp.juggler.util.data.replaceAll
+import jp.juggler.util.data.replaceFirst
+import jp.juggler.util.data.toHashSet
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.ui.fontSpan
+import jp.juggler.util.ui.FontSpan
 import java.util.regex.Pattern
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Char
+import kotlin.CharSequence
+import kotlin.Int
+import kotlin.String
+import kotlin.Throwable
+import kotlin.Unit
+import kotlin.also
+import kotlin.apply
+import kotlin.arrayOf
+import kotlin.code
+import kotlin.let
 import kotlin.math.min
+import kotlin.repeat
+import kotlin.run
 
 object HTMLDecoder {
 
@@ -298,6 +333,7 @@ object HTMLDecoder {
                     ++count
                     continue
                 }
+
                 Character.isWhitespace(c) -> continue
                 else -> break
             }
@@ -435,6 +471,7 @@ object HTMLDecoder {
             "li", "ol", "ul", "dl", "dt", "dd", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6",
             "table", "tbody", "thead", "tfoot", "tr", "td", "th",
             -> true
+
             else -> false
         }
 
@@ -548,14 +585,16 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "em" -> {
                     sb.setSpan(
-                        fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
+                        FontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
                         spanStart,
                         sb.length,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "strong" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -564,6 +603,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "tr" -> {
                     sb.append("|")
                 }
@@ -571,6 +611,7 @@ object HTMLDecoder {
                 "style", "script" -> {
                     // sb_tmpにレンダリングした分は読み捨てる
                 }
+
                 "h1" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -585,6 +626,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "h2" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -599,6 +641,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "h3" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -613,6 +656,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "h4" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -627,6 +671,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "h5" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -641,6 +686,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "h6" -> {
                     sb.setSpan(
                         StyleSpan(Typeface.BOLD),
@@ -655,6 +701,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "code" -> {
                     // インラインコード用の装飾
 //                    sb.setSpan(
@@ -670,6 +717,7 @@ object HTMLDecoder {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
+
                 "hr" -> {
                     val start = sb.length
                     sb.append(" ")
@@ -757,7 +805,7 @@ object HTMLDecoder {
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
                 sb.setSpan(
-                    fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
+                    FontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)),
                     start,
                     sb.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
@@ -797,6 +845,7 @@ object HTMLDecoder {
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
                     }
+
                     ListType.Ordered -> {
                         sb.setSpan(
                             OrderedListItemSpan(
@@ -808,6 +857,7 @@ object HTMLDecoder {
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
                     }
+
                     else -> Unit
                 }
             }
@@ -823,7 +873,7 @@ object HTMLDecoder {
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 sb.setSpan(
-                    fontSpan(Typeface.defaultFromStyle(Typeface.BOLD)),
+                    FontSpan(Typeface.defaultFromStyle(Typeface.BOLD)),
                     start,
                     sb.length,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -853,6 +903,7 @@ object HTMLDecoder {
                 }
                 outerContext.subOrdered(listItems.map { it.text })
             }
+
             "ul" -> outerContext.subUnordered()
             "dl" -> outerContext.subDefinition()
             "blockquote" -> outerContext.subQuote()
@@ -870,6 +921,7 @@ object HTMLDecoder {
                     encodeText(options, sb)
                     return
                 }
+
                 "img" -> {
                     encodeImage(options, sb)
                     return
@@ -1016,6 +1068,7 @@ object HTMLDecoder {
                     mention = item,
                     tag = link_tag
                 )
+
                 else -> LinkInfo(
                     url = item.url,
                     caption = "@${(if (PrefB.bpMentionFullAcct.value) fullAcct else item.acct).pretty}",

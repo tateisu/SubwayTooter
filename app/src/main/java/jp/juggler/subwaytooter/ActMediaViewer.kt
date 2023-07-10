@@ -15,13 +15,16 @@ import android.view.View
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
-import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.Player.TimelineChangeReason
-import com.google.android.exoplayer2.source.LoadEventInfo
-import com.google.android.exoplayer2.source.MediaLoadData
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.MediaSourceEventListener
-import com.google.android.exoplayer2.util.RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.util.RepeatModeUtil
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.LoadEventInfo
+import androidx.media3.exoplayer.source.MediaLoadData
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.MediaSourceEventListener
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmentJson
@@ -55,6 +58,7 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
 
+@androidx.media3.common.util.UnstableApi
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     companion object {
@@ -129,7 +133,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         override fun onTimelineChanged(
             timeline: Timeline,
-            @TimelineChangeReason reason: Int,
+            @Player.TimelineChangeReason reason: Int,
         ) {
             log.d("exoPlayer onTimelineChanged reason=$reason")
         }
@@ -286,12 +290,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     override fun onStart() {
         super.onStart()
-        views.exoView.onResume()
+        views.pvVideo.onResume()
     }
 
     override fun onStop() {
         super.onStop()
-        views.exoView.onPause()
+        views.pvVideo.onPause()
     }
 
     override fun finish() {
@@ -359,14 +363,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         exoPlayer = ExoPlayer.Builder(this).build()
         exoPlayer.addListener(playerListener)
-        views.exoView.run {
+        views.pvVideo.run {
             player = exoPlayer
             controllerAutoShow = false
             setShowRewindButton(false)
             setShowFastForwardButton(false)
             setShowPreviousButton(false)
             setShowNextButton(false)
-            setRepeatToggleModes(REPEAT_TOGGLE_MODE_ONE)
+            setRepeatToggleModes( RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
         }
     }
 
@@ -384,7 +388,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         // いったんすべて隠す
         views.run {
             pbvImage.gone()
-            exoView.gone()
+            pvVideo.gone()
             tvError.gone()
             svDescription.gone()
             tvStatus.gone()
@@ -417,7 +421,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     private fun showError(message: String) {
         views.run {
-            exoView.gone()
+            pvVideo.gone()
             pbvImage.gone()
             tvError.visible().text = message
         }
@@ -452,7 +456,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         // https://github.com/google/ExoPlayer/issues/1819
         HttpsURLConnection.setDefaultSSLSocketFactory(MySslSocketFactory)
-        views.exoView.visibility = View.VISIBLE
+        views.pvVideo.visibility = View.VISIBLE
         exoPlayer.setMediaItem(MediaItem.fromUri(uri))
         exoPlayer.prepare()
         exoPlayer.repeatMode = when (ta.type) {

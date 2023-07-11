@@ -611,7 +611,7 @@ class PostImpl(
                             val e = result.error
                             error(
                                 when {
-                                    e.isNullOrBlank() -> "(missing result.error)"
+                                    e.isNullOrBlank() -> "(missing error detail)"
 
                                     e.contains("HTTP 404") ->
                                         "$e\n${activity.getString(R.string.post_404_desc)}"

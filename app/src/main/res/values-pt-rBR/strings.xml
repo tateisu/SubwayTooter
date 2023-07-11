@@ -1256,4 +1256,6 @@
     <string name="poll_dont_make">Não fazer enquete</string>
     <string name="quick_toot_menu">Menu de post rápido</string>
     <string name="poll_make">Fazer enquete</string>
+    <string name="force_gap_when_refresh">Forçar adicionar vão ao atualizar o topo</string>
+    <string name="instance_local">Servidor local</string>
 </resources>

@@ -108,7 +108,7 @@ internal fun showToastImpl(
     context: Context,
     bLong: Boolean,
     message: String,
-    forceToast:Boolean = false,
+    forceToast: Boolean = false,
 ): Boolean {
     runOnMainLooper {
         if (!forceToast && (message.length >= 32 || message.count { it == '\n' } > 1)) {
@@ -154,8 +154,8 @@ internal fun showToastImpl(
 fun Context.showToast(
     bLong: Boolean,
     caption: String?,
-    forceToast:Boolean = false,
-): Boolean = showToastImpl(this, bLong, caption ?: "(null)" ,forceToast = forceToast)
+    forceToast: Boolean = false,
+): Boolean = showToastImpl(this, bLong, caption ?: "(null)", forceToast = forceToast)
 
 fun Context.showToast(ex: Throwable, caption: String? = null): Boolean =
     showToastImpl(this, true, ex.withCaption(caption))
@@ -188,23 +188,26 @@ fun AppCompatActivity.showError(ex: Throwable, caption: String? = null) {
     if (ex is CancellationException) return
 
     try {
-        AlertDialog.Builder(this)
-            .setTitle("error")
-            .setMessage(
-                listOf(
-                    caption,
-                    when (ex) {
-                        is IllegalStateException -> null
-                        else -> ex.javaClass.simpleName
-                    },
-                    ex.message,
-                )
-                    .filter { !it.isNullOrBlank() }
-                    .joinToString("\n")
-            )
+        val text = listOf(
+            caption,
+            when (ex) {
+                is IllegalStateException -> null
+                else -> ex.javaClass.simpleName
+            },
+            ex.message,
+        )
+            .filter { !it.isNullOrBlank() }
+            .joinToString("\n")
+        if (text.isNotEmpty()) {
+            AlertDialog.Builder(this)
+                .setMessage(text)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
     } catch (ignored: Throwable) {
-        showToast(ex, caption)
     }
+    showToast(ex, caption)
 }
 
 fun Context.errorString(@StringRes stringId: Int, vararg args: Any?): Nothing =

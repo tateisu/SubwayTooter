@@ -607,7 +607,19 @@ class PostImpl(
                         status != null ->
                             PostResult.Normal(account, status)
 
-                        else -> error(result.error ?: "(result.error is null)")
+                        else -> {
+                            val e = result.error
+                            error(
+                                when {
+                                    e.isNullOrBlank() -> "(missing result.error)"
+
+                                    e.contains("HTTP 404") ->
+                                        "$e\n${activity.getString(R.string.post_404_desc)}"
+
+                                    else -> e
+                                }
+                            )
+                        }
                     }
                 }
             }

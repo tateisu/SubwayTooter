@@ -1300,4 +1300,5 @@
     <string name="use_webp_format_if_server_accepts">Use WebP format if server accepts.</string>
     <string name="detail">Detail</string>
     <string name="emoji_detail">Emoji detail</string>
+    <string name="post_404_desc">(Or, you reply to follower-only post from other account)</string>
 </resources>

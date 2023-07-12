@@ -8,6 +8,8 @@ import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiTask
+import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.ServiceType
@@ -44,6 +46,9 @@ import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPutRequestBuilder
 import jp.juggler.util.ui.isLiveActivity
 import jp.juggler.util.ui.vg
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import java.nio.channels.ClosedChannelException
 import kotlin.math.min
 
 private val log = LogCategory("ActPostAttachment")
@@ -126,26 +131,65 @@ fun ActPost.openAttachment() {
 fun ActPost.addAttachment(
     uri: Uri,
     mimeTypeArg: String? = null,
-//    onUploadEnd: () -> Unit = {},
 ) {
+    val item = ActPost.AddAttachmentChannelItem(uri = uri, mimeTypeArg = mimeTypeArg)
+    for (nTry in 1..10) {
+        try {
+            val channelResult = addAttachmentChannel.trySend(item)
+            when {
+                channelResult.isSuccess -> return
+                channelResult.isClosed -> return
+                channelResult.isFailure -> continue
+            }
+        } catch (ex: Throwable) {
+            log.e(ex, "addAttachmentChannel.trySend failed.")
+            continue
+        }
+    }
+}
+
+suspend fun ActPost.getInstance(): TootInstance {
+    val client = TootApiClient(
+        context = applicationContext,
+        callback = object : TootApiCallback {
+            override suspend fun isApiCancelled() = isFinishing || isDestroyed
+        }
+    ).apply {
+        this.account = this@getInstance.account
+    }
+    val (instance, ri) = TootInstance.get(client = client)
+    if (instance != null) return instance
+    when (ri) {
+        null -> throw CancellationException()
+        else -> error("missing instance information. ${ri.error}")
+    }
+}
+
+suspend fun ActPost.addAttachmentSuspend(
+    uri: Uri,
+    mimeTypeArg: String? = null,
+) {
+    val actPost = this
     val account = this.account
-    if (account == null) {
-        dialogOrToast(R.string.account_select_please)
-        return
-    }
-    val instance = TootInstance.getCached(account)
-    if (instance == null) {
-        dialogOrToast("missing instance imformation.")
-        return
-    }
+
     val mimeType = uri.resolveMimeType(mimeTypeArg, this)
         ?.notEmpty()
 
     val isReply = states.inReplyToId != null
 
     when {
+        actPost.isFinishing || actPost.isDestroyed -> {
+            dialogOrToast("actPost is finishing or destroyed.")
+            return
+        }
+
         attachmentList.size >= 4 -> {
             dialogOrToast(R.string.attachment_too_many)
+            return
+        }
+
+        account == null -> {
+            dialogOrToast(R.string.account_select_please)
             return
         }
 
@@ -153,7 +197,11 @@ fun ActPost.addAttachment(
             dialogOrToast(R.string.mime_type_missing)
             return
         }
+    }
 
+    val instance = getInstance()
+
+    when {
         instance.instanceType == InstanceType.Pixelfed && isReply -> {
             AttachmentUploader.log.e("pixelfed_does_not_allow_reply_with_media")
             dialogOrToast(R.string.pixelfed_does_not_allow_reply_with_media)
@@ -169,10 +217,10 @@ fun ActPost.addAttachment(
             attachmentUploader.addRequest(
                 AttachmentRequest(
                     context = applicationContext,
-                    account = account,
+                    account = account!!,
                     pa = pa,
                     uri = uri,
-                    mimeType = mimeType,
+                    mimeType = mimeType!!,
                     instance = instance,
                     mediaConfig = mediaConfig,
                     serverMaxSqPixel = mediaConfig?.int("image_matrix_limit")?.takeIf { it > 0 },
@@ -190,6 +238,32 @@ fun ActPost.addAttachment(
                     //      onUploadEnd = onUploadEnd
                 )
             )
+        }
+    }
+}
+
+fun ActPost.launchAddAttachmentChannelReader() {
+    launchMain {
+        while (true) {
+            try {
+                val item = addAttachmentChannel.receive()
+                addAttachmentSuspend(item.uri, item.mimeTypeArg)
+            } catch (ex: Throwable) {
+                when (ex) {
+                    is CancellationException -> {
+                        log.i("launchAddAttachmentChannelReader: cancelled.")
+                        break
+                    }
+
+                    is ClosedChannelException, is ClosedReceiveChannelException -> {
+                        log.i("launchAddAttachmentChannelReader: channel closed.")
+                        break
+                    }
+
+                    else ->
+                        log.e(ex,"launchAddAttachmentChannelReader: addAttachmentSuspend raise error. retry…")
+                }
+            }
         }
     }
 }

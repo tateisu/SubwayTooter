@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.actpost.FeaturedTagCache
 import jp.juggler.subwaytooter.actpost.addAttachment
 import jp.juggler.subwaytooter.actpost.applyMushroomText
+import jp.juggler.subwaytooter.actpost.launchAddAttachmentChannelReader
 import jp.juggler.subwaytooter.actpost.onPickCustomThumbnailImpl
 import jp.juggler.subwaytooter.actpost.onPostAttachmentCompleteImpl
 import jp.juggler.subwaytooter.actpost.openAttachment
@@ -197,6 +198,13 @@ class ActPost : AppCompatActivity(),
         }
     }
 
+    class AddAttachmentChannelItem(
+        val  uri: Uri,
+        val mimeTypeArg: String?,
+    )
+
+    val addAttachmentChannel = Channel<AddAttachmentChannelItem>(capacity = Channel.BUFFERED)
+
     ////////////////////////////////////////////////////////////////
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -219,6 +227,8 @@ class ActPost : AppCompatActivity(),
         arMushroom.register(this)
 
         progressChannel = Channel(capacity = Channel.CONFLATED)
+
+        launchAddAttachmentChannelReader()
 
         initUI()
 
@@ -255,6 +265,7 @@ class ActPost : AppCompatActivity(),
         }
         completionHelper.onDestroy()
         attachmentUploader.onActivityDestroy()
+        addAttachmentChannel.close()
         super.onDestroy()
     }
 

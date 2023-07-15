@@ -611,6 +611,7 @@
     <string name="video_buffering">Buffering…</string>
     <string name="dont_repeat_download_to_same_url">Can\'t repeat downloading same URL in a few seconds.</string>
     <string name="zooming_of">(%4$d/%5$d) ×%3$.1f\n%1$d×%2$d</string>
+    <string name="zooming_of_resized">(%4$d/%5$d) ×%3$.1f\n%1$d×%2$d (original %6$d×%7$d)</string>
     <string name="media_attachment_still_uploading">Still uploading media.</string>
     <string name="highlight_word">Highlight keyword</string>
     <string name="new_item">New item…</string>

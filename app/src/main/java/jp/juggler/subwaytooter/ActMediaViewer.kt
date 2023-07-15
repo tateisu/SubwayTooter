@@ -5,8 +5,10 @@ import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.*
+import android.opengl.GLES10
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -17,9 +19,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
-import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
@@ -55,6 +57,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.*
+import javax.microedition.khronos.opengles.GL10
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
 
@@ -103,6 +106,27 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             activity.startActivity(intent)
             activity.overridePendingTransition(R.anim.slide_from_bottom, android.R.anim.fade_out)
         }
+
+        private fun Context.getMaxTextureSize(): Int {
+            try {
+                val tmpIntArray = IntArray(1)
+                GLES10.glGetIntegerv(GL10.GL_MAX_TEXTURE_SIZE, tmpIntArray, 0)
+                val maxTextureSize = tmpIntArray.first()
+                if (maxTextureSize !in 1024..65536) {
+                    error("GL_MAX_TEXTURE_SIZE returns $maxTextureSize")
+                }
+                return maxTextureSize
+            } catch (ex: Throwable) {
+                log.e(ex, "can't get GL_MAX_TEXTURE_SIZE")
+            }
+            val dm = resources.displayMetrics
+            val pixels = max(dm.widthPixels, dm.heightPixels)
+            return if (pixels <= 2048) {
+                2048
+            } else {
+                4096
+            }
+        }
     }
 
     class DownloadHistory(val time: Long, val url: String)
@@ -128,6 +152,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         val density = resources.displayMetrics.density
         (density * 12f + 0.5f).toInt()
     }
+
+    private var originalWidth = 0
+    private var originalHeight = 0
 
     private val playerListener = object : Player.Listener {
 
@@ -370,7 +397,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             setShowFastForwardButton(false)
             setShowPreviousButton(false)
             setShowNextButton(false)
-            setRepeatToggleModes( RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
+            setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
         }
     }
 
@@ -476,7 +503,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun decodeBitmap(
         options: BitmapFactory.Options,
         data: ByteArray,
-        @Suppress("SameParameterValue") pixelMax: Int,
+        @Suppress("SameParameterValue") pixelMax: Int = getMaxTextureSize(),
     ): Pair<Bitmap?, String?> {
 
         val orientation: Int? = ByteArrayInputStream(data).imageOrientation()
@@ -492,6 +519,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         if (w <= 0 || h <= 0) {
             return Pair(null, "can't decode image bounds.")
         }
+        originalWidth = w
+        originalHeight = h
 
         // calc bits to reduce size
         var bits = 0
@@ -607,7 +636,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                                     )
                                 }
                             client.publishApiProgress("decoding image…")
-                            val (b, error) = decodeBitmap(options, ba, 2048)
+                            val (b, error) = decodeBitmap(options, ba)
                             if (b != null) return@runApiTask2 b
                             if (error != null) errors.add(error)
                         } catch (ex: Throwable) {
@@ -883,14 +912,27 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     ) {
         if (isDestroyed) return
         if (views.tvStatus.visibility == View.VISIBLE) {
-            views.tvStatus.text = getString(
-                R.string.zooming_of,
-                w,
-                h,
-                scale,
-                idx + 1,
-                mediaList.size
-            )
+            views.tvStatus.text = if (w != originalWidth || h != originalHeight) {
+                getString(
+                    R.string.zooming_of_resized,
+                    w,
+                    h,
+                    scale,
+                    idx + 1,
+                    mediaList.size,
+                    originalWidth,
+                    originalHeight,
+                )
+            } else {
+                getString(
+                    R.string.zooming_of,
+                    w,
+                    h,
+                    scale,
+                    idx + 1,
+                    mediaList.size
+                )
+            }
         }
     }
 }

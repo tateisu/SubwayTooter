@@ -89,6 +89,7 @@ object InstanceCapability {
             ai.isMisskey -> true
             ti?.fedibirdCapabilities?.contains("emoji_reaction") == true -> true
             ti?.pleromaFeatures?.contains("custom_emoji_reactions") == true -> true
+            ti?.pleromaFeatures?.contains("pleroma_custom_emoji_reactions") == true -> true
             else -> false
         }
 

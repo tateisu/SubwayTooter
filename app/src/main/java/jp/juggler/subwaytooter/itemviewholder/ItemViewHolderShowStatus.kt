@@ -356,6 +356,8 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
     }
 }
 
+val reUrlGif = """\.gif(?:\z|\?)""".toRegex(RegexOption.IGNORE_CASE)
+
 fun ItemViewHolder.setMedia(
     mediaAttachments: ArrayList<TootAttachmentLike>,
     idx: Int,
@@ -390,11 +392,28 @@ fun ItemViewHolder.setMedia(
         TootAttachmentType.Unknown -> {
             iv.setMediaType(0)
             iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))
-            iv.setImageUrl(0f, null)
+            if (ta is TootAttachment &&
+                reUrlGif.containsMatchIn(ta.remote_url ?: "") &&
+                PrefB.bpImageAnimationEnable.value
+            ) {
+                val url = ta.remote_url!!
+                iv.setImageUrl(0f, url, url)
+            } else {
+                iv.setImageUrl(0f, null)
+            }
             showUrl = true
         }
 
-        else -> when (val urlThumbnail = ta.urlForThumbnail()) {
+        else -> if (ta is TootAttachment &&
+            reUrlGif.containsMatchIn(ta.remote_url ?: "") &&
+            PrefB.bpImageAnimationEnable.value
+        ) {
+            iv.setMediaType(0)
+            iv.setDefaultImage(null)
+            val url = ta.remote_url!!
+            iv.setImageUrl(0f, url, url)
+            showUrl = false
+        } else when (val urlThumbnail = ta.urlForThumbnail()) {
             null, "" -> {
                 iv.setMediaType(0)
                 iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))

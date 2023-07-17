@@ -33,6 +33,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachmen
 import jp.juggler.subwaytooter.databinding.ActMediaViewerBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
+import jp.juggler.subwaytooter.itemviewholder.reUrlGif
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.util.permissionSpecMediaDownload
 import jp.juggler.subwaytooter.util.requester
@@ -61,7 +62,7 @@ import javax.microedition.khronos.opengles.GL10
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
 
-@androidx.media3.common.util.UnstableApi
+@androidx.annotation.OptIn(markerClass = [androidx.media3.common.util.UnstableApi::class])
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     companion object {
@@ -399,6 +400,17 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             setShowNextButton(false)
             setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
         }
+
+        views.wvOther.apply{
+            scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+            settings.apply {
+                @SuppressLint("SetJavaScriptEnabled")
+                javaScriptEnabled = true
+                loadWithOverviewMode = true
+                useWideViewPort = true
+                setSupportZoom(true)
+            }
+        }
     }
 
     internal fun loadDelta(delta: Int) {
@@ -414,6 +426,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         // いったんすべて隠す
         views.run {
+            wvOther.gone()
             pbvImage.gone()
             pvVideo.gone()
             tvError.gone()
@@ -434,10 +447,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         when (ta.type) {
             TootAttachmentType.Unknown,
-            -> showError(getString(R.string.media_attachment_type_error, ta.type.id))
+            -> loadOther(ta) // showError(getString(R.string.media_attachment_type_error, ta.type.id))
 
-            TootAttachmentType.Image,
-            -> loadBitmap(ta)
+            TootAttachmentType.Image -> when {
+                reUrlGif.containsMatchIn(ta.remote_url ?: "") ->
+                    loadOther(ta)
+
+                else ->
+                    loadBitmap(ta)
+            }
 
             TootAttachmentType.Video,
             TootAttachmentType.GIFV,
@@ -590,7 +608,21 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         return Pair(bitmap2, null)
     }
 
-    @SuppressLint("StaticFieldLeak")
+    private fun loadOther(ta: TootAttachment) {
+
+        val urlList = ta.getLargeUrlList()
+        if (urlList.isEmpty()) {
+            showError("missing media attachment url.")
+            return
+        }
+        val url = urlList.first()
+        views.run {
+            cbMute.gone()
+            tvStatus.visible().text = "${ta.type.id} ${url.ellipsizeDot3(100)}"
+            wvOther.visible().loadUrl(url)
+        }
+    }
+
     private fun loadBitmap(ta: TootAttachment) {
 
         views.run {

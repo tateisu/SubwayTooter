@@ -5,9 +5,35 @@ import android.view.View
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMediaViewer
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.action.clickCardImage
+import jp.juggler.subwaytooter.action.clickConversation
+import jp.juggler.subwaytooter.action.clickDomainBlock
+import jp.juggler.subwaytooter.action.clickFollowInfo
+import jp.juggler.subwaytooter.action.clickFollowRequestAccept
+import jp.juggler.subwaytooter.action.clickListMoreButton
+import jp.juggler.subwaytooter.action.clickListTl
+import jp.juggler.subwaytooter.action.clickReplyInfo
+import jp.juggler.subwaytooter.action.clickScheduledToot
+import jp.juggler.subwaytooter.action.conversationOtherInstance
+import jp.juggler.subwaytooter.action.followFromAnotherAccount
+import jp.juggler.subwaytooter.action.longClickTootTag
+import jp.juggler.subwaytooter.action.openFilterMenu
+import jp.juggler.subwaytooter.action.tagDialog
+import jp.juggler.subwaytooter.action.userProfileLocal
 import jp.juggler.subwaytooter.actmain.nextPosition
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.ServiceType
+import jp.juggler.subwaytooter.api.entity.TimelineItem
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
+import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.api.entity.TootAttachmentMSP
+import jp.juggler.subwaytooter.api.entity.TootAttachmentType
+import jp.juggler.subwaytooter.api.entity.TootConversationSummary
+import jp.juggler.subwaytooter.api.entity.TootDomainBlock
+import jp.juggler.subwaytooter.api.entity.TootGap
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootScheduled
+import jp.juggler.subwaytooter.api.entity.TootSearchGap
+import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.startGap
 import jp.juggler.subwaytooter.pref.PrefB
@@ -62,6 +88,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                     tvContent
                 ).show()
             }
+
             btnFollow -> clickFollowInfo(
                 pos,
                 accessInfo,
@@ -88,11 +115,13 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                 followAccount,
                 accept = true
             )
+
             btnFollowRequestDeny -> clickFollowRequestAccept(
                 accessInfo,
                 followAccount,
                 accept = false
             )
+
             llFilter -> openFilterMenu(accessInfo, item.cast())
             ivCardImage -> clickCardImage(pos, accessInfo, statusShowing?.card)
             llConversationIcons -> clickConversation(
@@ -200,7 +229,7 @@ private fun ItemViewHolder.clickMedia(i: Int) {
             statusShowing?.media_attachments ?: (item as? TootScheduled)?.mediaAttachments
             ?: return
 
-        when (val item = if (i < mediaAttachments.size) mediaAttachments[i] else return) {
+        when (val item = mediaAttachments.firstOrNull() ?: return) {
             is TootAttachmentMSP -> {
                 // マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
                 // 会話の流れを表示する
@@ -212,15 +241,16 @@ private fun ItemViewHolder.clickMedia(i: Int) {
 
             is TootAttachment -> when {
 
-                // unknownが1枚だけなら内蔵ビューアを使わずにインテントを投げる
-                item.type == TootAttachmentType.Unknown && mediaAttachments.size == 1 -> {
-                    // https://github.com/tateisu/SubwayTooter/pull/119
-                    // メディアタイプがunknownの場合、そのほとんどはリモートから来たURLである
-                    // PrefB.bpPriorLocalURL の状態に関わらずリモートURLがあればそれをブラウザで開く
-                    when (val remoteUrl = item.remote_url.notEmpty()) {
-                        null -> activity.openCustomTab(item)
-                        else -> activity.openCustomTab(remoteUrl)
-                    }
+                // 添付メディアが1枚だけで、unknownまたはファイル拡張子がGIFなら、ブラウザで開く
+                // https://github.com/tateisu/SubwayTooter/pull/119
+                // メディアタイプがunknownの場合、そのほとんどはリモートから来たURLである
+                // PrefB.bpPriorLocalURL の状態に関わらずリモートURLがあればそれをブラウザで開く
+                mediaAttachments.size == 1 &&
+                        (item.type == TootAttachmentType.Unknown ||
+                                reUrlGif.containsMatchIn(item.remote_url ?: ""))
+                -> when (val remoteUrl = item.remote_url.notEmpty()) {
+                    null -> activity.openCustomTab(item)
+                    else -> activity.openCustomTab(remoteUrl)
                 }
 
                 // 内蔵メディアビューアを使う
@@ -324,9 +354,11 @@ private fun ItemViewHolder.clickTag(pos: Int, item: TimelineItem?) {
                         item.name,
                         tagInfo = item,
                     )
+
                 TootTag.TagType.Link ->
                     openCustomTab(item.url)
             }
+
             is TootSearchGap -> column.startGap(item, isHead = true)
             is TootConversationSummary -> clickConversation(
                 pos,
@@ -334,6 +366,7 @@ private fun ItemViewHolder.clickTag(pos: Int, item: TimelineItem?) {
                 listAdapter,
                 summary = item
             )
+
             is TootGap -> clickTootGap(column, item)
             is TootDomainBlock -> clickDomainBlock(accessInfo, item)
             is TootScheduled -> clickScheduledToot(accessInfo, item, column)

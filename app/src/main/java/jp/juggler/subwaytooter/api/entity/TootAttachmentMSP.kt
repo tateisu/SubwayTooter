@@ -7,11 +7,9 @@ class TootAttachmentMSP(
     val preview_url: String,
 ) : TootAttachmentLike {
 
-    override val type: TootAttachmentType
-        get() = TootAttachmentType.Unknown
+    override val type = TootAttachmentType.Unknown
 
-    override val description: String?
-        get() = null
+    override val description = null
 
     override fun urlForThumbnail() = preview_url
 

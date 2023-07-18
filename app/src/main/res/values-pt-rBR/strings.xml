@@ -1258,4 +1258,5 @@
     <string name="poll_make">Fazer enquete</string>
     <string name="force_gap_when_refresh">Forçar adicionar vão ao atualizar o topo</string>
     <string name="instance_local">Servidor local</string>
+    <string name="post_404_desc">(Ou você responde a um post apenas para seguidores de outra conta)</string>
 </resources>

@@ -356,7 +356,10 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
     }
 }
 
-val reUrlGif = """\.gif(?:\z|\?)""".toRegex(RegexOption.IGNORE_CASE)
+val reUrlGif by lazy{
+    """\.gif(?:\z|\?|#)"""
+        .toRegex(RegexOption.IGNORE_CASE)
+}
 
 fun ItemViewHolder.setMedia(
     mediaAttachments: ArrayList<TootAttachmentLike>,

@@ -107,8 +107,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
 
         private fun checkMaxBitmapSize(): Int {
-            var bitsMin = 10
-            var bitsMax = 16
+            var bitsMin = 10 // 1024 px
+            var bitsMax = 16 // 65536 px
             while (bitsMax > bitsMin) {
                 val bitsMid = (bitsMin + bitsMax + 1).shr(1)
                 val px = 1.shl(bitsMid)
@@ -123,13 +123,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                     false
                 }
                 when {
-                    !canCreate ->
-                        bitsMax = bitsMid - 1
-
-                    bitsMin < bitsMid ->
+                    canCreate ->
                         bitsMin = bitsMid
 
-                    else -> break
+                    else ->
+                        bitsMax = bitsMid - 1
                 }
             }
             val resolved = 1.shl(bitsMin)

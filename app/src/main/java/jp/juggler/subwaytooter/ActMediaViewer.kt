@@ -5,10 +5,8 @@ import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.*
-import android.opengl.GLES10
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -58,9 +56,9 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.*
-import javax.microedition.khronos.opengles.GL10
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
+import kotlin.math.min
 
 @androidx.annotation.OptIn(markerClass = [androidx.media3.common.util.UnstableApi::class])
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
@@ -108,25 +106,39 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             activity.overridePendingTransition(R.anim.slide_from_bottom, android.R.anim.fade_out)
         }
 
-        private fun Context.getMaxTextureSize(): Int {
-            try {
-                val tmpIntArray = IntArray(1)
-                GLES10.glGetIntegerv(GL10.GL_MAX_TEXTURE_SIZE, tmpIntArray, 0)
-                val maxTextureSize = tmpIntArray.first()
-                if (maxTextureSize !in 1024..65536) {
-                    error("GL_MAX_TEXTURE_SIZE returns $maxTextureSize")
+        private fun checkMaxBitmapSize(): Int {
+            var bitsMin = 10
+            var bitsMax = 16
+            while (bitsMax > bitsMin) {
+                val bitsMid = (bitsMin + bitsMax + 1).shr(1)
+                val px = 1.shl(bitsMid)
+                val canCreate = try {
+                    val bitmap = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888)
+                        ?: error("createBitmap returns null")
+                    bitmap.recycle()
+                    log.i("checkMaxBitmapSize: range=$bitsMin..$bitsMid..$bitsMax, px=${px}, canCreate=true")
+                    true
+                } catch (ex: Throwable) {
+                    log.i(ex.withCaption("checkMaxBitmapSize: range=$bitsMin..$bitsMid..$bitsMax, px=${px}, canCreate=false"))
+                    false
                 }
-                return maxTextureSize
-            } catch (ex: Throwable) {
-                log.e(ex, "can't get GL_MAX_TEXTURE_SIZE")
+                when {
+                    !canCreate ->
+                        bitsMax = bitsMid - 1
+
+                    bitsMin < bitsMid ->
+                        bitsMin = bitsMid
+
+                    else -> break
+                }
             }
-            val dm = resources.displayMetrics
-            val pixels = max(dm.widthPixels, dm.heightPixels)
-            return if (pixels <= 2048) {
-                2048
-            } else {
-                4096
-            }
+            val resolved = 1.shl(bitsMin)
+            log.w("checkMaxBitmapSize: resolved=$resolved")
+            return min(8192, resolved)
+        }
+
+        private val maxBitmapSize by lazy {
+            checkMaxBitmapSize()
         }
     }
 
@@ -401,7 +413,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
         }
 
-        views.wvOther.apply{
+        views.wvOther.apply {
             scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
             settings.apply {
                 @SuppressLint("SetJavaScriptEnabled")
@@ -521,7 +533,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun decodeBitmap(
         options: BitmapFactory.Options,
         data: ByteArray,
-        @Suppress("SameParameterValue") pixelMax: Int = getMaxTextureSize(),
+        @Suppress("SameParameterValue") pixelMax: Int = maxBitmapSize,
     ): Pair<Bitmap?, String?> {
 
         val orientation: Int? = ByteArrayInputStream(data).imageOrientation()

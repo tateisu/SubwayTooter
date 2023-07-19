@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -28,8 +27,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
+import jp.juggler.subwaytooter.util.getUserAgent
 import jp.juggler.util.*
-import jp.juggler.util.data.asciiPattern
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.initializeToastUtils
@@ -134,22 +133,10 @@ class App1 : Application() {
         //		return maxSize * 1024;
         //	}
 
-        val reNotAllowedInUserAgent = "[^\\x21-\\x7e]+".asciiPattern()
+        private var cookieManager: CookieManager? = null
+        private var cookieJar: CookieJar? = null
 
-        val userAgentDefault =
-            "SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
-
-        private fun getUserAgent(): String {
-            val userAgentCustom = PrefS.spUserAgent.value
-            return when {
-                userAgentCustom.isNotEmpty() && !reNotAllowedInUserAgent.matcher(userAgentCustom)
-                    .find() -> userAgentCustom
-
-                else -> userAgentDefault
-            }
-        }
-
-        private fun userAgentInterceptor() =
+        private fun Context.userAgentInterceptor() =
             Interceptor { chain ->
                 chain.proceed(
                     chain.request().newBuilder()
@@ -158,17 +145,14 @@ class App1 : Application() {
                 )
             }
 
-        private var cookieManager: CookieManager? = null
-        private var cookieJar: CookieJar? = null
-
-        private fun prepareOkHttp(
+        private fun Context.prepareOkHttp(
             timeoutSecondsConnect: Int,
             timeoutSecondsRead: Int,
         ): OkHttpClient.Builder {
 
             Logger.getLogger(OkHttpClient::class.java.name).level = Level.FINE
 
-            var cookieJar = this.cookieJar
+            var cookieJar = this@Companion.cookieJar
             if (cookieJar == null) {
                 val cookieManager = CookieManager().apply {
                     setCookiePolicy(CookiePolicy.ACCEPT_ALL)
@@ -176,8 +160,8 @@ class App1 : Application() {
                 CookieHandler.setDefault(cookieManager)
                 cookieJar = JavaNetCookieJar(cookieManager)
 
-                this.cookieManager = cookieManager
-                this.cookieJar = cookieJar
+                this@Companion.cookieManager = cookieManager
+                this@Companion.cookieJar = cookieJar
             }
 
             val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
@@ -285,7 +269,7 @@ class App1 : Application() {
                 val apiReadTimeout = max(3, PrefS.spApiReadTimeout.toInt())
 
                 // API用のHTTP設定はキャッシュを使わない
-                ok_http_client = prepareOkHttp(apiReadTimeout, apiReadTimeout)
+                ok_http_client = appContext.prepareOkHttp(apiReadTimeout, apiReadTimeout)
                     .build()
 
                 // ディスクキャッシュ
@@ -293,14 +277,14 @@ class App1 : Application() {
                 val cache = Cache(cacheDir, 30000000L)
 
                 // カスタム絵文字用のHTTP設定はキャッシュを使う
-                ok_http_client2 = prepareOkHttp(apiReadTimeout, apiReadTimeout)
+                ok_http_client2 = appContext.prepareOkHttp(apiReadTimeout, apiReadTimeout)
                     .cache(cache)
                     .build()
 
                 // 内蔵メディアビューア用のHTTP設定はタイムアウトを調整可能
                 val mediaReadTimeout = max(3, PrefS.spMediaReadTimeout.toInt())
                 ok_http_client_media_viewer =
-                    prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
+                    appContext.prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
                         .cache(cache)
                         .build()
             }

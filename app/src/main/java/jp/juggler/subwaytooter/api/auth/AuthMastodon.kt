@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
-import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.api.SendException
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -9,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.push.FcmFlavor
 import jp.juggler.subwaytooter.table.daoClientInfo
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -23,10 +23,10 @@ class AuthMastodon(override val client: TootApiClient) : AuthBase() {
     companion object {
         private val log = LogCategory("MastodonAuth")
 
-        @Suppress("MayBeConstant")
+        @Suppress("MayBeConstant", "RedundantSuppression")
         val DEBUG_AUTH = false
 
-        const val callbackUrl = "${BuildConfig.customScheme}://oauth/"
+        const val callbackUrl = "${FcmFlavor.CUSTOM_SCHEME}://oauth/"
 
         fun mastodonScope(ti: TootInstance?) = when {
             // 古いサーバ

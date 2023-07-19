@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
 import androidx.core.net.toUri
-import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -11,16 +10,25 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.push.FcmFlavor
 import jp.juggler.subwaytooter.table.daoClientInfo
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.cast
+import jp.juggler.util.data.digestSHA256
+import jp.juggler.util.data.encodeHexLower
+import jp.juggler.util.data.encodeUTF8
+import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 
 class AuthMisskey10(override val client: TootApiClient) : AuthBase() {
     companion object {
         private val log = LogCategory("MisskeyOldAuth")
-        private const val callbackUrl = "${BuildConfig.customScheme}://misskey/auth_callback"
+        private const val callbackUrl = "${FcmFlavor.CUSTOM_SCHEME}://misskey/auth_callback"
 
         fun isCallbackUrl(uriStr: String) =
             uriStr.startsWith(callbackUrl) ||
@@ -213,7 +221,6 @@ class AuthMisskey10(override val client: TootApiClient) : AuthBase() {
             linkHelper = LinkHelper.create(ti)
         )
 
-        @Suppress("UNUSED_VARIABLE")
         val clientInfo = daoClientInfo.load(apiHost, clientName)
             ?.notEmpty() ?: error("missing client id")
 

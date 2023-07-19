@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api.auth
 
 import android.net.Uri
-import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -11,12 +10,13 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.push.FcmFlavor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
-import java.util.*
+import java.util.UUID
 
 /**
  * miauth と呼ばれている認証手順。
@@ -26,7 +26,7 @@ class AuthMisskey13(override val client: TootApiClient) : AuthBase() {
     companion object {
         private val log = LogCategory("MisskeyMiAuth")
         private const val appIconUrl = "https://m1j.zzz.ac/subwaytooter-miauth-icon.png"
-        private const val callbackUrl = "${BuildConfig.customScheme}://miauth/auth_callback"
+        private const val callbackUrl = "${FcmFlavor.CUSTOM_SCHEME}://miauth/auth_callback"
 
         fun isCallbackUrl(uriStr: String) = uriStr.startsWith(callbackUrl)
     }

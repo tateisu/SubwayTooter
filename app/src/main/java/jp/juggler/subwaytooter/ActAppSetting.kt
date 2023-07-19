@@ -691,6 +691,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                             etEditText.inputType = item.inputType
                             etEditText.setText(text)
                             etEditText.setSelection(0, text.length)
+
+                            item.showEditText.invoke(actAppSetting,views.etEditText)
                         }
                         updateErrorView()
                     }

@@ -5,9 +5,11 @@ import android.net.Uri
 import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
-import androidx.media3.transformer.TransformationException
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.TransformationRequest
-import androidx.media3.transformer.TransformationResult
 import androidx.media3.transformer.Transformer
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.Dispatchers
@@ -57,35 +59,39 @@ suspend fun transcodeAudio(
     val tmpFile = context.generateTempFile("transcodeAudio")
 
     // Transformerは単一スレッドで処理する要件
-    val result: TransformationResult = withContext(Dispatchers.Main.immediate) {
+    val result: ExportResult = withContext(Dispatchers.Main.immediate) {
         val looper = Looper.getMainLooper()
         suspendCancellableCoroutine { cont ->
             val transformerListener = object : Transformer.Listener {
-                override fun onTransformationCompleted(
-                    inputMediaItem: MediaItem,
-                    transformationResult: TransformationResult,
+                override fun onCompleted(
+                    composition: Composition,
+                    exportResult: ExportResult,
                 ) {
-                    log.i("onTransformationCompleted inputMediaItem=$inputMediaItem transformationResult=$transformationResult")
-                    if (cont.isActive) cont.resume(transformationResult) {}
+                    val mediaItem = composition.sequences[0].editedMediaItems[0].mediaItem
+                    log.i("onCompleted mediaItem=$mediaItem exportResult=$exportResult")
+                    if (cont.isActive) cont.resume(exportResult) {}
                 }
 
-                override fun onTransformationError(
-                    inputMediaItem: MediaItem,
-                    exception: TransformationException,
+                override fun onError(
+                    composition: Composition,
+                    exportResult: ExportResult,
+                    exportException: ExportException,
                 ) {
+                    val mediaItem = composition.sequences[0].editedMediaItems[0].mediaItem
                     log.e(
-                        exception,
-                        "onTransformationError inputMediaItem=$inputMediaItem"
+                        exportException,
+                        "onError inputMediaItem=$mediaItem, exportResult=$exportResult"
                     )
-                    if (cont.isActive) cont.resumeWithException(exception)
+                    if (cont.isActive) cont.resumeWithException(exportException)
                 }
 
                 override fun onFallbackApplied(
-                    inputMediaItem: MediaItem,
+                    composition: Composition,
                     originalTransformationRequest: TransformationRequest,
                     fallbackTransformationRequest: TransformationRequest,
                 ) {
-                    log.i("onFallbackApplied inputMediaItem=$inputMediaItem original=$originalTransformationRequest fallback=$fallbackTransformationRequest")
+                    val mediaItem = composition.sequences[0].editedMediaItems[0].mediaItem
+                    log.i("onFallbackApplied mediaItem=$mediaItem original=$originalTransformationRequest fallback=$fallbackTransformationRequest")
                 }
             }
             val transformer = Transformer.Builder(context)
@@ -95,11 +101,13 @@ suspend fun transcodeAudio(
                         .setAudioMimeType(encodeMimeType)
                         .build()
                 )
-                .setRemoveVideo(true)
-                .setRemoveAudio(false)
                 .addListener(transformerListener)
                 .build()
-            transformer.startTransformation(inputMediaItem, tmpFile.canonicalPath)
+
+            val editedMediaItem = EditedMediaItem.Builder(inputMediaItem).apply {
+                setRemoveVideo(true)
+            }.build()
+            transformer.start(editedMediaItem, tmpFile.canonicalPath)
             cont.invokeOnCancellation {
                 transformer.cancel()
             }

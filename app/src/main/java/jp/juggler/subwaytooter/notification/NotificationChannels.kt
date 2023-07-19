@@ -17,9 +17,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.startup.Initializer
 import androidx.work.ForegroundInfo
-import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.LazyContextInitializer
+import jp.juggler.subwaytooter.push.FcmFlavor
 import jp.juggler.util.*
 import jp.juggler.util.log.LogCategory
 
@@ -56,8 +56,8 @@ enum class NotificationChannels(
         notificationId = 1,
         pircTap = 1,
         pircDelete = 1, // uriでtapとdeleteを区別している
-        uriPrefixDelete = "${BuildConfig.customScheme}://notification_delete/",
-        uriPrefixTap = "${BuildConfig.customScheme}://notification_click/",
+        uriPrefixDelete = "${FcmFlavor.CUSTOM_SCHEME}://notification_delete/",
+        uriPrefixTap = "${FcmFlavor.CUSTOM_SCHEME}://notification_click/",
     ),
     PullWorker(
         id = "PollingForegrounder",
@@ -69,8 +69,8 @@ enum class NotificationChannels(
         notificationId = 2,
         pircTap = 2,
         pircDelete = -1,
-        uriPrefixDelete = "${BuildConfig.customScheme}://checker",
-        uriPrefixTap = "${BuildConfig.customScheme}://checker-tap",
+        uriPrefixDelete = "${FcmFlavor.CUSTOM_SCHEME}://checker",
+        uriPrefixTap = "${FcmFlavor.CUSTOM_SCHEME}://checker-tap",
     ),
     ServerTimeout(
         id = "ErrorNotification",
@@ -82,8 +82,8 @@ enum class NotificationChannels(
         notificationId = 3,
         pircTap = 3,
         pircDelete = 4,
-        uriPrefixDelete = "${BuildConfig.customScheme}://server-timeout",
-        uriPrefixTap = "${BuildConfig.customScheme}://server-timeout-tap",
+        uriPrefixDelete = "${FcmFlavor.CUSTOM_SCHEME}://server-timeout",
+        uriPrefixTap = "${FcmFlavor.CUSTOM_SCHEME}://server-timeout-tap",
     ),
     PushMessage(
         id = "PushMessage",
@@ -95,8 +95,8 @@ enum class NotificationChannels(
         notificationId = 5,
         pircTap = 5,
         pircDelete = 6,
-        uriPrefixDelete = "${BuildConfig.customScheme}://pushMessage",
-        uriPrefixTap = "${BuildConfig.customScheme}://notification_click/",
+        uriPrefixDelete = "${FcmFlavor.CUSTOM_SCHEME}://pushMessage",
+        uriPrefixTap = "${FcmFlavor.CUSTOM_SCHEME}://notification_click/",
     ),
     Alert(
         id = "Alert",
@@ -108,8 +108,8 @@ enum class NotificationChannels(
         notificationId = 7,
         pircTap = 7,
         pircDelete = 8,
-        uriPrefixDelete = "${BuildConfig.customScheme}://alert",
-        uriPrefixTap = "${BuildConfig.customScheme}://alert-tap",
+        uriPrefixDelete = "${FcmFlavor.CUSTOM_SCHEME}://alert",
+        uriPrefixTap = "${FcmFlavor.CUSTOM_SCHEME}://alert-tap",
     ),
     PushWorker(
         id = "PushMessageWorker",
@@ -121,8 +121,8 @@ enum class NotificationChannels(
         notificationId = 9,
         pircTap = 9,
         pircDelete = 10,
-        uriPrefixDelete = "${BuildConfig.customScheme}://pushWorker",
-        uriPrefixTap = "${BuildConfig.customScheme}://pushWorker-tag",
+        uriPrefixDelete = "${FcmFlavor.CUSTOM_SCHEME}://pushWorker",
+        uriPrefixTap = "${FcmFlavor.CUSTOM_SCHEME}://pushWorker-tag",
     ),
 
     ;

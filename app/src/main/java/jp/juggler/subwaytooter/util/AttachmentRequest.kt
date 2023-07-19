@@ -7,11 +7,14 @@ import android.os.Build
 import jp.juggler.media.generateTempFile
 import jp.juggler.media.transcodeAudio
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.getStreamSize
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
 import jp.juggler.util.media.ResizeConfig
@@ -20,6 +23,7 @@ import jp.juggler.util.media.createResizedBitmap
 import jp.juggler.util.media.transcodeVideo
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.CancellationException
 import kotlin.math.min
 
 class AttachmentRequest(
@@ -27,13 +31,11 @@ class AttachmentRequest(
     val account: SavedAccount,
     val pa: PostAttachment,
     val uri: Uri,
-    var mimeType: String,
+    var mimeTypeArg: String?,
     val imageResizeConfig: ResizeConfig,
-    val serverMaxSqPixel: Int?,
-    val instance: TootInstance,
-    val mediaConfig: JsonObject?,
-    val maxBytesVideo: Int,
-    val maxBytesImage: Int,
+    val maxBytesVideo: (instance: TootInstance, mediaConfig: JsonObject?) -> Int,
+    val maxBytesImage: (instance: TootInstance, mediaConfig: JsonObject?) -> Int,
+    val isReply: Boolean = false,
 ) {
     companion object {
         private val log = LogCategory("AttachmentRequest")
@@ -51,14 +53,49 @@ class AttachmentRequest(
             "audio/x-wav",
             "audio/3gpp",
         )
-//    val badAudioType = setOf(
+
+        //    val badAudioType = setOf(
 //        "audio/mpeg","audio/aac",
 //        "audio/m4a","audio/x-m4a","audio/mp4",
 //        "video/x-ms-asf",
 //    )
+        private suspend fun Context.getInstance(account: SavedAccount): TootInstance {
+            val client = TootApiClient(
+                context = this,
+                callback = object : TootApiCallback {
+                    override suspend fun isApiCancelled() = false
+                }
+            ).apply {
+                this.account = account
+            }
+            val (instance, ri) = TootInstance.get(client = client)
+            if (instance != null) return instance
+            when (ri) {
+                null -> throw CancellationException()
+                else -> error("missing instance information. ${ri.error}")
+            }
+        }
     }
 
+    private var _instance: TootInstance? = null
+
+    suspend fun instance(): TootInstance {
+        _instance?.let { return it }
+        return context.getInstance(account).also { _instance = it }
+    }
+
+    suspend fun mediaConfig(): JsonObject? =
+        instance().configuration?.jsonObject("media_attachments")
+
+    private suspend fun serverMaxSqPixel(): Int? =
+        mediaConfig()?.int("image_matrix_limit")?.takeIf { it > 0 }
+
+    val mimeType
+        get() = uri.resolveMimeType(mimeTypeArg, context)?.notEmpty()
+            ?: error(context.getString(R.string.mime_type_missing))
+
     suspend fun createOpener(): InputStreamOpener {
+        val mimeType = this.mimeType
 
         // GIFはそのまま投げる
         if (mimeType == MIME_TYPE_GIF) {
@@ -128,9 +165,11 @@ class AttachmentRequest(
         )
     }
 
-    private fun createResizedImageOpener(): InputStreamOpener {
+    private suspend fun createResizedImageOpener(): InputStreamOpener {
         try {
             pa.progress = context.getString(R.string.attachment_handling_compress)
+
+            val instance = instance()
 
             val canUseWebP = try {
                 PrefB.bpUseWebP.value && MIME_TYPE_WEBP.mimeTypeIsSupported(instance)
@@ -154,7 +193,7 @@ class AttachmentRequest(
                 uri,
                 imageResizeConfig,
                 canSkip = canUseOriginal,
-                serverMaxSqPixel = serverMaxSqPixel
+                serverMaxSqPixel = serverMaxSqPixel()
             )?.let { bitmap ->
                 try {
                     return bitmap.compressAutoType(canUseWebP)
@@ -273,13 +312,15 @@ class AttachmentRequest(
         val tempFile = File(cacheDir, "movie." + Thread.currentThread().id + ".tmp")
         val outFile = File(cacheDir, "movie." + Thread.currentThread().id + ".mp4")
         var resultFile: File? = null
-
         try {
+
             // 入力ファイルをコピーする
             (context.contentResolver.openInputStream(uri)
                 ?: error("openInputStream returns null.")).use { inStream ->
                 FileOutputStream(tempFile).use { inStream.copyTo(it) }
             }
+
+            val mediaConfig = mediaConfig()
 
             // 動画のメタデータを調べる
             val info = tempFile.videoInfo
@@ -330,11 +371,13 @@ class AttachmentRequest(
         }
     }
 
-    private suspend fun createResizedAudioOpener(srcBytes: Long): InputStreamOpener =
-        when {
+    private suspend fun createResizedAudioOpener(srcBytes: Long): InputStreamOpener {
+        val instance = instance()
+        val mediaConfig = mediaConfig()
+        return   when {
             mimeType.mimeTypeIsSupported(instance) &&
                     goodAudioType.contains(mimeType) &&
-                    srcBytes <= maxBytesVideo -> contentUriOpener(
+                    srcBytes <= maxBytesVideo(instance,mediaConfig).toLong() -> contentUriOpener(
                 context.contentResolver,
                 uri,
                 mimeType,
@@ -360,4 +403,6 @@ class AttachmentRequest(
                 )
             }
         }
+    }
+
 }

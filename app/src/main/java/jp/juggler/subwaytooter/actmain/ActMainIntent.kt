@@ -7,7 +7,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.BuildConfig
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.conversationOtherInstance
 import jp.juggler.subwaytooter.action.openActPostImpl
@@ -32,6 +31,7 @@ import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
 import jp.juggler.subwaytooter.notification.recycleClickedNotification
 import jp.juggler.subwaytooter.pref.PrefDevice
 import jp.juggler.subwaytooter.pref.prefDevice
+import jp.juggler.subwaytooter.push.FcmFlavor
 import jp.juggler.subwaytooter.push.fcmHandler
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -56,7 +56,7 @@ fun ActMain.handleIntentUri(uri: Uri) {
     try {
         log.i("handleIntentUri $uri")
         when (uri.scheme) {
-            BuildConfig.customScheme -> handleCustomSchemaUri(uri)
+            FcmFlavor.CUSTOM_SCHEME -> handleCustomSchemaUri(uri)
             else -> handleOtherUri(uri)
         }
     } catch (ex: Throwable) {
@@ -193,7 +193,7 @@ private fun ActMain.handleCustomSchemaUri(uri: Uri) = launchAndShowError {
         // subwaytooter://oauth(\d*)/?...
         handleOAuth2Callback(uri)
     } else {
-        // ${BuildConfig.customScheme}://notification_click/?db_id=(db_id)
+        // ${FcmFlavor.customScheme}://notification_click/?db_id=(db_id)
         handleNotificationClick(uri, dataIdString)
     }
 }
@@ -377,6 +377,7 @@ suspend fun ActMain.updatePushDistributer() {
             selectPushDistributor()
             // 選択しなかった場合は購読の更新を行わない
         }
+
         else -> {
             runInProgress(cancellable = false) { reporter ->
                 withContext(AppDispatchers.DEFAULT) {

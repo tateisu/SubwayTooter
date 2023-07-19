@@ -41,7 +41,6 @@ android {
 
     buildFeatures {
         viewBinding true
-        buildConfig true
     }
 
     kotlinOptions {
@@ -96,15 +95,11 @@ android {
             dimension "fcmType"
             versionNameSuffix "-noFcm"
             applicationIdSuffix ".noFcm"
-            def scheme = "subwaytooternofcm"
-            manifestPlaceholders = [customScheme: scheme]
-            buildConfigField("String", "customScheme", "\"$scheme\"")
+            manifestPlaceholders = [customScheme:  "subwaytooternofcm"]
         }
         fcm {
             dimension "fcmType"
-            def scheme = "subwaytooter"
-            manifestPlaceholders = [customScheme: scheme]
-            buildConfigField("String", "customScheme", "\"$scheme\"")
+            manifestPlaceholders = [customScheme:  "subwaytooter"]
         }
     }
 

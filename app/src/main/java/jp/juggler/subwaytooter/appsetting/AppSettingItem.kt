@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
@@ -36,6 +37,8 @@ import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.subwaytooter.util.reNotAllowedInUserAgent
+import jp.juggler.subwaytooter.util.userAgentDefault
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.data.intentOpenDocument
@@ -111,6 +114,7 @@ class AppSettingItem(
     var onClickEdit: ActAppSetting.() -> Unit = {}
     var onClickReset: ActAppSetting.() -> Unit = {}
     var showTextView: ActAppSetting.(TextView) -> Unit = {}
+    var showEditText: ActAppSetting.(EditText) -> Unit = {}
 
     // for EditText
     var hint: String? = null
@@ -346,10 +350,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         text(PrefS.spClientName, R.string.client_name, InputTypeEx.text)
 
         text(PrefS.spUserAgent, R.string.user_agent, InputTypeEx.textMultiLine) {
-            hint = App1.userAgentDefault
+            showEditText = { it.hint = userAgentDefault() }
             filter = { it.replace(ActAppSetting.reLinefeed, " ").trim() }
             getError = {
-                val m = App1.reNotAllowedInUserAgent.matcher(it)
+                val m = reNotAllowedInUserAgent.matcher(it)
                 when (m.find()) {
                     true -> getString(R.string.user_agent_error, m.group())
                     else -> null

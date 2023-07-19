@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.InstanceType
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
@@ -35,13 +36,14 @@ import jp.juggler.util.network.toPost
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.network.toPut
 import jp.juggler.util.network.toPutRequestBuilder
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
-import java.util.concurrent.CancellationException
+import java.nio.channels.ClosedChannelException
 import kotlin.coroutines.coroutineContext
 
 class AttachmentUploader(
@@ -55,130 +57,137 @@ class AttachmentUploader(
     private val safeContext = activity.applicationContext!!
     private var lastAttachmentAdd = 0L
     private var lastAttachmentComplete = 0L
-    private var channel: Channel<AttachmentRequest>? = null
+    private val channel = Channel<AttachmentRequest>(capacity = Channel.UNLIMITED)
 
-    private fun prepareChannel(): Channel<AttachmentRequest> {
-        // double check before/after lock
-        channel?.let { return it }
-        synchronized(this) {
-            channel?.let { return it }
-            return Channel<AttachmentRequest>(capacity = Channel.UNLIMITED)
-                .also {
-                    channel = it
-                    launchIO {
-                        while (true) {
-                            val request = try {
-                                it.receive()
-                            } catch (ex: Throwable) {
-                                when (ex) {
-                                    is CancellationException, is ClosedReceiveChannelException -> break
-                                    else -> {
-                                        safeContext.showToast(ex)
-                                        continue
-                                    }
-                                }
+    init {
+        launchIO {
+            while (true) {
+                try {
+                    val request = channel.receive()
+                    if (request.pa.isCancelled) continue
+                    withContext(AppDispatchers.MainImmediate) {
+                        val pa = request.pa
+                        pa.status = try {
+                            withContext(pa.job + AppDispatchers.IO) {
+                                request.upload()
                             }
-                            val result = try {
-                                if (request.pa.isCancelled) continue
-                                withContext(request.pa.job + AppDispatchers.IO) {
-                                    request.upload()
-                                }
-                            } catch (ex: Throwable) {
-                                TootApiResult(ex.withCaption("upload failed."))
+                            request.pa.progress = ""
+
+                            val now = System.currentTimeMillis()
+                            if (now - lastAttachmentComplete >= 5000L) {
+                                safeContext.showToast(false, R.string.attachment_uploaded)
                             }
-                            try {
-                                request.pa.progress = ""
-                                withContext(AppDispatchers.MainImmediate) {
-                                    handleResult(request, result)
-                                }
-                            } catch (ex: Throwable) {
-                                when (ex) {
-                                    is CancellationException, is ClosedReceiveChannelException -> break
-                                    else -> {
-                                        safeContext.showToast(ex)
-                                        continue
-                                    }
-                                }
+                            lastAttachmentComplete = now
+
+                            PostAttachment.Status.Ok
+                        } catch (ex: Throwable) {
+                            if (ex is CancellationException) {
+                                // キャンセルはメッセージを出さない
+                            } else if (ex.message?.contains("cancel", ignoreCase = true) == true) {
+                                // キャンセルはメッセージを出さない
+                            } else if (ex is IllegalStateException) {
+                                safeContext.showToast(true, "${ex.message}")
+                            } else {
+                                safeContext.showToast(true, ex.withCaption("upload failed."))
                             }
+                            PostAttachment.Status.Error
                         }
+                        // 投稿中に画面回転があった場合、新しい画面のコールバックを呼び出す必要がある
+                        pa.callback?.onPostAttachmentComplete(pa)
+                    }
+                } catch (ex: Throwable) {
+                    when (ex) {
+                        is CancellationException -> {
+                            log.i("AttachmentUploader: channel cancelled.")
+                            break
+                        }
+
+                        is ClosedChannelException, is ClosedReceiveChannelException -> {
+                            log.i("AttachmentUploader: channel closed.")
+                            break
+                        }
+
+                        else -> safeContext.showToast(ex)
                     }
                 }
+            }
         }
     }
 
     fun onActivityDestroy() {
         try {
-            synchronized(this) {
-                channel?.close()
-                channel = null
-            }
-        } catch (ex: Throwable) {
-            log.e(ex, "can't close channel.")
+            channel.close()
+        } catch (ignored: Throwable) {
         }
     }
 
     fun addRequest(request: AttachmentRequest) {
-
         request.pa.progress = safeContext.getString(R.string.attachment_handling_start)
-
-        // アップロード開始トースト(連発しない)
-        val now = System.currentTimeMillis()
-        if (now - lastAttachmentAdd >= 5000L) {
-            safeContext.showToast(false, R.string.attachment_uploading)
-        }
-        lastAttachmentAdd = now
 
         // マストドンは添付メディアをID順に表示するため
         // 画像が複数ある場合は一つずつ処理する必要がある
-        // 投稿画面ごとに1スレッドだけ作成してバックグラウンド処理を行う
-        launchIO { prepareChannel().send(request) }
+        // 投稿画面ごとに作成したチャネルにsendして、受け側は順次処理する
+        launchIO {
+            try {
+                val now = System.currentTimeMillis()
+
+                // アップロード開始トースト(連発しない)
+                if (now - lastAttachmentAdd >= 5000L) {
+                    safeContext.showToast(false, R.string.attachment_uploading)
+                }
+
+                lastAttachmentAdd = now
+                channel.send(request)
+            } catch (ex: Throwable) {
+                log.e(ex, "addRequest failed.")
+            }
+        }
     }
 
     @WorkerThread
-    private suspend fun AttachmentRequest.upload(): TootApiResult? {
+    private suspend fun AttachmentRequest.upload() {
+        val account = this.account
+        val instance = this.instance()
+        val mediaConfig = this.mediaConfig()
+
+        // ensure mimeType
+        this.mimeType
+
+        if (instance.instanceType == InstanceType.Pixelfed && isReply) {
+            error(safeContext.getString(R.string.pixelfed_does_not_allow_reply_with_media))
+        }
+
+        val client = TootApiClient(safeContext, callback = object : TootApiCallback {
+            override suspend fun isApiCancelled() = !coroutineContext.isActive
+        })
+
+        client.account = account
+        client.currentCallCallback = {}
+
+        // 入力データの変換など
+        val opener = this.createOpener()
         try {
-            if (mimeType.isEmpty()) return TootApiResult("mime_type is empty.")
-
-            val client = TootApiClient(safeContext, callback = object : TootApiCallback {
-                override suspend fun isApiCancelled() = !coroutineContext.isActive
-            })
-
-            client.account = account
-            client.currentCallCallback = {}
-
-            val (ti, tiResult) = TootInstance.get(client)
-            ti ?: return tiResult
-
-            // 入力データの変換など
-            val opener = this.createOpener()
             val maxBytes = when (opener.isImage) {
-                true -> maxBytesImage
-                else -> maxBytesVideo
+                true -> maxBytesImage(instance, mediaConfig)
+                else -> maxBytesVideo(instance, mediaConfig)
             }
-            if (opener.contentLength > maxBytes) {
-                return TootApiResult(
-                    safeContext.getString(R.string.file_size_too_big, maxBytes / 1_000_000)
-                )
-            }
-
-            if (!opener.mimeType.mimeTypeIsSupported(instance)) {
-                return TootApiResult(
-                    safeContext.getString(R.string.mime_type_not_acceptable, opener.mimeType)
-                )
+            if (opener.contentLength > maxBytes.toLong()) {
+                error(safeContext.getString(R.string.file_size_too_big, maxBytes / 1_000_000))
+            } else if (!opener.mimeType.mimeTypeIsSupported(instance)) {
+                error(safeContext.getString(R.string.mime_type_not_acceptable, opener.mimeType))
             }
 
             val fileName = fixDocumentName(getDocumentName(safeContext.contentResolver, uri))
             pa.progress = safeContext.getString(R.string.attachment_handling_uploading, 0)
             fun writeProgress(percent: Int) {
-                if (percent < 100) {
-                    pa.progress =
-                        safeContext.getString(R.string.attachment_handling_uploading, percent)
+                pa.progress = if (percent < 100) {
+                    safeContext.getString(R.string.attachment_handling_uploading, percent)
                 } else {
-                    pa.progress = safeContext.getString(R.string.attachment_handling_waiting)
+                    safeContext.getString(R.string.attachment_handling_waiting)
                 }
             }
 
-            return if (account.isMisskey) {
+            if (account.isMisskey) {
                 val multipartBuilder = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
 
@@ -199,16 +208,13 @@ class AttachmentUploader(
                 )
                 opener.deleteTempFile()
 
-                val jsonObject = result?.jsonObject
-                if (jsonObject != null) {
-                    val a = parseItem(jsonObject) { tootAttachment(ServiceType.MISSKEY, it) }
-                    if (a == null) {
-                        result.error = "TootAttachment.parse failed"
-                    } else {
-                        pa.attachment = a
-                    }
-                }
-                result
+                result ?: throw CancellationException()
+
+                val jsonObject = result.jsonObject
+                    ?: error(result.error ?: "missing error detail")
+                pa.attachment =
+                    parseItem(jsonObject) { tootAttachment(ServiceType.MISSKEY, it) }
+                        ?: error("TootAttachment.parse failed")
             } else {
                 suspend fun postMedia(path: String) = client.request(
                     path,
@@ -226,13 +232,14 @@ class AttachmentUploader(
 
                 suspend fun postV2(): TootApiResult? {
                     // 3.1.3未満は v1 APIを使う
-                    if (!ti.versionGE(TootInstance.VERSION_3_1_3)) {
+                    if (!instance.versionGE(TootInstance.VERSION_3_1_3)) {
                         return postV1()
                     }
 
                     // v2 APIを試す
                     val result = postMedia("/api/v2/media")
-                    val code = result?.response?.code // complete,or 4xx error
+                        ?: throw CancellationException()
+                    val code = result.response?.code // complete,or 4xx error
                     when {
                         // 404ならv1 APIにフォールバック
                         code == 404 -> return postV1()
@@ -242,18 +249,17 @@ class AttachmentUploader(
 
                     // ポーリングして処理完了を待つ
                     pa.progress = safeContext.getString(R.string.attachment_handling_waiting_async)
-                    val id = parseItem(result?.jsonObject) {
+
+                    val id = parseItem(result.jsonObject) {
                         tootAttachment(ServiceType.MASTODON, it)
-                    }?.id
-                        ?: return TootApiResult("/api/v2/media did not return the media ID.")
+                    }?.id ?: error("/api/v2/media did not return the media ID.")
 
                     var lastResponse = SystemClock.elapsedRealtime()
-                    loop@ while (true) {
-
+                    while (true) {
                         delay(1000L)
 
                         val r2 = client.request("/api/v1/media/$id")
-                            ?: return null // cancelled
+                            ?: throw CancellationException()
 
                         val now = SystemClock.elapsedRealtime()
                         when (r2.response?.code) {
@@ -264,29 +270,22 @@ class AttachmentUploader(
                             206 -> lastResponse = now
 
                             // temporary errors, check timeout without 206 response.
-                            else -> if (now - lastResponse >= 120000L) {
-                                return TootApiResult("timeout.")
-                            }
+                            else -> if (now - lastResponse >= 120000L) error("timeout.")
                         }
                     }
                 }
 
                 val result = postV2()
-                opener.deleteTempFile()
+                    ?: throw CancellationException()
 
-                val jsonObject = result?.jsonObject
-                if (jsonObject != null) {
-                    when (val a = parseItem(jsonObject) {
-                        tootAttachment(ServiceType.MASTODON, it)
-                    }) {
-                        null -> result.error = "TootAttachment.parse failed"
-                        else -> pa.attachment = a
-                    }
-                }
-                result
+                val jsonObject = result.jsonObject
+                    ?: error(result.error ?: "missing error detail")
+
+                pa.attachment = parseItem(jsonObject) { tootAttachment(ServiceType.MASTODON, it) }
+                    ?: error("TootAttachment.parse failed")
             }
-        } catch (ex: Throwable) {
-            return TootApiResult(ex.withCaption("read failed."))
+        } finally {
+            opener.deleteTempFile()
         }
     }
 
@@ -306,38 +305,6 @@ class AttachmentUploader(
         return sb.toString()
     }
 
-    private fun handleResult(request: AttachmentRequest, result: TootApiResult?) {
-        val pa = request.pa
-        pa.status = when (pa.attachment) {
-            null -> {
-                if (result != null) {
-                    when {
-                        // キャンセルはトーストを出さない
-                        result.error?.contains("cancel", ignoreCase = true) == true -> Unit
-                        else -> safeContext.showToast(
-                            true,
-                            "${result.error} ${result.response?.request?.method} ${result.response?.request?.url}"
-                        )
-                    }
-                }
-                PostAttachment.Status.Error
-            }
-
-            else -> {
-                val now = System.currentTimeMillis()
-                if (now - lastAttachmentComplete >= 5000L) {
-                    safeContext.showToast(false, R.string.attachment_uploaded)
-                }
-                lastAttachmentComplete = now
-
-                PostAttachment.Status.Ok
-            }
-        }
-
-        // 投稿中に画面回転があった場合、新しい画面のコールバックを呼び出す必要がある
-        pa.callback?.onPostAttachmentComplete(pa)
-    }
-
     ///////////////////////////////////////////////////////////////
     // 添付データのカスタムサムネイル
     suspend fun uploadCustomThumbnail(
@@ -346,67 +313,62 @@ class AttachmentUploader(
         pa: PostAttachment,
     ): TootApiResult? = try {
         safeContext.runApiTask(account) { client ->
-            val (ti, ri) = TootInstance.get(client)
-            ti ?: return@runApiTask ri
-
-            val mimeType = src.uri.resolveMimeType(src.mimeType, safeContext)
-            if (mimeType.isNullOrEmpty()) {
-                return@runApiTask TootApiResult(safeContext.getString(R.string.mime_type_missing))
-            }
-
-            val mediaConfig = ti.configuration?.jsonObject("media_attachments")
             val ar = AttachmentRequest(
                 context = safeContext,
                 account = account,
                 pa = pa,
                 uri = src.uri,
-                mimeType = mimeType,
-                instance = ti,
-                mediaConfig = mediaConfig,
+                mimeTypeArg = src.mimeType,
                 imageResizeConfig = ResizeConfig(ResizeType.SquarePixel, 400),
-                serverMaxSqPixel = mediaConfig?.int("image_matrix_limit")?.takeIf { it > 0 },
-                maxBytesImage = 1000000,
-                maxBytesVideo = 1000000,
+                maxBytesImage = { _, _ -> 1000000 },
+                maxBytesVideo = { _, _ -> 1000000 },
             )
+            val instance = ar.instance()
+            val mediaConfig = ar.mediaConfig()
+            val maxBytesImage = ar.maxBytesImage(instance, mediaConfig)
+
             val opener = ar.createOpener()
-            if (opener.contentLength > ar.maxBytesImage) {
-                return@runApiTask TootApiResult(
-                    getString(
-                        R.string.file_size_too_big,
-                        ar.maxBytesImage / 1000000
-                    )
-                )
-            }
+            try{
 
-            val fileName = fixDocumentName(getDocumentName(safeContext.contentResolver, src.uri))
-
-            if (account.isMisskey) {
-                opener.deleteTempFile()
-                TootApiResult("custom thumbnail is not supported on misskey account.")
-            } else {
-                val result = client.request(
-                    "/api/v1/media/${pa.attachment?.id}",
-                    MultipartBody.Builder()
-                        .setType(MultipartBody.FORM)
-                        .addFormDataPart(
-                            "thumbnail",
-                            fileName,
-                            opener.toRequestBody(),
+                if (opener.contentLength > maxBytesImage.toLong()) {
+                    return@runApiTask TootApiResult(
+                        getString(
+                            R.string.file_size_too_big,
+                            maxBytesImage / 1000000
                         )
-                        .build().toPut()
-                )
-                opener.deleteTempFile()
-
-                val jsonObject = result?.jsonObject
-                if (jsonObject != null) {
-                    val a = parseItem(jsonObject) { tootAttachment(ServiceType.MASTODON, it) }
-                    if (a == null) {
-                        result.error = "TootAttachment.parse failed"
-                    } else {
-                        pa.attachment = a
-                    }
+                    )
                 }
-                result
+
+                val fileName = fixDocumentName(getDocumentName(safeContext.contentResolver, src.uri))
+
+                if (account.isMisskey) {
+                    TootApiResult("custom thumbnail is not supported on misskey account.")
+                } else {
+                    val result = client.request(
+                        "/api/v1/media/${pa.attachment?.id}",
+                        MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart(
+                                "thumbnail",
+                                fileName,
+                                opener.toRequestBody(),
+                            )
+                            .build().toPut()
+                    )
+
+                    val jsonObject = result?.jsonObject
+                    if (jsonObject != null) {
+                        val a = parseItem(jsonObject) { tootAttachment(ServiceType.MASTODON, it) }
+                        if (a == null) {
+                            result.error = "TootAttachment.parse failed"
+                        } else {
+                            pa.attachment = a
+                        }
+                    }
+                    result
+                }
+            }finally{
+                opener.deleteTempFile()
             }
         }
     } catch (ex: Throwable) {

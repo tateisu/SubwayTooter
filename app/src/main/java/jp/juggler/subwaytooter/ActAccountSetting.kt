@@ -52,7 +52,6 @@ import jp.juggler.util.network.toPost
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.ui.*
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
@@ -271,7 +270,7 @@ class ActAccountSetting : AppCompatActivity(),
         setSwitchColor(views.root)
 
         views.apply {
-            btnPushSubscriptionNotForce.vg(BuildConfig.DEBUG)
+            btnPushSubscriptionNotForce.vg(ReleaseType.isDebug)
 
             imageResizeItems = SavedAccount.resizeConfigList.map {
                 val caption = when (it.type) {

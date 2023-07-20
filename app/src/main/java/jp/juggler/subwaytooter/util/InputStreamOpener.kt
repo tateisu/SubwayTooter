@@ -16,6 +16,8 @@ abstract class InputStreamOpener {
     abstract val mimeType: String
     abstract val isImage: Boolean
 
+    open val fixExt :String? = null
+
     @Throws(IOException::class)
     abstract fun open(): InputStream
 
@@ -74,9 +76,11 @@ fun tempFileOpener(
     file: File,
     mimeType: String,
     isImage: Boolean,
+    fixExt:String? = null,
 ) = object : InputStreamOpener() {
     override val mimeType = mimeType
     override val isImage = isImage
+    override val fixExt = fixExt
 
     @Throws(IOException::class)
     override fun open() = FileInputStream(file)

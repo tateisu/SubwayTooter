@@ -176,7 +176,7 @@ class AttachmentRequest(
                 false
             }
 
-            val canUseOriginal = when {
+            val canUseOriginal: Boolean = when {
                 // WebPを使っていい場合、PNG画像をWebPに変換したい
                 canUseWebP && mimeType == MIME_TYPE_PNG -> false
                 // WebPを使わない場合、入力がWebPなら強制的にPNGかJPEGにする
@@ -219,7 +219,7 @@ class AttachmentRequest(
                         @Suppress("DEPRECATION")
                         Bitmap.CompressFormat.WEBP
                 }
-                return compressToTempFileOpener(MIME_TYPE_WEBP, format, 90)
+                return compressToTempFileOpener("webp", MIME_TYPE_WEBP, format, 90)
             } catch (ex: Throwable) {
                 log.w(ex, "compress to WebP lossy failed.")
                 // 失敗したらJPEG or PNG にフォールバック
@@ -234,12 +234,14 @@ class AttachmentRequest(
             }
             return when (hasAlpha) {
                 true -> compressToTempFileOpener(
+                    "png",
                     MIME_TYPE_PNG,
                     Bitmap.CompressFormat.PNG,
                     100
                 )
 
                 else -> compressToTempFileOpener(
+                    "jpg",
                     MIME_TYPE_JPEG,
                     Bitmap.CompressFormat.JPEG,
                     95
@@ -255,6 +257,7 @@ class AttachmentRequest(
      * 失敗したら例外を投げる
      */
     private fun Bitmap.compressToTempFileOpener(
+        fixExt: String?,
         outMimeType: String,
         format: Bitmap.CompressFormat,
         quality: Int,
@@ -262,7 +265,7 @@ class AttachmentRequest(
         val tempFile = context.generateTempFile("createResizedImageOpener")
         try {
             FileOutputStream(tempFile).use { compress(format, quality, it) }
-            return tempFileOpener(tempFile, outMimeType, isImage = true)
+            return tempFileOpener(tempFile, outMimeType, isImage = true, fixExt = fixExt)
         } catch (ex: Throwable) {
             tempFile.delete()
             throw ex
@@ -362,6 +365,10 @@ class AttachmentRequest(
                     else -> "video/mp4"
                 },
                 isImage = false,
+                fixExt = when (result) {
+                    tempFile -> null
+                    else -> "mp4"
+                },
             )
         } finally {
             if (outFile != resultFile) outFile.delete()

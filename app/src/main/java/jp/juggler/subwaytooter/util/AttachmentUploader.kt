@@ -177,7 +177,10 @@ class AttachmentUploader(
                 error(safeContext.getString(R.string.mime_type_not_acceptable, opener.mimeType))
             }
 
-            val fileName = fixDocumentName(getDocumentName(safeContext.contentResolver, uri))
+            val fileName = fixDocumentName(
+                getDocumentName(safeContext.contentResolver, uri),
+                fixExt = opener.fixExt,
+            )
             pa.progress = safeContext.getString(R.string.attachment_handling_uploading, 0)
             fun writeProgress(percent: Int) {
                 pa.progress = if (percent < 100) {
@@ -289,7 +292,7 @@ class AttachmentUploader(
         }
     }
 
-    private fun fixDocumentName(s: String): String {
+    private fun fixDocumentName(s: String, fixExt: String?): String {
         val sLength = s.length
         val m = """([^\x20-\x7f])""".asciiPattern().matcher(s)
         m.reset()
@@ -302,7 +305,11 @@ class AttachmentUploader(
             lastEnd = m.end()
         }
         if (lastEnd < sLength) sb.append(s.substring(lastEnd, sLength))
-        return sb.toString()
+        var escaped = sb.toString()
+        if (!fixExt.isNullOrEmpty()) {
+            escaped = """\.[^./\\]*\z""".toRegex().replace(escaped, "") + ".${fixExt}"
+        }
+        return escaped
     }
 
     ///////////////////////////////////////////////////////////////
@@ -339,8 +346,10 @@ class AttachmentUploader(
                     )
                 }
 
-                val fileName =
-                    fixDocumentName(getDocumentName(safeContext.contentResolver, src.uri))
+                val fileName = fixDocumentName(
+                    getDocumentName(safeContext.contentResolver, src.uri),
+                    fixExt = opener.fixExt,
+                )
 
                 if (account.isMisskey) {
                     TootApiResult("custom thumbnail is not supported on misskey account.")

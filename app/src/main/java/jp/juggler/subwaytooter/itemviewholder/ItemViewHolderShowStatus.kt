@@ -356,7 +356,7 @@ private fun ItemViewHolder.showAttachments(status: TootStatus) {
     }
 }
 
-val reUrlGif by lazy{
+val reUrlGif by lazy {
     """\.gif(?:\z|\?|#)"""
         .toRegex(RegexOption.IGNORE_CASE)
 }

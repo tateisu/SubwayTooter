@@ -38,8 +38,8 @@ abstract class PushBase {
         subLog: SubscriptionLogger,
         account: SavedAccount,
         willRemoveSubscription: Boolean,
-        forceUpdate:Boolean,
-    ):String?
+        forceUpdate: Boolean,
+    ): String?
 
     // プッシュメッセージのJSONデータを通知用に整形
     abstract suspend fun formatPushMessage(

@@ -604,6 +604,7 @@ open class TootAccount(
                     apDomain = pair.second ?: error("can't get apDomain from acct or url")
                     acct = Acct.parse(username, apDomain)
                 }
+
                 else -> error("serverType missmatch: ${parser.serviceType}")
             }
             return TootAccount(
@@ -713,12 +714,9 @@ open class TootAccount(
         // Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
         fun findHostFromUrl(
             acctArg: String?,
-            linkHelper: LinkHelper
-            ?,
-            url: String
-            ?,
-        )
-                : Pair<Host?, Host?> {
+            linkHelper: LinkHelper?,
+            url: String?,
+        ): Pair<Host?, Host?> {
             val apDomain = findApDomain(acctArg, linkHelper)
             val apiHost = findApiHost(url)
             return Pair(apiHost ?: apDomain, apDomain ?: apiHost)

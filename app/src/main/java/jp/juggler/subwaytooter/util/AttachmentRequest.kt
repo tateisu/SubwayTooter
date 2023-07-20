@@ -100,7 +100,7 @@ class AttachmentRequest(
         if (mimeType == MIME_TYPE_GIF) {
             // GIFはそのまま投げる
             return contentUriOpener(context.contentResolver, uri, mimeType, isImage = true)
-        }else if (mimeType.startsWith("image")) {
+        } else if (mimeType.startsWith("image")) {
             // 静止画
             return createResizedImageOpener()
         }
@@ -372,10 +372,11 @@ class AttachmentRequest(
     private suspend fun createResizedAudioOpener(srcBytes: Long): InputStreamOpener {
         val instance = instance()
         val mediaConfig = mediaConfig()
-        return   when {
+        return when {
             mimeType.mimeTypeIsSupported(instance) &&
                     goodAudioType.contains(mimeType) &&
-                    srcBytes <= maxBytesVideo(instance,mediaConfig).toLong() -> contentUriOpener(
+                    srcBytes <= maxBytesVideo(instance, mediaConfig).toLong()
+            -> contentUriOpener(
                 context.contentResolver,
                 uri,
                 mimeType,
@@ -402,5 +403,4 @@ class AttachmentRequest(
             }
         }
     }
-
 }

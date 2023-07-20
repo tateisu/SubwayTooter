@@ -28,4 +28,3 @@ fun Context.getUserAgent(): String {
         else -> userAgentDefault()
     }
 }
-

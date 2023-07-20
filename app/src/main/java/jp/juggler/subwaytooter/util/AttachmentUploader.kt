@@ -328,7 +328,7 @@ class AttachmentUploader(
             val maxBytesImage = ar.maxBytesImage(instance, mediaConfig)
 
             val opener = ar.createOpener()
-            try{
+            try {
 
                 if (opener.contentLength > maxBytesImage.toLong()) {
                     return@runApiTask TootApiResult(
@@ -339,7 +339,8 @@ class AttachmentUploader(
                     )
                 }
 
-                val fileName = fixDocumentName(getDocumentName(safeContext.contentResolver, src.uri))
+                val fileName =
+                    fixDocumentName(getDocumentName(safeContext.contentResolver, src.uri))
 
                 if (account.isMisskey) {
                     TootApiResult("custom thumbnail is not supported on misskey account.")
@@ -367,7 +368,7 @@ class AttachmentUploader(
                     }
                     result
                 }
-            }finally{
+            } finally {
                 opener.deleteTempFile()
             }
         }

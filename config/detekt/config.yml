@@ -76,10 +76,6 @@ comments:
 complexity:
   active: true
   
-  CyclomaticComplexMethod:
-    active: false
-    threshold: 20
-
   ComplexCondition:
     active: true
     threshold: 8
@@ -88,13 +84,15 @@ complexity:
     threshold: 10
     includeStaticDeclarations: false
     includePrivateDeclarations: false
-  ComplexMethod:
-    active: true
+
+  CyclomaticComplexMethod:
+    active: false
     threshold: 100
     ignoreSingleWhenExpression: true
     ignoreSimpleWhenEntries: true
     ignoreNestingFunctions: true
     nestingFunctions: ['run', 'let', 'apply', 'with', 'also', 'use', 'forEach', 'isNotNull', 'ifNull']
+
   LabeledExpression:
     active: false
     ignoredLabels: []
@@ -254,9 +252,6 @@ formatting:
   android: false
   autoCorrect: true
   
-  MultiLineIfElse:
-    active: false
-  
   Wrapping:
     active: false
   AnnotationOnSeparateLine:
@@ -293,7 +288,6 @@ formatting:
     active: false
     autoCorrect: true
     indentSize: 4
-    continuationIndentSize: 4
   MaximumLineLength:
     active: false
     maxLineLength: 120
@@ -390,6 +384,10 @@ formatting:
     # 誤検出があるので無効化
     active: false
     autoCorrect: true
+  BlockCommentInitialStarAlignment:
+    active: false
+  CommentWrapping:
+    active: false
 
 naming:
   active: true
@@ -402,7 +400,6 @@ naming:
     parameterPattern: '[a-z][A-Za-z0-9]*'
     privateParameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
     excludes:
       - '**/test/**'
       - '**/androidTest/**'
@@ -433,14 +430,12 @@ naming:
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
     ignoreAnnotated: ['Composable']
   FunctionParameterNaming:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     parameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
   InvalidPackageDeclaration:
     active: false
     excludes: ['*.kts']
@@ -495,7 +490,6 @@ naming:
     variablePattern: '[a-z][A-Za-z0-9]*'
     privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
 
 performance:
   active: true
@@ -520,8 +514,6 @@ potential-bugs:
     active: false
   DoubleMutabilityForCollection:
     active: false
-  DuplicateCaseInWhenExpression:
-    active: true
   EqualsAlwaysReturnsTrueOrFalse:
     active: true
   EqualsWithHashCodeExist:
@@ -534,7 +526,7 @@ potential-bugs:
     active: false
   IgnoredReturnValue:
     active: false
-    restrictToAnnotatedMethods: true
+    restrictToConfig: true
     returnValueAnnotations: ['*.CheckReturnValue', '*.CheckResult']
   ImplicitDefaultLocale:
     active: true
@@ -554,13 +546,8 @@ potential-bugs:
     ignoreOnClassesPattern: ''
   MapGetWithNotNullAssertionOperator:
     active: false
-  MissingWhenCase:
-    active: true
-    allowElseExpression: true
   NullableToStringCall:
     active: false
-  RedundantElseInWhen:
-    active: true
   UnconditionalJumpStatementInLoop:
     active: false
   UnnecessaryNotNullOperator:
@@ -590,7 +577,7 @@ style:
     active: false
   DataClassContainsFunctions:
     active: false
-    conversionFunctionPrefix: 'to'
+    conversionFunctionPrefix: ['to']
   DataClassShouldBeImmutable:
     active: false
   DestructuringDeclarationWithTooManyEntries:
@@ -608,8 +595,8 @@ style:
     active: false
     includeLineWrapping: false
   ForbiddenComment:
-    active: true
-    values: ['TODO:', 'FIXME:', 'STOPSHIP:']
+    active: false
+#    comments: ???
     allowedPatterns: ''
   ForbiddenImport:
     active: false
@@ -631,10 +618,6 @@ style:
       - '**/jvmTest/**'
       - '**/jsTest/**'
       - '**/iosTest/**'
-  ForbiddenPublicDataClass:
-    active: true
-    excludes: ['**']
-    ignorePackages: ['*.internal', '*.internal.*']
   ForbiddenVoid:
     active: false
     ignoreOverridden: false
@@ -643,14 +626,8 @@ style:
     active: true
     ignoreOverridableFunction: true
     ignoreActualFunction: true
-    excludedFunctions: 'describeContents'
+    excludedFunctions: ['describeContents']
     ignoreAnnotated: ['dagger.Provides']
-  LibraryCodeMustSpecifyReturnType:
-    active: true
-    excludes: ['**']
-  LibraryEntitiesShouldNotBePublic:
-    active: true
-    excludes: ['**']
   LoopWithTooManyJumpStatements:
     active: true
     maxJumpCount: 10
@@ -668,8 +645,6 @@ style:
     ignoreEnums: false
     ignoreRanges: false
     ignoreExtensionFunctions: true
-  MandatoryBracesIfStatements:
-    active: false
   MandatoryBracesLoops:
     active: false
   MaxLineLength:
@@ -711,7 +686,7 @@ style:
   ReturnCount:
     active: false
     max: 10
-    excludedFunctions: 'equals'
+    excludedFunctions: ['equals']
     excludeLabeled: false
     excludeReturnFromLambda: true
     excludeGuardClauses: false
@@ -790,3 +765,7 @@ style:
       - java.util.*
       - kotlinx.android.synthetic.*
       - android.content.*
+  UnusedPrivateProperty:
+    active: false
+  UnusedParameter:
+    active: false

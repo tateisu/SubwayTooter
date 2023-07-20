@@ -65,7 +65,7 @@ class TestTootInstance {
     /*
         TootInstance.get() はアカウントを指定する場合とホストを指定する場合がある
         ホスト指定とアカウント指定、 MastodonとMisskey で試す
-    */
+     */
 
     @Test
     fun instanceByHostname() = runTest {

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Typeface
@@ -627,30 +626,29 @@ class ActMain : AppCompatActivity(),
 
         super.onResume()
         /*
-        super.onResume() から呼ばれる isTopOfTask() が android.os.RemoteException 例外をたまに出すが、放置することにした。
-
-        java.lang.RuntimeException:
-        at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4430)
-        at android.app.ActivityThread.handleResumeActivity (ActivityThread.java:4470)
-        Caused by: java.lang.IllegalArgumentException:
-        at android.os.Parcel.createException (Parcel.java:1957)
-        at android.os.Parcel.readException (Parcel.java:1921)
-        at android.os.Parcel.readException (Parcel.java:1871)
-        at android.app.IActivityManager$Stub$Proxy.isTopOfTask (IActivityManager.java:7912)
-        at android.app.Activity.isTopOfTask (Activity.java:6724)
-        at android.app.Activity.onResume (Activity.java:1425)
-        at androidx.fragment.app.FragmentActivity.onResume (FragmentActivity.java:456)
-        at jp.juggler.subwaytooter.ActMain.onResume (ActMain.kt:685)
-        at android.app.Instrumentation.callActivityOnResume (Instrumentation.java:1456)
-        at android.app.Activity.performResume (Activity.java:7614)
-        at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4412)
-        Caused by: android.os.RemoteException:
-        at com.android.server.am.ActivityManagerService.isTopOfTask (ActivityManagerService.java:16128)
-        at android.app.IActivityManager$Stub.onTransact (IActivityManager.java:2376)
-        at com.android.server.am.ActivityManagerService.onTransact (ActivityManagerService.java:3648)
-        at com.android.server.am.HwActivityManagerService.onTransact (HwActivityManagerService.java:609)
-        at android.os.Binder.execTransact (Binder.java:739)
-        */
+           super.onResume() から呼ばれる isTopOfTask() が android.os.RemoteException 例外をたまに出すが、放置することにした。
+            java.lang.RuntimeException:
+            at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4430)
+            at android.app.ActivityThread.handleResumeActivity (ActivityThread.java:4470)
+            Caused by: java.lang.IllegalArgumentException:
+            at android.os.Parcel.createException (Parcel.java:1957)
+            at android.os.Parcel.readException (Parcel.java:1921)
+            at android.os.Parcel.readException (Parcel.java:1871)
+            at android.app.IActivityManager$Stub$Proxy.isTopOfTask (IActivityManager.java:7912)
+            at android.app.Activity.isTopOfTask (Activity.java:6724)
+            at android.app.Activity.onResume (Activity.java:1425)
+            at androidx.fragment.app.FragmentActivity.onResume (FragmentActivity.java:456)
+            at jp.juggler.subwaytooter.ActMain.onResume (ActMain.kt:685)
+            at android.app.Instrumentation.callActivityOnResume (Instrumentation.java:1456)
+            at android.app.Activity.performResume (Activity.java:7614)
+            at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4412)
+            Caused by: android.os.RemoteException:
+            at com.android.server.am.ActivityManagerService.isTopOfTask (ActivityManagerService.java:16128)
+            at android.app.IActivityManager$Stub.onTransact (IActivityManager.java:2376)
+            at com.android.server.am.ActivityManagerService.onTransact (ActivityManagerService.java:3648)
+            at com.android.server.am.HwActivityManagerService.onTransact (HwActivityManagerService.java:609)
+            at android.os.Binder.execTransact (Binder.java:739)
+         */
 
         if (PrefB.bpDontScreenOff.value) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

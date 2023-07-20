@@ -97,13 +97,11 @@ class AttachmentRequest(
     suspend fun createOpener(): InputStreamOpener {
         val mimeType = this.mimeType
 
-        // GIFはそのまま投げる
         if (mimeType == MIME_TYPE_GIF) {
+            // GIFはそのまま投げる
             return contentUriOpener(context.contentResolver, uri, mimeType, isImage = true)
-        }
-
-        // 静止画
-        if (mimeType.startsWith("image")) {
+        }else if (mimeType.startsWith("image")) {
+            // 静止画
             return createResizedImageOpener()
         }
 

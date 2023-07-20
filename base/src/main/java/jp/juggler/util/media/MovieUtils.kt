@@ -68,6 +68,36 @@ data class MovieResizeConfig(
     }
 }
 
+/**
+ * レシーバが奇数なら+1した値を返す
+ *
+ * `[OMX.qcom.video.encoder.avc] video encoder does not support odd resolution 1018x2263`
+ */
+private fun Int.fixOdd() = if (and(1) == 0) this else this + 1
+
+/**
+ * 動画のピクセルサイズを制限に合わせてスケーリングする
+ */
+private fun createScaledSize(inSize: Size, limitSquarePixels: Int): Size {
+
+    if (inSize.major <= 0 || inSize.minor <= 0) {
+        // 入力サイズの縦横が0以下の場合、アスペクト比を計算できないのでリサイズできない
+        log.w("createScaledSize: video size not valid. major=${inSize.major}, minor=${inSize.minor}")
+        return inSize
+    }
+
+    val squarePixels = inSize.major * inSize.minor
+    if (squarePixels <= limitSquarePixels) {
+        return inSize
+    }
+
+    val aspect = inSize.major.toFloat() / inSize.minor.toFloat()
+    return Size(
+        max(1f, sqrt(limitSquarePixels.toFloat() * aspect)).toInt().fixOdd(),
+        max(1f, sqrt(limitSquarePixels.toFloat() / aspect)).toInt().fixOdd(),
+    )
+}
+
 @Suppress("BlockingMethodInNonBlockingContext")
 suspend fun transcodeVideo(
     info: VideoInfo,
@@ -122,19 +152,10 @@ suspend fun transcodeVideo(
                         .addDataSource(inStream.fd)
                         .setVideoTrackStrategy(DefaultVideoStrategy.Builder()
                             .addResizer { inSize ->
-                                val squarePixels = inSize.major * inSize.minor
-                                val limit = resizeConfig.limitSquarePixels
-                                if (squarePixels <= limit || inSize.major <= 0 || inSize.minor <= 0) {
-                                    // 入力サイズが0以下の場合もアスペクト計算に支障がでるのでリサイズできない
-                                    inSize
-                                } else {
-                                    // アスペクト比を維持しつつ平方ピクセルが指定に収まるようにする
-                                    val aspect = inSize.major.toFloat() / inSize.minor.toFloat()
-                                    Size(
-                                        max(1, (sqrt(limit.toFloat() * aspect) + 0.5f).toInt()),
-                                        max(1, (sqrt(limit.toFloat() / aspect) + 0.5f).toInt()),
-                                    )
-                                }
+                                createScaledSize(
+                                    inSize = inSize,
+                                    limitSquarePixels = resizeConfig.limitSquarePixels
+                                )
                             }
                             .frameRate(resizeConfig.limitFrameRate)
                             .keyFrameInterval(10f)

@@ -96,7 +96,7 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
     api "ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0"
 
-    api "androidx.media3:media3-cast:$media3Version"
+    //non-OSS dependency api "androidx.media3:media3-cast:$media3Version"
     api "androidx.media3:media3-common:$media3Version"
     api "androidx.media3:media3-datasource:$media3Version"
     api "androidx.media3:media3-effect:$media3Version"

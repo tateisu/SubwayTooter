@@ -1,18 +1,38 @@
 package jp.juggler.util.media
 
+import android.content.Context
+import android.net.Uri
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.effect.ScaleAndRotateTransformation
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultEncoderFactory
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.Effects
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.ProgressHolder
+import androidx.media3.transformer.TransformationRequest
+import androidx.media3.transformer.Transformer
+import androidx.media3.transformer.VideoEncoderSettings
 import com.otaliastudios.transcoder.Transcoder
 import com.otaliastudios.transcoder.TranscoderListener
 import com.otaliastudios.transcoder.common.Size
 import com.otaliastudios.transcoder.strategy.DefaultAudioStrategy
 import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy
 import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.data.clip
+import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.io.File
 import java.io.FileInputStream
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resumeWithException
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -64,7 +84,7 @@ data class MovieResizeConfig(
         MovideResizeMode.Auto ->
             info.squarePixels > limitSquarePixels ||
                     (info.actualBps ?: 0).toFloat() > limitBitrate.toFloat() * 1.5f ||
-                    (info.frameRatio?.toInt() ?: 0) > limitFrameRate
+                    (info.frameRatio==null || info.frameRatio<1f || info.frameRatio > limitFrameRate)
     }
 }
 
@@ -96,6 +116,138 @@ private fun createScaledSize(inSize: Size, limitSquarePixels: Int): Size {
         max(1f, sqrt(limitSquarePixels.toFloat() * aspect)).toInt().fixOdd(),
         max(1f, sqrt(limitSquarePixels.toFloat() / aspect)).toInt().fixOdd(),
     )
+}
+
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+suspend fun transcodeVideoMedia3Transformer(
+    context: Context,
+    info: VideoInfo,
+    inFile: File,
+    outFile: File,
+    resizeConfig: MovieResizeConfig,
+    onProgress: (Float) -> Unit,
+): File = try {
+    withContext(AppDispatchers.MainImmediate) {
+
+        when (resizeConfig.mode) {
+            MovideResizeMode.No -> return@withContext inFile
+            MovideResizeMode.Always -> Unit
+            MovideResizeMode.Auto -> {
+                if (!resizeConfig.isTranscodeRequired(info)) {
+                    log.i("transcodeVideoMedia3Transformer: transcode not required.")
+                    return@withContext inFile
+                }
+            }
+        }
+
+        val srcMediaItem = MediaItem.fromUri(Uri.fromFile(inFile))
+        val editedMediaItem = EditedMediaItem.Builder(srcMediaItem).apply {
+
+            // 入力のフレームレートが高すぎるなら制限する
+            if (info.frameRatio==null || info.frameRatio<1f ||
+                info.frameRatio > resizeConfig.limitFrameRate
+            ) {
+                // This should be set for inputs that don't have an implicit frame rate (e.g. images).
+                // It will be ignored for inputs that do have an implicit frame rate (e.g. video).
+                setFrameRate(resizeConfig.limitFrameRate)
+            }
+
+            // 入力のピクセルサイズが大きすぎるなら制限する
+            if (info.size.w > 0 && info.size.h > 0 &&
+                info.squarePixels > resizeConfig.limitSquarePixels
+            ) {
+                // 端数やodd補正などによる問題が出なさそうなscale値を計算する
+                fun calcScale(
+                    srcLongerSide:Int,
+                    aspect:Float,
+                    limitSqPixel:Int,
+                ):Float {
+                    var sqPixel = limitSqPixel
+                    while (true) {
+                        val newW = ceil(sqrt(sqPixel * aspect)).toInt().fixOdd()
+                        val newH = ceil(sqrt(sqPixel / aspect)).toInt().fixOdd()
+                        if (newW * newH <= resizeConfig.limitSquarePixels) {
+                            return max(newW, newH).toFloat().div(srcLongerSide)
+                        }
+                        sqPixel -= srcLongerSide
+                    }
+                }
+                val scale = calcScale(
+                    srcLongerSide = max(info.size.w, info.size.h),
+                    aspect =  info.size.w.toFloat() / info.size.h.toFloat(),
+                    limitSqPixel =  resizeConfig.limitSquarePixels
+                )
+                val effects = Effects(
+                    /* audioProcessors */ emptyList(),
+                    /* videoEffects */ listOf(
+                        ScaleAndRotateTransformation.Builder().apply {
+                            setScale(scale, scale)
+                        }.build()
+                    )
+                )
+                setEffects(effects)
+            }
+        }.build()
+
+        val request = TransformationRequest.Builder().apply {
+            setVideoMimeType(MimeTypes.VIDEO_H264)
+            setAudioMimeType(MimeTypes.AUDIO_AAC)
+            // ビットレートがないな…
+        }.build()
+
+        // 完了検知
+        val completed = AtomicBoolean(false)
+        val error = AtomicReference<Throwable>(null)
+        val listener = object : Transformer.Listener {
+            override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                super.onCompleted(composition, exportResult)
+                completed.compareAndSet(false, true)
+            }
+
+            override fun onError(
+                composition: Composition,
+                exportResult: ExportResult,
+                exportException: ExportException,
+            ) {
+                super.onError(composition, exportResult, exportException)
+                error.compareAndSet(null, exportException)
+            }
+        }
+
+        val videoEncoderSettings = VideoEncoderSettings.Builder().apply {
+            setBitrate(resizeConfig.limitBitrate.clip(100_000L, Int.MAX_VALUE.toLong()).toInt())
+        }.build()
+
+        val encoderFactory = DefaultEncoderFactory.Builder(context).apply {
+            setRequestedVideoEncoderSettings(videoEncoderSettings)
+            // missing setRequestedAudioEncoderSettings
+        }.build()
+
+        // 開始
+        val transformer = Transformer.Builder(context).apply {
+            setEncoderFactory(encoderFactory)
+            setTransformationRequest(request)
+            addListener(listener)
+        }.build()
+        transformer.start(editedMediaItem, outFile.canonicalPath)
+
+        // 完了まで待機しつつ、定期的に進捗コールバックを呼ぶ
+        val progressHolder = ProgressHolder()
+        while (!completed.get()) {
+            error.get()?.let { throw it }
+            val progress = when (transformer.getProgress(progressHolder)) {
+                Transformer.PROGRESS_STATE_NOT_STARTED -> 0f
+                else -> progressHolder.progress.toFloat() / 100f
+            }
+            onProgress(progress)
+            delay(1000L)
+        }
+        outFile
+    }
+} catch (ex: Throwable) {
+    log.w("delete outFile due to error.")
+    outFile.delete()
+    throw ex
 }
 
 @Suppress("BlockingMethodInNonBlockingContext")

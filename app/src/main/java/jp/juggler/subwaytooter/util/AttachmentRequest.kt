@@ -18,9 +18,10 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
 import jp.juggler.util.media.ResizeConfig
+import jp.juggler.util.media.VideoInfo
 import jp.juggler.util.media.VideoInfo.Companion.videoInfo
 import jp.juggler.util.media.createResizedBitmap
-import jp.juggler.util.media.transcodeVideo
+import jp.juggler.util.media.transcodeVideoMedia3Transformer
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.CancellationException
@@ -134,7 +135,7 @@ class AttachmentRequest(
         when (isVideo) {
             true -> try {
                 // 動画のトランスコード(失敗したらオリジナルデータにフォールバックする)
-                return createResizedVideoOpener()
+                return createResizedVideoOpener(vi)
             } catch (ex: Throwable) {
                 log.w(
                     ex,
@@ -304,7 +305,7 @@ class AttachmentRequest(
         return false
     }
 
-    private suspend fun createResizedVideoOpener(): InputStreamOpener {
+    private suspend fun createResizedVideoOpener(srcInfo: VideoInfo): InputStreamOpener {
 
         val cacheDir = context.externalCacheDir
             ?.apply { mkdirs() }
@@ -324,10 +325,9 @@ class AttachmentRequest(
             val mediaConfig = mediaConfig()
 
             // 動画のメタデータを調べる
-            val info = tempFile.videoInfo
 
             // サーバに指定されたファイルサイズ上限と入力動画の時間長があれば、ビットレート上限を制限する
-            val duration = info.duration?.takeIf { it >= 0.1f }
+            val duration = srcInfo.duration?.takeIf { it >= 0.1f }
             val limitFileSize = mediaConfig?.float("video_size_limit")?.takeIf { it >= 1f }
             val limitBitrate = when {
                 duration != null && limitFileSize != null ->
@@ -346,12 +346,22 @@ class AttachmentRequest(
                     limitSquarePixels = mediaConfig?.int("video_matrix_limit")
                         ?.takeIf { it > 1 },
                 )
-
-            val result = transcodeVideo(
-                info,
-                tempFile,
-                outFile,
-                movieResizeConfig,
+//            val result = transcodeVideo(
+//                srcInfo,
+//                tempFile,
+//                outFile,
+//                movieResizeConfig,
+//            ) {
+//                val percent = (it * 100f).toInt()
+//                pa.progress =
+//                    context.getString(R.string.attachment_handling_compress_ratio, percent)
+//            }
+            val result = transcodeVideoMedia3Transformer(
+                context = context,
+                info = srcInfo,
+                inFile = tempFile,
+                outFile = outFile,
+                resizeConfig = movieResizeConfig,
             ) {
                 val percent = (it * 100f).toInt()
                 pa.progress =

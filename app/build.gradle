@@ -26,8 +26,8 @@ android {
         targetSdk(stTargetSdkVersion)
         minSdk(stMinSdkVersion)
 
-        versionCode 537
-        versionName "5.537"
+        versionCode 538
+        versionName "5.538"
         applicationId "jp.juggler.subwaytooter"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

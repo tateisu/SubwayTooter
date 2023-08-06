@@ -7,11 +7,12 @@ plugins {
 android {
     namespace "jp.juggler.base"
 
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
+
     defaultConfig {
         minSdk stMinSdkVersion
         targetSdk stTargetSdkVersion
-        compileSdk(stCompileSdkVersion)
-        setBuildToolsVersion(stBuildToolsVersion)
 
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

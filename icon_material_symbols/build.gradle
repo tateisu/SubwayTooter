@@ -5,8 +5,10 @@ plugins {
 
 android {
     namespace "jp.juggler.icon_material_symbols"
-    compileSdk stCompileSdkVersion
-    buildToolsVersion stBuildToolsVersion
+
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
+
     defaultConfig {
         minSdk stMinSdkVersion
         targetSdk stTargetSdkVersion

@@ -7,15 +7,18 @@ plugins {
 
 android {
     namespace 'com.jrummyapps.android.colorpicker'
+
     resourcePrefix "cpv_"
+
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
 
     defaultConfig {
         minSdk(stMinSdkVersion)
         targetSdk(stTargetSdkVersion)
-        compileSdk(stCompileSdkVersion)
-        setBuildToolsVersion(stBuildToolsVersion)
-        vectorDrawables.useSupportLibrary = true
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
 
     lint {

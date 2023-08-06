@@ -19,11 +19,12 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 android {
     namespace "jp.juggler.subwaytooter"
 
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
+
     defaultConfig {
         targetSdk(stTargetSdkVersion)
         minSdk(stMinSdkVersion)
-        compileSdk(stCompileSdkVersion)
-        setBuildToolsVersion(stBuildToolsVersion)
 
         versionCode 537
         versionName "5.537"

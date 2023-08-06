@@ -1,20 +1,18 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 apply plugin: "com.android.application"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion stCompileSdkVersion
-    buildToolsVersion stBuildToolsVersion
+    namespace 'jp.juggler.apng.sample'
 
-    compileOptions {
-        sourceCompatibility javaSourceCompatibility
-        targetCompatibility javaTargetCompatibility
-    }
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
 
     defaultConfig {
-        targetSdkVersion stTargetSdkVersion
-        minSdkVersion stMinSdkVersion
+        targetSdk(stTargetSdkVersion)
+        minSdk(stMinSdkVersion)
 
-        applicationId "jp.juggler.apng.sample"
         versionCode 1
         versionName "1.0"
 
@@ -34,6 +32,10 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
+    }
 
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
@@ -45,16 +47,14 @@ android {
 //                "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
-    namespace 'jp.juggler.apng.sample'
-}
+    kotlin {
+        jvmToolchain(kotlinJvmToolchain)
+    }
 
-kotlin {
-    jvmToolchain(kotlinJvmToolchain)
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = kotlinJvmTarget
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = kotlinJvmTarget
+        }
     }
 }
 

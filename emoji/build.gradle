@@ -6,11 +6,12 @@ apply plugin: "kotlin-android"
 android {
     namespace 'jp.juggler.emoji'
 
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
+
     defaultConfig {
         minSdk(stMinSdkVersion)
         targetSdk(stTargetSdkVersion)
-        compileSdk(stCompileSdkVersion)
-        setBuildToolsVersion(stBuildToolsVersion)
         vectorDrawables.useSupportLibrary = true
     }
 

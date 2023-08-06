@@ -8,11 +8,12 @@ plugins {
 android {
     namespace "jp.juggler.anko"
 
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
+
     defaultConfig {
         minSdk stMinSdkVersion
         targetSdk stTargetSdkVersion
-        compileSdk(stCompileSdkVersion)
-        setBuildToolsVersion(stBuildToolsVersion)
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

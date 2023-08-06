@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace "jp.juggler.apng"
+    compileSdk(stCompileSdkVersion)
+    setBuildToolsVersion(stBuildToolsVersion)
 
     defaultConfig {
         minSdk(stMinSdkVersion)
         targetSdk(stTargetSdkVersion)
-        compileSdk(stCompileSdkVersion)
-        setBuildToolsVersion(stBuildToolsVersion)
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

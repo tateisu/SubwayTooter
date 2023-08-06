@@ -9,7 +9,8 @@ enum class StreamStatus {
     Closed,
     Connecting,
     Open,
-    Subscribed
+    Subscribed,
+    ClosedNoRetry,
 }
 
 fun Column.getStreamingStatus() = when {

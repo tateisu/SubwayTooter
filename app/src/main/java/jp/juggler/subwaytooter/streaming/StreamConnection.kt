@@ -117,8 +117,16 @@ class StreamConnection(
         }
     }
 
+    // StreamStatus.Closed, StreamStatus.ErrorNoRetry は変更しない
+    // ほかは StreamStatus.Closed になり、コールバックが呼ばれる
+    private fun setStatusClose() {
+        if (status != StreamStatus.ClosedNoRetry) {
+            status = StreamStatus.Closed
+        }
+    }
+
     fun dispose() {
-        status = StreamStatus.Closed
+        setStatusClose()
         isDisposed.set(true)
         socket.get()?.cancel()
         socket.set(null)
@@ -352,14 +360,14 @@ class StreamConnection(
         manager.enqueue {
             log.v("$name WebSocket onClosing code=$code, reason=$reason")
             webSocket.cancel()
-            status = StreamStatus.Closed
+            setStatusClose()
         }
     }
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         manager.enqueue {
             log.i("$name WebSocket onClosed code=$code, reason=$reason")
-            status = StreamStatus.Closed
+            setStatusClose()
         }
     }
 
@@ -370,14 +378,17 @@ class StreamConnection(
             } else {
                 log.w(t, "$name WebSocket onFailure.")
             }
-            status = StreamStatus.Closed
 
             if (t is ProtocolException) {
                 val msg = t.message
                 if (msg != null && reAuthorizeError.matcher(msg).find()) {
-                    log.e("$name seems this server don't support public TL streaming. don't retry…")
+                    log.w("$name seems this server don't support public TL streaming. don't retry…")
+                    status = StreamStatus.ClosedNoRetry
+                    return@enqueue
                 }
             }
+
+            setStatusClose()
         }
     }
 
@@ -501,6 +512,10 @@ class StreamConnection(
         }
 
         when (status) {
+            StreamStatus.ClosedNoRetry -> {
+                // log.v("$name updateConnection aborted by ClosedNoRetry")
+                return
+            }
 
             StreamStatus.Connecting -> return
 
@@ -548,13 +563,13 @@ class StreamConnection(
         when {
             result == null -> {
                 log.w("$name updateConnection: cancelled.")
-                status = StreamStatus.Closed
+                setStatusClose()
             }
 
             ws == null -> {
                 val error = result.error
                 log.w("$name updateConnection: $error")
-                status = StreamStatus.Closed
+                setStatusClose()
             }
 
             else -> socket.set(ws)

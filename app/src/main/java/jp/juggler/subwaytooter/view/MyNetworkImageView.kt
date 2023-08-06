@@ -602,8 +602,7 @@ class MyNetworkImageView : AppCompatImageView {
         }
     }
 
-    override fun draw(canvas: Canvas?) {
-        canvas ?: return
+    override fun draw(canvas: Canvas) {
         when (path.isEmpty) {
             true -> super.draw(canvas)
             else -> {

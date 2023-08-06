@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id "com.android.library"
     id "org.jetbrains.kotlin.android"
@@ -5,12 +7,12 @@ plugins {
 
 android {
     namespace "jp.juggler.anko"
-    compileSdk stCompileSdkVersion
-    buildToolsVersion stBuildToolsVersion
 
     defaultConfig {
         minSdk stMinSdkVersion
         targetSdk stTargetSdkVersion
+        compileSdk(stCompileSdkVersion)
+        setBuildToolsVersion(stBuildToolsVersion)
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -26,18 +28,16 @@ android {
         sourceCompatibility javaSourceCompatibility
         targetCompatibility javaTargetCompatibility
     }
+    kotlin {
+        jvmToolchain(kotlinJvmToolchain)
+    }
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
     }
-}
-
-kotlin {
-    jvmToolchain(kotlinJvmToolchain)
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = kotlinJvmTarget
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = kotlinJvmTarget
+        }
     }
 }
 
@@ -48,7 +48,6 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation "androidx.core:core-ktx:$coreKtxVersion"
-    implementation "androidx.preference:preference-ktx:$preferenceVersion"
-    implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "androidx.preference:preference-ktx:$preferenceKtxVersion"
     implementation "com.google.android.material:material:$materialVersion"
 }

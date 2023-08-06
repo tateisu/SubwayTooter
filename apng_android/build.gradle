@@ -1,22 +1,19 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.android.library")
     id "org.jetbrains.kotlin.android"
 }
 
 android {
-    compileSdkVersion stCompileSdkVersion
-    buildToolsVersion stBuildToolsVersion
-
-    compileOptions {
-        sourceCompatibility javaSourceCompatibility
-        targetCompatibility javaTargetCompatibility
-    }
-
     namespace "jp.juggler.apng"
 
     defaultConfig {
-        targetSdkVersion stTargetSdkVersion
-        minSdkVersion stMinSdkVersion
+        minSdk(stMinSdkVersion)
+        targetSdk(stTargetSdkVersion)
+        compileSdk(stCompileSdkVersion)
+        setBuildToolsVersion(stBuildToolsVersion)
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -26,6 +23,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+
+    compileOptions {
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -38,15 +41,17 @@ android {
                 // "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
-}
 
-kotlin {
-    jvmToolchain(kotlinJvmToolchain)
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlin {
+        jvmToolchain(kotlinJvmToolchain)
+    }
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
+    }
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = kotlinJvmTarget
+        }
     }
 }
 

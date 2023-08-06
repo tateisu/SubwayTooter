@@ -34,11 +34,11 @@ buildscript {
     ext.lifecycleVersion = "2.6.1"
     ext.materialVersion = "1.9.0"
     ext.okhttpVersion = '5.0.0-alpha.11'
-    ext.preferenceVersion = "1.2.0"
-    ext.stBuildToolsVersion = "33.0.1"
-    ext.stCompileSdkVersion = 33
+    ext.preferenceKtxVersion = "1.2.0"
+    ext.stBuildToolsVersion = "34.0.0"
+    ext.stCompileSdkVersion = 34
     ext.stMinSdkVersion = 26
-    ext.stTargetSdkVersion = 33
+    ext.stTargetSdkVersion = 34
     ext.startupVersion = "1.1.1"
     ext.testKtxVersion = "1.5.0"
     ext.workVersion = "2.8.1"
@@ -49,7 +49,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
+        classpath 'com.android.tools.build:gradle:8.1.0'
 
         // room のバージョンの影響で google-services を上げられない場合がある
         classpath "com.google.gms:google-services:4.3.15"

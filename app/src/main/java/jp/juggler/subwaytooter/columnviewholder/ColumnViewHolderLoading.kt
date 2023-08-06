@@ -35,18 +35,19 @@ private class ErrorFlickListener(
     override fun onDown(e: MotionEvent) = true
 
     override fun onScroll(
-        e1: MotionEvent,
+        e1: MotionEvent?,
         e2: MotionEvent,
         distanceX: Float,
         distanceY: Float,
     ) = true
 
     override fun onFling(
-        e1: MotionEvent,
+        e1: MotionEvent?,
         e2: MotionEvent,
         velocityX: Float,
         velocityY: Float,
     ): Boolean {
+
 
         val vx = abs(velocityX)
         val vy = abs(velocityY)

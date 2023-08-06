@@ -1,14 +1,17 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id "com.android.library"
     id("org.jetbrains.kotlin.android")
 }
 android {
     namespace "jp.juggler.base"
-    compileSdk stCompileSdkVersion
 
     defaultConfig {
         minSdk stMinSdkVersion
         targetSdk stTargetSdkVersion
+        compileSdk(stCompileSdkVersion)
+        setBuildToolsVersion(stBuildToolsVersion)
 
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -27,8 +30,16 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
+    kotlin {
+        jvmToolchain(kotlinJvmToolchain)
+    }
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
+    }
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = kotlinJvmTarget
+        }
     }
     packagingOptions {
         jniLibs {

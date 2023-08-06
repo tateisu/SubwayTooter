@@ -1,18 +1,16 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    compileSdkVersion stCompileSdkVersion
-    buildToolsVersion stBuildToolsVersion
-
-    compileOptions {
-        sourceCompatibility javaSourceCompatibility
-        targetCompatibility javaTargetCompatibility
-    }
+    namespace 'jp.juggler.emoji'
 
     defaultConfig {
-        targetSdkVersion stTargetSdkVersion
-        minSdkVersion stMinSdkVersion
+        minSdk(stMinSdkVersion)
+        targetSdk(stTargetSdkVersion)
+        compileSdk(stCompileSdkVersion)
+        setBuildToolsVersion(stBuildToolsVersion)
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -23,18 +21,20 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility javaSourceCompatibility
+        targetCompatibility javaTargetCompatibility
+    }
+
+    kotlin {
+        jvmToolchain(kotlinJvmToolchain)
+    }
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
     }
-    namespace 'jp.juggler.emoji'
-}
-
-kotlin {
-    jvmToolchain(kotlinJvmToolchain)
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = kotlinJvmTarget
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = kotlinJvmTarget
+        }
     }
 }

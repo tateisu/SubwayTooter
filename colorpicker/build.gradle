@@ -1,11 +1,26 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
 }
 
 android {
-    compileSdkVersion stCompileSdkVersion
-    buildToolsVersion stBuildToolsVersion
+    namespace 'com.jrummyapps.android.colorpicker'
+    resourcePrefix "cpv_"
+
+    defaultConfig {
+        minSdk(stMinSdkVersion)
+        targetSdk(stTargetSdkVersion)
+        compileSdk(stCompileSdkVersion)
+        setBuildToolsVersion(stBuildToolsVersion)
+        vectorDrawables.useSupportLibrary = true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    lint {
+        abortOnError false
+    }
 
     compileOptions {
         sourceCompatibility javaSourceCompatibility
@@ -13,16 +28,9 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-    defaultConfig {
-        targetSdkVersion stTargetSdkVersion
-        minSdkVersion stMinSdkVersion
-        vectorDrawables.useSupportLibrary = true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    kotlin {
+        jvmToolchain(kotlinJvmToolchain)
     }
-
-    namespace 'com.jrummyapps.android.colorpicker'
-    resourcePrefix "cpv_"
-
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
         freeCompilerArgs += [
@@ -33,18 +41,10 @@ android {
                 //"-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         ]
     }
-    lint {
-        abortOnError false
-    }
-}
-
-kotlin {
-    jvmToolchain(kotlinJvmToolchain)
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = kotlinJvmTarget
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = kotlinJvmTarget
+        }
     }
 }
 

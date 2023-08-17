@@ -78,6 +78,8 @@ class StreamConnection(
     // Misskeyの投稿キャプチャ
     private val capturedId = HashSet<EntityId>()
 
+    private var lastUrl = "?"
+
     ///////////////////////////////////////////////////////////////////
     // methods
 
@@ -375,17 +377,16 @@ class StreamConnection(
         manager.enqueue {
             if (t is SocketException && t.message?.contains("closed") == true) {
                 log.v("$name socket closed.")
-            } else {
-                log.w(t, "$name WebSocket onFailure.")
-            }
-
-            if (t is ProtocolException) {
+            } else if (t is ProtocolException) {
+                log.w(t.withCaption("$name WebSocket onFailure.") + " " + lastUrl)
                 val msg = t.message
                 if (msg != null && reAuthorizeError.matcher(msg).find()) {
                     log.w("$name seems this server don't support public TL streaming. don't retry…")
                     status = StreamStatus.ClosedNoRetry
                     return@enqueue
                 }
+            } else {
+                log.w(t, "$name WebSocket onFailure.")
             }
 
             setStatusClose()
@@ -552,6 +553,7 @@ class StreamConnection(
         }
 
         val url = "$prefix$path"
+        this.lastUrl = url
 
         val (result, ws) = try {
             log.i("webSocket $url")

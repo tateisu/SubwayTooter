@@ -213,8 +213,7 @@ enum class NotificationChannels(
             setWhen(System.currentTimeMillis())
             setOngoing(true)
         }
-        val useForegroundServiceType = false
-        return if (useForegroundServiceType && Build.VERSION.SDK_INT >= 34) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ForegroundInfo(
                 nc.notificationId,
                 builder.build(),

@@ -69,6 +69,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
     <!--<uses-permission android:name="android.permission.CAMERA"/>-->
@@ -411,5 +412,11 @@
             </intent-filter>
         </receiver>
         <receiver android:name="jp.juggler.subwaytooter.notification.NotificationDeleteReceiver" />
+
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+
     </application>
 </manifest>

@@ -38,6 +38,12 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/anko/mastodon-related.SubwayTooter.anko.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/anko/mastodon-related.SubwayTooter.anko.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/apng_android/mastodon-related.SubwayTooter.apng_android.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/apng_android/mastodon-related.SubwayTooter.apng_android.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/mastodon-related.SubwayTooter.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/mastodon-related.SubwayTooter.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/mastodon-related.SubwayTooter.base.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/base/mastodon-related.SubwayTooter.base.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/mastodon-related.SubwayTooter.colorpicker.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/mastodon-related.SubwayTooter.colorpicker.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/emoji/mastodon-related.SubwayTooter.emoji.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/emoji/mastodon-related.SubwayTooter.emoji.androidTest.iml" />
     </modules>
   </component>
 </project>

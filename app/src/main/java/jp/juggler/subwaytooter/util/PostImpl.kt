@@ -68,8 +68,14 @@ class PostImpl(
 ) {
     companion object {
         private val log = LogCategory("PostImpl")
-        private val reAscii = """[\x00-\x7f]""".asciiPattern()
-        private val reNotAscii = """[^\x00-\x7f]""".asciiPattern()
+
+        // ハッシュタグ内部の、半角数字以外のASCII文字にマッチする正規表現
+        // 単体テストで使うのでpublig
+        val reTagAsciiNotNumber = """[\x00-\x2f\x3a-\x7f]""".toRegex()
+
+        // ハッシュタグ内部の、非ASCII文字にマッチする正規表現
+        // 単体テストで使うのでpublig
+        val reTagNonAscii = """[^\x00-\x7f]""".toRegex()
 
         private var lastPostTapped: Long = 0L
 
@@ -434,9 +440,10 @@ class PostImpl(
         if (PrefB.bpWarnHashtagAsciiAndNonAscii.value) {
             TootTag.findHashtags(content, account.isMisskey)
                 ?.filter {
-                    val hasAscii = reAscii.matcher(it).find()
-                    val hasNotAscii = reNotAscii.matcher(it).find()
-                    hasAscii && hasNotAscii
+                    // タグがASCII文字(半角数字を除く)と非ASCII文字の両方を含むか？
+                    val hasAscii = reTagAsciiNotNumber.containsMatchIn(it)
+                    val hasNonAscii = reTagNonAscii.containsMatchIn(it)
+                    hasAscii && hasNonAscii
                 }?.map { "#$it" }
                 ?.notEmpty()
                 ?.let { badTags ->

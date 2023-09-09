@@ -22,9 +22,9 @@ buildscript {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "${Vers.kotlinVersion}"
-    id("org.jetbrains.kotlin.android") version ("${Vers.kotlinVersion}") apply false
-    id("com.google.devtools.ksp") version ("${Vers.kspVersion}") apply false
+    id("org.jetbrains.kotlin.jvm") version (Vers.kotlinVersion) apply false
+    id("org.jetbrains.kotlin.android") version (Vers.kotlinVersion) apply false
+    id("com.google.devtools.ksp") version (Vers.kspVersion) apply false
 }
 
 allprojects {

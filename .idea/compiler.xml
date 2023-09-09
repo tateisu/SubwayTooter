@@ -3,7 +3,6 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.8">
       <module name="apng" target="1.7" />
-      <module name="SubwayTooter" target="17" />
       <module name="SubwayTooter.anko" target="17" />
       <module name="SubwayTooter.apng_android" target="17" />
       <module name="SubwayTooter.app" target="17" />

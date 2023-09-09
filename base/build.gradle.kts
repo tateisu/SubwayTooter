@@ -12,9 +12,8 @@ android {
 
     defaultConfig {
         minSdk = Vers.stMinSdkVersion
-        targetSdk = Vers.stTargetSdkVersion
 
-        consumerProguardFiles( "consumer-rules.pro")
+        consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -45,18 +44,18 @@ android {
             jvmTarget = Vers.kotlinJvmTarget
         }
     }
-    packagingOptions {
+    packaging {
         jniLibs {
-            excludes .addAll(listOf("META-INF/LICENSE*"))
+            excludes.addAll(listOf("META-INF/LICENSE*"))
         }
         resources {
-            excludes .addAll(listOf("META-INF/LICENSE*"))
+            excludes.addAll(listOf("META-INF/LICENSE*"))
         }
     }
 }
 
 kotlin {
-    jvmToolchain( Vers.kotlinJvmToolchain)
+    jvmToolchain(Vers.kotlinJvmToolchain)
 }
 
 tasks.withType<KotlinCompile>().configureEach {
@@ -71,7 +70,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
 
     api("androidx.appcompat:appcompat:${Vers.appcompatVersion}")
-    api("androidx.browser:browser:1.5.0")
+    api("androidx.browser:browser:1.6.0")
     api("androidx.core:core-ktx:${Vers.coreKtxVersion}")
     api("androidx.drawerlayout:drawerlayout:1.2.0")
     api("androidx.emoji2:emoji2-bundled:${Vers.emoji2Version}")
@@ -87,7 +86,7 @@ dependencies {
     api("androidx.lifecycle:lifecycle-service:${Vers.lifecycleVersion}")
     api("androidx.lifecycle:lifecycle-viewmodel-ktx:${Vers.lifecycleVersion}")
     api("androidx.lifecycle:lifecycle-viewmodel-savedstate:${Vers.lifecycleVersion}")
-    api("androidx.recyclerview:recyclerview:1.3.0")
+    api("androidx.recyclerview:recyclerview:1.3.1")
     api("androidx.startup:startup-runtime:${Vers.startupVersion}")
     api("androidx.work:work-runtime-ktx:${Vers.workVersion}")
     api("androidx.work:work-runtime:${Vers.workVersion}")

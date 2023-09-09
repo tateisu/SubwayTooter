@@ -22,6 +22,59 @@ cmd "./gradlew assembleNoFcmRelease";
 cmd "./gradlew assembleFcmRelease";
 cmd "./gradlew --stop";
 
+
+sub getBranch{
+    my $text = `git rev-parse --abbrev-ref HEAD`;
+    $text =~ s/\A\s+//;
+    $text =~ s/\s+\z//;
+    return $text;
+}
+
+sub getDate{
+    my @lt= localtime;
+    $lt[4]+=1;$lt[5]+=1900;
+    return sprintf("%d%02d%02d_%02d%02d%02d",reverse @lt[0..5]);
+}
+
+sub getVersion{
+    my $appBuildGradle = "app/build.gradle.kts";
+    my($code,$name);
+    open(my $fh,"<",$appBuildGradle) or die "$! $appBuildGradle";
+    while(<$fh>){
+        s/[\x0d\x0a]+//g;
+        s|//.*| |;
+        if(/versionCode\s*=\s*(\S+)/){
+            my $a = $1;
+            $a =~ s/[\s"]+//g;
+            $code = $a;
+        }elsif( /versionName\s*=\s*(\S+)/ ){
+            my $a = $1;
+            $a =~ s/[\s"]+//g;
+            $name = $a;
+        }
+    }
+    close($fh) or die "$! $appBuildGradle";
+    $code or die "missing versionCode in $appBuildGradle";
+    $name or die "missing versionCode in $appBuildGradle";
+    return ($code,$name);
+}
+
+my ($versionCode,$versionName) = getVersion();
+my $branch = getBranch() or die "missing git branch";
+my $date = getDate() or die "missing date";
+
 cmd "mkdir -p _apk";
-cmd "mv `find app/build/outputs/apk/ -path '*.apk'` _apk/";
-cmd "ls -1t _apk/SubwayTooter*.apk |head -n 5";
+
+for(
+    ["fcm","app/build/outputs/apk/fcm/release/app-fcm-release.apk"],
+    ["noFcm","app/build/outputs/apk/nofcm/release/app-nofcm-release.apk"],
+){
+    my($flavor,$srcPath)=@$_;
+    (-f $srcPath) or die "not found: $srcPath";
+
+    my $dstName= "SubwayTooter-$branch-$flavor-$versionCode-$versionName-$date.apk";
+
+    cmd "mv $srcPath _apk/$dstName";
+}
+
+cmd "ls -lt _apk/SubwayTooter*.apk |head -n 2";

@@ -1,13 +1,6 @@
-
-import com.android.build.gradle.api.ApplicationVariant
-import com.android.build.gradle.api.BaseVariantOutput
-
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -18,7 +11,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 
-val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystorePropertiesFile: File = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
     load(FileInputStream(keystorePropertiesFile))
 }
@@ -89,10 +82,6 @@ android {
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro",
             )
-
-            lintOptions {
-                disable("MissingTranslation")
-            }
             signingConfig = signingConfigs.getByName("release")
         }
         debug {
@@ -125,43 +114,7 @@ android {
     //        }
     //    }
 
-    // Generate Signed APK のファイル名を変更
-    applicationVariants.all(object : Action<ApplicationVariant> {
-        override fun execute(variant: ApplicationVariant) {
-            println("variant: ${variant}")
-
-            // Rename APK
-            val versionCode = defaultConfig.versionCode
-            val versionName = defaultConfig.versionName
-            val flavor = variant.flavorName
-            // val abi = output.getFilter("ABI") ?: "all"
-            val date = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-            val branch = providers.exec {
-                commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
-            }.standardOutput.asText.get()?.trim() ?: "(no branch)"
-
-            variant.outputs.all(object : Action<BaseVariantOutput> {
-                override fun execute(output: BaseVariantOutput) {
-                    val outputImpl = output as BaseVariantOutputImpl
-                    outputImpl.outputFileName =
-                        "SubwayTooter-${branch}-${flavor}-${versionCode}-${versionName}-${date}.apk"
-                    println("output file name: ${outputImpl.outputFileName}")
-                }
-            })
-        }
-    })
-
-    android.applicationVariants.all { variant ->
-        if (variant.buildType.name == "release") {
-            variant.outputs.all { output ->
-
-                true
-            }
-        }
-        true
-    }
-
-    packagingOptions {
+    packaging {
         resources {
             excludes.addAll(
                 listOf(
@@ -182,6 +135,7 @@ android {
     useLibrary("android.test.mock")
     lint {
         warning += "DuplicatePlatformClasses"
+        disable += "MissingTranslation"
     }
 
     kotlin {
@@ -269,8 +223,7 @@ repositories {
 }
 
 fun willApplyGoogleService(): Boolean {
-    val gradle = getGradle()
-    val taskRequestsString = gradle.getStartParameter().getTaskRequests().toString()
+    val taskRequestsString = gradle.startParameter.taskRequests.toString()
 
     val isMatch = """(assemble|generate|connected)Fcm""".toRegex()
         .find(taskRequestsString) != null
@@ -302,7 +255,7 @@ tasks.register<Detekt>("detektAll") {
     config.setFrom(configFile)
 
     val baselineFile = file("$rootDir/config/detekt/baseline.xml")
-    if (baselineFile.isFile()) {
+    if (baselineFile.isFile) {
         baseline.set(baselineFile)
     }
 
@@ -327,16 +280,15 @@ tasks.register<Detekt>("detektAll") {
     val buildFiles = "**/build/**"
     exclude(resourceFiles, buildFiles)
     reports {
-        html.enabled = true
-        xml.enabled = false
-        txt.enabled = false
-
-        xml.required.set(true)
+        xml.required.set(false)
         xml.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.xml"))
+
         html.required.set(true)
         html.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.html"))
+
         txt.required.set(true)
         txt.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.txt"))
+
         sarif.required.set(true)
         sarif.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.sarif"))
     }

@@ -129,7 +129,7 @@
     <string name="dont_show_reply">Masquer les réponses</string>
     <string name="dont_use_streaming_api">Actualiser manuellement les flux</string>
     <string name="drag_handle">Faites glisser la poignée</string>
-    <string name="edit">Éditer</string>
+    <string name="edit">Modifier</string>
     <string name="end_of_list">Fin de la liste</string>
     <string name="exit_app_when_close_protected_column">Quitter l’application lorsque vous essayez de fermer une colonne protégée avec le bouton \"Retour\" et sans confirmation</string>
     <string name="favourite">Favori</string>
@@ -981,7 +981,7 @@
     <string name="announcements_index">%1$d/%2$d</string>
     <string name="announcements_period1">Période de l’événement : %1$s</string>
     <string name="announcements_period2">Période de l’événement : %1$s…%2$s</string>
-    <string name="edited_at">Édité : %1$s</string>
+    <string name="edited_at">Modifié : %1$s</string>
     <string name="featured">Mis en avant</string>
     <string name="promoted">Promue</string>
     <string name="quote">Citer</string>
@@ -1064,7 +1064,7 @@
     <string name="check_beta_release">Vérifier la version bêta</string>
     <string name="ignore_text_in_shared_media">Masquer le texte supplémentaire qui accompagne les médias partagés à partir d’applications externes</string>
     <string name="auto">Auto</string>
-    <string name="status_edit">Éditer (Mastodon 3.5.0+)</string>
+    <string name="status_edit">Modifier (Mastodon 3.5.0+)</string>
     <string name="follow_hashtag_of">S’abonner à %1$s</string>
     <string name="attachment_handling_uploading">Téléversement %1$d%% …</string>
     <string name="movie_transcode_mode">Mode</string>
@@ -1090,8 +1090,8 @@
     <string name="attachment_handling_start">Initialisation …</string>
     <string name="attachment_handling_compress">Compression …</string>
     <string name="device_language">(langue de l’appareil)</string>
-    <string name="edit_history">Historique des éditions</string>
-    <string name="edited">édité</string>
+    <string name="edit_history">Historique des modifications</string>
+    <string name="edited">modifié</string>
     <string name="post_language_code">Code de langue du message (laisser vide pour utiliser le paramètre de langue de l’appareil)</string>
     <string name="skin_tone_unspecified">Non précisé</string>
     <string name="categories">Catégories</string>
@@ -1108,7 +1108,7 @@
     <string name="unbookmark">Retirer des signets</string>
     <string name="notification_type_update">mise à jour du message</string>
     <string name="notification_type_status_reference">message référencé</string>
-    <string name="cant_change_account_when_edit">Impossible de changer de compte tout en éditant le message.</string>
+    <string name="cant_change_account_when_edit">Impossible de changer de compte alors qu’un message est en cours de modification.</string>
     <string name="muted_quote">Citation en sourdine</string>
     <string name="search_emojis">Recherche d’émojis …</string>
     <string name="attachment_handling_compress_ratio">Compression %1$d%% …</string>
@@ -1129,4 +1129,5 @@
     <string name="next_step">Étape suivante</string>
     <string name="authentication_select">Sélectionner la méthode d’authentification</string>
     <string name="authentication_select_desc">Sélectionnez ci-dessous comment accéder au serveur.</string>
+    <string name="post_reset_confirm">Voulez-vous sauvegarder vers les brouillons et modifier un nouveau message \?</string>
 </resources>

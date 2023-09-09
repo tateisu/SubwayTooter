@@ -329,12 +329,13 @@ class ColumnViewHolder(
             )
 
             when (streamStatus) {
-                StreamStatus.Missing, StreamStatus.Closed ,StreamStatus.ClosedNoRetry -> {
-                }
+                StreamStatus.Missing, StreamStatus.Closed, StreamStatus.ClosedNoRetry -> Unit
+
                 StreamStatus.Connecting, StreamStatus.Open -> {
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                     sb.append("?")
                 }
+
                 StreamStatus.Subscribed -> {
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                 }

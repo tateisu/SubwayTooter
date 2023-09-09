@@ -298,7 +298,7 @@ fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<G
     }
     // 複数選択
     this.clipData?.let { clipData ->
-        (0 until clipData.itemCount).mapNotNull { clipData.getItemAt(it)?.uri }.forEach { uri ->
+        for (uri in (0 until clipData.itemCount).mapNotNull { clipData.getItemAt(it)?.uri }) {
             if (urlList.none { it.uri == uri }) {
                 urlList.add(GetContentResultEntry(uri))
             }

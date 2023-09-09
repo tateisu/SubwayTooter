@@ -22,7 +22,6 @@ import com.otaliastudios.transcoder.strategy.DefaultAudioStrategy
 import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.clip
-import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -84,14 +83,14 @@ data class MovieResizeConfig(
         MovideResizeMode.Auto ->
             info.squarePixels > limitSquarePixels ||
                     (info.actualBps ?: 0).toFloat() > limitBitrate.toFloat() * 1.5f ||
-                    (info.frameRatio==null || info.frameRatio<1f || info.frameRatio > limitFrameRate)
+                    (info.frameRatio == null || info.frameRatio < 1f || info.frameRatio > limitFrameRate)
     }
 }
 
 /**
  * レシーバが奇数なら+1した値を返す
  *
- * `[OMX.qcom.video.encoder.avc] video encoder does not support odd resolution 1018x2263`
+ * `OMX.qcom.video.encoder.avc video encoder does not support odd resolution 1018x2263`
  */
 private fun Int.fixOdd() = if (and(1) == 0) this else this + 1
 
@@ -144,7 +143,7 @@ suspend fun transcodeVideoMedia3Transformer(
         val editedMediaItem = EditedMediaItem.Builder(srcMediaItem).apply {
 
             // 入力のフレームレートが高すぎるなら制限する
-            if (info.frameRatio==null || info.frameRatio<1f ||
+            if (info.frameRatio == null || info.frameRatio < 1f ||
                 info.frameRatio > resizeConfig.limitFrameRate
             ) {
                 // This should be set for inputs that don't have an implicit frame rate (e.g. images).
@@ -158,10 +157,10 @@ suspend fun transcodeVideoMedia3Transformer(
             ) {
                 // 端数やodd補正などによる問題が出なさそうなscale値を計算する
                 fun calcScale(
-                    srcLongerSide:Int,
-                    aspect:Float,
-                    limitSqPixel:Int,
-                ):Float {
+                    srcLongerSide: Int,
+                    aspect: Float,
+                    limitSqPixel: Int,
+                ): Float {
                     var sqPixel = limitSqPixel
                     while (true) {
                         val newW = ceil(sqrt(sqPixel * aspect)).toInt().fixOdd()
@@ -172,10 +171,11 @@ suspend fun transcodeVideoMedia3Transformer(
                         sqPixel -= srcLongerSide
                     }
                 }
+
                 val scale = calcScale(
                     srcLongerSide = max(info.size.w, info.size.h),
-                    aspect =  info.size.w.toFloat() / info.size.h.toFloat(),
-                    limitSqPixel =  resizeConfig.limitSquarePixels
+                    aspect = info.size.w.toFloat() / info.size.h.toFloat(),
+                    limitSqPixel = resizeConfig.limitSquarePixels
                 )
                 val effects = Effects(
                     /* audioProcessors */ emptyList(),

@@ -47,8 +47,6 @@ private class ErrorFlickListener(
         velocityX: Float,
         velocityY: Float,
     ): Boolean {
-
-
         val vx = abs(velocityX)
         val vy = abs(velocityY)
         if (vy < vx * 1.5f) {

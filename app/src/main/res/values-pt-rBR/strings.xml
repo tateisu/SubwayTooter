@@ -1259,4 +1259,8 @@
     <string name="force_gap_when_refresh">Forçar adicionar vão ao atualizar o topo</string>
     <string name="instance_local">Servidor local</string>
     <string name="post_404_desc">(Ou você responde a um post apenas para seguidores de outra conta)</string>
+    <string name="gap_head">Início do vão</string>
+    <string name="reset_notification_tracking_status">Reiniciar o estado de rastreamento de notificação</string>
+    <string name="gap">Vão</string>
+    <string name="gap_tail">Fim do vão</string>
 </resources>

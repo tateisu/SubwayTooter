@@ -45,8 +45,8 @@ close($fh)
 @untrackedFiles and die "forgot git add?\n",map{ "- $_\n"} @untrackedFiles;
 
 # 現在のバージョン番号を取得
-my $buildFile = 'app/build.gradle';
-`cat $buildFile` =~ /versionName\s+["']([\d\.]+)["']/ 
+my $buildFile = 'app/build.gradle.kts';
+`cat $buildFile` =~ /versionName\s*=\s*["']([\d\.]+)["']/ 
 	or die "missing versionName in $buildFile\n";
 my($tag)="v$1";
 print "# version=$tag\n";

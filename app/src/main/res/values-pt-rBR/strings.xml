@@ -1263,4 +1263,5 @@
     <string name="reset_notification_tracking_status">Reiniciar o estado de rastreamento de notificação</string>
     <string name="gap">Vão</string>
     <string name="gap_tail">Fim do vão</string>
+    <string name="push_worker">Agente de notificação push</string>
 </resources>

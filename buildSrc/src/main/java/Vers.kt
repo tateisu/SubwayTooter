@@ -39,6 +39,6 @@ object Vers {
     const val stTargetSdkVersion = 34
     const val startupVersion = "1.1.1"
     const val testKtxVersion = "1.5.0"
-    const val webpDecoderVersion = "2.3.$glideVersion"
+    const val webpDecoderVersion = "2.6.$glideVersion"
     const val workVersion = "2.8.1"
 }

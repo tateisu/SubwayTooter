@@ -25,13 +25,12 @@ android {
     defaultConfig {
         targetSdk = Vers.stTargetSdkVersion
         minSdk = Vers.stMinSdkVersion
-        versionCode = 540
-        versionName = "5.540"
+        versionCode = 541
+        versionName = "5.541"
         applicationId = "jp.juggler.subwaytooter"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-
     }
 
     buildFeatures {

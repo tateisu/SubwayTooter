@@ -17,7 +17,7 @@
 
     <!--
         並べ替えのRecyclerView
-        ドラッグせずにスクロールするためのタッチ領域を確保したいので、右端のpaddingが大きい
+        ドラッグせずにスクロールするためのタッチ領域を確保したいのでpadding多め
      -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listView"
@@ -26,8 +26,7 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:fadeScrollbars="false"
-        android:paddingEnd="48dp"
-        android:paddingStart="8dp"
+        android:paddingHorizontal="48dp"
         android:paddingVertical="8dp"
         android:scrollbarStyle="outsideOverlay"
         android:scrollbars="vertical" />

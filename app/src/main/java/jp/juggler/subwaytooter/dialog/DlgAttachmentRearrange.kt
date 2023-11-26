@@ -5,17 +5,18 @@ import android.app.Dialog
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.AttachmentRearrangeDialogBinding
 import jp.juggler.subwaytooter.databinding.AttachmentsRearrangeItemBinding
 import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.data.ellipsizeDot3
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.dp
@@ -24,56 +25,60 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.anko.backgroundColor
 import kotlin.coroutines.resumeWithException
 
-suspend fun ActPost.dialogArrachmentRearrange(
+private val log = LogCategory("DlgAttachmentRearrange")
+
+/**
+ * 投稿画面で添付メディアを並べ替えるダイアログを開き、OKボタンが押されるまで非同期待機する。
+ * OK以外の方法で閉じたらCancellationExceptionを投げる。
+ */
+suspend fun AppCompatActivity.dialogArrachmentRearrange(
     initialList: List<PostAttachment>,
 ): List<PostAttachment> = suspendCancellableCoroutine { cont ->
     val views = AttachmentRearrangeDialogBinding.inflate(layoutInflater)
-    val dialog = Dialog(this)
-    dialog.setContentView(views.root)
+    val dialog = Dialog(this).apply {
+        setContentView(views.root)
+        setOnDismissListener {
+            if (cont.isActive) cont.resumeWithException(CancellationException())
+        }
+    }
 
     cont.invokeOnCancellation { dialog.dismissSafe() }
 
-    dialog.setOnDismissListener {
-        if (cont.isActive) cont.resumeWithException(CancellationException())
-    }
-
-    val rearrangeAdapter = RearrangeAdapter(layoutInflater, initialList)
+    val myAdapter = RearrangeAdapter(layoutInflater, initialList)
 
     views.btnCancel.setOnClickListener {
         dialog.dismissSafe()
     }
 
     views.btnOk.setOnClickListener {
-        if (cont.isActive) {
-            cont.resume(rearrangeAdapter.list) {}
-        }
+        if (cont.isActive) cont.resume(myAdapter.list) {}
         dialog.dismissSafe()
     }
 
     views.listView.apply {
         layoutManager = LinearLayoutManager(context)
-        adapter = rearrangeAdapter
-        rearrangeAdapter.itemTouchHelper.attachToRecyclerView(this)
+        adapter = myAdapter
+        myAdapter.itemTouchHelper.attachToRecyclerView(this)
     }
 
     dialog.window?.setLayout(dp(300), dp(440))
     dialog.show()
 }
 
+/**
+ * 並べ替えダイアログ内部のRecyclerViewに使うAdapter
+ */
 private class RearrangeAdapter(
     private val inflater: LayoutInflater,
     initialList: List<PostAttachment>,
-) : RecyclerView.Adapter<RearrangeAdapter.MyViewHolder>(),
-    MyDragCallback.Changer {
+) : RecyclerView.Adapter<RearrangeAdapter.MyViewHolder>(), MyDragCallback.Changer {
 
     val list = ArrayList(initialList)
 
     private var lastStateViewHolder: MyViewHolder? = null
     private var draggingItem: PostAttachment? = null
 
-    val itemTouchHelper by lazy {
-        ItemTouchHelper(MyDragCallback(this))
-    }
+    val itemTouchHelper = ItemTouchHelper(MyDragCallback(this))
 
     override fun getItemCount() = list.size
 
@@ -84,6 +89,7 @@ private class RearrangeAdapter(
         holder.bind(list.elementAtOrNull(position))
     }
 
+    // implements MyDragCallback.Changer
     override fun onMove(posFrom: Int, posTo: Int): Boolean {
         val item = list.removeAt(posFrom)
         list.add(posTo, item)
@@ -91,17 +97,31 @@ private class RearrangeAdapter(
         return true
     }
 
-    override fun onState(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+    // implements MyDragCallback.Changer
+    override fun onState(
+        caller: String,
+        viewHolder: RecyclerView.ViewHolder?,
+        actionState: Int,
+    ) {
+        log.d("onState: caller=$caller, viewHolder=$viewHolder, actionState=$actionState")
+
         val holder = (viewHolder as? MyViewHolder)
+        // 最後にドラッグ対象となったViewHolderを覚えておく
         holder?.let { lastStateViewHolder = it }
+        // 現在ドラッグ対象のPostAttachmentを覚えておく
         val pa = holder?.lastItem
         draggingItem = when {
             pa != null && actionState == ItemTouchHelper.ACTION_STATE_DRAG -> pa
             else -> null
         }
+        // 表示の更新
         holder?.bind()
         lastStateViewHolder?.takeIf { it != holder }?.bind()
     }
+
+    private val iconPlaceHolder = defaultColorIcon(inflater.context, R.drawable.ic_hourglass)
+    private val iconError = defaultColorIcon(inflater.context, R.drawable.ic_error)
+    private val iconFallback = defaultColorIcon(inflater.context, R.drawable.ic_clip)
 
     @SuppressLint("ClickableViewAccessibility")
     inner class MyViewHolder(
@@ -113,6 +133,7 @@ private class RearrangeAdapter(
         var lastItem: PostAttachment? = null
 
         init {
+            // リスト項目のタッチですぐにドラッグを開始する
             views.root.setOnTouchListener { _, event ->
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                     itemTouchHelper.startDrag(this)
@@ -121,59 +142,71 @@ private class RearrangeAdapter(
             }
         }
 
-        fun bind(pa: PostAttachment? = lastItem) {
-            pa ?: return
-            lastItem = pa
+        fun bind(item: PostAttachment? = lastItem) {
+            item ?: return
+            lastItem = item
 
             val context = views.root.context
 
+            // ドラッグ中は背景色を変える
             views.root.apply {
                 when {
-                    draggingItem === pa -> backgroundColor =
+                    draggingItem === item -> backgroundColor =
                         context.attrColor(R.attr.colorSearchFormBackground)
 
                     else -> background = null
                 }
             }
 
+            // サムネイルのロード開始
             views.ivThumbnail.apply {
-                val imageUrl = pa.attachment?.preview_url
-                if (imageUrl.isNullOrEmpty()) {
-                    val imageId = when (pa.status) {
-                        PostAttachment.Status.Progress -> R.drawable.ic_upload
-                        PostAttachment.Status.Error -> R.drawable.ic_error
-                        else -> R.drawable.ic_clip
+                when (val imageUrl = item.attachment?.preview_url) {
+                    null, "" -> {
+                        val iconDrawable = when (item.status) {
+                            PostAttachment.Status.Progress -> iconPlaceHolder
+                            PostAttachment.Status.Error -> iconError
+                            else -> iconFallback
+                        }
+                        Glide.with(context).clear(this)
+                        setImageDrawable(iconDrawable)
                     }
-                    Glide.with(context).clear(this)
-                    setImageDrawable(defaultColorIcon(context, imageId))
-                } else {
-                    Glide.with(context)
-                        .load(imageUrl)
-                        .placeholder(defaultColorIcon(context, R.drawable.ic_hourglass))
-                        .error(defaultColorIcon(context, R.drawable.ic_error))
-                        .fallback(defaultColorIcon(context, R.drawable.ic_clip))
-                        .into(this)
+
+                    else -> {
+                        Glide.with(context)
+                            .load(imageUrl)
+                            .placeholder(iconPlaceHolder)
+                            .error(iconError)
+                            .fallback(iconFallback)
+                            .into(this)
+                    }
                 }
             }
-            views.tvText.text = pa.attachment?.run {
-                "$type ${description?.ellipsizeDot3(40) ?: ""}"
-            } ?: context.getString(R.string.attachment_uploading)
+
+            // テキストの表示
+            views.tvText.text = item.attachment?.run {
+                "${type.id} ${description?.ellipsizeDot3(40) ?: ""}"
+            } ?: ""
         }
     }
 }
 
+/**
+ * RectclerViewのDrag&Drop操作に関するコールバック
+ */
 private class MyDragCallback(
     private val changer: Changer,
 ) : ItemTouchHelper.SimpleCallback(
     ItemTouchHelper.UP or ItemTouchHelper.DOWN,
     0 // no swipe
 ) {
+    // アダプタに行わせたい処理のinterface
     interface Changer {
         fun onMove(posFrom: Int, posTo: Int): Boolean
-        fun onState(viewHolder: RecyclerView.ViewHolder?, actionState: Int)
+        fun onState(caller: String, viewHolder: RecyclerView.ViewHolder?, actionState: Int)
     }
 
     override fun isLongPressDragEnabled() = false
+
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) = Unit
 
     override fun onMove(
@@ -192,7 +225,7 @@ private class MyDragCallback(
         actionState: Int,
     ) {
         super.onSelectedChanged(viewHolder, actionState)
-        changer.onState(viewHolder, actionState)
+        changer.onState("onSelectedChanged", viewHolder, actionState)
     }
 
     override fun clearView(
@@ -200,6 +233,6 @@ private class MyDragCallback(
         viewHolder: RecyclerView.ViewHolder,
     ) {
         super.clearView(recyclerView, viewHolder)
-        changer.onState(null, ItemTouchHelper.ACTION_STATE_IDLE)
+        changer.onState("clearView", viewHolder, ItemTouchHelper.ACTION_STATE_IDLE)
     }
 }

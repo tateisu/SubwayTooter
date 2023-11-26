@@ -113,9 +113,8 @@ class PermissionRequester(
      * 権限要求の結果を処理する
      * @param result 「パーミッション名」と「それが許可されているなら真」のマップ
      */
-    override fun onActivityResult(result: Map<String, Boolean>?) {
+    override fun onActivityResult(result: Map<String, Boolean>) {
         try {
-            result ?: error("missing result.")
             val listNotGranted = result.entries.filter { !it.value }.map { it.key }
             if (listNotGranted.isEmpty()) {
                 // すべて許可されている

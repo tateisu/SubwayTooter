@@ -4,7 +4,7 @@ object Vers {
     val javaSourceCompatibility = JavaVersion.VERSION_1_8
     val javaTargetCompatibility = JavaVersion.VERSION_1_8
 
-    const val androidGradlePruginVersion = "8.1.1"
+    const val androidGradlePruginVersion = "8.1.4"
     const val androidxAnnotationVersion = "1.6.0"
     const val androidxTestEspressoCoreVersion = "3.5.1"
     const val androidxTestExtJunitVersion = "1.1.5"
@@ -21,16 +21,16 @@ object Vers {
     const val emoji2Version = "1.4.0"
     const val glideVersion = "4.15.1"
     const val junitVersion = "4.13.2"
-    const val koinVersion = "3.4.2"
+    const val koinVersion = "3.5.0"
     const val kotlinJvmTarget = "1.8"
     const val kotlinJvmToolchain = 17
     const val kotlinTestVersion = "1.9.0"
-    const val kotlinVersion = "1.9.0"
-    const val kotlinxCoroutinesVersion = "1.7.2"
-    const val kspVersion = "1.9.0-1.0.11"
-    const val lifecycleVersion = "2.6.1"
-    const val materialVersion = "1.9.0"
-    const val media3Version = "1.1.1"
+    const val kotlinVersion = "1.9.20"
+    const val kotlinxCoroutinesVersion = "1.7.3"
+    const val kspVersion = "1.9.20-1.0.14"
+    const val lifecycleVersion = "2.6.2"
+    const val materialVersion = "1.10.0"
+    const val media3Version = "1.2.0"
     const val okhttpVersion = "5.0.0-alpha.11"
     const val preferenceKtxVersion = "1.2.1"
     const val stBuildToolsVersion = "34.0.0"

@@ -62,7 +62,13 @@ class CheckerWakeLocks(contextArg: Context) {
         ).apply { setReferenceCounted(false) }
     }
     private val wifiLock: WifiManager.WifiLock by lazy {
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= 34) {
+            wifiManager.createWifiLock(
+                WifiManager.WIFI_MODE_FULL_LOW_LATENCY,
+                PollingChecker::class.java.name
+            )
+        } else if (Build.VERSION.SDK_INT >= 29) {
+            @Suppress("DEPRECATION")
             wifiManager.createWifiLock(
                 WifiManager.WIFI_MODE_FULL_HIGH_PERF,
                 PollingChecker::class.java.name

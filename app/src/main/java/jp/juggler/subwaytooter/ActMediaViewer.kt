@@ -103,7 +103,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             intent.putExtra(EXTRA_DATA, encodeMediaList(list))
             intent.putExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
             activity.startActivity(intent)
-            activity.overridePendingTransition(R.anim.slide_from_bottom, android.R.anim.fade_out)
+
+            activity.overrideActivityTransitionCompat(
+                TransitionOverrideType.Open,
+                R.anim.slide_from_bottom,
+                android.R.anim.fade_out,
+            )
         }
 
         private fun checkMaxBitmapSize(): Int {
@@ -114,7 +119,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
                 val px = 1.shl(bitsMid)
                 val canCreate = try {
                     val bitmap = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888)
-                        ?: error("createBitmap returns null")
                     bitmap.recycle()
                     log.i("checkMaxBitmapSize: range=$bitsMin..$bitsMid..$bitsMax, px=${px}, canCreate=true")
                     true
@@ -303,8 +307,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
 
         this.serviceType = ServiceType.values()[
-                savedInstanceState?.int(EXTRA_SERVICE_TYPE)
-                    ?: intent.int(EXTRA_SERVICE_TYPE) ?: 0
+            savedInstanceState?.int(EXTRA_SERVICE_TYPE)
+                ?: intent.int(EXTRA_SERVICE_TYPE) ?: 0
         ]
 
         this.mediaList = decodeMediaList(
@@ -338,7 +342,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.slide_to_bottom)
+        overrideActivityTransitionCompat(
+            TransitionOverrideType.Close,
+            R.anim.fade_in,
+            R.anim.slide_to_bottom,
+        )
     }
 
     internal fun initUI() {
@@ -593,7 +601,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         // 回転後の画像
         val bitmap2 = try {
             Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
-                ?: return Pair(bitmap1, "createBitmap returns null")
         } catch (ex: Throwable) {
             log.e(ex, "createBitmap failed.")
             return Pair(bitmap1, ex.withCaption("createBitmap failed."))

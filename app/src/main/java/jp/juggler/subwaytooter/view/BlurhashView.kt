@@ -218,7 +218,7 @@ class BlurhashView : AppCompatTextView {
         val viewH = height
 
         val b = blurhashBitmap
-        if (b != null && !b.isRecycled && blurhashDecodeOk) {
+        if (!b.isRecycled && blurhashDecodeOk) {
             rectSrc.set(0, 0, b.width, b.height)
             rectDst.set(0, 0, viewW, viewH)
             canvas.drawBitmap(b, rectSrc, rectDst, paint)

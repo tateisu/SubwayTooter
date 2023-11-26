@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
@@ -109,7 +110,6 @@ fun PackageManager.getPackageInfoCompat(
 ): PackageInfo? = if (Build.VERSION.SDK_INT >= 33) {
     getPackageInfo(pakageName, PackageInfoFlags.of(flags.toLong()))
 } else {
-    @Suppress("DEPRECATION")
     getPackageInfo(pakageName, flags)
 }
 
@@ -120,7 +120,6 @@ fun PackageManager.queryIntentActivitiesCompat(
 ): List<ResolveInfo> = if (Build.VERSION.SDK_INT >= 33) {
     queryIntentActivities(intent, ResolveInfoFlags.of(queryFlag.toLong()))
 } else {
-    @Suppress("DEPRECATION")
     queryIntentActivities(intent, queryFlag)
 }
 
@@ -130,7 +129,6 @@ fun PackageManager.resolveActivityCompat(
 ): ResolveInfo? = if (Build.VERSION.SDK_INT >= 33) {
     resolveActivity(intent, ResolveInfoFlags.of(queryFlag.toLong()))
 } else {
-    @Suppress("DEPRECATION")
     resolveActivity(intent, queryFlag)
 }
 
@@ -143,6 +141,37 @@ fun AppCompatActivity.backPressed(block: () -> Unit) {
 // 型推論できる文脈だと型名を書かずにすむ
 inline fun <reified T> systemService(context: Context): T? =
     /* ContextCompat. */ ContextCompat.getSystemService(context, T::class.java)
+
+enum class TransitionOverrideType { Open, Close, }
+
+/**
+ *
+ * @param overrideType one of OVERRIDE_TRANSITION_OPEN, OVERRIDE_TRANSITION_CLOSE .
+ */
+fun AppCompatActivity.overrideActivityTransitionCompat(
+    overrideType: TransitionOverrideType,
+    @AnimRes animEnter: Int,
+    @AnimRes animExit: Int,
+) {
+    if (Build.VERSION.SDK_INT >= 34) {
+        overrideActivityTransition(
+            when (overrideType) {
+                TransitionOverrideType.Open ->
+                    AppCompatActivity.OVERRIDE_TRANSITION_OPEN
+
+                TransitionOverrideType.Close ->
+                    AppCompatActivity.OVERRIDE_TRANSITION_CLOSE
+            },
+            animEnter,
+            animExit
+        )
+    } else {
+        overridePendingTransition(
+            animEnter,
+            animExit,
+        )
+    }
+}
 
 //
 //object Utils {

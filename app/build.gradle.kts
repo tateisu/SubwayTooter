@@ -164,7 +164,7 @@ dependencies {
     implementation(project(":anko"))
     implementation(fileTree(mapOf("dir" to "src/main/libs", "include" to arrayOf("*.aar"))))
 
-    "fcmImplementation"("com.google.firebase:firebase-messaging:23.2.1")
+    "fcmImplementation"("com.google.firebase:firebase-messaging:23.3.1")
     "fcmImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Vers.kotlinxCoroutinesVersion}")
 
     // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"

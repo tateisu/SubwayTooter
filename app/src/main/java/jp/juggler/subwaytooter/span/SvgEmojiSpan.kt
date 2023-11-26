@@ -171,7 +171,7 @@ class SvgEmojiSpan internal constructor(
 
                     else -> try {
                         Bitmap.createBitmap(dstSizeInt, dstSizeInt, Bitmap.Config.ARGB_8888)
-                            ?.also { renderBitmap(it, svg, dstSize) }
+                            .also { renderBitmap(it, svg, dstSize) }
                     } catch (ex: Throwable) {
                         log.e(ex, "bitmap allocation failed.")
                         null

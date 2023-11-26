@@ -8,7 +8,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:${Vers.androidGradlePruginVersion}")
 
         // room のバージョンの影響で google-services を上げられない場合がある
-        classpath("com.google.gms:google-services:4.3.15")
+        classpath("com.google.gms:google-services:4.4.0")
 
         //noinspection DifferentKotlinGradleVersion
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Vers.kotlinVersion}")

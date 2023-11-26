@@ -279,6 +279,8 @@ tasks.register<Detekt>("detektAll") {
     val buildFiles = "**/build/**"
     exclude(resourceFiles, buildFiles)
     reports {
+        val buildDir = layout.buildDirectory
+
         xml.required.set(false)
         xml.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.xml"))
 
@@ -292,4 +294,3 @@ tasks.register<Detekt>("detektAll") {
         sarif.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.sarif"))
     }
 }
-

@@ -24,7 +24,7 @@ object Vers {
     const val koinVersion = "3.5.0"
     const val kotlinJvmTarget = "1.8"
     const val kotlinJvmToolchain = 17
-    const val kotlinTestVersion = "1.9.0"
+    const val kotlinTestVersion = "1.9.20"
     const val kotlinVersion = "1.9.20"
     const val kotlinxCoroutinesVersion = "1.7.3"
     const val kspVersion = "1.9.20-1.0.14"

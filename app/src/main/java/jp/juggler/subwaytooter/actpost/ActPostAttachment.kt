@@ -146,9 +146,9 @@ fun ActPost.addAttachment(
         return
     }
 
-    saveAttachmentList()
     val pa = PostAttachment(this)
     attachmentList.add(pa)
+    saveAttachmentList()
     showMediaAttachment()
 
     attachmentUploader.addRequest(
@@ -470,6 +470,7 @@ fun ActPost.rearrangeAttachments() = lifecycleScope.launch {
         // attachmentListを更新して表示し直す
         attachmentList.clear()
         attachmentList.addAll(newList)
+        saveAttachmentList()
         showMediaAttachment()
         showMediaAttachmentProgress()
     } catch (ex: Throwable) {

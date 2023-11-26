@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.res.Resources
 import android.content.res.TypedArray
 import android.graphics.Color
 import android.graphics.ColorFilter
@@ -19,6 +20,7 @@ import android.media.RingtoneManager
 import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.DisplayMetrics
 import android.util.SparseArray
 import android.view.View
 import android.widget.ImageButton
@@ -389,3 +391,19 @@ fun AppCompatActivity.setNavigationBack(toolbar: Toolbar) =
     toolbar.setNavigationOnClickListener {
         onBackPressedDispatcher.onBackPressed()
     }
+
+
+val Float.roundPixels get()= (this+0.5f).toInt()
+fun DisplayMetrics.dpFloat(src:Float) = (density* src)
+fun DisplayMetrics.dpFloat(src:Int) = (density*src.toFloat())
+fun Resources.dpFloat(src:Float) = displayMetrics.dpFloat(src)
+fun Resources.dpFloat(src:Int) = displayMetrics.dpFloat(src)
+fun Context.dpFloat(src:Float) = resources.dpFloat(src)
+fun Context.dpFloat(src:Int) = resources.dpFloat(src)
+
+fun DisplayMetrics.dp(src:Float) = (density* src).roundPixels
+fun DisplayMetrics.dp(src:Int) = (density*src.toFloat()).roundPixels
+fun Resources.dp(src:Float) = displayMetrics.dp(src)
+fun Resources.dp(src:Int) = displayMetrics.dp(src)
+fun Context.dp(src:Float) = resources.dp(src)
+fun Context.dp(src:Int) = resources.dp(src)

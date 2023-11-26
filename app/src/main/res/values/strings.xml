@@ -1302,4 +1302,6 @@
     <string name="detail">Detail</string>
     <string name="emoji_detail">Emoji detail</string>
     <string name="post_404_desc">(Or, you reply to follower-only post from other account)</string>
+    <string name="rearrange">rearrange</string>
+    <string name="attachment_rearrange_desc">Drag to rearrange.</string>
 </resources>

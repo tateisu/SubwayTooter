@@ -5,6 +5,7 @@ import android.net.Uri
 import android.text.InputType
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiTask
@@ -20,6 +21,7 @@ import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.decodeAttachmentBitmap
+import jp.juggler.subwaytooter.dialog.dialogArrachmentRearrange
 import jp.juggler.subwaytooter.dialog.focusPointDialog
 import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.pref.PrefB
@@ -40,6 +42,8 @@ import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPutRequestBuilder
 import jp.juggler.util.ui.isLiveActivity
 import jp.juggler.util.ui.vg
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import kotlin.math.min
 
 private val log = LogCategory("ActPostAttachment")
@@ -64,13 +68,23 @@ fun ActPost.decodeAttachments(sv: String) {
     }
 }
 
+fun ActPost.showAttachmentRearrangeButton() {
+    views.btnAttachmentsRearrange.vg(
+        attachmentList.size >= 2 &&
+                attachmentList.none { it.status == PostAttachment.Status.Progress }
+    )
+}
+
 fun ActPost.showMediaAttachment() {
     if (isFinishing) return
     views.llAttachment.vg(attachmentList.isNotEmpty())
     ivMedia.forEachIndexed { i, v -> showMediaAttachmentOne(v, i) }
+    showAttachmentRearrangeButton()
 }
 
 fun ActPost.showMediaAttachmentProgress() {
+    if (isFinishing) return
+    showAttachmentRearrangeButton()
     val mergedProgress = attachmentList
         .mapNotNull { it.progress.notEmpty() }
         .joinToString("\n")
@@ -433,6 +447,35 @@ fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: GetContentResultE
                 result?.error?.let { showToast(true, it) }
                 showMediaAttachment()
             }
+        }
+    }
+}
+
+fun ActPost.rearrangeAttachments() = lifecycleScope.launch {
+    try {
+        val rearranged = dialogArrachmentRearrange(attachmentList)
+        // 入れ替え中にアップロード失敗などで要素が消えることがあるので
+        // 最新のattachmentListを指定順に並べ替える
+        val remain = ArrayList(attachmentList)
+        val newList = buildList {
+            rearranged.map { a ->
+                val pa = remain.find { it === a }
+                if (pa != null) {
+                    add(pa)
+                    remain.remove(pa)
+                }
+            }
+            addAll(remain)
+        }
+        // attachmentListを更新して表示し直す
+        attachmentList.clear()
+        attachmentList.addAll(newList)
+        showMediaAttachment()
+        showMediaAttachmentProgress()
+    } catch (ex: Throwable) {
+        log.e(ex, "attachmentRearrange failed.")
+        if (ex !is CancellationException) {
+            dialogOrToast(ex.withCaption("attachmentRearrange failed."))
         }
     }
 }

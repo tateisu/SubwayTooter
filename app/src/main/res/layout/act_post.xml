@@ -116,14 +116,13 @@
                     android:textAllCaps="false" />
             </LinearLayout>
 
-            <LinearLayout
+            <com.google.android.flexbox.FlexboxLayout
                 android:id="@+id/llAttachment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:baselineAligned="false"
-                android:gravity="top|start"
-                android:orientation="horizontal">
+                app:flexWrap="wrap">
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia1"
@@ -161,16 +160,29 @@
                     android:scaleType="fitCenter"
                     tools:src="@drawable/ic_videocam" />
 
+                <ImageButton
+                    android:id="@+id/btnAttachmentsRearrange"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
+                    android:contentDescription="@string/rearrange"
+                    android:src="@drawable/swap_horiz_24px"
+                    android:visibility="gone"
+                    app:tint="?attr/colorTextContent"
+                    tools:visibility="visible" />
+
                 <TextView
                     android:id="@+id/tvAttachmentProgress"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:maxWidth="160dp"
                     android:textSize="11sp"
                     android:visibility="gone"
                     tools:text="アップロード中です\nアップロード中です\nアップロード中です\nアップロード中です\nアップロード中です"
                     tools:visibility="visible" />
-            </LinearLayout>
+
+            </com.google.android.flexbox.FlexboxLayout>
 
             <com.google.android.flexbox.FlexboxLayout
                 android:layout_width="match_parent"

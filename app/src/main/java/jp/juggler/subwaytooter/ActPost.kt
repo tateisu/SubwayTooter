@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.actpost.FeaturedTagCache
 import jp.juggler.subwaytooter.actpost.addAttachment
 import jp.juggler.subwaytooter.actpost.applyMushroomText
+import jp.juggler.subwaytooter.actpost.rearrangeAttachments
 import jp.juggler.subwaytooter.actpost.onPickCustomThumbnailImpl
 import jp.juggler.subwaytooter.actpost.onPostAttachmentCompleteImpl
 import jp.juggler.subwaytooter.actpost.openAttachment
@@ -314,7 +315,7 @@ class ActPost : AppCompatActivity(),
             R.id.btnFeaturedTag -> completionHelper.openFeaturedTagList(
                 featuredTagCache[account?.acct?.ascii ?: ""]?.list
             )
-
+            R.id.btnAttachmentsRearrange -> rearrangeAttachments()
             R.id.ibSchedule -> performSchedule()
             R.id.ibScheduleReset -> resetSchedule()
         }
@@ -445,6 +446,7 @@ class ActPost : AppCompatActivity(),
             views.btnEmojiPicker,
             views.btnMore,
             views.ivAccount,
+            views.btnAttachmentsRearrange,
         ).forEach { it.setOnClickListener(this) }
 
         ivMedia.forEach { it.setOnClickListener(this) }

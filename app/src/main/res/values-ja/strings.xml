@@ -1290,4 +1290,6 @@
     <string name="detail">詳細</string>
     <string name="emoji_detail">絵文字の詳細</string>
     <string name="post_404_desc">(もしくは、フォロー限定投稿にフォロー外から返信しようとしました)</string>
+    <string name="rearrange">並べ替え</string>
+    <string name="attachment_rearrange_desc">ドラッグで並べ替え</string>
 </resources>

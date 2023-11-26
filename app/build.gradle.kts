@@ -25,8 +25,8 @@ android {
     defaultConfig {
         targetSdk = Vers.stTargetSdkVersion
         minSdk = Vers.stMinSdkVersion
-        versionCode = 541
-        versionName = "5.541"
+        versionCode = 542
+        versionName = "5.542"
         applicationId = "jp.juggler.subwaytooter"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

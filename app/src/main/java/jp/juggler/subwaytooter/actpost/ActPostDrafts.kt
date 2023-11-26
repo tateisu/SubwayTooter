@@ -346,7 +346,6 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
 
         val srcAttachments = baseStatus.media_attachments
         if (srcAttachments?.isNotEmpty() == true) {
-            saveAttachmentList()
             this.attachmentList.clear()
             try {
                 for (src in srcAttachments) {
@@ -360,6 +359,7 @@ fun ActPost.initializeFromRedraftStatus(account: SavedAccount, jsonText: String)
             } catch (ex: Throwable) {
                 log.e(ex, "can't initialize attachments from redraft.")
             }
+            saveAttachmentList()
         }
 
         views.cbNSFW.isChecked = baseStatus.sensitive == true
@@ -443,7 +443,6 @@ fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
             ?.mapNotNull { it as? TootAttachment }
             ?.notEmpty()
             ?.let { srcAttachments ->
-                saveAttachmentList()
                 this.attachmentList.clear()
                 for (src in srcAttachments) {
                     try {
@@ -455,6 +454,7 @@ fun ActPost.initializeFromEditStatus(account: SavedAccount, jsonText: String) {
                         log.e(ex, "can't initialize attachments from edit status")
                     }
                 }
+                saveAttachmentList()
             }
 
         views.cbNSFW.isChecked = baseStatus.sensitive == true

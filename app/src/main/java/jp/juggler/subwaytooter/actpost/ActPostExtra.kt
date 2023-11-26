@@ -274,6 +274,7 @@ fun ActPost.performMore() {
                 views.etContent.setText("")
                 views.etContentWarning.setText("")
                 attachmentList.clear()
+                saveAttachmentList()
                 showMediaAttachment()
             }
 

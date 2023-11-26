@@ -98,8 +98,8 @@ suspend fun ActPost.restoreState(savedInstanceState: Bundle) {
         } else {
             // state から復元する
             states.attachmentListEncoded?.let {
-                saveAttachmentList()
                 decodeAttachments(it)
+                saveAttachmentList()
             }
         }
     }

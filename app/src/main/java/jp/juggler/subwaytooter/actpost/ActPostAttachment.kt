@@ -49,6 +49,7 @@ import kotlin.math.min
 private val log = LogCategory("ActPostAttachment")
 
 // AppStateに保存する
+// シャローコピーなので attachmentList を変更する前後のどっちかで呼ばれてれば良い
 fun ActPost.saveAttachmentList() {
     if (!isMultiWindowPost) appState.attachmentList = this.attachmentList
 }

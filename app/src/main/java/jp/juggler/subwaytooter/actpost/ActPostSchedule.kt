@@ -65,9 +65,9 @@ suspend fun ActPost.initializeFromScheduledStatus(account: SavedAccount, jsonTex
             }
             ?.notEmpty()
             ?.let {
-                saveAttachmentList()
                 this.attachmentList.clear()
                 this.attachmentList.addAll(it)
+                saveAttachmentList()
             }
     } catch (ex: Throwable) {
         log.e(ex, "initializeFromScheduledStatus failed.")

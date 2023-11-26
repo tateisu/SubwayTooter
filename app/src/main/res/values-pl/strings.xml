@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="user_mail_address">Adres e-mail</string>
+    <string name="account_add">Dodaj konto</string>
+    <string name="ok">OK</string>
+    <string name="instance">Serwer</string>
+    <string name="cancel">Anuluj</string>
+    <string name="action_settings">Ustawienia</string>
+    <string name="user_password">Hasło</string>
+</resources>

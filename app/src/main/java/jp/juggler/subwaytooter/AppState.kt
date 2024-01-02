@@ -191,9 +191,9 @@ class AppState(
 
     private val ttsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
-            if (intent != null) {
-                if (TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED == intent.action) {
-                    log.d("tts_receiver: speech completed.")
+            log.i("ttsReceiver onReceive action=${intent?.action}")
+            when (intent?.action) {
+                TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED -> {
                     ttsSpeakEnd = SystemClock.elapsedRealtime()
                     handler.post(procFlushSpeechQueue)
                 }
@@ -430,8 +430,11 @@ class AppState(
 
                                 ContextCompat.registerReceiver(
                                     context,
+                                    ttsReceiver,
                                     IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED),
-                                    ContextCompat.RECEIVER_NOT_EXPORTED,
+                                    ContextCompat.RECEIVER_EXPORTED,
+                                    // RECEIVER_NOT_EXPORTED だと読み上げ完了を受け取れない
+                                    // ContextCompat.RECEIVER_NOT_EXPORTED,
                                 )
 
                                 //									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {

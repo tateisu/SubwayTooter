@@ -21,7 +21,7 @@ import jp.juggler.subwaytooter.calcIconRound
 import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.decodeAttachmentBitmap
-import jp.juggler.subwaytooter.dialog.dialogArrachmentRearrange
+import jp.juggler.subwaytooter.dialog.dialogAttachmentRearrange
 import jp.juggler.subwaytooter.dialog.focusPointDialog
 import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.pref.PrefB
@@ -454,7 +454,7 @@ fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: GetContentResultE
 
 fun ActPost.rearrangeAttachments() = lifecycleScope.launch {
     try {
-        val rearranged = dialogArrachmentRearrange(attachmentList)
+        val rearranged = dialogAttachmentRearrange(attachmentList)
         // 入れ替え中にアップロード失敗などで要素が消えることがあるので
         // 最新のattachmentListを指定順に並べ替える
         val remain = ArrayList(attachmentList)

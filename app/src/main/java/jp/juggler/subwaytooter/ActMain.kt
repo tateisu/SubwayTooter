@@ -657,13 +657,13 @@ class ActMain : AppCompatActivity(),
         }
 
         // 外部から受け取ったUriの処理
-        val uri = ActCallback.last_uri.getAndSet(null)
+        val uri = ActCallback.lastUri.getAndSet(null)
         if (uri != null) {
             handleIntentUri(uri)
         }
 
         // 外部から受け取ったUriの処理
-        val intent = ActCallback.sent_intent.getAndSet(null)
+        val intent = ActCallback.sharedIntent.getAndSet(null)
         if (intent != null) {
             handleSharedIntent(intent)
         }

@@ -13,6 +13,7 @@ import android.os.Environment
 import android.os.SystemClock
 import android.view.View
 import android.view.Window
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
@@ -20,6 +21,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.RepeatModeUtil
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
@@ -60,7 +62,6 @@ import javax.net.ssl.HttpsURLConnection
 import kotlin.math.max
 import kotlin.math.min
 
-@androidx.annotation.OptIn(markerClass = [androidx.media3.common.util.UnstableApi::class])
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     companion object {
@@ -226,6 +227,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    @UnstableApi
     private val mediaSourceEventListener = object : MediaSourceEventListener {
         override fun onLoadStarted(
             windowIndex: Int,
@@ -306,7 +308,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
 
-        this.serviceType = ServiceType.values()[
+        this.serviceType = ServiceType.entries[
             savedInstanceState?.int(EXTRA_SERVICE_TYPE)
                 ?: intent.int(EXTRA_SERVICE_TYPE) ?: 0
         ]
@@ -349,7 +351,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         )
     }
 
-    internal fun initUI() {
+    @OptIn(UnstableApi::class)
+    private fun initUI() {
         setContentView(views.root)
 
         views.pbvImage.background = MediaBackgroundDrawable(
@@ -409,6 +412,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
         exoPlayer = ExoPlayer.Builder(this).build()
         exoPlayer.addListener(playerListener)
+
         views.pvVideo.run {
             player = exoPlayer
             controllerAutoShow = false
@@ -916,7 +920,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
     private fun mediaBackgroundDialog() {
         launchAndShowError {
             actionsDialog(getString(R.string.background_pattern)) {
-                for (k in MediaBackgroundDrawable.Kind.values()) {
+                for (k in MediaBackgroundDrawable.Kind.entries) {
                     if (!k.isMediaBackground) continue
                     action(k.name) {
                         val idx = k.toIndex()

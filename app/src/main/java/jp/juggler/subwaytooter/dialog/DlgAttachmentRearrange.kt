@@ -31,7 +31,7 @@ private val log = LogCategory("DlgAttachmentRearrange")
  * 投稿画面で添付メディアを並べ替えるダイアログを開き、OKボタンが押されるまで非同期待機する。
  * OK以外の方法で閉じたらCancellationExceptionを投げる。
  */
-suspend fun AppCompatActivity.dialogArrachmentRearrange(
+suspend fun AppCompatActivity.dialogAttachmentRearrange(
     initialList: List<PostAttachment>,
 ): List<PostAttachment> = suspendCancellableCoroutine { cont ->
     val views = AttachmentRearrangeDialogBinding.inflate(layoutInflater)

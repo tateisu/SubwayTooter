@@ -10,6 +10,7 @@ import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
 import android.text.Spannable
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnEncoder
@@ -411,7 +412,7 @@ class AppState(
                                     } catch (ignored: Throwable) {
                                         null
                                     }
-                                    if (voiceSet == null || voiceSet.isEmpty()) {
+                                    if (voiceSet.isNullOrEmpty()) {
                                         log.d("TextToSpeech.getVoices returns null or empty set.")
                                     } else {
                                         val lang = defaultLocale(context).toLanguageTag()
@@ -427,9 +428,10 @@ class AppState(
 
                                 handler.post(procFlushSpeechQueue)
 
-                                context.registerReceiver(
-                                    ttsReceiver,
-                                    IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED)
+                                ContextCompat.registerReceiver(
+                                    context,
+                                    IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED),
+                                    ContextCompat.RECEIVER_NOT_EXPORTED,
                                 )
 
                                 //									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {

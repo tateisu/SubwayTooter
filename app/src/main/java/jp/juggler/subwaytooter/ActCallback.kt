@@ -20,8 +20,8 @@ class ActCallback : AppCompatActivity() {
     companion object {
         private val log = LogCategory("ActCallback")
 
-        internal val last_uri = AtomicReference<Uri>(null)
-        internal val sent_intent = AtomicReference<Intent>(null)
+        internal val lastUri = AtomicReference<Uri>(null)
+        internal val sharedIntent = AtomicReference<Intent>(null)
 
         private fun String?.isMediaMimeType() = when {
             this == null -> false
@@ -47,10 +47,10 @@ class ActCallback : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        log.d("onCreate flags=0x${intent.flags.toString(radix = 16)}")
+        var intent = this.intent
+        log.d("onCreate flags=0x${intent?.flags?.toString(radix = 16)}")
         super.onCreate(savedInstanceState)
 
-        var intent: Intent? = intent
         when {
             intent == null -> {
                 // 多分起きないと思う
@@ -65,29 +65,31 @@ class ActCallback : AppCompatActivity() {
                 val type = intent.type
                 // ACTION_SEND か ACTION_SEND_MULTIPLE
                 // ACTION_VIEW かつ  type が 画像かビデオか音声
-                if (
+                when {
                     Intent.ACTION_SEND == action ||
-                    Intent.ACTION_SEND_MULTIPLE == action ||
-                    (Intent.ACTION_VIEW == action && type.isMediaMimeType())
-                ) {
+                            Intent.ACTION_SEND_MULTIPLE == action ||
+                            (Intent.ACTION_VIEW == action && type.isMediaMimeType()) -> {
 
-                    // Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
-                    // http://qiita.com/pside/items/a821e2fe9ae6b7c1a98c
+                        // Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
+                        // http://qiita.com/pside/items/a821e2fe9ae6b7c1a98c
 
-                    // 有効期間を延長する
-                    intent = remake(intent)
-                    if (intent != null) {
-                        sent_intent.set(intent)
+                        // 有効期間を延長する
+                        intent = remake(intent)
+                        if (intent != null) {
+                            sharedIntent.set(intent)
+                        }
                     }
-                } else if (forbidUriFromApp(intent)) {
-                    // last_uriをクリアする
-                    last_uri.set(null)
-                    // ダイアログを閉じるまで画面遷移しない
-                    return
-                } else {
-                    val uri = intent.data
-                    if (uri != null) {
-                        last_uri.set(uri)
+                    forbidUriFromApp(intent) -> {
+                        // last_uriをクリアする
+                        lastUri.set(null)
+                        // ダイアログを閉じるまで画面遷移しない
+                        return
+                    }
+                    else -> {
+                        val uri = intent.data
+                        if (uri != null) {
+                            lastUri.set(uri)
+                        }
                     }
                 }
             }
@@ -105,13 +107,11 @@ class ActCallback : AppCompatActivity() {
     }
 
     private fun copyExtraTexts(dst: Intent, src: Intent) {
-        var sv: String?
+        src.string(Intent.EXTRA_TEXT)
+            ?.let { dst.putExtra(Intent.EXTRA_TEXT, it) }
         //
-        sv = src.string(Intent.EXTRA_TEXT)
-        if (sv != null) dst.putExtra(Intent.EXTRA_TEXT, sv)
-        //
-        sv = src.string(Intent.EXTRA_SUBJECT)
-        if (sv != null) dst.putExtra(Intent.EXTRA_SUBJECT, sv)
+        src.string(Intent.EXTRA_SUBJECT)
+            ?.let { dst.putExtra(Intent.EXTRA_SUBJECT, it) }
     }
 
     private fun remake(src: Intent): Intent? {
@@ -123,52 +123,56 @@ class ActCallback : AppCompatActivity() {
             val type = src.type
 
             if (type.isMediaMimeType()) {
-                if (Intent.ACTION_VIEW == action) {
-                    src.data?.let { uriOriginal ->
+                when (action){
+                    Intent.ACTION_VIEW -> {
+                        src.data?.let { uriOriginal ->
+                            try {
+                                val uri = saveToCache(uriOriginal)
+                                val dst = Intent(action)
+                                dst.setDataAndType(uri, type)
+                                copyExtraTexts(dst, src)
+                                return dst
+                            } catch (ex: Throwable) {
+                                log.e(ex, "remake failed. src=$src")
+                            }
+                        }
+                    }
+                    Intent.ACTION_SEND -> {
+                        var uri = src.getStreamUriExtra()
+                            ?: return src // text/plainの場合
                         try {
-                            val uri = saveToCache(uriOriginal)
+                            uri = saveToCache(uri)
+
                             val dst = Intent(action)
-                            dst.setDataAndType(uri, type)
+                            dst.type = type
+                            dst.putExtra(Intent.EXTRA_STREAM, uri)
                             copyExtraTexts(dst, src)
                             return dst
                         } catch (ex: Throwable) {
                             log.e(ex, "remake failed. src=$src")
                         }
                     }
-                } else if (Intent.ACTION_SEND == action) {
-                    var uri = src.getStreamUriExtra()
-                        ?: return src // text/plainの場合
-                    try {
-                        uri = saveToCache(uri)
-
-                        val dst = Intent(action)
-                        dst.type = type
-                        dst.putExtra(Intent.EXTRA_STREAM, uri)
-                        copyExtraTexts(dst, src)
-                        return dst
-                    } catch (ex: Throwable) {
-                        log.e(ex, "remake failed. src=$src")
-                    }
-                } else if (Intent.ACTION_SEND_MULTIPLE == action) {
-                    val listUri = src.getStreamUriListExtra()
-                        ?: return null
-                    val listDst = ArrayList<Uri>()
-                    for (uriOriginal in listUri) {
-                        if (uriOriginal != null) {
-                            try {
-                                val uri = saveToCache(uriOriginal)
-                                listDst.add(uri)
-                            } catch (ex: Throwable) {
-                                log.e(ex, "remake failed. src=$src")
+                    Intent.ACTION_SEND_MULTIPLE  -> {
+                        val listUri = src.getStreamUriListExtra()
+                            ?: return null
+                        val listDst = ArrayList<Uri>()
+                        for (uriOriginal in listUri) {
+                            if (uriOriginal != null) {
+                                try {
+                                    val uri = saveToCache(uriOriginal)
+                                    listDst.add(uri)
+                                } catch (ex: Throwable) {
+                                    log.e(ex, "remake failed. src=$src")
+                                }
                             }
                         }
+                        if (listDst.isEmpty()) return null
+                        val dst = Intent(action)
+                        dst.type = type
+                        dst.putParcelableArrayListExtra(Intent.EXTRA_STREAM, listDst)
+                        copyExtraTexts(dst, src)
+                        return dst
                     }
-                    if (listDst.isEmpty()) return null
-                    val dst = Intent(action)
-                    dst.type = type
-                    dst.putParcelableArrayListExtra(Intent.EXTRA_STREAM, listDst)
-                    copyExtraTexts(dst, src)
-                    return dst
                 }
             } else if (Intent.ACTION_SEND == action) {
 

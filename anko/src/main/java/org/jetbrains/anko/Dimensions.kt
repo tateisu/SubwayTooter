@@ -16,7 +16,9 @@
 package org.jetbrains.anko
 
 import android.content.Context
+import android.os.Build
 import android.util.DisplayMetrics
+import android.util.TypedValue
 import android.view.View
 import androidx.annotation.DimenRes
 import androidx.fragment.app.Fragment
@@ -36,13 +38,35 @@ const val MAXDPI: Int = 0xfffe
 fun Context.dip(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 fun Context.dip(value: Float): Int = (value * resources.displayMetrics.density).toInt()
 
+private fun Float.roundSize() = when {
+    this < 0f -> (this - 0.5f).toInt()
+    else -> (this + 0.5f).toInt()
+}
+
 //return sp dimension value in pixels
-fun Context.sp(value: Int): Int = (value * resources.displayMetrics.scaledDensity).toInt()
-fun Context.sp(value: Float): Int = (value * resources.displayMetrics.scaledDensity).toInt()
+fun DisplayMetrics.sp(value: Float): Int =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, value, this)
+        .roundSize()
+
+fun DisplayMetrics.px2sp(px: Float): Float = when {
+    Build.VERSION.SDK_INT >= 34 ->
+        TypedValue.deriveDimension(TypedValue.COMPLEX_UNIT_SP, px, this)
+
+    else -> try {
+        @Suppress("DEPRECATION")
+        px / scaledDensity
+    } catch (ex: Throwable) {
+        0f
+    }
+}
+
+fun Context.sp(value: Float) = resources.displayMetrics.sp(value)
+fun Context.sp(value: Int): Int = resources.displayMetrics.sp(value.toFloat())
+fun Context.px2sp(px: Float): Float = resources.displayMetrics.px2sp(px)
+fun Context.px2sp(px: Int): Float = resources.displayMetrics.px2sp(px.toFloat())
 
 //converts px value into dip or sp
 fun Context.px2dip(px: Int): Float = px.toFloat() / resources.displayMetrics.density
-fun Context.px2sp(px: Int): Float = px.toFloat() / resources.displayMetrics.scaledDensity
 
 fun Context.dimen(@DimenRes resource: Int): Int = resources.getDimensionPixelSize(resource)
 

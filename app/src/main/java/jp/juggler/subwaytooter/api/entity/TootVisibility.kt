@@ -68,6 +68,7 @@ enum class TootVisibility(
                 LocalPublic, LocalHome -> true
                 else -> false
             }
+
             else -> when (this) {
                 Public, UnlistedHome -> true
                 else -> false
@@ -109,47 +110,35 @@ enum class TootVisibility(
     companion object {
         private val log = LogCategory("TootVisivbility")
 
-        fun parseMastodon(a: String?): TootVisibility? {
-            for (v in values()) {
-                if (v.strMastodon == a) return v
-            }
-            return null
-        }
+        fun parseMastodon(a: String?) =
+            entries.find { it.strMastodon == a }
 
         fun parseMisskey(a: String?, localOnly: Boolean = false): TootVisibility? {
-            for (v in values()) {
-                if (v.strMisskey == a) {
-                    if (localOnly) {
-                        when (v) {
-                            Public -> return LocalPublic
-                            UnlistedHome -> return LocalHome
-                            PrivateFollowers -> return LocalFollowers
+            entries.find { it.strMisskey == a }?.let { v ->
+                if (localOnly) {
+                    when (v) {
+                        Public -> return LocalPublic
+                        UnlistedHome -> return LocalHome
+                        PrivateFollowers -> return LocalFollowers
 
-                            else -> {
-                            }
-                        }
+                        else -> Unit
                     }
-                    return v
                 }
+                return v
             }
             return null
         }
 
-        fun fromId(id: Int): TootVisibility? {
-            for (v in values()) {
-                if (v.id == id) return v
-            }
-            return null
-        }
+        fun fromId(id: Int) = entries.find { it.id == id }
 
         fun parseSavedVisibility(sv: String?): TootVisibility? {
             sv ?: return null
 
             // 新しい方式ではenumのidの文字列表現
-            values().find { it.id.toString() == sv }?.let { return it }
+            entries.find { it.id.toString() == sv }?.let { return it }
 
             // 古い方式ではマストドンの公開範囲文字列かweb_setting
-            values().find { it.strMastodon == sv }?.let { return it }
+            entries.find { it.strMastodon == sv }?.let { return it }
 
             return null
         }

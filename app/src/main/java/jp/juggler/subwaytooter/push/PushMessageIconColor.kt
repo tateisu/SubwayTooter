@@ -7,99 +7,102 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.util.log.LogCategory
 
-private val log = LogCategory("NotificationIconAndColor")
+private val log = LogCategory("PushMessageIconColor")
 
 enum class PushMessageIconColor(
     @ColorRes val colorRes: Int,
     @DrawableRes val iconId: Int,
-    val keys: Array<String>,
+    val keys: Set<String>,
 ) {
     Favourite(
         0,
         R.drawable.ic_star_outline,
-        arrayOf("favourite"),
+        setOf("favourite"),
     ),
     Mention(
         0,
         R.drawable.outline_alternate_email_24,
-        arrayOf("mention"),
+        setOf("mention"),
     ),
     Reply(
         0,
         R.drawable.ic_reply,
-        arrayOf("reply")
+        setOf("reply")
     ),
     Reblog(
         0,
         R.drawable.ic_repeat,
-        arrayOf("reblog", "renote"),
+        setOf("reblog", "renote"),
     ),
     Quote(
         0,
         R.drawable.ic_quote,
-        arrayOf("quote"),
+        setOf("quote"),
     ),
     Follow(
         0,
         R.drawable.ic_person_add,
-        arrayOf("follow", "followRequestAccepted")
+        setOf("follow", "followRequestAccepted")
     ),
     Unfollow(
         0,
         R.drawable.ic_follow_cross,
-        arrayOf("unfollow")
+        setOf("unfollow")
     ),
     Reaction(
         0,
         R.drawable.outline_add_reaction_24,
-        arrayOf("reaction", "emoji_reaction", "pleroma:emoji_reaction")
+        setOf("reaction", "emoji_reaction", "pleroma:emoji_reaction")
     ),
     FollowRequest(
         R.color.colorNotificationAccentFollowRequest,
         R.drawable.ic_follow_wait,
-        arrayOf("follow_request", "receiveFollowRequest"),
+        setOf("follow_request", "receiveFollowRequest"),
     ),
     Poll(
         0,
         R.drawable.outline_poll_24,
-        arrayOf("pollVote", "poll_vote", "poll"),
+        setOf("pollVote", "poll_vote", "poll"),
     ),
     Status(
         0,
         R.drawable.ic_edit,
-        arrayOf("status", "update", "status_reference")
+        setOf("status", "update", "status_reference")
     ),
     AdminSignUp(
         0,
         R.drawable.outline_group_add_24,
-        arrayOf(TootNotification.TYPE_ADMIN_SIGNUP),
+        setOf(TootNotification.TYPE_ADMIN_SIGNUP),
     ),
     AdminReport(
         R.color.colorNotificationAccentAdminReport,
         R.drawable.ic_error,
-        arrayOf(TootNotification.TYPE_ADMIN_REPORT),
+        setOf(TootNotification.TYPE_ADMIN_REPORT),
     ),
 
     Unknown(
         R.color.colorNotificationAccentUnknown,
         R.drawable.ic_question,
-        arrayOf("unknown"),
+        setOf("unknown"),
     )
     ;
 
     companion object {
-        val map = buildMap {
-            values().forEach {
-                for (k in it.keys) {
-                    val old: PushMessageIconColor? = get(k)
-                    if (old != null) {
-                        error("NotificationIconAndColor: $k is duplicate: ${it.name} and ${old.name}")
-                    } else {
-                        put(k, it)
-                    }
+        val map = PushMessageIconColor.entries.map { it.keys }.flatten().toSet()
+            .associateWith { key ->
+                val colors = PushMessageIconColor.entries
+                    .filter { it.keys.contains(key) }
+                when {
+                    colors.isEmpty() -> error("missing color fot key=$key")
+                    colors.size > 1 -> error(
+                        "NotificationIconAndColor: duplicate key $key to ${
+                            colors.joinToString(", ") { it.name }
+                        }"
+                    )
+
+                    else -> colors.first()
                 }
             }
-        }
     }
 }
 

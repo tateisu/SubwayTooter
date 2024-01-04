@@ -175,7 +175,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
         if (savedInstanceState != null) {
             try {
                 savedInstanceState.getString(STATE_CHOOSE_INTENT_TARGET)?.let { target ->
-                    customShareTarget = CustomShareTarget.values().firstOrNull { it.name == target }
+                    customShareTarget = CustomShareTarget.entries.find { it.name == target }
                 }
             } catch (ex: Throwable) {
                 log.e(ex, "can't restore customShareTarget.")

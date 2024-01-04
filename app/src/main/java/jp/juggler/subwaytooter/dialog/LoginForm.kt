@@ -3,7 +3,9 @@ package jp.juggler.subwaytooter.dialog
 import android.app.Dialog
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Filter
+import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
@@ -21,15 +23,23 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.notBlank
 import jp.juggler.util.data.notEmpty
-import jp.juggler.util.log.*
-import jp.juggler.util.ui.*
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.ProgressDialogEx
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.hideKeyboard
+import jp.juggler.util.ui.invisible
+import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.vg
+import jp.juggler.util.ui.visible
+import jp.juggler.util.ui.visibleOrInvisible
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.textResource
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.IDN
-import java.util.*
 
 class LoginForm(
     val activity: AppCompatActivity,
@@ -62,7 +72,8 @@ class LoginForm(
     ) {
         Login(R.string.existing_account, R.string.existing_account_desc),
         Pseudo(R.string.pseudo_account, R.string.pseudo_account_desc),
-    //    Create(2, R.string.create_account, R.string.create_account_desc),
+
+        //    Create(2, R.string.create_account, R.string.create_account_desc),
         Token(R.string.input_access_token, R.string.input_access_token_desc),
     }
 
@@ -76,7 +87,7 @@ class LoginForm(
     private var targetServerInfo: TootInstance? = null
 
     init {
-        for (a in Action.values()) {
+        for (a in Action.entries) {
             val subViews =
                 LvAuthTypeBinding.inflate(activity.layoutInflater, views.llPageAuthType, true)
             subViews.btnAuthType.textResource = a.idName

@@ -9,7 +9,6 @@ enum class TrackingType(
     NotReply("notReply", PullNotification.TRACKING_NAME_DEFAULT);
 
     companion object {
-        private val valuesCache = values()
-        fun parseStr(str: String?) = valuesCache.firstOrNull { it.str == str } ?: All
+        fun parseStr(str: String?) = entries.firstOrNull { it.str == str } ?: All
     }
 }

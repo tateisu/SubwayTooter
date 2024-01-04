@@ -6,9 +6,22 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRef
-import jp.juggler.subwaytooter.api.finder.*
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootMessageHolder
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.finder.mastodonFollowSuggestion2ListParser
+import jp.juggler.subwaytooter.api.finder.misskey11FollowersParser
+import jp.juggler.subwaytooter.api.finder.misskey11FollowingParser
+import jp.juggler.subwaytooter.api.finder.misskeyArrayFinderUsers
+import jp.juggler.subwaytooter.api.finder.misskeyCustomParserBlocks
+import jp.juggler.subwaytooter.api.finder.misskeyCustomParserFavorites
+import jp.juggler.subwaytooter.api.finder.misskeyCustomParserFollowRequest
+import jp.juggler.subwaytooter.api.finder.misskeyCustomParserMutes
 import jp.juggler.subwaytooter.search.MspHelper.loadingMSP
 import jp.juggler.subwaytooter.search.MspHelper.refreshMSP
 import jp.juggler.subwaytooter.search.NotestockHelper.loadingNotestock
@@ -17,10 +30,16 @@ import jp.juggler.subwaytooter.search.TootsearchHelper.loadingTootsearch
 import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
 import jp.juggler.subwaytooter.streaming.StreamSpec
 import jp.juggler.subwaytooter.table.daoAcctColor
-import jp.juggler.util.*
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.appendIf
+import jp.juggler.util.data.ellipsizeDot3
+import jp.juggler.util.data.jsonArrayOf
+import jp.juggler.util.data.jsonObjectOf
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.toJsonArray
 import jp.juggler.util.log.LogCategory
-import java.util.*
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -1128,6 +1147,7 @@ enum class ColumnType(
                     arrayFinder = misskeyArrayFinderUsers,
                     listParser = misskeyCustomParserMutes
                 )
+
                 else -> getAccountList(client, ApiPath.PATH_MUTES)
             }
         },
@@ -1142,6 +1162,7 @@ enum class ColumnType(
                     arrayFinder = misskeyArrayFinderUsers,
                     listParser = misskeyCustomParserMutes
                 )
+
                 else -> getAccountList(
                     client,
                     ApiPath.PATH_MUTES,
@@ -1750,6 +1771,7 @@ enum class ColumnType(
                             ApiPath.PATH_FOLLOW_SUGGESTION2,
                             listParser = mastodonFollowSuggestion2ListParser,
                         )
+
                     else ->
                         getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
                 }
@@ -1773,6 +1795,7 @@ enum class ColumnType(
                             ApiPath.PATH_FOLLOW_SUGGESTION2,
                             listParser = mastodonFollowSuggestion2ListParser,
                         )
+
                     else ->
                         getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
                 }
@@ -1798,6 +1821,7 @@ enum class ColumnType(
                             listParser = mastodonFollowSuggestion2ListParser,
                             mastodonFilterByIdRange = false
                         )
+
                     else ->
                         getAccountList(
                             client,
@@ -2088,7 +2112,7 @@ enum class ColumnType(
         fun dump() {
             var min = Int.MAX_VALUE
             var max = Int.MIN_VALUE
-            values().forEach {
+            for (it in entries) {
                 val id = it.id
                 min = min(min, id)
                 max = max(max, id)

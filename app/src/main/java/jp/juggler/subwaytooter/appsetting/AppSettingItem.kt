@@ -70,7 +70,7 @@ enum class SettingType(val id: Int) {
     ;
 
     companion object {
-        val map = values().associateBy { it.id }
+        val map = entries.associateBy { it.id }
     }
 }
 
@@ -367,7 +367,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         spinnerSimple(
             PrefI.ipAdditionalButtonsPosition,
             R.string.additional_buttons_position,
-            *(AdditionalButtonsPosition.values().sortedBy { it.idx }.map { it.captionId }
+            *(AdditionalButtonsPosition.entries.sortedBy { it.idx }.map { it.captionId }
                 .toIntArray())
         )
 
@@ -380,7 +380,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     }
 
     section(R.string.translate_or_custom_share) {
-        CustomShareTarget.values().forEach { target ->
+        for (target in CustomShareTarget.entries) {
             item(
                 SettingType.TextWithSelector,
                 target.pref,
@@ -498,7 +498,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(PrefB.bpUseInternalMediaViewer, R.string.use_internal_media_viewer)
 
         spinner(PrefI.ipMediaBackground, R.string.background_pattern) {
-            MediaBackgroundDrawable.Kind.values()
+            MediaBackgroundDrawable.Kind.entries
                 .filter { it.isMediaBackground }
                 .map { it.name }
         }

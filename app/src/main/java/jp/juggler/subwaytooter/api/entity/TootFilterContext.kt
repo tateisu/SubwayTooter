@@ -23,13 +23,12 @@ enum class TootFilterContext(
     companion object {
         private val log = LogCategory("TootFilterContext")
 
-        private val valuesCache = values()
-        private val apiNameMap = valuesCache.associateBy { it.apiName }
+        private val apiNameMap = entries.associateBy { it.apiName }
 
         fun parseBits(src: JsonArray?): Int =
             src?.stringList()?.mapNotNull { apiNameMap[it]?.bit }?.sum() ?: 0
 
         fun bitsToNames(mask: Int) =
-            valuesCache.filter { it.bit.and(mask) != 0 }.map { it.caption_id }
+            entries.filter { it.bit.and(mask) != 0 }.map { it.caption_id }
     }
 }

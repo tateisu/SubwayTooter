@@ -20,8 +20,24 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.ActAbout
+import jp.juggler.subwaytooter.ActAppSetting
+import jp.juggler.subwaytooter.ActFavMute
+import jp.juggler.subwaytooter.ActHighlightWordList
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.ActMutedApp
+import jp.juggler.subwaytooter.ActMutedPseudoAccount
+import jp.juggler.subwaytooter.ActMutedWord
+import jp.juggler.subwaytooter.ActOSSLicense
+import jp.juggler.subwaytooter.ActPushMessageList
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.action.accountAdd
+import jp.juggler.subwaytooter.action.accountOpenSetting
+import jp.juggler.subwaytooter.action.openColumnFromUrl
+import jp.juggler.subwaytooter.action.openColumnList
+import jp.juggler.subwaytooter.action.serverProfileDirectoryFromSideMenu
+import jp.juggler.subwaytooter.action.timeline
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.pickAccount
@@ -50,7 +66,7 @@ import jp.juggler.util.ui.createColoredDrawable
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
@@ -71,7 +87,7 @@ class SideMenuAdapter(
         private const val urlOlderDevices =
             "https://github.com/tateisu/SubwayTooter/discussions/192"
 
-        private val itemTypeCount = ItemType.values().size
+        private val itemTypeCount = ItemType.entries.size
 
         private var lastVersionView: WeakReference<TextView>? = null
 
@@ -487,10 +503,12 @@ class SideMenuAdapter(
             when (itemType) {
                 ItemType.IT_DIVIDER ->
                     viewOrInflate(view, parent, R.layout.lv_sidemenu_separator)
+
                 ItemType.IT_GROUP_HEADER ->
                     viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_group).apply {
                         text = actMain.getString(title)
                     }
+
                 ItemType.IT_NORMAL ->
                     viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
                         isAllCaps = false
@@ -522,6 +540,7 @@ class SideMenuAdapter(
                         background = null
                         text = versionText
                     }
+
                 ItemType.IT_TIMEZONE ->
                     viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
                         textSize = 14f
@@ -529,6 +548,7 @@ class SideMenuAdapter(
                         background = null
                         text = getTimeZoneString(context)
                     }
+
                 ItemType.IT_NOTIFICATION_PERMISSION ->
                     viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
                         isAllCaps = false
@@ -599,6 +619,7 @@ class SideMenuAdapter(
             Pair(R.string.notification_push_distributor_disabled) {
                 actMain.selectPushDistributor()
             }
+
         else -> null
     }
 
@@ -616,6 +637,7 @@ class SideMenuAdapter(
 
                     else -> true
                 }
+
                 else -> true
             }
         }

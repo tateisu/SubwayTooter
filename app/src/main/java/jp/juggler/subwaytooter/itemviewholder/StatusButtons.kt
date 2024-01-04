@@ -76,7 +76,7 @@ enum class AdditionalButtonsPosition(
     ;
 
     companion object {
-        fun fromIndex(i: Int) = values().find { it.idx == i } ?: Top
+        fun fromIndex(i: Int) = entries.find { it.idx == i } ?: Top
     }
 }
 
@@ -821,7 +821,7 @@ class StatusButtonsViewHolder(
     }
 
     private fun AnkoFlexboxLayout.additionalButtons() {
-        btnCustomShares = CustomShareTarget.values().map { target ->
+        btnCustomShares = CustomShareTarget.entries.map { target ->
             imageButton {
                 background = ContextCompat.getDrawable(
                     context,

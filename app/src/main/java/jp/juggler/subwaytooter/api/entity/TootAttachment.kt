@@ -98,7 +98,7 @@ class TootAttachment private constructor(
         private val ext_audio = arrayOf(".mpga", ".mp3", ".aac", ".ogg")
 
         private fun parseType(src: String?) =
-            TootAttachmentType.values().find { it.id == src }
+            TootAttachmentType.entries.find { it.id == src }
 
         private fun guessMediaTypeByUrl(src: String?): TootAttachmentType? {
             val uri = src.mayUri() ?: return null

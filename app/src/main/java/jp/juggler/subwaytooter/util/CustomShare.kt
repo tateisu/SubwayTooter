@@ -208,7 +208,7 @@ object CustomShare {
     fun getCache(target: CustomShareTarget) = cache[target]
 
     fun reloadCache(context: Context) {
-        CustomShareTarget.values().forEach { target ->
+        for (target in CustomShareTarget.entries) {
             val cn = target.customShareComponentName
             val pair = getInfo(context, cn)
             cache[target] = pair

@@ -20,9 +20,7 @@ class EmojiMapLoader(
     private val assetsSet = appContext.assets.list("")!!.toSet()
     private val resources = appContext.resources!!
 
-    private val categoryNameMap = HashMap<String, EmojiCategory>().apply {
-        EmojiCategory.values().forEach { put(it.name, it) }
-    }
+    private val categoryNameMap = EmojiCategory.entries.associateBy { it.name }
 
     private var lastEmoji: UnicodeEmoji? = null
     private var lastCategory: EmojiCategory? = null
@@ -60,28 +58,34 @@ class EmojiMapLoader(
                     if (!assetsSet.contains(line)) error("missing assets.")
                     lastEmoji = UnicodeEmoji(assetsName = line)
                 }
+
                 "drawable" -> {
                     val drawableId = getDrawableId(line) ?: error("missing drawable.")
                     lastEmoji = UnicodeEmoji(drawableId = drawableId)
                 }
+
                 "un" -> {
                     val emoji = lastEmoji ?: error("missing lastEmoji.")
                     addCode(emoji, line)
                     emoji.unifiedCode = line
                 }
+
                 "u" -> {
                     val emoji = lastEmoji ?: error("missing lastEmoji.")
                     addCode(emoji, line)
                 }
+
                 "sn" -> {
                     val emoji = lastEmoji ?: error("missing lastEmoji.")
                     addName(emoji, line)
                     emoji.unifiedName = line
                 }
+
                 "s" -> {
                     val emoji = lastEmoji ?: error("missing lastEmoji.")
                     addName(emoji, line)
                 }
+
                 "t" -> {
                     val cols = line.split(",", limit = 3)
                     if (cols.size != 3) error("invalid tone spec. line=$lno $line")
@@ -99,6 +103,7 @@ class EmojiMapLoader(
                     lastCategory = categoryNameMap[line]
                         ?: error("missing category name.")
                 }
+
                 "c" -> {
                     val category = lastCategory
                         ?: error("missing lastCategory.")
@@ -110,6 +115,7 @@ class EmojiMapLoader(
                         category.emojiList.add(emoji)
                     }
                 }
+
                 else -> error("unknown header $head")
             }
         } catch (ex: Throwable) {

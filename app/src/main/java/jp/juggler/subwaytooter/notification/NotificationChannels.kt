@@ -256,10 +256,9 @@ class NotificationChannelsInitializer : Initializer<Boolean> {
 
     override fun create(context: Context): Boolean {
         context.run {
-            val list = NotificationChannels.values()
-            log.i("createNotificationChannel(s) size=${list.size}")
             val notificationManager = NotificationManagerCompat.from(this)
-            for (nc in list) {
+            log.i("createNotificationChannel(s) size=${NotificationChannels.entries.size}")
+            for (nc in NotificationChannels.entries) {
                 val channel = NotificationChannel(
                     nc.id,
                     getString(nc.titleId),

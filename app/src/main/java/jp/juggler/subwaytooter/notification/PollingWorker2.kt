@@ -4,7 +4,17 @@ import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.CoroutineWorker
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ForegroundInfo
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import androidx.work.await
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
@@ -114,7 +124,7 @@ class PollingWorker2(
 
     private fun stateMapToString(map: Map<PollingState, List<String>>) =
         StringBuilder().apply {
-            for (state in PollingState.valuesCache) {
+            for (state in PollingState.entries) {
                 val list = map[state] ?: continue
                 if (isNotEmpty()) append(" |")
                 append(state.desc)

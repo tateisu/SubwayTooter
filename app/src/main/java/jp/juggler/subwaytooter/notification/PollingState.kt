@@ -11,8 +11,4 @@ enum class PollingState(val desc: String) {
     CheckPushSubscription("check push subscription"),
     CheckNotifications("check notifications"),
     ;
-
-    companion object {
-        val valuesCache = values()
-    }
 }

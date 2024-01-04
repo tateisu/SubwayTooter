@@ -326,7 +326,7 @@ object ColumnEncoder {
                 -> {
                     profileId = EntityId.mayNull(src.string(KEY_PROFILE_ID))
                     val tabId = src.optInt(KEY_PROFILE_TAB)
-                    profileTab = ProfileTab.values().find { it.id == tabId } ?: ProfileTab.Status
+                    profileTab = ProfileTab.entries.find { it.id == tabId } ?: ProfileTab.Status
                 }
 
                 ColumnType.LIST_MEMBER,

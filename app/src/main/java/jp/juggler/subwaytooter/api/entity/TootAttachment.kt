@@ -2,7 +2,13 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.pref.PrefB
-import jp.juggler.util.data.*
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.addTo
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.clip
+import jp.juggler.util.data.mayUri
+import jp.juggler.util.data.notBlank
+import jp.juggler.util.data.notEmpty
 
 @Suppress("LongParameterList")
 class TootAttachment private constructor(
@@ -104,6 +110,9 @@ class TootAttachment private constructor(
             return null
         }
 
+        /**
+         * アプリ内でencodeJson()した情報をデコードする
+         */
         fun tootAttachmentJson(
             src: JsonObject,
         ): TootAttachment {
@@ -147,8 +156,9 @@ class TootAttachment private constructor(
                 else -> TootAttachmentType.Unknown
             }
             val url = src.string("url")
-            val description = src.string("comment")?.notBlank()
-                ?: src.string("name")?.notBlank()
+            val description = (src.string("comment")?.notBlank()
+                ?: src.string("name")?.notBlank())
+                ?.takeIf { it != "null" }
             return TootAttachment(
                 blurhash = null,
                 description = description,
@@ -189,7 +199,7 @@ class TootAttachment private constructor(
 
             return TootAttachment(
                 blurhash = src.string("blurhash"),
-                description = src.string("name"),
+                description = src.string("name")?.notBlank()?.takeIf { it != "null" },
                 focusX = parseFocusValue(focus, "x"),
                 focusY = parseFocusValue(focus, "y"),
                 id = EntityId.DEFAULT,
@@ -219,7 +229,8 @@ class TootAttachment private constructor(
 
             return TootAttachment(
                 blurhash = src.string("blurhash"),
-                description = src.string("description"),
+                description = src.string("description")
+                    ?.notBlank()?.takeIf { it != "null" },
                 focusX = parseFocusValue(focus, "x"),
                 focusY = parseFocusValue(focus, "y"),
                 id = EntityId.mayDefault(src.string("id")),

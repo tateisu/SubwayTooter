@@ -10,5 +10,4 @@ enum class PollingState(val desc: String) {
     CheckServerInformation("check server information"),
     CheckPushSubscription("check push subscription"),
     CheckNotifications("check notifications"),
-    ;
 }

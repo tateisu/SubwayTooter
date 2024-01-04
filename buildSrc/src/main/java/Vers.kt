@@ -17,7 +17,7 @@ object Vers {
     const val conscryptVersion = "2.5.2"
     const val coreKtxVersion = "1.12.0"
     const val desugarLibVersion = "2.0.3"
-    const val detektVersion = "1.23.1"
+    const val detektVersion = "1.23.4"
     const val emoji2Version = "1.4.0"
     const val glideVersion = "4.15.1"
     const val junitVersion = "4.13.2"

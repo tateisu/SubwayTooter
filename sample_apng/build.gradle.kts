@@ -31,7 +31,7 @@ android {
             )
         }
     }
-    packagingOptions {
+    packaging {
         resources {
             pickFirsts += listOf("META-INF/atomicfu.kotlin_module")
         }

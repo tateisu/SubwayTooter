@@ -8,7 +8,6 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.WordTrieTree
 import jp.juggler.util.log.LogCategory
@@ -433,7 +432,7 @@ suspend fun Column.loadFilter2(client: TootApiClient): List<TootFilter>? {
     if (getFilterContext() == null) return null
     var result = client.request(ApiPath.PATH_FILTERS_V2)
     if (result?.response?.code == 404) {
-        result = client.request(ApiPath.PATH_FILTERS)
+        result = client.request(ApiPath.PATH_FILTERS_V1)
     }
 
     val jsonArray = result?.jsonArray ?: return null
@@ -511,7 +510,7 @@ fun reloadFilter(context: Context, accessInfo: SavedAccount) {
         ) { client ->
             var result = client.request(ApiPath.PATH_FILTERS_V2)
             if (result?.response?.code == 404) {
-                result = client.request(ApiPath.PATH_FILTERS)
+                result = client.request(ApiPath.PATH_FILTERS_V1)
             }
             result?.jsonArray?.let {
                 resultList = TootFilter.parseList(it)

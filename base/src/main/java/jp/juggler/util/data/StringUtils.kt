@@ -9,7 +9,8 @@ import android.util.Base64
 import androidx.core.net.toUri
 import jp.juggler.util.log.LogCategory
 import java.security.MessageDigest
-import java.util.*
+import java.util.LinkedList
+import java.util.Locale
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 

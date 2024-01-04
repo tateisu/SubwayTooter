@@ -7,7 +7,12 @@ import jp.juggler.util.log.showError
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.ProgressDialogEx
 import jp.juggler.util.ui.dismissSafe
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -68,6 +73,7 @@ fun AppCompatActivity.launchAndShowError(
             is CancellationException -> {
                 log.w(errorCaption ?: "launchAndShowError cancelled.")
             }
+
             else -> {
                 log.e(ex, errorCaption ?: "launchAndShowError failed.")
                 showError(ex, errorCaption)

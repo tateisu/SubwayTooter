@@ -392,18 +392,17 @@ fun AppCompatActivity.setNavigationBack(toolbar: Toolbar) =
         onBackPressedDispatcher.onBackPressed()
     }
 
+val Float.roundPixels get() = (this + 0.5f).toInt()
+fun DisplayMetrics.dpFloat(src: Float) = (density * src)
+fun DisplayMetrics.dpFloat(src: Int) = (density * src.toFloat())
+fun Resources.dpFloat(src: Float) = displayMetrics.dpFloat(src)
+fun Resources.dpFloat(src: Int) = displayMetrics.dpFloat(src)
+fun Context.dpFloat(src: Float) = resources.dpFloat(src)
+fun Context.dpFloat(src: Int) = resources.dpFloat(src)
 
-val Float.roundPixels get()= (this+0.5f).toInt()
-fun DisplayMetrics.dpFloat(src:Float) = (density* src)
-fun DisplayMetrics.dpFloat(src:Int) = (density*src.toFloat())
-fun Resources.dpFloat(src:Float) = displayMetrics.dpFloat(src)
-fun Resources.dpFloat(src:Int) = displayMetrics.dpFloat(src)
-fun Context.dpFloat(src:Float) = resources.dpFloat(src)
-fun Context.dpFloat(src:Int) = resources.dpFloat(src)
-
-fun DisplayMetrics.dp(src:Float) = (density* src).roundPixels
-fun DisplayMetrics.dp(src:Int) = (density*src.toFloat()).roundPixels
-fun Resources.dp(src:Float) = displayMetrics.dp(src)
-fun Resources.dp(src:Int) = displayMetrics.dp(src)
-fun Context.dp(src:Float) = resources.dp(src)
-fun Context.dp(src:Int) = resources.dp(src)
+fun DisplayMetrics.dp(src: Float) = (density * src).roundPixels
+fun DisplayMetrics.dp(src: Int) = (density * src.toFloat()).roundPixels
+fun Resources.dp(src: Float) = displayMetrics.dp(src)
+fun Resources.dp(src: Int) = displayMetrics.dp(src)
+fun Context.dp(src: Float) = resources.dp(src)
+fun Context.dp(src: Int) = resources.dp(src)

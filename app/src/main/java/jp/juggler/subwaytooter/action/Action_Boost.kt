@@ -7,11 +7,17 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.reloadAccountSetting
 import jp.juggler.subwaytooter.actmain.showColumnMatchAccount
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.ApiTask
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.errorApiResult
+import jp.juggler.subwaytooter.api.runApiTask2
+import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.findStatus
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
@@ -27,6 +33,7 @@ import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
+import kotlinx.coroutines.CancellationException
 import kotlin.math.max
 
 private class BoostImpl(
@@ -46,8 +53,6 @@ private class BoostImpl(
     // Mastodonは非公開トゥートをブーストできるのは本人だけ
     private val isPrivateToot = accessInfo.isMastodon &&
             statusArg.visibility == TootVisibility.PrivateFollowers
-
-    private var bConfirmed = false
 
     private fun preCheck(): Boolean {
 
@@ -73,15 +78,15 @@ private class BoostImpl(
         } else {
             val (result, status) = client.syncStatus(accessInfo, statusArg)
             when {
+                result == null -> throw CancellationException()
                 status == null -> errorApiResult(result)
-                status.reblogged -> errorApiResult(getString(R.string.already_boosted))
+                status.reblogged -> errorApiResult(R.string.already_boosted)
                 else -> status
             }
         }
 
     // ブースト結果をUIに反映させる
-    private fun after(result: TootApiResult?, newStatus: TootStatus?, unrenoteId: EntityId?) {
-        result ?: return // cancelled.
+    private fun after(newStatus: TootStatus?, unrenoteId: EntityId?) {
         when {
             // Misskeyでunrenoteに成功した
             unrenoteId != null -> {
@@ -143,36 +148,20 @@ private class BoostImpl(
                 }
                 callback()
             }
-
-            else -> activity.showToast(true, result.error)
         }
     }
 
-    suspend fun boostApi(client: TootApiClient, targetStatus: TootStatus): TootApiResult? =
-        if (accessInfo.isMisskey) {
-            if (!bSet) {
-                val myRenoteId = targetStatus.myRenoteId ?: errorApiResult("missing renote id.")
-
-                client.request(
-                    "/api/notes/delete",
-                    accessInfo.putMisskeyApiToken().apply {
-                        put("noteId", myRenoteId.toString())
-                        put("renoteId", targetStatus.id.toString())
-                    }.toPostRequestBuilder()
-                )?.also {
-                    if (it.response?.code == 204) {
-                        resultUnrenoteId = myRenoteId
-                    }
-                }
-            } else {
-                client.request(
+    suspend fun boostApi(client: TootApiClient, targetStatus: TootStatus): TootApiResult =
+        when {
+            accessInfo.isMisskey -> when {
+                // misskey, create renote
+                bSet -> client.requestOrThrow(
                     "/api/notes/create",
                     accessInfo.putMisskeyApiToken().apply {
                         put("renoteId", targetStatus.id.toString())
                     }.toPostRequestBuilder()
-                )?.also { result ->
-                    val jsonObject = result.jsonObject
-                    if (jsonObject != null) {
+                ).apply {
+                    jsonObject?.let { jsonObject ->
                         val outerStatus =
                             parser.status(jsonObject.jsonObject("createdNote") ?: jsonObject)
                         val innerStatus = outerStatus?.reblog ?: outerStatus
@@ -184,73 +173,84 @@ private class BoostImpl(
                         resultStatus = innerStatus
                     }
                 }
-            }
-        } else {
-            val b = JsonObject().apply {
-                if (visibility != null) put("visibility", visibility.strMastodon)
-            }.toPostRequestBuilder()
+                // misskey, delete renote
+                else -> {
+                    val myRenoteId = targetStatus.myRenoteId
+                        ?: error("missing renote id.")
 
-            client.request(
+                    client.requestOrThrow(
+                        "/api/notes/delete",
+                        accessInfo.putMisskeyApiToken().apply {
+                            put("noteId", myRenoteId.toString())
+                            put("renoteId", targetStatus.id.toString())
+                        }.toPostRequestBuilder()
+                    ).apply {
+                        if (response?.code == 204) {
+                            resultUnrenoteId = myRenoteId
+                        }
+                    }
+                }
+            }
+            // mastodon, reblog or unreblog
+            else -> client.requestOrThrow(
                 "/api/v1/statuses/${targetStatus.id}/${if (bSet) "reblog" else "unreblog"}",
-                b
-            )?.also { result ->
+                requestBuilder = JsonObject().apply {
+                    if (visibility != null) put("visibility", visibility.strMastodon)
+                }.toPostRequestBuilder()
+            ).apply {
                 // reblogはreblogを表すStatusを返す
                 // unreblogはreblogしたStatusを返す
-                val s = parser.status(result.jsonObject)
+                val s = parser.status(jsonObject)
                 resultStatus = s?.reblog ?: s
             }
         }
 
-    fun run() {
-        activity.launchAndShowError {
-            if (!preCheck()) return@launchAndShowError
+    fun run() = activity.launchAndShowError {
+        if (!preCheck()) return@launchAndShowError
 
-            if (!bConfirmed) {
-                activity.confirm(
-                    activity.getString(
-                        when {
-                            !bSet -> R.string.confirm_unboost_from
-                            isPrivateToot -> R.string.confirm_boost_private_from
-                            visibility == TootVisibility.PrivateFollowers -> R.string.confirm_private_boost_from
-                            else -> R.string.confirm_boost_from
-                        },
-                        daoAcctColor.getNickname(accessInfo)
-                    ),
-                    when (bSet) {
-                        true -> accessInfo.confirmBoost
-                        else -> accessInfo.confirmUnboost
-                    }
-                ) { newConfirmEnabled ->
-                    when (bSet) {
-                        true -> accessInfo.confirmBoost = newConfirmEnabled
-                        else -> accessInfo.confirmUnboost = newConfirmEnabled
-                    }
-                    daoSavedAccount.save(accessInfo)
-                    activity.reloadAccountSetting(accessInfo)
-                }
+        val confirmMessage = activity.getString(
+            when {
+                !bSet -> R.string.confirm_unboost_from
+                isPrivateToot -> R.string.confirm_boost_private_from
+                visibility == TootVisibility.PrivateFollowers ->
+                    R.string.confirm_private_boost_from
+
+                else -> R.string.confirm_boost_from
+            },
+            daoAcctColor.getNickname(accessInfo)
+        )
+
+        activity.confirm(
+            message = confirmMessage,
+            isConfirmEnabled = when (bSet) {
+                true -> accessInfo.confirmBoost
+                else -> accessInfo.confirmUnboost
             }
+        ) { newConfirmEnabled ->
+            when (bSet) {
+                true -> accessInfo.confirmBoost = newConfirmEnabled
+                else -> accessInfo.confirmUnboost = newConfirmEnabled
+            }
+            daoSavedAccount.save(accessInfo)
+            activity.reloadAccountSetting(accessInfo)
+        }
 
-            // ブースト表示を更新中にする
-            activity.appState.setBusyBoost(accessInfo, statusArg)
-            activity.showColumnMatchAccount(accessInfo)
-
-            val result =
-                activity.runApiTask(
-                    accessInfo,
-                    progressStyle = ApiTask.PROGRESS_NONE
-                ) { client ->
-                    try {
-                        val targetStatus = syncStatus(client)
-                        boostApi(client, targetStatus)
-                    } catch (ex: TootApiResultException) {
-                        ex.result
-                    }
-                }
+        // ブースト表示を更新中にする
+        activity.appState.setBusyBoost(accessInfo, statusArg)
+        activity.showColumnMatchAccount(accessInfo)
+        try {
+            activity.runApiTask2(
+                accessInfo = accessInfo,
+                progressStyle = ApiTask.PROGRESS_NONE
+            ) { client ->
+                boostApi(client, syncStatus(client))
+            }
+            // カラムデータの書き換え
+            after(resultStatus, resultUnrenoteId)
+        } finally {
             // 更新中状態をリセット
             activity.appState.resetBusyBoost(accessInfo, statusArg)
-            // カラムデータの書き換え
-            after(result, resultStatus, resultUnrenoteId)
-            // result == null の場合でも更新中表示の解除が必要になる
+            // 失敗やキャンセルの場合でも表示を更新する
             activity.showColumnMatchAccount(accessInfo)
         }
     }

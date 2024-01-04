@@ -3,8 +3,20 @@ package jp.juggler.subwaytooter.util
 import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResultException
+import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.InstanceType
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootPollsType
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootTag
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.errorApiResult
+import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.getVisibilityString
@@ -14,19 +26,31 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.table.daoTagHistory
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.AppDispatchers
-import jp.juggler.util.data.*
-import jp.juggler.util.log.*
+import jp.juggler.util.data.JsonArray
+import jp.juggler.util.data.JsonException
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.digestSHA256Hex
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.data.jsonObjectOf
+import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.toJsonArray
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.log.errorString
+import jp.juggler.util.log.showToast
 import jp.juggler.util.network.MEDIA_TYPE_JSON
 import jp.juggler.util.network.toPostRequestBuilder
-import jp.juggler.util.ui.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.util.*
+import java.util.Calendar
+import java.util.GregorianCalendar
+import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicBoolean
 
 sealed class PostResult {
@@ -110,36 +134,22 @@ class PostImpl(
         }
     }
 
-    private var resultStatus: TootStatus? = null
-    private var resultCredentialTmp: TootAccount? = null
-    private var resultScheduledStatusSucceeded = false
-
-    private suspend fun getCredential(
-        client: TootApiClient,
-        parser: TootParser,
-    ): TootApiResult? {
-        return client.request("/api/v1/accounts/verify_credentials")?.also { result ->
-            resultCredentialTmp = parser.account(result.jsonObject)
-        }
-    }
-
+    // may null, not error
     private suspend fun getWebVisibility(
         client: TootApiClient,
         parser: TootParser,
         instance: TootInstance,
-    ): TootVisibility? {
-        if (account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) return null
-
-        val r2 = getCredential(client, parser)
-
-        val credentialTmp = resultCredentialTmp
-            ?: errorApiResult(r2)
-
-        val privacy = credentialTmp.source?.privacy
-            ?: errorApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
-
-        return TootVisibility.parseMastodon(privacy)
-        // may null, not error
+    ): TootVisibility? = when {
+        account.isMisskey -> null
+        instance.versionGE(TootInstance.VERSION_1_6) -> null
+        else -> {
+            val privacy = parser.account(
+                client.requestOrThrow("/api/v1/accounts/verify_credentials")
+                    .jsonObject
+            )?.source?.privacy
+                ?: error(R.string.cant_get_web_setting_visibility)
+            TootVisibility.parseMastodon(privacy)
+        }
     }
 
     private fun checkServerHasVisibility(
@@ -150,12 +160,7 @@ class PostImpl(
     ) {
         if (actual != extra || checkFun(instance)) return
         val strVisibility = extra.getVisibilityString(account.isMisskey)
-        errorApiResult(
-            activity.getString(
-                R.string.server_has_no_support_of_visibility,
-                strVisibility
-            )
-        )
+        activity.errorApiResult(R.string.server_has_no_support_of_visibility, strVisibility)
     }
 
     private suspend fun checkVisibility(
@@ -205,7 +210,6 @@ class PostImpl(
             "/api/v1/scheduled_statuses/$scheduledId",
             Request.Builder().delete()
         )
-
         log.d("delete old scheduled status. result=$result")
         delay(2000L)
     }
@@ -271,15 +275,13 @@ class PostImpl(
 
                 // Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
                 if (bNSFW) {
-                    val r = client.request(
+                    client.requestOrThrow(
                         "/api/drive/files/update",
                         account.putMisskeyApiToken().apply {
                             put("fileId", a.id.toString())
                             put("isSensitive", true)
-                        }
-                            .toPostRequestBuilder()
+                        }.toPostRequestBuilder()
                     )
-                    if (r == null || r.error != null) errorApiResult(r)
                 }
             }
             if (array.isNotEmpty()) json["mediaIds"] = array
@@ -361,7 +363,7 @@ class PostImpl(
 
         if (scheduledAt != 0L) {
             if (!instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
-                errorApiResult(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
+                activity.errorApiResult(R.string.scheduled_status_requires_mastodon_2_7_0)
             }
             // UTCの日時を渡す
             val c = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"))
@@ -505,32 +507,28 @@ class PostImpl(
         isPosting.set(true)
         return try {
             withContext(AppDispatchers.MainImmediate) {
-                activity.runApiTask(
-                    account,
+                val (status, scheduled) = activity.runApiTask2(
+                    accessInfo = account,
                     progressSetup = { it.setCanceledOnTouchOutside(false) },
                 ) { client ->
-                    val (instance, ri) = TootInstance.get(client)
-                    instance ?: return@runApiTask ri
+                    val instance = TootInstance.getOrThrow(client)
 
                     if (instance.instanceType == InstanceType.Pixelfed) {
                         // Pixelfedは返信に画像を添付できない
                         if (inReplyToId != null && attachmentList != null) {
-                            return@runApiTask TootApiResult(getString(R.string.pixelfed_does_not_allow_reply_with_media))
+                            error(R.string.pixelfed_does_not_allow_reply_with_media)
                         }
 
                         // Pixelfedの返信ではない投稿は画像添付が必須
                         if (inReplyToId == null && attachmentList == null) {
-                            return@runApiTask TootApiResult(getString(R.string.pixelfed_does_not_allow_post_without_media))
+                            error(R.string.pixelfed_does_not_allow_post_without_media)
                         }
                     }
 
                     val parser = TootParser(this, account)
 
-                    this@PostImpl.visibilityChecked = try {
-                        checkVisibility(client, parser, instance) // may null
-                    } catch (ex: TootApiResultException) {
-                        return@runApiTask ex.result
-                    }
+                    // may null
+                    this@PostImpl.visibilityChecked = checkVisibility(client, parser, instance)
 
                     if (redraftStatusId != null) {
                         // 元の投稿を削除する
@@ -546,10 +544,8 @@ class PostImpl(
                         } else {
                             encodeParamsMastodon(json, instance)
                         }
-                    } catch (ex: TootApiResultException) {
-                        return@runApiTask ex.result
                     } catch (ex: JsonException) {
-                        log.e(ex, "status encoding failed.")
+                        throw IllegalStateException("encoding status failed.", ex)
                     }
 
                     val bodyString = json.toString()
@@ -567,67 +563,66 @@ class PostImpl(
                         }
                     }
 
-                    when {
-                        account.isMisskey -> client.request(
-                            "/api/notes/create",
-                            createRequestBuilder()
-                        )
+                    try {
+                        val result = when {
+                            account.isMisskey -> client.requestOrThrow(
+                                "/api/notes/create",
+                                createRequestBuilder()
+                            )
 
-                        editStatusId != null -> client.request(
-                            "/api/v1/statuses/$editStatusId",
-                            createRequestBuilder(isPut = true)
-                        )
+                            editStatusId != null -> client.requestOrThrow(
+                                "/api/v1/statuses/$editStatusId",
+                                createRequestBuilder(isPut = true)
+                            )
 
-                        else -> client.request(
-                            "/api/v1/statuses",
-                            createRequestBuilder()
-                        )
-                    }?.also { result ->
+                            else -> client.requestOrThrow(
+                                "/api/v1/statuses",
+                                createRequestBuilder()
+                            )
+                        }
                         val jsonObject = result.jsonObject
+                        when {
 
-                        if (scheduledAt != 0L && jsonObject != null) {
-                            // {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
-                            resultScheduledStatusSucceeded = true
-                            return@runApiTask result
-                        } else {
-                            val status = parser.status(
-                                when {
-                                    account.isMisskey -> jsonObject?.jsonObject("createdNote")
-                                        ?: jsonObject
+                            // 予約投稿完了
+                            scheduledAt != 0L && jsonObject != null -> {
+                                // {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
+                                Pair(null, true)
+                            }
 
-                                    else -> jsonObject
-                                }
-                            )
-                            resultStatus = status
-                            saveStatusTag(status)
+                            // 通常投稿完了
+                            else -> {
+                                val status = parser.status(
+                                    when {
+                                        account.isMisskey ->
+                                            jsonObject?.jsonObject("createdNote")
+                                                ?: jsonObject
+
+                                        else -> jsonObject
+                                    }
+                                )?.also { saveStatusTag(it) }
+                                Pair(status, false)
+                            }
+                        }
+                    } catch (ex: TootApiResultException) {
+                        val errorMessage = ex.result?.error
+                        when {
+                            errorMessage.isNullOrBlank() -> error("(missing error detail)")
+
+                            errorMessage.contains("HTTP 404") ->
+                                error("$ex\n${activity.getString(R.string.post_404_desc)}")
+
+                            else -> throw ex
                         }
                     }
-                }.let { result ->
-                    if (result == null) throw CancellationException()
+                }
+                when {
+                    scheduled -> PostResult.Scheduled(account)
 
-                    val status = resultStatus
-                    when {
-                        resultScheduledStatusSucceeded ->
-                            PostResult.Scheduled(account)
+                    status == null ->
+                        error("can't parse status in API result.")
 
-                        // 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-                        status != null ->
-                            PostResult.Normal(account, status)
-
-                        else -> {
-                            val e = result.error
-                            error(
-                                when {
-                                    e.isNullOrBlank() -> "(missing error detail)"
-
-                                    e.contains("HTTP 404") ->
-                                        "$e\n${activity.getString(R.string.post_404_desc)}"
-
-                                    else -> e
-                                }
-                            )
-                        }
-                    }
+                    // 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
+                    else -> PostResult.Normal(account, status)
                 }
             }
         } finally {

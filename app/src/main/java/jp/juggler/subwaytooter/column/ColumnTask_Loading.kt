@@ -10,7 +10,6 @@ import jp.juggler.subwaytooter.columnviewholder.scrollToTop
 import jp.juggler.subwaytooter.notification.injectData
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.OpenSticker
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.runOnMainLooper
 import jp.juggler.util.coroutine.runOnMainLooperDelayed
 import jp.juggler.util.data.JsonArray
@@ -902,7 +901,7 @@ class ColumnTask_Loading(
     suspend fun getFilterList(client: TootApiClient): TootApiResult? {
         var result = client.request(ApiPath.PATH_FILTERS_V2)
         if (result?.response?.code == 404) {
-            result = client.request(ApiPath.PATH_FILTERS)
+            result = client.request(ApiPath.PATH_FILTERS_V1)
         }
         if (result != null) {
             val src = TootFilter.parseList(result.jsonArray)

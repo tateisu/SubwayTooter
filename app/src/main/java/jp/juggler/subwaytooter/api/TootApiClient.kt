@@ -5,16 +5,42 @@ import android.net.Uri
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.auth.AuthBase
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootResults
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
-import jp.juggler.util.data.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.SimpleHttpClient
+import jp.juggler.subwaytooter.util.SimpleHttpClientImpl
+import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.util.data.CharacterGroup
+import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.asciiRegex
+import jp.juggler.util.data.decodeJsonArray
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.decodePercent
+import jp.juggler.util.data.decodeUTF8
+import jp.juggler.util.data.encodePercent
+import jp.juggler.util.data.groupEx
+import jp.juggler.util.data.letNotEmpty
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPostRequestBuilder
-import okhttp3.*
+import kotlinx.coroutines.CancellationException
+import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import okhttp3.internal.closeQuietly
 
 class TootApiClient(
@@ -358,7 +384,7 @@ class TootApiClient(
 
     //////////////////////////////////////////////////////////////////////
 
-//    fun request(
+    //    fun request(
 //        path: String,
 //        request_builder: Request.Builder = Request.Builder()
 //    ): TootApiResult? {
@@ -390,6 +416,26 @@ class TootApiClient(
 //        }
 //    }
 //
+
+    /**
+     * requestと同じだがキャンセルやエラー発生時に例外を投げる
+     */
+    suspend fun requestOrThrow(
+        path: String,
+        requestBuilder: Request.Builder = Request.Builder(),
+        forceAccessToken: String? = null,
+    ): TootApiResult {
+        val result = request(
+            path = path,
+            requestBuilder = requestBuilder,
+            forceAccessToken = forceAccessToken,
+        )
+        when {
+            result == null -> throw CancellationException()
+            !result.error.isNullOrBlank() -> errorApiResult(result)
+            else -> return result
+        }
+    }
 
     suspend fun request(
         path: String,

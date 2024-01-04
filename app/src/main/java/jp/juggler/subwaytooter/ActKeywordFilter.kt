@@ -247,7 +247,7 @@ class ActKeywordFilter : AppCompatActivity() {
 
                 if (result?.response?.code == 404) {
                     // try v1
-                    result = client.request("${ApiPath.PATH_FILTERS}/$filterId")
+                    result = client.request("${ApiPath.PATH_FILTERS_V1}/$filterId")
                     result?.jsonObject?.let {
                         try {
                             resultFilter = TootFilter(it)
@@ -391,12 +391,12 @@ class ActKeywordFilter : AppCompatActivity() {
         return runApiTask(account) { client ->
             if (filterId == null) {
                 client.request(
-                    ApiPath.PATH_FILTERS,
+                    ApiPath.PATH_FILTERS_V1,
                     params.toPostRequestBuilder()
                 )
             } else {
                 client.request(
-                    "${ApiPath.PATH_FILTERS}/$filterId",
+                    "${ApiPath.PATH_FILTERS_V1}/$filterId",
                     params.toRequestBody().toPut()
                 )
             }

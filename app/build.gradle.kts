@@ -164,7 +164,7 @@ dependencies {
     implementation(project(":anko"))
     implementation(fileTree(mapOf("dir" to "src/main/libs", "include" to arrayOf("*.aar"))))
 
-    "fcmImplementation"("com.google.firebase:firebase-messaging:23.3.1")
+    "fcmImplementation"("com.google.firebase:firebase-messaging:23.4.0")
     "fcmImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Vers.kotlinxCoroutinesVersion}")
 
     // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
@@ -272,25 +272,26 @@ tasks.register<Detekt>("detektAll") {
         )
     )
 
-//    val kotlinFiles = "**/*.kt"
-//    include(kotlinFiles)
-
     val resourceFiles = "**/resources/**"
     val buildFiles = "**/build/**"
     exclude(resourceFiles, buildFiles)
     reports {
-        val buildDir = layout.buildDirectory
-
-        xml.required.set(false)
-        xml.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.xml"))
-
-        html.required.set(true)
-        html.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.html"))
+        fun reportLocationByExt(ext: String) =
+            layout.buildDirectory
+                .file("reports/detekt/st-${name}.$ext")
+                .get()
+                .asFile
 
         txt.required.set(true)
-        txt.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.txt"))
+        txt.outputLocation.set(reportLocationByExt("txt"))
 
-        sarif.required.set(true)
-        sarif.outputLocation.set(file("$buildDir/reports/detekt/st-${name}.sarif"))
+        html.required.set(true)
+        html.outputLocation.set(reportLocationByExt("html"))
+
+        xml.required.set(false)
+        xml.outputLocation.set(reportLocationByExt("xml"))
+
+        sarif.required.set(false)
+        sarif.outputLocation.set(reportLocationByExt("sarif"))
     }
 }

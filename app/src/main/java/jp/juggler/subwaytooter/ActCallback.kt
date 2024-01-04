@@ -79,12 +79,14 @@ class ActCallback : AppCompatActivity() {
                             sharedIntent.set(intent)
                         }
                     }
+
                     forbidUriFromApp(intent) -> {
                         // last_uriをクリアする
                         lastUri.set(null)
                         // ダイアログを閉じるまで画面遷移しない
                         return
                     }
+
                     else -> {
                         val uri = intent.data
                         if (uri != null) {
@@ -123,7 +125,7 @@ class ActCallback : AppCompatActivity() {
             val type = src.type
 
             if (type.isMediaMimeType()) {
-                when (action){
+                when (action) {
                     Intent.ACTION_VIEW -> {
                         src.data?.let { uriOriginal ->
                             try {
@@ -137,6 +139,7 @@ class ActCallback : AppCompatActivity() {
                             }
                         }
                     }
+
                     Intent.ACTION_SEND -> {
                         var uri = src.getStreamUriExtra()
                             ?: return src // text/plainの場合
@@ -152,7 +155,8 @@ class ActCallback : AppCompatActivity() {
                             log.e(ex, "remake failed. src=$src")
                         }
                     }
-                    Intent.ACTION_SEND_MULTIPLE  -> {
+
+                    Intent.ACTION_SEND_MULTIPLE -> {
                         val listUri = src.getStreamUriListExtra()
                             ?: return null
                         val listDst = ArrayList<Uri>()

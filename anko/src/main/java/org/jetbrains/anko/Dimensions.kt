@@ -34,20 +34,14 @@ const val XXXHDPI: Int = DisplayMetrics.DENSITY_XXXHIGH
 
 const val MAXDPI: Int = 0xfffe
 
-//returns dip(dp) dimension value in pixels
-fun Context.dip(value: Int): Int = (value * resources.displayMetrics.density).toInt()
-fun Context.dip(value: Float): Int = (value * resources.displayMetrics.density).toInt()
+// sp to px
+fun DisplayMetrics.sp(sp: Float) =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, this)
 
-private fun Float.roundSize() = when {
-    this < 0f -> (this - 0.5f).toInt()
-    else -> (this + 0.5f).toInt()
-}
+fun Context.sp(sp: Float) = resources.displayMetrics.sp(sp)
+fun Context.sp(sp: Int) = resources.displayMetrics.sp(sp.toFloat())
 
-//return sp dimension value in pixels
-fun DisplayMetrics.sp(value: Float): Int =
-    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, value, this)
-        .roundSize()
-
+// px to sp
 fun DisplayMetrics.px2sp(px: Float): Float = when {
     Build.VERSION.SDK_INT >= 34 ->
         TypedValue.deriveDimension(TypedValue.COMPLEX_UNIT_SP, px, this)
@@ -60,10 +54,12 @@ fun DisplayMetrics.px2sp(px: Float): Float = when {
     }
 }
 
-fun Context.sp(value: Float) = resources.displayMetrics.sp(value)
-fun Context.sp(value: Int): Int = resources.displayMetrics.sp(value.toFloat())
 fun Context.px2sp(px: Float): Float = resources.displayMetrics.px2sp(px)
 fun Context.px2sp(px: Int): Float = resources.displayMetrics.px2sp(px.toFloat())
+
+// dip to px
+fun Context.dip(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+fun Context.dip(value: Float): Int = (value * resources.displayMetrics.density).toInt()
 
 //converts px value into dip or sp
 fun Context.px2dip(px: Int): Float = px.toFloat() / resources.displayMetrics.density
@@ -73,8 +69,8 @@ fun Context.dimen(@DimenRes resource: Int): Int = resources.getDimensionPixelSiz
 //the same for nested DSL components
 fun AnkoContext<*>.dip(value: Int): Int = ctx.dip(value)
 fun AnkoContext<*>.dip(value: Float): Int = ctx.dip(value)
-fun AnkoContext<*>.sp(value: Int): Int = ctx.sp(value)
-fun AnkoContext<*>.sp(value: Float): Int = ctx.sp(value)
+fun AnkoContext<*>.sp(value: Int) = ctx.sp(value)
+fun AnkoContext<*>.sp(value: Float) = ctx.sp(value)
 fun AnkoContext<*>.px2dip(px: Int): Float = ctx.px2dip(px)
 fun AnkoContext<*>.px2sp(px: Int): Float = ctx.px2sp(px)
 fun AnkoContext<*>.dimen(@DimenRes resource: Int): Int = ctx.dimen(resource)
@@ -82,8 +78,8 @@ fun AnkoContext<*>.dimen(@DimenRes resource: Int): Int = ctx.dimen(resource)
 //the same for the views
 fun View.dip(value: Int): Int = context.dip(value)
 fun View.dip(value: Float): Int = context.dip(value)
-fun View.sp(value: Int): Int = context.sp(value)
-fun View.sp(value: Float): Int = context.sp(value)
+fun View.sp(value: Int) = context.sp(value)
+fun View.sp(value: Float) = context.sp(value)
 fun View.px2dip(px: Int): Float = context.px2dip(px)
 fun View.px2sp(px: Int): Float = context.px2sp(px)
 fun View.dimen(@DimenRes resource: Int): Int = context.dimen(resource)
@@ -91,8 +87,8 @@ fun View.dimen(@DimenRes resource: Int): Int = context.dimen(resource)
 //the same for Fragments
 fun Fragment.dip(value: Int): Int = requireContext().dip(value)
 fun Fragment.dip(value: Float): Int = requireContext().dip(value)
-fun Fragment.sp(value: Int): Int = requireContext().sp(value)
-fun Fragment.sp(value: Float): Int = requireContext().sp(value)
+fun Fragment.sp(value: Int) = requireContext().sp(value)
+fun Fragment.sp(value: Float) = requireContext().sp(value)
 fun Fragment.px2dip(px: Int): Float = requireContext().px2dip(px)
 fun Fragment.px2sp(px: Int): Float = requireContext().px2sp(px)
 fun Fragment.dimen(@DimenRes resource: Int): Int = requireContext().dimen(resource)

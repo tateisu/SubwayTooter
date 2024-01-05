@@ -1,7 +1,9 @@
 package jp.juggler.util.os
 
 import android.content.Context
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 
 /**
  * インストゥルメントテストのContextは
@@ -18,3 +20,6 @@ val Context.applicationContextSafe: Context
 
 fun Context.error(@StringRes resId: Int, vararg args: Any?): Nothing =
     error(getString(resId, *args))
+
+fun Context.resDrawable(@DrawableRes resId: Int) =
+    ContextCompat.getDrawable(this, resId)

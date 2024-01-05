@@ -23,7 +23,7 @@ import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.DlgContextMenuBinding
 import jp.juggler.subwaytooter.dialog.DlgListMember
-import jp.juggler.subwaytooter.dialog.DlgQRCode
+import jp.juggler.subwaytooter.dialog.dialogQrCode
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -446,11 +446,11 @@ internal class DlgContextMenu(
             else -> whoHost
         }
 
-    private fun updateGroup(btn: Button, group: View, toggle: Boolean = false): Boolean {
+    private fun updateGroup(btn: Button, group: View, toggle: Boolean = false) {
 
         if (btn.visibility != View.VISIBLE) {
             group.vg(false)
-            return true
+            return
         }
 
         when {
@@ -463,51 +463,57 @@ internal class DlgContextMenu(
             else -> btn.setOnClickListener(this)
         }
 
-        val iconId = if (group.visibility == View.VISIBLE) {
-            R.drawable.ic_arrow_drop_up
-        } else {
-            R.drawable.ic_arrow_drop_down
+        val iconId = when (group.visibility) {
+            View.VISIBLE -> R.drawable.ic_arrow_drop_up
+            else -> R.drawable.ic_arrow_drop_down
         }
 
         val iconColor = activity.attrColor(R.attr.colorTimeSmall)
         val drawable = createColoredDrawable(activity, iconId, iconColor, 1f)
         btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
-        return true
     }
 
-    private fun onClickUpdateGroup(v: View): Boolean = when (v.id) {
-        R.id.btnGroupStatusCrossAccount -> updateGroup(
-            views.btnGroupStatusCrossAccount,
-            views.llGroupStatusCrossAccount,
-            toggle = true
-        )
+    private fun onClickUpdateGroup(v: View): Boolean {
+        when (v.id) {
+            R.id.btnGroupStatusCrossAccount -> updateGroup(
+                views.btnGroupStatusCrossAccount,
+                views.llGroupStatusCrossAccount,
+                toggle = true
+            )
 
-        R.id.btnGroupUserCrossAccount -> updateGroup(
-            views.btnGroupUserCrossAccount,
-            views.llGroupUserCrossAccount,
-            toggle = true
-        )
-        R.id.btnGroupStatusAround -> updateGroup(
-            views.btnGroupStatusAround,
-            views.llGroupStatusAround,
-            toggle = true
-        )
-        R.id.btnGroupStatusByMe -> updateGroup(
-            views.btnGroupStatusByMe,
-            views.llGroupStatusByMe,
-            toggle = true
-        )
-        R.id.btnGroupStatusExtra -> updateGroup(
-            views.btnGroupStatusExtra,
-            views.llGroupStatusExtra,
-            toggle = true
-        )
-        R.id.btnGroupUserExtra -> updateGroup(
-            views.btnGroupUserExtra,
-            views.llGroupUserExtra,
-            toggle = true
-        )
-        else -> false
+            R.id.btnGroupUserCrossAccount -> updateGroup(
+                views.btnGroupUserCrossAccount,
+                views.llGroupUserCrossAccount,
+                toggle = true
+            )
+
+            R.id.btnGroupStatusAround -> updateGroup(
+                views.btnGroupStatusAround,
+                views.llGroupStatusAround,
+                toggle = true
+            )
+
+            R.id.btnGroupStatusByMe -> updateGroup(
+                views.btnGroupStatusByMe,
+                views.llGroupStatusByMe,
+                toggle = true
+            )
+
+            R.id.btnGroupStatusExtra -> updateGroup(
+                views.btnGroupStatusExtra,
+                views.llGroupStatusExtra,
+                toggle = true
+            )
+
+            R.id.btnGroupUserExtra -> updateGroup(
+                views.btnGroupUserExtra,
+                views.llGroupUserExtra,
+                toggle = true
+            )
+
+            else -> return false
+        }
+        return true
     }
 
     private fun ActMain.onClickUserAndStatus(
@@ -552,16 +558,18 @@ internal class DlgContextMenu(
                 accessInfo,
                 who
             )
+
             R.id.btnNickname -> clickNicknameCustomize(accessInfo, who)
-            R.id.btnAccountQrCode -> DlgQRCode.open(
-                activity,
-                whoRef.decoded_display_name,
-                who.getUserUrl()
+            R.id.btnAccountQrCode -> activity.dialogQrCode(
+                message = whoRef.decoded_display_name,
+                url = who.getUserUrl()
             )
+
             R.id.btnDomainBlock -> clickDomainBlock(accessInfo, who)
             R.id.btnOpenTimeline -> who.apiHost.valid()?.let { timelineLocal(pos, it) }
             R.id.btnDomainTimeline -> who.apiHost.valid()
                 ?.let { timelineDomain(pos, accessInfo, it) }
+
             R.id.btnAvatarImage -> openAvatarImage(who)
             R.id.btnQuoteName -> quoteName(who)
             R.id.btnHideBoost -> userSetShowBoosts(accessInfo, who, false)
@@ -574,6 +582,7 @@ internal class DlgContextMenu(
                 column,
                 getUserApiHost()
             )
+
             R.id.btnEndorse -> userEndorsement(accessInfo, who, !relation.endorsed)
             R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
             R.id.btnOpenAccountInAdminWebUi -> openBrowser("https://${accessInfo.apiHost.ascii}/admin/accounts/${who.id}")
@@ -612,6 +621,7 @@ internal class DlgContextMenu(
                 accessInfo,
                 status
             )
+
             R.id.btnQuoteUrlStatus -> openPost(status.url?.notEmpty())
             R.id.btnShareUrlStatus -> shareText(status.url?.notEmpty())
             R.id.btnConversationMute -> conversationMute(accessInfo, status)
@@ -622,6 +632,7 @@ internal class DlgContextMenu(
                 accessInfo,
                 status
             )
+
             else -> return false
         }
         return true
@@ -675,10 +686,12 @@ internal class DlgContextMenu(
                     dialog.dismissSafe()
                     followFromAnotherAccount(pos, accessInfo, who)
                 }
+
                 R.id.btnProfile -> {
                     dialog.dismissSafe()
                     userProfileFromAnotherAccount(pos, accessInfo, who)
                 }
+
                 R.id.btnSendMessage -> {
                     dialog.dismissSafe()
                     mentionFromAnotherAccount(accessInfo, who)

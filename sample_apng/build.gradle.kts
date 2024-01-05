@@ -40,6 +40,7 @@ android {
     compileOptions {
         sourceCompatibility = Vers.javaSourceCompatibility
         targetCompatibility = Vers.javaTargetCompatibility
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {

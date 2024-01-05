@@ -31,7 +31,7 @@ allprojects {
         google()
         mavenCentral()
 
-        // com.github.androidmads:QRGenerator
+        // alexzhirkevich/custom-qr-generator
         maven(url = "https://jitpack.io")
     }
 }

@@ -289,18 +289,14 @@ fun createResizedBitmap(
             // 出力用Bitmap作成
             val dst = Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
             try {
-                if (dst == null) {
-                    context.showToast(false, "bitmap creation failed.")
-                } else {
-                    val canvas = Canvas(dst)
-                    val paint = Paint()
-                    paint.isFilterBitmap = true
-                    canvas.drawBitmap(sourceBitmap, matrix, paint)
-                    log.d("createResizedBitmap: resized to ${dstSizeInt.x}x${dstSizeInt.y}")
-                    return dst
-                }
+                val canvas = Canvas(dst)
+                val paint = Paint()
+                paint.isFilterBitmap = true
+                canvas.drawBitmap(sourceBitmap, matrix, paint)
+                log.d("createResizedBitmap: resized to ${dstSizeInt.x}x${dstSizeInt.y}")
+                return dst
             } catch (ex: Throwable) {
-                dst?.recycle()
+                dst.recycle()
                 throw ex
             }
         } finally {

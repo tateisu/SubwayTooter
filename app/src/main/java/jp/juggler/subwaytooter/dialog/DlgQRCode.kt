@@ -1,95 +1,101 @@
 package jp.juggler.subwaytooter.dialog
 
-import android.annotation.SuppressLint
 import android.app.Dialog
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import androidmads.library.qrgenearator.QRGContents
-import androidmads.library.qrgenearator.QRGEncoder
-import jp.juggler.subwaytooter.ActMain
+import android.graphics.drawable.ColorDrawable
+import androidx.appcompat.app.AppCompatActivity
+import com.github.alexzhirkevich.customqrgenerator.QrData
+import com.github.alexzhirkevich.customqrgenerator.vector.QrCodeDrawable
+import com.github.alexzhirkevich.customqrgenerator.vector.createQrVectorOptions
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorBallShape
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorColor
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorFrameShape
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogoPadding
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorLogoShape
+import com.github.alexzhirkevich.customqrgenerator.vector.style.QrVectorPixelShape
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.coroutine.launchProgress
+import jp.juggler.subwaytooter.databinding.DlgQrCodeBinding
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.coroutine.withProgress
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.os.resDrawable
+import kotlinx.coroutines.withContext
 
-@SuppressLint("StaticFieldLeak")
-object DlgQRCode {
+private val log = LogCategory("DlgQRCode")
 
-    private val log = LogCategory("DlgQRCode")
+val UInt.int get() = toInt()
 
-    internal interface QrCodeCallback {
-        fun onQrCode(bitmap: Bitmap?)
-    }
-
-    private fun makeQrCode(
-        activity: ActMain,
-        size: Int,
-        url: String,
-        callback: QrCodeCallback,
+fun AppCompatActivity.dialogQrCode(
+    message: CharSequence,
+    url: String,
+) = launchAndShowError("dialogQrCode failed.") {
+    val drawable = withProgress(
+        caption = getString(R.string.generating_qr_code),
     ) {
-        activity.launchProgress(
-            "making QR code",
-            progressInitializer = {
-                it.setMessageEx(activity.getString(R.string.generating_qr_code))
-            },
-            doInBackground = {
-                try {
-                    QRGEncoder(
-                        /* data */ url,
-                        /* bundle */ null,
-                        QRGContents.Type.TEXT,
-                        /* dimension */ size,
-                    ).apply {
-                        // 背景色
-                        colorBlack = Color.WHITE
-                        // 図柄の色
-                        colorWhite = Color.BLACK
-                    }.bitmap
-                } catch (ex: Throwable) {
-                    log.e(ex, "QR generation failed.")
-                    null
-                }
-            },
-            afterProc = {
-                if (it != null) callback.onQrCode(it)
-            },
-        )
+        withContext(AppDispatchers.DEFAULT) {
+            QrCodeDrawable(data = QrData.Url(url), options = qrCodeOptions())
+        }
+    }
+    val dialog = Dialog(this@dialogQrCode)
+
+    val views = DlgQrCodeBinding.inflate(layoutInflater).apply {
+        btnCancel.setOnClickListener { dialog.cancel() }
+        ivQrCode.setImageDrawable(drawable)
+        tvMessage.text = message
+        tvUrl.text = "[ $url ]" // なぜか素のURLだと@以降が表示されない
     }
 
-    fun open(activity: ActMain, message: CharSequence, url: String) {
+    dialog.apply {
+        setContentView(views.root)
+        setCancelable(true)
+        setCanceledOnTouchOutside(true)
+        show()
+    }
+}
 
-        val size = (0.5f + 240f * activity.density).toInt()
-        makeQrCode(activity, size, url, object : QrCodeCallback {
+private fun AppCompatActivity.qrCodeOptions() = createQrVectorOptions {
+    background {
+        drawable = ColorDrawable(Color.WHITE)
+    }
 
-            @SuppressLint("InflateParams")
-            override fun onQrCode(bitmap: Bitmap?) {
+    padding = .125f
 
-                val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_qr_code, null, false)
-                val dialog = Dialog(activity)
-                dialog.setContentView(viewRoot)
-                dialog.setCancelable(true)
-                dialog.setCanceledOnTouchOutside(true)
-
-                var tv = viewRoot.findViewById<TextView>(R.id.tvMessage)
-                tv.text = message
-
-                tv = viewRoot.findViewById(R.id.tvUrl)
-                tv.text = "[ $url ]" // なぜか素のURLだと@以降が表示されない
-
-                val iv = viewRoot.findViewById<ImageView>(R.id.ivQrCode)
-                iv.setImageBitmap(bitmap)
-
-                dialog.setOnDismissListener {
-                    iv.setImageDrawable(null)
-                    bitmap?.recycle()
-                }
-
-                viewRoot.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
-
-                dialog.show()
-            }
-        })
+    logo {
+        drawable = resDrawable(R.drawable.qr_code_center)
+        size = .25f
+        shape = QrVectorLogoShape.Default
+        padding = QrVectorLogoPadding.Natural(.1f)
+    }
+    shapes {
+        // 市松模様のドット
+        darkPixel = QrVectorPixelShape.RoundCorners(.5f)
+        // 3隅の真ん中の大きめドット
+        ball = QrVectorBallShape.RoundCorners(.25f)
+        // 3隅の枠
+        frame = QrVectorFrameShape.RoundCorners(.25f)
+    }
+    colors {
+        val cobalt = 0xFF0088FFU.int
+        val cobaltDark = 0xFF004488U.int
+        // 市松模様のドット
+        dark = QrVectorColor.Solid(cobaltDark)
+        // 3隅の真ん中の大きめドット
+        ball = QrVectorColor.RadialGradient(
+            colors = listOf(
+                0f to cobaltDark,
+                1f to cobalt,
+            ),
+            radius = 2f,
+        )
+        // 3隅の枠
+        frame = QrVectorColor.LinearGradient(
+            colors = listOf(
+                0f to cobaltDark,
+                1f to cobalt,
+            ),
+            orientation = QrVectorColor.LinearGradient
+                .Orientation.Vertical
+        )
     }
 }

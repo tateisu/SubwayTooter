@@ -30,8 +30,8 @@
         tools:ignore="SmallSp"/>
 
     <ImageView
-        android:layout_width="240dp"
-        android:layout_height="240dp"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
         android:layout_margin="10dp"
         android:scaleType="centerInside"
         android:id="@+id/ivQrCode"

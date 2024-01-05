@@ -20,7 +20,7 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
-import jp.juggler.util.media.MovideResizeMode
+import jp.juggler.util.media.MovieResizeMode
 import jp.juggler.util.media.MovieResizeConfig
 import jp.juggler.util.media.ResizeConfig
 import jp.juggler.util.media.ResizeType
@@ -928,7 +928,7 @@ class SavedAccount(
 
     fun getMovieResizeConfig() =
         MovieResizeConfig(
-            mode = MovideResizeMode.fromInt(movieTranscodeMode),
+            mode = MovieResizeMode.fromInt(movieTranscodeMode),
             limitBitrate = movieTranscodeBitrate.toLongOrNull()
                 ?.takeIf { it >= 100_000L } ?: 2_000_000L,
             limitFrameRate = movieTranscodeFramerate.toIntOrNull()

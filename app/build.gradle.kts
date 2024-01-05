@@ -150,7 +150,6 @@ android {
     }
 }
 
-
 dependencies {
 
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
@@ -172,7 +171,8 @@ dependencies {
     implementation("com.github.UnifiedPush:android-connector:2.1.1")
     implementation("jp.wasabeef:glide-transformations:4.3.0")
 
-    implementation("com.github.androidmads:QRGenerator:1.0.1")
+    // implementation("com.github.androidmads:QRGenerator:1.0.1")
+    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2")
 
     val apng4AndroidVersion = "2.25.0"
     implementation("com.github.penfeizhou.android.animation:apng:$apng4AndroidVersion")

@@ -27,19 +27,19 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility =Vers. javaSourceCompatibility
-                targetCompatibility =Vers.javaTargetCompatibility
+        sourceCompatibility = Vers.javaSourceCompatibility
+        targetCompatibility = Vers.javaTargetCompatibility
     }
 
     kotlin {
         jvmToolchain(Vers.kotlinJvmToolchain)
     }
     kotlinOptions {
-        jvmTarget =Vers. kotlinJvmTarget
+        jvmTarget = Vers.kotlinJvmTarget
     }
     tasks.withType<KotlinCompile>().configureEach {
         kotlinOptions {
-            jvmTarget =Vers. kotlinJvmTarget
+            jvmTarget = Vers.kotlinJvmTarget
         }
     }
 }

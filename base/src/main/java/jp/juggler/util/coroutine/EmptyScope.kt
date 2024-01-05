@@ -84,6 +84,30 @@ fun AppCompatActivity.launchAndShowError(
 
 /////////////////////////////////////////////////////////////////////////
 
+suspend fun <T:Any?> AppCompatActivity.withProgress(
+    caption:String,
+    progressInitializer: suspend (ProgressDialogEx) -> Unit = {},
+    block: suspend (progress :ProgressDialogEx)->T,
+):T {
+    val activity = this
+    var progress: ProgressDialogEx? = null
+    try {
+        progress = ProgressDialogEx(activity)
+        progress.setCancelable(true)
+        progress.isIndeterminateEx = true
+        progress.setMessageEx(caption)
+        progressInitializer(progress)
+        progress.show()
+        return supervisorScope {
+            val task = async(AppDispatchers.MainImmediate) { block(progress) }
+            progress.setOnCancelListener { task.cancel() }
+            task.await()
+        }
+    } finally {
+        progress?.dismissSafe()
+    }
+}
+
 fun <T : Any?> AppCompatActivity.launchProgress(
     caption: String,
     doInBackground: suspend CoroutineScope.(ProgressDialogEx) -> T,

@@ -96,11 +96,7 @@ suspend fun transcodeAudio(
             }
             val transformer = Transformer.Builder(context)
                 .setLooper(looper)
-                .setTransformationRequest(
-                    TransformationRequest.Builder()
-                        .setAudioMimeType(encodeMimeType)
-                        .build()
-                )
+                .setAudioMimeType(encodeMimeType)
                 .addListener(transformerListener)
                 .build()
 

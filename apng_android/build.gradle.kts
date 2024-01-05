@@ -45,7 +45,7 @@ android {
     }
 
     kotlin {
-        jvmToolchain( Vers.kotlinJvmToolchain)
+        jvmToolchain(Vers.kotlinJvmToolchain)
     }
     kotlinOptions {
         jvmTarget = Vers.kotlinJvmTarget
@@ -64,6 +64,8 @@ repositories {
 dependencies {
     api(project(":apng"))
     implementation(project(":base"))
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
 
     testImplementation("junit:junit:${Vers.junitVersion}")
 }

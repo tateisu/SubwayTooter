@@ -153,23 +153,28 @@ fun AppCompatActivity.overrideActivityTransitionCompat(
     @AnimRes animEnter: Int,
     @AnimRes animExit: Int,
 ) {
-    if (Build.VERSION.SDK_INT >= 34) {
-        overrideActivityTransition(
-            when (overrideType) {
-                TransitionOverrideType.Open ->
-                    AppCompatActivity.OVERRIDE_TRANSITION_OPEN
+    when {
+        Build.VERSION.SDK_INT >= 34 -> {
+            overrideActivityTransition(
+                when (overrideType) {
+                    TransitionOverrideType.Open ->
+                        AppCompatActivity.OVERRIDE_TRANSITION_OPEN
 
-                TransitionOverrideType.Close ->
-                    AppCompatActivity.OVERRIDE_TRANSITION_CLOSE
-            },
-            animEnter,
-            animExit
-        )
-    } else {
-        overridePendingTransition(
-            animEnter,
-            animExit,
-        )
+                    TransitionOverrideType.Close ->
+                        AppCompatActivity.OVERRIDE_TRANSITION_CLOSE
+                },
+                animEnter,
+                animExit
+            )
+        }
+
+        else -> {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(
+                animEnter,
+                animExit,
+            )
+        }
     }
 }
 

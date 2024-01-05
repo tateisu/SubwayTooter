@@ -12,7 +12,6 @@ import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
-import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.VideoEncoderSettings
 import com.otaliastudios.transcoder.Transcoder
@@ -23,9 +22,14 @@ import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.clip
 import jp.juggler.util.log.LogCategory
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,19 +42,19 @@ import kotlin.math.sqrt
 
 private val log = LogCategory("MovieUtils")
 
-enum class MovideResizeMode(val int: Int) {
+enum class MovieResizeMode(val int: Int) {
     Auto(0),
     No(1),
     Always(2),
     ;
 
     companion object {
-        fun fromInt(i: Int) = values().find { it.int == i } ?: Auto
+        fun fromInt(i: Int) = entries.find { it.int == i } ?: Auto
     }
 }
 
 data class MovieResizeConfig(
-    val mode: MovideResizeMode,
+    val mode: MovieResizeMode,
     val limitFrameRate: Int,
     val limitBitrate: Long,
     val limitSquarePixels: Int,
@@ -78,9 +82,9 @@ data class MovieResizeConfig(
 
     // トランスコードをスキップする判定
     fun isTranscodeRequired(info: VideoInfo) = when (mode) {
-        MovideResizeMode.No -> false
-        MovideResizeMode.Always -> true
-        MovideResizeMode.Auto ->
+        MovieResizeMode.No -> false
+        MovieResizeMode.Always -> true
+        MovieResizeMode.Auto ->
             info.squarePixels > limitSquarePixels ||
                     (info.actualBps ?: 0).toFloat() > limitBitrate.toFloat() * 1.5f ||
                     (info.frameRatio == null || info.frameRatio < 1f || info.frameRatio > limitFrameRate)
@@ -129,9 +133,9 @@ suspend fun transcodeVideoMedia3Transformer(
     withContext(AppDispatchers.MainImmediate) {
 
         when (resizeConfig.mode) {
-            MovideResizeMode.No -> return@withContext inFile
-            MovideResizeMode.Always -> Unit
-            MovideResizeMode.Auto -> {
+            MovieResizeMode.No -> return@withContext inFile
+            MovieResizeMode.Always -> Unit
+            MovieResizeMode.Auto -> {
                 if (!resizeConfig.isTranscodeRequired(info)) {
                     log.i("transcodeVideoMedia3Transformer: transcode not required.")
                     return@withContext inFile
@@ -189,12 +193,6 @@ suspend fun transcodeVideoMedia3Transformer(
             }
         }.build()
 
-        val request = TransformationRequest.Builder().apply {
-            setVideoMimeType(MimeTypes.VIDEO_H264)
-            setAudioMimeType(MimeTypes.AUDIO_AAC)
-            // ビットレートがないな…
-        }.build()
-
         // 完了検知
         val completed = AtomicBoolean(false)
         val error = AtomicReference<Throwable>(null)
@@ -226,9 +224,11 @@ suspend fun transcodeVideoMedia3Transformer(
         // 開始
         val transformer = Transformer.Builder(context).apply {
             setEncoderFactory(encoderFactory)
-            setTransformationRequest(request)
+            setAudioMimeType(MimeTypes.AUDIO_AAC)
+            setVideoMimeType(MimeTypes.VIDEO_H264)
             addListener(listener)
         }.build()
+
         transformer.start(editedMediaItem, outFile.canonicalPath)
 
         // 完了まで待機しつつ、定期的に進捗コールバックを呼ぶ
@@ -265,9 +265,9 @@ suspend fun transcodeVideo(
         }
 
         when (resizeConfig.mode) {
-            MovideResizeMode.No -> return@withContext inFile
-            MovideResizeMode.Always -> Unit
-            MovideResizeMode.Auto -> {
+            MovieResizeMode.No -> return@withContext inFile
+            MovieResizeMode.Always -> Unit
+            MovieResizeMode.Auto -> {
                 if (info.squarePixels <= resizeConfig.limitSquarePixels &&
                     (info.actualBps ?: 0).toFloat() <= resizeConfig.limitBitrate * 1.5f &&
                     (info.frameRatio?.toInt() ?: 0) <= resizeConfig.limitFrameRate

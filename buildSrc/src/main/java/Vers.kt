@@ -36,6 +36,8 @@ object Vers {
     const val koinVersion = "3.5.0"
     const val kotlinTestVersion = kotlinVersion // "1.9.22"
     const val kotlinxCoroutinesVersion = "1.7.3"
+    const val kotlinxSerializationPluginVersion = kotlinVersion
+    const val kotlinxSerializationLibVersion = "1.6.2"
     const val kspVersion = "$kotlinVersion-1.0.16"
     const val lifecycleVersion = "2.6.2"
     const val materialVersion = "1.11.0"

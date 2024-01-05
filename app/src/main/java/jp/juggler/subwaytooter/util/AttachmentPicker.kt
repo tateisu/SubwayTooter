@@ -4,6 +4,11 @@ import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.dialog.actionsDialog
@@ -17,8 +22,8 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.isOk
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
 class AttachmentPicker(
@@ -33,9 +38,8 @@ class AttachmentPicker(
 
     // callback after media selected
     interface Callback {
-        fun onPickAttachment(uri: Uri, mimeType: String? = null)
-        fun onPickCustomThumbnail(pa: PostAttachment, src: GetContentResultEntry)
-        fun resumeCustomThumbnailTarget(id: String?): PostAttachment?
+        suspend fun onPickAttachment(uri: Uri, mimeType: String? = null)
+        suspend fun onPickCustomThumbnail(attachmentId: String?, src: GetContentResultEntry)
     }
 
     // actions after permission granted
@@ -43,7 +47,6 @@ class AttachmentPicker(
 
     @Serializable
     data class States(
-
         @Serializable(with = UriSerializer::class)
         var uriCameraImage: Uri? = null,
 
@@ -55,59 +58,48 @@ class AttachmentPicker(
     ////////////////////////////////////////////////////////////////////////
     // activity result handlers
 
-    private val arAttachmentChooser = ActivityResultHandler(log) { r ->
+    private var pickThumbnailLauncher: ActivityResultLauncher<PickVisualMediaRequest>? = null
+
+    private val pickThumbnailCallback = ActivityResultCallback<Uri?> {
+        handleThumbnailResult(it)
+    }
+
+    private var pickVisualMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>? = null
+
+    private val pickVisualMediaCallback = ActivityResultCallback<List<Uri>?> { uris ->
+        uris?.handleGetContentResult(activity.contentResolver)?.pickAll()
+    }
+
+    private val prPickAudio = permissionSpecAudioPicker.requester { openAudioPicker() }
+    private val arPickAudio = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
         r.data?.handleGetContentResult(activity.contentResolver)?.pickAll()
     }
 
-    private val arCamera = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) {
-            // 失敗したら DBからデータを削除
-            states.uriCameraImage?.let { uri ->
-                activity.contentResolver.delete(uri, null, null)
-                states.uriCameraImage = null
-            }
-        } else {
-            // 画像のURL
-            when (val uri = r.data?.data ?: states.uriCameraImage) {
-                null -> activity.showToast(false, "missing image uri")
-                else -> callback.onPickAttachment(uri)
-            }
-        }
-    }
+    private val prCamera = permissionSpecCamera.requester { openStillCamera() }
+    private val arCamera = ActivityResultHandler(log) { handleCameraResult(it) }
 
-    private val arCapture = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data?.data?.let { callback.onPickAttachment(it) }
-    }
-
-    private val arCustomThumbnail = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data
-            ?.handleGetContentResult(activity.contentResolver)
-            ?.firstOrNull()
-            ?.let {
-                callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)?.let { pa ->
-                    callback.onPickCustomThumbnail(pa, it)
-                }
-            }
-    }
-
-    private val prPickAttachment = permissionSpecImagePicker.requester { openPicker() }
-
-    private val prPickCustomThumbnail = permissionSpecImagePicker.requester {
-        callback.resumeCustomThumbnailTarget(states.customThumbnailTargetId)
-            ?.let { openCustomThumbnail(it) }
-    }
+    private val prCapture = permissionSpecCapture.requester { openPicker() }
+    private val arCapture = ActivityResultHandler(log) { handleCaptureResult(it) }
 
     init {
         // must register all ARHs before onStart
-        prPickAttachment.register(activity)
-        prPickCustomThumbnail.register(activity)
-        arAttachmentChooser.register(activity)
+        prPickAudio.register(activity)
+        arPickAudio.register(activity)
+
+        prCamera.register(activity)
         arCamera.register(activity)
+
         arCapture.register(activity)
-        arCustomThumbnail.register(activity)
+
+        pickVisualMediaLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.PickMultipleVisualMedia(4),
+            pickVisualMediaCallback,
+        )
+        pickThumbnailLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.PickVisualMedia(),
+            pickThumbnailCallback,
+        )
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -132,21 +124,17 @@ class AttachmentPicker(
     ////////////////////////////////////////////////////////////////////////
 
     fun openPicker() {
-        if (!prPickAttachment.checkOrLaunch()) return
         activity.run {
             launchAndShowError {
                 actionsDialog {
-                    action(getString(R.string.pick_images)) {
-                        openAttachmentChooser(R.string.pick_images, "image/*", "video/*")
-                    }
-                    action(getString(R.string.pick_videos)) {
-                        openAttachmentChooser(R.string.pick_videos, "video/*")
+                    action(getString(R.string.pick_images_or_video)) {
+                        openVisualMediaPicker()
                     }
                     action(getString(R.string.pick_audios)) {
-                        openAttachmentChooser(R.string.pick_audios, "audio/*")
+                        openAudioPicker()
                     }
                     action(getString(R.string.image_capture)) {
-                        performCamera()
+                        openStillCamera()
                     }
                     action(getString(R.string.video_capture)) {
                         performCapture(
@@ -165,43 +153,74 @@ class AttachmentPicker(
         }
     }
 
-    private fun openAttachmentChooser(titleId: Int, vararg mimeTypes: String) {
-        // SAFのIntentで開く
-        try {
-            val intent = intentGetContent(true, activity.getString(titleId), mimeTypes)
-            arAttachmentChooser.launch(intent)
-        } catch (ex: Throwable) {
-            log.e(ex, "openAttachmentChooser failed.")
-            activity.showToast(ex, "openAttachmentChooser failed.")
+    private fun openVisualMediaPicker() {
+        (pickVisualMediaLauncher
+            ?: error("pickVisualMediaLauncher is not registered."))
+            .launch(
+                PickVisualMediaRequest(
+                    ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                )
+            )
+    }
+
+    private fun openAudioPicker() {
+        if (!prPickAudio.checkOrLaunch()) return
+        activity.launchAndShowError {
+            val intent = intentGetContent(
+                allowMultiple = true,
+                caption = activity.getString(R.string.pick_audios),
+                mimeTypes = arrayOf("audio/*"),
+            )
+            arPickAudio.launch(intent)
         }
     }
 
-    private fun performCamera() {
-        try {
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.TITLE, "${System.currentTimeMillis()}.jpg")
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            }
-
-            val newUri =
-                activity.contentResolver.insert(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    values
-                )
-                    .also { states.uriCameraImage = it }
+    private fun openStillCamera() {
+        if (!prCamera.checkOrLaunch()) return
+        activity.launchAndShowError {
+            val newUri = activity.contentResolver.insert(
+                /* url = */
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                /* values = */
+                ContentValues().apply {
+                    put(MediaStore.Images.Media.TITLE, "${System.currentTimeMillis()}.jpg")
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                },
+            ).also { states.uriCameraImage = it }
 
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
                 putExtra(MediaStore.EXTRA_OUTPUT, newUri)
             }
 
             arCamera.launch(intent)
-        } catch (ex: Throwable) {
-            log.e(ex, "performCamera failed.")
-            activity.showToast(ex, "performCamera failed.")
         }
     }
 
-    private fun performCapture(action: String, errorCaption: String) {
+    private fun handleCameraResult(r: ActivityResult) {
+        activity.launchAndShowError {
+            when {
+                r.isOk -> when (val uri = r.data?.data ?: states.uriCameraImage) {
+                    null -> activity.showToast(false, "missing image uri")
+                    else -> callback.onPickAttachment(uri)
+                }
+                // 失敗したら DBからデータを削除
+                else -> states.uriCameraImage?.let { uri ->
+                    activity.contentResolver.delete(uri, null, null)
+                    states.uriCameraImage = null
+                }
+            }
+        }
+    }
+
+    /**
+     * 動画や音声をキャプチャする
+     * - Uriは呼び出し先に任せっきり
+     */
+    private fun performCapture(
+        action: String,
+        errorCaption: String,
+    ) {
+        if (!prCapture.checkOrLaunch()) return
         try {
             arCapture.launch(Intent(action))
         } catch (ex: Throwable) {
@@ -210,28 +229,46 @@ class AttachmentPicker(
         }
     }
 
-    private fun ArrayList<GetContentResultEntry>.pickAll() =
-        forEach { callback.onPickAttachment(it.uri, it.mimeType) }
+    private fun handleCaptureResult(r: ActivityResult) {
+        activity.launchAndShowError {
+            if (r.isOk) {
+                when (val uri = r.data?.data) {
+                    null -> activity.showToast(false, "missing media uri")
+                    else -> callback.onPickAttachment(uri)
+                }
+            }
+        }
+    }
+
+    private fun List<GetContentResultEntry>.pickAll() {
+        activity.launchAndShowError {
+            forEach { callback.onPickAttachment(it.uri, it.mimeType) }
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////////
     // Mastodon's custom thumbnail
 
-    fun openCustomThumbnail(pa: PostAttachment) {
-        try {
-            states.customThumbnailTargetId = pa.attachment?.id?.toString()
-                ?: return
-            if (!prPickCustomThumbnail.checkOrLaunch()) return
-            // SAFのIntentで開く
-            arCustomThumbnail.launch(
-                intentGetContent(
-                    false,
-                    activity.getString(R.string.pick_images),
-                    arrayOf("image/*")
+    fun openCustomThumbnail(attachmentId: String?) {
+        states.customThumbnailTargetId = attachmentId
+            ?: error("attachmentId is null")
+        activity.launchAndShowError {
+            (pickThumbnailLauncher
+                ?: error("pickThumbnailLauncher is not registered."))
+                .launch(
+                    PickVisualMediaRequest(
+                        ActivityResultContracts.PickVisualMedia.ImageOnly,
+                    )
                 )
-            )
-        } catch (ex: Throwable) {
-            log.e(ex, "openCustomThumbnail failed.")
-            activity.showToast(ex, "openCustomThumbnail failed.")
+        }
+    }
+
+    private fun handleThumbnailResult(uri: Uri?) {
+        uri ?: return
+        activity.launchAndShowError {
+            listOf(uri).handleGetContentResult(activity.contentResolver).firstOrNull()?.let {
+                callback.onPickCustomThumbnail(states.customThumbnailTargetId, it)
+            }
         }
     }
 }

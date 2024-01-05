@@ -320,6 +320,7 @@
     <string name="color_and_background">Color and Background…</string>
     <string name="column_background">Column background</string>
     <string name="pick_image">Pick an image</string>
+    <string name="pick_images_or_video">Pick images or video…</string>
     <string name="pick_images">Pick image(s)…</string>
     <string name="pick_videos">Pick video(s)…</string>
     <string name="pick_audios">Choose audio file(s)…</string>

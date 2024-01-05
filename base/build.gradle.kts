@@ -105,7 +105,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Vers.kotlinxCoroutinesVersion}")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinxCoroutinesVersion}")
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:${Vers.kotlinxSerializationLibVersion}")
     api("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
 
     //non-OSS dependency api "androidx.media3:media3-cast:$media3Version"

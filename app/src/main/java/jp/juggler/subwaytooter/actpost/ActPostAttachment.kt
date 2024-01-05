@@ -269,7 +269,9 @@ fun ActPost.performAttachmentClick(idx: Int) {
                     TootAttachmentType.GIFV,
                     TootAttachmentType.Video,
                     -> action(getString(R.string.custom_thumbnail)) {
-                        attachmentPicker.openCustomThumbnail(pa)
+                        attachmentPicker.openCustomThumbnail(
+                            attachmentId = pa.attachment?.id?.toString()
+                        )
                     }
 
                     else -> Unit

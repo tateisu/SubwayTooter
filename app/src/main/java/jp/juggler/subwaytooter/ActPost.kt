@@ -22,7 +22,6 @@ import jp.juggler.subwaytooter.actpost.CompletionHelper
 import jp.juggler.subwaytooter.actpost.FeaturedTagCache
 import jp.juggler.subwaytooter.actpost.addAttachment
 import jp.juggler.subwaytooter.actpost.applyMushroomText
-import jp.juggler.subwaytooter.actpost.rearrangeAttachments
 import jp.juggler.subwaytooter.actpost.onPickCustomThumbnailImpl
 import jp.juggler.subwaytooter.actpost.onPostAttachmentCompleteImpl
 import jp.juggler.subwaytooter.actpost.openAttachment
@@ -33,6 +32,7 @@ import jp.juggler.subwaytooter.actpost.performAttachmentClick
 import jp.juggler.subwaytooter.actpost.performMore
 import jp.juggler.subwaytooter.actpost.performPost
 import jp.juggler.subwaytooter.actpost.performSchedule
+import jp.juggler.subwaytooter.actpost.rearrangeAttachments
 import jp.juggler.subwaytooter.actpost.removeReply
 import jp.juggler.subwaytooter.actpost.resetSchedule
 import jp.juggler.subwaytooter.actpost.restoreState
@@ -82,7 +82,7 @@ import java.util.concurrent.ConcurrentHashMap
 class ActPost : AppCompatActivity(),
     View.OnClickListener,
     PostAttachment.Callback,
-    MyClickableSpanHandler, AttachmentPicker.Callback {
+    MyClickableSpanHandler {
 
     companion object {
         private val log = LogCategory("ActPost")
@@ -215,7 +215,21 @@ class ActPost : AppCompatActivity(),
         appState = App1.getAppState(this)
         handler = appState.handler
         attachmentUploader = AttachmentUploader(this, handler)
-        attachmentPicker = AttachmentPicker(this, this)
+        attachmentPicker = AttachmentPicker(this, object : AttachmentPicker.Callback {
+            override suspend fun onPickAttachment(uri: Uri, mimeType: String?) {
+                addAttachment(uri, mimeType)
+            }
+
+            override suspend fun onPickCustomThumbnail(
+                attachmentId: String?,
+                src: GetContentResultEntry,
+            ) {
+                val pa = attachmentList.find { it.attachment?.id?.toString() == attachmentId }
+                    ?: error("missing attachment for attachmentId=$attachmentId")
+                onPickCustomThumbnailImpl(pa, src)
+            }
+        })
+
         density = resources.displayMetrics.density
         arMushroom.register(this)
 
@@ -315,6 +329,7 @@ class ActPost : AppCompatActivity(),
             R.id.btnFeaturedTag -> completionHelper.openFeaturedTagList(
                 featuredTagCache[account?.acct?.ascii ?: ""]?.list
             )
+
             R.id.btnAttachmentsRearrange -> rearrangeAttachments()
             R.id.ibSchedule -> performSchedule()
             R.id.ibScheduleReset -> resetSchedule()
@@ -337,10 +352,6 @@ class ActPost : AppCompatActivity(),
         openBrowser(span.linkInfo.url)
     }
 
-    override fun onPickAttachment(uri: Uri, mimeType: String?) {
-        addAttachment(uri, mimeType)
-    }
-
     override fun onPostAttachmentProgress() {
         launchIO {
             try {
@@ -353,15 +364,6 @@ class ActPost : AppCompatActivity(),
 
     override fun onPostAttachmentComplete(pa: PostAttachment) {
         onPostAttachmentCompleteImpl(pa)
-    }
-
-    override fun resumeCustomThumbnailTarget(id: String?): PostAttachment? {
-        id ?: return null
-        return attachmentList.find { it.attachment?.id?.toString() == id }
-    }
-
-    override fun onPickCustomThumbnail(pa: PostAttachment, src: GetContentResultEntry) {
-        onPickCustomThumbnailImpl(pa, src)
     }
 
     fun initUI() {

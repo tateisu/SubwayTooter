@@ -1,5 +1,6 @@
 package jp.juggler.util.data
 
+import android.content.ClipData
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -283,28 +284,26 @@ data class GetContentResultEntry(
     var time: Long? = null,
 )
 
-// returns list of pair of uri and mime-type.
-fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<GetContentResultEntry> {
-    val urlList = ArrayList<GetContentResultEntry>()
-    // 単一選択
-    data?.let {
-        val mimeType = try {
-            type ?: contentResolver.getType(it)
-        } catch (ex: Throwable) {
-            log.w(ex, "contentResolver.getType failed. uri=$it")
-            null
-        }
-        urlList.add(GetContentResultEntry(it, mimeType))
+fun MutableList<GetContentResultEntry>.addNoDuplicate(
+    contentResolver: ContentResolver,
+    uri: Uri?,
+    type: String? = null,
+) {
+    uri ?: return
+    if (any { it.uri == uri }) return
+    val mimeType = try {
+        type ?: contentResolver.getType(uri)
+    } catch (ex: Throwable) {
+        log.w(ex, "contentResolver.getType failed. uri=$uri")
+        return
     }
-    // 複数選択
-    this.clipData?.let { clipData ->
-        for (uri in (0 until clipData.itemCount).mapNotNull { clipData.getItemAt(it)?.uri }) {
-            if (urlList.none { it.uri == uri }) {
-                urlList.add(GetContentResultEntry(uri))
-            }
-        }
-    }
-    urlList.forEach {
+    add(GetContentResultEntry(uri, mimeType))
+}
+
+fun List<GetContentResultEntry>.grantPermissions(
+    contentResolver: ContentResolver,
+) {
+    forEach {
         try {
             contentResolver.takePersistableUriPermission(
                 it.uri,
@@ -313,5 +312,29 @@ fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<G
         } catch (_: Throwable) {
         }
     }
-    return urlList
 }
+
+// returns list of pair of uri and mime-type.
+fun List<Uri>.handleGetContentResult(contentResolver: ContentResolver) =
+    buildList {
+        this@handleGetContentResult.forEach {
+            addNoDuplicate(contentResolver, it)
+        }
+        grantPermissions(contentResolver)
+    }
+
+val ClipData.uris
+    get() = (0 until itemCount).mapNotNull { getItemAt(it)?.uri }
+
+// returns list of pair of uri and mime-type.
+fun Intent.handleGetContentResult(contentResolver: ContentResolver) =
+    buildList {
+        // 単一選択
+        addNoDuplicate(contentResolver, data, type)
+
+        // 複数選択
+        clipData?.uris?.forEach {
+            addNoDuplicate(contentResolver, it)
+        }
+        grantPermissions(contentResolver)
+    }

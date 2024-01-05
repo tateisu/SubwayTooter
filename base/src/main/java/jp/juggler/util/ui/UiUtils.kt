@@ -378,6 +378,9 @@ val AppCompatActivity.isLiveActivity: Boolean
 val ActivityResult.isNotOk
     get() = Activity.RESULT_OK != resultCode
 
+val ActivityResult.isOk
+    get() = Activity.RESULT_OK == resultCode
+
 /**
  * Ringtone pickerの処理結果のUriまたはnull
  */

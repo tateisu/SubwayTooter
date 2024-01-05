@@ -43,49 +43,110 @@ class PermissionSpec(
         }
 }
 
-val permissionSpecNotification = if (Build.VERSION.SDK_INT >= 33) {
-    PermissionSpec(
+val permissionSpecNotification = when {
+    Build.VERSION.SDK_INT >= 33 -> PermissionSpec(
         permissions = listOf(
             Manifest.permission.POST_NOTIFICATIONS,
         ),
         deniedId = R.string.permission_denied_notifications,
         rationalId = R.string.permission_rational_notifications,
     )
-} else {
-    PermissionSpec(
+    else -> PermissionSpec(
         permissions = emptyList(),
         deniedId = R.string.permission_denied_notifications,
         rationalId = R.string.permission_rational_notifications,
     )
 }
 
-val permissionSpecMediaDownload = if (Build.VERSION.SDK_INT >= 33) {
-    PermissionSpec(
+val permissionSpecMediaDownload = when {
+    Build.VERSION.SDK_INT >= 33 -> PermissionSpec(
         permissions = listOf(Manifest.permission.POST_NOTIFICATIONS),
         deniedId = R.string.permission_denied_download_manager,
         rationalId = R.string.permission_rational_download_manager,
     )
-} else {
-    PermissionSpec(
+    else -> PermissionSpec(
         permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
         deniedId = R.string.permission_denied_media_access,
         rationalId = R.string.permission_rational_media_access,
     )
 }
 
-val permissionSpecImagePicker = if (Build.VERSION.SDK_INT >= 33) {
-    PermissionSpec(
+/**
+ * 静止画のみを端末から選ぶ
+ */
+val permissionSpecImagePicker = when {
+    Build.VERSION.SDK_INT >= 34 -> PermissionSpec(
+        permissions = emptyList(),
+        deniedId = R.string.permission_denied_media_access,
+        rationalId = R.string.permission_rational_media_access,
+    )
+    Build.VERSION.SDK_INT >= 33 -> PermissionSpec(
         permissions = listOf(
             Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.READ_MEDIA_VIDEO,
+        ),
+        deniedId = R.string.permission_denied_media_access,
+        rationalId = R.string.permission_rational_media_access,
+    )
+    else -> PermissionSpec(
+        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        deniedId = R.string.permission_denied_media_access,
+        rationalId = R.string.permission_rational_media_access,
+    )
+}
+
+/**
+ * オーディオのみを端末から選ぶ
+ */
+val permissionSpecAudioPicker = when {
+    Build.VERSION.SDK_INT >= 33 -> PermissionSpec(
+        permissions = listOf(
             Manifest.permission.READ_MEDIA_AUDIO,
         ),
         deniedId = R.string.permission_denied_media_access,
         rationalId = R.string.permission_rational_media_access,
     )
-} else {
-    PermissionSpec(
-        permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+    else -> {
+        PermissionSpec(
+            permissions = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            deniedId = R.string.permission_denied_media_access,
+            rationalId = R.string.permission_rational_media_access,
+        )
+    }
+}
+
+/**
+ * カメラ撮影用の実行時パーミッション
+ * https://developer.android.com/media/camera/camera-deprecated/photobasics?hl=ja#TaskPhotoView
+ */
+val permissionSpecCamera = when {
+    Build.VERSION.SDK_INT >= 29 -> PermissionSpec(
+        permissions = emptyList(),
+        deniedId = R.string.permission_denied_media_access,
+        rationalId = R.string.permission_rational_media_access,
+    )
+    else -> PermissionSpec(
+        permissions = listOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+        ),
+        deniedId = R.string.permission_denied_media_access,
+        rationalId = R.string.permission_rational_media_access,
+    )
+}
+/**
+ * 動画や音声のキャプチャ前
+ */
+val permissionSpecCapture = when {
+    Build.VERSION.SDK_INT >= 29 -> PermissionSpec(
+        permissions = emptyList(),
+        deniedId = R.string.permission_denied_media_access,
+        rationalId = R.string.permission_rational_media_access,
+    )
+    else -> PermissionSpec(
+        permissions = listOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+        ),
         deniedId = R.string.permission_denied_media_access,
         rationalId = R.string.permission_rational_media_access,
     )

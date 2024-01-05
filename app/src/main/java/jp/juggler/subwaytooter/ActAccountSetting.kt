@@ -14,43 +14,75 @@ import android.text.Editable
 import android.text.SpannableString
 import android.text.TextWatcher
 import android.view.View
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.CompoundButton
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.Spinner
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.auth.authRepo
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.ServiceType
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootAttachment.Companion.tootAttachment
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.runApiTask
+import jp.juggler.subwaytooter.api.runApiTask2
+import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.actionsDialog
-import jp.juggler.subwaytooter.notification.*
+import jp.juggler.subwaytooter.notification.checkNotificationImmediate
+import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
+import jp.juggler.subwaytooter.notification.resetNotificationTracking
 import jp.juggler.subwaytooter.push.PushBase
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.util.*
+import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.coroutine.launchProgress
-import jp.juggler.util.data.*
+import jp.juggler.util.data.UriSerializer
+import jp.juggler.util.data.getDocumentName
+import jp.juggler.util.data.getStreamSize
+import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
+import jp.juggler.util.long
 import jp.juggler.util.media.ResizeConfig
 import jp.juggler.util.media.ResizeType
 import jp.juggler.util.media.createResizedBitmap
 import jp.juggler.util.network.toPatch
 import jp.juggler.util.network.toPost
 import jp.juggler.util.network.toPostRequestBuilder
-import jp.juggler.util.ui.*
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.isOk
+import jp.juggler.util.ui.scan
+import jp.juggler.util.ui.vg
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import okhttp3.MediaType
@@ -164,49 +196,25 @@ class ActAccountSetting : AppCompatActivity(),
         loadLanguageList()
     }
 
-    ///////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    private var permissionCamera = permissionSpecCamera.requester {
+        openCamera()
+    }
+
+    private var pickImageLauncher: ActivityResultLauncher<PickVisualMediaRequest>? = null
+
+    private val pickImageCallback = ActivityResultCallback<Uri?> {
+        handlePickImageResult(it)
+    }
+
+    private val arCameraImage = ActivityResultHandler(log) {
+        handleCameraResult(it)
+    }
 
     private val arShowAcctColor = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        showAcctColor()
+        if (r.isOk) showAcctColor()
     }
-
-    private val arAddAttachment = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        r.data
-            ?.handleGetContentResult(contentResolver)
-            ?.firstOrNull()
-            ?.let {
-                uploadImage(
-                    state.propName,
-                    it.uri,
-                    it.uri.resolveMimeType(it.mimeType, this),
-                )
-            }
-    }
-
-    private val arCameraImage = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) {
-            // 失敗したら DBからデータを削除
-            state.uriCameraImage?.let {
-                contentResolver.delete(it, null, null)
-            }
-            state.uriCameraImage = null
-        } else {
-            // 画像のURL
-            val uri = r.data?.data ?: state.uriCameraImage
-            if (uri != null) {
-                uploadImage(
-                    state.propName,
-                    uri,
-                    uri.resolveMimeType(null, this),
-                )
-            }
-        }
-    }
-
-    private val prPickAvater = permissionSpecImagePicker.requester { openPicker(it) }
-    private val prPickHeader = permissionSpecImagePicker.requester { openPicker(it) }
 
     ///////////////////////////////////////////////////
 
@@ -214,11 +222,13 @@ class ActAccountSetting : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         backPressed { handleBackPressed() }
 
-        prPickAvater.register(this)
-        prPickHeader.register(this)
+        pickImageLauncher = registerForActivityResult(
+            ActivityResultContracts.PickVisualMedia(),
+            pickImageCallback,
+        )
 
+        permissionCamera.register(this)
         arShowAcctColor.register(this)
-        arAddAttachment.register(this)
         arCameraImage.register(this)
 
         if (savedInstanceState != null) {
@@ -1335,63 +1345,88 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun pickAvatarImage() {
-        openPicker(prPickAvater)
+        openImagePickerOrCamera("avatar")
     }
 
     private fun pickHeaderImage() {
-        openPicker(prPickHeader)
+        openImagePickerOrCamera("header")
     }
 
-    private fun openPicker(permissionRequester: PermissionRequester) {
+    private fun openImagePickerOrCamera(propName: String) {
+        state.propName = propName
         launchAndShowError {
-            if (!permissionRequester.checkOrLaunch()) return@launchAndShowError
-            val propName = when (permissionRequester) {
-                prPickHeader -> "header"
-                else -> "avatar"
-            }
             actionsDialog {
                 action(getString(R.string.pick_image)) {
-                    performAttachment(propName)
+                    openPickImage()
                 }
                 action(getString(R.string.image_capture)) {
-                    performCamera(propName)
+                    openCamera()
                 }
             }
         }
     }
 
-    private fun performAttachment(propName: String) {
-        try {
-            state.propName = propName
-            val intent = intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
-            arAddAttachment.launch(intent)
-        } catch (ex: Throwable) {
-            log.e(ex, "performAttachment failed.")
-            showToast(ex, "performAttachment failed.")
-        }
+    private fun openPickImage() {
+        (pickImageLauncher ?: error("pickImageLauncher not registered")).launch(
+            PickVisualMediaRequest(
+                ActivityResultContracts.PickVisualMedia.ImageOnly,
+            )
+        )
     }
 
-    private fun performCamera(propName: String) {
+    private fun handlePickImageResult(uri: Uri?) {
+        uri ?: return
+        uploadImage(
+            state.propName,
+            uri,
+            uri.resolveMimeType(null, this),
+        )
+    }
 
-        try {
+    private fun openCamera() {
+        if (!permissionCamera.checkOrLaunch()) return
+        launchAndShowError(errorCaption = "openCamera failed.") {
             // カメラで撮影
             val filename = System.currentTimeMillis().toString() + ".jpg"
-            val values = ContentValues()
-            values.put(MediaStore.Images.Media.TITLE, filename)
-            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.TITLE, filename)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            }
             val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-            state.uriCameraImage = uri
+                .also { state.uriCameraImage = it }
 
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-
-            state.propName = propName
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                putExtra(MediaStore.EXTRA_OUTPUT, uri)
+            }
             arCameraImage.launch(intent)
-        } catch (ex: Throwable) {
-            log.e(ex, "opening camera app failed.")
-            showToast(ex, "opening camera app failed.")
         }
     }
+
+    private fun handleCameraResult(r: ActivityResult) {
+        when {
+            r.isOk -> {
+                // 画像のURL
+                val uri = r.data?.data ?: state.uriCameraImage
+                if (uri != null) {
+                    uploadImage(
+                        state.propName,
+                        uri,
+                        uri.resolveMimeType(null, this),
+                    )
+                }
+            }
+
+            else -> {
+                // 失敗したら DBからデータを削除
+                state.uriCameraImage?.let {
+                    contentResolver.delete(it, null, null)
+                }
+                state.uriCameraImage = null
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////
 
     internal interface InputStreamOpener {
         val mimeType: String

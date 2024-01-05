@@ -21,7 +21,8 @@ buildscript {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version (Vers.kotlinVersion) apply false
+    kotlin("jvm") version (Vers.kotlinVersion) apply false
+    kotlin("plugin.serialization") version (Vers.kotlinxSerializationPluginVersion) apply true // !!
     id("org.jetbrains.kotlin.android") version (Vers.kotlinVersion) apply false
     id("com.google.devtools.ksp") version (Vers.kspVersion) apply false
 }

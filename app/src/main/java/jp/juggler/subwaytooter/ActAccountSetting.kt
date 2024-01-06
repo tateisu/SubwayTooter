@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.app.Activity
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -9,7 +8,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.SpannableString
 import android.text.TextWatcher
@@ -21,11 +19,6 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Spinner
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -63,6 +56,7 @@ import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.coroutine.launchProgress
+import jp.juggler.util.data.UriAndType
 import jp.juggler.util.data.UriSerializer
 import jp.juggler.util.data.getDocumentName
 import jp.juggler.util.data.getStreamSize
@@ -198,18 +192,12 @@ class ActAccountSetting : AppCompatActivity(),
 
     /////////////////////////////////////////////////////////////////////
 
-    private var permissionCamera = permissionSpecCamera.requester {
-        openCamera()
+    private val cameraOpener = CameraOpener {
+        uploadImage(state.propName, it)
     }
 
-    private var pickImageLauncher: ActivityResultLauncher<PickVisualMediaRequest>? = null
-
-    private val pickImageCallback = ActivityResultCallback<Uri?> {
-        handlePickImageResult(it)
-    }
-
-    private val arCameraImage = ActivityResultHandler(log) {
-        handleCameraResult(it)
+    private val visualMediaPicker = VisualMediaPickerCompat {
+        uploadImage(state.propName, it?.firstOrNull())
     }
 
     private val arShowAcctColor = ActivityResultHandler(log) { r ->
@@ -222,14 +210,10 @@ class ActAccountSetting : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         backPressed { handleBackPressed() }
 
-        pickImageLauncher = registerForActivityResult(
-            ActivityResultContracts.PickVisualMedia(),
-            pickImageCallback,
-        )
+        visualMediaPicker.register(this)
+        cameraOpener.register(this)
 
-        permissionCamera.register(this)
         arShowAcctColor.register(this)
-        arCameraImage.register(this)
 
         if (savedInstanceState != null) {
             savedInstanceState.getString(ACTIVITY_STATE)
@@ -1357,71 +1341,11 @@ class ActAccountSetting : AppCompatActivity(),
         launchAndShowError {
             actionsDialog {
                 action(getString(R.string.pick_image)) {
-                    openPickImage()
+                    visualMediaPicker.open()
                 }
                 action(getString(R.string.image_capture)) {
-                    openCamera()
+                    cameraOpener.open()
                 }
-            }
-        }
-    }
-
-    private fun openPickImage() {
-        (pickImageLauncher ?: error("pickImageLauncher not registered")).launch(
-            PickVisualMediaRequest(
-                ActivityResultContracts.PickVisualMedia.ImageOnly,
-            )
-        )
-    }
-
-    private fun handlePickImageResult(uri: Uri?) {
-        uri ?: return
-        uploadImage(
-            state.propName,
-            uri,
-            uri.resolveMimeType(null, this),
-        )
-    }
-
-    private fun openCamera() {
-        if (!permissionCamera.checkOrLaunch()) return
-        launchAndShowError(errorCaption = "openCamera failed.") {
-            // カメラで撮影
-            val filename = System.currentTimeMillis().toString() + ".jpg"
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.TITLE, filename)
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            }
-            val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                .also { state.uriCameraImage = it }
-
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-                putExtra(MediaStore.EXTRA_OUTPUT, uri)
-            }
-            arCameraImage.launch(intent)
-        }
-    }
-
-    private fun handleCameraResult(r: ActivityResult) {
-        when {
-            r.isOk -> {
-                // 画像のURL
-                val uri = r.data?.data ?: state.uriCameraImage
-                if (uri != null) {
-                    uploadImage(
-                        state.propName,
-                        uri,
-                        uri.resolveMimeType(null, this),
-                    )
-                }
-            }
-
-            else -> {
-                // 失敗したら DBからデータを削除
-                state.uriCameraImage?.let {
-                    contentResolver.delete(it, null, null)
-                }
-                state.uriCameraImage = null
             }
         }
     }
@@ -1515,7 +1439,10 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
-    private fun uploadImage(propName: String, uri: Uri, mimeType: String?) {
+    private fun uploadImage(propName: String, src: UriAndType?) {
+        src ?: return
+        val uri = src.uri
+        val mimeType = src.mimeType
 
         if (mimeType == null) {
             showToast(false, "mime type is not provided.")

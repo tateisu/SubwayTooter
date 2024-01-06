@@ -3,10 +3,12 @@ package jp.juggler.subwaytooter.pref
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Rect
+import android.net.Uri
 import androidx.startup.AppInitializer
 import androidx.startup.Initializer
+import jp.juggler.util.data.mayUri
 import jp.juggler.util.os.applicationContextSafe
-import java.util.*
+import java.util.UUID
 
 class PrefDevice(context: Context) {
 
@@ -28,6 +30,10 @@ class PrefDevice(context: Context) {
         private const val PREF_TIME_LAST_ENDPOINT_REGISTER = "timeLastEndpointRegister"
         private const val PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION =
             "supressRequestNotificationPermission"
+        private const val PREF_MEDIA_PICKER_MULTIPLE = "mediaPickerMultiple"
+        private const val PREF_CAMERA_OPENER_LAST_URI = "cameraOpenerLastUri"
+        private const val PREF_CAPTURE_ACTION = "captureAction"
+        private const val PREF_CAPTURE_ERROR_CAPTION = "captureErrorCaption"
 
         const val PUSH_DISTRIBUTOR_FCM = "fcm"
         const val PUSH_DISTRIBUTOR_NONE = "none"
@@ -152,6 +158,31 @@ class PrefDevice(context: Context) {
         set(value) {
             value.saveTo(PREF_SUPRESS_REQUEST_NOTIFICATION_PERMISSION)
         }
+
+    var mediaPickerMultiple: Boolean
+        get() = boolean(PREF_MEDIA_PICKER_MULTIPLE) ?: false
+        set(value) {
+            value.saveTo(PREF_MEDIA_PICKER_MULTIPLE)
+        }
+
+    var cameraOpenerLastUri: Uri?
+        get() = string(PREF_CAMERA_OPENER_LAST_URI)?.mayUri()
+        set(value) {
+            (value?.toString() ?: "").saveTo(PREF_CAMERA_OPENER_LAST_URI)
+        }
+
+    val captureAction
+        get() = string(PREF_CAPTURE_ACTION)
+
+    val captureErrorCaption
+        get() = string(PREF_CAPTURE_ERROR_CAPTION)
+
+    fun setCaptureParams(action: String, errorCaption: String) {
+        edit {
+            it.putString(PREF_CAPTURE_ACTION, action)
+            it.putString(PREF_CAPTURE_ERROR_CAPTION, errorCaption)
+        }
+    }
 
     //////////////////////////////////
     // 以下は古い

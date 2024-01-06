@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -65,7 +64,7 @@ import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.coroutine.launchMain
-import jp.juggler.util.data.GetContentResultEntry
+import jp.juggler.util.data.UriAndType
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.string
@@ -216,14 +215,15 @@ class ActPost : AppCompatActivity(),
         handler = appState.handler
         attachmentUploader = AttachmentUploader(this, handler)
         attachmentPicker = AttachmentPicker(this, object : AttachmentPicker.Callback {
-            override suspend fun onPickAttachment(uri: Uri, mimeType: String?) {
-                addAttachment(uri, mimeType)
+            override suspend fun onPickAttachment(item: UriAndType) {
+                addAttachment(item.uri, item.mimeType)
             }
 
             override suspend fun onPickCustomThumbnail(
                 attachmentId: String?,
-                src: GetContentResultEntry,
+                src: UriAndType?,
             ) {
+                src ?: return
                 val pa = attachmentList.find { it.attachment?.id?.toString() == attachmentId }
                     ?: error("missing attachment for attachmentId=$attachmentId")
                 onPickCustomThumbnailImpl(pa, src)

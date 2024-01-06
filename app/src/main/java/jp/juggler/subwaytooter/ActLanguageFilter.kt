@@ -132,7 +132,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
     private val arImport = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
-        r.data?.handleGetContentResult(contentResolver)
+        r.data?.checkMimeTypeAndGrant(contentResolver)
             ?.firstOrNull()?.uri?.let { import2(it) }
     }
 

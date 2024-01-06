@@ -42,7 +42,7 @@ class PermissionRequester(
 
     private var getContext: (() -> Context?)? = null
 
-    private val activity
+    val activity
         get() = getContext?.invoke() as? FragmentActivity
 
     // ActivityのonCreate()から呼び出す
@@ -61,6 +61,12 @@ class PermissionRequester(
             ActivityResultContracts.RequestMultiplePermissions(),
             this,
         )
+    }
+
+    fun hasPermissions() :Boolean{
+        val activity = activity ?: error("missing activity.")
+        val listNotGranted = spec.listNotGranded(activity)
+        return listNotGranted.isEmpty()
     }
 
     /**

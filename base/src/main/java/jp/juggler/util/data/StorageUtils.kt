@@ -278,13 +278,9 @@ fun intentGetContent(
     return Intent.createChooser(intent, caption)
 }
 
-data class GetContentResultEntry(
-    val uri: Uri,
-    val mimeType: String? = null,
-    var time: Long? = null,
-)
+data class UriAndType(val uri: Uri, val mimeType: String?)
 
-fun MutableList<GetContentResultEntry>.addNoDuplicate(
+fun MutableList<UriAndType>.addNoDuplicate(
     contentResolver: ContentResolver,
     uri: Uri?,
     type: String? = null,
@@ -295,12 +291,12 @@ fun MutableList<GetContentResultEntry>.addNoDuplicate(
         type ?: contentResolver.getType(uri)
     } catch (ex: Throwable) {
         log.w(ex, "contentResolver.getType failed. uri=$uri")
-        return
+        null
     }
-    add(GetContentResultEntry(uri, mimeType))
+    add(UriAndType(uri, mimeType))
 }
 
-fun List<GetContentResultEntry>.grantPermissions(
+fun List<UriAndType>.grantPermissions(
     contentResolver: ContentResolver,
 ) {
     forEach {
@@ -314,27 +310,32 @@ fun List<GetContentResultEntry>.grantPermissions(
     }
 }
 
-// returns list of pair of uri and mime-type.
-fun List<Uri>.handleGetContentResult(contentResolver: ContentResolver) =
-    buildList {
-        this@handleGetContentResult.forEach {
-            addNoDuplicate(contentResolver, it)
-        }
-        grantPermissions(contentResolver)
-    }
+/**
+ * URIのリストに対してMIMEタイプの取得とtakePersistableUriPermissionを行う
+ * @return UriAndTypeのリスト
+ */
+fun List<Uri>.checkMimeTypeAndGrant(
+    contentResolver: ContentResolver,
+) = buildList {
+    this@checkMimeTypeAndGrant.forEach { addNoDuplicate(contentResolver, it) }
+    grantPermissions(contentResolver)
+}
 
 val ClipData.uris
     get() = (0 until itemCount).mapNotNull { getItemAt(it)?.uri }
 
-// returns list of pair of uri and mime-type.
-fun Intent.handleGetContentResult(contentResolver: ContentResolver) =
-    buildList {
-        // 単一選択
-        addNoDuplicate(contentResolver, data, type)
+/**
+ * ピッカーが返したIntentからURIのリストを読み、MIMEタイプの取得とtakePersistableUriPermissionを行う
+ * @return UriAndTypeのリスト
+ */
+fun Intent.checkMimeTypeAndGrant(
+    contentResolver: ContentResolver,
+) = buildList {
+    // 単一選択
+    addNoDuplicate(contentResolver, data, type)
 
-        // 複数選択
-        clipData?.uris?.forEach {
-            addNoDuplicate(contentResolver, it)
-        }
-        grantPermissions(contentResolver)
-    }
+    // 複数選択
+    clipData?.uris?.forEach { addNoDuplicate(contentResolver, it) }
+
+    grantPermissions(contentResolver)
+}

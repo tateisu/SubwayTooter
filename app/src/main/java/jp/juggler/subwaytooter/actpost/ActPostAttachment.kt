@@ -29,9 +29,8 @@ import jp.juggler.subwaytooter.util.AttachmentRequest
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.coroutine.launchAndShowError
-import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.CharacterGroup
-import jp.juggler.util.data.GetContentResultEntry
+import jp.juggler.util.data.UriAndType
 import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.data.decodeJsonArray
 import jp.juggler.util.data.notEmpty
@@ -269,9 +268,7 @@ fun ActPost.performAttachmentClick(idx: Int) {
                     TootAttachmentType.GIFV,
                     TootAttachmentType.Video,
                     -> action(getString(R.string.custom_thumbnail)) {
-                        attachmentPicker.openCustomThumbnail(
-                            attachmentId = pa.attachment?.id?.toString()
-                        )
+                        attachmentPicker.openThumbnailPicker(pa)
                     }
 
                     else -> Unit
@@ -436,20 +433,18 @@ suspend fun ActPost.editAttachmentDescription(
     }
 }
 
-fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: GetContentResultEntry) {
+suspend fun ActPost.onPickCustomThumbnailImpl(pa: PostAttachment, src: UriAndType) {
     when (val account = this.account) {
         null -> showToast(false, R.string.account_select_please)
-        else -> launchMain {
-            if (pa.attachment?.isEdit == true) {
-                showToast(
-                    true,
-                    "Sorry, updateing thumbnail is not yet supported in case of editing post."
-                )
-            } else {
-                val result = attachmentUploader.uploadCustomThumbnail(account, src, pa)
-                result?.error?.let { showToast(true, it) }
-                showMediaAttachment()
-            }
+        else -> if (pa.attachment?.isEdit == true) {
+            showToast(
+                true,
+                "Sorry, updateing thumbnail is not yet supported in case of editing post."
+            )
+        } else {
+            val result = attachmentUploader.uploadCustomThumbnail(account, src, pa)
+            result?.error?.let { showToast(true, it) }
+            showMediaAttachment()
         }
     }
 }

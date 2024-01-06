@@ -64,7 +64,7 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.cast
 import jp.juggler.util.data.defaultLocale
-import jp.juggler.util.data.handleGetContentResult
+import jp.juggler.util.data.checkMimeTypeAndGrant
 import jp.juggler.util.data.intentOpenDocument
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
@@ -132,7 +132,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private val arImportAppData = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
-        r.data?.handleGetContentResult(contentResolver)
+        r.data?.checkMimeTypeAndGrant(contentResolver)
             ?.firstOrNull()
             ?.uri?.let { importAppData2(false, it) }
     }
@@ -1031,7 +1031,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private fun handleFontResult(item: AppSettingItem?, data: Intent, fileName: String) {
         item ?: error("handleFontResult : setting item is null")
-        data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
+        data.checkMimeTypeAndGrant(contentResolver).firstOrNull()?.uri?.let {
             val file = saveTimelineFont(it, fileName)
             if (file != null) {
                 (item.pref as? StringPref)?.value = file.absolutePath

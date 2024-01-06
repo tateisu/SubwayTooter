@@ -1,9 +1,7 @@
 package jp.juggler.util.ui
 
-import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.content.res.TypedArray
@@ -26,18 +24,13 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import jp.juggler.util.data.clip
 import jp.juggler.util.data.notZero
 import jp.juggler.util.getUriExtra
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.log.showToast
 
 private val log = LogCategory("UiUtils")
 
@@ -342,44 +335,8 @@ var View.isEnabledAlpha: Boolean
 
 /////////////////////////////////////////////////
 
-class ActivityResultHandler(
-    private val log: LogCategory,
-    private val callback: (ActivityResult) -> Unit,
-) {
-    private var launcher: ActivityResultLauncher<Intent>? = null
-    private var getContext: (() -> Context?)? = null
-
-    private val context
-        get() = getContext?.invoke()
-
-    // startForActivityResultの代わりに呼び出す
-    fun launch(intent: Intent, options: ActivityOptionsCompat? = null) = try {
-        (launcher ?: error("ActivityResultHandler not registered."))
-            .launch(intent, options)
-    } catch (ex: Throwable) {
-        log.e(ex, "launch failed")
-        context?.showToast(ex, "activity launch failed.")
-    }
-
-    // onCreate時に呼び出す
-    fun register(a: FragmentActivity) {
-        getContext = { a.applicationContext }
-        this.launcher = a.registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { callback(it) }
-    }
-}
-
-fun Intent.launch(ar: ActivityResultHandler) = ar.launch(this)
-
 val AppCompatActivity.isLiveActivity: Boolean
     get() = !(isFinishing || isDestroyed)
-
-val ActivityResult.isNotOk
-    get() = Activity.RESULT_OK != resultCode
-
-val ActivityResult.isOk
-    get() = Activity.RESULT_OK == resultCode
 
 /**
  * Ringtone pickerの処理結果のUriまたはnull

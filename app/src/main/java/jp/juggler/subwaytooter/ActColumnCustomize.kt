@@ -74,7 +74,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
     private val arColumnBackgroundImage = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
-        r.data?.handleGetContentResult(contentResolver)
+        r.data?.checkMimeTypeAndGrant(contentResolver)
             ?.firstOrNull()?.uri?.let { updateBackground(it) }
     }
 

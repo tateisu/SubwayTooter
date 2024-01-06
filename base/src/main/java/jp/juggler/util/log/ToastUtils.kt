@@ -11,7 +11,6 @@ import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.util.coroutine.AppDispatchers.withTimeoutSafe
 import jp.juggler.util.coroutine.runOnMainLooper
 import kotlinx.coroutines.CancellationException
@@ -181,7 +180,7 @@ fun Activity.dialogOrToast(message: String?) {
 fun Activity.dialogOrToast(@StringRes stringId: Int, vararg args: Any) =
     dialogOrToast(getString(stringId, *args))
 
-fun AppCompatActivity.showError(ex: Throwable, caption: String? = null) {
+fun Activity.showError(ex: Throwable, caption: String? = null) {
     log.e(ex, caption ?: "(showError)")
 
     // キャンセル例外はUIに表示しない

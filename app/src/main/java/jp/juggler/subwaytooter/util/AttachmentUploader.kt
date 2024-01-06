@@ -20,7 +20,7 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchIO
-import jp.juggler.util.data.GetContentResultEntry
+import jp.juggler.util.data.UriAndType
 import jp.juggler.util.data.asciiPattern
 import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.data.encodeHex
@@ -316,7 +316,7 @@ class AttachmentUploader(
     // 添付データのカスタムサムネイル
     suspend fun uploadCustomThumbnail(
         account: SavedAccount,
-        src: GetContentResultEntry,
+        src: UriAndType,
         pa: PostAttachment,
     ): TootApiResult? = try {
         safeContext.runApiTask(account) { client ->
@@ -335,8 +335,9 @@ class AttachmentUploader(
             val maxBytesImage = ar.maxBytesImage(instance, mediaConfig)
 
             val opener = ar.createOpener()
-            try {
+            pa.progress = ""
 
+            try {
                 if (opener.contentLength > maxBytesImage.toLong()) {
                     return@runApiTask TootApiResult(
                         getString(
@@ -354,6 +355,7 @@ class AttachmentUploader(
                 if (account.isMisskey) {
                     TootApiResult("custom thumbnail is not supported on misskey account.")
                 } else {
+
                     val result = client.request(
                         "/api/v1/media/${pa.attachment?.id}",
                         MultipartBody.Builder()

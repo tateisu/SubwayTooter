@@ -27,8 +27,8 @@ class AttachmentPicker(
         suspend fun onPickCustomThumbnail(attachmentId: String?, src: UriAndType?)
     }
 
-    // actions after permission granted
-    enum class AfterPermission { Attachment, CustomThumbnail, }
+    //    // actions after permission granted
+    //    enum class AfterPermission { Attachment, CustomThumbnail, }
 
     @Serializable
     data class States(

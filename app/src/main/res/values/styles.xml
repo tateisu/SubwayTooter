@@ -203,9 +203,7 @@
         <item name="android:textColor">@color/Dark_colorTextTimeSmall</item>
     </style>
 
-
     <style name="AppTheme.Mastodon.Base" parent="Theme.AppCompat.NoActionBar">
-
 
         <!-- AppCompat ============================================ -->
 

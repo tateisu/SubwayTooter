@@ -11,4 +11,14 @@
     <style name="AppTheme.Mastodon" parent="AppTheme.Mastodon.Base">
     </style>
 
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/Other_splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
+        <item name="windowSplashScreenAnimationDuration">100</item>
+
+        <!-- Set the theme of the Activity that directly follows your splash screen. -->
+        <!-- Required -->
+        <item name="postSplashScreenTheme">@style/AppTheme.Mastodon</item>
+    </style>
+
 </resources>

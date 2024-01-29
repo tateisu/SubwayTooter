@@ -148,7 +148,7 @@
     <!-- =================================================== -->
 
     <!-- スプラッシュ画面の背景色はテーマ関係なし -->
-    <color name="Other_splashBackground">#0080ff</color>
+    <color name="Other_splashBackground">#000000</color>
 
     <!-- 通知のアクセント色 -->
     <color name="colorOsNotificationAccent">#B3E1FF</color>

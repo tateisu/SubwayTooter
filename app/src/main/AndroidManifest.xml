@@ -101,7 +101,7 @@
         android:maxAspectRatio="100"
         android:resizeableActivity="true"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.Light"
+        android:theme="@style/Theme.App.Starting"
         tools:ignore="DataExtractionRules,UnusedAttribute">
 
         <activity

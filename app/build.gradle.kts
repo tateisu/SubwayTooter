@@ -166,6 +166,8 @@ dependencies {
     "fcmImplementation"("com.google.firebase:firebase-messaging:23.4.0")
     "fcmImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Vers.kotlinxCoroutinesVersion}")
 
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
     api("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
     implementation("com.github.UnifiedPush:android-connector:2.1.1")

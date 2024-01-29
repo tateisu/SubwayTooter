@@ -3,21 +3,31 @@
     <!-- light theme -->
     <style name="AppTheme.Light" parent="AppTheme.Light.Base">
         <item name="android:windowSplashScreenBackground">@color/Other_splashBackground</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
         <item name="android:windowSplashScreenAnimationDuration">1000</item>
+        <item name="windowSplashScreenBackground">@color/Other_splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
     </style>
 
     <!-- dark theme -->
     <style name="AppTheme.Dark" parent="AppTheme.Dark.Base">
         <item name="android:windowSplashScreenBackground">@color/Other_splashBackground</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
         <item name="android:windowSplashScreenAnimationDuration">1000</item>
+        <item name="windowSplashScreenBackground">@color/Other_splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
     </style>
 
     <!-- Mastidon theme -->
     <style name="AppTheme.Mastodon" parent="AppTheme.Mastodon.Base">
         <item name="android:windowSplashScreenBackground">@color/Other_splashBackground</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
-        <item name="android:windowSplashScreenAnimationDuration">1000</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
+        <item name="android:windowSplashScreenAnimationDuration">100</item>
+        <item name="windowSplashScreenBackground">@color/Other_splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_white</item>
+        <item name="windowSplashScreenAnimationDuration">100</item>
     </style>
+
 </resources>

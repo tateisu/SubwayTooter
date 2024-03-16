@@ -19,6 +19,12 @@ compileKotlin.kotlinOptions {
         "-opt-in=kotlin.ExperimentalStdlibApi",
     )
 }
+compileTestKotlin.kotlinOptions{
+    jvmTarget = Vers.kotlinJvmTarget
+    freeCompilerArgs = listOf(
+        "-opt-in=kotlin.ExperimentalStdlibApi",
+    )
+}
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))

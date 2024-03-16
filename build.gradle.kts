@@ -8,7 +8,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:${Vers.androidGradlePruginVersion}")
 
         // room のバージョンの影響で google-services を上げられない場合がある
-        classpath("com.google.gms:google-services:4.4.0")
+        classpath("com.google.gms:google-services:4.4.1")
 
         //noinspection DifferentKotlinGradleVersion
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Vers.kotlinVersion}")
@@ -34,6 +34,17 @@ allprojects {
 
         // alexzhirkevich/custom-qr-generator
         maven(url = "https://jitpack.io")
+    }
+
+    // configurationのリストを標準出力に出す
+    // usage: ./gradlew -q --no-configuration-cache :app:printConfigurations
+    tasks.register("printConfigurations") {
+        doLast {
+            println("project: ${project.name} configurations:")
+            for( c in configurations){
+                println("configuration: ${c.name}")
+            }
+        }
     }
 }
 

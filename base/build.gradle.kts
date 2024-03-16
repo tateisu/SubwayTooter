@@ -70,7 +70,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
 
     api("androidx.appcompat:appcompat:${Vers.appcompatVersion}")
-    api("androidx.browser:browser:1.7.0")
+    api("androidx.browser:browser:1.8.0")
     api("androidx.core:core-ktx:${Vers.coreKtxVersion}")
     api("androidx.drawerlayout:drawerlayout:1.2.0")
     api("androidx.emoji2:emoji2-bundled:${Vers.emoji2Version}")

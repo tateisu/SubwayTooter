@@ -163,7 +163,7 @@ dependencies {
     implementation(project(":anko"))
     implementation(fileTree(mapOf("dir" to "src/main/libs", "include" to arrayOf("*.aar"))))
 
-    "fcmImplementation"("com.google.firebase:firebase-messaging:23.4.0")
+    "fcmImplementation"("com.google.firebase:firebase-messaging:23.4.1")
     "fcmImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Vers.kotlinxCoroutinesVersion}")
 
     implementation("androidx.core:core-splashscreen:1.0.1")

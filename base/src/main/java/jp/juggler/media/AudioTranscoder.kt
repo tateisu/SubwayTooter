@@ -49,6 +49,7 @@ fun Context.generateTempFile(prefix: String) =
 suspend fun transcodeAudio(
     context: Context,
     inUri: Uri,
+    @Suppress("UNUSED_PARAMETER")
     inMimeType: String,
 ): Pair<File, String> {
     val inputMediaItem = MediaItem.fromUri(inUri)

@@ -296,7 +296,7 @@ object PrefB {
 
     val bpEmojioneShortcode = BooleanPref(
         "EmojioneShortcode",
-        true
+        false,
     )
 
     val bpEmojiPickerCloseOnSelected = BooleanPref(

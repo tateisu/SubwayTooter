@@ -50,7 +50,7 @@ object Vers {
     const val apng4AndroidVersion = "2.25.0"
     const val conscryptVersion = "2.5.2"
     const val desugarLibVersion = "2.0.4"
-    const val detektVersion = "1.23.4"
+    const val detektVersion = "1.23.5"
     const val gildorkotlinCoroutinesOkhttp = "1.0"
     const val googleFlexbox="3.0.0"
     const val googleMaterial = "1.11.0"

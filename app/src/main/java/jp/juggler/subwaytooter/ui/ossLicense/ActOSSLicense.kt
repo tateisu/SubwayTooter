@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.ui.ossLicense
 
 import android.os.Bundle
+import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.ActOssLicenseBinding
+import jp.juggler.subwaytooter.util.StColorScheme
+import jp.juggler.subwaytooter.util.dummyStColorTheme
+import jp.juggler.subwaytooter.util.getStColorTheme
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.provideViewModel
 import jp.juggler.subwaytooter.util.toAnnotatedString
@@ -64,16 +68,20 @@ class ActOSSLicense : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        // ステータスバーの色にattr色を使っているので、テーマの指定は必要
         App1.setActivityTheme(this)
+        val stColorScheme = getStColorTheme()
         setContent {
             Screen(
+                stColorScheme = stColorScheme,
                 librariesFlow = viewModel.libraries,
                 isProgressShownFlow = viewModel.isProgressShown,
             )
         }
 
         try {
-            viewModel.load()
+            viewModel.load(stColorScheme = stColorScheme)
         } catch (ex: Throwable) {
             log.e(ex, "dependency in fo loading failed.")
         }
@@ -83,6 +91,7 @@ class ActOSSLicense : ComponentActivity() {
     @Composable
     fun DefaultPreview() {
         Screen(
+            stColorScheme = dummyStColorTheme(),
             isProgressShownFlow = MutableStateFlow(false),
             librariesFlow = MutableStateFlow(
                 listOf(
@@ -109,56 +118,50 @@ class ActOSSLicense : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun Screen(
+        stColorScheme: StColorScheme,
         librariesFlow: Flow<List<LibText>>,
         isProgressShownFlow: Flow<Boolean>,
     ) {
         val isProgressShown = isProgressShownFlow.collectAsState(false)
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(stringResource(R.string.oss_license))
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { finish() }
-                        ) {
-                            Icon(
-                                // imageVector = AutoMirrored.Outlined.ArrowBack,
-                                imageVector = Icons.Outlined.Close,
-                                contentDescription = stringResource(R.string.close)
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.topAppBarColors(
-//                        containerColor = : Color = Color.Unspecified,
-//                    scrolledContainerColor: Color = Color.Unspecified,
-//                navigationIconContentColor: Color = Color.Unspecified,
-//                titleContentColor: Color = Color.Unspecified,
-//                actionIconContentColor: Color = Color.Unspecified,
-
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.primary,
-                    ),
-                )
-            },
-        ) { innerPadding ->
-            when (isProgressShown.value) {
-                true -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.width(64.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        MaterialTheme(colorScheme = stColorScheme.materialColorScheme) {
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(stringResource(R.string.oss_license))
+                        },
+                        navigationIcon = {
+                            IconButton(
+                                onClick = { finish() }
+                            ) {
+                                Icon(
+                                    // imageVector = AutoMirrored.Outlined.ArrowBack,
+                                    imageVector = Icons.Outlined.Close,
+                                    contentDescription = stringResource(R.string.close)
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarDefaults.topAppBarColors(),
                     )
-                }
+                },
+            ) { innerPadding ->
+                when (isProgressShown.value) {
+                    true -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(64.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    }
 
-                else -> ScrollContent(innerPadding, librariesFlow)
+                    else -> ScrollContent(innerPadding, librariesFlow)
+                }
             }
         }
     }
@@ -188,7 +191,9 @@ class ActOSSLicense : ComponentActivity() {
             src.nameBig.notEmpty()?.let {
                 ClickableText(
                     text = it,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground,
+                    ),
                 ) { offset ->
                     it.getStringAnnotations(
                         tag = "URL",
@@ -202,7 +207,9 @@ class ActOSSLicense : ComponentActivity() {
             src.nameSmall.notEmpty()?.let {
                 ClickableText(
                     text = it,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground,
+                    ),
                 ) { offset ->
                     it.getStringAnnotations(
                         tag = "URL",
@@ -217,7 +224,9 @@ class ActOSSLicense : ComponentActivity() {
             src.desc.notEmpty()?.let {
                 ClickableText(
                     text = it,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground,
+                    ),
                 ) { offset ->
                     it.getStringAnnotations(
                         tag = "URL",

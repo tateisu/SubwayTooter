@@ -84,11 +84,11 @@ fun AppCompatActivity.launchAndShowError(
 
 /////////////////////////////////////////////////////////////////////////
 
-suspend fun <T:Any?> AppCompatActivity.withProgress(
-    caption:String,
+suspend fun <T : Any?> AppCompatActivity.withProgress(
+    caption: String,
     progressInitializer: suspend (ProgressDialogEx) -> Unit = {},
-    block: suspend (progress :ProgressDialogEx)->T,
-):T {
+    block: suspend (progress: ProgressDialogEx) -> T,
+): T {
     val activity = this
     var progress: ProgressDialogEx? = null
     try {

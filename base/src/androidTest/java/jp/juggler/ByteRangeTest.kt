@@ -25,7 +25,7 @@ class ByteRangeTest {
                 val kotlinBase64UrlSafe = Base64.UrlSafe
 
                 // kotlin.io の Base64.UrlSafe は 末尾の = パディングを残すので後から除去する必要がある
-                val encodedByKotlinIo = kotlinBase64UrlSafe.encode(src).trimEnd { it=='=' }
+                val encodedByKotlinIo = kotlinBase64UrlSafe.encode(src).trimEnd { it == '=' }
                 // ByteRange().encodeBase64Url() はパディングを含まない
                 val encodeByByteRange = src.toByteRange().encodeBase64Url()
                 // StringUtils の encodeBase64Url() はパディングを含まない

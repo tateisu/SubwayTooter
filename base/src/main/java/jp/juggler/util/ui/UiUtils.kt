@@ -25,6 +25,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
+import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -52,6 +53,9 @@ fun Context.attrColor(attrId: Int): Int {
     a.recycle()
     return color
 }
+
+fun Context.resColor(@ColorRes resId: Int): Int =
+    ContextCompat.getColor(this, resId)
 
 fun <T> TypedArray.use(block: (TypedArray) -> T): T =
     try {
@@ -352,6 +356,7 @@ fun AppCompatActivity.setNavigationBack(toolbar: Toolbar) =
     toolbar.setNavigationOnClickListener {
         onBackPressedDispatcher.onBackPressed()
     }
+
 fun ComponentActivity.setNavigationBack(toolbar: Toolbar) =
     toolbar.setNavigationOnClickListener {
         onBackPressedDispatcher.onBackPressed()

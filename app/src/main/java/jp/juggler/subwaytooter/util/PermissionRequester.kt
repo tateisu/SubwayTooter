@@ -63,7 +63,7 @@ class PermissionRequester(
         )
     }
 
-    fun hasPermissions() :Boolean{
+    fun hasPermissions(): Boolean {
         val activity = activity ?: error("missing activity.")
         val listNotGranted = spec.listNotGranded(activity)
         return listNotGranted.isEmpty()

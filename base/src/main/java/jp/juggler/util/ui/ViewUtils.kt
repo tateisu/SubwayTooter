@@ -12,7 +12,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.annotation.ColorInt
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import jp.juggler.util.log.LogCategory
 import kotlin.math.pow
@@ -44,6 +43,7 @@ fun View.hideKeyboard() {
         when (val imm = this.context?.getSystemService(Context.INPUT_METHOD_SERVICE)) {
             is InputMethodManager ->
                 imm.hideSoftInputFromWindow(this.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+
             else -> log.e("hideKeyboard: can't get InputMethodManager")
         }
     } catch (ex: Throwable) {
@@ -148,6 +148,7 @@ fun Activity.setStatusBarColorCompat(@ColorInt c: Int) {
                         //Dark Text to show up on your light status bar
                         decorView.systemUiVisibility or bit
                     }
+
                     else -> {
                         //Light Text to show up on your dark status bar
                         decorView.systemUiVisibility and bit.inv()

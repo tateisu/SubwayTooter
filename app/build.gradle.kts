@@ -164,8 +164,8 @@ dependencies {
     implementation(project(":apng_android"))
     implementation(project(":anko"))
 
-
     implementation("androidx.activity:activity-compose:${Vers.androidxActivity}")
+    implementation("androidx.activity:activity-ktx:${Vers.androidxActivity}")
     implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.compose.material3:material3:1.2.1")

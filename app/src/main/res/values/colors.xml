@@ -19,7 +19,7 @@
     <color name="Light_colorColumnSettingBackground">#bbb</color>
     <color name="Light_colorColumnStripBackground">#fff</color>
     <color name="Light_colorConversationMainTootBg">#200088ff</color>
-    <color name="Light_colorLink">#00a2ff</color>
+    <color name="Light_colorLink">#0080ff</color>
     <color name="Light_colorPostFormBackground">#eee</color>
     <color name="Light_colorActionBarBg">#ccc</color>
     <color name="Light_colorActionBarBgStacked">#ddd</color>

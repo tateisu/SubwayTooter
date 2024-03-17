@@ -16,7 +16,6 @@ import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.api.entity.TootAccount
@@ -28,10 +27,14 @@ import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.*
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.ui.*
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.mixColor
+import jp.juggler.util.ui.scan
+import jp.juggler.util.ui.setIconDrawableId
+import jp.juggler.util.ui.setNavigationBarColorCompat
+import jp.juggler.util.ui.setStatusBarColorCompat
 import org.xmlpull.v1.XmlPullParser
 import kotlin.math.max
 import kotlin.math.min
@@ -68,6 +71,7 @@ fun TootVisibility.getVisibilityIconId(isMisskeyData: Boolean): Int {
             TootVisibility.Limited -> R.drawable.ic_account_circle
             TootVisibility.Mutual -> R.drawable.ic_bidirectional
         }
+
         else -> when (this) {
             TootVisibility.Public -> R.drawable.ic_public
             TootVisibility.UnlistedHome -> R.drawable.ic_lock_open
@@ -113,6 +117,7 @@ fun TootVisibility.getVisibilityString(isMisskeyData: Boolean): String {
                 TootVisibility.Limited -> R.string.visibility_limited
                 TootVisibility.Mutual -> R.string.visibility_mutual
             }
+
             else -> when (this) {
                 TootVisibility.Public -> R.string.visibility_public
                 TootVisibility.UnlistedHome -> R.string.visibility_unlisted
@@ -316,6 +321,7 @@ fun fixHorizontalPadding(v: View, dpDelta: Float = 12f) {
                 v.setPaddingRelative(padLr + dm.widthPixels / 2, padT, padLr, padB)
                 return
             }
+
             else -> Unit
         }
     }
@@ -403,6 +409,7 @@ fun SpannableStringBuilder.appendMisskeyReaction(
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
+
         else ->
             this.append(emoji.unifiedCode)
     }

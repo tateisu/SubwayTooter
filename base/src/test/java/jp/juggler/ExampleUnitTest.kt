@@ -1,7 +1,7 @@
-package jp.juggler.base
+package jp.juggler
 
-import org.junit.Test
-import org.junit.Assert.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ExampleUnitTest {
     @Test

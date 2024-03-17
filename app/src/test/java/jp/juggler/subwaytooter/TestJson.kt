@@ -1,9 +1,15 @@
 package jp.juggler.subwaytooter
 
-import jp.juggler.util.data.*
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import jp.juggler.util.data.buildJsonArray
+import jp.juggler.util.data.buildJsonObject
+import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.decodeJsonValue
+import jp.juggler.util.data.isDecimalNotation
+import jp.juggler.util.data.jsonObjectOf
+import jp.juggler.util.data.writeJsonValue
 import java.io.StringWriter
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TestJson {
     companion object {
@@ -103,7 +109,11 @@ class TestJson {
         fun x(expect: Boolean, n: Number) {
             val encoded = n.toString()
             val actual = encoded.isDecimalNotation()
-            assertEquals("${n.javaClass.simpleName} $n", expect, actual)
+            assertEquals(
+                expected = expect,
+                actual = actual,
+                message = "${n.javaClass.simpleName} $n",
+            )
         }
         // integers and longs
         x(false, 0)
@@ -141,8 +151,16 @@ class TestJson {
             val encodedObject = jsonObjectOf("n" to n).toString()
             val decodedObject = encodedObject.decodeJsonObject()
             val decoded = decodedObject["n"]
-            assertEquals("$n type $encodedObject", expectClass, decoded?.javaClass)
-            assertEquals("$n value $encodedObject", expectValue, decoded)
+            assertEquals<Class<*>?>(
+                expected = expectClass,
+                actual = decoded?.javaClass,
+                message = "$n type $encodedObject",
+            )
+            assertEquals(
+                expected = expectValue,
+                actual = decoded,
+                message = "$n value $encodedObject",
+            )
         }
         x(0)
         x(0f, expectValue = 0)

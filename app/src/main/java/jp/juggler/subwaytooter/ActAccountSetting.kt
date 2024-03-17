@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -22,8 +21,9 @@ import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.jrummyapps.android.colorpicker.ColorPickerDialog
-import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import androidx.lifecycle.lifecycleScope
+import com.jrummyapps.android.colorpicker.ColorPickerDialogType
+import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -77,6 +77,8 @@ import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.isOk
 import jp.juggler.util.ui.scan
 import jp.juggler.util.ui.vg
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import okhttp3.MediaType
@@ -94,7 +96,6 @@ import kotlin.math.max
 
 class ActAccountSetting : AppCompatActivity(),
     View.OnClickListener,
-    ColorPickerDialogListener,
     CompoundButton.OnCheckedChangeListener,
     AdapterView.OnItemSelectedListener {
     companion object {
@@ -722,13 +723,19 @@ class ActAccountSetting : AppCompatActivity(),
 //                )
 
             R.id.btnNotificationAccentColorEdit -> {
-                ColorPickerDialog.newBuilder().apply {
-                    setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    setAllowPresets(true)
-                    setShowAlphaSlider(false)
-                    setDialogId(COLOR_DIALOG_NOTIFICATION_ACCENT_COLOR)
-                    account.notificationAccentColor.notZero()?.let { setColor(it) }
-                }.show(this)
+                lifecycleScope.launch {
+                    try {
+                        account.notificationAccentColor = dialogColorPicker(
+                            colorInitial = account.notificationAccentColor.notZero(),
+                            alphaEnabled = false,
+                        )
+                        showNotificationColor()
+                        saveUIToData()
+                    } catch (ex: Throwable) {
+                        if (ex is CancellationException) return@launch
+                        log.e(ex, "openColorPicker failed.")
+                    }
+                }
             }
 
             R.id.btnNotificationAccentColorReset -> {
@@ -1516,21 +1523,6 @@ class ActAccountSetting : AppCompatActivity(),
             .setPositiveButton(android.R.string.ok, null)
             .show()
         return rv
-    }
-
-    override fun onDialogDismissed(dialogId: Int) {
-    }
-
-    override fun onColorSelected(dialogId: Int, newColor: Int) {
-        when (dialogId) {
-            COLOR_DIALOG_NOTIFICATION_ACCENT_COLOR -> {
-                account.notificationAccentColor = newColor or Color.BLACK
-                showNotificationColor()
-                saveUIToData()
-            }
-
-            else -> Unit
-        }
     }
 
     private fun showNotificationColor() {

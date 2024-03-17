@@ -1,16 +1,13 @@
-@file:Suppress(
-    "USELESS_CAST", "unused", "DEPRECATED_IDENTITY_EQUALS", "UNUSED_VARIABLE",
-    "UNUSED_VALUE", "ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE", "VARIABLE_WITH_REDUNDANT_INITIALIZER",
-    "ReplaceCallWithComparison"
-)
-
 package jp.juggler.subwaytooter
 
 import jp.juggler.subwaytooter.util.VersionString
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
-import org.junit.Assert.*
-
+@Suppress(
+    "unused",
+    "ReplaceCallWithComparison"
+)
 class TestVersionString {
     @Test
     fun test1() {

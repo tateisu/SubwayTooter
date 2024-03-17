@@ -23,6 +23,7 @@ import android.util.SparseArray
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -348,6 +349,10 @@ val ActivityResult.decodeRingtonePickerResult
     }
 
 fun AppCompatActivity.setNavigationBack(toolbar: Toolbar) =
+    toolbar.setNavigationOnClickListener {
+        onBackPressedDispatcher.onBackPressed()
+    }
+fun ComponentActivity.setNavigationBack(toolbar: Toolbar) =
     toolbar.setNavigationOnClickListener {
         onBackPressedDispatcher.onBackPressed()
     }

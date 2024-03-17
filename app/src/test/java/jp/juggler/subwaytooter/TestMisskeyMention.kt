@@ -2,8 +2,8 @@ package jp.juggler.subwaytooter
 
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.util.data.asciiPatternString
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @Suppress("MemberNameEqualsClassName")
 class TestMisskeyMention {

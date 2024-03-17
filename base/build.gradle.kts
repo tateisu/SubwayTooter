@@ -69,107 +69,122 @@ dependencies {
     //noinspection GradleDependency
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
 
-    api("androidx.appcompat:appcompat:${Vers.appcompatVersion}")
-    api("androidx.browser:browser:1.8.0")
-    api("androidx.core:core-ktx:${Vers.coreKtxVersion}")
-    api("androidx.drawerlayout:drawerlayout:1.2.0")
-    api("androidx.emoji2:emoji2-bundled:${Vers.emoji2Version}")
-    api("androidx.emoji2:emoji2-views-helper:${Vers.emoji2Version}")
-    api("androidx.emoji2:emoji2-views:${Vers.emoji2Version}")
-    api("androidx.emoji2:emoji2:${Vers.emoji2Version}")
-    api("androidx.exifinterface:exifinterface:1.3.7")
-    api("androidx.lifecycle:lifecycle-common-java8:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-livedata-ktx:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-process:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-reactivestreams-ktx:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-runtime-ktx:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-service:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-viewmodel-ktx:${Vers.lifecycleVersion}")
-    api("androidx.lifecycle:lifecycle-viewmodel-savedstate:${Vers.lifecycleVersion}")
-    api("androidx.recyclerview:recyclerview:1.3.2")
-    api("androidx.startup:startup-runtime:${Vers.startupVersion}")
-    api("androidx.work:work-runtime-ktx:${Vers.workVersion}")
-    api("androidx.work:work-runtime:${Vers.workVersion}")
-    api("com.astuetz:pagerslidingtabstrip:1.0.1")
-    api("com.caverock:androidsvg-aar:1.4")
-    api("com.github.hadilq:live-event:1.3.0")
-    api("com.github.omadahealth:swipy:1.2.3@aar")
-    api("com.github.woxthebox:draglistview:1.7.3")
-    api("com.google.android.flexbox:flexbox:3.0.0")
-    api("com.google.android.material:material:${Vers.materialVersion}")
-    api("com.otaliastudios:transcoder:0.10.5")
-    api("com.squareup.okhttp3:okhttp-urlconnection:${Vers.okhttpVersion}")
-    api("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
-    api("org.bouncycastle:bcprov-jdk15on:1.70")
-    api("org.jetbrains.kotlin:kotlin-reflect:${Vers.kotlinVersion}")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Vers.kotlinxCoroutinesVersion}")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinxCoroutinesVersion}")
-    api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:${Vers.kotlinxSerializationLibVersion}")
-    api("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
+    // JugglerBaseInitializer で使う
+    implementation("androidx.startup:startup-runtime:${Vers.androidxStartup}")
 
-    //non-OSS dependency api "androidx.media3:media3-cast:$media3Version"
-    api("androidx.media3:media3-common:${Vers.media3Version}")
-    api("androidx.media3:media3-datasource:${Vers.media3Version}")
-    api("androidx.media3:media3-effect:${Vers.media3Version}")
-    api("androidx.media3:media3-exoplayer:${Vers.media3Version}")
-    api("androidx.media3:media3-session:${Vers.media3Version}")
-    api("androidx.media3:media3-transformer:${Vers.media3Version}")
-    api("androidx.media3:media3-ui:${Vers.media3Version}")
+    // decodeP256dh で使う
+    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
 
-    // commons-codecをapiにすると、端末上の古いjarが使われてしまう
-    // declaration of "org.apache.commons.codec.binary.Base64" appears in /system/framework/org.apache.http.legacy.jar)
-    androidTestImplementation("commons-codec:commons-codec:${Vers.commonsCodecVersion}")
+    // defaultSecurityProvider で使う
+    implementation("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
 
-    // Koin main features for Android
-    api("io.insert-koin:koin-android:${Vers.koinVersion}")
-    api("io.insert-koin:koin-android-compat:${Vers.koinVersion}")
-    api("io.insert-koin:koin-androidx-workmanager:${Vers.koinVersion}")
-    // api( "io.insert-koin:koin-androidx-navigation:$koinVersion")
-    // api( "io.insert-koin:koin-androidx-compose:$koinVersion")
+    // AudioTranscoderで使う
+    implementation("androidx.media3:media3-common:${Vers.androidxMedia3}")
+    implementation("androidx.media3:media3-transformer:${Vers.androidxMedia3}")
+    implementation("androidx.media3:media3-effect:${Vers.androidxMedia3}")
 
-    // for com.bumptech.glide.integration.webp.*
-    api("com.github.zjupure:webpdecoder:${Vers.webpDecoderVersion}")
-    api("com.github.bumptech.glide:glide:${Vers.glideVersion}")
-    api("com.github.bumptech.glide:annotations:${Vers.glideVersion}")
-    api("com.github.bumptech.glide:okhttp3-integration:${Vers.glideVersion}") {
-        exclude("com.squareup.okhttp3", "okhttp")
-    }
+    // EmptyScope.kt で使う
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinxCoroutinesVersion}")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Vers.androidxLifecycle}")
 
-    androidTestApi("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCoreVersion}")
-    androidTestApi("androidx.test.ext:junit-ktx:1.1.5")
-    androidTestApi("androidx.test.ext:junit:${Vers.androidxTestExtJunitVersion}")
-    androidTestApi("androidx.test.ext:truth:1.5.0")
-    androidTestApi("androidx.test:core-ktx:${Vers.testKtxVersion}")
-    androidTestApi("androidx.test:core:${Vers.androidxTestVersion}")
-    androidTestApi("androidx.test:runner:1.5.2")
-    androidTestApi("org.jetbrains.kotlin:kotlin-test:${Vers.kotlinTestVersion}")
-    androidTestApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
-    testApi("androidx.arch.core:core-testing:${Vers.archVersion}")
-    testApi("junit:junit:${Vers.junitVersion}")
-    testApi("org.jetbrains.kotlin:kotlin-test:${Vers.kotlinTestVersion}")
-    testApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
+    // Compat.kt で使う
+    implementation("androidx.annotation:annotation:${Vers.androidxAnnotation}")
+    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
 
-    // To use android test orchestrator
-    androidTestUtil("androidx.test:orchestrator:1.4.2")
+    // JsonDelegate で使う
+    implementation(kotlin("reflect"))
+    // UriSerializer で使う。アカウント設定で状態の保存に kotlinx-serialization-json を使っている
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Vers.kotlinxSerializationLibVersion}")
 
-    testApi("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
-        exclude("com.squareup.okio", "okio")
-        exclude("com.squareup.okhttp3", "okhttp")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
-    }
-    androidTestApi("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
-        exclude("com.squareup.okio", "okio")
-        exclude("com.squareup.okhttp3", "okhttp")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
-    }
+    // BitmapUtils で使う
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
-    // conscrypt をUnitテストするための指定
-    // https://github.com/google/conscrypt/issues/649
+    // MovieUtils で使う
+    implementation("com.otaliastudios:transcoder:0.10.5")
 
-    api("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
+    // HttpUtils で使う
+    implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
+
+    // ==========================================================================
+    // 単体テスト
+    testImplementation(kotlin("test"))
+
+    // ==========================================================================
+    // AndroidTest
+    // 紛らわしいのでAndroidTestではkotlin.testを使わない androidTestImplementation(kotlin("test"))
+    androidTestRuntimeOnly("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:core:${Vers.androidxTestCore}")
+    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunit}")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
+
+    // DispatchersTest で使う
+    androidTestImplementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Vers.androidxLifecycle}")
+
+//    implementation("androidx.core:core-ktx:${Vers.androidxCoreVersion}")
+//
+//    implementation("androidx.emoji2:emoji2-bundled:${Vers.androidxEmoji2}")
+//    implementation("androidx.emoji2:emoji2-views-helper:${Vers.androidxEmoji2}")
+//    implementation("androidx.emoji2:emoji2-views:${Vers.androidxEmoji2}")
+//    implementation("androidx.emoji2:emoji2:${Vers.androidxEmoji2}")
+//    implementation("androidx.lifecycle:lifecycle-common-java8:${Vers.lifecycleVersion}")
+//    implementation("androidx.lifecycle:lifecycle-livedata-ktx:${Vers.lifecycleVersion}")
+//    implementation("androidx.lifecycle:lifecycle-process:${Vers.lifecycleVersion}")
+//    implementation("androidx.lifecycle:lifecycle-reactivestreams-ktx:${Vers.lifecycleVersion}")
+//    implementation("androidx.lifecycle:lifecycle-service:${Vers.lifecycleVersion}")
+//    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Vers.lifecycleVersion}")
+//    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:${Vers.lifecycleVersion}")
+//
+//
+//    implementation("com.astuetz:pagerslidingtabstrip:1.0.1")
+//    implementation("com.caverock:androidsvg-aar:1.4")
+//    implementation("com.github.UnifiedPush:android-connector:2.1.1")
+//
+//    implementation("com.github.bumptech.glide:annotations:${Vers.glideVersion}")
+//    implementation("com.github.bumptech.glide:glide:${Vers.glideVersion}")
+//    implementation("com.github.hadilq:live-event:1.3.0")
+//
+//    implementation("com.github.penfeizhou.android.animation:apng:${Vers.apng4AndroidVersion}")
+//
+//    implementation("com.github.zjupure:webpdecoder:${Vers.webpDecoderVersion}")
+//
+//    implementation("com.google.android.material:material:${Vers.googleMaterialVersion}")
+//
+//    implementation("jp.wasabeef:glide-transformations:4.3.0")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Vers.kotlinxCoroutinesVersion}")
+//    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+//    implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:${Vers.gildorkotlinCoroutinesOkhttp}")
+
+
+//    androidTestImplementation("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCoreVersion}")
+//    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
+//    androidTestImplementation("androidx.test.ext:truth:1.5.0")
+//    androidTestImplementation("androidx.test:core-ktx:${Vers.testKtxVersion}")
+//
+//    testImplementation("androidx.arch.core:core-testing:${Vers.archVersion}")
+//    testImplementation("junit:junit:${Vers.junitVersion}")
+//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
+//
+//    // Compose compilerによりkotlinのバージョンを上げられない
+//    //noinspection GradleDependency
+//    testImplementation("org.jetbrains.kotlin:kotlin-test:${Vers.kotlinTestVersion}")
+//    //noinspection GradleDependency
+//    androidTestImplementation("org.jetbrains.kotlin:kotlin-test:${Vers.kotlinTestVersion}")
+//
+//    // To use android test orchestrator
+//    // androidTestUtil("androidx.test:orchestrator:1.4.2")
+//
+//    testImplementation("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
+//        exclude("com.squareup.okio", "okio")
+//        exclude("com.squareup.okhttp3", "okhttp")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+//    }
+//    androidTestImplementation("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
+//        exclude("com.squareup.okio", "okio")
+//        exclude("com.squareup.okhttp3", "okhttp")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+//    }
 }

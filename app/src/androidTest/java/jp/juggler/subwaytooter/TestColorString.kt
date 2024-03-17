@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.graphics.Color
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.jrummyapps.android.colorpicker.parseColorString
+import com.jrummyapps.android.colorpicker.parseColor
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,8 +12,8 @@ class TestColorString {
     @Test
     fun testColorString() {
         fun a(s: String, expect: Int) {
-            assertEquals(s, expect, parseColorString(s))
-            assertEquals("#$s", expect, parseColorString("#$s"))
+            assertEquals(s, expect, s.parseColor())
+            assertEquals("#$s", expect, "#$s".parseColor())
         }
         a("", Color.BLACK)
         a("8", Color.BLACK or 0x88_88_88)

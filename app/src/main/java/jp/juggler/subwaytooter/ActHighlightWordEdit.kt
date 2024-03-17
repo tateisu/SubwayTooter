@@ -8,8 +8,7 @@ import android.media.RingtoneManager
 import android.os.Bundle
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
-import com.jrummyapps.android.colorpicker.ColorPickerDialog
-import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.databinding.ActHighlightEditBinding
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.daoHighlightWord
@@ -23,12 +22,15 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.long
 import jp.juggler.util.string
-import jp.juggler.util.ui.*
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.decodeRingtonePickerResult
+import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.setNavigationBack
 import org.jetbrains.anko.textColor
 
 class ActHighlightWordEdit
     : AppCompatActivity(),
-    ColorPickerDialogListener,
     CompoundButton.OnCheckedChangeListener {
 
     companion object {
@@ -141,20 +143,26 @@ class ActHighlightWordEdit
         views.btnDiscard.setOnClickListener { finish() }
         views.btnSave.setOnClickListener { save() }
         views.btnTextColorEdit.setOnClickListener {
-            openColorPicker(
-                COLOR_DIALOG_ID_TEXT,
-                item.color_fg
-            )
+            launchAndShowError {
+                item.color_fg = Color.BLACK or dialogColorPicker(
+                    colorInitial = item.color_fg.notZero(),
+                    alphaEnabled = false,
+                )
+                showColor()
+            }
         }
         views.btnTextColorReset.setOnClickListener {
             item.color_fg = 0
             showColor()
         }
         views.btnBackgroundColorEdit.setOnClickListener {
-            openColorPicker(
-                COLOR_DIALOG_ID_BACKGROUND,
-                item.color_bg
-            )
+            launchAndShowError {
+                item.color_bg = dialogColorPicker(
+                    colorInitial = item.color_bg.notZero(),
+                    alphaEnabled = true,
+                ).notZero() ?: 0x01000000
+                showColor()
+            }
         }
         views.btnBackgroundColorReset.setOnClickListener {
             item.color_bg = 0
@@ -178,28 +186,6 @@ class ActHighlightWordEdit
         if (bBusy) return
         uiToData()
         showSound()
-    }
-
-    private fun openColorPicker(id: Int, initialColor: Int) {
-        val builder = ColorPickerDialog.newBuilder()
-            .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-            .setAllowPresets(true)
-            .setShowAlphaSlider(id == COLOR_DIALOG_ID_BACKGROUND)
-            .setDialogId(id)
-
-        if (initialColor != 0) builder.setColor(initialColor)
-
-        builder.show(this)
-    }
-
-    override fun onDialogDismissed(dialogId: Int) {}
-
-    override fun onColorSelected(dialogId: Int, newColor: Int) {
-        when (dialogId) {
-            COLOR_DIALOG_ID_TEXT -> item.color_fg = newColor or Color.BLACK
-            COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = newColor.notZero() ?: 0x01000000
-        }
-        showColor()
     }
 
     //////////////////////////////////////////////////////////////////

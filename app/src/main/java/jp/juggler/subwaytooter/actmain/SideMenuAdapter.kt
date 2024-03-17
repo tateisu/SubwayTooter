@@ -28,7 +28,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMutedApp
 import jp.juggler.subwaytooter.ActMutedPseudoAccount
 import jp.juggler.subwaytooter.ActMutedWord
-import jp.juggler.subwaytooter.ActOSSLicense
+import jp.juggler.subwaytooter.ui.ossLicense.ActOSSLicense
 import jp.juggler.subwaytooter.ActPushMessageList
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R

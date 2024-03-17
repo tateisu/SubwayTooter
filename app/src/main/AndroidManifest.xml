@@ -252,7 +252,7 @@
             android:label="@string/app_about" />
 
         <activity
-            android:name=".ActOSSLicense"
+            android:name=".ui.ossLicense.ActOSSLicense"
             android:exported="false"
             android:label="@string/oss_license" />
 

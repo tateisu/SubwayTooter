@@ -2,15 +2,14 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
-import com.jrummyapps.android.colorpicker.ColorPickerDialog
-import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActNicknameBinding
 import jp.juggler.subwaytooter.table.AcctColor
@@ -23,11 +22,17 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.string
-import jp.juggler.util.ui.*
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.decodeRingtonePickerResult
+import jp.juggler.util.ui.hideKeyboard
+import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.setNavigationBack
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 
-class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
+class ActNickname : AppCompatActivity(), View.OnClickListener {
 
     companion object {
         private val log = LogCategory("ActNickname")
@@ -170,17 +175,14 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
     }
 
     override fun onClick(v: View) {
-        val builder: ColorPickerDialog.Builder
         when (v.id) {
-            R.id.btnTextColorEdit -> {
+            R.id.btnTextColorEdit -> launchAndShowError {
                 views.etNickname.hideKeyboard()
-                builder = ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(false)
-                    .setDialogId(1)
-                if (colorFg != 0) builder.setColor(colorFg)
-                builder.show(this)
+                colorFg = Color.BLACK or dialogColorPicker(
+                    colorInitial = colorFg.notZero(),
+                    alphaEnabled = false
+                )
+                show()
             }
 
             R.id.btnTextColorReset -> {
@@ -188,15 +190,13 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
                 show()
             }
 
-            R.id.btnBackgroundColorEdit -> {
+            R.id.btnBackgroundColorEdit -> launchAndShowError {
                 views.etNickname.hideKeyboard()
-                builder = ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(false)
-                    .setDialogId(2)
-                if (colorBg != 0) builder.setColor(colorBg)
-                builder.show(this)
+                colorBg = Color.BLACK or dialogColorPicker(
+                    colorInitial = colorBg.notZero(),
+                    alphaEnabled = false,
+                )
+                show()
             }
 
             R.id.btnBackgroundColorReset -> {
@@ -220,16 +220,6 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
             R.id.btnNotificationSoundReset -> notificationSoundUri = ""
         }
     }
-
-    override fun onColorSelected(dialogId: Int, @ColorInt newColor: Int) {
-        when (dialogId) {
-            1 -> colorFg = -0x1000000 or newColor
-            2 -> colorBg = -0x1000000 or newColor
-        }
-        show()
-    }
-
-    override fun onDialogDismissed(dialogId: Int) {}
 
     private fun openNotificationSoundPicker() {
         val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)

@@ -62,10 +62,13 @@ repositories {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+
     api(project(":apng"))
     implementation(project(":base"))
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+    implementation("com.github.bumptech.glide:glide:${Vers.glideVersion}")
+    implementation("com.github.zjupure:webpdecoder:${Vers.webpDecoderVersion}")
 
-    testImplementation("junit:junit:${Vers.junitVersion}")
+    // テストコードはない…
 }

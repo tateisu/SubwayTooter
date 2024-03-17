@@ -68,4 +68,8 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
     implementation(project(":base"))
     implementation(project(":apng_android"))
+    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
+
+    // ないとなぜかIDE上にエラーが出る
+    implementation("androidx.activity:activity-ktx:${Vers.androidxActivity}")
 }

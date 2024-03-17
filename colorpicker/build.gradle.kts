@@ -23,6 +23,9 @@ android {
     lint {
         abortOnError = false
     }
+    buildFeatures {
+        viewBinding = true
+    }
 
     compileOptions {
         sourceCompatibility = Vers.javaSourceCompatibility
@@ -52,5 +55,12 @@ android {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+
+    // dismissSafe, systemService, View.gone() など
     implementation(project(":base"))
+
+    implementation("androidx.core:core-ktx:${Vers.androidxCore}")
+    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
+    implementation("androidx.annotation:annotation:${Vers.androidxAnnotation}")
+    implementation("com.google.android.flexbox:flexbox:${Vers.googleFlexbox}")
 }

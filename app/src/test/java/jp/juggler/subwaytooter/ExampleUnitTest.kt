@@ -1,11 +1,14 @@
 package jp.juggler.subwaytooter
 
-import org.junit.Test
-import org.junit.Assert.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        assertEquals(
+            expected = 4,
+            actual = 2 + 2,
+        )
     }
 }

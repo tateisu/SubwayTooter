@@ -129,7 +129,7 @@ private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
     )
 }
 
-fun AppCompatActivity.setStatusBarColorCompat(@ColorInt c: Int) {
+fun Activity.setStatusBarColorCompat(@ColorInt c: Int) {
     window?.apply {
         statusBarColor = Color.BLACK or c
 
@@ -157,7 +157,7 @@ fun AppCompatActivity.setStatusBarColorCompat(@ColorInt c: Int) {
     }
 }
 
-fun AppCompatActivity.setNavigationBarColorCompat(@ColorInt c: Int) {
+fun Activity.setNavigationBarColorCompat(@ColorInt c: Int) {
     if (c == 0) {
         // no way to restore to system default, need restart app.
         return

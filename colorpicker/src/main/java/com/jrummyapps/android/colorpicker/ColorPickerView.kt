@@ -17,8 +17,18 @@ package com.jrummyapps.android.colorpicker
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.ComposeShader
+import android.graphics.LinearGradient
+import android.graphics.Paint
 import android.graphics.Paint.Align
+import android.graphics.Point
+import android.graphics.PorterDuff
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.Shader.TileMode
 import android.os.Bundle
 import android.os.Parcelable
@@ -57,7 +67,7 @@ class ColorPickerView @JvmOverloads constructor(
         private const val BORDER_WIDTH_PX = 1
     }
 
-    interface OnColorChangedListener {
+    fun interface OnColorChangedListener {
         fun onColorChanged(newColor: Int)
     }
 
@@ -70,41 +80,35 @@ class ColorPickerView @JvmOverloads constructor(
     /**
      * The width in px of the hue panel.
      */
-    private val huePanelWidthPx =
-        DrawingUtils.dpToPx(context, HUE_PANEL_WDITH_DP.toFloat())
+    private val huePanelWidthPx = context.dpToPx(HUE_PANEL_WDITH_DP)
 
     /**
      * The height in px of the alpha panel
      */
-    private val alphaPanelHeightPx =
-        DrawingUtils.dpToPx(context, ALPHA_PANEL_HEIGH_DP.toFloat())
+    private val alphaPanelHeightPx = context.dpToPx(ALPHA_PANEL_HEIGH_DP)
 
     /**
      * The distance in px between the different
      * color panels.
      */
-    private val panelSpacingPx =
-        DrawingUtils.dpToPx(context, PANEL_SPACING_DP.toFloat())
+    private val panelSpacingPx = context.dpToPx(PANEL_SPACING_DP)
 
     /**
      * The radius in px of the color palette tracker circle.
      */
-    private val circleTrackerRadiusPx =
-        DrawingUtils.dpToPx(context, CIRCLE_TRACKER_RADIUS_DP.toFloat())
+    private val circleTrackerRadiusPx = context.dpToPx(CIRCLE_TRACKER_RADIUS_DP)
 
     /**
      * The px which the tracker of the hue or alpha panel
      * will extend outside of its bounds.
      */
-    private val sliderTrackerOffsetPx =
-        DrawingUtils.dpToPx(context, SLIDER_TRACKER_OFFSET_DP.toFloat())
+    private val sliderTrackerOffsetPx = context.dpToPx(SLIDER_TRACKER_OFFSET_DP)
 
     /**
      * Height of slider tracker on hue panel,
      * width of slider on alpha panel.
      */
-    private val sliderTrackerSizePx =
-        DrawingUtils.dpToPx(context, SLIDER_TRACKER_SIZE_DP.toFloat())
+    private val sliderTrackerSizePx = context.dpToPx(SLIDER_TRACKER_SIZE_DP)
 
     /**
      * the current value of the text that will be shown in the alpha slider.
@@ -147,7 +151,7 @@ class ColorPickerView @JvmOverloads constructor(
 
     private val satValTrackerPaint = Paint().apply {
         style = Paint.Style.STROKE
-        strokeWidth = DrawingUtils.dpToPx(context, 2f).toFloat()
+        strokeWidth = context.dpToPx(2f).toFloat()
         isAntiAlias = true
     }
 
@@ -155,7 +159,7 @@ class ColorPickerView @JvmOverloads constructor(
 
     private val alphaTextPaint = Paint().apply {
         color = -0xe3e3e4
-        textSize = DrawingUtils.dpToPx(context, 14f).toFloat()
+        textSize = context.dpToPx(14f).toFloat()
         isAntiAlias = true
         textAlign = Align.CENTER
         isFakeBoldText = true
@@ -164,7 +168,7 @@ class ColorPickerView @JvmOverloads constructor(
     private val hueAlphaTrackerPaint = Paint().apply {
         color = sliderTrackerColor
         style = Paint.Style.STROKE
-        strokeWidth = DrawingUtils.dpToPx(context, 2f).toFloat()
+        strokeWidth = context.dpToPx(2f).toFloat()
         isAntiAlias = true
     }
 
@@ -208,7 +212,7 @@ class ColorPickerView @JvmOverloads constructor(
     private var hueRect: Rect? = null
     private var alphaRect: Rect? = null
     private var startTouchPoint: Point? = null
-    private var alphaPatternDrawable: AlphaPatternDrawable? = null
+    private var tilePatternDrawable: TilePatternDrawable? = null
 
     /**
      * OnColorChangedListener to get notified when the color selected by the user has changed.
@@ -286,6 +290,7 @@ class ColorPickerView @JvmOverloads constructor(
         val rect = this.satValRect ?: return
         val drawingRect = this.drawingRect ?: return
 
+        @Suppress("KotlinConstantConditions")
         if (BORDER_WIDTH_PX > 0) {
             borderPaint.color = borderColor
             canvas.drawRect(
@@ -366,9 +371,10 @@ class ColorPickerView @JvmOverloads constructor(
         val p = satValToPoint(sat, bri)
         satValTrackerPaint.color = -0x1000000
         canvas.drawCircle(
-            p.x.toFloat(), p.y.toFloat(), (circleTrackerRadiusPx - DrawingUtils.dpToPx(
-                context, 1f
-            )).toFloat(), satValTrackerPaint
+            p.x.toFloat(),
+            p.y.toFloat(),
+            (circleTrackerRadiusPx - context.dpToPx(1f)).toFloat(),
+            satValTrackerPaint
         )
         satValTrackerPaint.color = -0x222223
         canvas.drawCircle(
@@ -381,6 +387,7 @@ class ColorPickerView @JvmOverloads constructor(
 
     private fun drawHuePanel(canvas: Canvas) {
         val rect = hueRect
+        @Suppress("KotlinConstantConditions")
         if (BORDER_WIDTH_PX > 0) {
             borderPaint.color = borderColor
             canvas.drawRect(
@@ -440,13 +447,14 @@ class ColorPickerView @JvmOverloads constructor(
     private fun drawAlphaPanel(canvas: Canvas) {
         if (!showAlphaPanel) return
         val rect = this.alphaRect ?: return
-        val alphaPatternDrawable = this.alphaPatternDrawable ?: return
+        val alphaPatternDrawable = this.tilePatternDrawable ?: return
 
         /*
          * Will be drawn with hw acceleration, very fast.
          * Also the AlphaPatternDrawable is backed by a bitmap
          * generated only once if the size does not change.
          */
+        @Suppress("KotlinConstantConditions")
         if (BORDER_WIDTH_PX > 0) {
             borderPaint.color = borderColor
             canvas.drawRect(
@@ -477,9 +485,7 @@ class ColorPickerView @JvmOverloads constructor(
                 canvas.drawText(
                     it,
                     rect.centerX().toFloat(),
-                    (rect.centerY() + DrawingUtils.dpToPx(
-                        context, 4f
-                    )).toFloat(),
+                    (rect.centerY() + context.dpToPx(4f)).toFloat(),
                     alphaTextPaint
                 )
             }
@@ -579,6 +585,7 @@ class ColorPickerView @JvmOverloads constructor(
                 startTouchPoint = Point(event.x.toInt(), event.y.toInt())
                 update = moveTrackersIfNeeded(event)
             }
+
             MotionEvent.ACTION_MOVE -> update = moveTrackersIfNeeded(event)
             MotionEvent.ACTION_UP -> {
                 startTouchPoint = null
@@ -607,16 +614,19 @@ class ColorPickerView @JvmOverloads constructor(
                 hue = pointToHue(event.y)
                 true
             }
+
             satValRect?.contains(startX, startY) == true -> {
                 val result = pointToSatVal(event.x, event.y)
                 sat = result[0]
                 bri = result[1]
                 true
             }
+
             alphaRect?.contains(startX, startY) == true -> {
                 alpha = pointToAlpha(event.x.toInt())
                 true
             }
+
             else -> false
         }
     }
@@ -679,14 +689,17 @@ class ColorPickerView @JvmOverloads constructor(
                     finalWidth = widthAllowed
                     finalHeight = heightNeeded
                 }
+
                 widthOk -> {
                     finalHeight = heightAllowed
                     finalWidth = widthNeeded
                 }
+
                 heightOk -> {
                     finalHeight = heightNeeded
                     finalWidth = widthAllowed
                 }
+
                 else -> {
                     finalHeight = heightAllowed
                     finalWidth = widthAllowed
@@ -769,7 +782,7 @@ class ColorPickerView @JvmOverloads constructor(
         val alphaRect = Rect(left, top, right, bottom)
             .also { this.alphaRect = it }
 
-        alphaPatternDrawable = AlphaPatternDrawable(DrawingUtils.dpToPx(context, 4f))
+        tilePatternDrawable = TilePatternDrawable(context.dpToPx(4f))
             .apply {
                 setBounds(
                     alphaRect.left,

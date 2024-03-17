@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
@@ -405,7 +406,7 @@ class App1 : Application() {
         }
 
         fun setActivityTheme(
-            activity: AppCompatActivity,
+            activity: Activity,
             forceDark: Boolean = false,
         ) {
             prepare(activity.applicationContext, "setActivityTheme")

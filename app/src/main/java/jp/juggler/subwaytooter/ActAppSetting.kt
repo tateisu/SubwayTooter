@@ -27,17 +27,17 @@ import android.widget.FrameLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
-import androidx.annotation.ColorInt
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.jrummyapps.android.colorpicker.ColorPickerDialog
-import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import com.jrummyapps.android.colorpicker.ColorPickerDialogType
+import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.appsetting.AppDataExporter
 import jp.juggler.subwaytooter.appsetting.AppSettingItem
 import jp.juggler.subwaytooter.appsetting.SettingType
@@ -63,8 +63,8 @@ import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
 import jp.juggler.util.data.cast
-import jp.juggler.util.data.defaultLocale
 import jp.juggler.util.data.checkMimeTypeAndGrant
+import jp.juggler.util.data.defaultLocale
 import jp.juggler.util.data.intentOpenDocument
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
@@ -81,6 +81,8 @@ import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.isNotOk
 import jp.juggler.util.ui.launch
 import jp.juggler.util.ui.vg
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -94,7 +96,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.math.abs
 
-class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnClickListener {
+class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
     companion object {
 
@@ -393,22 +395,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 
     private fun dip(dp: Int): Int = dip(dp.toFloat())
 
-    override fun onDialogDismissed(dialogId: Int) {
-    }
-
-    override fun onColorSelected(dialogId: Int, @ColorInt newColor: Int) {
-        val colorTarget = this.colorTarget ?: return
-        val ip: IntPref = colorTarget.pref.cast() ?: error("$colorTarget has no in pref")
-        val c = when (colorTarget.type) {
-            SettingType.ColorAlpha -> newColor.notZero() ?: 1
-            else -> newColor or Color.BLACK
-        }
-        ip.value = c
-        val vh = findItemViewHolder(colorTarget)
-        vh?.showColor()
-        colorTarget.changed(this)
-    }
-
     private val settingHolderList =
         ConcurrentHashMap<Int, VhSettingItem>()
 
@@ -655,15 +641,25 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
                         views.btnEdit.isEnabledAlpha = item.enabled
                         views.btnReset.isEnabledAlpha = item.enabled
                         views.btnEdit.setOnClickListener {
-                            actAppSetting.colorTarget = item
-                            val color = ip.value
-                            val builder = ColorPickerDialog.newBuilder()
-                                .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                                .setAllowPresets(true)
-                                .setShowAlphaSlider(item.type == SettingType.ColorAlpha)
-                                .setDialogId(COLOR_DIALOG_ID)
-                            if (color != 0) builder.setColor(color)
-                            builder.show(actAppSetting)
+                            actAppSetting.lifecycleScope.launch {
+                                try {
+                                    actAppSetting.colorTarget = item
+                                    val newColor = actAppSetting.dialogColorPicker(
+                                        colorInitial = ip.value.notZero(),
+                                        alphaEnabled = item.type == SettingType.ColorAlpha,
+                                    )
+                                    val c = when (item.type) {
+                                        SettingType.ColorAlpha -> newColor.notZero() ?: 1
+                                        else -> newColor or Color.BLACK
+                                    }
+                                    ip.value = c
+                                    item.changed(actAppSetting)
+                                    actAppSetting.findItemViewHolder(item)?.showColor()
+                                } catch (ex: Throwable) {
+                                    if (ex is CancellationException) return@launch
+                                    log.e(ex, "")
+                                }
+                            }
                         }
                         views.btnReset.setOnClickListener {
                             ip.removeValue()

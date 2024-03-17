@@ -96,7 +96,6 @@ fabric.properties
 # Generated files
 bin/
 gen/
-out/
 #  Uncomment the following line in case you need and you don't have the release build type files in your app
 # release/
 
@@ -221,3 +220,5 @@ keystore.properties
 
 app/fcm/release/output-metadata.json
 /_apk/
+
+/.depCheck/

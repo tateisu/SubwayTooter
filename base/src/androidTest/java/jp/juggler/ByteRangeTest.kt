@@ -4,55 +4,64 @@ import jp.juggler.crypt.toByteRange
 import jp.juggler.util.data.decodeBase64
 import jp.juggler.util.data.encodeBase64
 import jp.juggler.util.data.encodeBase64Url
-import org.apache.commons.codec.binary.Base64.encodeBase64String
-import org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class ByteRangeTest {
 
     /**
-     * ByteRangeや StringUtilsのBase64が、commons-codecの出力結果と一致するか調べる。
+     * ByteRangeや StringUtilsのBase64が、kotlin.io.encoding.Base64 の出力結果と一致するか調べる。
      */
+    @OptIn(ExperimentalEncodingApi::class)
     @Test
     fun testByteRangeBase64() {
         for (len in 0..300) {
             val src = ByteArray(len) { it.toByte() }
             run {
-                val encodedByApacheCodec = encodeBase64URLSafeString(src)
+
+                val kotlinBase64UrlSafe = Base64.UrlSafe
+
+                // kotlin.io の Base64.UrlSafe は 末尾の = パディングを残すので後から除去する必要がある
+                val encodedByKotlinIo = kotlinBase64UrlSafe.encode(src).trimEnd { it=='=' }
+                // ByteRange().encodeBase64Url() はパディングを含まない
                 val encodeByByteRange = src.toByteRange().encodeBase64Url()
-                val encodeByUtils = src.encodeBase64Url()
-                val decodedByUtils = encodeByUtils.decodeBase64()
+                // StringUtils の encodeBase64Url() はパディングを含まない
+                val encodeByStringUtils = src.encodeBase64Url()
+                // もちろんStringUtilsの decodeBase64() でデコードできる
+                val decodedByUtils = encodeByStringUtils.decodeBase64()
                 assertEquals(
                     "len=$len",
-                    encodedByApacheCodec,
+                    encodedByKotlinIo,
                     encodeByByteRange,
                 )
                 assertEquals(
                     "len=$len",
-                    encodedByApacheCodec,
-                    encodeByUtils,
+                    encodedByKotlinIo,
+                    encodeByStringUtils,
                 )
                 assertArrayEquals(
-                    "len=$len encoded=$encodeByUtils",
+                    "len=$len encoded=$encodeByStringUtils",
                     src,
                     decodedByUtils,
                 )
             }
             run {
-                val encodedByApacheCodec = encodeBase64String(src)
+                val kotinBase64 = Base64.Default
+                val encodedByKotlinIo = kotinBase64.encode(src)
                 val encodeByByteRange = src.toByteRange().encodeBase64()
                 val encodeByUtils = src.encodeBase64()
                 val decodedByUtils = encodeByUtils.decodeBase64()
                 assertEquals(
                     "len=$len",
-                    encodedByApacheCodec,
+                    encodedByKotlinIo,
                     encodeByByteRange,
                 )
                 assertEquals(
                     "len=$len",
-                    encodedByApacheCodec,
+                    encodedByKotlinIo,
                     encodeByUtils,
                 )
                 assertArrayEquals(

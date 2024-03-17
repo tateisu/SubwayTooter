@@ -5,13 +5,16 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:${Vers.androidGradlePruginVersion}")
+        classpath("com.android.tools.build:gradle:${Vers.androidGradlePrugin}")
 
         // room のバージョンの影響で google-services を上げられない場合がある
         classpath("com.google.gms:google-services:4.4.1")
 
         //noinspection DifferentKotlinGradleVersion
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Vers.kotlinVersion}")
+
+        // Compose Compilerの都合でkotlinを上げられない場合がある
+        //noinspection GradleDependency
         classpath("org.jetbrains.kotlin:kotlin-serialization:${Vers.kotlinVersion}")
 
         classpath("com.github.bjoernq:unmockplugin:0.7.6")
@@ -25,6 +28,7 @@ plugins {
     kotlin("plugin.serialization") version (Vers.kotlinxSerializationPluginVersion) apply true // !!
     id("org.jetbrains.kotlin.android") version (Vers.kotlinVersion) apply false
     id("com.google.devtools.ksp") version (Vers.kspVersion) apply false
+ //   id("com.android.library") version "8.3.0" apply false
 }
 
 allprojects {

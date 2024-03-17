@@ -27,7 +27,7 @@ import androidx.core.graphics.ColorUtils
 internal class ColorPaletteAdapter(
     val colors: IntArray,
     var selectedPosition: Int,
-    @ColorShape val colorShape: Int,
+    val colorShape: ColorShape,
     val listener: (Int) -> Unit,
 ) : BaseAdapter() {
 
@@ -47,10 +47,9 @@ internal class ColorPaletteAdapter(
     private inner class ViewHolder(parent: ViewGroup) {
         val root: View = run {
             LayoutInflater.from(parent.context).inflate(
-                if (colorShape == ColorShape.SQUARE) {
-                    R.layout.cpv_color_item_square
-                } else {
-                    R.layout.cpv_color_item_circle
+                when (colorShape) {
+                    ColorShape.Square -> R.layout.cpv_color_item_square
+                    ColorShape.Circle -> R.layout.cpv_color_item_circle
                 },
                 parent,
                 false
@@ -81,12 +80,14 @@ internal class ColorPaletteAdapter(
                         imageView.colorFilter = null
                     }
                 }
-                alpha <= ColorPickerDialog.ALPHA_THRESHOLD -> {
+
+                alpha <= ALPHA_THRESHOLD -> {
                     colorPanelView.borderColor = color or -0x1000000
                     imageView.setColorFilter( /*color | 0xFF000000*/Color.BLACK,
                         PorterDuff.Mode.SRC_IN
                     )
                 }
+
                 else -> {
                     colorPanelView.borderColor = originalBorderColor
                     imageView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN)

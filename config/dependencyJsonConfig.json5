@@ -1,0 +1,219 @@
+{
+  // json5
+
+  // ~/.gradle/caches フォルダ
+  "gradleCacheDir": "/c/Users/tateisu/.gradle/caches",
+  //デバッグ用。指定があればそのフォルダにpomファイルをコピーする。
+  // "pomDumpDir" : null,
+
+  // 不足データの取得に使うリポジトリ
+  "repos": [
+    "https://repo.maven.apache.org/maven2",
+    "https://dl.google.com/android/maven2",
+    "https://www.jitpack.io",
+  ],
+
+  //////////////////////////////////////////////////////////////
+  // 出力ファイル別の設定
+  "outputs": [
+    {
+      "name": "fcm",
+      // 出力JSONファイルのpath
+      "outFile": "app/src/fcm/res/raw/dep_list.json",
+      // gradlew dependencies に指定するconfiguration
+      "configuration": "fcmReleaseRuntimeClasspath",
+    },
+    {
+      "name": "noFcm",
+      // 出力JSONファイルのpath
+      "outFile": "app/src/noFcm/res/raw/dep_list.json",
+      // gradlew dependencies に指定するconfiguration
+      "configuration": "noFcmReleaseRuntimeClasspath",
+    }
+  ],
+
+  // Gradleの依存関係からは自動検出できない依存関係
+  "additionalLibs": [
+    {
+      "website": "https://github.com/iamcal/emoji-data",
+
+      "name": "iamcal/emoji-data",
+      "description": "Easy to parse data and spritesheets for emoji",
+      "licenses": [
+        {
+          "url": "https://opensource.org/license/mit/",
+        },
+      ],
+      "developers": [
+        {
+          "name": "Cal Henderson"
+        }
+      ],
+    },
+    {
+      "website": "https://github.com/twitter/twemoji",
+
+      "name": "Twitter Emoji (Twemoji)",
+      "description": "A simple library that provides standard Unicode emoji support across all platforms.",
+      "licenses": [
+        {
+          "url": "https://opensource.org/license/mit/",
+        },
+      ],
+      "developers": [
+        {
+          "name": "X (fka Twitter)"
+        }
+      ],
+    },
+    {
+      "website": "https://github.com/jrummyapps/colorpicker",
+
+      "name": "Color Picker",
+      "description": "Yet another open source color picker for Android.",
+      "licenses": [
+        {
+          "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        },
+      ],
+      "developers": [
+        {
+          "name": "Jared Rummler"
+        }
+      ],
+    },
+    {
+      "website": "https://github.com/Kotlin/anko",
+
+      "name": "Kotlin/anko (Anko Layouts)",
+      "description": "a fast and type-safe way to write dynamic Android layouts",
+      "licenses": [
+        {
+          "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        },
+      ],
+    }
+  ],
+  //////////////////////////////////////////////////////////////
+  // 既知のライセンス情報
+  // - URLの微妙な差異を吸収するため、あらかじめよくあるライセンスを列挙しておく
+  // - 実行時にPOMから取得した情報でデータが追加される
+  "licenses": [
+    {
+      "name": "The Apache Software License, Version 2.0",
+      "shortName": "Apache-2.0",
+      "urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0",
+        "https://www.apache.org/licenses/LICENSE-2.0.txt",
+        "http://www.apache.org/licenses/LICENSE-2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt",
+        "https://api.github.com/licenses/apache-2.0",
+        "https://github.com/elye/loaderviewlibrary/blob/master/LICENSE",
+      ],
+    },
+    {
+      "name": "MIT License",
+      "shortName": "MIT",
+      "urls": [
+        "https://opensource.org/license/mit/",
+        "https://opensource.org/licenses/MIT",
+        "https://github.com/lisawray/groupie/blob/master/LICENSE.md",
+        "https://github.com/omadahealth/SwipyRefreshLayoutblob/master/LICENSE",
+      ],
+    },
+    {
+      "name": "The 2-Clause BSD License",
+      "shortName": "BSD-2-Clause",
+      "urls": [
+        "https://opensource.org/license/bsd-2-clause/",
+        "http://www.opensource.org/licenses/bsd-license",
+      ],
+    },
+/*
+    {
+      "name": "SQLCipher Community Edition License",
+      "shortName": "SQLCipher Community Edition License",
+      "urls": [
+        "https://www.zetetic.net/sqlcipher/license/",
+      ],
+    },
+*/
+    {
+      "name": "Amazon Software License",
+      "shortName": "Amazon Software License",
+      "urls": [
+        "https://aws.amazon.com/asl/",
+        "http://aws.amazon.com/asl/",
+      ],
+    },
+    {
+      "name": "Unicode, Inc. License",
+      "shortName": "Unicode License",
+      "urls": [
+        "https://www.unicode.org/copyright.html#License",
+        "http://www.unicode.org/copyright.html#License",
+      ],
+    },
+  ],
+  // 以下のライブラリはpomにDevelopers指定がなくても許容する
+  "libsMissingDevelopers": [
+    "androidx.databinding:databinding-",
+    "androidx.databinding:databinding-adapters",
+    "androidx.databinding:viewbinding",
+    "com.amazonaws:aws-android-sdk-",
+    "com.github.alexzhirkevich:custom-qr-generator",
+    "com.github.penfeizhou.android.animation",
+    "com.google.android.datatransport:transport-",
+    "com.google.android.gms:play-services-",
+    "com.google.code.findbugs:jsr305:",
+    "com.google.code.gson:gson:",
+    "com.google.errorprone:error_prone_annotations:",
+    "com.google.firebase:firebase-",
+    "com.google.guava:failureaccess",
+    "com.google.guava:guava",
+    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+    "com.google.zxing:core",
+    "com.jakewharton.picasso:picasso2-okhttp3-downloader",
+    "com.squareup.picasso:picasso",
+    "com.theartofdev.edmodo:android-image-cropper",
+    "io.realm:android-adapters",
+    "javax.inject:javax.inject",
+    "org.apache.httpcomponents:httpclient",
+    "org.apache.httpcomponents:httpcore",
+    "org.apache.httpcomponents:httpmime",
+    "org.eclipse.paho:org.eclipse.paho.client.mqttv3",
+  ],
+  // 以下のライブラリはpomにライセンス指定がなくても許容する
+  "libsMissingLicenses": [
+    "com.github.alexzhirkevich:custom-qr-generator",
+    "com.github.penfeizhou.android.animation",
+    "com.google.guava:failureaccess",
+    "com.google.guava:guava",
+    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+    "com.google.zxing:core",
+    "com.squareup.picasso:picasso",
+    "com.theartofdev.edmodo:android-image-cropper",
+    "commons-codec:commons-codec",
+    "commons-logging:commons-logging",
+    "org.apache.httpcomponents:httpclient",
+    "org.apache.httpcomponents:httpcore",
+    "org.apache.httpcomponents:httpmime",
+    "org.eclipse.paho:org.eclipse.paho.client.mqttv3",
+  ],
+  // 以下のライブラリはpomにライセンス名の指定がなくても許容する
+  "libsMissingLicenseName": [
+  ],
+  // 以下のライブラリはpomにWebサイト指定がなくても許容する
+  "libsMissingWebSite": [
+    "androidx.databinding:viewbinding",
+    "com.github.alexzhirkevich:custom-qr-generator",
+    "com.github.penfeizhou.android.animation",
+    "com.google.android.datatransport:transport-",
+    "com.google.android.gms:play-services-", // 前方一致
+    "com.google.errorprone:error_prone_annotations",
+    "com.google.firebase:firebase-", // 前方一致
+    "com.google.guava:failureaccess",
+    "com.google.guava:listenablefuture",
+    "com.google.zxing:core",
+  ],
+}

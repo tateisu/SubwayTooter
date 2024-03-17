@@ -35,6 +35,10 @@ android {
 
     buildFeatures {
         viewBinding = true
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
 
     // exoPlayer 2.9.0 以降は Java 8 compiler support を要求する
@@ -151,9 +155,7 @@ android {
 }
 
 dependencies {
-
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
-    //noinspection GradleDependency
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
 
     implementation(project(":base"))
@@ -161,56 +163,96 @@ dependencies {
     implementation(project(":emoji"))
     implementation(project(":apng_android"))
     implementation(project(":anko"))
-    implementation(fileTree(mapOf("dir" to "src/main/libs", "include" to arrayOf("*.aar"))))
+
+
+    implementation("androidx.activity:activity-compose:${Vers.androidxActivity}")
+    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
+    implementation("androidx.browser:browser:1.8.0")
+    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.compose.runtime:runtime-livedata:${Vers.androidxComposeRuntime}")
+    implementation("androidx.compose.ui:ui-tooling-preview:${Vers.androidxComposeUi}")
+    implementation("androidx.compose.ui:ui:${Vers.androidxComposeUi}")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    implementation("androidx.emoji2:emoji2-bundled:${Vers.androidxEmoji2}")
+    implementation("androidx.emoji2:emoji2-views-helper:${Vers.androidxEmoji2}")
+    implementation("androidx.emoji2:emoji2-views:${Vers.androidxEmoji2}")
+    implementation("androidx.emoji2:emoji2:${Vers.androidxEmoji2}")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:${Vers.androidxLifecycle}")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${Vers.androidxLifecycle}")
+    implementation("androidx.media3:media3-common:${Vers.androidxMedia3}")
+    implementation("androidx.media3:media3-datasource:${Vers.androidxMedia3}")
+    implementation("androidx.media3:media3-exoplayer:${Vers.androidxMedia3}")
+    implementation("androidx.media3:media3-session:${Vers.androidxMedia3}")
+    implementation("androidx.media3:media3-ui:${Vers.androidxMedia3}")
+    implementation("androidx.recyclerview:recyclerview:${Vers.androidxRecyclerView}")
+    implementation("androidx.work:work-runtime-ktx:${Vers.androidxWork}")
+    implementation("androidx.work:work-runtime:${Vers.androidxWork}")
+    implementation("com.caverock:androidsvg-aar:1.4")
+    implementation("com.github.UnifiedPush:android-connector:2.1.1")
+    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2")
+    implementation("com.github.bumptech.glide:glide:${Vers.glideVersion}")
+    implementation("com.github.omadahealth:swipy:1.2.3@aar")
+    implementation("com.github.penfeizhou.android.animation:apng:${Vers.apng4AndroidVersion}")
+    implementation("com.github.woxthebox:draglistview:1.7.3")
+    implementation("com.github.zjupure:webpdecoder:${Vers.webpDecoderVersion}")
+    implementation("com.google.android.flexbox:flexbox:${Vers.googleFlexbox}")
+    implementation("com.google.android.material:material:${Vers.googleMaterial}")
+    implementation("com.squareup.okhttp3:okhttp-urlconnection:${Vers.okhttpVersion}")
+    implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
+    implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
+    implementation("io.insert-koin:koin-android-compat:${Vers.koinVersion}")
+    implementation("io.insert-koin:koin-android:${Vers.koinVersion}")
+    implementation("io.insert-koin:koin-androidx-workmanager:${Vers.koinVersion}")
+    implementation("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Vers.kotlinxSerializationLibVersion}")
+    implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:${Vers.gildorkotlinCoroutinesOkhttp}")
+
+    ////////////
+
+    implementation("com.github.bumptech.glide:okhttp3-integration:${Vers.glideVersion}") {
+        exclude("com.squareup.okhttp3", "okhttp")
+    }
 
     "fcmImplementation"("com.google.firebase:firebase-messaging:23.4.1")
     "fcmImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Vers.kotlinxCoroutinesVersion}")
 
-    implementation("androidx.core:core-splashscreen:1.0.1")
-
-    // implementation "org.conscrypt:conscrypt-android:$conscryptVersion"
-    api("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
-    implementation("com.github.UnifiedPush:android-connector:2.1.1")
-    implementation("jp.wasabeef:glide-transformations:4.3.0")
-
-    // implementation("com.github.androidmads:QRGenerator:1.0.1")
-    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2")
-
-    val apng4AndroidVersion = "2.25.0"
-    implementation("com.github.penfeizhou.android.animation:apng:$apng4AndroidVersion")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:${Vers.detektVersion}")
 
     ksp("com.github.bumptech.glide:ksp:${Vers.glideVersion}")
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:${Vers.detektVersion}")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.3")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.3")
 
-    testImplementation(project(":base"))
-    androidTestImplementation(project(":base"))
+    // =================================================
+    // UnitTest
+    testImplementation(kotlin("test"))
+    testImplementation("androidx.arch.core:core-testing:${Vers.androidxArchCoreTesting}")
+    testImplementation("junit:junit:${Vers.junitVersion}")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
 
-    androidTestApi("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCoreVersion}")
-    androidTestApi("androidx.test.ext:junit-ktx:1.1.5")
-    androidTestApi("androidx.test.ext:junit:${Vers.androidxTestExtJunitVersion}")
-    androidTestApi("androidx.test.ext:truth:1.5.0")
-    androidTestApi("androidx.test:core-ktx:${Vers.testKtxVersion}")
-    androidTestApi("androidx.test:core:${Vers.androidxTestVersion}")
-    androidTestApi("androidx.test:runner:1.5.2")
-    androidTestApi("org.jetbrains.kotlin:kotlin-test:${Vers.kotlinTestVersion}")
-    androidTestApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
-    testApi("androidx.arch.core:core-testing:${Vers.archVersion}")
-    testApi("junit:junit:${Vers.junitVersion}")
-    testApi("org.jetbrains.kotlin:kotlin-test:${Vers.kotlinTestVersion}")
-    testApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
+//    testImplementation("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
+//        exclude("com.squareup.okio", "okio")
+//        exclude("com.squareup.okhttp3", "okhttp")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+//        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+//    }
 
-    // To use android test orchestrator
+    // ==============================================
+    // androidTest
+    androidTestRuntimeOnly("androidx.test:runner:1.5.2")
     androidTestUtil("androidx.test:orchestrator:1.4.2")
 
-    testApi("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
-        exclude("com.squareup.okio", "okio")
-        exclude("com.squareup.okhttp3", "okhttp")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
-    }
-    androidTestApi("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
+    androidTestImplementation("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCore}")
+    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
+    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunit}")
+    androidTestImplementation("androidx.test.ext:truth:1.5.0")
+    androidTestImplementation("androidx.test:core-ktx:${Vers.androidxTestCoreKtx}")
+    androidTestImplementation("androidx.test:core:${Vers.androidxTestCore}")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.3")
+
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
         exclude("com.squareup.okio", "okio")
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")

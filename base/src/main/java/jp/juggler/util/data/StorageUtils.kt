@@ -9,7 +9,6 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RawRes
 import jp.juggler.util.log.LogCategory
-import okhttp3.internal.closeQuietly
 import java.io.InputStream
 
 private val log = LogCategory("StorageUtils")
@@ -223,7 +222,10 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
         }
         return size
     } finally {
-        if (bClose) inStream.closeQuietly()
+        if (bClose) try {
+            inStream.close()
+        } catch (_: Throwable) {
+        }
     }
 }
 

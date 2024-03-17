@@ -2,11 +2,11 @@
 
 package jp.juggler.apng
 
-import org.junit.Assert.*
-import org.junit.Test
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @Suppress("LargeClass")
 class TestApng {
@@ -3090,9 +3090,8 @@ class TestApng {
         )
     }
 
-    private fun getResourceFile(path: String): File {
-        return File(this.javaClass.classLoader.getResource(path).path)
-    }
+    private fun getResourceFile(path: String): File =
+        File(javaClass.classLoader.getResource(path)!!.path)
 
     @Test
     fun testByteMod() {
@@ -3124,10 +3123,10 @@ class TestApng {
                     }
 
                     override fun onAnimationInfo(
-						apng: Apng,
-						header: ApngImageHeader,
-						animationControl: ApngAnimationControl,
-					) {
+                        apng: Apng,
+                        header: ApngImageHeader,
+                        animationControl: ApngAnimationControl,
+                    ) {
                         println("animationControl=$animationControl")
                     }
 
@@ -3140,12 +3139,12 @@ class TestApng {
                     }
 
                     override fun onAnimationFrame(
-						apng: Apng,
-						frameControl: ApngFrameControl,
-						bitmap: ApngBitmap,
-					) {
+                        apng: Apng,
+                        frameControl: ApngFrameControl,
+                        frameBitmap: ApngBitmap,
+                    ) {
                         println("onAnimationFrame frameControl=$frameControl")
-                        println("onAnimationFrame w=${bitmap.width},h=${bitmap.height}")
+                        println("onAnimationFrame w=${frameBitmap.width},h=${frameBitmap.height}")
                     }
                 }
             )
@@ -3154,7 +3153,6 @@ class TestApng {
 
     @Test
     fun test16bitPaeth() {
-
         FileInputStream(getResourceFile("basi2c16.png")).use { inStream ->
             ApngDecoder.parseStream(
                 BufferedInputStream(inStream),
@@ -3172,10 +3170,10 @@ class TestApng {
                     }
 
                     override fun onAnimationInfo(
-						apng: Apng,
-						header: ApngImageHeader,
-						animationControl: ApngAnimationControl,
-					) {
+                        apng: Apng,
+                        header: ApngImageHeader,
+                        animationControl: ApngAnimationControl,
+                    ) {
                         println("animationControl=$animationControl")
                     }
 
@@ -3200,31 +3198,31 @@ class TestApng {
                                 val dst_g = dstPos.green
                                 val dst_b = dstPos.blue
                                 assertEquals(
-                                    "xy=$x,$y color=${"0x%x".format(dstPos.color)} r",
                                     src_r shr 8,
-                                    dst_r
+                                    dst_r,
+                                    "xy=$x,$y color=${"0x%x".format(dstPos.color)} r",
                                 )
                                 assertEquals(
-                                    "xy=$x,$y color=${"0x%x".format(dstPos.color)} g",
                                     src_g shr 8,
-                                    dst_g
+                                    dst_g,
+                                    "xy=$x,$y color=${"0x%x".format(dstPos.color)} g",
                                 )
                                 assertEquals(
-                                    "xy=$x,$y color=${"0x%x".format(dstPos.color)} b",
                                     src_b shr 8,
-                                    dst_b
+                                    dst_b,
+                                    "xy=$x,$y color=${"0x%x".format(dstPos.color)} b",
                                 )
                             }
                         }
                     }
 
                     override fun onAnimationFrame(
-						apng: Apng,
-						frameControl: ApngFrameControl,
-						bitmap: ApngBitmap,
-					) {
+                        apng: Apng,
+                        frameControl: ApngFrameControl,
+                        frameBitmap: ApngBitmap,
+                    ) {
                         println("onAnimationFrame frameControl=$frameControl")
-                        println("onAnimationFrame w=${bitmap.width},h=${bitmap.height}")
+                        println("onAnimationFrame w=${frameBitmap.width},h=${frameBitmap.height}")
                     }
                 }
             )

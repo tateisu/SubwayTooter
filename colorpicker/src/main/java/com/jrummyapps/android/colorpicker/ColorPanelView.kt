@@ -16,7 +16,13 @@
 package com.jrummyapps.android.colorpicker
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.os.Parcelable
@@ -29,6 +35,17 @@ import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
+
+enum class ColorShape(val attrEnum: Int) {
+    Square(0),
+    Circle(1),
+    ;
+
+    companion object {
+        fun fromInt(i: Int): ColorShape =
+            entries.find { it.attrEnum == i } ?: Square
+    }
+}
 
 /**
  * This class draws a panel which which will be filled with a color which can be set. It can be used to show the
@@ -45,7 +62,7 @@ class ColorPanelView @JvmOverloads constructor(
     }
 
     /* The width in pixels of the border surrounding the color panel. */
-    private val borderWidthPx = DrawingUtils.dpToPx(context, 1f)
+    private val borderWidthPx = context.dpToPx(1f)
 
     private val borderPaint = Paint().apply {
         isAntiAlias = true
@@ -68,7 +85,7 @@ class ColorPanelView @JvmOverloads constructor(
     private var drawingRect = Rect()
     private var colorRect = Rect()
 
-    private var alphaPattern = AlphaPatternDrawable(DrawingUtils.dpToPx(context, 4f))
+    private var alphaPattern = TilePatternDrawable(context.dpToPx(4f))
 
     private var showOldColor = false
 
@@ -88,8 +105,7 @@ class ColorPanelView @JvmOverloads constructor(
             }
         }
 
-    @ColorShape
-    private var shape = 0
+    private var shape = ColorShape.Circle
         set(value) {
             if (field != value) {
                 field = value
@@ -99,9 +115,9 @@ class ColorPanelView @JvmOverloads constructor(
 
     init {
         val a = getContext().obtainStyledAttributes(attrs, R.styleable.ColorPanelView)
-        shape = a.getInt(R.styleable.ColorPanelView_cpv_colorShape, ColorShape.CIRCLE)
+        shape = ColorShape.fromInt(a.getInt(R.styleable.ColorPanelView_cpv_colorShape, -1))
         showOldColor = a.getBoolean(R.styleable.ColorPanelView_cpv_showOldColor, false)
-        check(!(showOldColor && shape != ColorShape.CIRCLE)) { "Color preview is only available in circle mode" }
+        check(!(showOldColor && shape != ColorShape.Circle)) { "Color preview is only available in circle mode" }
         borderColor = a.getColor(R.styleable.ColorPanelView_cpv_borderColor, DEFAULT_BORDER_COLOR)
         a.recycle()
 
@@ -137,13 +153,13 @@ class ColorPanelView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         borderPaint.color = borderColor
         colorPaint.color = color
-        if (shape == ColorShape.SQUARE) {
+        if (shape == ColorShape.Square) {
             if (borderWidthPx > 0) {
                 canvas.drawRect(drawingRect, borderPaint)
             }
             alphaPattern.draw(canvas)
             canvas.drawRect(colorRect, colorPaint)
-        } else if (shape == ColorShape.CIRCLE) {
+        } else if (shape == ColorShape.Circle) {
             val outerRadius = measuredWidth / 2
             if (borderWidthPx > 0) {
                 canvas.drawCircle(
@@ -176,24 +192,22 @@ class ColorPanelView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         when (shape) {
-            ColorShape.SQUARE -> {
+            ColorShape.Square -> {
                 val width = MeasureSpec.getSize(widthMeasureSpec)
                 val height = MeasureSpec.getSize(heightMeasureSpec)
                 setMeasuredDimension(width, height)
             }
-            ColorShape.CIRCLE -> {
+
+            ColorShape.Circle -> {
                 super.onMeasure(widthMeasureSpec, widthMeasureSpec)
                 setMeasuredDimension(measuredWidth, measuredWidth)
-            }
-            else -> {
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
             }
         }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (shape == ColorShape.SQUARE || showOldColor) {
+        if (shape == ColorShape.Square || showOldColor) {
             drawingRect.set(
                 paddingLeft,
                 paddingTop,

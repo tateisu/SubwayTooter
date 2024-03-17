@@ -4,8 +4,11 @@ import jp.juggler.util.data.BinPackList
 import jp.juggler.util.data.BinPackMap
 import jp.juggler.util.data.decodeBinPack
 import jp.juggler.util.data.encodeBinPack
-import org.junit.Assert.*
-import org.junit.Test
+import kotlin.test.DefaultAsserter.assertEquals
+import kotlin.test.DefaultAsserter.assertNotNull
+import kotlin.test.DefaultAsserter.assertTrue
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
 
 class BinPackTest {
     @Test
@@ -17,11 +20,12 @@ class BinPackTest {
             val decoded = encoded.decodeBinPack()
             val message = "($v ${v?.javaClass?.simpleName}) dump=${encoded.dump()}"
             when {
-                expected is ByteArray -> assertArrayEquals(
-                    "${v?.javaClass?.simpleName} $v",
+                expected is ByteArray -> assertContentEquals(
                     expected,
-                    decoded as? ByteArray
+                    decoded as? ByteArray,
+                    "${v?.javaClass?.simpleName} $v",
                 )
+
                 v is Set<*> -> {
                     val decodedSet = (decoded as? BinPackList)?.toSet()
                     assertNotNull("$message decoded?", decodedSet)
@@ -29,6 +33,7 @@ class BinPackTest {
                     assertTrue("$message containsAll 1", v.containsAll(decodedSet))
                     assertTrue("$message containsAll 2", decodedSet.containsAll(v))
                 }
+
                 else -> assertEquals(
                     message,
                     expected,

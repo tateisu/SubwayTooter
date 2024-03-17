@@ -12,43 +12,52 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.SeekBar
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
-import com.jrummyapps.android.colorpicker.ColorPickerDialog
-import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.runApiTask
-import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.getAcctColor
+import jp.juggler.subwaytooter.column.getBackgroundImageDir
+import jp.juggler.subwaytooter.column.getColumnName
+import jp.juggler.subwaytooter.column.getContentColor
+import jp.juggler.subwaytooter.column.getHeaderBackgroundColor
+import jp.juggler.subwaytooter.column.getHeaderNameColor
+import jp.juggler.subwaytooter.column.getIconId
+import jp.juggler.subwaytooter.column.setHeaderBackground
 import jp.juggler.subwaytooter.databinding.ActColumnCustomizeBinding
 import jp.juggler.util.backPressed
+import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
-import jp.juggler.util.data.*
+import jp.juggler.util.data.checkMimeTypeAndGrant
+import jp.juggler.util.data.defaultLocale
+import jp.juggler.util.data.intentGetContent
+import jp.juggler.util.data.mayUri
+import jp.juggler.util.data.notZero
 import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.media.createResizedBitmap
-import jp.juggler.util.ui.*
+import jp.juggler.util.ui.ActivityResultHandler
+import jp.juggler.util.ui.hideKeyboard
+import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.setNavigationBack
+import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
 import java.text.NumberFormat
 import kotlin.math.max
 
-class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
+class ActColumnCustomize : AppCompatActivity(), View.OnClickListener {
 
     companion object {
 
         internal val log = LogCategory("ActColumnCustomize")
 
         internal const val EXTRA_COLUMN_INDEX = "column_index"
-
-        internal const val COLOR_DIALOG_ID_HEADER_BACKGROUND = 1
-        internal const val COLOR_DIALOG_ID_HEADER_FOREGROUND = 2
-        internal const val COLOR_DIALOG_ID_COLUMN_BACKGROUND = 3
-        internal const val COLOR_DIALOG_ID_ACCT_TEXT = 4
-        internal const val COLOR_DIALOG_ID_CONTENT_TEXT = 5
 
         internal const val PROGRESS_MAX = 65536
 
@@ -107,19 +116,13 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     }
 
     override fun onClick(v: View) {
-
-        val builder: ColorPickerDialog.Builder
-
         when (v.id) {
 
-            R.id.btnHeaderBackgroundEdit -> {
-                ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(false)
-                    .setDialogId(COLOR_DIALOG_ID_HEADER_BACKGROUND)
-                    .setColor(column.getHeaderBackgroundColor())
-                    .show(this)
+            R.id.btnHeaderBackgroundEdit -> launchAndShowError {
+                column.headerBgColor = Color.BLACK or dialogColorPicker(
+                    colorInitial = column.getHeaderBackgroundColor(),
+                    alphaEnabled = false,
+                )
             }
 
             R.id.btnHeaderBackgroundReset -> {
@@ -127,14 +130,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 show()
             }
 
-            R.id.btnHeaderTextEdit -> {
-                ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(false)
-                    .setDialogId(COLOR_DIALOG_ID_HEADER_FOREGROUND)
-                    .setColor(column.getHeaderNameColor())
-                    .show(this)
+            R.id.btnHeaderTextEdit -> launchAndShowError {
+                column.headerFgColor = Color.BLACK or dialogColorPicker(
+                    colorInitial = column.getHeaderNameColor(),
+                    alphaEnabled = false,
+                )
             }
 
             R.id.btnHeaderTextReset -> {
@@ -142,14 +142,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 show()
             }
 
-            R.id.btnColumnBackgroundColor -> {
-                builder = ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(false)
-                    .setDialogId(COLOR_DIALOG_ID_COLUMN_BACKGROUND)
-                if (column.columnBgColor != 0) builder.setColor(column.columnBgColor)
-                builder.show(this)
+            R.id.btnColumnBackgroundColor -> launchAndShowError {
+                column.columnBgColor = Color.BLACK or dialogColorPicker(
+                    colorInitial = column.columnBgColor.notZero(),
+                    alphaEnabled = false,
+                )
             }
 
             R.id.btnColumnBackgroundColorReset -> {
@@ -157,14 +154,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 show()
             }
 
-            R.id.btnAcctColor -> {
-                ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(true)
-                    .setDialogId(COLOR_DIALOG_ID_ACCT_TEXT)
-                    .setColor(column.getAcctColor())
-                    .show(this)
+            R.id.btnAcctColor -> launchAndShowError {
+                column.acctColor = dialogColorPicker(
+                    colorInitial = column.getAcctColor(),
+                    alphaEnabled = true,
+                ).notZero() ?: 1
             }
 
             R.id.btnAcctColorReset -> {
@@ -172,14 +166,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                 show()
             }
 
-            R.id.btnContentColor -> {
-                ColorPickerDialog.newBuilder()
-                    .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                    .setAllowPresets(true)
-                    .setShowAlphaSlider(true)
-                    .setDialogId(COLOR_DIALOG_ID_CONTENT_TEXT)
-                    .setColor(column.getContentColor())
-                    .show(this)
+            R.id.btnContentColor -> launchAndShowError {
+                column.contentColor = dialogColorPicker(
+                    colorInitial = column.getContentColor(),
+                    alphaEnabled = true,
+                ).notZero() ?: 1
             }
 
             R.id.btnContentColorReset -> {
@@ -202,28 +193,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             }
         }
     }
-
-    override fun onColorSelected(dialogId: Int, @ColorInt newColor: Int) {
-        when (dialogId) {
-            COLOR_DIALOG_ID_HEADER_BACKGROUND ->
-                column.headerBgColor = Color.BLACK or newColor
-
-            COLOR_DIALOG_ID_HEADER_FOREGROUND ->
-                column.headerFgColor = Color.BLACK or newColor
-
-            COLOR_DIALOG_ID_COLUMN_BACKGROUND ->
-                column.columnBgColor = Color.BLACK or newColor
-
-            COLOR_DIALOG_ID_ACCT_TEXT ->
-                column.acctColor = newColor.notZero() ?: 1
-
-            COLOR_DIALOG_ID_CONTENT_TEXT ->
-                column.contentColor = newColor.notZero() ?: 1
-        }
-        show()
-    }
-
-    override fun onDialogDismissed(dialogId: Int) {}
 
     private fun updateBackground(uriArg: Uri) {
         launchMain {

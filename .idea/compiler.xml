@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.8">
+    <bytecodeTargetLevel target="19">
       <module name="apng" target="1.7" />
-      <module name="SubwayTooter.anko" target="17" />
-      <module name="SubwayTooter.apng_android" target="17" />
-      <module name="SubwayTooter.app" target="17" />
-      <module name="SubwayTooter.base" target="17" />
-      <module name="SubwayTooter.buildSrc" target="17" />
-      <module name="SubwayTooter.buildSrc.main" target="17" />
-      <module name="SubwayTooter.buildSrc.test" target="17" />
-      <module name="SubwayTooter.colorpicker" target="17" />
-      <module name="SubwayTooter.emoji" target="17" />
-      <module name="SubwayTooter.icon_material_symbols" target="17" />
+      <module name="SubwayTooter.buildSrc" target="20" />
+      <module name="SubwayTooter.buildSrc.main" target="20" />
+      <module name="SubwayTooter.buildSrc.test" target="20" />
       <module name="SubwayTooter.main" target="17" />
-      <module name="SubwayTooter.sample_apng" target="17" />
       <module name="SubwayTooter.test" target="17" />
     </bytecodeTargetLevel>
   </component>

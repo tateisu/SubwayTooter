@@ -1,17 +1,16 @@
-@file:Suppress(
-    "USELESS_CAST", "unused", "DEPRECATED_IDENTITY_EQUALS", "UNUSED_VARIABLE",
-    "UNUSED_VALUE", "ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE", "VARIABLE_WITH_REDUNDANT_INITIALIZER",
-    "ReplaceCallWithComparison"
-)
-
 package jp.juggler.subwaytooter
 
-import org.junit.Test
+import kotlin.test.Test
 
 //import kotlin.test.*
 
 typealias TestLambdaCallback = (x: Int) -> Int
 
+@Suppress(
+    "unused", "UNUSED_VARIABLE",
+    "UNUSED_VALUE", "ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE",
+    "ReplaceCallWithComparison"
+)
 class TestKotlinFeature {
 
     private val CODE_A = 1

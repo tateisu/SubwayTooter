@@ -18,10 +18,10 @@ sub cmd($){
 cmd "./gradlew --stop";
 cmd "rm -rf .gradle/caches/build-cache-*";
 cmd "./gradlew clean";
+cmd "./dependencyJson.pl";
 cmd "./gradlew assembleNoFcmRelease";
 cmd "./gradlew assembleFcmRelease";
 cmd "./gradlew --stop";
-
 
 sub getBranch{
     my $text = `git rev-parse --abbrev-ref HEAD`;

@@ -45,12 +45,14 @@ android {
 }
 
 dependencies {
-    testImplementation("junit:junit:${Vers.junitVersion}")
-    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunitVersion}")
-    androidTestImplementation("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCoreVersion}")
+    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
+    implementation("androidx.core:core-ktx:${Vers.androidxCore}")
+    implementation("androidx.preference:preference-ktx:${Vers.androidxPreferenceKtx}")
+    implementation("com.google.android.material:material:${Vers.googleMaterial}")
 
-    implementation("androidx.appcompat:appcompat:${Vers.appcompatVersion}")
-    implementation("androidx.core:core-ktx:${Vers.coreKtxVersion}")
-    implementation("androidx.preference:preference-ktx:${Vers.preferenceKtxVersion}")
-    implementation("com.google.android.material:material:${Vers.materialVersion}")
+    testImplementation(kotlin("test"))
+
+    androidTestRuntimeOnly("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:core:${Vers.androidxTestCore}")
+    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunit}")
 }

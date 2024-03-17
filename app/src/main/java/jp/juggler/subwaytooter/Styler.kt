@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -469,7 +470,7 @@ fun ViewGroup.generateLayoutParamsEx(): ViewGroup.LayoutParams? =
         null
     }
 
-fun AppCompatActivity.setStatusBarColor(forceDark: Boolean = false) {
+fun Activity.setStatusBarColor(forceDark: Boolean = false) {
     window?.apply {
         if (Build.VERSION.SDK_INT < 30) {
             @Suppress("DEPRECATION")

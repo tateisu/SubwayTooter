@@ -27,7 +27,6 @@ compileTestKotlin.kotlinOptions{
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
-    testImplementation("junit:junit:${Vers.junitVersion}")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Vers.kotlinVersion}")
+    // implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
+    testImplementation(kotlin("test"))
 }

@@ -242,9 +242,8 @@ fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
 //	}
 //}
 
-fun Context.loadRawResource(@RawRes resId: Int): ByteArray {
-    return resources.openRawResource(resId).use { it.readBytes() }
-}
+fun Context.loadRawResource(@RawRes resId: Int): ByteArray =
+    resources.openRawResource(resId).use { it.readBytes() }
 
 fun intentOpenDocument(mimeType: String): Intent {
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)

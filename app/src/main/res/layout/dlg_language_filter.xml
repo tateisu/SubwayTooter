@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="300dp"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <TextView
@@ -33,6 +34,7 @@
             android:elevation="3dp"
             android:src="@drawable/ic_edit"
             android:id="@+id/btnPresets"
+            app:tint="?attr/colorTextContent"
             android:contentDescription="@string/presets"
             />
     </LinearLayout>

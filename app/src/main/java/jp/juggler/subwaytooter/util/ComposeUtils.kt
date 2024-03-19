@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import android.app.Activity
 import android.content.Context
+import androidx.activity.ComponentActivity
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -14,6 +15,10 @@ import jp.juggler.util.ui.resColor
 class StColorScheme(
     val materialColorScheme: ColorScheme,
     val colorTextLink: Color,
+    val colorTextContent: Color,
+    val colorTextError: Color,
+    val colorProgressBackground:Color,
+    val colorDivider: Color,
 )
 
 fun Context.createStColorSchemeLight(): StColorScheme {
@@ -33,13 +38,16 @@ fun Context.createStColorSchemeLight(): StColorScheme {
             secondary = colorTextLink,
             onSecondary = Color.White,
 
-            surface = Color(resColor(R.color.Light_colorColumnSettingBackground)),
+            surface = Color(resColor(R.color.Light_colorReplyBackground)),
             onSurface = colorTextContent,
+            onSurfaceVariant = colorTextContent,
             onTertiary = colorTextContent,
-
-            onSurfaceVariant = Color(resColor(R.color.Light_colorTextHint)),
         ),
         colorTextLink = colorTextLink,
+        colorTextContent = colorTextContent,
+        colorTextError = colorTextError,
+        colorProgressBackground = Color(0xC0000000),
+        colorDivider = Color(resColor(R.color.Light_colorTextDivider)),
     )
 }
 
@@ -61,13 +69,16 @@ fun Context.createStColorSchemeDark(): StColorScheme {
             secondary = colorTextLink,
             onSecondary = colorTextContent,
 
-            surface = Color(resColor(R.color.Dark_colorColumnSettingBackground)),
+            surface = Color(resColor(R.color.Dark_colorColumnHeader)),
             onSurface = colorTextContent,
+            onSurfaceVariant = colorTextContent,
             onTertiary = colorTextContent,
-
-            onSurfaceVariant = Color(resColor(R.color.Dark_colorTextHint)),
         ),
         colorTextLink = colorTextLink,
+        colorTextContent = colorTextContent,
+        colorTextError = colorTextError,
+        colorProgressBackground = Color(0xC0000000),
+        colorDivider = Color(resColor(R.color.Dark_colorSettingDivider)),
     )
 }
 
@@ -89,13 +100,16 @@ fun Context.createStColorSchemeMastodonDark(): StColorScheme {
             secondary = colorTextLink,
             onSecondary = colorTextContent,
 
-            surface = Color(resColor(R.color.Mastodon_colorColumnSettingBackground)),
+            surface = Color(resColor(R.color.Mastodon_colorColumnHeader)),
             onSurface = colorTextContent,
+            onSurfaceVariant = colorTextContent,
             onTertiary = colorTextContent,
-
-            onSurfaceVariant = Color(resColor(R.color.Mastodon_colorTextHint)),
         ),
         colorTextLink = colorTextLink,
+        colorTextContent = colorTextContent,
+        colorTextError = colorTextError,
+        colorProgressBackground = Color(0xC0000000),
+        colorDivider = Color(resColor(R.color.Mastodon_colorSettingDivider)),
     )
 }
 
@@ -112,5 +126,12 @@ fun Activity.getStColorTheme(forceDark: Boolean = false): StColorScheme {
 
 fun dummyStColorTheme() = StColorScheme(
     materialColorScheme = darkColorScheme(),
-    colorTextLink = Color.Cyan,
+    colorTextContent = Color.White,
+    colorTextLink = Color(0xff0080ff),
+    colorTextError = Color.Red,
+    colorProgressBackground = Color(0x80808080),
+    colorDivider = Color(0x80808080),
 )
+
+fun ComponentActivity.fireBackPressed() =
+    onBackPressedDispatcher.onBackPressed()

@@ -169,6 +169,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.compose.material:material-icons-extended-android:${Vers.androidxComposeMaterialIcons}")
     implementation("androidx.compose.runtime:runtime-livedata:${Vers.androidxComposeRuntime}")
     implementation("androidx.compose.ui:ui-tooling-preview:${Vers.androidxComposeUi}")
     implementation("androidx.compose.ui:ui:${Vers.androidxComposeUi}")

@@ -105,6 +105,10 @@ dependencies {
     // HttpUtils で使う
     implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
 
+    // ないとなぜかIDE上にエラーが出る
+    implementation("androidx.activity:activity-ktx:${Vers.androidxActivity}")
+
+
     // ==========================================================================
     // 単体テスト
     testImplementation(kotlin("test"))

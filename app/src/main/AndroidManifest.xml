@@ -298,7 +298,7 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
-            android:name=".ActLanguageFilter"
+            android:name=".ui.languageFilter.LanguageFilterActivity"
             android:exported="false"
             android:label="@string/language_filter"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />

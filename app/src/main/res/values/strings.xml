@@ -1305,4 +1305,7 @@
     <string name="post_404_desc">(Or, you reply to follower-only post from other account)</string>
     <string name="rearrange">rearrange</string>
     <string name="attachment_rearrange_desc">Drag to rearrange.</string>
+    <string name="language_filter_importing">Importing language filter…</string>
+    <string name="language_filter_loading">Loading available languages…</string>
+    <string name="language_name_montenegrin">Montenegrin</string>
 </resources>

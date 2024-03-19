@@ -90,6 +90,7 @@ import jp.juggler.subwaytooter.pref.PrefS
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.ui.languageFilter.LanguageFilterActivity
 import jp.juggler.subwaytooter.util.DecodeOptions.Companion.reloadEmojiScale
 import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.subwaytooter.util.openBrowser
@@ -309,11 +310,10 @@ class ActMain : AppCompatActivity(),
     }
 
     val arLanguageFilter = ActivityResultHandler(log) { r ->
-        if (r.isNotOk) return@ActivityResultHandler
-        appState.saveColumnList()
-        r.data?.int(ActLanguageFilter.EXTRA_COLUMN_INDEX)
-            ?.let { appState.column(it) }
-            ?.onLanguageFilterChanged()
+        LanguageFilterActivity.decodeResult(r)?.let { columnIndex ->
+            appState.saveColumnList()
+            appState.column(columnIndex) ?.onLanguageFilterChanged()
+        }
     }
 
     val arNickname = ActivityResultHandler(log) { r ->

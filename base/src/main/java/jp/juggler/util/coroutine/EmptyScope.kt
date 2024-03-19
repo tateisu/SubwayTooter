@@ -1,5 +1,6 @@
 package jp.juggler.util.coroutine
 
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import jp.juggler.util.log.LogCategory
@@ -63,6 +64,25 @@ fun launchIO(block: suspend CoroutineScope.() -> Unit): Job =
     }
 
 fun AppCompatActivity.launchAndShowError(
+    errorCaption: String? = null,
+    block: suspend CoroutineScope.() -> Unit,
+): Job = lifecycleScope.launch {
+    try {
+        block()
+    } catch (ex: Throwable) {
+        when (ex) {
+            is CancellationException -> {
+                log.w(errorCaption ?: "launchAndShowError cancelled.")
+            }
+
+            else -> {
+                log.e(ex, errorCaption ?: "launchAndShowError failed.")
+                showError(ex, errorCaption)
+            }
+        }
+    }
+}
+fun ComponentActivity.launchAndShowError(
     errorCaption: String? = null,
     block: suspend CoroutineScope.() -> Unit,
 ): Job = lifecycleScope.launch {

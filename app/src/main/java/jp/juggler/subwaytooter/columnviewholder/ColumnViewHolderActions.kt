@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.columnviewholder
 import android.view.View
 import android.widget.CompoundButton
 import jp.juggler.subwaytooter.ActColumnCustomize
-import jp.juggler.subwaytooter.ActLanguageFilter
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.accountResendConfirmMail
@@ -12,7 +11,13 @@ import jp.juggler.subwaytooter.action.notificationDeleteAll
 import jp.juggler.subwaytooter.actmain.closeColumn
 import jp.juggler.subwaytooter.actmain.closeColumnAll
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
-import jp.juggler.subwaytooter.column.*
+import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnType
+import jp.juggler.subwaytooter.column.addColumnViewHolder
+import jp.juggler.subwaytooter.column.fireShowContent
+import jp.juggler.subwaytooter.column.isSearchColumn
+import jp.juggler.subwaytooter.column.startLoading
+import jp.juggler.subwaytooter.ui.languageFilter.LanguageFilterActivity.Companion.openLanguageFilterActivity
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.ui.hideKeyboard
@@ -252,9 +257,9 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
 
         btnLanguageFilter ->
             activity.appState.columnIndex(column)?.let { colIdx ->
-
-                activity.arLanguageFilter.launch(
-                    ActLanguageFilter.createIntent(activity, colIdx)
+                openLanguageFilterActivity(
+                    activity.arLanguageFilter,
+                    colIdx
                 )
             }
 

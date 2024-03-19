@@ -35,6 +35,7 @@ object Vers {
     const val androidxArchCoreTesting = "2.2.0"
     const val androidxComposeRuntime = "1.6.3"
     const val androidxComposeUi = "1.6.3"
+    const val androidxComposeMaterialIcons  = "1.6.3"
     const val androidxCore = "1.12.0"
     const val androidxEmoji2 = "1.4.0"
     const val androidxLifecycle = "2.7.0"

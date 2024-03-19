@@ -3,6 +3,7 @@ package jp.juggler.util.ui
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,7 +19,7 @@ class ActivityResultHandler(
     private var launcher: ActivityResultLauncher<Intent>? = null
     private var getContext: (() -> Context?)? = null
 
-    private val context
+    val context
         get() = getContext?.invoke()
 
     // startForActivityResultの代わりに呼び出す
@@ -32,6 +33,13 @@ class ActivityResultHandler(
 
     // onCreate時に呼び出す
     fun register(a: FragmentActivity) {
+        getContext = { a.applicationContext }
+        this.launcher = a.registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { callback(it) }
+    }
+    // onCreate時に呼び出す
+    fun register(a: ComponentActivity) {
         getContext = { a.applicationContext }
         this.launcher = a.registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()

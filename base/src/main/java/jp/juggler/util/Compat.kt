@@ -11,6 +11,7 @@ import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
@@ -133,6 +134,12 @@ fun PackageManager.resolveActivityCompat(
 }
 
 fun AppCompatActivity.backPressed(block: () -> Unit) {
+    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() = block()
+    })
+}
+
+fun ComponentActivity.backPressed(block: () -> Unit) {
     onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() = block()
     })

@@ -203,12 +203,12 @@ class LanguageFilterViewModel(
     }
 
     fun isLanguageListChanged(): Boolean {
-        fun JsonObject.encodeSorted(): String {
-            val clone = this.toString().decodeJsonObject()
-            if (!clone.contains(TootStatus.LANGUAGE_CODE_DEFAULT)) {
-                clone[TootStatus.LANGUAGE_CODE_DEFAULT] = true
+        fun JsonObject.encodeSorted() = toString().decodeJsonObject().run {
+            if (!contains(TootStatus.LANGUAGE_CODE_DEFAULT)) {
+                put(TootStatus.LANGUAGE_CODE_DEFAULT, true)
             }
-            return clone.keys.sorted().joinToString(",") { "$it=${this[it]}" }
+            entries.sortedBy { it.key }
+                .joinToString(",") { "${it.key}=${it.value}" }
         }
 
         val current = (encodeLanguageList()).encodeSorted()

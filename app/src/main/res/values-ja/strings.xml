@@ -1296,4 +1296,6 @@
     <string name="language_filter_importing">言語フィルタの読み込み中です…</string>
     <string name="language_filter_loading">利用可能な言語の取得中…</string>
     <string name="language_name_montenegrin">モンテネグロ語</string>
+    <string name="agg_boosts">ブースト集約</string>
+    <string name="display_name_boosted_by_agg">%1$s と%2$s名がブーストしました</string>
 </resources>

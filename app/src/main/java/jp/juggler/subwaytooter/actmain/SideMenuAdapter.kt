@@ -412,6 +412,10 @@ class SideMenuAdapter(
             timeline(defaultInsertPosition, ColumnType.SCHEDULED_STATUS)
         },
 
+        Item(icon = R.drawable.ic_repeat, title = R.string.agg_boosts) {
+            timeline(defaultInsertPosition, ColumnType.AGG_BOOSTS)
+        },
+
         Item(),
         Item(title = R.string.toot_search),
 

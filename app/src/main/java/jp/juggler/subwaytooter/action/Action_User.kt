@@ -17,12 +17,11 @@ import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.buildJsonArray
 import jp.juggler.util.data.buildJsonObject
-import jp.juggler.util.data.intoStringResource
+import jp.juggler.util.data.getSpannedString
 import jp.juggler.util.data.jsonObjectOf
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.*
@@ -30,7 +29,6 @@ import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.vg
 import kotlinx.coroutines.*
 import okhttp3.Request
-import java.util.*
 
 // private val log = LogCategory("Action_User")
 
@@ -812,8 +810,10 @@ fun ActMain.userSuggestionDelete(
     val activity = this
     launchAndShowError {
         confirm(
-            who.decodeDisplayName(activity)
-                .intoStringResource(activity, R.string.delete_succeeded_confirm)
+            activity.getSpannedString(
+                R.string.delete_succeeded_confirm,
+                who.decodeDisplayName(activity),
+            )
         )
         runApiTask(accessInfo) { client ->
             client.request("/api/v1/suggestions/${who.id}", Request.Builder().delete())
@@ -826,6 +826,7 @@ fun ActMain.userSuggestionDelete(
                         column.removeUser(accessInfo, ColumnType.FOLLOW_SUGGESTION, who.id)
                     }
                 }
+
                 else -> showToast(true, result.error)
             }
         }
@@ -908,6 +909,7 @@ fun ActMain.userEndorsement(
                         else -> R.string.remove_endorse_succeeded
                     }
                 )
+
                 else -> showToast(true, error)
             }
         }

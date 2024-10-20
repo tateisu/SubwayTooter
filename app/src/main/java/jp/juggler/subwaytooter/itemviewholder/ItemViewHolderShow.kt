@@ -7,6 +7,7 @@ import android.os.SystemClock
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.Spanned
 import android.text.style.StyleSpan
 import android.view.View
 import android.widget.Button
@@ -29,7 +30,6 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
@@ -231,6 +231,31 @@ fun ItemViewHolder.bind(
             }
         }
 
+        is TootAggBoost -> {
+            val colorBg = PrefI.ipEventBgColorBoost.value
+            val boosterCount = item.boosterStatuses.size
+            val headBoost = item.boosterStatuses.first()
+            if (item.boosterStatuses.size == 1) {
+                showBoost(
+                    headBoost.accountRef,
+                    headBoost.time_created_at,
+                    R.drawable.ic_repeat,
+                    R.string.display_name_boosted_by,
+                    boostStatus = headBoost
+                )
+            } else {
+                showAggBoost(
+                    headBoost.accountRef,
+                    headBoost.time_created_at,
+                    R.drawable.ic_repeat,
+                    boosterCount - 1,
+                    R.string.display_name_boosted_by_agg,
+                    boostStatus = headBoost
+                )
+            }
+            showStatusOrReply(item.originalStatus, colorBg)
+        }
+
         is TootAccountRef -> showAccount(item)
         is TootNotification -> showNotification(item)
         is TootGap -> showGap()
@@ -362,7 +387,7 @@ fun ItemViewHolder.showBoost(
     )
     setAcct(tvBoostedAcct, accessInfo, who)
 
-    // フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
+    // decoded_display_name が2箇所で表示に使われるのを避ける必要がある
     boostInvalidator.text = if (reaction != null) {
         val options = DecodeOptions(
             activity,
@@ -375,13 +400,86 @@ fun ItemViewHolder.showBoost(
         reaction.toSpannableStringBuilder(options, boostStatus).apply {
             append(" ")
             append(
-                who.decodeDisplayNameCached(activity)
-                    .intoStringResource(activity, stringId)
+                activity.getSpannedString(
+                    stringId,
+                    who.decodeDisplayNameCached(activity),
+                )
             )
         }
     } else {
-        who.decodeDisplayNameCached(activity)
-            .intoStringResource(activity, stringId)
+        activity.getSpannedString(
+            stringId,
+            who.decodeDisplayNameCached(activity),
+        )
+    }
+}
+
+fun ItemViewHolder.showAggBoost(
+    whoRef: TootAccountRef,
+    time: Long,
+    iconId: Int,
+    boosterCount: Int,
+    @StringRes stringId: Int,
+    reaction: TootReaction? = null,
+    boostStatus: TootStatus? = null,
+    reblogVisibility: TootVisibility? = null,
+) {
+    boostAccount = whoRef
+
+    val who = whoRef.get()
+
+    setIconDrawableId(
+        activity,
+        ivBoosted,
+        iconId,
+        color = colorTextContent,
+        alphaMultiplier = stylerBoostAlpha
+    )
+
+    ivBoostAvatar.let { v ->
+        v.setImageUrl(
+            calcIconRound(v.layoutParams),
+            accessInfo.supplyBaseUrl(who.avatar_static),
+            accessInfo.supplyBaseUrl(who.avatar)
+        )
+    }
+    boostTime = time
+    llBoosted.visibility = View.VISIBLE
+    showStatusTime(
+        activity,
+        tvBoostedTime,
+        who,
+        time = time,
+        status = boostStatus,
+        reblogVisibility = reblogVisibility
+    )
+    setAcct(tvBoostedAcct, accessInfo, who)
+
+    // decoded_display_name が2箇所で表示に使われるのを避ける必要がある
+    boostInvalidator.text = if (reaction != null) {
+        val options = DecodeOptions(
+            activity,
+            accessInfo,
+            decodeEmoji = true,
+            enlargeEmoji = DecodeOptions.emojiScaleReaction,
+            enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
+            emojiSizeMode = accessInfo.emojiSizeMode(),
+        )
+        reaction.toSpannableStringBuilder(options, boostStatus).apply {
+            append(" ")
+            append(
+                activity.getSpannedString(
+                    stringId,
+                    who.decodeDisplayNameCached(activity)
+                )
+            )
+        }
+    } else {
+        activity.getSpannedString(
+            stringId,
+            who.decodeDisplayNameCached(activity),
+            "%d".format(boosterCount)
+        )
     }
 }
 
@@ -491,7 +589,7 @@ fun ItemViewHolder.showReply(
     // 返信された人
     target: TootAccount?,
     iconId: Int,
-    text: Spannable,
+    text: Spanned,
 ) {
     llReply.visibility = View.VISIBLE
 
@@ -520,7 +618,10 @@ fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, iconId: I
         replyer = replyer,
         target = reply.accountRef.get(),
         iconId,
-        reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
+        activity.getSpannedString(
+            stringId,
+            reply.accountRef.decoded_display_name,
+        ),
     )
 }
 
@@ -537,7 +638,10 @@ fun ItemViewHolder.showReply(replyer: TootAccount?, reply: TootStatus, accountId
         }
     }
 
-    val text = name.intoStringResource(activity, R.string.reply_to)
+    val text = activity.getSpannedString(
+        R.string.reply_to,
+        name,
+    )
     showReply(replyer = replyer, target = null, R.drawable.ic_reply, text)
 
     // tootsearchはreplyオブジェクトがなくin_reply_toだけが提供される場合があるが
@@ -717,7 +821,7 @@ val Column.canRelativeTime
         ColumnType.CONVERSATION,
         ColumnType.CONVERSATION_WITH_REFERENCE,
         ColumnType.STATUS_HISTORY,
-        -> false
+            -> false
 
         else -> true
     }

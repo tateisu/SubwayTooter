@@ -2097,6 +2097,25 @@ enum class ColumnType(
         canStreamingMisskey = streamingTypeNo,
     ),
 
+    AGG_BOOSTS(
+        48,
+        iconId = { R.drawable.ic_repeat },
+        name1 = { it.getString(R.string.agg_boosts) },
+        bAllowPseudo = false,
+        bAllowMisskey = false,
+        canAutoRefresh = false,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+        loading = { client ->
+            getAggBoosts(
+                client = client,
+                pathBase = column.makeHomeTlUrl(),
+                scanStatusMax = 400,
+                skipActioned = false,
+            )
+        },
+    ),
+
     ;
 
     init {

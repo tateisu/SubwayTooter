@@ -33,7 +33,7 @@ import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
-import kotlinx.coroutines.CancellationException
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
 
 private class BoostImpl(

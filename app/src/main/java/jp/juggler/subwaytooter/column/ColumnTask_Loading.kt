@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.auth.authRepo
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.finder.*
 import jp.juggler.subwaytooter.columnviewholder.scrollToTop
 import jp.juggler.subwaytooter.notification.injectData
@@ -197,6 +198,7 @@ class ColumnTask_Loading(
                     column.offsetNext += src.size
                     true
                 }
+
                 else -> true
             }
             return when {
@@ -214,14 +216,19 @@ class ColumnTask_Loading(
         while (more) more = when {
             isCancelled ->
                 log.d("$logCaption: cancelled.")
+
             !column.isFilterEnabled ->
                 log.d("$logCaption: isFiltered is false.")
+
             column.idOld == null ->
                 log.d("$logCaption: idOld is empty.")
+
             (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
                 log.d("$logCaption: read enough data.")
+
             SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT ->
                 log.d("$logCaption: timeout.")
+
             else -> parseResult(requester(column.idOld, null))
         }
         return firstResult
@@ -293,14 +300,19 @@ class ColumnTask_Loading(
         while (more) more = when {
             isCancelled ->
                 log.d("$logCaption: cancelled.")
+
             !column.isFilterEnabled ->
                 log.d("$logCaption: isFiltered is false.")
+
             column.idRecent == null ->
                 log.d("$logCaption: idRecent is empty.")
+
             (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
                 log.d("$logCaption: read enough data.")
+
             SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT ->
                 log.d("$logCaption: timeout.")
+
             else -> parseResult(requester(null, column.idRecent))
         }
 
@@ -350,11 +362,13 @@ class ColumnTask_Loading(
                     } else {
                         column.saveRangeBottom(result, src)
                     }
+
                 ColumnPagingType.Offset -> {
                     // idOldがないので2回目以降は発生しない
                     column.offsetNext += src.size
                     true
                 }
+
                 else -> true
             }
 
@@ -373,14 +387,19 @@ class ColumnTask_Loading(
         while (more) more = when {
             isCancelled ->
                 log.d("$logCaption: cancelled.")
+
             !column.isFilterEnabled ->
                 log.d("$logCaption: isFiltered is false.")
+
             column.idOld == null ->
                 log.d("$logCaption: idOld is empty.")
+
             (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
                 log.d("$logCaption: read enough data.")
+
             SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT ->
                 log.d("$logCaption: timeout.")
+
             else -> parseResult(requester(column.idOld, null))
         }
         return firstResult
@@ -451,14 +470,19 @@ class ColumnTask_Loading(
         while (more) more = when {
             isCancelled ->
                 log.d("$logCaption: cancelled.")
+
             !column.isFilterEnabled ->
                 log.d("$logCaption: isFiltered is false.")
+
             column.idRecent == null ->
                 log.d("$logCaption: idRecent is empty.")
+
             (listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
                 log.d("$logCaption: read enough data.")
+
             SystemClock.elapsedRealtime() - timeStart > Column.LOOP_TIMEOUT ->
                 log.d("$logCaption: timeout.")
+
             else -> parseResult(requester(null, column.idRecent))
         }
         return firstResult
@@ -529,6 +553,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMisskeyMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -559,6 +584,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMastodonMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -616,6 +642,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMisskeyMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -645,6 +672,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMastodonMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -704,6 +732,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMisskeyMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -735,6 +764,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMastodonMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -789,6 +819,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMisskeyMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -818,6 +849,7 @@ class ColumnTask_Loading(
                     adder = adder,
                     initialMinId = initialMinId
                 )
+
                 else -> loadMastodonMaxId(
                     logCaption = logCaption,
                     requester = requester,
@@ -1249,5 +1281,125 @@ class ColumnTask_Loading(
             }
             return apiResult
         }
+    }
+
+    class TmpAggBoost(
+        val originalStatus: TootStatus,
+    ) {
+        var actionedByMe = false
+
+        // map of boosters account.id to status
+        val boosters = HashMap<EntityId, TootStatus>()
+        var timeLatestBoost = 0L
+    }
+
+    suspend fun getAggBoosts(
+        client: TootApiClient,
+        pathBase: String?,
+        scanStatusMax: Int,
+        // ログインユーザがfav,boost,済みなら表示しない
+        skipActioned: Boolean = false,
+        misskeyParams: JsonObject? = null,
+        arrayFinder: (JsonObject) -> JsonArray? =
+            nullArrayFinder,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootStatus> =
+            defaultStatusListParser,
+    ): TootApiResult? {
+        pathBase ?: return null // cancelled.
+
+        val logCaption = "getAggBoosts"
+        val delimiter = if (-1 == pathBase.indexOf('?')) '?' else '&'
+        var firstResult: TootApiResult? = null
+        var nextMaxId: EntityId? = null
+        var countStatus = 0
+        var countBoost = 0
+        val boostMap = HashMap<EntityId, TmpAggBoost>()
+        for (i in 0 until 300) {
+            val result = client.request(
+                when {
+                    nextMaxId != null -> "$pathBase${delimiter}max_id=$nextMaxId"
+                    else -> pathBase
+                }
+            )
+            if (result == null) {
+                log.d("$logCaption: cancelled.")
+                break
+            }
+            if (firstResult == null) firstResult = result
+
+            result.jsonObject?.let {
+                if (column.pagingType == ColumnPagingType.Cursor) {
+                    column.idOld = EntityId.mayNull(it.string("next"))
+                }
+                result.data = arrayFinder(it)
+            }
+
+            val array = result.jsonArray
+            if (array == null) {
+                log.w("$logCaption: missing item list")
+                break
+            }
+
+            val src = listParser(parser, array)
+            if (src.isEmpty()) {
+                log.w("$logCaption: empty data.")
+                break
+            }
+            column.saveRangeBottom(result, src)
+
+            for (status in src) {
+                ++countStatus
+                val reblog = status.reblog
+                if (reblog == null || status.isQuoteToot) continue
+                ++countBoost
+                val aggBoost = boostMap.getOrPut(reblog.id) {
+                    TmpAggBoost(reblog)
+                }
+                val accountId = status.account.id
+                if (!aggBoost.boosters.contains(accountId)) {
+                    aggBoost.boosters[accountId] = status
+                }
+                if (skipActioned && (reblog.reblogged || reblog.favourited)) {
+                    aggBoost.actionedByMe = true
+                }
+            }
+            nextMaxId = column.idOld
+            if (nextMaxId == null) {
+                log.d("$logCaption: reach to end.")
+                break
+            }
+            if ((listTmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
+                log.d("$logCaption: read enough data.")
+                break
+            }
+            if (countStatus >= scanStatusMax) {
+                log.d("$logCaption: reach to scanStatusMax.")
+                break
+            }
+        }
+
+        val newList = boostMap.values
+            .filter { aggBoost ->
+                !aggBoost.actionedByMe &&
+                        !column.isFiltered(aggBoost.originalStatus)
+            }
+            .onEach { aggBoost ->
+                // ブーストされた時刻の最新を集計
+                aggBoost.timeLatestBoost = aggBoost.boosters.values
+                    .maxOfOrNull { it.time_created_at } ?: 0L
+            }
+            .sortedByDescending { it.timeLatestBoost }
+            .map {
+                TootAggBoost(
+                    originalStatus = it.originalStatus,
+                    boosterStatuses = it.boosters.values.sortedByDescending { it.id },
+                )
+            }
+
+        listTmp = ArrayList(newList)
+        column.idOld = null
+        column.idRecent = null
+
+        return firstResult
     }
 }

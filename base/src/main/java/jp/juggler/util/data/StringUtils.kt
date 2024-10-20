@@ -2,11 +2,11 @@ package jp.juggler.util.data
 
 import android.content.Context
 import android.net.Uri
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
+import android.text.SpannedString
 import android.util.Base64
+import androidx.annotation.StringRes
 import androidx.core.net.toUri
+import androidx.core.text.buildSpannedString
 import jp.juggler.util.log.LogCategory
 import java.security.MessageDigest
 import java.util.LinkedList
@@ -112,19 +112,29 @@ fun CharSequence.replaceFirst(pattern: Pattern, replacement: String): String =
 fun CharSequence.replaceAll(pattern: Pattern, replacement: String): String =
     pattern.matcher(this).replaceAll(replacement)
 
-// %1$s を含む文字列リソースを利用して装飾テキストの前後に文字列を追加する
-fun CharSequence?.intoStringResource(context: Context, stringId: Int): Spannable {
+private val reFormatArgs = """%(\d+)${"\\$"}s""".toRegex()
 
-    val s = context.getString(stringId)
-    val end = s.length
-    val pos = s.indexOf("%1\$s")
-    if (pos == -1) return SpannableString(s)
-
-    val sb = SpannableStringBuilder()
-    if (pos > 0) sb.append(s.substring(0, pos))
-    if (this != null) sb.append(this)
-    if (pos + 4 < end) sb.append(s.substring(pos + 4, end))
-    return sb
+fun Context.getSpannedString(
+    @StringRes stringId: Int,
+    vararg args: CharSequence,
+): SpannedString = buildSpannedString {
+    val src = getString(stringId)
+    var lastEnd = 0
+    fun addText(end: Int) {
+        if (end > lastEnd) {
+            append(src.substring(lastEnd, end))
+        }
+    }
+    reFormatArgs.findAll(src).forEach { mr ->
+        addText(mr.range.first)
+        val index = mr.groupValues[1].toInt() - 1
+        when (val arg = args.elementAtOrNull(index)) {
+            null -> append("(null)")
+            else -> append(arg)
+        }
+        lastEnd = mr.range.last + 1
+    }
+    addText(src.length)
 }
 
 //fun Char.hex2int() : Int {

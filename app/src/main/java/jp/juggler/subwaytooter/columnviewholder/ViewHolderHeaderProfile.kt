@@ -39,7 +39,7 @@ import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.buildJsonObject
-import jp.juggler.util.data.intoStringResource
+import jp.juggler.util.data.getSpannedString
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.showToast
@@ -350,8 +350,10 @@ internal class ViewHolderHeaderProfile(
             llMoved.visibility = View.VISIBLE
             tvMoved.visibility = View.VISIBLE
 
-            val caption = who.decodeDisplayName(activity)
-                .intoStringResource(activity, R.string.account_moved_to)
+            val caption = activity.getSpannedString(
+                R.string.account_moved_to,
+                who.decodeDisplayName(activity),
+            )
 
             movedCaptionInvalidator.text = caption
 

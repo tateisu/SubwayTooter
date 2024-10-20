@@ -38,6 +38,7 @@ fun Column.canReloadWhenRefreshTop(): Boolean = when (type) {
     ColumnType.FOLLOW_SUGGESTION,
     ColumnType.PROFILE_DIRECTORY,
     ColumnType.STATUS_HISTORY,
+    ColumnType.AGG_BOOSTS,
     -> true
 
     ColumnType.LIST_MEMBER,
@@ -70,6 +71,7 @@ fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
     ColumnType.TREND_TAG,
     ColumnType.FOLLOW_SUGGESTION,
     ColumnType.STATUS_HISTORY,
+    ColumnType.AGG_BOOSTS,
     -> false
 
     ColumnType.FOLLOW_REQUESTS -> isMisskey

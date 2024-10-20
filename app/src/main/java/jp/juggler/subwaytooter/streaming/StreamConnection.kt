@@ -209,7 +209,7 @@ class StreamConnection(
             "readAllNotifications",
             "readAllUnreadMentions",
             "readAllUnreadSpecifiedNotes",
-            -> return
+                -> return
         }
 
         when (type) {
@@ -385,7 +385,7 @@ class StreamConnection(
                     status = StreamStatus.ClosedNoRetry
                     return@enqueue
                 }
-            } else if( t is java.io.EOFException){
+            } else if (t is java.io.EOFException) {
                 log.w("$name WebSocket onFailure. ${t.withCaption()} $lastUrl")
             } else {
                 log.w(t, "$name WebSocket onFailure.")

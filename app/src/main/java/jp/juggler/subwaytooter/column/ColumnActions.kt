@@ -86,6 +86,7 @@ fun Column.findStatus(
         when (data) {
             is TootNotification -> procStatus(data.status)
             is TootStatus -> procStatus(data)
+            is TootAggBoost -> procStatus(data.originalStatus)
         }
     }
 

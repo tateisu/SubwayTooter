@@ -223,3 +223,6 @@ app/fcm/release/output-metadata.json
 /_apk/
 
 /.depCheck/
+
+
+/.kotlin/

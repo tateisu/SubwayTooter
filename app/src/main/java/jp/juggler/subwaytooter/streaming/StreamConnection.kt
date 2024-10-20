@@ -378,13 +378,15 @@ class StreamConnection(
             if (t is SocketException && t.message?.contains("closed") == true) {
                 log.v("$name socket closed.")
             } else if (t is ProtocolException) {
-                log.w(t.withCaption("$name WebSocket onFailure.") + " " + lastUrl)
+                log.w("$name WebSocket onFailure. ${t.withCaption()} $lastUrl")
                 val msg = t.message
                 if (msg != null && reAuthorizeError.matcher(msg).find()) {
                     log.w("$name seems this server don't support public TL streaming. don't retry…")
                     status = StreamStatus.ClosedNoRetry
                     return@enqueue
                 }
+            } else if( t is java.io.EOFException){
+                log.w("$name WebSocket onFailure. ${t.withCaption()} $lastUrl")
             } else {
                 log.w(t, "$name WebSocket onFailure.")
             }

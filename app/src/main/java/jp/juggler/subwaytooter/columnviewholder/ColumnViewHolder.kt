@@ -29,7 +29,6 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.subwaytooter.view.OutsideDrawerLayout
-import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.Benchmark
 import jp.juggler.util.log.LogCategory
@@ -99,6 +98,8 @@ class ColumnViewHolder(
     lateinit var btnSearchClear: ImageButton
     lateinit var btnEmojiAdd: ImageButton
     lateinit var etSearch: EditText
+    lateinit var etStatusLoadLimit: EditText
+
     lateinit var flEmoji: FlexboxLayout
     lateinit var tvEmojiDesc: MyTextView
     lateinit var cbResolve: CheckBox
@@ -115,6 +116,7 @@ class ColumnViewHolder(
     lateinit var flColumnBackground: View
     lateinit var ivColumnBackgroundImage: ImageView
     lateinit var llSearch: View
+    lateinit var llAggBoostBar: View
     lateinit var cbDontCloseColumn: CheckBox
     lateinit var cbShowMediaDescription: CheckBox
     lateinit var cbRemoteOnly: CheckBox
@@ -190,6 +192,14 @@ class ColumnViewHolder(
     val announcementContentInvalidator: NetworkEmojiInvalidator
 
     val viewRoot: View = inflate(activity, parent)
+
+    val statusLoadLimitTextWatcher = CustomTextWatcher {
+        val n = etStatusLoadLimit.text.toString().toIntOrNull()
+        if (n != null && n > 0) {
+            column?.aggStatusLimit = n
+            activity.appState.saveColumnList()
+        }
+    }
 
     /////////////////////////////////
 
@@ -1113,6 +1123,38 @@ class ColumnViewHolder(
         } // end of search bar
     }
 
+    private fun _LinearLayout.inflateAggBoostBar() {
+        llAggBoostBar = verticalLayout {
+            lparams(matchParent, wrapContent)
+
+            linearLayout {
+                lparams(matchParent, wrapContent)
+                isBaselineAligned = false
+                gravity = Gravity.CENTER
+
+                myTextView {
+                    text = context.getString(R.string.agg_status_limit)
+                    textSize = 12f
+                    gravity = Gravity.END
+                }.lparams(0, wrapContent) {
+                    weight = 1f
+                }
+
+                etStatusLoadLimit = myEditText {
+                    id = View.generateViewId()
+                    inputType = InputType.TYPE_CLASS_NUMBER
+                    maxLines = 1
+                    minWidthCompat = dip(120)
+                    gravity = Gravity.END
+                    horizontalPadding = dip(8)
+                }.lparams(wrapContent, wrapContent) {
+                    marginStart = dip(4)
+                    marginEnd = dip(12)
+                }
+            }
+        }
+    }
+
     private fun _LinearLayout.inflateListBar() {
         llListList = linearLayout {
             lparams(matchParent, wrapContent)
@@ -1305,6 +1347,7 @@ class ColumnViewHolder(
             inflateColumnSetting()
             inflateAnnouncementsBox()
             inflateSearchBar()
+            inflateAggBoostBar()
             inflateListBar()
             inflateQuickFilter()
             inflateColumnBody(actMain)

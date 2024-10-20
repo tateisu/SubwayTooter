@@ -184,6 +184,12 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         etSearch.setText(column.searchQuery)
         cbResolve.isCheckedNoAnime = column.searchResolve
 
+        etStatusLoadLimit.removeTextChangedListener(statusLoadLimitTextWatcher)
+        if (column.type == ColumnType.AGG_BOOSTS) {
+            etStatusLoadLimit.setText(column.aggStatusLimit.toString())
+            etStatusLoadLimit.addTextChangedListener(statusLoadLimitTextWatcher)
+        }
+
         cbRemoteOnly.vg(column.canRemoteOnly())
 
         cbWithAttachment.vg(bAllowFilter)
@@ -239,6 +245,8 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
 
             else -> llSearch.vg(false)
         }
+
+        llAggBoostBar.vg(column.type == ColumnType.AGG_BOOSTS)
 
         llListList.vg(column.type == ColumnType.LIST_LIST)
 

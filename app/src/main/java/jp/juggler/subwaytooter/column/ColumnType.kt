@@ -2110,7 +2110,7 @@ enum class ColumnType(
             getAggBoosts(
                 client = client,
                 pathBase = column.makeHomeTlUrl(),
-                scanStatusMax = 400,
+                scanStatusMax = max(20, column.aggStatusLimit),
                 skipActioned = false,
             )
         },

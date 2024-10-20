@@ -177,6 +177,7 @@ class Column(
     internal var hashtagAll = ""
     internal var hashtagNone = ""
     internal var hashtagAcct = ""
+    internal var aggStatusLimit = 400
 
     internal var languageFilter: JsonObject? = null
 

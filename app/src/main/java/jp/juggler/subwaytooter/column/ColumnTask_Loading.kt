@@ -15,6 +15,7 @@ import jp.juggler.util.coroutine.runOnMainLooper
 import jp.juggler.util.coroutine.runOnMainLooperDelayed
 import jp.juggler.util.data.JsonArray
 import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPostRequestBuilder
@@ -1388,7 +1389,10 @@ class ColumnTask_Loading(
                 aggBoost.timeLatestBoost = aggBoost.boosters.values
                     .maxOfOrNull { it.time_created_at } ?: 0L
             }
-            .sortedByDescending { it.timeLatestBoost }
+            .sortedWith { a, b ->
+                b.boosters.size.compareTo(a.boosters.size).notZero()
+                    ?: b.timeLatestBoost.compareTo(a.timeLatestBoost)
+            }
             .map {
                 TootAggBoost(
                     originalStatus = it.originalStatus,

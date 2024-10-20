@@ -84,7 +84,6 @@
     <string name="confirm_unbookmark_from">Unbookmark this status from %1$s ?</string>
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
-    <string name="display_name_boosted_by_agg">%1$s and %2$s users boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
     <string name="display_name_mentioned_by">%1$s mentioned</string>
     <string name="display_name_voted_by">%1$s voted</string>
@@ -1311,5 +1310,7 @@
     <string name="language_name_montenegrin">Montenegrin</string>
 
     <string name="agg_boosts">Agg. boosts</string>
+    <string name="agg_status_limit">prove posts limit</string>
+    <string name="display_name_boosted_by_agg">%1$s and %2$s followings boosted.</string>
 
 </resources>

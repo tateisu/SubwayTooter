@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
@@ -97,7 +96,7 @@ class ActAbout : AppCompatActivity() {
         }
 
         fun searchAcct(acct: String) {
-            setResult(Activity.RESULT_OK, Intent().apply { putExtra(EXTRA_SEARCH, acct) })
+            setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_SEARCH, acct) })
             finish()
         }
 
@@ -150,7 +149,7 @@ class ActAbout : AppCompatActivity() {
                 setOnClickListener {
                     val data = Intent()
                     data.putExtra(EXTRA_SEARCH, who.acct ?: who.name)
-                    setResult(Activity.RESULT_OK, data)
+                    setResult(RESULT_OK, data)
                     finish()
                 }
             }.let { ll.addView(it) }

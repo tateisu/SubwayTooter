@@ -212,6 +212,9 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 cbResolve.isCheckedNoAnime = column.searchResolve
             } else if (column.type == ColumnType.REACTIONS) {
                 updateReactionQueryView()
+            } else if (column.type == ColumnType.AGG_BOOSTS) {
+                etStatusLoadLimit.hideKeyboard()
+                etStatusLoadLimit.setText(column.aggStatusLimit.toString())
             }
             refreshLayout.isRefreshing = false
             column.startLoading()

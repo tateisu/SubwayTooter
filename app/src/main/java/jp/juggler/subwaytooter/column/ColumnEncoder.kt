@@ -66,6 +66,7 @@ object ColumnEncoder {
     private const val KEY_SEARCH_QUERY = "search_query"
     private const val KEY_SEARCH_RESOLVE = "search_resolve"
     private const val KEY_INSTANCE_URI = "instance_uri"
+    private const val KEY_AGG_STATUS_LIMIT = "aggStatusLimit"
 
     private const val KEY_REMOTE_ONLY = "remoteOnly"
 
@@ -168,7 +169,7 @@ object ColumnEncoder {
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
                 ColumnType.ACCOUNT_AROUND,
-                ->
+                    ->
                     dst[KEY_STATUS_ID] = statusId.toString()
 
                 ColumnType.STATUS_HISTORY -> {
@@ -192,7 +193,7 @@ object ColumnEncoder {
 
                 ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
                 ColumnType.MISSKEY_ANTENNA_TL,
-                -> {
+                    -> {
                     dst[KEY_PROFILE_ID] = profileId.toString()
                 }
 
@@ -220,11 +221,15 @@ object ColumnEncoder {
                     dst[KEY_SEARCH_RESOLVE] = searchResolve
                 }
 
+                ColumnType.AGG_BOOSTS -> {
+                    dst[KEY_AGG_STATUS_LIMIT] = aggStatusLimit
+                }
+
                 ColumnType.REACTIONS,
                 ColumnType.SEARCH_MSP,
                 ColumnType.SEARCH_TS,
                 ColumnType.SEARCH_NOTESTOCK,
-                -> {
+                    -> {
                     dst[KEY_SEARCH_QUERY] = searchQuery
                 }
 
@@ -278,6 +283,7 @@ object ColumnEncoder {
             systemNotificationNotRelated = src.optBoolean(KEY_SYSTEM_NOTIFICATION_NOT_RELATED)
             instanceLocal = src.optBoolean(KEY_INSTANCE_LOCAL)
             quickFilter = src.optInt(KEY_QUICK_FILTER, 0)
+            aggStatusLimit = src.optInt(KEY_AGG_STATUS_LIMIT, 400)
 
             announcementHideTime = src.optLong(KEY_ANNOUNCEMENT_HIDE_TIME, 0L)
 
@@ -304,7 +310,7 @@ object ColumnEncoder {
                 ColumnType.FAVOURITED_BY,
                 ColumnType.LOCAL_AROUND,
                 ColumnType.ACCOUNT_AROUND,
-                -> statusId = EntityId.mayNull(src.string(KEY_STATUS_ID))
+                    -> statusId = EntityId.mayNull(src.string(KEY_STATUS_ID))
 
                 ColumnType.STATUS_HISTORY -> {
                     statusId = EntityId.mayNull(src.string(KEY_STATUS_ID))
@@ -312,18 +318,18 @@ object ColumnEncoder {
                 }
 
                 ColumnType.FEDERATED_AROUND,
-                -> {
+                    -> {
                     statusId = EntityId.mayNull(src.string(KEY_STATUS_ID))
                     remoteOnly = src.optBoolean(KEY_REMOTE_ONLY, false)
                 }
 
                 ColumnType.FEDERATE,
-                -> {
+                    -> {
                     remoteOnly = src.optBoolean(KEY_REMOTE_ONLY, false)
                 }
 
                 ColumnType.PROFILE,
-                -> {
+                    -> {
                     profileId = EntityId.mayNull(src.string(KEY_PROFILE_ID))
                     val tabId = src.optInt(KEY_PROFILE_TAB)
                     profileTab = ProfileTab.entries.find { it.id == tabId } ?: ProfileTab.Status
@@ -332,7 +338,7 @@ object ColumnEncoder {
                 ColumnType.LIST_MEMBER,
                 ColumnType.LIST_TL,
                 ColumnType.MISSKEY_ANTENNA_TL,
-                -> {
+                    -> {
                     profileId = EntityId.mayNull(src.string(KEY_PROFILE_ID))
                 }
 
@@ -364,7 +370,7 @@ object ColumnEncoder {
                 ColumnType.SEARCH_MSP,
                 ColumnType.SEARCH_TS,
                 ColumnType.SEARCH_NOTESTOCK,
-                -> {
+                    -> {
                     searchQuery = src.optString(KEY_SEARCH_QUERY)
                 }
 

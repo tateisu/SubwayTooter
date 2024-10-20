@@ -1,10 +1,16 @@
 package jp.juggler.subwaytooter.util
 
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.TextUnit
+import jp.juggler.util.data.mayUri
 
 fun CharSequence.toAnnotatedString() = when (this) {
     is AnnotatedString -> this
@@ -35,25 +41,26 @@ fun List<CharSequence>.joinAnnotatedString(
  * @return CharSequence, 実際には Stringまたは AnnotatedString
  */
 fun String.annotateUrl(
-    uri: String?,
+    url: String?,
     colorLink: Color,
     fontSize: TextUnit = TextUnit.Unspecified,
-): CharSequence = when (uri) {
+    opener: (Uri) -> Unit,
+): CharSequence = when (val uri = url?.mayUri()) {
     null -> this
-    else -> AnnotatedString.Builder().apply {
-        append(this@annotateUrl)
-        addStyle(
-            style = SpanStyle(
-                color = colorLink,
-                fontSize = fontSize,
-                textDecoration = TextDecoration.Underline
-            ), start = 0, end = length
-        )
-        addStringAnnotation(
-            tag = "URL",
-            annotation = uri.toString(),
-            start = 0,
-            end = length,
-        )
-    }.toAnnotatedString()
+    else -> buildAnnotatedString {
+        withLink(
+            LinkAnnotation.Clickable(
+                tag = "uri",
+                styles = TextLinkStyles(
+                    style = SpanStyle(
+                        color = colorLink,
+                        textDecoration = TextDecoration.Underline,
+                        fontSize = fontSize,
+                    )
+                ),
+            ) { opener(uri) }
+        ) {
+            append(this@annotateUrl)
+        }
+    }
 }

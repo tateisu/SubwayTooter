@@ -2,12 +2,15 @@ package jp.juggler.subwaytooter.ui.ossLicense
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.StColorScheme
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.data.decodeJsonObject
+import jp.juggler.util.data.eventFlow
+import jp.juggler.util.data.setEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +32,11 @@ class ActOSSLicenseViewModel(
     private val _isProgressShown = MutableStateFlow(false)
     val isProgressShown = _isProgressShown.asStateFlow()
 
+    private val _linkEvent = eventFlow<Uri>()
+    val linkEvent = _linkEvent.asStateFlow()
+
+    private fun fireUriEvent(uri:Uri) = _linkEvent.setEvent(uri)
+
     fun load(stColorScheme: StColorScheme) = viewModelScope.launch {
         try {
             _isProgressShown.value = true
@@ -48,6 +56,7 @@ class ActOSSLicenseViewModel(
                             it,
                             licenses,
                             stColorScheme = stColorScheme,
+                            linkOpener = ::fireUriEvent,
                         )
                     }
                     ?.sortedBy { it.nameSort }

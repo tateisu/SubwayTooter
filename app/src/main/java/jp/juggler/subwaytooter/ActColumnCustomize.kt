@@ -13,7 +13,6 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
 import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.runApiTask
@@ -340,10 +339,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener {
 
             views.tvColumnName.text = column.getColumnName(false)
 
-            if (column.columnBgColor != 0) {
-                views.flColumnBackground.setBackgroundColor(column.columnBgColor)
-            } else {
-                ViewCompat.setBackground(views.flColumnBackground, null)
+            when (column.columnBgColor) {
+                0 -> views.flColumnBackground.background = null
+                else -> views.flColumnBackground.setBackgroundColor(column.columnBgColor)
             }
 
             showAlpha(updateText = true, updateSeek = true)

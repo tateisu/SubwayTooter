@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -46,21 +44,16 @@ android {
             //"-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
         )
     }
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = Vers.kotlinJvmTarget
-        }
-    }
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+    coreLibraryDesugaring(libs.desugar.jdk)
 
     // dismissSafe, systemService, View.gone() など
     implementation(project(":base"))
 
-    implementation("androidx.core:core-ktx:${Vers.androidxCore}")
-    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
-    implementation("androidx.annotation:annotation:${Vers.androidxAnnotation}")
-    implementation("com.google.android.flexbox:flexbox:${Vers.googleFlexbox}")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.annotation)
+    implementation(libs.google.flexbox)
 }

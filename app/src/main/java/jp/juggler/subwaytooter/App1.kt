@@ -28,12 +28,15 @@ import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.subwaytooter.util.getUserAgent
+import jp.juggler.util.coroutine.AppDispatchers
+import jp.juggler.util.coroutine.EmptyScope
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.initializeToastUtils
 import jp.juggler.util.network.MySslSocketFactory
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.os.applicationContextSafe
+import kotlinx.coroutines.launch
 import okhttp3.Cache
 import okhttp3.CacheControl
 import okhttp3.ConnectionSpec
@@ -215,7 +218,23 @@ class App1 : Application() {
             // Playサービスが古い端末ではEmojiCompatの初期化がまだ行われていない状態になる
             // ワークアラウンドとして、アプリ内にバンドルしたデータを使うBundledEmojiCompatConfigで初期化する
             // (初期化が既に行われている場合は無害である)
-            EmojiCompat.init(BundledEmojiCompatConfig(appContext))
+            EmojiCompat.init(
+                BundledEmojiCompatConfig(
+                    appContext,
+                    object : java.util.concurrent.Executor {
+                        override fun execute(command: Runnable?) {
+                            command ?: throw NullPointerException()
+                            EmptyScope.launch(AppDispatchers.IO) {
+                                try {
+                                    command.run()
+                                } catch (ex: Throwable) {
+                                    log.w(ex, "BundledEmojiCompatConfig fontLoadExecutor failed.")
+                                }
+                            }
+                        }
+                    }
+                )
+            )
 
             // initialize Conscrypt
             Security.insertProviderAt(

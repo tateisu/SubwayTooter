@@ -1,7 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version Vers.kotlinVersion
+    alias(libs.plugins.kotlin.jvm)
     `java-library`
 }
 
@@ -10,23 +11,16 @@ java {
     targetCompatibility = Vers.javaTargetCompatibility
 }
 
-val compileKotlin: KotlinCompile by tasks
-val compileTestKotlin: KotlinCompile by tasks
-
-compileKotlin.kotlinOptions {
-    jvmTarget = Vers.kotlinJvmTarget
-    freeCompilerArgs = listOf(
-        "-opt-in=kotlin.ExperimentalStdlibApi",
-    )
-}
-compileTestKotlin.kotlinOptions{
-    jvmTarget = Vers.kotlinJvmTarget
-    freeCompilerArgs = listOf(
-        "-opt-in=kotlin.ExperimentalStdlibApi",
-    )
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(Vers.kotlinJvmTarget))
+        freeCompilerArgs = listOf(
+            "-opt-in=kotlin.ExperimentalStdlibApi",
+        )
+    }
 }
 
 dependencies {
     // implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
-    testImplementation(kotlin("test"))
+    testImplementation(libs.kotlin.test)
 }

@@ -5,7 +5,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.Scroller
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -40,7 +39,7 @@ constructor(gravity: Int) : androidx.recyclerview.widget.LinearSnapHelper() {
     override fun attachToRecyclerView(recyclerView: RecyclerView?) {
         mRecyclerView = recyclerView
         if (recyclerView != null) {
-            isRTL = ViewCompat.getLayoutDirection(recyclerView) == ViewCompat.LAYOUT_DIRECTION_RTL
+            isRTL = recyclerView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
 
             mGravityScroller = Scroller(recyclerView.context, DecelerateInterpolator())
         }

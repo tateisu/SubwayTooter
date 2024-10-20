@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -37,22 +35,17 @@ android {
     kotlinOptions {
         jvmTarget = Vers.kotlinJvmTarget
     }
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = Vers.kotlinJvmTarget
-        }
-    }
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
-    implementation("androidx.core:core-ktx:${Vers.androidxCore}")
-    implementation("androidx.preference:preference-ktx:${Vers.androidxPreferenceKtx}")
-    implementation("com.google.android.material:material:${Vers.googleMaterial}")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.preference.ktx)
+    implementation(libs.google.material)
 
-    testImplementation(kotlin("test"))
+    testImplementation(libs.kotlin.test)
 
-    androidTestRuntimeOnly("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:core:${Vers.androidxTestCore}")
-    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunit}")
+    androidTestRuntimeOnly(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 }

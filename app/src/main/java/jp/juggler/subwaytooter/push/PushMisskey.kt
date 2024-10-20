@@ -54,24 +54,22 @@ class PushMisskey(
         var hasEmptySubscription = false
 
         if (!lastEndpointUrl.isNullOrEmpty()) {
-            val lastSubscription = when (lastEndpointUrl) {
-                null, "" -> null
-                else -> try {
-                    subLog.i("check current subscription…")
-                    // Misskeyは2022/12/18に現在の購読を確認するAPIができた
-                    api.getPushSubscription(account, lastEndpointUrl)
-                    // 購読がない => 空オブジェクト (v13 drdr.club でそんな感じ)
-                } catch (ex: Throwable) {
-                    // APIがない => 404 (v10 めいすきーのソースと動作で確認)
-                    when ((ex as? ApiError)?.response?.code) {
-                        in 400 until 500 -> null
-                        else -> throw ex
-                    }
+            val lastSubscription = try {
+                subLog.i("check current subscription…")
+                // Misskeyは2022/12/18に現在の購読を確認するAPIができた
+                api.getPushSubscription(account, lastEndpointUrl)
+                // 購読がない => 空オブジェクト (v13 drdr.club でそんな感じ)
+            } catch (ex: Throwable) {
+                // APIがない => 404 (v10 めいすきーのソースと動作で確認)
+                when ((ex as? ApiError)?.response?.code) {
+                    in 400 until 500 -> null
+                    else -> throw ex
                 }
             }
 
             if (lastSubscription != null) {
-                if (lastSubscription.size == 0) {
+                @Suppress("UsePropertyAccessSyntax")
+                if (lastSubscription.isEmpty()) {
                     // 購読がないと空レスポンスになり、アプリ側で空オブジェクトに変換される
                     @Suppress("UNUSED_VALUE")
                     hasEmptySubscription = true
@@ -102,6 +100,7 @@ class PushMisskey(
                     subLog.i(R.string.push_subscription_app_server_hash_missing_but_ok)
                     null
                 }
+
                 else -> context.getString(
                     R.string.push_subscription_app_server_hash_missing_error
                 )
@@ -231,7 +230,7 @@ class PushMisskey(
                     TootNotification.TYPE_FOLLOW,
                     TootNotification.TYPE_FOLLOW_REQUEST,
                     TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                    -> {
+                        -> {
                         val whoAcct = a.getFullAcct(who)
                         if (TootStatus.favMuteSet?.contains(whoAcct) == true) {
                             error("muted by favMuteSet ${whoAcct.pretty}")

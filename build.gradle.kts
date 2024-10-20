@@ -5,47 +5,34 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:${Vers.androidGradlePrugin}")
-
         // room のバージョンの影響で google-services を上げられない場合がある
-        classpath("com.google.gms:google-services:4.4.1")
-
-        //noinspection DifferentKotlinGradleVersion
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Vers.kotlinVersion}")
-
-        // Compose Compilerの都合でkotlinを上げられない場合がある
-        //noinspection GradleDependency
-        classpath("org.jetbrains.kotlin:kotlin-serialization:${Vers.kotlinVersion}")
-
-        classpath("com.github.bjoernq:unmockplugin:0.7.6")
-
-        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:${Vers.detektVersion}")
+        classpath(libs.google.services)
+        // classpath(libs.unmockplugin)
     }
 }
 
 plugins {
-    kotlin("jvm") version (Vers.kotlinVersion) apply false
-    kotlin("plugin.serialization") version (Vers.kotlinxSerializationPluginVersion) apply true // !!
-    id("org.jetbrains.kotlin.android") version (Vers.kotlinVersion) apply false
-    id("com.google.devtools.ksp") version (Vers.kspVersion) apply false
- //   id("com.android.library") version "8.3.0" apply false
+    // alias(libs.plugins.unmock) apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.gradleVersionsPlugin) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.ksp) apply false
 }
 
 allprojects {
-    repositories {
-        google()
-        mavenCentral()
 
-        // alexzhirkevich/custom-qr-generator
-        maven(url = "https://jitpack.io")
-    }
 
     // configurationのリストを標準出力に出す
     // usage: ./gradlew -q --no-configuration-cache :app:printConfigurations
     tasks.register("printConfigurations") {
         doLast {
             println("project: ${project.name} configurations:")
-            for( c in configurations){
+            for (c in configurations) {
                 println("configuration: ${c.name}")
             }
         }

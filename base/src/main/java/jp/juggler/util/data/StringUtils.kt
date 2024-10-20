@@ -242,7 +242,7 @@ fun String.sanitizeBDI(): String {
         if (closer != null) {
             if (stack == null) stack = LinkedList()
             stack.add(closer)
-        } else if (stack?.isNotEmpty() == true && stack.last == c) {
+        } else if (stack?.lastOrNull() == c) {
             stack.removeLast()
         }
     }

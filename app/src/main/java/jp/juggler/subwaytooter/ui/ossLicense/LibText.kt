@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.ui.ossLicense
 
+import android.net.Uri
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import jp.juggler.subwaytooter.util.StColorScheme
@@ -45,6 +46,7 @@ fun parseLibText(
     lib: JsonObject,
     licenses: Map<String?, JsonObject>,
     stColorScheme: StColorScheme,
+    linkOpener: (Uri) -> Unit,
 ): LibText {
     val colorLink = stColorScheme.colorTextLink
 
@@ -56,10 +58,10 @@ fun parseLibText(
     val nameSmall: CharSequence?
     if (name.isNullOrBlank()) {
         // nameがない場合はnameBigはidを大きく表示する
-        nameBig = (id ?: "(no name, no id)").annotateUrl(webSite, colorLink)
+        nameBig = (id ?: "(no name, no id)").annotateUrl(webSite, colorLink, opener = linkOpener)
         nameSmall = null
     } else {
-        nameBig = name.annotateUrl(webSite, colorLink)
+        nameBig = name.annotateUrl(webSite, colorLink, opener = linkOpener)
         nameSmall = id
         // idがない場合はnameSmallはnullとなる
     }
@@ -70,7 +72,7 @@ fun parseLibText(
         ?.map {
             val uri =
                 it.jsonArray("urls")?.stringList()?.firstOrNull()?.toHttpUrlOrNull()?.toString()
-            it.string("name")!!.annotateUrl(uri, colorLink)
+            it.string("name")!!.annotateUrl(uri, colorLink, opener = linkOpener)
         }
         ?.toList()?.joinAnnotatedString(AnnotatedString(", "))
 

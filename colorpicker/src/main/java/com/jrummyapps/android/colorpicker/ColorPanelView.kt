@@ -34,7 +34,6 @@ import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
 
 enum class ColorShape(val attrEnum: Int) {
     Square(0),
@@ -268,7 +267,7 @@ class ColorPanelView @JvmOverloads constructor(
         val height = height
         val midy = screenPos[1] + height / 2
         var referenceX = screenPos[0] + width / 2
-        if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_LTR) {
+        if (getLayoutDirection() == LAYOUT_DIRECTION_LTR) {
             val screenWidth = context.resources.displayMetrics.widthPixels
             referenceX = screenWidth - referenceX // mirror
         }

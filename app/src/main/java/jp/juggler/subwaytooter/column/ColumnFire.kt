@@ -24,9 +24,9 @@ fun Column.removeColumnViewHolderByActivity(activity: ActMain) {
 
 // 複数のリスナがある場合、最も新しいものを返す
 val Column.viewHolder: ColumnViewHolder?
-    get() {
-        if (isDispose.get()) return null
-        return if (listViewHolder.isEmpty()) null else listViewHolder.first
+    get() = when {
+        isDispose.get() -> null
+        else -> listViewHolder.firstOrNull()
     }
 
 fun Column.fireShowContent(

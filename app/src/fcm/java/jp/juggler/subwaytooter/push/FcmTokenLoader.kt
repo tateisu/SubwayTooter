@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.push
 
 import android.content.Context
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.tasks.await
@@ -57,9 +57,9 @@ object FcmTokenLoader {
     }
 
     fun isPlayServiceAvailavle(context: Context): Boolean {
-        val errorCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-        if (errorCode == ConnectionResult.SUCCESS) return true
-        log.w("isPlayServiceAvailavle=${connectionResultString(errorCode)}")
+        val code = GoogleApiAvailabilityLight.getInstance().isGooglePlayServicesAvailable(context)
+        if (code == ConnectionResult.SUCCESS) return true
+        log.w("isPlayServiceAvailavle=${connectionResultString(code)}")
         return false
     }
 

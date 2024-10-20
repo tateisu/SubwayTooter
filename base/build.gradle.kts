@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 android {
     namespace = "jp.juggler.base"
@@ -39,11 +37,6 @@ android {
     kotlinOptions {
         jvmTarget = Vers.kotlinJvmTarget
     }
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = Vers.kotlinJvmTarget
-        }
-    }
     packaging {
         jniLibs {
             excludes.addAll(listOf("META-INF/LICENSE*"))
@@ -58,56 +51,49 @@ kotlin {
     jvmToolchain(Vers.kotlinJvmToolchain)
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = Vers.kotlinJvmTarget
-    }
-}
-
 dependencies {
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
     //noinspection GradleDependency
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+    coreLibraryDesugaring(libs.desugar.jdk)
 
     // JugglerBaseInitializer で使う
-    implementation("androidx.startup:startup-runtime:${Vers.androidxStartup}")
+    implementation(libs.androidx.startup.runtime)
 
     // decodeP256dh で使う
-    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation(libs.bcprov.jdk15on)
 
     // defaultSecurityProvider で使う
-    implementation("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
+    implementation(libs.conscrypt.android)
 
     // AudioTranscoderで使う
-    implementation("androidx.media3:media3-common:${Vers.androidxMedia3}")
-    implementation("androidx.media3:media3-transformer:${Vers.androidxMedia3}")
-    implementation("androidx.media3:media3-effect:${Vers.androidxMedia3}")
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.effect)
 
     // EmptyScope.kt で使う
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinxCoroutinesVersion}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Vers.androidxLifecycle}")
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
 
     // Compat.kt で使う
-    implementation("androidx.annotation:annotation:${Vers.androidxAnnotation}")
-    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
+    implementation(libs.androidx.annotation)
+    implementation(libs.androidx.appcompat)
 
     // JsonDelegate で使う
     implementation(kotlin("reflect"))
     // UriSerializer で使う。アカウント設定で状態の保存に kotlinx-serialization-json を使っている
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Vers.kotlinxSerializationLibVersion}")
+    implementation(libs.kotlinx.serialization.json)
 
     // BitmapUtils で使う
-    implementation("androidx.exifinterface:exifinterface:1.3.7")
+    implementation(libs.androidx.exifinterface)
 
     // MovieUtils で使う
-    implementation("com.otaliastudios:transcoder:0.10.5")
+    implementation(libs.otaliastudios.transcoder)
 
     // HttpUtils で使う
-    implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
+    implementation(libs.okhttp)
 
     // ないとなぜかIDE上にエラーが出る
-    implementation("androidx.activity:activity-ktx:${Vers.androidxActivity}")
-
+    implementation(libs.androidx.activity.ktx)
 
     // ==========================================================================
     // 単体テスト
@@ -116,13 +102,13 @@ dependencies {
     // ==========================================================================
     // AndroidTest
     // 紛らわしいのでAndroidTestではkotlin.testを使わない androidTestImplementation(kotlin("test"))
-    androidTestRuntimeOnly("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:core:${Vers.androidxTestCore}")
-    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunit}")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
+    androidTestRuntimeOnly(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 
     // DispatchersTest で使う
-    androidTestImplementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Vers.androidxLifecycle}")
+    androidTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
 
 //    implementation("androidx.core:core-ktx:${Vers.androidxCoreVersion}")
 //
@@ -157,7 +143,6 @@ dependencies {
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Vers.kotlinxCoroutinesVersion}")
 //    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 //    implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:${Vers.gildorkotlinCoroutinesOkhttp}")
-
 
 //    androidTestImplementation("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCoreVersion}")
 //    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")

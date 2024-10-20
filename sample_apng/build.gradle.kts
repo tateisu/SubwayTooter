@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -56,20 +54,14 @@ android {
     kotlin {
         jvmToolchain(Vers.kotlinJvmToolchain)
     }
-
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = Vers.kotlinJvmTarget
-        }
-    }
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+    coreLibraryDesugaring(libs.desugar.jdk)
     implementation(project(":base"))
     implementation(project(":apng_android"))
-    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
+    implementation(libs.androidx.appcompat)
 
     // ないとなぜかIDE上にエラーが出る
-    implementation("androidx.activity:activity-ktx:${Vers.androidxActivity}")
+    implementation(libs.androidx.activity.ktx)
 }

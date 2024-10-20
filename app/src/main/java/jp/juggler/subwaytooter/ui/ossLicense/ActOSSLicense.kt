@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,12 +39,12 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.databinding.ActOssLicenseBinding
 import jp.juggler.subwaytooter.util.StColorScheme
+import jp.juggler.subwaytooter.util.collectOnLifeCycle
 import jp.juggler.subwaytooter.util.dummyStColorTheme
 import jp.juggler.subwaytooter.util.getStColorTheme
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.provideViewModel
 import jp.juggler.subwaytooter.util.toAnnotatedString
-import jp.juggler.util.data.mayUri
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.flow.Flow
@@ -78,6 +77,10 @@ class ActOSSLicense : ComponentActivity() {
                 librariesFlow = viewModel.libraries,
                 isProgressShownFlow = viewModel.isProgressShown,
             )
+        }
+
+        collectOnLifeCycle(viewModel.linkEvent) {
+            openBrowser(it?.get())
         }
 
         try {
@@ -189,53 +192,29 @@ class ActOSSLicense : ComponentActivity() {
                 .padding(vertical = 6.dp, horizontal = 12.dp)
         ) {
             src.nameBig.notEmpty()?.let {
-                ClickableText(
+                Text(
                     text = it,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         color = MaterialTheme.colorScheme.onBackground,
                     ),
-                ) { offset ->
-                    it.getStringAnnotations(
-                        tag = "URL",
-                        start = offset,
-                        end = offset,
-                    ).firstOrNull()?.let { a ->
-                        openBrowser(a.item.mayUri())
-                    }
-                }
+                )
             }
             src.nameSmall.notEmpty()?.let {
-                ClickableText(
+                Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onBackground,
                     ),
-                ) { offset ->
-                    it.getStringAnnotations(
-                        tag = "URL",
-                        start = offset,
-                        end = offset,
-                    ).firstOrNull()?.let { a ->
-                        openBrowser(a.item.mayUri())
-                    }
-                }
+                )
             }
-            Spacer(modifier = Modifier.height(8.dp))
             src.desc.notEmpty()?.let {
-                ClickableText(
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
                     text = it,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onBackground,
-                    ),
-                ) { offset ->
-                    it.getStringAnnotations(
-                        tag = "URL",
-                        start = offset,
-                        end = offset,
-                    ).firstOrNull()?.let { a ->
-                        openBrowser(a.item.mayUri())
-                    }
-                }
+                    )
+                )
             }
         }
     }

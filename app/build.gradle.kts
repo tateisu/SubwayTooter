@@ -1,14 +1,17 @@
 import io.gitlab.arturbosch.detekt.Detekt
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    kotlin("plugin.serialization")
-    id("com.google.devtools.ksp")
-    id("io.gitlab.arturbosch.detekt")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+
+    // 以下は試験用、保守用
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.gradleVersionsPlugin)
 }
 
 val keystorePropertiesFile: File = rootProject.file("keystore.properties")
@@ -47,14 +50,15 @@ android {
         targetCompatibility = Vers.javaTargetCompatibility
         isCoreLibraryDesugaringEnabled = true
     }
-
+    kotlin {
+        jvmToolchain(Vers.kotlinJvmToolchain)
+    }
     kotlinOptions {
         jvmTarget = Vers.kotlinJvmTarget
         freeCompilerArgs = listOf(
             "-opt-in=kotlin.ExperimentalStdlibApi",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-opt-in=androidx.media3.common.util.UnstableApi",
             //      "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             //      "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
         )
@@ -141,22 +145,11 @@ android {
         disable += "MissingTranslation"
     }
 
-    kotlin {
-        jvmToolchain(Vers.kotlinJvmToolchain)
-    }
-    kotlinOptions {
-        jvmTarget = Vers.kotlinJvmTarget
-    }
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = Vers.kotlinJvmTarget
-        }
-    }
 }
 
 dependencies {
     // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+    coreLibraryDesugaring(libs.desugar.jdk)
 
     implementation(project(":base"))
     implementation(project(":colorpicker"))
@@ -164,73 +157,81 @@ dependencies {
     implementation(project(":apng_android"))
     implementation(project(":anko"))
 
-    implementation("androidx.activity:activity-compose:${Vers.androidxActivity}")
-    implementation("androidx.activity:activity-ktx:${Vers.androidxActivity}")
-    implementation("androidx.appcompat:appcompat:${Vers.androidxAppcompat}")
-    implementation("androidx.browser:browser:1.8.0")
-    implementation("androidx.compose.material3:material3:1.2.1")
-    implementation("androidx.compose.material:material-icons-extended-android:${Vers.androidxComposeMaterialIcons}")
-    implementation("androidx.compose.runtime:runtime-livedata:${Vers.androidxComposeRuntime}")
-    implementation("androidx.compose.ui:ui-tooling-preview:${Vers.androidxComposeUi}")
-    implementation("androidx.compose.ui:ui:${Vers.androidxComposeUi}")
-    implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-    implementation("androidx.emoji2:emoji2-bundled:${Vers.androidxEmoji2}")
-    implementation("androidx.emoji2:emoji2-views-helper:${Vers.androidxEmoji2}")
-    implementation("androidx.emoji2:emoji2-views:${Vers.androidxEmoji2}")
-    implementation("androidx.emoji2:emoji2:${Vers.androidxEmoji2}")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:${Vers.androidxLifecycle}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${Vers.androidxLifecycle}")
-    implementation("androidx.media3:media3-common:${Vers.androidxMedia3}")
-    implementation("androidx.media3:media3-datasource:${Vers.androidxMedia3}")
-    implementation("androidx.media3:media3-exoplayer:${Vers.androidxMedia3}")
-    implementation("androidx.media3:media3-session:${Vers.androidxMedia3}")
-    implementation("androidx.media3:media3-ui:${Vers.androidxMedia3}")
-    implementation("androidx.recyclerview:recyclerview:${Vers.androidxRecyclerView}")
-    implementation("androidx.work:work-runtime-ktx:${Vers.androidxWork}")
-    implementation("androidx.work:work-runtime:${Vers.androidxWork}")
-    implementation("com.caverock:androidsvg-aar:1.4")
-    implementation("com.github.UnifiedPush:android-connector:2.1.1")
-    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2")
-    implementation("com.github.bumptech.glide:glide:${Vers.glideVersion}")
+    // 各種ライブラリのBoM
+    implementation(platform(libs.koin.bom))
+    implementation(platform(libs.androidx.compose.bom))
+    testImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+
+    implementation(libs.androidsvg.aar)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.browser)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.drawerlayout)
+    implementation(libs.androidx.emoji2)
+    implementation(libs.androidx.emoji2.bundled)
+    implementation(libs.androidx.emoji2.views)
+    implementation(libs.androidx.emoji2.views.helper)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.datasource)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.session)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.apng4Android)
+    implementation(libs.conscrypt.android)
+    implementation(libs.custom.qr.generator)
+    implementation(libs.draglistview)
+    implementation(libs.glide)
+    implementation(libs.google.flexbox)
+    implementation(libs.google.material)
+    implementation(libs.koin.android)
+    implementation(libs.koin.android.compat)
+    implementation(libs.koin.androidx.workmanager)
+    implementation(libs.kotlin.coroutines.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.urlconnection)
+    implementation(libs.unifiedpush.android.connector)
+    implementation(libs.webpDecoder)
+
+    // AAR指定はバージョンカタログにはない…
+    //noinspection UseTomlInstead
     implementation("com.github.omadahealth:swipy:1.2.3@aar")
-    implementation("com.github.penfeizhou.android.animation:apng:${Vers.apng4AndroidVersion}")
-    implementation("com.github.woxthebox:draglistview:1.7.3")
-    implementation("com.github.zjupure:webpdecoder:${Vers.webpDecoderVersion}")
-    implementation("com.google.android.flexbox:flexbox:${Vers.googleFlexbox}")
-    implementation("com.google.android.material:material:${Vers.googleMaterial}")
-    implementation("com.squareup.okhttp3:okhttp-urlconnection:${Vers.okhttpVersion}")
-    implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
-    implementation("com.squareup.okhttp3:okhttp:${Vers.okhttpVersion}")
-    implementation("io.insert-koin:koin-android-compat:${Vers.koinVersion}")
-    implementation("io.insert-koin:koin-android:${Vers.koinVersion}")
-    implementation("io.insert-koin:koin-androidx-workmanager:${Vers.koinVersion}")
-    implementation("org.conscrypt:conscrypt-android:${Vers.conscryptVersion}")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Vers.kotlinxSerializationLibVersion}")
-    implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:${Vers.gildorkotlinCoroutinesOkhttp}")
 
-    ////////////
-
-    implementation("com.github.bumptech.glide:okhttp3-integration:${Vers.glideVersion}") {
+    val glideVersion = libs.versions.glide.get()
+    implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion") {
         exclude("com.squareup.okhttp3", "okhttp")
     }
 
-    "fcmImplementation"("com.google.firebase:firebase-messaging:23.4.1")
-    "fcmImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Vers.kotlinxCoroutinesVersion}")
+    "fcmImplementation"(libs.firebase.messaging)
+    "fcmImplementation"(libs.kotlinx.coroutines.play.services)
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:${Vers.detektVersion}")
+    detektPlugins(libs.detekt.formatting)
 
-    ksp("com.github.bumptech.glide:ksp:${Vers.glideVersion}")
+    ksp(libs.glide.ksp)
 
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.3")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.3")
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
     // =================================================
     // UnitTest
-    testImplementation(kotlin("test"))
-    testImplementation("androidx.arch.core:core-testing:${Vers.androidxArchCoreTesting}")
-    testImplementation("junit:junit:${Vers.junitVersion}")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Vers.kotlinxCoroutinesVersion}")
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-test
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 
 //    testImplementation("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
 //        exclude("com.squareup.okio", "okio")
@@ -242,28 +243,25 @@ dependencies {
 
     // ==============================================
     // androidTest
-    androidTestRuntimeOnly("androidx.test:runner:1.5.2")
-    androidTestUtil("androidx.test:orchestrator:1.4.2")
+    androidTestRuntimeOnly(libs.androidx.test.runner)
+    androidTestUtil(libs.androidx.test.orchestrator)
 
-    androidTestImplementation("androidx.test.espresso:espresso-core:${Vers.androidxTestEspressoCore}")
-    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
-    androidTestImplementation("androidx.test.ext:junit:${Vers.androidxTestExtJunit}")
-    androidTestImplementation("androidx.test.ext:truth:1.5.0")
-    androidTestImplementation("androidx.test:core-ktx:${Vers.androidxTestCoreKtx}")
-    androidTestImplementation("androidx.test:core:${Vers.androidxTestCore}")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.3")
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.test.ext.junit.ktx)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.ext.truth)
+    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
-    androidTestImplementation("com.squareup.okhttp3:mockwebserver:${Vers.okhttpVersion}") {
+    val okHttpVersion = libs.versions.okhttp.get()
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion") {
         exclude("com.squareup.okio", "okio")
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
     }
-}
-
-repositories {
-    mavenCentral()
 }
 
 fun willApplyGoogleService(): Boolean {
@@ -339,4 +337,9 @@ tasks.register<Detekt>("detektAll") {
         sarif.required.set(false)
         sarif.outputLocation.set(reportLocationByExt("sarif"))
     }
+}
+
+composeCompiler {
+//    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }

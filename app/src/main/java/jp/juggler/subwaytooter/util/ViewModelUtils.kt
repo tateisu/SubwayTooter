@@ -42,10 +42,7 @@ fun <T : Any?> AppCompatActivity.collectOnLifeCycle(
     block: suspend (T) -> Unit,
 ) = lifecycleScope.launch {
     lifecycle.repeatOnLifecycle(state = state) {
-        flow.collect {
-            block(it)
-            // Viewの更新
-        }
+        flow.collect { block(it) }
     }
 }
 
@@ -55,9 +52,6 @@ fun <T : Any?> ComponentActivity.collectOnLifeCycle(
     block: suspend (T) -> Unit,
 ) = lifecycleScope.launch {
     lifecycle.repeatOnLifecycle(state = state) {
-        flow.collect {
-            block(it)
-            // Viewの更新
-        }
+        flow.collect { block(it) }
     }
 }

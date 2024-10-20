@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -50,25 +48,16 @@ android {
     kotlinOptions {
         jvmTarget = Vers.kotlinJvmTarget
     }
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = Vers.kotlinJvmTarget
-        }
-    }
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${Vers.desugarLibVersion}")
+    coreLibraryDesugaring(libs.desugar.jdk)
 
     api(project(":apng"))
     implementation(project(":base"))
 
-    implementation("com.github.bumptech.glide:glide:${Vers.glideVersion}")
-    implementation("com.github.zjupure:webpdecoder:${Vers.webpDecoderVersion}")
+    implementation(libs.glide)
+    implementation(libs.webpDecoder)
 
     // テストコードはない…
 }

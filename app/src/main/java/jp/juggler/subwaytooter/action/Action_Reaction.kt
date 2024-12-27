@@ -117,7 +117,7 @@ fun ActMain.reactionAdd(
         }
     }
 
-    if (TootReaction.isCustomEmoji(code) && !InstanceCapability.canCustomEmojiReaction(
+    if (TootReaction.isCustomEmoji(code) && !InstanceCapability.canPostCustomEmojiReaction(
             accessInfo,
             ti
         )
@@ -351,7 +351,7 @@ private fun ActMain.reactionWithoutUi(
 
     launchAndShowError {
         when {
-            isCustomEmoji && !InstanceCapability.canCustomEmojiReaction(accessInfo, ti) ->
+            isCustomEmoji && !InstanceCapability.canPostCustomEmojiReaction(accessInfo, ti) ->
                 error("can't use custom emoji for reaction from this account.")
 
             isCustomEmoji && url?.likePleromaStatusUrl() == true -> confirm(

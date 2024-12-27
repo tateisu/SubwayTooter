@@ -10,8 +10,9 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.auth.AuthMastodon
 import jp.juggler.subwaytooter.api.entity.InstanceCapability
+import jp.juggler.subwaytooter.api.entity.NotificationType
+import jp.juggler.subwaytooter.api.entity.NotificationType.Companion.toNotificationType
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootPushSubscription
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
@@ -36,6 +37,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.security.Provider
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
+import kotlin.String
 import kotlin.coroutines.coroutineContext
 
 private val log = LogCategory("PushMastodon")
@@ -132,6 +134,12 @@ class PushMastodon(
         })
         client.account = account
         val ti = TootInstance.getExOrThrow(client)
+
+        try {
+            account.disableNotificationsByServer(ti)
+        } catch (ex: Throwable) {
+            log.w(ex, "disableNotificationsByServer failed.")
+        }
 
         val newAlerts = account.alerts(ti)
 
@@ -257,69 +265,101 @@ class PushMastodon(
         }
     }
 
-    private fun SavedAccount.alerts(ti: TootInstance) = JsonObject().also { dst ->
-        // Mastodon's Notification::TYPES in
-        // in https://github.com/mastodon/mastodon/blob/main/app/models/notification.rb#L30
-        dst[TootNotification.TYPE_ADMIN_REPORT] = notificationFollow
-        dst[TootNotification.TYPE_ADMIN_SIGNUP] = notificationFollow // 設定項目不足
-        dst[TootNotification.TYPE_FAVOURITE] = notificationFavourite
-        dst[TootNotification.TYPE_FOLLOW] = notificationFollow
-        dst[TootNotification.TYPE_FOLLOW_REQUEST] = notificationFollowRequest
-        dst[TootNotification.TYPE_MENTION] = notificationMention
-        dst[TootNotification.TYPE_POLL] = notificationVote
-        dst[TootNotification.TYPE_REBLOG] = notificationBoost
-        dst[TootNotification.TYPE_STATUS] = notificationPost
-        dst[TootNotification.TYPE_UPDATE] = notificationUpdate
-        // fedibird拡張
-        // https://github.com/fedibird/mastodon/blob/fedibird/app/controllers/api/v1/push/subscriptions_controller.rb#L55
-        // https://github.com/fedibird/mastodon/blob/fedibird/app/models/notification.rb
-        if (ti.pleromaFeatures?.contains("pleroma_emoji_reactions") == true) {
-            dst[TootNotification.TYPE_EMOJI_REACTION_PLEROMA] = notificationReaction
-        } else if (ti.fedibirdCapabilities?.contains("emoji_reaction") == true) {
-            dst[TootNotification.TYPE_EMOJI_REACTION] = notificationReaction
-        }
-        dst[TootNotification.TYPE_SCHEDULED_STATUS] = notificationPost // 設定項目不足
-        dst[TootNotification.TYPE_STATUS_REFERENCE] = notificationStatusReference
-    }
-
     // サーバが知らないアラート種別は比較対象から除去する
+    // サーバから取得できるalertsがおかしいサーバのバージョンなどあり、
+    // 購読時に指定可能かどうかとは微妙に条件が異なる
     private fun Iterable<String>.knownOnly(
         account: SavedAccount,
         ti: TootInstance,
     ) = filter {
-        when (it) {
-            // TYPE_ADMIN_SIGNUP, TYPE_UPDATE はalertから読めない時期があった。4.0.0以降なら大丈夫だろう
-
-            TootNotification.TYPE_ADMIN_REPORT -> ti.versionGE(TootInstance.VERSION_4_0_0)
-            TootNotification.TYPE_ADMIN_SIGNUP -> ti.versionGE(TootInstance.VERSION_4_0_0)
-            TootNotification.TYPE_FAVOURITE -> true
-            TootNotification.TYPE_FOLLOW -> true
-            TootNotification.TYPE_FOLLOW_REQUEST -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
-            TootNotification.TYPE_MENTION -> true
-            TootNotification.TYPE_POLL -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
-            TootNotification.TYPE_REBLOG -> true
-            TootNotification.TYPE_STATUS -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
-            TootNotification.TYPE_UPDATE -> ti.versionGE(TootInstance.VERSION_4_0_0)
-
-            //////////////////////
-            // Fedibird拡張
-
-            TootNotification.TYPE_EMOJI_REACTION,
-            -> InstanceCapability.canReaction(account, ti)
-
-            // pleromaの絵文字リアクションはalertに指定できない
-            TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-            -> InstanceCapability.canReaction(account, ti)
-
-            TootNotification.TYPE_SCHEDULED_STATUS,
-            -> InstanceCapability.scheduledStatus(account, ti)
-
-            TootNotification.TYPE_STATUS_REFERENCE,
-            -> InstanceCapability.statusReference(account, ti)
-
-            else -> {
+        when(val type = it.toNotificationType()) {
+            // 未知のアラートの差異は比較しない。でないと購読を何度も繰り返すことになる
+            is NotificationType.Unknown -> {
                 log.w("${account.acct}: unknown alert '$it'. server version='${ti.version}'")
-                false // 未知のアラートの差異は比較しない。でないと購読を何度も繰り返すことになる
+                false
+            }
+
+            // 投稿の編集の通知は3.5.0rcから使えるはずだが、
+            // この比較ではバージョン4未満なら比較対象から除外する。
+            // 何らかの不具合へのワークアラウンドだったような…
+            NotificationType.Update -> ti.versionGE(TootInstance.VERSION_4_0_0)
+
+            // 管理者向けのユーザサインアップ通知はalertから読めない時期があった。
+            // よって4.0.0未満では比較対象から除外する。
+            NotificationType.AdminSignup -> ti.versionGE(TootInstance.VERSION_4_0_0)
+
+            // 他はalertsを組み立てるときと同じコードで判定する
+            else -> canSubscribe(type, account, ti)
+        }
+    }
+
+    /**
+     * ある通知種別をalertsで購読できるなら真
+     */
+    private fun canSubscribe(
+        type:NotificationType,
+        account: SavedAccount,
+        ti: TootInstance,
+    ):Boolean = when(type) {
+        // 昔からあった
+        NotificationType.Follow -> true
+        NotificationType.Favourite -> true
+        NotificationType.Mention -> true
+        NotificationType.Reblog -> true
+
+        // Mastodon 2.8 投票完了
+        NotificationType.Poll -> ti.versionGE(TootInstance.VERSION_2_8_0_rc1)
+
+        // Mastodon 3.1.0 フォローリクエストを受信した
+        NotificationType.FollowRequest -> ti.versionGE(TootInstance.VERSION_3_1_0_rc1)
+
+        // Mastodon 3.3.0 指定ユーザからの投稿
+        NotificationType.Status -> ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
+
+        // Mastodon 3.5.0 Fav/Boost/Reply した投稿が編集された
+        NotificationType.Update -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+
+        // Mastodon 3.5.0 管理者向け、ユーザサインアップ
+        NotificationType.AdminSignup -> ti.versionGE(TootInstance.VERSION_3_5_0_rc1)
+
+        // Mastodon 4.0.0 管理者向け、ユーザが通報を作成した
+        NotificationType.AdminReport -> ti.versionGE(TootInstance.VERSION_4_0_0)
+
+        // (Mastodon 4.3) サーバ間の関係が断絶した。
+        NotificationType.SeveredRelationships -> ti.versionGE(TootInstance.VERSION_4_3_0)
+
+        // Fedibird 絵文字リアクション通知
+        NotificationType.EmojiReactionFedibird ->
+            InstanceCapability.canReceiveEmojiReactionFedibird(ti)
+
+        // Pleroma 絵文字リアクション通知
+        NotificationType.EmojiReactionPleroma ->
+            InstanceCapability.canReceiveEmojiReactionPleroma(ti)
+
+        // Fedibird 投稿の参照の通知
+        NotificationType.StatusReference ->
+            InstanceCapability.statusReference(account, ti)
+
+        // Fedibird 予約投稿の通知
+        NotificationType.ScheduledStatus ->
+            InstanceCapability.canReceiveScheduledStatus(account, ti)
+
+        // https://github.com/fedibird/mastodon/blob/fedibird/app/controllers/api/v1/push/subscriptions_controller.rb#L55
+        // https://github.com/fedibird/mastodon/blob/fedibird/app/models/notification.rb
+
+        // 他、Misskey用の通知タイプなどはMastodonのプッシュ購読対象ではない
+        else -> false
+    }
+
+    /**
+     * プッシュ通知種別ごとに購読の有無を指定するJsonObjectを作成する
+     */
+    private fun SavedAccount.alerts(ti: TootInstance) = JsonObject().also { dst ->
+        for (type in NotificationType.allKnown) {
+            if( canSubscribe(type,this,ti)){
+                // 購読可能なAlertのcodeごとにtrue,falseを設定する
+                dst[type.code] = isNotificationEnabled(type)
+                // Note: 未知の通知はallKnownには含まれない
             }
         }
     }
@@ -411,11 +451,11 @@ class PushMastodon(
 
 //        // ふぁぼ魔ミュート
 //        when ( pm.notificationType) {
-//            TootNotification.TYPE_REBLOG,
-//            TootNotification.TYPE_FAVOURITE,
-//            TootNotification.TYPE_FOLLOW,
-//            TootNotification.TYPE_FOLLOW_REQUEST,
-//            TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+//            NotificationType.REBLOG,
+//            NotificationType.FAVOURITE,
+//            NotificationType.FOLLOW,
+//            NotificationType.FOLLOW_REQUEST,
+//            NotificationType.FOLLOW_REQUEST_MISSKEY,
 //            -> {
 //                val whoAcct = a.getFullAcct(user)
 //                if (TootStatus.favMuteSet?.contains(whoAcct) == true) {

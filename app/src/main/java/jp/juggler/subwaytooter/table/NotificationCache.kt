@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.NotificationType.Companion.toNotificationType
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.data.*
@@ -86,11 +87,11 @@ class NotificationCache(
                 EntityId.mayDefault(src.string("id"))
             }
 
-        fun parseNotificationType(accessInfo: SavedAccount, src: JsonObject): String =
-            when {
+        fun parseNotificationType(accessInfo: SavedAccount, src: JsonObject) =
+            (when {
                 accessInfo.isMisskey -> src.string("type")
                 else -> src.string("type")
-            } ?: "?"
+            } ?: "?").toNotificationType()
 
         private fun makeNotificationUrlMastodon(
             flags: Int,
@@ -255,18 +256,18 @@ class NotificationCache(
             val type = parseNotificationType(account, item)
 
             // 通知しないタイプなら取り除く
-            if (!account.canNotificationShowing(type)) {
+            if (!account.isNotificationEnabled(type)) {
                 it.remove()
                 continue
             }
 
             // 種類別に一定件数を保持する
-            val count = 1 + (typeCount[type] ?: 0)
+            val count = 1 + (typeCount[type.code] ?: 0)
             if (count > 60) {
                 it.remove()
                 continue
             }
-            typeCount[type] = count
+            typeCount[type.code] = count
         }
     }
 

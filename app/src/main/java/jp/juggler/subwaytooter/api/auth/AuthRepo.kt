@@ -81,7 +81,7 @@ class AuthRepo(
         item.tokenJson = auth2Result.tokenJson
         item.loginAccount = auth2Result.tootAccount
         item.misskeyVersion = auth2Result.tootInstance.misskeyVersionMajor
-        daoSavedAccount.save(item)
+
     }
 
     // notification_tagがもう使われてない

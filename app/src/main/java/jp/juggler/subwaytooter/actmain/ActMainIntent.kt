@@ -277,8 +277,9 @@ private suspend fun ActMain.afterAccessTokenUpdate(
 ): Boolean {
     log.i("afterAccessTokenUpdate token ${sa.bearerAccessToken ?: sa.misskeyApiToken} =>${auth2Result.tokenJson}")
     // DBの情報を更新する
+    sa.disableNotificationsByServer(auth2Result.tootInstance)
     authRepo.updateTokenInfo(sa, auth2Result)
-
+    daoSavedAccount.save(sa)
     // 各カラムの持つアカウント情報をリロードする
     reloadAccountSetting(daoSavedAccount.loadAccountList())
 
@@ -322,7 +323,9 @@ private suspend fun ActMain.afterAccountAdd(
         bModified = true
         account.visibility = TootVisibility.PrivateFollowers
     }
-
+    if (account.disableNotificationsByServer(auth2Result.tootInstance)) {
+        bModified = true
+    }
     if (!account.isMisskey) {
         val source = ta.source
         if (source != null) {
@@ -335,10 +338,11 @@ private suspend fun ActMain.afterAccountAdd(
             // XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
             // 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
         }
+        // fedibird拡張の
+    }
 
-        if (bModified) {
-            daoSavedAccount.save(account)
-        }
+    if (bModified) {
+        daoSavedAccount.save(account)
     }
 
     // 適当にカラムを追加する

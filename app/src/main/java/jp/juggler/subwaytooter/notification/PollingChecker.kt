@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.NotificationType
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.notification.CheckerWakeLocks.Companion.checkerWakeLocks
@@ -113,8 +114,8 @@ class PollingChecker(
         "follower" -> { it ->
             val who = it.account
             when {
-                it.type == TootNotification.TYPE_FOLLOW ||
-                        it.type == TootNotification.TYPE_FOLLOW_REQUEST -> true
+                it.type == NotificationType.Follow ||
+                        it.type == NotificationType.FollowRequest -> true
 
                 who == null -> true
                 account.isMe(who) -> true
@@ -277,7 +278,7 @@ class PollingChecker(
 
             fun JsonObject.isMention() =
                 when (NotificationCache.parseNotificationType(account, this)) {
-                    TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+                    NotificationType.Reply, NotificationType.Mention -> true
                     else -> false
                 }
 
@@ -339,19 +340,12 @@ class PollingChecker(
             if (notification.status?.checkMuted() == true) return
 
             // ふぁぼ魔ミュート
-            when (notification.type) {
-                TootNotification.TYPE_REBLOG,
-                TootNotification.TYPE_FAVOURITE,
-                TootNotification.TYPE_FOLLOW,
-                TootNotification.TYPE_FOLLOW_REQUEST,
-                TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                -> {
-                    val whoAcct = notification.account
-                        ?.let { account.getFullAcct(it) }
-                    if (whoAcct?.let { TootStatus.favMuteSet?.contains(it) } == true) {
-                        log.d("${whoAcct.pretty} is in favMuteSet.")
-                        return
-                    }
+            if( notification.type.hideByFavMute ){
+                val whoAcct = notification.account
+                    ?.let { account.getFullAcct(it) }
+                if (whoAcct?.let { TootStatus.favMuteSet?.contains(it) } == true) {
+                    log.d("${whoAcct.pretty} is in favMuteSet.")
+                    return
                 }
             }
 

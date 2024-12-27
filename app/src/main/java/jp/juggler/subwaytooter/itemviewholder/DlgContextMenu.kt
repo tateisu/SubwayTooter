@@ -217,11 +217,11 @@ internal class DlgContextMenu(
         val bShowConversationMute = when {
             status == null -> false
             accessInfo.isMe(status.account) -> true
-            notification != null && TootNotification.TYPE_MENTION == notification.type -> true
+            notification != null && NotificationType.Mention == notification.type -> true
             else -> false
         }
 
-        val muted = status?.muted ?: false
+        val muted = status?.muted == true
         views.btnConversationMute.vg(bShowConversationMute)
             ?.setText(
                 when {

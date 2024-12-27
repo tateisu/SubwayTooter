@@ -14,12 +14,13 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import jp.juggler.subwaytooter.api.entity.NotificationType.Companion.toNotificationType
 import jp.juggler.subwaytooter.databinding.ActPushMessageListBinding
 import jp.juggler.subwaytooter.databinding.LvPushMessageBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.runInProgress
 import jp.juggler.subwaytooter.push.PushMessageIconColor
-import jp.juggler.subwaytooter.push.iconColor
+import jp.juggler.subwaytooter.push.pushMessageIconAndColor
 import jp.juggler.subwaytooter.push.pushRepo
 import jp.juggler.subwaytooter.table.PushMessage
 import jp.juggler.subwaytooter.table.daoAccountNotificationStatus
@@ -190,10 +191,12 @@ class ActPushMessageList : AppCompatActivity() {
         fun bind(pm: PushMessage?) {
             pm ?: return
             lastItem = pm
+            val type = pm.notificationType?.toNotificationType()
+            val iconColor = type.pushMessageIconAndColor()
 
             Glide.with(views.ivSmall)
                 .load(pm.iconSmall)
-                .error(tintIcon(pm, pm.iconColor()))
+                .error(tintIcon(pm, iconColor))
                 .into(views.ivSmall)
 
             Glide.with(views.ivLarge)

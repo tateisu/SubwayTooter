@@ -1300,4 +1300,9 @@
     <string name="display_name_boosted_by_agg">%1$s とフォロー%2$s名がブーストしました</string>
     <string name="agg_status_limit">投稿調査限度</string>
 
+    <string name="notification_type_severed_relationships">severed relationships</string>
+    <string name="servered_relationships_by">サーバ管理者によりフォロー関係が失われました</string>
+    <string name="domain_blocked_target_name">%1$sドメインはブロックされました。</string>
+    <string name="domain_blocked_following_count">%1$dフォローが失われました。</string>
+    <string name="domain_blocked_followers_count">%1$dフォロワーが失われました。</string>
 </resources>

@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import androidx.room.*
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.NotificationType
 import jp.juggler.util.*
 import jp.juggler.util.data.*
 import jp.juggler.util.log.LogCategory

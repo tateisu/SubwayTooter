@@ -200,6 +200,7 @@ dependencies {
     implementation(libs.koin.android.compat)
     implementation(libs.koin.androidx.workmanager)
     implementation(libs.kotlin.coroutines.okhttp)
+    implementation(libs.kotlin.reflect)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.okhttp.urlconnection)

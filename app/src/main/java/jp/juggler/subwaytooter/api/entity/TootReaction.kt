@@ -127,7 +127,7 @@ class TootReaction(
         fun canReaction(
             accessInfo: SavedAccount,
             ti: TootInstance? = TootInstance.getCached(accessInfo),
-        ) = InstanceCapability.canReaction(accessInfo, ti)
+        ) = InstanceCapability.canEmojiReaction(accessInfo, ti)
 
         fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
             jsonText.notEmpty()?.let { src ->

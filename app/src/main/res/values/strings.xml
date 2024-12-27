@@ -1313,4 +1313,9 @@
     <string name="agg_status_limit">prove posts limit</string>
     <string name="display_name_boosted_by_agg">%1$s and %2$s followings boosted.</string>
 
+    <string name="notification_type_severed_relationships">severed relationships</string>
+    <string name="servered_relationships_by">servered relationships by server admin.</string>
+    <string name="domain_blocked_target_name">domain %1$s was blocked.</string>
+    <string name="domain_blocked_following_count">%1$d followings are lost.</string>
+    <string name="domain_blocked_followers_count">%1$d followers are lost.</string>
 </resources>

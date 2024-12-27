@@ -20,8 +20,8 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
-import jp.juggler.util.media.MovieResizeMode
 import jp.juggler.util.media.MovieResizeConfig
+import jp.juggler.util.media.MovieResizeMode
 import jp.juggler.util.media.ResizeConfig
 import jp.juggler.util.media.ResizeType
 import kotlin.math.max
@@ -69,6 +69,7 @@ class SavedAccount(
     var notificationReaction: Boolean = false,
     var notificationUpdate: Boolean = true,
     var notificationVote: Boolean = false,
+    // Note: これ以上の追加は jsonDelegate 移譲プロパティを使うこと
     var pushPolicy: String? = null,
     var tokenJson: JsonObject? = null,
     var visibility: TootVisibility = TootVisibility.Public,
@@ -110,6 +111,9 @@ class SavedAccount(
     @JsonPropBoolean("notification_status_reference", true)
     var notificationStatusReference by jsonDelegates.boolean
 
+    @JsonPropBoolean("notification_severed_relationships", true)
+    var notificationSeveredRelationships by jsonDelegates.boolean
+
     @JsonPropBoolean("notificationPushEnable", true)
     var notificationPushEnable by jsonDelegates.boolean
 
@@ -143,7 +147,6 @@ class SavedAccount(
         acctArg = cursor.getString(COL_USER), // acct
         apiHostArg = cursor.getStringOrNull(COL_HOST), // host
         apDomainArg = cursor.getStringOrNull(COL_DOMAIN), // host
-
         accountJson = cursor.getStringOrNull(COL_ACCOUNT)?.decodeJsonObject(),
         confirmBoost = cursor.getBoolean(COL_CONFIRM_BOOST),
         confirmFavourite = cursor.getBoolean(COL_CONFIRM_FAVOURITE),
@@ -174,6 +177,7 @@ class SavedAccount(
         notificationReaction = cursor.getBoolean(COL_NOTIFICATION_REACTION),
         notificationUpdate = cursor.getBoolean(COL_NOTIFICATION_UPDATE),
         notificationVote = cursor.getBoolean(COL_NOTIFICATION_VOTE),
+        // Note: extraJsonを使う移譲プロパティは個別に設定する必要はない
         pushPolicy = cursor.getStringOrNull(COL_PUSH_POLICY),
 //        soundUri = cursor.getString(COL_SOUND_URI),
         tokenJson = cursor.getString(COL_TOKEN).decodeJsonObject(),
@@ -369,6 +373,8 @@ class SavedAccount(
                 notificationVote = false
                 notificationPost = false
                 notificationUpdate = false
+                notificationStatusReference = false
+                notificationSeveredRelationships = false
             }
         }
 
@@ -501,6 +507,7 @@ class SavedAccount(
                     put(COL_NOTIFICATION_REACTION, notificationReaction)
                     put(COL_NOTIFICATION_UPDATE, notificationUpdate)
                     put(COL_NOTIFICATION_VOTE, notificationVote)
+                    // Note: extraJsonを使う移譲プロパティはまとめて処理される
                     put(COL_PUSH_POLICY, pushPolicy)
 //                    put(COL_SOUND_URI, soundUri)
                     put(COL_TOKEN, tokenJson?.toString())
@@ -544,6 +551,9 @@ class SavedAccount(
                 this.notificationReaction = b.notificationReaction
                 this.notificationUpdate = b.notificationUpdate
                 this.notificationVote = b.notificationVote
+                // Note: jsonDelegates 移譲で extraJson にアクセスするプロパティは個別にコピーする必要がない
+                // this.notificationSeveredRelationships = b.notificationSeveredRelationships
+                // this.notificationPushEnable = b.notificationPushEnable
                 this.pushPolicy = b.pushPolicy
                 // this.soundUri = b.soundUri
                 this.tokenJson = b.tokenJson
@@ -865,50 +875,42 @@ class SavedAccount(
             notificationFollowRequest.booleanToInt(64) +
             notificationPost.booleanToInt(128) +
             notificationUpdate.booleanToInt(256) +
-            notificationStatusReference.booleanToInt(512)
+            notificationStatusReference.booleanToInt(512) +
+            notificationSeveredRelationships.booleanToInt(1024)
 
-    fun canNotificationShowing(type: String?) = when (type) {
-
-        TootNotification.TYPE_MENTION,
-        TootNotification.TYPE_REPLY,
-        -> notificationMention
-
-        TootNotification.TYPE_REBLOG,
-        TootNotification.TYPE_RENOTE,
-        TootNotification.TYPE_QUOTE,
-        -> notificationBoost
-
-        TootNotification.TYPE_FAVOURITE -> notificationFavourite
-
-        TootNotification.TYPE_FOLLOW,
-        TootNotification.TYPE_UNFOLLOW,
-        TootNotification.TYPE_ADMIN_SIGNUP,
-        TootNotification.TYPE_ADMIN_REPORT,
-        -> notificationFollow
-
-        TootNotification.TYPE_FOLLOW_REQUEST,
-        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
-        -> notificationFollowRequest
-
-        TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-        TootNotification.TYPE_EMOJI_REACTION,
-        TootNotification.TYPE_REACTION,
-        -> notificationReaction
-
-        TootNotification.TYPE_VOTE,
-        TootNotification.TYPE_POLL,
-        TootNotification.TYPE_POLL_VOTE_MISSKEY,
-        -> notificationVote
-
-        TootNotification.TYPE_STATUS -> notificationPost
-
-        TootNotification.TYPE_UPDATE -> notificationUpdate
-
-        TootNotification.TYPE_STATUS_REFERENCE -> notificationStatusReference
-
-        // 未知の通知はオフらない
-        else -> true
+    /**
+     * 通知の種別ごとに、アカウント設定で有効になっているか調べる
+     */
+    // Mastodon's Notification::TYPES in
+    // in https://github.com/mastodon/mastodon/blob/main/app/models/notification.rb#L30
+    fun isNotificationEnabled(type: NotificationType?): Boolean = when (type) {
+        // 未知の通知は表示対象とみなす
+        null, is NotificationType.Unknown -> true
+        NotificationType.Follow -> notificationFollow
+        NotificationType.Favourite -> notificationFavourite
+        NotificationType.Mention -> notificationMention
+        NotificationType.Reblog -> notificationBoost
+        NotificationType.Poll -> notificationVote
+        NotificationType.FollowRequest -> notificationFollowRequest
+        NotificationType.Status -> notificationPost
+        NotificationType.Update -> notificationUpdate
+        NotificationType.AdminSignup -> notificationFollow
+        NotificationType.AdminReport -> notificationFollow
+        NotificationType.EmojiReactionFedibird -> notificationReaction
+        NotificationType.EmojiReactionPleroma -> notificationReaction
+        NotificationType.ScheduledStatus -> notificationPost
+        NotificationType.SeveredRelationships -> notificationSeveredRelationships
+        NotificationType.StatusReference -> notificationStatusReference
+        // Misskey
+        NotificationType.FollowRequestAcceptedMisskey -> notificationFollowRequest
+        NotificationType.FollowRequestMisskey -> notificationFollowRequest
+        NotificationType.PollVoteMisskey -> notificationVote
+        NotificationType.Quote -> notificationBoost
+        NotificationType.Reaction -> notificationReaction
+        NotificationType.Renote -> notificationBoost
+        NotificationType.Reply -> notificationMention
+        NotificationType.Unfollow -> notificationFollow
+        NotificationType.Vote -> notificationVote
     }
 
     fun getResizeConfig() =
@@ -939,4 +941,37 @@ class SavedAccount(
 
     fun isRequiredPushSubscription() = (notificationFlags() != 0) && notificationPushEnable
     fun isRequiredPullCheck() = (notificationFlags() != 0) && notificationPullEnable
+
+    /**
+     * SavedAccountのプッシュ通知項目の一部はアカウントやサーバの情報次第では使うことができない。
+     * TootInstance を元にそのチェックを行い SavedAccountを変更する。
+     * この関数はDB保存を行わない。
+     * @return 変更したら真
+     */
+    fun disableNotificationsByServer(ti: TootInstance?): Boolean {
+        var modified = false
+        //
+        if (notificationStatusReference &&
+            !InstanceCapability.statusReference(this, ti)
+        ) {
+            notificationStatusReference = false
+            modified = true
+        }
+        //
+        if (notificationSeveredRelationships &&
+            !InstanceCapability.canReceiveSeveredRelationships(this, ti)
+        ) {
+            notificationSeveredRelationships = false
+            modified = true
+        }
+        //
+        if (notificationReaction &&
+            !InstanceCapability.canReceiveEmojiReactionAny(ti)
+        ) {
+            notificationReaction = false
+            modified = true
+        }
+        //
+        return modified
+    }
 }

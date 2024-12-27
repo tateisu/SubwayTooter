@@ -28,107 +28,7 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.max
 
-// インスタンスの種別
-enum class InstanceType {
-    Mastodon,
-    Misskey,
-    Pixelfed,
-    Pleroma
-}
 
-object InstanceCapability {
-//    FavouriteHashtag(CapabilitySource.Fedibird, "favourite_hashtag"),
-//    FavouriteDomain(CapabilitySource.Fedibird, "favourite_domain"),
-//    StatusExpire(CapabilitySource.Fedibird, "status_expire"),
-//    FollowNoDelivery(CapabilitySource.Fedibird, "follow_no_delivery"),
-//    FollowHashtag(CapabilitySource.Fedibird, "follow_hashtag"),
-//    SubscribeAccount(CapabilitySource.Fedibird, "subscribe_account"),
-//    SubscribeDomain(CapabilitySource.Fedibird, "subscribe_domain"),
-//    SubscribeKeyword(CapabilitySource.Fedibird, "subscribe_keyword"),
-//    TimelineNoLocal(CapabilitySource.Fedibird, "timeline_no_local"),
-//    TimelineDomain(CapabilitySource.Fedibird, "timeline_domain"),
-//    TimelineGroup(CapabilitySource.Fedibird, "timeline_group"),
-//    TimelineGroupDirectory(CapabilitySource.Fedibird, "timeline_group_directory"),
-
-    fun quote(ti: TootInstance?) =
-        ti?.feature_quote == true
-
-    fun visibilityMutual(ti: TootInstance?) =
-        ti?.fedibirdCapabilities?.contains("visibility_mutual") == true
-
-    fun visibilityLimited(ti: TootInstance?) =
-        ti?.fedibirdCapabilities?.contains("visibility_limited") == true
-
-    fun statusReference(ai: SavedAccount, ti: TootInstance?) =
-        when {
-            ai.isPseudo -> false
-            ai.isMisskey -> false
-            else -> ti?.fedibirdCapabilities?.contains("status_reference") == true
-        }
-
-    fun scheduledStatus(ai: SavedAccount, ti: TootInstance?) =
-        when {
-            ai.isPseudo -> false
-            ai.isMisskey -> false
-            // 予約投稿自体はMastodonに2.7.0からある。通知はFedibird拡張
-            else -> ti?.fedibirdCapabilities != null && ti.versionGE(TootInstance.VERSION_2_7_0_rc1)
-        }
-
-    fun canReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
-        when {
-            ai.isPseudo -> false
-            ai.isMisskey -> true
-            ti?.fedibirdCapabilities?.contains("emoji_reaction") == true -> true
-            ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true -> true
-            else -> false
-        }
-
-    fun canCustomEmojiReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
-        when {
-            ai.isPseudo -> false
-            ai.isMisskey -> true
-            ti?.fedibirdCapabilities?.contains("emoji_reaction") == true -> true
-            ti?.pleromaFeatures?.contains("custom_emoji_reactions") == true -> true
-            ti?.pleromaFeatures?.contains("pleroma_custom_emoji_reactions") == true -> true
-            else -> false
-        }
-
-    fun maxReactionPerAccount(
-        ai: SavedAccount,
-        ti: TootInstance? = TootInstance.getCached(ai),
-    ): Int =
-        when {
-            !canReaction(ai, ti) -> 0
-            ai.isMisskey -> 1
-            ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true -> Int.MAX_VALUE - 10
-            else ->
-                ti?.configuration?.jsonObject("emoji_reactions")
-                    ?.int("max_reactions_per_account")
-                    ?: ti?.configuration?.int("emoji_reactions_per_account")
-                    ?: 1
-        }
-
-//    fun canMultipleReaction(ai: SavedAccount, ti: TootInstance? = TootInstance.getCached(ai)) =
-//        when {
-//            ai.isPseudo -> false
-//            ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true -> true
-//            (ti?.configuration?.int("emoji_reactions_per_account") ?: 1) > 1 -> true
-//            ai.isMisskey -> false
-//            else -> false
-//        }
-
-    fun listMyReactions(ai: SavedAccount, ti: TootInstance?) =
-        when {
-            ai.isPseudo -> false
-            ai.isMisskey ->
-                // m544 extension
-                ti?.misskeyEndpoints?.contains("i/reactions") == true
-
-            else ->
-                // fedibird extension
-                ti?.fedibirdCapabilities?.contains("emoji_reaction") == true
-        }
-}
 
 class TootInstance(parser: TootParser, src: JsonObject) {
 
@@ -375,6 +275,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         val VERSION_3_4_0_rc1 = VersionString("3.4.0rc1")
         val VERSION_3_5_0_rc1 = VersionString("3.5.0rc1")
         val VERSION_4_0_0 = VersionString("4.0.0")
+        val VERSION_4_3_0 = VersionString("4.3.0")
 
         val MISSKEY_VERSION_11 = VersionString("11.0")
         val MISSKEY_VERSION_12 = VersionString("12.0")
@@ -493,7 +394,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         private suspend fun TootApiClient.getInstanceInformation(
             forceAccessToken: String? = null,
         ): TootApiResult? {
-
             // /api/v1/instance を読む(mastodon)
             val r1 = getInstanceInformationMastodon(forceAccessToken)
                 ?: return null // cancelled

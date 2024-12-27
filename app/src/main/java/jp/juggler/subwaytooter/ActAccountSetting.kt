@@ -28,6 +28,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.auth.AuthBase
 import jp.juggler.subwaytooter.api.auth.authRepo
+import jp.juggler.subwaytooter.api.entity.InstanceCapability
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAttachment
@@ -103,12 +104,12 @@ class ActAccountSetting : AppCompatActivity(),
 
         internal const val KEY_ACCOUNT_DB_ID = "account_db_id"
 
-        internal const val RESULT_INPUT_ACCESS_TOKEN = Activity.RESULT_FIRST_USER + 10
+        internal const val RESULT_INPUT_ACCESS_TOKEN = RESULT_FIRST_USER + 10
         internal const val EXTRA_DB_ID = "db_id"
 
-        internal const val max_length_display_name = 30
-        internal const val max_length_note = 160
-        internal const val max_length_fields = 255
+        internal const val MAX_LENGTH_DISPLAY_NAME = 30
+        internal const val MAX_LENGTH_NOTE = 160
+        internal const val MAX_LENGTH_FIELDS = 255
 
         internal const val MIME_TYPE_JPEG = "image/jpeg"
         internal const val MIME_TYPE_PNG = "image/png"
@@ -157,7 +158,10 @@ class ActAccountSetting : AppCompatActivity(),
 
     lateinit var handler: Handler
 
-    lateinit var account: SavedAccount
+    val account: SavedAccount? by lazy {
+        intent.long(KEY_ACCOUNT_DB_ID)
+            ?.let { daoSavedAccount.loadAccount(it) }
+    }
 
     private val views by lazy {
         ActAccountSettingBinding.inflate(layoutInflater, null, false)
@@ -215,30 +219,26 @@ class ActAccountSetting : AppCompatActivity(),
 
         arShowAcctColor.register(this)
 
-        if (savedInstanceState != null) {
-            savedInstanceState.getString(ACTIVITY_STATE)
-                ?.let { state = kJson.decodeFromString(it) }
-        }
+        savedInstanceState?.getString(ACTIVITY_STATE)
+            ?.let { state = kJson.decodeFromString(it) }
 
         App1.setActivityTheme(this)
 
         initUI()
 
         launchAndShowError {
-            val a = intent.long(KEY_ACCOUNT_DB_ID)
-                ?.let { daoSavedAccount.loadAccount(it) }
+            val a = account
             if (a == null) {
                 finish()
                 return@launchAndShowError
             }
             supportActionBar?.subtitle = a.acct.pretty
-
-            loadUIFromData(a)
-
+            val ti = loadInstance(a) // may null
+            loadUIFromData(a, ti)
             initializeProfile()
 
             views.btnOpenBrowser.text =
-                getString(R.string.open_instance_website, account.apiHost.pretty)
+                getString(R.string.open_instance_website, a.apiHost.pretty)
         }
     }
 
@@ -392,17 +392,16 @@ class ActAccountSetting : AppCompatActivity(),
     private fun EditText.parseInt(): Int? =
         text?.toString()?.toIntOrNull()
 
-    private fun loadUIFromData(a: SavedAccount) {
-        this.account = a
+    private fun loadUIFromData(a: SavedAccount, ti: TootInstance?) {
         this.visibility = a.visibility
         loadingBusy = true
         try {
-
+            if (a.disableNotificationsByServer(ti)) {
+                daoSavedAccount.save(a)
+            }
             views.apply {
-
                 tvInstance.text = a.apiHost.pretty
                 tvUser.text = a.acct.pretty
-
                 cbConfirmBoost.isChecked = a.confirmBoost
                 cbConfirmFavourite.isChecked = a.confirmFavourite
                 cbConfirmFollow.isChecked = a.confirmFollow
@@ -420,15 +419,23 @@ class ActAccountSetting : AppCompatActivity(),
                 cbNotificationMention.isChecked = a.notificationMention
                 cbNotificationPost.isChecked = a.notificationPost
                 cbNotificationReaction.isChecked = a.notificationReaction
-                cbNotificationStatusReference.isChecked = a.notificationStatusReference
                 cbNotificationUpdate.isChecked = a.notificationUpdate
                 cbNotificationVote.isChecked = a.notificationVote
+                cbNotificationSeveredRelationships.isChecked = a.notificationSeveredRelationships
+
+                // feribird拡張
+                cbNotificationStatusReference.apply {
+                    val canUse = InstanceCapability.statusReference(a, ti)
+                    isEnabledAlpha = canUse
+                    isChecked = canUse && a.notificationStatusReference
+                }
+
+                swNotificationPullEnabled.isChecked = a.notificationPullEnable
+                swNotificationPushEnabled.isChecked = a.notificationPushEnable
                 swDontShowTimeout.isChecked = a.dontShowTimeout
                 swExpandCW.isChecked = a.expandCw
                 swMarkSensitive.isChecked = a.defaultSensitive
                 swNSFWOpen.isChecked = a.dontHideNsfw
-                swNotificationPullEnabled.isChecked = a.notificationPullEnable
-                swNotificationPushEnabled.isChecked = a.notificationPushEnable
 
                 defaultTextInvalidator.text = a.defaultText
                 etMaxTootChars.setText(a.maxTootChars.toString())
@@ -502,6 +509,7 @@ class ActAccountSetting : AppCompatActivity(),
                     cbNotificationStatusReference,
                     cbNotificationUpdate,
                     cbNotificationVote,
+                    cbNotificationSeveredRelationships,
                     etDefaultText,
                     etMaxTootChars,
                     etMediaSizeMax,
@@ -535,8 +543,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun showAcctColor() {
-
-        val sa = this.account
+        val sa = this.account ?: return
         val ac = daoAcctColor.load(sa)
         views.tvUserCustom.apply {
             backgroundColor = ac.colorBg
@@ -570,14 +577,11 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun saveUIToData() {
-        if (!::account.isInitialized) return
-        if (loadingBusy) return
+        val account = account ?: return
         launchAndShowError {
-
+            if (loadingBusy) return@launchAndShowError
             account.visibility = visibility
-
             views.apply {
-
                 account.confirmBoost = cbConfirmBoost.isChecked
                 account.confirmFavourite = cbConfirmFavourite.isChecked
                 account.confirmFollow = cbConfirmFollow.isChecked
@@ -598,12 +602,14 @@ class ActAccountSetting : AppCompatActivity(),
                 account.notificationFollowRequest = cbNotificationFollowRequest.isChecked
                 account.notificationMention = cbNotificationMention.isChecked
                 account.notificationPost = cbNotificationPost.isChecked
-                account.notificationPullEnable = swNotificationPullEnabled.isChecked
-                account.notificationPushEnable = swNotificationPushEnabled.isChecked
                 account.notificationReaction = cbNotificationReaction.isChecked
-                account.notificationStatusReference = cbNotificationStatusReference.isChecked
                 account.notificationUpdate = cbNotificationUpdate.isChecked
                 account.notificationVote = cbNotificationVote.isChecked
+                account.notificationPullEnable = swNotificationPullEnabled.isChecked
+                account.notificationPushEnable = swNotificationPushEnabled.isChecked
+                account.notificationStatusReference = cbNotificationStatusReference.isChecked
+                account.notificationSeveredRelationships =
+                    cbNotificationSeveredRelationships.isChecked
 
 //                account.soundUri = ""
                 account.defaultText = etDefaultText.text.toString()
@@ -627,12 +633,12 @@ class ActAccountSetting : AppCompatActivity(),
                 account.lang = languages.elementAtOrNull(spLanguageCode.selectedItemPosition)?.first
                     ?: SavedAccount.LANG_WEB
             }
-
             daoSavedAccount.save(account)
         }
     }
 
     private fun handleBackPressed() {
+        val account = account ?: return
         checkNotificationImmediateAll(this, onlyEnqueue = true)
         checkNotificationImmediate(this, account.db_id)
         finish()
@@ -650,6 +656,7 @@ class ActAccountSetting : AppCompatActivity(),
             }
 
             views.swNotificationPushEnabled -> launchAndShowError {
+                val account = account ?: return@launchAndShowError
                 val oldChecked = account.notificationPushEnable
                 try {
                     if (oldChecked == isChecked) return@launchAndShowError
@@ -678,6 +685,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     override fun onClick(v: View) {
+        val account = account ?: return
         when (v.id) {
             R.id.btnAccessToken -> performAccessToken()
             R.id.btnInputAccessToken -> inputAccessToken()
@@ -746,12 +754,13 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun showVisibility() {
+        val account = account ?: return
         views.btnVisibility.text =
             visibility.getVisibilityString(account.isMisskey)
     }
 
     private fun performVisibility() {
-
+        val account = account ?: return
         val list = if (account.isMisskey) {
             arrayOf(
                 //	TootVisibility.WebSetting,
@@ -792,6 +801,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun performLoadPreference() {
+        val account = account ?: return
         launchMain {
             runApiTask(account) { client ->
                 client.request("/api/v1/preferences")
@@ -842,6 +852,7 @@ class ActAccountSetting : AppCompatActivity(),
 ///////////////////////////////////////////////////
 
     private fun performAccountRemove() {
+        val account = account ?: return
         launchAndShowError {
             confirm(getString(R.string.confirm_account_remove), title = getString(R.string.confirm))
             authRepo.accountRemove(account)
@@ -851,13 +862,14 @@ class ActAccountSetting : AppCompatActivity(),
 
     ///////////////////////////////////////////////////
     private fun performAccessToken() {
+        val account = account ?: return
         launchMain {
             try {
                 runApiTask2(account) { client ->
                     val authUrl = client.authStep1(forceUpdateClient = true)
                     withContext(AppDispatchers.MainImmediate) {
                         val resultIntent = Intent().apply { data = authUrl }
-                        setResult(Activity.RESULT_OK, resultIntent)
+                        setResult(RESULT_OK, resultIntent)
                         finish()
                     }
                 }
@@ -868,7 +880,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun inputAccessToken() {
-
+        val account = account ?: return
         val data = Intent()
         data.putExtra(EXTRA_DB_ID, account.db_id)
         setResult(RESULT_INPUT_ACCESS_TOKEN, data)
@@ -878,6 +890,7 @@ class ActAccountSetting : AppCompatActivity(),
 //////////////////////////////////////////////////////////////////////////
 
     private fun initializeProfile() {
+        val account = account ?: return
         // 初期状態
         val questionId = R.drawable.wide_question
         val loadingText = when (account.isPseudo) {
@@ -919,8 +932,19 @@ class ActAccountSetting : AppCompatActivity(),
         }
     }
 
+    // サーバ情報をロードする
+    private suspend fun loadInstance(a: SavedAccount): TootInstance? = try {
+        runApiTask2(a) { client ->
+            TootInstance.getExOrThrow(client)
+        }
+    } catch (ex: Throwable) {
+        showApiError(ex)
+        null
+    }
+
     // サーバから情報をロードする
     private fun loadProfile() {
+        val account = account ?: return
         launchMain {
             try {
                 runApiTask2(account) { client ->
@@ -955,6 +979,7 @@ class ActAccountSetting : AppCompatActivity(),
 
     private fun showProfile(src: TootAccount) {
         if (isDestroyed) return
+        val account = account ?: return
         profileBusy = true
         try {
             views.ivProfileAvatar.setImageUrl(
@@ -1082,8 +1107,8 @@ class ActAccountSetting : AppCompatActivity(),
         val multipartBuilder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
 
-        val apiKey =
-            account.tokenJson?.string(AuthBase.KEY_API_KEY_MISSKEY)
+        val apiKey = account?.tokenJson
+            ?.string(AuthBase.KEY_API_KEY_MISSKEY)
         if (apiKey?.isNotEmpty() == true) {
             multipartBuilder.addFormDataPart("i", apiKey)
         }
@@ -1126,9 +1151,9 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun updateCredential(args: List<Pair<String, Any>>) {
+        val account = account ?: return
         launchMain {
             var resultAccount: TootAccount? = null
-
             runApiTask(account) { client ->
                 try {
                     if (account.isMisskey) {
@@ -1248,14 +1273,14 @@ class ActAccountSetting : AppCompatActivity(),
         val sv = views.etDisplayName.text.toString()
         if (!bConfirmed) {
             val length = sv.codePointCount(0, sv.length)
-            if (length > max_length_display_name) {
+            if (length > MAX_LENGTH_DISPLAY_NAME) {
                 AlertDialog.Builder(this)
                     .setMessage(
                         getString(
                             R.string.length_warning,
                             getString(R.string.display_name),
                             length,
-                            max_length_display_name
+                            MAX_LENGTH_DISPLAY_NAME
                         )
                     )
                     .setNegativeButton(R.string.cancel, null)
@@ -1273,14 +1298,14 @@ class ActAccountSetting : AppCompatActivity(),
         if (!bConfirmed) {
 
             val length = TootAccount.countText(sv)
-            if (length > max_length_note) {
+            if (length > MAX_LENGTH_NOTE) {
                 AlertDialog.Builder(this)
                     .setMessage(
                         getString(
                             R.string.length_warning,
                             getString(R.string.note),
                             length,
-                            max_length_note
+                            MAX_LENGTH_NOTE
                         )
                     )
                     .setNegativeButton(R.string.cancel, null)
@@ -1314,14 +1339,14 @@ class ActAccountSetting : AppCompatActivity(),
                 )
             )
         }
-        if (!bConfirmed && lengthLongest > max_length_fields) {
+        if (!bConfirmed && lengthLongest > MAX_LENGTH_FIELDS) {
             AlertDialog.Builder(this)
                 .setMessage(
                     getString(
                         R.string.length_warning,
                         getString(R.string.profile_metadata),
                         lengthLongest,
-                        max_length_fields
+                        MAX_LENGTH_FIELDS
                     )
                 )
                 .setNegativeButton(R.string.cancel, null)
@@ -1467,8 +1492,12 @@ class ActAccountSetting : AppCompatActivity(),
         )
     }
 
+    /**
+     * @return pushRepo.updateSubscription が成功したら真
+     */
     private suspend fun updatePushSubscription(force: Boolean): Boolean {
         val activity = this
+        val account = account ?: return false
         val anyNotificationWanted = account.notificationBoost ||
                 account.notificationFavourite ||
                 account.notificationFollow ||
@@ -1477,7 +1506,9 @@ class ActAccountSetting : AppCompatActivity(),
                 account.notificationVote ||
                 account.notificationFollowRequest ||
                 account.notificationPost ||
-                account.notificationUpdate
+                account.notificationUpdate ||
+                account.notificationSeveredRelationships ||
+                account.notificationStatusReference
 
         val lines = ArrayList<String>()
         val subLogger = object : PushBase.SubscriptionLogger {
@@ -1525,6 +1556,7 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun showNotificationColor() {
+        val account = account ?: return
         views.vNotificationAccentColorColor.backgroundColor =
             account.notificationAccentColor.notZero()
                 ?: ContextCompat.getColor(this, R.color.colorOsNotificationAccent)

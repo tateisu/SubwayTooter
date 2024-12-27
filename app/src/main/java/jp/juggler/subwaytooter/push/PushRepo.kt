@@ -10,9 +10,12 @@ import androidx.core.net.toUri
 import androidx.work.Operation
 import androidx.work.WorkManager
 import androidx.work.await
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import jp.juggler.crypt.*
 import jp.juggler.subwaytooter.ActCallback
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.NotificationType.Companion.toNotificationType
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.push.ApiPushAppServer
 import jp.juggler.subwaytooter.api.push.ApiPushMastodon
@@ -37,6 +40,7 @@ import jp.juggler.util.os.applicationContextSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -44,8 +48,13 @@ import okhttp3.OkHttpClient
 import org.unifiedpush.android.connector.UnifiedPush
 import java.lang.ref.WeakReference
 import java.security.Provider
+import java.util.concurrent.CancellationException
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.math.min
 
 private val log = LogCategory("PushRepo")
@@ -97,6 +106,34 @@ class PushRepo(
         var refReporter: WeakReference<(String) -> Unit>? = null
 
         var subscriptionMutex = Mutex()
+
+        private suspend inline fun <R> ListenableFuture<R>.await(): R {
+            // Fast path
+            if (isDone) {
+                try {
+                    return get()
+                } catch (e: ExecutionException) {
+                    throw e.cause ?: e
+                }
+            }
+            return suspendCancellableCoroutine { cont ->
+                cont.invokeOnCancellation { cancel(false) }
+                addListener(
+                    Runnable {
+                        try {
+                            cont.resume(get())
+                        } catch (throwable: Throwable) {
+                            val cause = throwable.cause ?: throwable
+                            when (throwable) {
+                                is CancellationException -> cont.cancel(cause)
+                                else -> cont.resumeWithException(cause)
+                            }
+                        }
+                    },
+                    directExecutor(),
+                )
+            }
+        }
     }
 
     private val pushMisskey by lazy {
@@ -166,17 +203,20 @@ class PushRepo(
                     showProgress("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
+
                 PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
                     // 購読解除
 
                     showProgress("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
+
                 PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
                     // 特にイベントは来ないので、プッシュ購読をやりなおす
                     showProgress("enqueueRegisterEndpoint for ${pushDistributor}…")
                     enqueueRegisterEndpoint(context)
                 }
+
                 else -> {
                     showProgress("UnifiedPush.saveDistributor")
                     UnifiedPush.saveDistributor(context, pushDistributor)
@@ -349,20 +389,24 @@ class PushRepo(
                         log.i("registerEndpoint dist=FCM(default), acctHashList=${acctHashList.size}")
                         registerEndpointFcm(acctHashList)
                     }
+
                     else -> {
                         log.w("pushDistributor not selected. but can't select default distributor from background service.")
                         return
                     }
                 }
+
                 PrefDevice.PUSH_DISTRIBUTOR_NONE -> {
                     log.i("push distrobuter 'none' is selected. it will remove subscription.")
                     willRemoveSubscription = true
                     null
                 }
+
                 PrefDevice.PUSH_DISTRIBUTOR_FCM -> {
                     log.i("registerEndpoint dist=FCM, acctHashList=${acctHashList.size}")
                     registerEndpointFcm(acctHashList)
                 }
+
                 else -> {
                     log.i("registerEndpoint dist=${prefDevice.pushDistributor}, acctHashList=${acctHashList.size}")
                     registerEndpointUnifiedPush(acctHashList)
@@ -446,6 +490,7 @@ class PushRepo(
                 log.w("missing upEndpoint. can't register endpoint.")
                 null
             }
+
             else -> {
                 apiAppServer.endpointUpsert(
                     upUrl = upEndpoint,
@@ -461,6 +506,7 @@ class PushRepo(
                 log.w("missing fcmToken. can't register endpoint.")
                 null
             }
+
             else -> {
                 apiAppServer.endpointUpsert(
                     upUrl = null,
@@ -630,7 +676,7 @@ class PushRepo(
                 return
             }
 
-            if (!account.canNotificationShowing(pm.notificationType)) {
+            if (!account.isNotificationEnabled(pm.notificationType?.toNotificationType())) {
                 log.w("notificationType ${pm.notificationType} is disabled.")
                 return
             }
@@ -741,7 +787,9 @@ class PushRepo(
         }
 
         val density = context.resources.displayMetrics.density
-        val iconAndColor = pm.iconColor()
+        val notificationType = pm.notificationType?.toNotificationType()
+
+        val iconAndColor = notificationType.pushMessageIconAndColor()
 
         val targetName = daoAcctColor.getNicknameWithColor(account.acct)
 
@@ -794,7 +842,7 @@ class PushRepo(
         // val piTap = PendingIntent.getActivity(this, nc.pircTap, iTap, PendingIntent.FLAG_IMMUTABLE)
 
         ncPushMessage.notify(context, urlDelete) {
-            color = pm.iconColor().colorRes.notZero()
+            color = iconAndColor.colorRes.notZero()
                 ?.let { ContextCompat.getColor(context, it) }
                 ?: account.notificationAccentColor.notZero()
                         ?: ContextCompat.getColor(context, R.color.colorOsNotificationAccent)

@@ -68,6 +68,10 @@ internal suspend fun AppCompatActivity.addPseudoAccount(
         account.notificationVote = false
         account.notificationPost = false
         account.notificationUpdate = false
+        account.notificationSeveredRelationships = false
+        account.notificationStatusReference = false
+        account.notificationPushEnable = false
+        account.notificationPullEnable = false
         daoSavedAccount.save(account)
         return account
     } catch (ex: Throwable) {

@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate
 import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate.Companion.misskeyNoteUpdate
+import jp.juggler.subwaytooter.api.entity.NotificationType
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootInstance
@@ -312,16 +313,17 @@ class StreamConnection(
 
                     else -> when (payload) {
                         is TimelineItem -> {
+                            val notificationType = (payload as? TootNotification)?.type
+                            when (notificationType) {
+                                NotificationType.EmojiReactionFedibird,
+                                NotificationType.EmojiReactionPleroma,
+                                    -> {
+                                    log.d("emoji_reaction (notification) ${payload.status?.id}")
+                                    fireEmojiReactionNotification(payload)
+                                }
 
-                            if (payload is TootNotification &&
-                                (payload.type == TootNotification.TYPE_EMOJI_REACTION ||
-                                        payload.type == TootNotification.TYPE_EMOJI_REACTION_PLEROMA)
-
-                            ) {
-                                log.d("emoji_reaction (notification) ${payload.status?.id}")
-                                fireEmojiReactionNotification(payload)
+                                else -> Unit
                             }
-
                             fireTimelineItem(payload, stream = stream)
                         }
 

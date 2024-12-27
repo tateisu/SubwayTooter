@@ -5,13 +5,16 @@ import android.view.View
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.nextPosition
+import jp.juggler.subwaytooter.api.entity.NotificationType
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootNotificationEventType
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.getVisibilityIconId
 import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import org.jetbrains.anko.backgroundColor
 
@@ -19,64 +22,70 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
     val nStatus = n.status
     val nAccountRef = n.accountRef
     when (n.type) {
-        TootNotification.TYPE_FAVOURITE ->
+        is NotificationType.Unknown ->
+            showNotificationUnknown(n, nAccountRef, nStatus)
+
+        NotificationType.Favourite ->
             showNotificationFavourite(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_REBLOG ->
+        NotificationType.Reblog ->
             showNotificationReblog(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_RENOTE ->
+        NotificationType.Renote ->
             showNotificationRenote(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_FOLLOW ->
+        NotificationType.Follow ->
             showNotificationFollow(n, nAccountRef)
 
-        TootNotification.TYPE_UNFOLLOW ->
+        NotificationType.Unfollow ->
             showNotificationUnfollow(n, nAccountRef)
 
-        TootNotification.TYPE_ADMIN_SIGNUP ->
+        NotificationType.AdminSignup ->
             showNotificationSignup(n, nAccountRef)
 
-        TootNotification.TYPE_ADMIN_REPORT ->
+        NotificationType.AdminReport ->
             showNotificationReport(n, nAccountRef)
 
-        TootNotification.TYPE_MENTION,
-        TootNotification.TYPE_REPLY,
-        -> showNotificationMention(n, nAccountRef, nStatus)
+        NotificationType.Mention,
+        NotificationType.Reply,
+            -> showNotificationMention(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-        TootNotification.TYPE_EMOJI_REACTION,
-        TootNotification.TYPE_REACTION,
-        -> showNotificationReaction(n, nAccountRef, nStatus)
+        NotificationType.EmojiReactionPleroma,
+        NotificationType.EmojiReactionFedibird,
+        NotificationType.Reaction,
+            -> showNotificationReaction(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_QUOTE ->
+        NotificationType.Quote ->
             showNotificationQuote(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_STATUS ->
+        NotificationType.Status ->
             showNotificationPost(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_UPDATE ->
+        NotificationType.Update ->
             showNotificationUpdate(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_STATUS_REFERENCE ->
+        NotificationType.StatusReference ->
             showNotificationStatusReference(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_FOLLOW_REQUEST,
-        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-        -> showNotificationFollowRequest(n, nAccountRef)
+        NotificationType.FollowRequest,
+        NotificationType.FollowRequestMisskey,
+            -> showNotificationFollowRequest(n, nAccountRef)
 
-        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY ->
+        NotificationType.FollowRequestAcceptedMisskey ->
             showNotificationFollowRequestAccepted(n, nAccountRef)
 
-        TootNotification.TYPE_VOTE,
-        TootNotification.TYPE_POLL_VOTE_MISSKEY,
-        -> showNotificationVote(n, nAccountRef, nStatus)
+        NotificationType.Vote,
+        NotificationType.PollVoteMisskey,
+            -> showNotificationVote(n, nAccountRef, nStatus)
 
-        TootNotification.TYPE_POLL ->
+        NotificationType.Poll ->
             showNotificationPoll(n, nAccountRef, nStatus)
 
-        else ->
+        NotificationType.ScheduledStatus ->
             showNotificationUnknown(n, nAccountRef, nStatus)
+
+        NotificationType.SeveredRelationships ->
+            showNotificationSeveredRelationship(n, nAccountRef, nStatus)
     }
 }
 
@@ -130,6 +139,7 @@ private fun ItemViewHolder.showNotificationSignup(
         showAccount(it)
     }
 }
+
 private fun ItemViewHolder.showNotificationReport(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
@@ -383,6 +393,52 @@ private fun ItemViewHolder.showNotificationPoll(
     }
     val colorBg = 0
     nStatus?.let { showNotificationStatus(it, colorBg) }
+}
+
+private fun ItemViewHolder.showNotificationSeveredRelationship(
+    n: TootNotification,
+    nAccountRef: TootAccountRef?,
+    nStatus: TootStatus?,
+) {
+    nAccountRef?.let {
+        showBoost(
+            it,
+            n.time_created_at,
+            R.drawable.baseline_heart_broken_24,
+            R.string.servered_relationships_by,
+        )
+    }
+    val colorBg = 0
+    nStatus?.let { showNotificationStatus(it, colorBg) }
+    viewRoot.backgroundColor = colorBg
+    tvMessageHolder.visibility = View.VISIBLE
+    tvMessageHolder.gravity = Gravity.START
+    tvMessageHolder.text = when (val event = n.event) {
+        null -> "missing event details."
+        else -> when (val type = event.type) {
+            is TootNotificationEventType.Unknown -> "event type is ${type.code}"
+            TootNotificationEventType.DomainBlock -> listOfNotNull(
+                event.targetName?.notEmpty()?.let {
+                    activity.getString(
+                        R.string.domain_blocked_target_name,
+                        it,
+                    )
+                },
+                event.followingCount?.notZero()?.let {
+                    activity.getString(
+                        R.string.domain_blocked_following_count,
+                        it,
+                    )
+                },
+                event.followersCount?.notZero()?.let {
+                    activity.getString(
+                        R.string.domain_blocked_followers_count,
+                        it,
+                    )
+                }
+            ).joinToString("")
+        }
+    }
 }
 
 private fun ItemViewHolder.showNotificationUnknown(

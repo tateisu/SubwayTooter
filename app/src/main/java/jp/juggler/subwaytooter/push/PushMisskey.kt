@@ -8,7 +8,6 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.ApiError
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootAccount.Companion.tootAccount
-import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.api.push.ApiPushMisskey
@@ -224,24 +223,17 @@ class PushMisskey(
                 }
 
                 // ふぁぼ魔ミュート
-                when (notification.type) {
-                    TootNotification.TYPE_REBLOG,
-                    TootNotification.TYPE_FAVOURITE,
-                    TootNotification.TYPE_FOLLOW,
-                    TootNotification.TYPE_FOLLOW_REQUEST,
-                    TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                        -> {
-                        val whoAcct = a.getFullAcct(who)
-                        if (TootStatus.favMuteSet?.contains(whoAcct) == true) {
-                            error("muted by favMuteSet ${whoAcct.pretty}")
-                        }
+                if (notification.type.hideByFavMute) {
+                    val whoAcct = a.getFullAcct(who)
+                    if (TootStatus.favMuteSet?.contains(whoAcct) == true) {
+                        error("muted by favMuteSet ${whoAcct.pretty}")
                     }
                 }
 
                 // バッジ画像のURLはない。通知種別により決まる
                 pm.iconSmall = null
                 pm.iconLarge = a.supplyBaseUrl(who?.avatar_static)
-                pm.notificationType = notification.type
+                pm.notificationType = notification.type.code
                 pm.notificationId = notification.id.toString()
 
                 json.long("dateTime")?.let { pm.timestamp = it }

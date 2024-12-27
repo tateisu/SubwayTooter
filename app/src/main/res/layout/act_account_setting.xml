@@ -576,6 +576,12 @@
                 style="@style/setting_row_form"
                 android:text="@string/notification_type_status_reference_fedibird" />
 
+            <CheckBox
+                android:id="@+id/cbNotificationSeveredRelationships"
+                style="@style/setting_row_form"
+                android:text="@string/notification_type_severed_relationships" />
+
+            notification
             <View style="@style/setting_divider" />
 
             <TextView

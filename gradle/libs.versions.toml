@@ -43,6 +43,7 @@ junit = "4.13.2"
 koinBom = "4.0.0"
 kotlin = "2.0.21"
 kotlinCoroutinesOkhttp = "1.0"
+kotlinReflect = "2.1.0"
 kotlinxCoroutines = "1.8.0"
 kotlinxSerialization = "1.6.3"
 ksp = "2.0.21-1.0.25" # kotlinバージョンに依存している
@@ -120,6 +121,7 @@ koin-android-compat = { module = "io.insert-koin:koin-android-compat" }
 koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koinBom" }
 kotlin-coroutines-okhttp = { module = "ru.gildor.coroutines:kotlin-coroutines-okhttp", version.ref = "kotlinCoroutinesOkhttp" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }

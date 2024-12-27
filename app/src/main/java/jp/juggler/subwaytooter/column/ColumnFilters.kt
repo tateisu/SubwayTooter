@@ -282,86 +282,92 @@ private fun Column.checkLanguageFilter(status: TootStatus?): Boolean {
 }
 
 fun Column.isFiltered(item: TootNotification): Boolean {
+    val filtered = when (quickFilter) {
+        Column.QUICK_FILTER_ALL -> when (item.type) {
 
-    if (when (quickFilter) {
-            Column.QUICK_FILTER_ALL -> when (item.type) {
-                TootNotification.TYPE_FAVOURITE -> dontShowFavourite
+            NotificationType.Favourite -> dontShowFavourite
 
-                TootNotification.TYPE_REBLOG,
-                TootNotification.TYPE_RENOTE,
-                TootNotification.TYPE_QUOTE,
-                    -> dontShowBoost
+            NotificationType.Reblog,
+            NotificationType.Renote,
+            NotificationType.Quote,
+                -> dontShowBoost
 
-                TootNotification.TYPE_FOLLOW,
-                TootNotification.TYPE_UNFOLLOW,
-                TootNotification.TYPE_FOLLOW_REQUEST,
-                TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
-                TootNotification.TYPE_ADMIN_SIGNUP,
-                TootNotification.TYPE_ADMIN_REPORT,
-                    -> dontShowFollow
+            NotificationType.Follow,
+            NotificationType.Unfollow,
+            NotificationType.FollowRequest,
+            NotificationType.FollowRequestMisskey,
+            NotificationType.FollowRequestAcceptedMisskey,
+            NotificationType.AdminSignup,
+            NotificationType.AdminReport,
+                -> dontShowFollow
 
-                TootNotification.TYPE_MENTION,
-                TootNotification.TYPE_REPLY,
-                    -> dontShowReply
+            NotificationType.Mention,
+            NotificationType.Reply,
+                -> dontShowReply
 
-                TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-                TootNotification.TYPE_EMOJI_REACTION,
-                TootNotification.TYPE_REACTION,
-                    -> dontShowReaction
+            NotificationType.EmojiReactionPleroma,
+            NotificationType.EmojiReactionFedibird,
+            NotificationType.Reaction,
+                -> dontShowReaction
 
-                TootNotification.TYPE_VOTE,
-                TootNotification.TYPE_POLL,
-                TootNotification.TYPE_POLL_VOTE_MISSKEY,
-                    -> dontShowVote
+            NotificationType.Vote,
+            NotificationType.Poll,
+            NotificationType.PollVoteMisskey,
+                -> dontShowVote
 
-                TootNotification.TYPE_STATUS,
-                TootNotification.TYPE_UPDATE,
-                TootNotification.TYPE_STATUS_REFERENCE,
-                    -> dontShowNormalToot
+            NotificationType.Status,
+            NotificationType.Update,
+            NotificationType.StatusReference,
+                -> dontShowNormalToot
 
-                else -> false
-            }
-
-            else -> when (item.type) {
-                TootNotification.TYPE_FAVOURITE -> quickFilter != Column.QUICK_FILTER_FAVOURITE
-                TootNotification.TYPE_REBLOG,
-                TootNotification.TYPE_RENOTE,
-                TootNotification.TYPE_QUOTE,
-                    -> quickFilter != Column.QUICK_FILTER_BOOST
-
-                TootNotification.TYPE_FOLLOW,
-                TootNotification.TYPE_UNFOLLOW,
-                TootNotification.TYPE_FOLLOW_REQUEST,
-                TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-                TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
-                TootNotification.TYPE_ADMIN_SIGNUP,
-                TootNotification.TYPE_ADMIN_REPORT,
-                    -> quickFilter != Column.QUICK_FILTER_FOLLOW
-
-                TootNotification.TYPE_MENTION,
-                TootNotification.TYPE_REPLY,
-                    -> quickFilter != Column.QUICK_FILTER_MENTION
-
-                TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-                TootNotification.TYPE_EMOJI_REACTION,
-                TootNotification.TYPE_REACTION,
-                    -> quickFilter != Column.QUICK_FILTER_REACTION
-
-                TootNotification.TYPE_VOTE,
-                TootNotification.TYPE_POLL,
-                TootNotification.TYPE_POLL_VOTE_MISSKEY,
-                    -> quickFilter != Column.QUICK_FILTER_VOTE
-
-                TootNotification.TYPE_STATUS,
-                TootNotification.TYPE_UPDATE,
-                TootNotification.TYPE_STATUS_REFERENCE,
-                    -> quickFilter != Column.QUICK_FILTER_POST
-
-                else -> true
-            }
+            // 以下の項目はフィルタしない
+            is NotificationType.Unknown -> false
+            NotificationType.ScheduledStatus -> false
+            NotificationType.SeveredRelationships -> false
         }
-    ) {
+
+        else -> when (item.type) {
+            NotificationType.Favourite -> quickFilter != Column.QUICK_FILTER_FAVOURITE
+            NotificationType.Reblog,
+            NotificationType.Renote,
+            NotificationType.Quote,
+                -> quickFilter != Column.QUICK_FILTER_BOOST
+
+            NotificationType.Follow,
+            NotificationType.Unfollow,
+            NotificationType.FollowRequest,
+            NotificationType.FollowRequestMisskey,
+            NotificationType.FollowRequestAcceptedMisskey,
+            NotificationType.AdminSignup,
+            NotificationType.AdminReport,
+                -> quickFilter != Column.QUICK_FILTER_FOLLOW
+
+            NotificationType.Mention,
+            NotificationType.Reply,
+                -> quickFilter != Column.QUICK_FILTER_MENTION
+
+            NotificationType.EmojiReactionPleroma,
+            NotificationType.EmojiReactionFedibird,
+            NotificationType.Reaction,
+                -> quickFilter != Column.QUICK_FILTER_REACTION
+
+            NotificationType.Vote,
+            NotificationType.Poll,
+            NotificationType.PollVoteMisskey,
+                -> quickFilter != Column.QUICK_FILTER_VOTE
+
+            NotificationType.Status,
+            NotificationType.Update,
+            NotificationType.StatusReference,
+                -> quickFilter != Column.QUICK_FILTER_POST
+
+            // クイックフィルタで種別絞り込みをした場合、以下の項目は表示しない
+            is NotificationType.Unknown -> true
+            NotificationType.ScheduledStatus -> true
+            NotificationType.SeveredRelationships -> true
+        }
+    }
+    if (filtered) {
         log.d("isFiltered: ${item.type} notification filtered.")
         return true
     }
@@ -410,27 +416,13 @@ fun Column.isFiltered(item: TootNotification): Boolean {
     }
 
     // ふぁぼ魔ミュート
-    when (item.type) {
-        TootNotification.TYPE_REBLOG,
-        TootNotification.TYPE_RENOTE,
-        TootNotification.TYPE_QUOTE,
-        TootNotification.TYPE_FAVOURITE,
-        TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
-        TootNotification.TYPE_EMOJI_REACTION,
-        TootNotification.TYPE_REACTION,
-        TootNotification.TYPE_FOLLOW,
-        TootNotification.TYPE_FOLLOW_REQUEST,
-        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-        TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY,
-            -> {
-            val who = item.account
-            if (who != null && favMuteSet?.contains(accessInfo.getFullAcct(who)) == true) {
-                log.d("${accessInfo.getFullAcct(who)} is in favMuteSet.")
-                return true
-            }
+    if( item.type.hideByFavMute){
+        val who = item.account
+        if (who != null && favMuteSet?.contains(accessInfo.getFullAcct(who)) == true) {
+            log.d("${accessInfo.getFullAcct(who)} is in favMuteSet.")
+            return true
         }
     }
-
     return false
 }
 

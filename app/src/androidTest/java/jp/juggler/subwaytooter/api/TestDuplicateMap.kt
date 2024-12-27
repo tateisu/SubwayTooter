@@ -122,7 +122,7 @@ class TestDuplicateMap {
             val itemJson = JsonObject()
 
             itemJson.apply {
-                put("type", TootNotification.TYPE_MENTION)
+                put("type", NotificationType.Mention.code)
                 put("id", id)
             }
 

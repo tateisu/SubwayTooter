@@ -259,6 +259,7 @@ fun Column.replaceStatus(statusId: EntityId, statusJson: JsonObject) {
                     changed = true
                 }
             }
+
             is TootNotification -> {
                 if (item.status?.id == statusId) {
                     item.status = createStatus()
@@ -280,7 +281,7 @@ fun Column.onHideFavouriteNotification(acct: Acct) {
     val tmpList = ArrayList<TimelineItem>(listData.size)
 
     for (o in listData) {
-        if (o is TootNotification && o.type != TootNotification.TYPE_MENTION) {
+        if (o is TootNotification && o.type != NotificationType.Mention) {
             val who = o.account
             if (who != null) {
                 val whoAcct = accessInfo.getFullAcct(who)
@@ -455,6 +456,7 @@ fun Column.onTagFollowChanged(account: SavedAccount, newTag: TootTag) {
                         if (tmpList.none(tagFinder)) {
                             tmpList.add(0, newTag)
                         }
+
                     else -> tmpList.indexOfFirst(tagFinder)
                         .takeIf { it >= 0 }?.let { tmpList.removeAt(it) }
                 }

@@ -20,6 +20,3 @@ val Context.applicationContextSafe: Context
 
 fun Context.error(@StringRes resId: Int, vararg args: Any?): Nothing =
     error(getString(resId, *args))
-
-fun Context.resDrawable(@DrawableRes resId: Int) =
-    ContextCompat.getDrawable(this, resId)

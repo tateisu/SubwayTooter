@@ -26,6 +26,7 @@ import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -69,11 +70,14 @@ fun Context.getAttributeResourceId(attrId: Int) =
         .use { it.getResourceId(0, 0) }
         .notZero() ?: error("missing resource id. attr_id=0x${attrId.toString(16)}")
 
-fun Context.attrDrawable(attrId: Int): Drawable {
-    val drawableId = getAttributeResourceId(attrId)
-    return ContextCompat.getDrawable(this, drawableId)
+fun Context.resDrawable(@DrawableRes drawableId: Int): Drawable =
+    ContextCompat.getDrawable(this, drawableId)
         ?: error("getDrawable failed. drawableId=0x${drawableId.toString(16)}")
-}
+
+fun View.resDrawable(@DrawableRes resId: Int) = context.resDrawable(resId)
+
+fun Context.attrDrawable(attrId: Int): Drawable =
+    resDrawable(getAttributeResourceId(attrId))
 
 /////////////////////////////////////////////////////////
 

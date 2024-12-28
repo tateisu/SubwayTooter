@@ -34,4 +34,23 @@ class Benchmark(
     fun start() {
         timeStart = SystemClock.elapsedRealtime()
     }
+
+    inline fun <ReturnType:Any?> bench(block: ()-> ReturnType): ReturnType {
+        start()
+        val returnValue = block()
+        report()
+        return returnValue
+    }
+
+}
+
+inline fun <ReturnType:Any?> LogCategory.bench(
+    caption: String,
+    minMs: Long = 33L,
+    block: ()-> ReturnType,
+): ReturnType {
+    val b = Benchmark(this,caption=caption,minMs=minMs)
+    val returnValue = block()
+    b.report()
+    return returnValue
 }

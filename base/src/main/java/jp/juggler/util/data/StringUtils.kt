@@ -2,17 +2,15 @@ package jp.juggler.util.data
 
 import android.content.Context
 import android.net.Uri
-import android.text.SpannedString
 import android.util.Base64
-import androidx.annotation.StringRes
 import androidx.core.net.toUri
-import androidx.core.text.buildSpannedString
 import jp.juggler.util.log.LogCategory
 import java.security.MessageDigest
 import java.util.LinkedList
 import java.util.Locale
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.text.StringBuilder
 
 private val log = LogCategory("StringUtils")
 
@@ -111,31 +109,6 @@ fun CharSequence.replaceFirst(pattern: Pattern, replacement: String): String =
 
 fun CharSequence.replaceAll(pattern: Pattern, replacement: String): String =
     pattern.matcher(this).replaceAll(replacement)
-
-private val reFormatArgs = """%(\d+)${"\\$"}s""".toRegex()
-
-fun Context.getSpannedString(
-    @StringRes stringId: Int,
-    vararg args: CharSequence,
-): SpannedString = buildSpannedString {
-    val src = getString(stringId)
-    var lastEnd = 0
-    fun addText(end: Int) {
-        if (end > lastEnd) {
-            append(src.substring(lastEnd, end))
-        }
-    }
-    reFormatArgs.findAll(src).forEach { mr ->
-        addText(mr.range.first)
-        val index = mr.groupValues[1].toInt() - 1
-        when (val arg = args.elementAtOrNull(index)) {
-            null -> append("(null)")
-            else -> append(arg)
-        }
-        lastEnd = mr.range.last + 1
-    }
-    addText(src.length)
-}
 
 //fun Char.hex2int() : Int {
 //	if( '0' <= this && this <= '9') return ((this-'0'))

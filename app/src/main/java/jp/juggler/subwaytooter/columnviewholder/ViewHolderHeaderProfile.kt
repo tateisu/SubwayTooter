@@ -39,12 +39,12 @@ import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.buildJsonObject
-import jp.juggler.util.data.getSpannedString
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.getSpannedString
 import jp.juggler.util.ui.setIconDrawableId
 import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
@@ -449,8 +449,10 @@ internal class ViewHolderHeaderProfile(
                             when {
                                 accessInfo.isPseudo ->
                                     TootApiResult("Personal notes is not supported on pseudo account.")
+
                                 accessInfo.isMisskey ->
                                     TootApiResult("Personal notes is not supported on Misskey account.")
+
                                 else ->
                                     client.request(
                                         "/api/v1/accounts/${who.id}/note",
@@ -467,6 +469,7 @@ internal class ViewHolderHeaderProfile(
                                 if (lastColumn == column) bindData(column)
                                 true
                             }
+
                             else -> {
                                 activity.showToast(true, error)
                                 false
@@ -547,8 +550,10 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("locked")
+
                     PrefB.bpUseTwemoji.value ->
                         appendSpan("locked", emoji.createSpan(activity))
+
                     else ->
                         append(emoji.unifiedCode)
                 }
@@ -560,8 +565,10 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("bot")
+
                     PrefB.bpUseTwemoji.value ->
                         appendSpan("bot", emoji.createSpan(activity))
+
                     else ->
                         append(emoji.unifiedCode)
                 }
@@ -573,8 +580,10 @@ internal class ViewHolderHeaderProfile(
                 when {
                     emoji == null ->
                         append("suspended")
+
                     PrefB.bpUseTwemoji.value ->
                         appendSpan("suspended", emoji.createSpan(activity))
+
                     else ->
                         append(emoji.unifiedCode)
                 }

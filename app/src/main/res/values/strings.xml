@@ -1314,8 +1314,15 @@
     <string name="display_name_boosted_by_agg">%1$s and %2$s followings boosted.</string>
 
     <string name="notification_type_severed_relationships">severed relationships</string>
-    <string name="servered_relationships_by">servered relationships by server admin.</string>
-    <string name="domain_blocked_target_name">domain %1$s was blocked.</string>
-    <string name="domain_blocked_following_count">%1$d followings are lost.</string>
-    <string name="domain_blocked_followers_count">%1$d followers are lost.</string>
+
+    <string name="servered_relationships_domain_block">%1$s admin/moderator has blocked domain %2$s.</string>
+    <string name="servered_relationships_account_suspension">%1$s admin/moderator has suspended account %2$s.</string>
+    <string name="servered_relationships_user_domain_block">user %1$s have blocked domain %2$s.</string>
+    <string name="count_following_1">%1$d account you follow</string>
+    <string name="count_followings">%1$d accounts you follow</string>
+    <string name="count_follower_1">%1$d of your follower</string>
+    <string name="count_followers">%1$d of your followers</string>
+    <string name="losts_join"> and </string>
+    <string name="lost_relationships">you lost %1$s.</string>
+    <string name="check_details_web_ui">Check details in Web UI.</string>
 </resources>

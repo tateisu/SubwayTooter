@@ -48,6 +48,7 @@ import jp.juggler.util.log.Benchmark
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.applyAlphaMultiplier
 import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.resDrawable
 import org.jetbrains.anko.UI
 import org.jetbrains.anko._LinearLayout
 import org.jetbrains.anko.allCaps
@@ -90,6 +91,7 @@ class ItemViewHolder(
 
     internal lateinit var listAdapter: ItemListAdapter
 
+    private val inflateBench = Benchmark(log, "Item-Inflate", 40L)
     val bindBenchmark = Benchmark(log, "Item-bind", 40L)
 
     lateinit var llBoosted: View
@@ -199,11 +201,11 @@ class ItemViewHolder(
     var boostAccount: TootAccountRef? = null
     var followAccount: TootAccountRef? = null
 
-    var boostTime: Long = 0L
+    var boostTime = 0L
 
     var colorTextContent: Int = 0
-    var acctColor: Int = 0
-    var contentColorCsl: ColorStateList = ColorStateList.valueOf(0)
+    var acctColor = 0
+    var contentColorCsl = ColorStateList.valueOf(0)
 
     val boostInvalidator: NetworkEmojiInvalidator
     val replyInvalidator: NetworkEmojiInvalidator
@@ -220,27 +222,27 @@ class ItemViewHolder(
         this.viewRoot = inflate(activity)
 
         for (v in arrayOf(
-            btnListTL,
-            btnListMore,
-            btnSearchTag,
-            btnGapHead,
-            btnGapTail,
-            btnContentWarning,
-            btnShowMedia,
-            btnFollow,
-            ivCardImage,
             btnCardImageHide,
             btnCardImageShow,
-            ivAvatar,
-            llBoosted,
-            llReply,
-            llFollow,
+            btnContentWarning,
+            btnFollow,
             btnFollow,
             btnFollowRequestAccept,
             btnFollowRequestDeny,
+            btnGapHead,
+            btnGapTail,
             btnHideMedia,
+            btnListMore,
+            btnListTL,
+            btnSearchTag,
+            btnShowMedia,
+            ivAvatar,
+            ivCardImage,
+            llBoosted,
+            llFilter,
+            llFollow,
+            llReply,
             llTrendTag,
-            llFilter
         )) {
             v.setOnClickListener(this)
         }
@@ -264,11 +266,16 @@ class ItemViewHolder(
             v.setOnLongClickListener(this)
         }
 
-        //
-        tvContent.movementMethod = MyLinkMovementMethod
-        tvMentions.movementMethod = MyLinkMovementMethod
-        tvContentWarning.movementMethod = MyLinkMovementMethod
-        tvCardText.movementMethod = MyLinkMovementMethod
+        // リンク処理用のMyLinkMovementMethod
+        for (v in arrayOf(
+            tvContent,
+            tvMentions,
+            tvContentWarning,
+            tvCardText,
+            tvMessageHolder,
+        )) {
+            v.movementMethod = MyLinkMovementMethod
+        }
 
         var f: Float
 
@@ -455,8 +462,7 @@ class ItemViewHolder(
         llFollow = linearLayout {
             lparams(matchParent, wrapContent)
 
-            background =
-                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
             gravity = Gravity.CENTER_VERTICAL
 
             ivFollow = myNetworkImageView {
@@ -521,8 +527,7 @@ class ItemViewHolder(
                 lparams(matchParent, matchParent)
 
                 btnHideMedia = imageButton {
-                    background =
-                        ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                    background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
                     contentDescription = context.getString(R.string.hide)
                     imageResource = R.drawable.ic_close
                 }.lparams(dip(32), dip(32)) {
@@ -531,7 +536,7 @@ class ItemViewHolder(
                 ivMediaThumbnails.clear()
                 repeat(MEDIA_VIEW_COUNT) {
                     myNetworkImageView {
-                        background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                        background = resDrawable(R.drawable.bg_thumbnail)
                         contentDescription = context.getString(R.string.thumbnail)
                         scaleType = ImageView.ScaleType.CENTER_CROP
                     }.lparams(matchParent, thumbnailHeight) {
@@ -557,7 +562,7 @@ class ItemViewHolder(
 
                 repeat(MEDIA_VIEW_COUNT) { idx ->
                     myNetworkImageView {
-                        background = ContextCompat.getDrawable(context, R.drawable.bg_thumbnail)
+                        background = resDrawable(R.drawable.bg_thumbnail)
                         contentDescription = context.getString(R.string.thumbnail)
                         scaleType = ImageView.ScaleType.CENTER_CROP
                     }.lparams(0, matchParent) {
@@ -643,16 +648,10 @@ class ItemViewHolder(
     private fun _LinearLayout.inflateStatusReplyInfo() {
         llReply = linearLayout {
             lparams(matchParent, wrapContent) {}
-
             minimumHeight = dip(40)
-
             padding = dip(4)
-
-            background =
-                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
-
+            background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
             gravity = Gravity.CENTER_VERTICAL
-
             ivReply = imageView {
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
@@ -683,8 +682,7 @@ class ItemViewHolder(
             gravity = Gravity.CENTER_VERTICAL
 
             btnContentWarning = imageButton {
-                backgroundDrawable =
-                    ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
+                backgroundDrawable = resDrawable(R.drawable.bg_button_cw)
                 contentDescription = context.getString(R.string.show)
                 imageResource = R.drawable.ic_eye
                 imageTintList = ColorStateList.valueOf(context.attrColor(R.attr.colorTextContent))
@@ -820,8 +818,7 @@ class ItemViewHolder(
 
     private fun _LinearLayout.inflateStatusAvatar() {
         ivAvatar = myNetworkImageView {
-            background =
-                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
             contentDescription = context.getString(R.string.thumbnail)
             scaleType = ImageView.ScaleType.CENTER_CROP
         }.lparams(dip(48), dip(48)) {
@@ -897,7 +894,7 @@ class ItemViewHolder(
 
             btnSearchTag = compatButton {
                 background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                    resDrawable(R.drawable.btn_bg_transparent_round6dp)
                 allCaps = false
             }.lparams(0, wrapContent) {
                 weight = 1f
@@ -932,8 +929,7 @@ class ItemViewHolder(
             lparams(matchParent, wrapContent)
 
             gravity = Gravity.CENTER_VERTICAL
-            background =
-                ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+            background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
 
             verticalLayout {
                 lparams(0, wrapContent) {
@@ -964,16 +960,14 @@ class ItemViewHolder(
             minimumHeight = dip(40)
 
             btnListTL = compatButton {
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
                 allCaps = false
             }.lparams(0, wrapContent) {
                 weight = 1f
             }
 
             btnListMore = imageButton {
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
                 imageResource = R.drawable.ic_more
                 contentDescription = context.getString(R.string.more)
             }.lparams(dip(40), matchParent) {
@@ -985,6 +979,7 @@ class ItemViewHolder(
     private fun _LinearLayout.inflateMessageHolder() {
         tvMessageHolder = myTextView {
             padding = dip(4)
+            compoundDrawablePadding = dip(4)
         }.lparams(matchParent, wrapContent)
     }
 
@@ -996,16 +991,14 @@ class ItemViewHolder(
             gravity = Gravity.END
 
             btnFollowRequestAccept = imageButton {
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
                 contentDescription = context.getString(R.string.follow_accept)
                 imageResource = R.drawable.ic_check
                 setPadding(0, 0, 0, 0)
             }.lparams(dip(48f), dip(32f))
 
             btnFollowRequestDeny = imageButton {
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+                background = resDrawable(R.drawable.btn_bg_transparent_round6dp)
                 contentDescription = context.getString(R.string.follow_deny)
                 imageResource = R.drawable.ic_close
                 setPadding(0, 0, 0, 0)
@@ -1032,35 +1025,34 @@ class ItemViewHolder(
     }
 
     fun inflate(actMain: ActMain) = with(actMain.UI {}) {
-        val b = Benchmark(log, "Item-Inflate", 40L)
-        val rv = verticalLayout {
-            // トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
-            layoutParams =
-                androidx.recyclerview.widget.RecyclerView.LayoutParams(matchParent, wrapContent)
-                    .apply {
-                        marginStart = dip(8)
-                        marginEnd = dip(8)
-                        topMargin = dip(2f)
-                        bottomMargin = dip(1f)
-                    }
+        inflateBench.bench {
+            verticalLayout {
+                // トップレベルのViewGroupのlparamsはイニシャライザ内部に置く
+                layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(
+                    matchParent,
+                    wrapContent,
+                ).apply {
+                    marginStart = dip(8)
+                    marginEnd = dip(8)
+                    topMargin = dip(2f)
+                    bottomMargin = dip(1f)
+                }
 
-            setPaddingRelative(dip(4), dip(1f), dip(4), dip(2f))
+                setPaddingRelative(dip(4), dip(1f), dip(4), dip(2f))
 
-            descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+                descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
 
-            inflateBoosted()
-            inflateFollowed()
-            inflateStatus(actMain)
-            inflateConversationIcons()
-            inflateSearchTag()
-            inflateTrendTag()
-            inflateList()
-            inflateMessageHolder()
-
-            inflateFollowRequest()
-            inflateFilter()
+                inflateBoosted()
+                inflateFollowed()
+                inflateStatus(actMain)
+                inflateConversationIcons()
+                inflateSearchTag()
+                inflateTrendTag()
+                inflateList()
+                inflateMessageHolder()
+                inflateFollowRequest()
+                inflateFilter()
+            }
         }
-        b.report()
-        rv
     }
 }

@@ -12,7 +12,10 @@ import android.text.style.StyleSpan
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.core.graphics.drawable.DrawableCompat
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.actmain.closePopup
 import jp.juggler.subwaytooter.api.TootParser
@@ -46,234 +49,233 @@ fun ItemViewHolder.bind(
     bSimpleList: Boolean,
     item: TimelineItem,
 ) {
-    bindBenchmark.start()
+    bindBenchmark.bench {
 
-    this.listAdapter = listAdapter
-    this.column = column
-    this.bSimpleList = bSimpleList
+        this.listAdapter = listAdapter
+        this.column = column
+        this.bSimpleList = bSimpleList
 
-    this.accessInfo = column.accessInfo
+        this.accessInfo = column.accessInfo
 
-    val fontBold = ActMain.timelineFontBold
-    val fontNormal = ActMain.timelineFont
-    viewRoot.scan { v ->
-        try {
-            when (v) {
-                // ボタンは太字なので触らない
-                is Button, is CountImageButton ->
-                    if (v is Button && tvMediaDescriptions.contains(v)) {
-                        v.typeface = fontNormal
+        val fontBold = ActMain.timelineFontBold
+        val fontNormal = ActMain.timelineFont
+        viewRoot.scan { v ->
+            try {
+                when (v) {
+                    // ボタンは太字なので触らない
+                    is Button, is CountImageButton ->
+                        if (v is Button && tvMediaDescriptions.contains(v)) {
+                            v.typeface = fontNormal
+                        }
+
+                    is TextView -> v.typeface = when {
+                        v === tvName ||
+                                v === tvFollowerName ||
+                                v === tvBoosted ||
+                                v === tvReply ||
+                                v === tvTrendTagCount ||
+                                v === tvTrendTagName ||
+                                v === tvConversationIconsMore ||
+                                v === tvConversationParticipants ||
+                                v === tvFilterPhrase -> fontBold
+
+                        else -> fontNormal
+                    }
+                }
+            } catch (ex: Throwable) {
+                log.e(ex, "can't change font.")
+            }
+        }
+
+        if (bSimpleList) {
+            viewRoot.setOnTouchListener { _, ev ->
+                // ポップアップを閉じた時にクリックでリストを触ったことになってしまう不具合の回避
+                val now = SystemClock.elapsedRealtime()
+                // ポップアップを閉じた直後はタッチダウンを無視する
+                if (now - StatusButtonsPopup.lastPopupClose >= 30L) {
+                    false
+                } else {
+                    val action = ev.action
+                    ItemViewHolder.log.d("onTouchEvent action=$action")
+                    true
+                }
+            }
+
+            viewRoot.setOnClickListener { viewClicked ->
+                activity.closePopup()
+                statusShowing?.let { status ->
+                    val popup =
+                        StatusButtonsPopup(activity, column, true, this@bind)
+                    activity.popupStatusButtons = popup
+                    popup.show(
+                        listAdapter.columnVh.listView,
+                        viewClicked,
+                        status,
+                        item as? TootNotification
+                    )
+                }
+            }
+            llButtonBar.visibility = View.GONE
+            this.buttonsForStatus = null
+        } else {
+            viewRoot.isClickable = false
+            llButtonBar.visibility = View.VISIBLE
+            this.buttonsForStatus = StatusButtons(
+                activity,
+                column,
+                false,
+                statusButtonsViewHolder,
+                this
+            )
+        }
+
+        this.statusShowing = null
+        this.statusReply = null
+        this.statusAccount = null
+        this.boostAccount = null
+        this.followAccount = null
+        this.boostTime = 0L
+        this.viewRoot.setBackgroundColor(0)
+        this.boostedAction = defaultBoostedAction
+
+        btnGapHead.visibility = View.GONE
+        btnGapTail.visibility = View.GONE
+        flCardImage.visibility = View.GONE
+        llBoosted.visibility = View.GONE
+        llCardOuter.visibility = View.GONE
+        llConversationIcons.visibility = View.GONE
+        llFilter.visibility = View.GONE
+        llFollow.visibility = View.GONE
+        llFollowRequest.visibility = View.GONE
+        llList.visibility = View.GONE
+        llOpenSticker.visibility = View.GONE
+        llReply.visibility = View.GONE
+        llSearchTag.visibility = View.GONE
+        llStatus.visibility = View.GONE
+        llTrendTag.visibility = View.GONE
+        tvCardText.visibility = View.GONE
+        tvMediaCount.visibility = View.GONE
+        tvMessageHolder.visibility = View.GONE
+
+        tvMediaDescriptions.forEach { it.visibility = View.GONE }
+
+        removeExtraView()
+
+        val colorTextContent = column.getContentColor()
+        this.colorTextContent = colorTextContent
+        this.contentColorCsl = ColorStateList.valueOf(colorTextContent)
+
+        tvApplication.setTextColor(colorTextContent)
+        tvBoosted.setTextColor(colorTextContent)
+        tvCardText.setTextColor(colorTextContent)
+        tvContent.setTextColor(colorTextContent)
+        tvContentWarning.setTextColor(colorTextContent)
+        tvConversationIconsMore.setTextColor(colorTextContent)
+        tvConversationParticipants.setTextColor(colorTextContent)
+        tvFilterPhrase.setTextColor(colorTextContent)
+        tvFollowerName.setTextColor(colorTextContent)
+        tvMediaCount.setTextColor(colorTextContent)
+        tvMentions.setTextColor(colorTextContent)
+        tvMessageHolder.setTextColor(colorTextContent)
+        tvName.setTextColor(colorTextContent)
+        tvReply.setTextColor(colorTextContent)
+        tvTrendTagCount.setTextColor(colorTextContent)
+        tvTrendTagName.setTextColor(colorTextContent)
+
+        tvMediaDescriptions.forEach { it.setTextColor(colorTextContent) }
+        cvTagHistory.setColor(colorTextContent)
+
+        //NSFWは文字色固定 btnShowMedia.setTextColor( colorTextContent );
+
+        (llCardOuter.background as? PreviewCardBorder)?.color =
+            colorPreviewCardBorder(colorTextContent)
+
+        val colorTextAcct = column.getAcctColor()
+        this.acctColor = colorTextAcct
+
+        tvBoostedTime.setTextColor(colorTextAcct)
+        tvFilterDetail.setTextColor(colorTextAcct)
+        tvFilterPhrase.setTextColor(colorTextAcct)
+        tvTime.setTextColor(colorTextAcct)
+        tvTrendTagDesc.setTextColor(colorTextAcct)
+
+        // 以下のビューの文字色はsetAcct() で設定される
+        //		tvBoostedAcct.setTextColor(c)
+        //		tvFollowerAcct.setTextColor(c)
+        //		tvAcct.setTextColor(c)
+
+        this.item = item
+        when (item) {
+            is TootStatus -> {
+                val reblog = item.reblog
+                when {
+                    reblog == null -> showStatusOrReply(item)
+
+                    item.isQuoteToot -> {
+                        // 引用Renote
+                        val colorBg = PrefI.ipEventBgColorBoost.value
+                        showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
+                        showStatus(item, colorBg)
                     }
 
-                is TextView -> v.typeface = when {
-                    v === tvName ||
-                            v === tvFollowerName ||
-                            v === tvBoosted ||
-                            v === tvReply ||
-                            v === tvTrendTagCount ||
-                            v === tvTrendTagName ||
-                            v === tvConversationIconsMore ||
-                            v === tvConversationParticipants ||
-                            v === tvFilterPhrase -> fontBold
-
-                    else -> fontNormal
+                    else -> {
+                        // 引用なしブースト
+                        val colorBg = PrefI.ipEventBgColorBoost.value
+                        showBoost(
+                            item.accountRef,
+                            item.time_created_at,
+                            R.drawable.ic_repeat,
+                            R.string.display_name_boosted_by,
+                            boostStatus = item
+                        )
+                        showStatusOrReply(reblog, colorBg)
+                    }
                 }
             }
-        } catch (ex: Throwable) {
-            log.e(ex, "can't change font.")
-        }
-    }
 
-    if (bSimpleList) {
-
-        viewRoot.setOnTouchListener { _, ev ->
-            // ポップアップを閉じた時にクリックでリストを触ったことになってしまう不具合の回避
-            val now = SystemClock.elapsedRealtime()
-            // ポップアップを閉じた直後はタッチダウンを無視する
-            if (now - StatusButtonsPopup.lastPopupClose >= 30L) {
-                false
-            } else {
-                val action = ev.action
-                ItemViewHolder.log.d("onTouchEvent action=$action")
-                true
-            }
-        }
-
-        viewRoot.setOnClickListener { viewClicked ->
-            activity.closePopup()
-            statusShowing?.let { status ->
-                val popup =
-                    StatusButtonsPopup(activity, column, true, this@bind)
-                activity.popupStatusButtons = popup
-                popup.show(
-                    listAdapter.columnVh.listView,
-                    viewClicked,
-                    status,
-                    item as? TootNotification
-                )
-            }
-        }
-        llButtonBar.visibility = View.GONE
-        this.buttonsForStatus = null
-    } else {
-        viewRoot.isClickable = false
-        llButtonBar.visibility = View.VISIBLE
-        this.buttonsForStatus = StatusButtons(
-            activity,
-            column,
-            false,
-            statusButtonsViewHolder,
-            this
-        )
-    }
-
-    this.statusShowing = null
-    this.statusReply = null
-    this.statusAccount = null
-    this.boostAccount = null
-    this.followAccount = null
-    this.boostTime = 0L
-    this.viewRoot.setBackgroundColor(0)
-    this.boostedAction = defaultBoostedAction
-
-    btnGapHead.visibility = View.GONE
-    btnGapTail.visibility = View.GONE
-    flCardImage.visibility = View.GONE
-    llBoosted.visibility = View.GONE
-    llCardOuter.visibility = View.GONE
-    llConversationIcons.visibility = View.GONE
-    llFilter.visibility = View.GONE
-    llFollow.visibility = View.GONE
-    llFollowRequest.visibility = View.GONE
-    llList.visibility = View.GONE
-    llOpenSticker.visibility = View.GONE
-    llReply.visibility = View.GONE
-    llSearchTag.visibility = View.GONE
-    llStatus.visibility = View.GONE
-    llTrendTag.visibility = View.GONE
-    tvCardText.visibility = View.GONE
-    tvMediaCount.visibility = View.GONE
-    tvMessageHolder.visibility = View.GONE
-
-    tvMediaDescriptions.forEach { it.visibility = View.GONE }
-
-    removeExtraView()
-
-    val colorTextContent = column.getContentColor()
-    this.colorTextContent = colorTextContent
-    this.contentColorCsl = ColorStateList.valueOf(colorTextContent)
-
-    tvApplication.setTextColor(colorTextContent)
-    tvBoosted.setTextColor(colorTextContent)
-    tvCardText.setTextColor(colorTextContent)
-    tvContent.setTextColor(colorTextContent)
-    tvContentWarning.setTextColor(colorTextContent)
-    tvConversationIconsMore.setTextColor(colorTextContent)
-    tvConversationParticipants.setTextColor(colorTextContent)
-    tvFilterPhrase.setTextColor(colorTextContent)
-    tvFollowerName.setTextColor(colorTextContent)
-    tvMediaCount.setTextColor(colorTextContent)
-    tvMentions.setTextColor(colorTextContent)
-    tvMessageHolder.setTextColor(colorTextContent)
-    tvName.setTextColor(colorTextContent)
-    tvReply.setTextColor(colorTextContent)
-    tvTrendTagCount.setTextColor(colorTextContent)
-    tvTrendTagName.setTextColor(colorTextContent)
-
-    tvMediaDescriptions.forEach { it.setTextColor(colorTextContent) }
-    cvTagHistory.setColor(colorTextContent)
-
-    //NSFWは文字色固定 btnShowMedia.setTextColor( colorTextContent );
-
-    (llCardOuter.background as? PreviewCardBorder)?.color =
-        colorPreviewCardBorder(colorTextContent)
-
-    val colorTextAcct = column.getAcctColor()
-    this.acctColor = colorTextAcct
-
-    tvBoostedTime.setTextColor(colorTextAcct)
-    tvFilterDetail.setTextColor(colorTextAcct)
-    tvFilterPhrase.setTextColor(colorTextAcct)
-    tvTime.setTextColor(colorTextAcct)
-    tvTrendTagDesc.setTextColor(colorTextAcct)
-
-    // 以下のビューの文字色はsetAcct() で設定される
-    //		tvBoostedAcct.setTextColor(c)
-    //		tvFollowerAcct.setTextColor(c)
-    //		tvAcct.setTextColor(c)
-
-    this.item = item
-    when (item) {
-        is TootStatus -> {
-            val reblog = item.reblog
-            when {
-                reblog == null -> showStatusOrReply(item)
-
-                item.isQuoteToot -> {
-                    // 引用Renote
-                    val colorBg = PrefI.ipEventBgColorBoost.value
-                    showReply(item.account, reblog, R.drawable.ic_quote, R.string.quote_to)
-                    showStatus(item, colorBg)
-                }
-
-                else -> {
-                    // 引用なしブースト
-                    val colorBg = PrefI.ipEventBgColorBoost.value
+            is TootAggBoost -> {
+                val colorBg = PrefI.ipEventBgColorBoost.value
+                val boosterCount = item.boosterStatuses.size
+                val headBoost = item.boosterStatuses.first()
+                if (item.boosterStatuses.size == 1) {
                     showBoost(
-                        item.accountRef,
-                        item.time_created_at,
+                        headBoost.accountRef,
+                        headBoost.time_created_at,
                         R.drawable.ic_repeat,
                         R.string.display_name_boosted_by,
-                        boostStatus = item
+                        boostStatus = headBoost
                     )
-                    showStatusOrReply(reblog, colorBg)
+                } else {
+                    showAggBoost(
+                        headBoost.accountRef,
+                        headBoost.time_created_at,
+                        R.drawable.ic_repeat,
+                        boosterCount - 1,
+                        R.string.display_name_boosted_by_agg,
+                        boostStatus = headBoost
+                    )
                 }
+                showStatusOrReply(item.originalStatus, colorBg)
             }
-        }
 
-        is TootAggBoost -> {
-            val colorBg = PrefI.ipEventBgColorBoost.value
-            val boosterCount = item.boosterStatuses.size
-            val headBoost = item.boosterStatuses.first()
-            if (item.boosterStatuses.size == 1) {
-                showBoost(
-                    headBoost.accountRef,
-                    headBoost.time_created_at,
-                    R.drawable.ic_repeat,
-                    R.string.display_name_boosted_by,
-                    boostStatus = headBoost
-                )
-            } else {
-                showAggBoost(
-                    headBoost.accountRef,
-                    headBoost.time_created_at,
-                    R.drawable.ic_repeat,
-                    boosterCount - 1,
-                    R.string.display_name_boosted_by_agg,
-                    boostStatus = headBoost
-                )
+            is TootAccountRef -> showAccount(item)
+            is TootNotification -> showNotification(item)
+            is TootGap -> showGap()
+            is TootSearchGap -> showSearchGap(item)
+            is TootDomainBlock -> showDomainBlock(item)
+            is TootList -> showList(item)
+            is MisskeyAntenna -> showAntenna(item)
+            is TootMessageHolder -> showMessageHolder(item)
+            is TootTag -> showSearchTag(item)
+            is TootFilter -> showFilter(item)
+            is TootConversationSummary -> {
+                showStatusOrReply(item.last_status)
+                showConversationIcons(item)
             }
-            showStatusOrReply(item.originalStatus, colorBg)
-        }
 
-        is TootAccountRef -> showAccount(item)
-        is TootNotification -> showNotification(item)
-        is TootGap -> showGap()
-        is TootSearchGap -> showSearchGap(item)
-        is TootDomainBlock -> showDomainBlock(item)
-        is TootList -> showList(item)
-        is MisskeyAntenna -> showAntenna(item)
-        is TootMessageHolder -> showMessageHolder(item)
-        is TootTag -> showSearchTag(item)
-        is TootFilter -> showFilter(item)
-        is TootConversationSummary -> {
-            showStatusOrReply(item.last_status)
-            showConversationIcons(item)
+            is TootScheduled -> showScheduled(item)
         }
-
-        is TootScheduled -> showScheduled(item)
     }
-    bindBenchmark.report()
 }
 
 // プレビューカードの枠の色はテキストより薄め
@@ -355,6 +357,8 @@ fun ItemViewHolder.showBoost(
     reaction: TootReaction? = null,
     boostStatus: TootStatus? = null,
     reblogVisibility: TootVisibility? = null,
+    showAvatar: Boolean = true,
+    avatarNameReplacement: CharSequence? = null,
 ) {
     boostAccount = whoRef
 
@@ -368,13 +372,15 @@ fun ItemViewHolder.showBoost(
         alphaMultiplier = stylerBoostAlpha
     )
 
-    ivBoostAvatar.let { v ->
+    ivBoostAvatar.vg(showAvatar)?.let { v ->
         v.setImageUrl(
             calcIconRound(v.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
         )
     }
+
+
     boostTime = time
     llBoosted.visibility = View.VISIBLE
     showStatusTime(
@@ -387,30 +393,28 @@ fun ItemViewHolder.showBoost(
     )
     setAcct(tvBoostedAcct, accessInfo, who)
 
+    val text = activity.getSpannedString(
+        stringId,
+        avatarNameReplacement ?: who.decodeDisplayNameCached(activity),
+    )
+
     // decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-    boostInvalidator.text = if (reaction != null) {
-        val options = DecodeOptions(
-            activity,
-            accessInfo,
-            decodeEmoji = true,
-            enlargeEmoji = DecodeOptions.emojiScaleReaction,
-            enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
-            emojiSizeMode = accessInfo.emojiSizeMode(),
-        )
-        reaction.toSpannableStringBuilder(options, boostStatus).apply {
+    boostInvalidator.text = when (reaction) {
+        null -> text
+        else -> reaction.toSpannableStringBuilder(
+            options = DecodeOptions(
+                activity,
+                accessInfo,
+                decodeEmoji = true,
+                enlargeEmoji = DecodeOptions.emojiScaleReaction,
+                enlargeCustomEmoji = DecodeOptions.emojiScaleReaction,
+                emojiSizeMode = accessInfo.emojiSizeMode(),
+            ),
+            boostStatus,
+        ).apply {
             append(" ")
-            append(
-                activity.getSpannedString(
-                    stringId,
-                    who.decodeDisplayNameCached(activity),
-                )
-            )
+            append(text)
         }
-    } else {
-        activity.getSpannedString(
-            stringId,
-            who.decodeDisplayNameCached(activity),
-        )
     }
 }
 
@@ -423,6 +427,7 @@ fun ItemViewHolder.showAggBoost(
     reaction: TootReaction? = null,
     boostStatus: TootStatus? = null,
     reblogVisibility: TootVisibility? = null,
+    showAvatar: Boolean = true,
 ) {
     boostAccount = whoRef
 
@@ -436,13 +441,14 @@ fun ItemViewHolder.showAggBoost(
         alphaMultiplier = stylerBoostAlpha
     )
 
-    ivBoostAvatar.let { v ->
+    ivBoostAvatar.vg(showAvatar)?.let { v ->
         v.setImageUrl(
             calcIconRound(v.layoutParams),
             accessInfo.supplyBaseUrl(who.avatar_static),
             accessInfo.supplyBaseUrl(who.avatar)
         )
     }
+
     boostTime = time
     llBoosted.visibility = View.VISIBLE
     showStatusTime(
@@ -483,11 +489,34 @@ fun ItemViewHolder.showAggBoost(
     }
 }
 
-fun ItemViewHolder.showMessageHolder(item: TootMessageHolder) {
-    tvMessageHolder.visibility = View.VISIBLE
-    tvMessageHolder.text = item.text
-    tvMessageHolder.gravity = item.gravity
+fun ItemViewHolder.showMessageHolder(
+    gravity: Int,
+    text: CharSequence,
+    @DrawableRes iconId: Int = 0,
+    @ColorInt iconColor: Int = 0,
+) = with(tvMessageHolder) {
+    this.visibility = View.VISIBLE
+    this.text = text
+    this.gravity = gravity
+    if (iconId == 0) {
+        setCompoundDrawablesRelative(null, null, null, null)
+    } else {
+        setCompoundDrawablesRelative(
+            DrawableCompat.wrap(
+                resDrawable(iconId)
+            ).also {
+                DrawableCompat.setTint(it, iconColor)
+                it.setBounds(0, 0, it.getIntrinsicWidth(), it.getIntrinsicHeight())
+            },
+            null,
+            null,
+            null,
+        )
+    }
 }
+
+fun ItemViewHolder.showMessageHolder(item: TootMessageHolder) =
+    showMessageHolder(item.gravity, item.text)
 
 fun ItemViewHolder.showList(list: TootList) {
     llList.visibility = View.VISIBLE

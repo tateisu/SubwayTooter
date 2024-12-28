@@ -1,22 +1,35 @@
 package jp.juggler.subwaytooter.itemviewholder
 
+import android.content.Context
+import android.text.Spannable
 import android.view.Gravity
-import android.view.View
+import androidx.annotation.StringRes
+import androidx.core.text.buildSpannedString
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.addColumn
 import jp.juggler.subwaytooter.actmain.nextPosition
 import jp.juggler.subwaytooter.api.entity.NotificationType
+import jp.juggler.subwaytooter.api.entity.RelationshipSeveranceEvent
+import jp.juggler.subwaytooter.api.entity.RelationshipSeveranceEventType
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootNotificationEventType
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.getVisibilityIconId
 import jp.juggler.subwaytooter.pref.PrefI
+import jp.juggler.subwaytooter.span.LinkInfo
+import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
+import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.bold
+import jp.juggler.util.ui.getSpannedString
+import jp.juggler.util.ui.joinToSpannedString
 import org.jetbrains.anko.backgroundColor
+
+private val log = LogCategory("ItemViewHolderShowNotification")
 
 fun ItemViewHolder.showNotification(n: TootNotification) {
     val nStatus = n.status
@@ -395,50 +408,105 @@ private fun ItemViewHolder.showNotificationPoll(
     nStatus?.let { showNotificationStatus(it, colorBg) }
 }
 
+/**
+ *
+ */
+private fun RelationshipSeveranceEvent.format(
+    context: Context,
+    account: SavedAccount,
+    user: TootAccountRef?,
+): CharSequence = with(context) {
+    buildSpannedString {
+        fun appendResString(@StringRes id: Int, vararg args: Any?) =
+            append(getSpannedString(id, *args))
+
+        // 管理者やモデレータのドメイン
+        val adminDomain = account.apDomain.pretty
+
+        // typeによりドメインかユーザ名か異なる
+        val targetBold = (targetName?.notEmpty() ?: "(???)").bold()
+
+        when (val type = type) {
+            is RelationshipSeveranceEventType.Unknown ->
+                append("unknown event type. ${type.code}")
+
+            RelationshipSeveranceEventType.DomainBlock ->
+                appendResString(
+                    R.string.servered_relationships_domain_block,
+                    adminDomain.bold(),
+                    targetBold, // ドメイン名
+                )
+
+            RelationshipSeveranceEventType.AccountSuspension ->
+                appendResString(
+                    R.string.servered_relationships_account_suspension,
+                    adminDomain.bold(),
+                    targetBold, // ユーザ名
+                )
+
+            RelationshipSeveranceEventType.UserDomainBlock ->
+                appendResString(
+                    R.string.servered_relationships_account_suspension,
+                    user?.decoded_display_name ?: "?", // 誰の名前が出るんだろう?
+                    targetBold, // ドメイン名
+                )
+        }
+
+        val losts = listOfNotNull(
+            when (val n = followingCount) {
+                null, 0 -> null
+                1 -> getString(R.string.count_following_1, n)
+                else -> getString(R.string.count_followings, n)
+            }?.bold(),
+            when (val n = followersCount) {
+                null, 0 -> null
+                1 -> getString(R.string.count_follower_1, n)
+                else -> getString(R.string.count_followers, n)
+            }?.bold(),
+        )
+        if (losts.isNotEmpty()) {
+            append(" ")
+            appendResString(
+                R.string.lost_relationships,
+                losts.joinToSpannedString(getString(R.string.losts_join))
+            )
+        }
+        // リンク追加
+        append(" ")
+        val start = length
+        appendResString(R.string.check_details_web_ui)
+        val end = length
+        setSpan(
+            MyClickableSpan(LinkInfo(url = "https://${account.apiHost.ascii}/severed_relationships")),
+            start,
+            end,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+    }
+}
+
 private fun ItemViewHolder.showNotificationSeveredRelationship(
     n: TootNotification,
     nAccountRef: TootAccountRef?,
     nStatus: TootStatus?,
 ) {
-    nAccountRef?.let {
-        showBoost(
-            it,
-            n.time_created_at,
-            R.drawable.baseline_heart_broken_24,
-            R.string.servered_relationships_by,
-        )
-    }
+    // この通知のための色設定はない
     val colorBg = 0
-    nStatus?.let { showNotificationStatus(it, colorBg) }
+    // statusがなくても背景色は変えておく
     viewRoot.backgroundColor = colorBg
-    tvMessageHolder.visibility = View.VISIBLE
-    tvMessageHolder.gravity = Gravity.START
-    tvMessageHolder.text = when (val event = n.event) {
-        null -> "missing event details."
-        else -> when (val type = event.type) {
-            is TootNotificationEventType.Unknown -> "event type is ${type.code}"
-            TootNotificationEventType.DomainBlock -> listOfNotNull(
-                event.targetName?.notEmpty()?.let {
-                    activity.getString(
-                        R.string.domain_blocked_target_name,
-                        it,
-                    )
-                },
-                event.followingCount?.notZero()?.let {
-                    activity.getString(
-                        R.string.domain_blocked_following_count,
-                        it,
-                    )
-                },
-                event.followersCount?.notZero()?.let {
-                    activity.getString(
-                        R.string.domain_blocked_followers_count,
-                        it,
-                    )
-                }
-            ).joinToString("")
-        }
-    }
+    // statusはないはずだが、あれば一応表示する
+    nStatus?.let { showNotificationStatus(it, colorBg) }
+
+    showMessageHolder(
+        gravity = Gravity.START,
+        text = n.event?.format(
+            context = activity,
+            account = column.accessInfo,
+            user = nAccountRef,
+        ) ?: "missing event details…",
+        iconId = R.drawable.baseline_heart_broken_24,
+        iconColor = colorTextContent,
+    )
 }
 
 private fun ItemViewHolder.showNotificationUnknown(
@@ -456,10 +524,10 @@ private fun ItemViewHolder.showNotificationUnknown(
     }
     val colorBg = 0
     nStatus?.let { showNotificationStatus(it, colorBg) }
-
-    tvMessageHolder.visibility = View.VISIBLE
-    tvMessageHolder.text = "notification type is ${n.type}"
-    tvMessageHolder.gravity = Gravity.CENTER
+    showMessageHolder(
+        text = "notification type is ${n.type}",
+        gravity = Gravity.CENTER,
+    )
 }
 
 private fun ItemViewHolder.showNotificationStatus(

@@ -5,7 +5,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.NotificationType.Companion.toNotificationType
 import jp.juggler.subwaytooter.api.entity.TootAccountRef.Companion.tootAccountRefOrNull
-import jp.juggler.subwaytooter.api.entity.TootNotificationEvent.Companion.parseTootNotififcationEvent
+import jp.juggler.subwaytooter.api.entity.RelationshipSeveranceEvent.Companion.parseTootNotififcationEvent
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.notEmpty
@@ -23,7 +23,7 @@ class TootNotification(
     var status: TootStatus?,
 
     // Mastodon 4.3, severed_relationships で供給される
-    val event: TootNotificationEvent?,
+    val event: RelationshipSeveranceEvent?,
 
     var reaction: TootReaction? = null,
 
@@ -75,9 +75,6 @@ class TootNotification(
             src: JsonObject,
         ): TootNotification {
             val type = src.stringOrThrow("type").toNotificationType()
-            if( type == NotificationType.SeveredRelationships){
-                log.i("src=$src")
-            }
 
             val created_at: String? = src.string("created_at")
 

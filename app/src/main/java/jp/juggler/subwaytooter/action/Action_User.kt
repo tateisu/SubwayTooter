@@ -21,11 +21,11 @@ import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.buildJsonArray
 import jp.juggler.util.data.buildJsonObject
-import jp.juggler.util.data.getSpannedString
 import jp.juggler.util.data.jsonObjectOf
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.*
 import jp.juggler.util.ui.dismissSafe
+import jp.juggler.util.ui.getSpannedString
 import jp.juggler.util.ui.vg
 import kotlinx.coroutines.*
 import okhttp3.Request

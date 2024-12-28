@@ -19,7 +19,7 @@ import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.withProgress
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.os.resDrawable
+import jp.juggler.util.ui.resDrawable
 import kotlinx.coroutines.withContext
 
 private val log = LogCategory("DlgQRCode")

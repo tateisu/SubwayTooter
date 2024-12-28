@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromU
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.api.showApiError
+import jp.juggler.subwaytooter.column.ColumnLoadReason
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.dialog.DlgConfirm.okDialog
@@ -226,7 +227,8 @@ private fun ActMain.handleNotificationClick(uri: Uri, dataIdString: String) {
         )
 
         // 通知を読み直す
-        if (!column.bInitialLoading) column.startLoading()
+        column.startLoading(ColumnLoadReason.OpenPush)
+
     } catch (ex: Throwable) {
         log.e(ex, "handleNotificationClick failed.")
     }
@@ -286,7 +288,7 @@ private suspend fun ActMain.afterAccessTokenUpdate(
     // 自動でリロードする
     appState.columnList
         .filter { it.accessInfo == sa }
-        .forEach { it.startLoading() }
+        .forEach { it.startLoading(ColumnLoadReason.TokenUpdated) }
 
     // 通知の更新が必要かもしれない
     checkNotificationImmediateAll(this, onlyEnqueue = true)

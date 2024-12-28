@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import jp.juggler.subwaytooter.column.ColumnLoadReason
 import jp.juggler.subwaytooter.column.getColumnName
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.column.toAdapterIndex
@@ -53,14 +54,14 @@ private class ErrorFlickListener(
             // フリック方向が上下ではない
             ColumnViewHolder.log.d("fling? not vertical view. $vx $vy")
         } else {
-
             val vyDp = vy / density
             val limit = 1024f
             ColumnViewHolder.log.d("fling? $vyDp/$limit")
             if (vyDp >= limit) {
                 val column = cvh.column
                 if (column != null && column.lastTask == null) {
-                    column.startLoading()
+                    // ロード中表示の上下フリックでリロードを行う
+                    column.startLoading(ColumnLoadReason.ForceReload)
                 }
             }
         }

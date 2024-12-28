@@ -380,6 +380,8 @@ internal class ViewHolderHeaderProfile(
         }
     }
 
+
+
     override fun onClick(v: View) {
 
         when (v.id) {
@@ -389,20 +391,17 @@ internal class ViewHolderHeaderProfile(
 
             R.id.btnFollowing -> {
                 column.profileTab = ProfileTab.Following
-                activity.appState.saveColumnList()
-                column.startLoading()
+                reloadBySettingChange()
             }
 
             R.id.btnFollowers -> {
                 column.profileTab = ProfileTab.Followers
-                activity.appState.saveColumnList()
-                column.startLoading()
+                reloadBySettingChange()
             }
 
             R.id.btnStatusCount -> {
                 column.profileTab = ProfileTab.Status
-                activity.appState.saveColumnList()
-                column.startLoading()
+                reloadBySettingChange()
             }
 
             R.id.btnMore -> whoRef?.let { whoRef ->

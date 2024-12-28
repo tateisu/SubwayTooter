@@ -50,7 +50,7 @@ fun ActMain.refreshAfterPost() {
             if (column.type == ColumnType.SCHEDULED_STATUS &&
                 column.accessInfo.acct == postedAcct
             ) {
-                column.startLoading()
+                column.startLoading(ColumnLoadReason.RefreshAfterPost)
             }
         }
     } else if (postedAcct != null && postedStatusId != null) {

@@ -98,7 +98,11 @@ class ColumnViewHolder(
     lateinit var btnSearchClear: ImageButton
     lateinit var btnEmojiAdd: ImageButton
     lateinit var etSearch: EditText
+
+    lateinit var llAggBoostBar: View
+    lateinit var tvLoadLimitLabel: TextView
     lateinit var etStatusLoadLimit: EditText
+    lateinit var btnAggStart: ImageButton
 
     lateinit var flEmoji: FlexboxLayout
     lateinit var tvEmojiDesc: MyTextView
@@ -116,7 +120,6 @@ class ColumnViewHolder(
     lateinit var flColumnBackground: View
     lateinit var ivColumnBackgroundImage: ImageView
     lateinit var llSearch: View
-    lateinit var llAggBoostBar: View
     lateinit var cbDontCloseColumn: CheckBox
     lateinit var cbShowMediaDescription: CheckBox
     lateinit var cbRemoteOnly: CheckBox
@@ -193,14 +196,6 @@ class ColumnViewHolder(
 
     val viewRoot: View = inflate(activity, parent)
 
-    val statusLoadLimitTextWatcher = CustomTextWatcher {
-        val n = etStatusLoadLimit.text.toString().toIntOrNull()
-        if (n != null && n > 0) {
-            column?.aggStatusLimit = n
-            activity.appState.saveColumnList()
-        }
-    }
-
     /////////////////////////////////
 
     val scrollPosition: ScrollPosition
@@ -219,9 +214,9 @@ class ColumnViewHolder(
 
     /////////////////////////////////
 
-    private val procStartLoading: Runnable = Runnable {
+    private val procLoadByContentInvalidated: Runnable = Runnable {
         if (bindingBusy || isPageDestroyed) return@Runnable
-        column?.startLoading()
+        column?.startLoading(ColumnLoadReason.ContentInvalidated)
     }
 
     val procShowColumnHeader: Runnable = Runnable {
@@ -414,6 +409,7 @@ class ColumnViewHolder(
             btnQuickFilterVote,
             btnSearch,
             btnSearchClear,
+            btnAggStart,
             llColumnHeader,
             llRefreshError,
         ).forEach { it.setOnClickListener(this) }
@@ -503,44 +499,51 @@ class ColumnViewHolder(
             }
             false
         })
+        etStatusLoadLimit.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
+            if (!bindingBusy) {
+                if (actionId == EditorInfo.IME_ACTION_GO) {
+                    btnAggStart.performClick()
+                    return@OnEditorActionListener true
+                }
+            }
+            false
+        })
 
         // 入力の追跡
         etRegexFilter.addTextChangedListener(CustomTextWatcher {
             if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
             if (!isRegexValid()) return@CustomTextWatcher
             column?.regexText = etRegexFilter.text.toString()
-            activity.appState.saveColumnList()
-            activity.handler.removeCallbacks(procStartLoading)
-            activity.handler.postDelayed(procStartLoading, 666L)
+            delayLoadByContentInvalidated()
         })
 
         etHashtagExtraAny.addTextChangedListener(CustomTextWatcher {
             if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
             column?.hashtagAny = etHashtagExtraAny.text.toString()
-            activity.appState.saveColumnList()
-            activity.handler.removeCallbacks(procStartLoading)
-            activity.handler.postDelayed(procStartLoading, 666L)
+            delayLoadByContentInvalidated()
         })
 
         etHashtagExtraAll.addTextChangedListener(CustomTextWatcher {
             if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
             column?.hashtagAll = etHashtagExtraAll.text.toString()
-            activity.appState.saveColumnList()
-            activity.handler.removeCallbacks(procStartLoading)
-            activity.handler.postDelayed(procStartLoading, 666L)
+            delayLoadByContentInvalidated()
         })
 
         etHashtagExtraNone.addTextChangedListener(CustomTextWatcher {
             if (bindingBusy || isPageDestroyed) return@CustomTextWatcher
             column?.hashtagNone = etHashtagExtraNone.text.toString()
-            activity.appState.saveColumnList()
-            activity.handler.removeCallbacks(procStartLoading)
-            activity.handler.postDelayed(procStartLoading, 666L)
+            delayLoadByContentInvalidated()
         })
 
         announcementContentInvalidator =
             NetworkEmojiInvalidator(activity.handler, tvAnnouncementContent)
         tvAnnouncementContent.movementMethod = MyLinkMovementMethod
+    }
+
+    private fun delayLoadByContentInvalidated() {
+        activity.appState.saveColumnList()
+        activity.handler.removeCallbacks(procLoadByContentInvalidated)
+        activity.handler.postDelayed(procLoadByContentInvalidated, 666L)
     }
 
     override fun onRefresh(direction: SwipyRefreshLayoutDirection) {
@@ -553,7 +556,7 @@ class ColumnViewHolder(
         if (direction == SwipyRefreshLayoutDirection.TOP && column.canReloadWhenRefreshTop()) {
             refreshLayout.isRefreshing = false
             activity.handler.post {
-                this@ColumnViewHolder.column?.startLoading()
+                this@ColumnViewHolder.column?.startLoading(ColumnLoadReason.PullToRefresh)
             }
             return
         }
@@ -1132,9 +1135,10 @@ class ColumnViewHolder(
                 isBaselineAligned = false
                 gravity = Gravity.CENTER
 
-                myTextView {
+                tvLoadLimitLabel = myTextView {
                     text = context.getString(R.string.agg_status_limit)
                     textSize = 12f
+                    textColor = context.attrColor(R.attr.colorTextContent)
                     gravity = Gravity.END
                 }.lparams(0, wrapContent) {
                     weight = 1f
@@ -1143,6 +1147,7 @@ class ColumnViewHolder(
                 etStatusLoadLimit = myEditText {
                     id = View.generateViewId()
                     inputType = InputType.TYPE_CLASS_NUMBER
+                    imeOptions = EditorInfo.IME_ACTION_GO
                     maxLines = 1
                     minWidthCompat = dip(120)
                     gravity = Gravity.END
@@ -1150,6 +1155,17 @@ class ColumnViewHolder(
                 }.lparams(wrapContent, wrapContent) {
                     marginStart = dip(4)
                     marginEnd = dip(12)
+                }
+
+                btnAggStart = imageButton {
+                    backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                    contentDescription = context.getString(R.string.search)
+                    imageResource = R.drawable.baseline_start_24
+                    imageTintList = ColorStateList.valueOf(
+                        context.attrColor(R.attr.colorTextContent)
+                    )
+                }.lparams(dip(40), dip(40)) {
+                    startMargin = dip(4)
                 }
             }
         }

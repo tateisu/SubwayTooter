@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.columnviewholder.ColumnViewHolder
+import jp.juggler.subwaytooter.columnviewholder.scrollToTop
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
@@ -39,12 +40,12 @@ fun Column.canReloadWhenRefreshTop(): Boolean = when (type) {
     ColumnType.PROFILE_DIRECTORY,
     ColumnType.STATUS_HISTORY,
     ColumnType.AGG_BOOSTS,
-    -> true
+        -> true
 
     ColumnType.LIST_MEMBER,
     ColumnType.MUTES,
     ColumnType.FOLLOW_REQUESTS,
-    -> isMisskey
+        -> isMisskey
 
     else -> false
 }
@@ -56,7 +57,8 @@ fun Column.canRefreshTopBySwipe(): Boolean =
                 ColumnType.CONVERSATION,
                 ColumnType.CONVERSATION_WITH_REFERENCE,
                 ColumnType.INSTANCE_INFORMATION,
-                -> false
+                    -> false
+
                 else -> true
             }
 
@@ -72,7 +74,7 @@ fun Column.canRefreshBottomBySwipe(): Boolean = when (type) {
     ColumnType.FOLLOW_SUGGESTION,
     ColumnType.STATUS_HISTORY,
     ColumnType.AGG_BOOSTS,
-    -> false
+        -> false
 
     ColumnType.FOLLOW_REQUESTS -> isMisskey
 
@@ -134,14 +136,17 @@ fun Column.getHeaderDesc(): String {
             R.raw.search_desc_msp_en,
             R.raw.search_desc_msp_ja
         )
+
         ColumnType.SEARCH_TS -> loadSearchDesc(
             R.raw.search_desc_ts_en,
             R.raw.search_desc_ts_ja
         )
+
         ColumnType.SEARCH_NOTESTOCK -> loadSearchDesc(
             R.raw.search_desc_notestock_en,
             R.raw.search_desc_notestock_ja
         )
+
         else -> ""
     }
     cacheHeaderDesc = cache
@@ -186,7 +191,7 @@ fun Column.onActivityStart() {
     // フィルタ一覧のリロードが必要
     if (filterReloadRequired) {
         filterReloadRequired = false
-        startLoading()
+        startLoading(ColumnLoadReason.ContentInvalidated)
         return
     }
 
@@ -234,7 +239,46 @@ fun Column.cancelLastTask() {
 //		return null;
 //	}
 
-fun Column.startLoading() {
+fun Column.startLoading(reason: ColumnLoadReason) {
+    // ブースト集約カラムは手動開始するまでロード開始しない
+    if (type == ColumnType.AGG_BOOSTS) {
+        when (reason) {
+            // 自動的にロード開始することはない
+            ColumnLoadReason.PageSelect,
+            ColumnLoadReason.RefreshAfterPost ,
+            ColumnLoadReason.OpenPush ,
+                ->{
+                    // initializng 表示を除去する
+                    if(!bFirstInitialized){
+                        clear()
+                    }
+                    return
+                }
+
+            // コンテンツの表示を継続できない場合はカラムの内容をクリアする
+            ColumnLoadReason.ContentInvalidated,
+            ColumnLoadReason.SettingChange,
+            ColumnLoadReason.TokenUpdated,
+                -> {
+                clear()
+                return
+            }
+
+            // 開始ボタンを押したり、明示的なリロード操作を行った場合はロードする
+            ColumnLoadReason.PullToRefresh,
+            ColumnLoadReason.ForceReload,
+                -> Unit
+        }
+    }
+    // 以下の理由では未ロードの場合だけロード開始する
+    when (reason) {
+        ColumnLoadReason.PageSelect,
+        ColumnLoadReason.OpenPush,
+            -> if (bFirstInitialized) return
+
+        else -> Unit
+    }
+
     cancelLastTask()
 
     initFilter()
@@ -262,13 +306,39 @@ fun Column.startLoading() {
     task.start()
 }
 
+fun Column.clear() {
+    cancelLastTask()
+    initFilter()
+    Column.showOpenSticker = PrefB.bpOpenSticker.value
+
+    mRefreshLoadingErrorPopupState = 0
+    mRefreshLoadingError = ""
+    mInitialLoadingError = ""
+    bFirstInitialized = true
+    bInitialLoading = true
+    bRefreshLoading = false
+    idOld = null
+    idRecent = null
+    offsetNext = 0
+    pagingType = ColumnPagingType.Default
+
+    duplicateMap.clear()
+    listData.clear()
+    //
+    bInitialLoading = false
+    lastTask = null
+    fireShowContent(reason = "loading updated", reset = true)
+    // 初期ロードの直後は先頭に移動する
+    viewHolder?.scrollToTop()
+    updateMisskeyCapture()
+}
+
 fun Column.startRefresh(
     bSilent: Boolean,
     bBottom: Boolean,
     postedStatusId: EntityId? = null,
     refreshAfterToot: Int = -1,
 ) {
-
     if (lastTask != null) {
         if (!bSilent) {
             context.showToast(true, R.string.column_is_busy)
@@ -286,7 +356,7 @@ fun Column.startRefresh(
     } else if (!bBottom && !canRefreshTop()) {
         val holder = viewHolder
         if (holder != null) holder.refreshLayout.isRefreshing = false
-        startLoading()
+        startLoading(ColumnLoadReason.PullToRefresh)
         return
     }
 
@@ -322,7 +392,7 @@ fun Column.startRefreshForPost(
         ColumnType.FEDERATE,
         ColumnType.DIRECT_MESSAGES,
         ColumnType.MISSKEY_HYBRID,
-        -> startRefresh(
+            -> startRefresh(
             bSilent = true,
             bBottom = false,
             postedStatusId = postedStatusId,
@@ -342,13 +412,13 @@ fun Column.startRefreshForPost(
 
         ColumnType.CONVERSATION,
         ColumnType.CONVERSATION_WITH_REFERENCE,
-        -> {
+            -> {
             // 会話への返信が行われたなら会話を更新する
             try {
                 if (postedReplyId != null) {
                     for (item in listData) {
                         if (item is TootStatus && item.id == postedReplyId) {
-                            startLoading()
+                            startLoading(ColumnLoadReason.ContentInvalidated)
                             break
                         }
                     }

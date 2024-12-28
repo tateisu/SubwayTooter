@@ -4,6 +4,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnLoadReason
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.util.log.LogCategory
 
@@ -28,9 +29,7 @@ internal class TabletColumnViewHolder(
 
         columnViewHolder.onPageCreate(column, pageIndex, columnCount)
 
-        if (!column.bFirstInitialized) {
-            column.startLoading()
-        }
+        column.startLoading(ColumnLoadReason.PageSelect)
     }
 
     fun onViewRecycled() {

@@ -309,7 +309,7 @@ fun Column.onDomainBlockChanged(
 
     if (type == ColumnType.DOMAIN_BLOCKS) {
         // ドメインブロック一覧を読み直す
-        startLoading()
+        startLoading(ColumnLoadReason.ContentInvalidated)
         return
     }
 
@@ -342,7 +342,7 @@ fun Column.onDomainBlockChanged(
 fun Column.onListListUpdated(account: SavedAccount) {
     if (account != accessInfo) return
     if (type == ColumnType.LIST_LIST || type == ColumnType.MISSKEY_ANTENNA_LIST) {
-        startLoading()
+        startLoading(ColumnLoadReason.ContentInvalidated)
         val vh = viewHolder
         vh?.onListListUpdated()
     }
@@ -351,7 +351,7 @@ fun Column.onListListUpdated(account: SavedAccount) {
 fun Column.onListNameUpdated(account: SavedAccount, item: TootList) {
     if (account != accessInfo) return
     if (type == ColumnType.LIST_LIST) {
-        startLoading()
+        startLoading(ColumnLoadReason.ContentInvalidated)
     } else if (type == ColumnType.LIST_TL || type == ColumnType.LIST_MEMBER) {
         if (item.id == profileId) {
             this.listInfo = item

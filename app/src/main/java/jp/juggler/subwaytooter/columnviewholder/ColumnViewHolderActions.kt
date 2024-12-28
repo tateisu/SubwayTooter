@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.actmain.closeColumn
 import jp.juggler.subwaytooter.actmain.closeColumnAll
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnLoadReason
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.addColumnViewHolder
 import jp.juggler.subwaytooter.column.fireShowContent
@@ -20,6 +21,7 @@ import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.ui.languageFilter.LanguageFilterActivity.Companion.openLanguageFilterActivity
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
+import jp.juggler.util.ui.CustomTextWatcher
 import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isCheckedNoAnime
 import java.util.regex.Pattern
@@ -57,6 +59,11 @@ fun ColumnViewHolder.isRegexValid(): Boolean {
     return error == null
 }
 
+fun ColumnViewHolder.reloadBySettingChange(){
+    activity.appState.saveColumnList()
+    column?.startLoading(ColumnLoadReason.SettingChange)
+}
+
 fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Boolean) {
     view ?: return
 
@@ -78,80 +85,67 @@ fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Bool
 
         cbShowMediaDescription -> {
             column.showMediaDescription = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbWithAttachment -> {
             column.withAttachment = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbRemoteOnly -> {
             column.remoteOnly = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbWithHighlight -> {
             column.withHighlight = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowBoost -> {
             column.dontShowBoost = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowReply -> {
             column.dontShowReply = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowReaction -> {
             column.dontShowReaction = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowVote -> {
             column.dontShowVote = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowNormalToot -> {
             column.dontShowNormalToot = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowNonPublicToot -> {
             column.dontShowNonPublicToot = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowFavourite -> {
             column.dontShowFavourite = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontShowFollow -> {
             column.dontShowFollow = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbInstanceLocal -> {
             column.instanceLocal = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
 
         cbDontStreaming -> {
@@ -183,8 +177,7 @@ fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Bool
 
         cbOldApi -> {
             column.useOldApi = isChecked
-            activity.appState.saveColumnList()
-            column.startLoading()
+            reloadBySettingChange()
         }
     }
 }
@@ -217,7 +210,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 etStatusLoadLimit.setText(column.aggStatusLimit.toString())
             }
             refreshLayout.isRefreshing = false
-            column.startLoading()
+            column.startLoading(ColumnLoadReason.ForceReload)
         }
 
         btnSearch -> {
@@ -227,7 +220,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 column.searchResolve = cbResolve.isChecked
             }
             activity.appState.saveColumnList()
-            column.startLoading()
+            column.startLoading(ColumnLoadReason.ForceReload)
         }
 
         btnSearchClear -> {
@@ -236,7 +229,17 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
             etSearch.setText("")
             flEmoji.removeAllViews()
             activity.appState.saveColumnList()
-            column.startLoading()
+            column.startLoading(ColumnLoadReason.ForceReload)
+        }
+
+        btnAggStart ->{
+            val n = etStatusLoadLimit.text.toString().toIntOrNull()
+            if (n != null && n > 0) {
+                column.aggStatusLimit = n
+                activity.appState.saveColumnList()
+                etStatusLoadLimit.hideKeyboard()
+                column.startLoading(ColumnLoadReason.ForceReload)
+            }
         }
 
         llColumnHeader -> scrollToTop2()

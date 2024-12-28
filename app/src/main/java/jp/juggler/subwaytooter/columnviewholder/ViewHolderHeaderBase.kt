@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnLoadReason
+import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
@@ -58,4 +60,9 @@ abstract class ViewHolderHeaderBase(viewRoot: View) : RecyclerView.ViewHolder(vi
     internal abstract fun onViewRecycled()
 
     internal open fun getAccount(): TootAccountRef? = null
+
+    fun reloadBySettingChange(){
+        activity.appState.saveColumnList()
+        column.startLoading(ColumnLoadReason.SettingChange)
+    }
 }

@@ -19,7 +19,7 @@ fun ColumnViewHolder.clickQuickFilter(filter: Int) {
     column?.quickFilter = filter
     showQuickFilter()
     activity.appState.saveColumnList()
-    column?.startLoading()
+    column?.startLoading(ColumnLoadReason.SettingChange)
 }
 
 fun ColumnViewHolder.showQuickFilter() {

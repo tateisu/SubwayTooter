@@ -7,7 +7,6 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.getContentColor
-import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.databinding.LvHeaderProfileDirectoryBinding
 
 internal class ViewHolderHeaderProfileDirectory(
@@ -73,7 +72,6 @@ internal class ViewHolderHeaderProfileDirectory(
             R.id.cbResolve -> column.searchResolve = isChecked
         }
 
-        activity.appState.saveColumnList()
-        column.startLoading()
+        reloadBySettingChange()
     }
 }

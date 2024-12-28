@@ -70,6 +70,7 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.column.Column
+import jp.juggler.subwaytooter.column.ColumnLoadReason
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.column.fireColumnColor
 import jp.juggler.subwaytooter.column.fireRelativeTime
@@ -312,7 +313,7 @@ class ActMain : AppCompatActivity(),
     val arLanguageFilter = ActivityResultHandler(log) { r ->
         LanguageFilterActivity.decodeResult(r)?.let { columnIndex ->
             appState.saveColumnList()
-            appState.column(columnIndex) ?.onLanguageFilterChanged()
+            appState.column(columnIndex)?.onLanguageFilterChanged()
         }
     }
 
@@ -701,7 +702,7 @@ class ActMain : AppCompatActivity(),
     override fun onPageSelected(position: Int) {
         handler.post {
             appState.column(position)?.let { column ->
-                if (!column.bFirstInitialized) column.startLoading()
+                column.startLoading(ColumnLoadReason.PageSelect)
                 scrollColumnStrip(position)
                 completionHelper.setInstance(column.accessInfo.takeIf { !it.isNA })
             }

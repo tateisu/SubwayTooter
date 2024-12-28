@@ -52,7 +52,7 @@ val ActMain.defaultInsertPosition: Int
 fun ActMain.scrollAndLoad(idx: Int) {
     val c = appState.column(idx) ?: return
     scrollToColumn(idx)
-    if (!c.bFirstInitialized) c.startLoading()
+    c.startLoading(ColumnLoadReason.PageSelect)
 }
 
 fun ActMain.addColumn(column: Column, indexArg: Int): Int {

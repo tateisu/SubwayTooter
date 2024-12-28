@@ -25,6 +25,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.bottomPadding
+import org.jetbrains.anko.textColor
 import org.jetbrains.anko.topPadding
 
 private val log = LogCategory("ColumnViewHolderLifeCycle")
@@ -184,10 +185,8 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         etSearch.setText(column.searchQuery)
         cbResolve.isCheckedNoAnime = column.searchResolve
 
-        etStatusLoadLimit.removeTextChangedListener(statusLoadLimitTextWatcher)
         if (column.type == ColumnType.AGG_BOOSTS) {
             etStatusLoadLimit.setText(column.aggStatusLimit.toString())
-            etStatusLoadLimit.addTextChangedListener(statusLoadLimitTextWatcher)
         }
 
         cbRemoteOnly.vg(column.canRemoteOnly())
@@ -218,6 +217,28 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
 
         btnDeleteNotification.vg(column.isNotificationColumn)
 
+        fun dip(dp: Int): Int = (activity.density * dp + 0.5f).toInt()
+        val context = activity
+
+        val searchBgColor = PrefI.ipSearchBgColor.value.notZero()
+            ?: context.attrColor(R.attr.colorSearchFormBackground)
+
+        for( v in arrayOf(
+            llSearch,
+            llAggBoostBar,
+            llListList,
+        )){
+            v.apply {
+                backgroundColor = searchBgColor
+                startPadding = dip(12)
+                endPadding = dip(12)
+                topPadding = dip(3)
+                bottomPadding = dip(3)
+            }
+        }
+        llAggBoostBar.vg(column.type == ColumnType.AGG_BOOSTS)
+        llListList.vg(column.type == ColumnType.LIST_LIST)
+        // 検索バーは複数の絡む種別で異なる利用をされる
         when {
             column.isSearchColumn -> {
                 llSearch.vg(true)
@@ -246,9 +267,8 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
             else -> llSearch.vg(false)
         }
 
-        llAggBoostBar.vg(column.type == ColumnType.AGG_BOOSTS)
+        tvLoadLimitLabel
 
-        llListList.vg(column.type == ColumnType.LIST_LIST)
 
         llHashtagExtra.vg(column.hasHashtagExtra)
         etHashtagExtraAny.setText(column.hashtagAny)
@@ -286,8 +306,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
 
         lastAnnouncementShown = -1L
 
-        fun dip(dp: Int): Int = (activity.density * dp + 0.5f).toInt()
-        val context = activity
+
 
         val announcementsBgColor = PrefI.ipAnnouncementsBgColor.value.notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
@@ -302,24 +321,9 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
             setPadding(0, padV, 0, padV)
         }
 
-        val searchBgColor = PrefI.ipSearchBgColor.value.notZero()
-            ?: context.attrColor(R.attr.colorSearchFormBackground)
 
-        llSearch.apply {
-            backgroundColor = searchBgColor
-            startPadding = dip(12)
-            endPadding = dip(12)
-            topPadding = dip(3)
-            bottomPadding = dip(3)
-        }
 
-        llListList.apply {
-            backgroundColor = searchBgColor
-            startPadding = dip(12)
-            endPadding = dip(12)
-            topPadding = dip(3)
-            bottomPadding = dip(3)
-        }
+
 
         showColumnColor()
 

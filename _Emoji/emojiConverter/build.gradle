@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'src/lib')
+    // implementation fileTree(include: ['*.jar'], dir: 'src/lib')
     implementation "com.google.guava:guava:31.1-jre"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'

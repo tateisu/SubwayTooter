@@ -182,6 +182,7 @@
     "org.apache.httpcomponents:httpcore",
     "org.apache.httpcomponents:httpmime",
     "org.eclipse.paho:org.eclipse.paho.client.mqttv3",
+    "androidx.compose:compose-bom",
   ],
   // 以下のライブラリはpomにライセンス指定がなくても許容する
   "libsMissingLicenses": [

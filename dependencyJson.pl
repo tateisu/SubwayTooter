@@ -217,15 +217,24 @@ sub downloadPom($){
     $file =~ s/:/_/g;
     if( not -f $file){
         say "downloading pom for $dep";
-        $dep =~ m|^([^:]+):([^:]+):([^:]+)$|;
-        my($groupId,$artifactId,$version)=($1,$2,$3);
-        my $groupIdSlashed = $groupId;
-        $groupIdSlashed =~ s|\.|/|g;
+        my $urlSuffix;
+        if( $dep =~ m|^([^:]+):([^:]+):([^:]+)$| ){
+            my($groupId,$artifactId,$version)=($1,$2,$3);
+            my $groupIdSlashed = $groupId;
+            $groupIdSlashed =~ s|\.|/|g;
+            $urlSuffix = "$groupIdSlashed/$artifactId/$version/$artifactId-$version.pom";
+        }elsif( $dep =~ m|^([^:]+):([^:]+)$| ){
+            # androidx.compose.material3:1.3.0
+            # ↓
+            # https://dl.google.com/android/maven2
+        }else{
+            die "can't parse urlSuffix from string '$dep'";
+        }
 
         my $successResponse;
         my @errorResponses;
         for my $repo(@{$config->{repos}}){
-            my $url = "$repo/$groupIdSlashed/$artifactId/$version/$artifactId-$version.pom";
+            my $url = "$repo/$urlSuffix";
             my $response = $ua->get($url);
             if( $response->is_success) {
                 $successResponse = $response;
@@ -271,11 +280,19 @@ sub listingDependencies($){
 
         # 末尾の注釈を除去
         s/\s*\([c*]\)$//;
+        
+        my $before = $_;
+        
+        # "->" の対応：変更前のバージョンがカラの場合がある
+        s/^([^ :]+:[^ :]+) -> ([^ :]+)$/$1:$2/;
 
         # "->" の対応：バージョンのみが変わる場合
-        s/([^ :]+?) -> ([^ :]+?)$/$2/;
+        s/([^ :]+?) -> ([^ :]+)$/$2/;
+
         # "->" の対応：パッケージごと変わる場合
         s/(\S+?) -> (\S+?)$/$2/;
+
+        # ($_ eq $before) or say "changed: $before $_";
 
         $_ and $deps{$_} = 1;
     }

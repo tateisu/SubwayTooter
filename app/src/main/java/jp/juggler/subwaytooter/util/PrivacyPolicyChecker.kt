@@ -6,12 +6,12 @@ import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.pref.PrefS
+import jp.juggler.util.coroutine.cancellationException
 import jp.juggler.util.data.decodeUTF8
 import jp.juggler.util.data.digestSHA256
 import jp.juggler.util.data.encodeBase64Url
 import jp.juggler.util.data.loadRawResource
 import jp.juggler.util.ui.dismissSafe
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.ref.WeakReference
 import kotlin.coroutines.resumeWithException
@@ -42,7 +42,7 @@ class PrivacyPolicyChecker(val context: Context) {
 suspend fun ActMain.checkPrivacyPolicy(): Boolean {
     // 既に表示中かもしれない
     if (dlgPrivacyPolicy?.get()?.isShowing == true) {
-        throw CancellationException()
+        throw cancellationException()
     }
 
     // 同意ずみなら表示しない
@@ -56,14 +56,14 @@ suspend fun ActMain.checkPrivacyPolicy(): Boolean {
             .setOnCancelListener { finish() }
             .setNegativeButton(R.string.cancel) { _, _ ->
                 finish()
-                if (cont.isActive) cont.resume(false) {}
+                if (cont.isActive) cont.resume(false) { _, _, _ -> }
             }
             .setPositiveButton(R.string.agree) { _, _ ->
                 PrefS.spAgreedPrivacyPolicyDigest.value = checker.digest
-                if (cont.isActive) cont.resume(true) {}
+                if (cont.isActive) cont.resume(true) { _, _, _ -> }
             }
             .setOnDismissListener {
-                if (cont.isActive) cont.resumeWithException(CancellationException())
+                if (cont.isActive) cont.resumeWithException(cancellationException())
             }
             .create()
         dlgPrivacyPolicy = WeakReference(dialog)

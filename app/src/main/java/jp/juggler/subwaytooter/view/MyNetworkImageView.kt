@@ -45,57 +45,64 @@ class MyNetworkImageView : AppCompatImageView {
 
     class MyRequestListener<T> : RequestListener<T> {
         override fun onResourceReady(
-            resource: T,
-            model: Any?,
-            target: Target<T>?,
-            dataSource: DataSource?,
+            resource: T & Any,
+            model: Any,
+            target: Target<T?>?,
+            dataSource: DataSource,
             isFirstResource: Boolean,
         ): Boolean {
             return false // Allow calling onResourceReady on the Target.
         }
 
         /**
-         * @return false to allow calling onLoadFailed on the Target.
+         * @return f
          */
         override fun onLoadFailed(
             e: GlideException?,
             model: Any?,
-            target: Target<T>?,
+            target: Target<T?>,
             isFirstResource: Boolean,
-        ) = false.apply {
-            e ?: return@apply
-            val httpException = when (
-                val exceptions = e.rootCauses?.mapNotNull { it as? HttpException }
-            ) {
-                null -> null
-                // 複数ある場合、causeつきのを優先する
-                else -> exceptions.find { it.cause != null }
-                    ?: exceptions.firstOrNull()
-            }
-            if (httpException != null) {
-                val statusCode = httpException.statusCode
-                when (httpException.cause) {
-                    null -> log.e(httpException, "onLoadFailed")
-                    else -> {
-                        val causeName = httpException.cause?.javaClass?.simpleName
-                        val causeMessage = httpException.cause?.message
-                        log.e("onLoadFailed: HttpException $statusCode $causeName $causeMessage")
+        ): Boolean {
+            if (e != null) {
+                try {
+                    val httpException = when (
+                        val exceptions = e.rootCauses?.mapNotNull { it as? HttpException }
+                    ) {
+                        null -> null
+                        // 複数ある場合、causeつきのを優先する
+                        else -> exceptions.find { it.cause != null }
+                            ?: exceptions.firstOrNull()
                     }
-                }
-            } else {
-                log.e(e, "onLoadFailed")
-                e.rootCauses?.forEach { cause ->
-                    val message = cause?.message
-                    when {
-                        cause == null -> Unit
-                        message?.contains("setDataSource failed: status") == true ||
-                                message?.contains("etDataSourceCallback failed: status") == true
-                        -> log.w(message)
+                    if (httpException != null) {
+                        val statusCode = httpException.statusCode
+                        when (httpException.cause) {
+                            null -> log.e(httpException, "onLoadFailed")
+                            else -> {
+                                val causeName = httpException.cause?.javaClass?.simpleName
+                                val causeMessage = httpException.cause?.message
+                                log.e("onLoadFailed: HttpException $statusCode $causeName $causeMessage")
+                            }
+                        }
+                    } else {
+                        log.e(e, "onLoadFailed")
+                        e.rootCauses?.forEach { cause ->
+                            val message = cause?.message
+                            when {
+                                cause == null -> Unit
+                                message?.contains("setDataSource failed: status") == true ||
+                                        message?.contains("etDataSourceCallback failed: status") == true
+                                    -> log.w(message)
 
-                        else -> log.e(cause, "caused by")
+                                else -> log.e(cause, "caused by")
+                            }
+                        }
                     }
+                } catch (ex: Throwable) {
+                    log.e(ex, "can't check GlideException")
                 }
             }
+            // false to allow calling onLoadFailed on the Target.
+            return false
         }
     }
 

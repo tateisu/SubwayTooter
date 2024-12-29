@@ -104,13 +104,13 @@ private class ViewChildrenRecursiveSequence(private val view: View) : Sequence<V
 
         override fun hasNext(): Boolean {
             if (!current.hasNext() && sequences.isNotEmpty()) {
-                current = sequences.removeLast().iterator()
+                current = sequences.removeLastCompat().iterator()
             }
             return current.hasNext()
         }
 
         @Suppress("NOTHING_TO_INLINE")
-        private inline fun <T : Any> MutableList<T>.removeLast(): T {
+        private inline fun <T : Any> MutableList<T>.removeLastCompat(): T {
             if (isEmpty()) throw NoSuchElementException()
             return removeAt(size - 1)
         }

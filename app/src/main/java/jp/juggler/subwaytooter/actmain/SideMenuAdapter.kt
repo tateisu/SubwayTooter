@@ -54,6 +54,7 @@ import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.data.JsonObject
+import jp.juggler.util.data.anyArrayOf
 import jp.juggler.util.data.decodeJsonObject
 import jp.juggler.util.data.decodeUTF8
 import jp.juggler.util.data.notEmpty
@@ -333,7 +334,7 @@ class SideMenuAdapter(
         },
 
         Item(icon = R.drawable.ic_search, title = R.string.search) {
-            timeline(defaultInsertPosition, ColumnType.SEARCH, args = arrayOf("", false))
+            timeline(defaultInsertPosition, ColumnType.SEARCH, args = anyArrayOf("", false))
         },
 
         Item(icon = R.drawable.ic_trend, title = R.string.trend_tag) {

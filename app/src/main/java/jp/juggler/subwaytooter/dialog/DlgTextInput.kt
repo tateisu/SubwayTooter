@@ -6,11 +6,11 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.databinding.DlgTextInputBinding
+import jp.juggler.util.coroutine.cancellationException
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.visible
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resumeWithException
 
@@ -54,14 +54,14 @@ suspend fun AppCompatActivity.showTextInputDialog(
                 if (text.isEmpty() && !allowEmpty) {
                     onEmptyText()
                 } else if (onOk(text)) {
-                    if (cont.isActive) cont.resume(Unit) {}
+                    if (cont.isActive) cont.resume(Unit) { _, _, _ -> }
                     dialog.dismissSafe()
                 }
             }
         }
         views.btnCancel.setOnClickListener { dialog.cancel() }
         dialog.setOnDismissListener {
-            if (cont.isActive) cont.resumeWithException(CancellationException())
+            if (cont.isActive) cont.resumeWithException(cancellationException())
         }
         cont.invokeOnCancellation { dialog.dismissSafe() }
         dialog.show()

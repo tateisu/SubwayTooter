@@ -15,12 +15,12 @@ import jp.juggler.subwaytooter.databinding.AttachmentRearrangeDialogBinding
 import jp.juggler.subwaytooter.databinding.AttachmentsRearrangeItemBinding
 import jp.juggler.subwaytooter.defaultColorIcon
 import jp.juggler.subwaytooter.util.PostAttachment
+import jp.juggler.util.coroutine.cancellationException
 import jp.juggler.util.data.ellipsizeDot3
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.dp
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.anko.backgroundColor
 import kotlin.coroutines.resumeWithException
@@ -38,7 +38,7 @@ suspend fun AppCompatActivity.dialogAttachmentRearrange(
     val dialog = Dialog(this).apply {
         setContentView(views.root)
         setOnDismissListener {
-            if (cont.isActive) cont.resumeWithException(CancellationException())
+            if (cont.isActive) cont.resumeWithException(cancellationException())
         }
     }
 
@@ -51,7 +51,7 @@ suspend fun AppCompatActivity.dialogAttachmentRearrange(
     }
 
     views.btnOk.setOnClickListener {
-        if (cont.isActive) cont.resume(myAdapter.list) {}
+        if (cont.isActive) cont.resume(myAdapter.list) { _, _, _ -> }
         dialog.dismissSafe()
     }
 

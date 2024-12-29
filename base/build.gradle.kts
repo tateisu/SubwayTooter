@@ -83,6 +83,8 @@ dependencies {
     // UriSerializer で使う。アカウント設定で状態の保存に kotlinx-serialization-json を使っている
     implementation(libs.kotlinx.serialization.json)
 
+    implementation(libs.kotlinx.coroutines.core)
+
     // BitmapUtils で使う
     implementation(libs.androidx.exifinterface)
 
@@ -94,6 +96,8 @@ dependencies {
 
     // ないとなぜかIDE上にエラーが出る
     implementation(libs.androidx.activity.ktx)
+
+
 
     // ==========================================================================
     // 単体テスト

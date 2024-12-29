@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
+import jp.juggler.util.data.anyArrayOf
 import jp.juggler.util.data.neatSpaces
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
@@ -238,7 +239,7 @@ internal class ViewHolderHeaderInstance(
                 activity.timeline(
                     activity.nextPosition(column),
                     ColumnType.SEARCH,
-                    args = arrayOf("@${who.username}@${who.apDomain.ascii}", true)
+                    args = anyArrayOf("@${who.username}@${who.apDomain.ascii}", true)
                 )
             }
 

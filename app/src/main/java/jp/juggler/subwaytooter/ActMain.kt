@@ -102,6 +102,7 @@ import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.data.anyArrayOf
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
@@ -338,7 +339,7 @@ class ActMain : AppCompatActivity(),
             timeline(
                 defaultInsertPosition,
                 ColumnType.SEARCH,
-                args = arrayOf(search, true)
+                args = anyArrayOf(search, true)
             )
         }
     }

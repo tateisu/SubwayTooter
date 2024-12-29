@@ -21,6 +21,7 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.systemService
 import kotlinx.coroutines.*
+import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -85,6 +86,7 @@ suspend fun cancelAllWorkAndJoin(context: Context) {
                     WorkInfo.State.CANCELLED,
                 )
             ).build()
+
             val list = workManager.getWorkInfos(workQuery).await()
             if (list.isEmpty()) break
             list.forEach {
@@ -207,14 +209,14 @@ suspend fun checkNoticifationAll(
         if (s != PollingState.Complete) log.i("$logPrefix[${a.acct.pretty}]${s.desc}")
         when (s) {
             PollingState.CheckNotifications,
-            -> nextPollingRequired = true
+                -> nextPollingRequired = true
 
             PollingState.Cancelled,
             PollingState.Error,
-            -> hasError = true
+                -> hasError = true
 
             PollingState.Timeout,
-            -> {
+                -> {
                 hasError = true
                 timeoutAccounts.add(a.acct.pretty)
             }
@@ -244,6 +246,7 @@ suspend fun checkNoticifationAll(
                 )
                 null
             }
+
             else -> EmptyScope.launch(AppDispatchers.DEFAULT) {
                 try {
                     PollingChecker(

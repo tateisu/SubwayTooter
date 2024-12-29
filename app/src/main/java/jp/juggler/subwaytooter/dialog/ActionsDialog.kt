@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.content.Context
+import jp.juggler.util.coroutine.cancellationException
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.ui.dismissSafe
 import kotlinx.coroutines.CancellationException
@@ -28,11 +29,11 @@ class ActionsDialogInitializer(
                 title?.notEmpty()?.let { setTitle(it) }
                 setNegativeButton(android.R.string.cancel, null)
                 setItems(list.map { it.caption }.toTypedArray()) { d, i ->
-                    if (cont.isActive) cont.resume(list[i]) {}
+                    if (cont.isActive) cont.resume(list[i]) {_,_,_->}
                     d.dismissSafe()
                 }
                 setOnDismissListener {
-                    if (cont.isActive) cont.resumeWithException(CancellationException())
+                    if (cont.isActive) cont.resumeWithException(cancellationException())
                 }
             }.create()
             cont.invokeOnCancellation { dialog.dismissSafe() }

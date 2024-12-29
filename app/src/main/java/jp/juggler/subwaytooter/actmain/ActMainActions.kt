@@ -85,8 +85,10 @@ fun ActMain.onBackPressedImpl() {
                         PrefB.bpExitAppWhenCloseProtectedColumn.value &&
                                 PrefB.bpDontConfirmBeforeCloseColumn.value ->
                             finish()
+
                         else -> showToast(false, R.string.missing_closeable_column)
                     }
+
                     1 -> closeColumn(closeableColumnList.first())
                     else -> showToast(
                         false,
@@ -119,6 +121,7 @@ fun ActMain.onClickImpl(v: View) {
                 ColumnType.PROFILE.name1(this)
             )
         ) { openProfileQuickPostAccount(it) }
+
         R.id.btnQuickToot -> quickPostAccountDialog { performQuickPost(it) }
         R.id.btnQuickTootMenu -> toggleQuickPostMenu()
         R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
@@ -139,25 +142,30 @@ fun ActMain.onMyClickableSpanClickedImpl(viewClicked: View, span: MyClickableSpa
                 whoRef = tag.getAccount()
                 break@loop
             }
+
             is ViewHolderItem -> {
                 column = tag.ivh.column
                 whoRef = tag.ivh.getAccount()
                 break@loop
             }
+
             is ColumnViewHolder -> {
                 column = tag.column
                 whoRef = null
                 break@loop
             }
+
             is ViewHolderHeaderBase -> {
                 column = tag.column
                 whoRef = tag.getAccount()
                 break@loop
             }
+
             is TabletColumnViewHolder -> {
                 column = tag.columnViewHolder.column
                 break@loop
             }
+
             else -> when (val parent = view.parent) {
                 is View -> view = parent
                 else -> break@loop
@@ -231,7 +239,7 @@ suspend fun ActMain.themeDefaultChangedDialog() {
             .setMessage(R.string.color_theme_changed)
             .setPositiveButton(android.R.string.ok, null)
             .setOnDismissListener {
-                if (cont.isActive) cont.resume(Unit) {}
+                if (cont.isActive) cont.resume(Unit) { _, _, _ -> }
             }
             .create()
         cont.invokeOnCancellation { dialog.dismissSafe() }

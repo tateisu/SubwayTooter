@@ -18,16 +18,16 @@ suspend fun Context.loadIcon(url: String?, size: Int): Bitmap? = try {
         @Suppress("ThrowableNotThrown")
         val target = object : CustomTarget<Bitmap>() {
             override fun onLoadFailed(errorDrawable: Drawable?) {
-                if (cont.isActive) cont.resume(null) {}
+                if (cont.isActive) cont.resume(null) {_, _, _ ->}
                 if (!url.isNullOrEmpty()) log.w("onLoadFailed. url=$url")
             }
 
             override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                if (cont.isActive) cont.resume(resource) { resource.recycle() }
+                if (cont.isActive) cont.resume(resource) { _, _, _ -> resource.recycle() }
             }
 
             override fun onLoadCleared(placeholder: Drawable?) {
-                if (cont.isActive) cont.resume(null) {}
+                if (cont.isActive) cont.resume(null) { _, _, _ -> }
                 if (!url.isNullOrEmpty()) log.w("onLoadCleared. url=$url")
             }
         }

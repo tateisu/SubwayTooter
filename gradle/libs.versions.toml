@@ -1,20 +1,21 @@
 [versions]
-androidGradlePlugin = "8.7.1"
-androidsvgAar = "1.4"
+androidGradlePlugin = "8.7.3"
+androidSvgAar = "1.4"
 androidxActivity = "1.9.3"
-androidxAnnotation = "1.9.0"
+androidxAnnotation = "1.9.1"
 androidxAppcompat = "1.7.0"
 androidxArchCoreTesting = "2.2.0"
 androidxBrowser = "1.8.0"
-androidxComposeBom = "2024.10.00"
-androidxCoreKtx = "1.13.1"
+androidxComposeBom = "2024.12.01"
+androidxCoreKtx = "1.15.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxDrawerlayout = "1.2.0"
 androidxEmoji2 = "1.5.0"
-androidxLifecycle = "2.8.6"
-androidxMedia3 = "1.4.1"
-androidxMedia3Effect = "1.4.1"
-androidxMedia3Transformer = "1.4.1"
+androidxExifInterface = "1.3.7"
+androidxLifecycle = "2.8.7"
+androidxMedia3 = "1.5.1"
+androidxMedia3Effect = "1.5.1"
+androidxMedia3Transformer = "1.5.1"
 androidxPreference = "1.2.1"
 androidxRecyclerView = "1.3.2"
 androidxStartup = "1.2.0"
@@ -24,37 +25,34 @@ androidxTestExtJunit = "1.2.1"
 androidxTestExtTruth = "1.6.0"
 androidxTestOrchestrator = "1.5.1"
 androidxTestRunner = "1.6.2"
-androidxWork = "2.9.1"
-anroidxExifInterface = "1.3.7"
+androidxWork = "2.10.0"
 apng4Android = "2.25.0"
 bcprovJdk15on = "1.70"
 conscryptAndroid = "2.5.2"
 customQrGenerator = "1.6.2"
-desugarJdk = "2.1.2"
+desugarJdk = "2.1.4"
 detekt = "1.23.7"
 draglistview = "1.7.3"
-firebaseMessaging = "24.0.2"
-glide = "4.15.1"
+firebaseMessaging = "24.1.0"
+glide = "4.16.0"
 googleFlexbox = "3.0.0"
 googleMaterial = "1.12.0"
 googleServices = "4.4.2"
-gradleVersionsPlugin = "0.51.0"
 junit = "4.13.2"
 koinBom = "4.0.0"
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 kotlinCoroutinesOkhttp = "1.0"
-kotlinReflect = "2.1.0"
 kotlinxCoroutines = "1.8.0"
+kotlinxCoroutinesGuava = "1.10.1"
 kotlinxSerialization = "1.6.3"
-ksp = "2.0.21-1.0.25" # kotlinバージョンに依存している
-okhttp = "5.0.0-alpha.12"
+ksp = "2.1.0-1.0.29" # kotlinバージョンに依存している
+okhttp = "5.0.0-alpha.14"
 otaliastudiosTranscoder = "0.10.5"
 unifiedPushAndroidConnector = "2.1.1"
-# unmockPlugin = "0.8.0"
-webpDecoder = "2.6.4.15.1" # glideバージョンに依存している
+webpDecoder = "2.6.4.16.0" # glideバージョンに依存している
 
 [libraries]
-androidsvg-aar = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvgAar" }
+androidsvg-aar = { module = "com.caverock:androidsvg-aar", version.ref = "androidSvgAar" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidxActivity" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidxAnnotation" }
@@ -76,7 +74,7 @@ androidx-emoji2 = { module = "androidx.emoji2:emoji2", version.ref = "androidxEm
 androidx-emoji2-bundled = { module = "androidx.emoji2:emoji2-bundled", version.ref = "androidxEmoji2" }
 androidx-emoji2-views = { module = "androidx.emoji2:emoji2-views", version.ref = "androidxEmoji2" }
 androidx-emoji2-views-helper = { module = "androidx.emoji2:emoji2-views-helper", version.ref = "androidxEmoji2" }
-androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "anroidxExifInterface" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "androidxExifInterface" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
@@ -124,6 +122,7 @@ kotlin-coroutines-okhttp = { module = "ru.gildor.coroutines:kotlin-coroutines-ok
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "kotlinxCoroutinesGuava" }
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -131,18 +130,14 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-urlconnection = { module = "com.squareup.okhttp3:okhttp-urlconnection", version.ref = "okhttp" }
 otaliastudios-transcoder = { module = "com.otaliastudios:transcoder", version.ref = "otaliastudiosTranscoder" }
 unifiedpush-android-connector = { module = "com.github.UnifiedPush:android-connector", version.ref = "unifiedPushAndroidConnector" }
-# unmockPlugin = { module = "com.github.bjoernq:unmockplugin", version.ref = "unmockPlugin" }
 webpDecoder = { module = "com.github.zjupure:webpdecoder", version.ref = "webpDecoder" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-gradleVersionsPlugin = { id = "com.github.ben-manes.versions", version.ref = "gradleVersionsPlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-# unmockPlugin = { id = "de.mobilej.unmock" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-

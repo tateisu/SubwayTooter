@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.util.log.LogCategory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.guava.await
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -64,11 +65,11 @@ class PollingWorker2(
 
             // アカウント毎に呼び出されるので重複排除したい
             // 未完了のジョブがあり、インターバルが同じなら何もしない
-            if (workManager.getWorkInfosForUniqueWork(WORK_NAME).await()
-                    .any {
-                        val oldInterval = prefDevice.pollingWorker2Interval ?: 0L
-                        oldInterval == newInterval && !it.state.isFinished
-                    }
+            val workInfos = workManager.getWorkInfosForUniqueWork(WORK_NAME).await()
+            if (workInfos.any {
+                    val oldInterval = prefDevice.pollingWorker2Interval ?: 0L
+                    oldInterval == newInterval && !it.state.isFinished
+                }
             ) {
                 return
             }

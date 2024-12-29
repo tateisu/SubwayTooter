@@ -1368,10 +1368,10 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
     private val currentVersion: String
         get() = try {
-            packageManager.getPackageInfoCompat(packageName)!!.versionName
+            packageManager.getPackageInfoCompat(packageName)?.versionName
         } catch (ignored: Throwable) {
-            "??"
-        }
+            null
+        } ?: "??"
 
     private fun Context.grantFileProviderUri(
         intent: Intent,

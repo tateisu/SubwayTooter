@@ -9,11 +9,11 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.databinding.DlgLanguageFilterBinding
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.util.StColorScheme
+import jp.juggler.util.coroutine.cancellationException
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.setEnabledColor
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resumeWithException
 
@@ -79,18 +79,18 @@ suspend fun ComponentActivity.dialogLanguageFilterEdit(
             setPositiveButton(R.string.ok) { _, _ ->
                 if (cont.isActive) cont.resume(
                     LanguageFilterEditResult.Update(getCode(), isAllow())
-                ) {}
+                ) { _, _, _ -> }
             }
             if (item != null && item.code != TootStatus.LANGUAGE_CODE_DEFAULT) {
                 setNeutralButton(R.string.delete) { _, _ ->
                     if (cont.isActive) cont.resume(
                         LanguageFilterEditResult.Delete(item.code)
-                    ) {}
+                    ) { _, _, _ -> }
                 }
             }
         }.create().also { dialog ->
             dialog.setOnDismissListener {
-                if (cont.isActive) cont.resumeWithException(CancellationException())
+                if (cont.isActive) cont.resumeWithException(cancellationException())
             }
             cont.invokeOnCancellation { dialog.dismissSafe() }
             dialog.show()

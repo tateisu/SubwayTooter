@@ -514,7 +514,7 @@ sub checkWorkingTreeOrCommit(){
 }
 
 # Weblateの未マージのブランチがあるか調べる
-sub checkweblateMerged(){
+sub checkWeblateMerged(){
     system qq(git fetch weblate -q);
     my @list = `git branch -r --no-merged`;
     for(@list){
@@ -581,18 +581,16 @@ sub apkGen($){
     cmd "./gradlew --stop";
     cmd "rm -rf .gradle/caches/build-cache-*";
     cmd "./gradlew clean";
-    cmd "./dependencyJson.pl";
     cmd "./gradlew assembleNoFcmRelease";
     cmd "./gradlew assembleFcmRelease";
     cmd "./gradlew --stop";
-
     cmd "mkdir -p _apk";
     
     my $branchSanitided = sanitizeFileName($info->{branch});
 
     for(
-        ["fcm","app/build/outputs/apk/fcm/release/app-fcm-release.apk"],
-        ["noFcm","app/build/outputs/apk/nofcm/release/app-nofcm-release.apk"],
+        ["fcm", "app/build/outputs/apk/fcm/release/app-fcm-release.apk"],
+        ["noFcm", "app/build/outputs/apk/nofcm/release/app-nofcm-release.apk"],
     ){
         my($flavor,$srcPath)=@$_;
         (-f $srcPath) or die "not found: $srcPath";
@@ -629,7 +627,7 @@ if($action eq "apk"){
 }elsif($action eq "tag"){
     $branch eq 'main' or die "branch is not main. [$branch]";
     checkWorkingTreeOrDie();
-    checkweblateMerged();
+    checkWeblateMerged();
     dependencyJson();
     checkWorkingTreeOrCommit();
     apkGen($info);

@@ -3,8 +3,6 @@
 
   // ~/.gradle/caches フォルダ
   "gradleCacheDir": "/c/Users/tateisu/.gradle/caches",
-  //デバッグ用。指定があればそのフォルダにpomファイルをコピーする。
-  // "pomDumpDir" : null,
 
   // 不足データの取得に使うリポジトリ
   "repos": [

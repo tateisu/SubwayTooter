@@ -51,10 +51,16 @@ usage: $0 [options] {action}
                     default: $buildFile
 END
 
+sub usage(;$){
+    say $usage;
+    @_ and say "\nError: ",join(" ",@_);
+    exit 1;
+}
+
 GetOptions (
     "configFile=s" => \$configFile,
     "buildFile=s" => \$buildFile,
-) or die("!! bad options. !!\n$usage");
+) or usage "bad options.";
 
 ######################################################
 # ユーティリティ
@@ -606,7 +612,7 @@ sub apkGen($){
 
 # ビルド設定からアプリのバージョンを読む
 my($versionCode,$versionName) = getVersion();
-my $branch = getBranch() or die "missing git branch";
+my $branch = getBranch() or die "can't read git branch.";
 my $tag = "v$versionName";
 say "# branch=$branch, versionCode=$versionCode, versionName=$versionName";
 
@@ -625,14 +631,14 @@ if($action eq "apk"){
 }elsif($action eq "depJson"){
     dependencyJson();
 }elsif($action eq "tag"){
-    $branch eq 'main' or die "branch is not main. [$branch]";
+    $branch eq 'main' or die "action[$action]: current branch mast be main. [$branch]";
     checkWorkingTreeOrDie();
     checkWeblateMerged();
     dependencyJson();
     checkWorkingTreeOrCommit();
     apkGen($info);
     if( isExistTag($tag) ){
-        say "# already tag is exists. [$tag]";
+        say "# tag $tag is already exists.";
     }else{
         say "# tag $tag is not yet exist. create & push the tag...";
         cmd "git tag -a $tag -m $tag";
@@ -640,7 +646,7 @@ if($action eq "apk"){
         cmd "git push --tags";
     }
 }elsif(not $action){
-    die "!! missing action. !!\n$usage";
+    usage "action not specified.";
 }else{
-    die "!! unknown action [$action]. !!\n$usage";
+    usage "action [$action] is unknown.";
 }

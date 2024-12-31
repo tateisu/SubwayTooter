@@ -12,11 +12,17 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.annotation.ColorInt
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import jp.juggler.util.colorSpace.OkLch
+import jp.juggler.util.colorSpace.OkLchConverter
+import jp.juggler.util.colorSpace.RgbFloat
+import jp.juggler.util.colorSpace.RgbFloat.Companion.FF_FLOAT
+import jp.juggler.util.colorSpace.RgbFloat.Companion.argbToBits
+import jp.juggler.util.data.clip
 import jp.juggler.util.log.LogCategory
-import jp.juggler.util.systemService
+import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 private val log = LogCategory("ViewUtils")
 
@@ -99,6 +105,12 @@ fun mixColor(col1: Int, col2: Int): Int = Color.rgb(
     (Color.blue(col1) + Color.blue(col2)) ushr 1
 )
 
+data class Lab(
+    val l: Float,
+    val a: Float,
+    val b: Float,
+)
+
 private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
 
     fun Int.revGamma(): Float {
@@ -132,6 +144,63 @@ private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
         500 * (x - y), // a
         200 * (y - z) //b
     )
+}
+
+private val okLchConverter by lazy { OkLchConverter() }
+
+private fun Int.argbToOkLch(dst: OkLch): OkLch {
+    okLchConverter.rgbToLch(
+        dst = dst,
+        r = argbToBits(16).toFloat().div(FF_FLOAT),
+        g = argbToBits(8).toFloat().div(FF_FLOAT),
+        b = argbToBits(0).toFloat().div(FF_FLOAT),
+    )
+    return dst
+}
+
+private fun lchToArgb(
+    alpha: Int,
+    l: Float,
+    c: Float,
+    h: Float,
+): Int {
+    val dst = RgbFloat()
+    okLchConverter.lchToRgb(
+        dst = dst,
+        l = l,
+        c = c,
+        h = h,
+    )
+    return alpha.clip(0, 255).shl(24)
+        .or((dst.r * 255f).clip(0f, 255f).roundToInt().shl(16))
+        .or((dst.g * 255f).clip(0f, 255f).roundToInt().shl(8))
+        .or((dst.b * 255f).clip(0f, 255f).roundToInt())
+}
+
+/**
+ * sampleとsrcの明るさの差が sampleとthresholdより大きいなら、
+ * sampleとsrcの中間の色を返す
+ * alpha はsrcのまま
+ */
+@ColorInt
+fun fixColor(
+    @ColorInt src: Int,
+    thresholdLightness: Float, // 0..1f
+    expectLightness: Float, // 0..1f
+): Int {
+    val lchSrc = OkLch()
+    val lSrc = src.argbToOkLch(lchSrc).l
+    val expectToSrc = abs(lSrc - expectLightness)
+    val expectToThreshold = abs(thresholdLightness - expectLightness)
+    return when {
+        expectToSrc <= expectToThreshold -> src
+        else -> lchToArgb(
+            alpha = src.argbToBits(24),
+            l = (lchSrc.l + expectLightness) / 2f,
+            c = lchSrc.c,
+            h = lchSrc.h,
+        )
+    }
 }
 
 fun Activity.setStatusBarColorCompat(@ColorInt c: Int) {

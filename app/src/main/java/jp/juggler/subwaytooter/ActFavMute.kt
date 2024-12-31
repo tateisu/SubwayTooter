@@ -15,6 +15,7 @@ import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import kotlinx.coroutines.withContext
 
@@ -32,17 +33,17 @@ class ActFavMute : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        App1.setActivityTheme(this)
         backPressed {
             setResult(RESULT_OK)
             finish()
         }
+        App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
         loadData()
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)

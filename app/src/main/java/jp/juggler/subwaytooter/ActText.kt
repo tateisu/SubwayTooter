@@ -150,8 +150,7 @@ class ActText : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-
-        setContentView(views.root)
+        setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.etText)

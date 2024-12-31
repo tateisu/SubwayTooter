@@ -11,7 +11,9 @@ import jp.juggler.subwaytooter.databinding.ActAboutBinding
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.getPackageInfoCompat
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
+import org.jetbrains.anko.contentView
 
 class ActAbout : AppCompatActivity() {
 
@@ -77,7 +79,7 @@ class ActAbout : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-        setContentView(views.root)
+        setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.svContent)

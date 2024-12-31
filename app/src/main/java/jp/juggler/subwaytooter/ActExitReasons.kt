@@ -9,16 +9,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.databinding.ActExitReasonsBinding
 import jp.juggler.util.data.decodeUTF8
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 
-@RequiresApi(Build.VERSION_CODES.R)
 class ActExitReasons : AppCompatActivity() {
 
     companion object {
@@ -81,7 +80,7 @@ class ActExitReasons : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-        setContentView(views.root)
+        setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalPadding(views.listView)
@@ -94,9 +93,13 @@ class ActExitReasons : AppCompatActivity() {
         }
 
         this.adapter = MyAdapter()
-        adapter.list = am.getHistoricalProcessExitReasons(null, 0, 200)
-            .filterNotNull()
-            .toList()
+        adapter.list = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            am.getHistoricalProcessExitReasons(null, 0, 200)
+                .filterNotNull()
+                .toList()
+        } else {
+            emptyList()
+        }
 
         views.listView.adapter = adapter
     }
@@ -106,24 +109,26 @@ class ActExitReasons : AppCompatActivity() {
         private val textView: TextView = viewRoot.findViewById(R.id.textView)
 
         fun bind(context: Context, info: ApplicationExitInfo) {
-            val trace = try {
-                info.traceInputStream?.use {
-                    it.readBytes().decodeUTF8()
-                } ?: "(null)"
-            } catch (ex: Throwable) {
-                ex.withCaption("can't read traceInputStream")
-            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val trace = try {
+                    info.traceInputStream?.use {
+                        it.readBytes().decodeUTF8()
+                    } ?: "(null)"
+                } catch (ex: Throwable) {
+                    ex.withCaption("can't read traceInputStream")
+                }
 
-            textView.text = """
-				timestamp=${TootStatus.formatTime(context, info.timestamp, bAllowRelative = false)}
-				importance=${info.importance}
-				pss=${info.pss}
-				rss=${info.rss}
-				reason=${reasonString(info.reason)}
-				status=${info.status}
-				description=${info.description}
-				trace=$trace
-			""".trimIndent()
+                textView.text = """
+                timestamp=${TootStatus.formatTime(context, info.timestamp, bAllowRelative = false)}
+                importance=${info.importance}
+                pss=${info.pss}
+                rss=${info.rss}
+                reason=${reasonString(info.reason)}
+                status=${info.status}
+                description=${info.description}
+                trace=$trace
+                """.trimIndent()
+            }
         }
     }
 

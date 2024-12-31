@@ -11,6 +11,7 @@ import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.AsyncActivity
 import jp.juggler.util.data.asciiPattern
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -34,12 +35,12 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
         load()
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         fixHorizontalMargin(views.listView)
         setNavigationBack(views.toolbar)

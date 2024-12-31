@@ -70,6 +70,7 @@ import jp.juggler.util.log.showToast
 import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.setContentViewAndInsets
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -210,7 +211,6 @@ class ActPost : AppCompatActivity(),
             }
         }
         if (isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
-        App1.setActivityTheme(this)
         appState = App1.getAppState(this)
         handler = appState.handler
         attachmentUploader = AttachmentUploader(this, handler)
@@ -235,6 +235,8 @@ class ActPost : AppCompatActivity(),
 
         progressChannel = Channel(capacity = Channel.CONFLATED)
 
+        App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
 
         // 進捗表示チャネルの回収コルーチン
@@ -367,8 +369,6 @@ class ActPost : AppCompatActivity(),
     }
 
     fun initUI() {
-        setContentView(views.root)
-
         if (PrefB.bpPostButtonBarTop.value) {
             val bar = findViewById<View>(R.id.llFooterBar)
             val parent = bar.parent as ViewGroup

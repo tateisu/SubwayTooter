@@ -79,6 +79,7 @@ import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.isNotOk
 import jp.juggler.util.ui.launch
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.vg
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -184,6 +185,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
         arSaveAppData.register(this)
 
         App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
 
         this.handler = App1.getAppState(this).handler
 
@@ -210,8 +212,6 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initUi() {
-        setContentView(views.root)
-
         fixHorizontalPadding(views.llContent, 0f)
 
         views.lvList.layoutManager = LinearLayoutManager(this)

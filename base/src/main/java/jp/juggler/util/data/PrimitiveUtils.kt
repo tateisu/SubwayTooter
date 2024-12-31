@@ -1,6 +1,9 @@
 package jp.juggler.util.data
 
 import java.lang.ref.WeakReference
+import kotlin.math.PI
+import kotlin.math.ceil
+import kotlin.math.floor
 
 // 型推論できる文脈だと型名を書かずにすむ
 @Suppress("unused")
@@ -20,6 +23,37 @@ fun <T : Comparable<T>> maxComparable(a: T, b: T): T = if (a >= b) a else b
 
 fun <T : Comparable<T>> T.clip(min: T, max: T) =
     if (this < min) min else if (this > max) max else this
+
+fun Int.clip(min: Int, max: Int) = when {
+    this < min -> min
+    this > max -> max
+    else -> this
+}
+
+fun Float.clip(min: Float, max: Float) = when {
+    this < min -> min
+    this > max -> max
+    else -> this
+}
+
+fun Double.clip(min: Double, max: Double) = when {
+    this < min -> min
+    this > max -> max
+    else -> this
+}
+
+const val PI_FLOAT = PI.toFloat()
+
+fun Double.floorToInt() = floor(this).toInt()
+fun Float.floorToInt() = floor(this).toInt()
+
+fun Double.ceilToInt() = ceil(this).toInt()
+fun Float.ceilToInt() = ceil(this).toInt()
+
+fun Double.pow2() = this * this
+fun Float.pow2() = this * this
+fun Double.sqrt() = kotlin.math.sqrt(this)
+fun Float.sqrt() = kotlin.math.sqrt(this)
 
 ////////////////////////////////////////////////////////////////////
 

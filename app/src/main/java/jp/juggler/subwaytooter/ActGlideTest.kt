@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.util.EmojiSizeMode
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import kotlinx.coroutines.withContext
 
@@ -31,7 +32,7 @@ class ActGlideTest : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-        setContentView(views.root)
+        setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
         fixHorizontalMargin(views.rvImages)
         setNavigationBack(views.toolbar)

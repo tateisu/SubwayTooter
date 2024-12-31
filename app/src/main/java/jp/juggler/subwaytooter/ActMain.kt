@@ -12,9 +12,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import android.widget.HorizontalScrollView
-import android.widget.ImageButton
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -26,7 +23,6 @@ import jp.juggler.subwaytooter.action.accessTokenPrompt
 import jp.juggler.subwaytooter.action.timeline
 import jp.juggler.subwaytooter.actmain.ActMainPhoneViews
 import jp.juggler.subwaytooter.actmain.ActMainTabletViews
-import jp.juggler.subwaytooter.actmain.ColumnStripLinearLayout
 import jp.juggler.subwaytooter.actmain.SideMenuAdapter
 import jp.juggler.subwaytooter.actmain.afterNotificationGranted
 import jp.juggler.subwaytooter.actmain.closePopup
@@ -82,6 +78,7 @@ import jp.juggler.subwaytooter.column.removeColumnViewHolderByActivity
 import jp.juggler.subwaytooter.column.saveScrollPosition
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.column.viewHolder
+import jp.juggler.subwaytooter.databinding.ActMainBinding
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.itemviewholder.StatusButtonsPopup
 import jp.juggler.subwaytooter.notification.checkNotificationImmediateAll
@@ -97,9 +94,6 @@ import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.permissionSpecNotification
 import jp.juggler.subwaytooter.util.requester
-import jp.juggler.subwaytooter.view.MyDrawerLayout
-import jp.juggler.subwaytooter.view.MyEditText
-import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.anyArrayOf
@@ -113,6 +107,7 @@ import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.setContentViewAndInsets
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -196,28 +191,29 @@ class ActMain : AppCompatActivity(),
 
     var quickPostVisibility: TootVisibility = TootVisibility.AccountSetting
 
-    lateinit var llFormRoot: LinearLayout
-    lateinit var vBottomPadding: View
-    lateinit var llQuickPostBar: LinearLayout
-    lateinit var etQuickPost: MyEditText
-    lateinit var ivQuickTootAccount: MyNetworkImageView
-    lateinit var btnQuickToot: ImageButton
-    lateinit var btnQuickPostMenu: ImageButton
-    lateinit var llEmpty: View
-    lateinit var llColumnStrip: ColumnStripLinearLayout
-    lateinit var svColumnStrip: HorizontalScrollView
-    lateinit var btnMenu: ImageButton
-    lateinit var btnToot: ImageButton
-    lateinit var vFooterDivider1: View
-    lateinit var vFooterDivider2: View
+    private val views by lazy {
+        ActMainBinding.inflate(layoutInflater)
+    }
 
-    lateinit var drawer: MyDrawerLayout
+    val llFormRoot get() = views.llFormRoot
+    val vBottomPadding get() = views.vBottomPadding
+    val llQuickPostBar get() = views.llQuickTootBar
+    val etQuickPost get() = views.etQuickToot
+    val ivQuickTootAccount get() = views.ivQuickTootAccount
+    val btnQuickToot get() = views.btnQuickToot
+    val btnQuickPostMenu get() = views.btnQuickTootMenu
+    val llEmpty get() = views.llEmpty
+    val llColumnStrip get() = views.llColumnStrip
+    val svColumnStrip get() = views.svColumnStrip
+    val btnMenu get() = views.btnMenu
+    val btnToot get() = views.btnToot
+    val vFooterDivider1 get() = views.vFooterDivider1
+    val vFooterDivider2 get() = views.vFooterDivider2
+    val drawer get() = views.drawerLayout
 
     lateinit var completionHelper: CompletionHelper
-
     lateinit var handler: Handler
     lateinit var appState: AppState
-
     lateinit var sideMenuAdapter: SideMenuAdapter
 
     var subscriptionUpdaterCalled = false
@@ -418,12 +414,13 @@ class ActMain : AppCompatActivity(),
         arActPost.register(this)
         arActText.register(this)
 
-        App1.setActivityTheme(this)
-
         appState = App1.getAppState(this)
         handler = appState.handler
         density = appState.density
         completionHelper = CompletionHelper(this, appState.handler)
+
+        App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
 
         EmojiDecoder.useTwemoji = PrefB.bpUseTwemoji.value
 
@@ -748,22 +745,6 @@ class ActMain : AppCompatActivity(),
 
     // ビューのlateinit変数を初期化する
     private fun findViews() {
-        llFormRoot = findViewById(R.id.llFormRoot)
-        vBottomPadding = findViewById(R.id.vBottomPadding)
-        llEmpty = findViewById(R.id.llEmpty)
-        drawer = findViewById(R.id.drawer_layout)
-        btnMenu = findViewById(R.id.btnMenu)
-        btnToot = findViewById(R.id.btnToot)
-        vFooterDivider1 = findViewById(R.id.vFooterDivider1)
-        vFooterDivider2 = findViewById(R.id.vFooterDivider2)
-        llColumnStrip = findViewById(R.id.llColumnStrip)
-        svColumnStrip = findViewById(R.id.svColumnStrip)
-        llQuickPostBar = findViewById(R.id.llQuickTootBar)
-        etQuickPost = findViewById(R.id.etQuickToot)
-        ivQuickTootAccount = findViewById(R.id.ivQuickTootAccount)
-        btnQuickToot = findViewById(R.id.btnQuickToot)
-        btnQuickPostMenu = findViewById(R.id.btnQuickTootMenu)
-
         btnToot.setOnClickListener(this)
         btnMenu.setOnClickListener(this)
         ivQuickTootAccount.setOnClickListener(this)
@@ -772,7 +753,6 @@ class ActMain : AppCompatActivity(),
     }
 
     internal fun initUI() {
-        setContentView(R.layout.act_main)
 
         quickPostVisibility =
             TootVisibility.parseSavedVisibility(PrefS.spQuickTootVisibility.value)

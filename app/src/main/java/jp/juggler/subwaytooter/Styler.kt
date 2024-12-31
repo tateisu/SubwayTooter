@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -15,6 +14,9 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
@@ -30,6 +32,7 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.fixColor
 import jp.juggler.util.ui.mixColor
 import jp.juggler.util.ui.scan
 import jp.juggler.util.ui.setIconDrawableId
@@ -477,29 +480,63 @@ fun ViewGroup.generateLayoutParamsEx(): ViewGroup.LayoutParams? =
         null
     }
 
-fun Activity.setStatusBarColor(forceDark: Boolean = false) {
-    window?.apply {
-        if (Build.VERSION.SDK_INT < 30) {
-            @Suppress("DEPRECATION")
-            clearFlags(
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
-                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
-            )
-        }
+fun systemBarStyle(
+    isLightTheme: Boolean,
+    colorBg: Int,
+) = when {
+    isLightTheme -> SystemBarStyle.light(
+        // bg color used when light theme that have dark icon, should use light color.
+        scrim = fixColor(src = colorBg, thresholdLightness = 0.5f, expectLightness = 1f),
+        // bg color used when light theme that have LIGHT icon, should use dark color.
+        darkScrim = fixColor(src = colorBg, thresholdLightness = 0.5f, expectLightness = 0f),
+    )
 
-        addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+    else -> SystemBarStyle.dark(
+        // bg color used when dark theme that have LIGHT icon, should use dark color.
+        scrim = fixColor(src = colorBg, thresholdLightness = 0.5f, expectLightness = 0f),
+    )
+}
 
-        var c = when {
-            forceDark -> Color.BLACK
-            else -> PrefI.ipStatusBarColor.value.notZero()
-                ?: attrColor(android.R.attr.colorPrimaryDark)
-        }
-        setStatusBarColorCompat(c)
-
-        c = when {
-            forceDark -> Color.BLACK
-            else -> PrefI.ipNavigationBarColor.value
-        }
-        setNavigationBarColorCompat(c)
+fun ComponentActivity.enableEdgeToEdgeEx(forceDark: Boolean) {
+    var nTheme = PrefI.ipUiTheme.value
+    if (forceDark && nTheme == 0) nTheme = 1
+    val isLightTheme = when (nTheme) {
+        2 -> false // R.style.AppTheme_Mastodon
+        1 -> false // R.style.AppTheme_Dark
+        /* 0 */ else ->  true // R.style.AppTheme_Light
     }
+    enableEdgeToEdge(
+        statusBarStyle = systemBarStyle(
+            isLightTheme = isLightTheme,
+            colorBg = when {
+                forceDark -> Color.BLACK
+                else -> PrefI.ipStatusBarColor.value.notZero()
+                    ?: attrColor(android.R.attr.colorPrimaryDark)
+            },
+        ),
+        navigationBarStyle = systemBarStyle(
+            isLightTheme = isLightTheme,
+            colorBg = when {
+                forceDark -> Color.BLACK
+                else -> PrefI.ipNavigationBarColor.value
+            },
+        ),
+    )
+//    window?.apply {
+//        if (Build.VERSION.SDK_INT < 30) {
+//            @Suppress("DEPRECATION")
+//            clearFlags(
+//                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
+//                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+//            )
+//        }
+//
+//        addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+//
+//        var c =
+//            setStatusBarColorCompat(c)
+//
+//        c =
+//            setNavigationBarColorCompat(c)
+//    }
 }

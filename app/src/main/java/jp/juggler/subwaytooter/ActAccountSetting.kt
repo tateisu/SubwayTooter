@@ -76,6 +76,7 @@ import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.isOk
 import jp.juggler.util.ui.scan
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.vg
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -223,7 +224,7 @@ class ActAccountSetting : AppCompatActivity(),
             ?.let { state = kJson.decodeFromString(it) }
 
         App1.setActivityTheme(this)
-
+        setContentViewAndInsets(views.root)
         initUI()
 
         launchAndShowError {
@@ -258,7 +259,6 @@ class ActAccountSetting : AppCompatActivity(),
     private fun initUI() {
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         fixHorizontalPadding(views.svContent)
         setSwitchColor(views.root)

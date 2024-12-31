@@ -106,6 +106,7 @@ class ActHighlightWordList : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         arEdit.register(this)
         App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
         loadData()
     }
@@ -116,7 +117,6 @@ class ActHighlightWordList : AppCompatActivity() {
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)

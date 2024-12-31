@@ -37,6 +37,7 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.os.saveToDownload
 import jp.juggler.util.time.formatLocalTime
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -70,7 +71,7 @@ class ActPushMessageList : AppCompatActivity() {
         prNotification.checkOrLaunch()
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
-        setContentView(views.root)
+        setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
 

@@ -42,6 +42,7 @@ import jp.juggler.util.media.createResizedBitmap
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import jp.juggler.util.ui.vg
 import org.jetbrains.anko.textColor
@@ -100,6 +101,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener {
         }
         arColumnBackgroundImage.register(this)
         App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
 
         appState = App1.getAppState(this)
@@ -254,7 +256,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.svContent)

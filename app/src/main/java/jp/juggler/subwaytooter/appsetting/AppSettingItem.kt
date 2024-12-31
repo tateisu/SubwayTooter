@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.actmain.selectPushDistributor
 import jp.juggler.subwaytooter.dialog.runInProgress
 import jp.juggler.subwaytooter.drawable.MediaBackgroundDrawable
+import jp.juggler.subwaytooter.enableEdgeToEdgeEx
 import jp.juggler.subwaytooter.itemviewholder.AdditionalButtonsPosition
 import jp.juggler.subwaytooter.notification.showAlertNotification
 import jp.juggler.subwaytooter.pref.PrefB
@@ -32,7 +33,6 @@ import jp.juggler.subwaytooter.pref.impl.FloatPref
 import jp.juggler.subwaytooter.pref.impl.IntPref
 import jp.juggler.subwaytooter.pref.impl.LongPref
 import jp.juggler.subwaytooter.pref.impl.StringPref
-import jp.juggler.subwaytooter.setStatusBarColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.table.sortedByNickname
 import jp.juggler.subwaytooter.util.CustomShareTarget
@@ -1041,11 +1041,15 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         colorOpaque(PrefI.ipStatusBarColor, R.string.status_bar_color) {
-            changed = { setStatusBarColor() }
+            changed = {
+                enableEdgeToEdgeEx(forceDark = false)
+            }
         }
 
         colorOpaque(PrefI.ipNavigationBarColor, R.string.navigation_bar_color) {
-            changed = { setStatusBarColor() }
+            changed = {
+                enableEdgeToEdgeEx(forceDark = false)
+            }
         }
 
         colorOpaque(PrefI.ipSearchBgColor, R.string.search_bar_background_color)

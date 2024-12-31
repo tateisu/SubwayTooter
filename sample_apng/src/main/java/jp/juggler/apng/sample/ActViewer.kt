@@ -6,8 +6,8 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.TextView
 import jp.juggler.apng.ApngFrames
+import jp.juggler.apng.sample.databinding.ActViewerBinding
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.AsyncActivity
 import jp.juggler.util.int
@@ -32,8 +32,9 @@ class ActViewer : AsyncActivity() {
         }
     }
 
-    private lateinit var apngView: ApngView
-    private lateinit var tvError: TextView
+    private val views by lazy {
+        ActViewerBinding.inflate(layoutInflater)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,13 +42,10 @@ class ActViewer : AsyncActivity() {
         val resId = intent.int(EXTRA_RES_ID) ?: 0
 
         this.title = intent.string(EXTRA_CAPTION) ?: "?"
+        edgeToEdgeEx(views.root)
 
-        setContentView(R.layout.act_apng_view)
-        this.apngView = findViewById(R.id.apngView)
-        this.tvError = findViewById(R.id.tvError)
-
-        apngView.setOnLongClickListener {
-            val apngFrames = apngView.apngFrames
+        views.apngView.setOnLongClickListener {
+            val apngFrames = views.apngView.apngFrames
 
             if (apngFrames != null) {
                 save(apngFrames)
@@ -71,9 +69,9 @@ class ActViewer : AsyncActivity() {
                     }
                 }
 
-                apngView.visibility = View.VISIBLE
-                tvError.visibility = View.GONE
-                apngView.apngFrames = apngFrames
+                views.apngView.visibility = View.VISIBLE
+                views.tvError.visibility = View.GONE
+                views.apngView.apngFrames = apngFrames
                 apngFrames = null
             } catch (ex: Throwable) {
                 ex.printStackTrace()
@@ -81,9 +79,9 @@ class ActViewer : AsyncActivity() {
 
                 val message = "%s %s".format(ex.javaClass.simpleName, ex.message)
                 if (!isDestroyed) {
-                    apngView.visibility = View.GONE
-                    tvError.visibility = View.VISIBLE
-                    tvError.text = message
+                    views.apngView.visibility = View.GONE
+                    views.tvError.visibility = View.VISIBLE
+                    views.tvError.text = message
                 }
             } finally {
                 apngFrames?.dispose()
@@ -93,7 +91,7 @@ class ActViewer : AsyncActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        apngView.apngFrames?.dispose()
+        views.apngView.apngFrames?.dispose()
     }
 
     private fun save(apngFrames: ApngFrames) {

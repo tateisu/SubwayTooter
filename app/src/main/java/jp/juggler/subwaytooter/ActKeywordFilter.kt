@@ -31,6 +31,7 @@ import jp.juggler.util.network.toPostRequestBuilder
 import jp.juggler.util.network.toPut
 import jp.juggler.util.network.toRequestBody
 import jp.juggler.util.string
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 
 class ActKeywordFilter : AppCompatActivity() {
@@ -109,6 +110,7 @@ class ActKeywordFilter : AppCompatActivity() {
         backPressed { confirmBack() }
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
 
         launchAndShowError {
@@ -175,7 +177,6 @@ class ActKeywordFilter : AppCompatActivity() {
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)

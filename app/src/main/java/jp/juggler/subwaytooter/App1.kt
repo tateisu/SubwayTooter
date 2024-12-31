@@ -1,12 +1,16 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Handler
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
+import androidx.activity.ComponentActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 import com.bumptech.glide.Glide
@@ -429,7 +433,7 @@ class App1 : Application() {
         }
 
         fun setActivityTheme(
-            activity: Activity,
+            activity: ComponentActivity,
             forceDark: Boolean = false,
         ) {
             prepare(activity.applicationContext, "setActivityTheme")
@@ -443,7 +447,7 @@ class App1 : Application() {
                     /* 0 */ else -> R.style.AppTheme_Light
                 }
             )
-            activity.setStatusBarColor(forceDark = forceDark)
+            activity.enableEdgeToEdgeEx(forceDark = forceDark)
         }
 
         internal val CACHE_CONTROL = CacheControl.Builder()

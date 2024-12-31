@@ -26,6 +26,7 @@ import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.decodeRingtonePickerResult
 import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import org.jetbrains.anko.textColor
 
@@ -83,6 +84,7 @@ class ActHighlightWordEdit
         super.onCreate(savedInstanceState)
         arNotificationSound.register(this)
         App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         initUI()
 
         setResult(RESULT_CANCELED)
@@ -129,7 +131,6 @@ class ActHighlightWordEdit
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)

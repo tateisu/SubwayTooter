@@ -7,14 +7,18 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.AdapterView
 import android.widget.BaseAdapter
-import android.widget.ListView
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import jp.juggler.apng.ApngFrames
+import jp.juggler.apng.sample.databinding.ActListBinding
 import jp.juggler.util.coroutine.AppDispatchers
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -29,7 +33,10 @@ class ActList : AppCompatActivity(), CoroutineScope {
 
     class ListItem(val id: Int, val caption: String)
 
-    private lateinit var listView: ListView
+    private val views by lazy {
+        ActListBinding.inflate(layoutInflater)
+    }
+
     private lateinit var listAdapter: MyAdapter
     private var timeAnimationStart: Long = 0L
 
@@ -43,11 +50,10 @@ class ActList : AppCompatActivity(), CoroutineScope {
         activityJob = Job()
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.act_list)
-        this.listView = findViewById(R.id.listView)
+        edgeToEdgeEx(views.root)
         listAdapter = MyAdapter()
-        listView.adapter = listAdapter
-        listView.onItemClickListener = listAdapter
+        views.listView.adapter = listAdapter
+        views.listView.onItemClickListener = listAdapter
         timeAnimationStart = SystemClock.elapsedRealtime()
 
         // Assume thisActivity is the current activity

@@ -76,6 +76,7 @@ import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.isNotOk
 import jp.juggler.util.ui.isOk
 import jp.juggler.util.ui.launch
+import jp.juggler.util.ui.setContentViewAndInsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -134,8 +135,6 @@ class LanguageFilterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         arImport.register(this)
         super.onCreate(savedInstanceState)
-        App1.setActivityTheme(this)
-
         backPressed {
             launchAndShowError {
                 if (viewModel.isLanguageListChanged()) {

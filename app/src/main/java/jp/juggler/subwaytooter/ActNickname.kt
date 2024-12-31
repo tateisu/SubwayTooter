@@ -27,6 +27,7 @@ import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.decodeRingtonePickerResult
 import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isEnabledAlpha
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 import jp.juggler.util.ui.vg
 import org.jetbrains.anko.backgroundColor
@@ -85,13 +86,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener {
         }
         arNotificationSound.register(this)
         App1.setActivityTheme(this)
-
+        setContentViewAndInsets(views.root)
         initUI()
         load()
     }
 
     private fun initUI() {
-        setContentView(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
 

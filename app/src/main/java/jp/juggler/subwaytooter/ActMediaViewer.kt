@@ -304,7 +304,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         prDownload.register(this)
-        App1.setActivityTheme(this, forceDark = true)
 
         this.showDescription = intent.getBooleanExtra(EXTRA_SHOW_DESCRIPTION, showDescription)
 
@@ -321,6 +320,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         this.idx = (savedInstanceState?.int(EXTRA_IDX) ?: intent.int(EXTRA_IDX))
             ?.takeIf { it in mediaList.indices } ?: 0
 
+        App1.setActivityTheme(this, forceDark = true)
+        setContentViewAndInsets(views.root)
         initUI()
 
         load(savedInstanceState)
@@ -353,8 +354,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     @OptIn(UnstableApi::class)
     private fun initUI() {
-        setContentView(views.root)
-
         views.pbvImage.background = MediaBackgroundDrawable(
             context = views.root.context,
             tileStep = tileStep,

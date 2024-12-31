@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import jp.juggler.subwaytooter.databinding.ActAlertBinding
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.data.notEmpty
+import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
 
 class ActAlert : AppCompatActivity() {
@@ -34,7 +35,8 @@ class ActAlert : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(views.root)
+        App1.setActivityTheme(this)
+        setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
 

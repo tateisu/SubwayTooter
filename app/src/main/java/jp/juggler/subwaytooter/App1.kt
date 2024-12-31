@@ -440,7 +440,7 @@ class App1 : Application() {
                 when (nTheme) {
                     2 -> R.style.AppTheme_Mastodon
                     1 -> R.style.AppTheme_Dark
-                    else -> R.style.AppTheme_Light
+                    /* 0 */ else -> R.style.AppTheme_Light
                 }
             )
             activity.setStatusBarColor(forceDark = forceDark)

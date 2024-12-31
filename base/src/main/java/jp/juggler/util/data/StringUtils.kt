@@ -217,29 +217,24 @@ fun ellipsize(src: String, limit: Int): String =
     }
 
 fun String.sanitizeBDI(): String {
-
     // 文字列をスキャンしてBDI制御文字をスタックに入れていく
     var stack: LinkedList<Char>? = null
     for (c in this) {
-        val closer = SanitizeBdiMap[c]
-        if (closer != null) {
-            if (stack == null) stack = LinkedList()
-            stack.add(closer)
-        } else if (stack?.lastOrNull() == c) {
-            stack.removeLast()
+        when {
+            // stackの末尾を閉じる文字
+            stack?.lastOrNull() == c -> stack.removeLast()
+            // BDI制御文字の開始なら、閉じる文字をスタックに覚える
+            else -> SanitizeBdiMap[c]?.let { closer ->
+                if (stack == null) stack = LinkedList()
+                stack.add(closer)
+            }
         }
     }
-
-    if (stack?.isNotEmpty() == true) {
-        val sb = StringBuilder(this.length + stack.size)
-        sb.append(this)
-        while (!stack.isEmpty()) {
-            sb.append(stack.removeLast())
-        }
-        return sb.toString()
+    // スタックにBDI制御文字があれば末尾に付与する
+    return when {
+        stack.isNullOrEmpty() -> this
+        else -> this + (stack.reversed().joinToString(""))
     }
-
-    return this
 }
 
 //fun String.dumpCodePoints() : CharSequence {

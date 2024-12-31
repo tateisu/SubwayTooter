@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
     `java-library`
+    alias(libs.plugins.kotlin.jvm)
 }
 
 java {

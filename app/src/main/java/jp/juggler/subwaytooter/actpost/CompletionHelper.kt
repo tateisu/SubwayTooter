@@ -21,7 +21,6 @@ import jp.juggler.subwaytooter.util.EmojiDecoder
 import jp.juggler.subwaytooter.util.PopupAutoCompleteAcct
 import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.view.MyEditText
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.asciiRegex
 import jp.juggler.util.log.LogCategory

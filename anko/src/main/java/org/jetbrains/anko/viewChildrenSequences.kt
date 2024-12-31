@@ -18,6 +18,7 @@ package org.jetbrains.anko
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import java.util.LinkedList
 
 /**
  * Return the first child [View] matching the given [predicate].
@@ -82,16 +83,35 @@ private class ViewChildrenSequence(private val view: View) : Sequence<View> {
     }
 }
 
+private val emptyViewIterator: Iterator<View> = object : Iterator<View> {
+    override fun hasNext() = false
+    override fun next(): View = error("emptyViewIterator.next() should not called.")
+}
+
 private class ViewChildrenRecursiveSequence(private val view: View) : Sequence<View> {
+
     override fun iterator(): Iterator<View> {
         if (view !is ViewGroup) return emptyList<View>().iterator()
         return RecursiveViewIterator(view)
     }
 
     private class RecursiveViewIterator(view: View) : Iterator<View> {
+        private var current = emptyViewIterator
+        private val sequences = LinkedList<Sequence<View>>().apply {
+            add((view as? ViewGroup)?.children ?: sequenceOf(view))
+        }
 
-        private val sequences = arrayListOf((view as? ViewGroup)?.children ?: sequenceOf(view))
-        private var current = sequences.removeLast().iterator()
+        override fun hasNext(): Boolean {
+            while (true) {
+                if (current.hasNext()) return true
+                try {
+                    current = sequences.removeLast().iterator()
+                } catch (_: Throwable) {
+                    break
+                }
+            }
+            return false
+        }
 
         override fun next(): View {
             if (!hasNext()) throw NoSuchElementException()
@@ -100,19 +120,6 @@ private class ViewChildrenRecursiveSequence(private val view: View) : Sequence<V
                 sequences.add(view.children)
             }
             return view
-        }
-
-        override fun hasNext(): Boolean {
-            if (!current.hasNext() && sequences.isNotEmpty()) {
-                current = sequences.removeLastCompat().iterator()
-            }
-            return current.hasNext()
-        }
-
-        @Suppress("NOTHING_TO_INLINE")
-        private inline fun <T : Any> MutableList<T>.removeLastCompat(): T {
-            if (isEmpty()) throw NoSuchElementException()
-            return removeAt(size - 1)
         }
     }
 }

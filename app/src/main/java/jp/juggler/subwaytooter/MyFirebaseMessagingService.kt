@@ -29,7 +29,7 @@ package jp.juggler.subwaytooter
 //                    else -> {
 //                        pushMessageStatus.addFirst(messageId)
 //                        while (pushMessageStatus.size > 100) {
-//                            pushMessageStatus.removeLast()
+//                            pushMessageStatus.removeLastCompat()
 //                        }
 //                        false
 //                    }

@@ -581,7 +581,6 @@
                 style="@style/setting_row_form"
                 android:text="@string/notification_type_severed_relationships" />
 
-            notification
             <View style="@style/setting_divider" />
 
             <TextView

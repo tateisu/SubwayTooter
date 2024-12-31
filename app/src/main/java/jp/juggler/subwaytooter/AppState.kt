@@ -21,7 +21,6 @@ import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.coroutine.runOnMainLooper
 import jp.juggler.util.data.*
@@ -59,7 +58,7 @@ class AppState(
         private const val TTS_STATUS_INITIALIZING = 1
         private const val TTS_STATUS_INITIALIZED = 2
 
-        private const val tts_speak_wait_expire = 1000L * 100
+        private const val TTS_SPEAK_WAIT_EXPIRE = 1000L * 100
         private val random = Random()
 
         private val reSpaces = "[\\s　]+".asciiPattern()
@@ -221,7 +220,7 @@ class AppState(
 
                 if (ttsSpeakStart >= max(1L, ttsSpeakEnd)) {
                     // まだ終了イベントを受け取っていない
-                    val expire_remain = tts_speak_wait_expire + ttsSpeakStart - now
+                    val expire_remain = TTS_SPEAK_WAIT_EXPIRE + ttsSpeakStart - now
                     if (expire_remain <= 0) {
                         log.d("proc_flushSpeechQueue: tts_speak wait expired.")
                         restartTTS()
@@ -474,8 +473,7 @@ class AppState(
 
         if (tts == null) return
 
-        val text = getStatusText(status)
-        if (text == null || text.length == 0) return
+        val text = getStatusText(status).notBlank() ?: return
 
         val spanList = text.getSpans(0, text.length, MyClickableSpan::class.java)
         if (spanList == null || spanList.isEmpty()) {

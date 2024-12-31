@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -16,11 +16,12 @@
 
     <EditText
         android:id="@+id/etMessage"
-        android:inputType="none"
-        android:importantForAutofill="no"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_margin="12dp"
+        android:layout_weight="1"
+        android:importantForAutofill="no"
+        android:inputType="none"
+        tools:ignore="LabelFor"
         tools:text="hello" />
 </LinearLayout>

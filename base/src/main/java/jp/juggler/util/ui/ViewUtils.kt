@@ -13,7 +13,9 @@ import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.systemService
 import kotlin.math.pow
 
 private val log = LogCategory("ViewUtils")
@@ -51,12 +53,15 @@ fun View.hideKeyboard() {
     }
 }
 
-fun View.showKeyboard() {
+fun View.showKeyboard(
+    // InputMethodManager.SHOW_IMPLICIT or InputMethodManager.SHOW_FORCED,
+    flag: Int = InputMethodManager.SHOW_IMPLICIT,
+) {
     try {
-        ContextCompat.getSystemService(context, InputMethodManager::class.java)!!
-            .showSoftInput(this, InputMethodManager.HIDE_NOT_ALWAYS)
+        context.getSystemService<InputMethodManager>()!!
+            .showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
     } catch (ex: Throwable) {
-        log.e(ex, "showKeyboard failed.")
+        log.e(ex, "showKeyboard failed. flag=$flag")
     }
 }
 

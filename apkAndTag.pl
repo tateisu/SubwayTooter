@@ -59,6 +59,13 @@ GetOptions (
 ######################################################
 # ユーティリティ
 
+my $jsonXs = new JSON::XS->utf8->pretty(1)->indent(1)->canonical(1);
+
+# ディープコピー
+sub deepCopy($){
+    return $jsonXs->decode( $jsonXs->encode($_[0]));
+}
+
 sub cmd($){
 	print "+ ",$_[0],"\n";
 	my $rv = system $_[0];
@@ -383,7 +390,7 @@ sub compactLisences($$){
 
     # 変更するライセンスリスト
     # ディープコピーする
-    my $licenses = decode_json encode_json $initialLicenseList;
+    my $licenses = deepCopy $initialLicenseList;
 
     # ライブラリごとにライセンスのリストがあるので、それをshortNameのリストに変換する
     for my $lib (@$libs){
@@ -439,7 +446,7 @@ sub dependencyJson{
         say "$size library information parsed.";
 
         # 追加の依存関係
-        my $addItems = decode_json encode_json $config->{additionalLibs};
+        my $addItems = deepCopy $config->{additionalLibs};
         @$addItems and push @libs, @$addItems;
 
         # initialLicenses をディープコピーして見つかったライセンス情報を追加してコンパクト化する
@@ -450,10 +457,12 @@ sub dependencyJson{
         say "# [$name] save to json $out->{outFile}";
         my $outFile = $out->{outFile};
         open(my $fh,">:raw",$outFile) or die "$outFile $!";
-        print $fh encode_json {
-            libs => \@libs,
-            licenses => $licenses,
-        };
+        print $fh $jsonXs->encode(
+            {
+                libs => \@libs,
+                licenses => $licenses,
+            }
+        );
         close($fh) or die "$outFile $!";
 
         ++$outIndex;

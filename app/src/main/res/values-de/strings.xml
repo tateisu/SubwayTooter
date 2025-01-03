@@ -697,8 +697,8 @@
     <string name="pixelfed_does_not_allow_post_without_media">Pixelfeld lässt keine Posts (keine Antworten) ohne Medienanhänge zu.</string>
     <string name="hashtag_contains_ascii_and_not_ascii">Der Hashtag %1$s enthält sowohl ASCII- als auch Nicht-ASCII-Zeichen. Es könnte sich um einen Tippfehler handeln. Bist du sicher\?</string>
     <string name="pixelfed_does_not_allow_reply_with_media">Pixelfeld lässt keine Antworten mit Medienanhängen zu.</string>
-    <string name="navigation_bar_color">Farbe der Navigationsleiste (App-Neustart erforderlich. Vor Android 8.0 kann die Icon-Farbe nicht angepasst werden)</string>
-    <string name="status_bar_color">Farbe der Statusleiste (App-Neustart erforderlich. Vor Android 6.0 können Icon und Textfarbe nicht angepasst werden)</string>
+    <string name="navigation_bar_color">Farbe der Navigationsleiste (App-Neustart erforderlich)</string>
+    <string name="status_bar_color">Farbe der Statusleiste (App-Neustart erforderlich)</string>
     <string name="custom_emoji">Benutzerdefiniertes Emoji</string>
     <string name="show_in_directory">Im Verzeichnis anzeigen</string>
     <string name="profile_directory_not_supported_on_misskey">Profilverzeichnis wird von Misskey nicht unterstützt</string>

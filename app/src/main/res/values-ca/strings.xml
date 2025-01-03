@@ -949,8 +949,8 @@
     <string name="show_in_directory">Mostra al directori</string>
     <string name="featured_hashtags">Hashtags coneguts</string>
     <string name="custom_emoji">emoji personalitzat</string>
-    <string name="status_bar_color">Color de la barra s\'estat (cal reiniciar aplicació. Amb Android pre-6 no es pot ajustar el color d\'icones i text)</string>
-    <string name="navigation_bar_color">Color de barra de navegació (cal reiniciar aplicació. Amb Android pre-8 no es pot ajustar el color d\'icones)</string>
+    <string name="status_bar_color">Color de la barra s\'estat (cal reiniciar aplicació)</string>
+    <string name="navigation_bar_color">Color de barra de navegació (cal reiniciar aplicació)</string>
     <string name="pixelfed_does_not_allow_reply_with_media">Pixelfed no permet respostes amb adjuncions de mèdia.</string>
     <string name="pixelfed_does_not_allow_post_without_media">Pixelfed no permet publicacions (ni respostes) sense adjunció de mèdia.</string>
     <string name="hashtag_contains_ascii_and_not_ascii">El hashtag %1$s conté caràcters ASCII i no-ASCII alhora. Podria ser un lapsus. N\'estàs segura\?</string>

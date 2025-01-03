@@ -941,8 +941,8 @@
     <string name="block_domain">Bloquer tout le domaine</string>
     <string name="media_attachment_max_byte_size_pixelfed">Taille limite de la pièce jointe (PixelFed) (Unité : Mo. Par défaut 15)</string>
     <string name="resize_square_pixels">Redimensionner en %1$d pixels carrés (équivalent %2$dx%2$d)</string>
-    <string name="status_bar_color">Couleur de la barre d’état (redémarrage de l\'app requis. pre-Android 6 ne peut pas ajuster l’icône et la couleur du texte)</string>
-    <string name="navigation_bar_color">Couleur de la barre de navigation (redémarrage de l’app requis. pre-Android 8 ne peut pas ajuster la couleur des icônes)</string>
+    <string name="status_bar_color">Couleur de la barre d’état (redémarrage de l\'app requis)</string>
+    <string name="navigation_bar_color">Couleur de la barre de navigation (redémarrage de l’app requis)</string>
     <string name="quick_toot_omit_account_selection">Lorsque vous utilisez la fonction de message rapide, omettez si possible la sélection du compte</string>
     <string name="default_">Par défaut</string>
     <string name="confirm_unbookmark_from">Retirer ce statut comme un signet à partir de %1$s \?</string>

@@ -874,8 +874,8 @@
     <string name="profile_directory_not_supported_on_misskey">O diretório de perfis não é suportado no Misskey</string>
     <string name="show_in_directory">Mostrar no diretório</string>
     <string name="custom_emoji">Emoji personalizado</string>
-    <string name="status_bar_color">Cor da barra de status (requer reiniciar o app. Pré-Android 6 não é possível ajustar ícone e cor do texto)</string>
-    <string name="navigation_bar_color">Cor da barra de navegação (requer reiniciar o app. Pré-Android 8 não é possível ajustar cor do ícone)</string>
+    <string name="status_bar_color">Cor da barra de status (requer reiniciar o app)</string>
+    <string name="navigation_bar_color">Cor da barra de navegação (requer reiniciar o app)</string>
     <string name="around_this_toot">Ao redor do post</string>
     <string name="no">Não</string>
     <string name="muted_quote">Comentário silenciado</string>

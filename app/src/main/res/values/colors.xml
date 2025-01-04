@@ -22,8 +22,8 @@
     <color name="Light_colorLink">#0080ff</color>
     <color name="Light_colorPostFormBackground">#eee</color>
     <color name="Light_colorActionBarBg">#ccc</color>
+    <color name="Light_colorActionBarBgDark">#bbb</color>
     <color name="Light_colorActionBarBgStacked">#ddd</color>
-    <color name="Light_colorStatusBarBg">#707070</color> <!-- ステータスバー背景 -->
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
     <color name="Light_colorRefreshErrorBg">#D222</color>
     <color name="Light_colorRegexFilterError">#f00</color>
@@ -48,6 +48,12 @@
     <color name="Light_colotListItemDrag">#AACCCCCC</color>
     <color name="Light_colorAppCompatAccent">#0080ff</color>
 
+    <!-- OSのステータスバー背景 -->
+    <color name="Light_colorOsStatusBarBg">#fff</color>
+    <!-- OSのナビゲーションバー背景
+        端末によりライトテーマでもアイコン図柄が黒くないことがあるので、白にはしない -->
+    <color name="Light_colorOsNavigationBarBg">#ccc</color>
+
     <!-- =================================================== -->
     <!-- Dark theme -->
 
@@ -71,15 +77,16 @@
     <color name="Dark_colorListItemDrag">#AA444444</color>
     <color name="Dark_colorPostFormBackground">#222</color>
     <color name="Dark_colorActionBarBg">#333</color>
+    <color name="Dark_colorActionBarBgDark">#111</color>
     <color name="Dark_colorActionBarBgStacked">#222</color>
-    <color name="Dark_colorStatusBarBg">#222</color> <!-- ステータスバー背景 -->
     <color name="Dark_colorProfileBackgroundMask">#C0000000</color>
     <color name="Dark_colorRefreshErrorBg">#D222</color>
     <color name="Dark_colorRegexFilterError">#f00</color>
     <color name="Dark_colorReplyBackground">#333</color>
     <color name="Dark_colorRippleEffect">#777</color>
     <color name="Dark_colorSearchFormBackground">#333370</color>
-    <color name="Dark_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
+    <color name="Dark_colorSettingDivider">#66FFFFFF
+    </color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
     <color name="Dark_colorShowMediaBackground">#222</color>
     <color name="Dark_colorShowMediaText">#ccFFFFFF</color>
     <color name="Dark_colorStatusButtonsPopupBg">#424242</color>
@@ -95,6 +102,11 @@
     <color name="Dark_colorTextTimeSmall">#BBBBBB</color>
     <color name="Dark_colorThumbnailBackground">#20ffffff</color>
     <color name="Dark_colorAppCompatAccent">#0080ff</color>
+
+    <!-- OSのステータスバー背景。
+    ダークテーマならアイコン図柄は明るいので、暗い色を指定して良い -->
+    <color name="Dark_colorOsStatusBarBg">#222</color>
+    <color name="Dark_colorOsNavigationBarBg">#222</color>
 
     <!-- =================================================== -->
     <!-- Mastodon theme -->
@@ -120,15 +132,16 @@
     <color name="Mastodon_colorListItemDrag">#AA2F6091</color>
     <color name="Mastodon_colorPostFormBackground">#222</color>
     <color name="Mastodon_colorActionBarBg">#444B5D</color>
+    <color name="Mastodon_colorActionBarBgDark">#1d2028</color>
     <color name="Mastodon_colorActionBarBgStacked">#444B5D</color>
-    <color name="Mastodon_colorStatusBarBg">#444B5D</color>
     <color name="Mastodon_colorProfileBackgroundMask">#C0000000</color>
     <color name="Mastodon_colorRefreshErrorBg">#D222</color>
     <color name="Mastodon_colorRegexFilterError">#f00</color>
     <color name="Mastodon_colorReplyBackground">#333</color>
     <color name="Mastodon_colorRippleEffect">#C1607ECC</color>
     <color name="Mastodon_colorSearchFormBackground">#333370</color>
-    <color name="Mastodon_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
+    <color name="Mastodon_colorSettingDivider">#66FFFFFF
+    </color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
     <color name="Mastodon_colorShowMediaBackground">#222</color>
     <color name="Mastodon_colorShowMediaText">#ccFFFFFF</color>
     <color name="Mastodon_colorStatusButtonsPopupBg">#424242</color>
@@ -145,6 +158,11 @@
     <color name="Mastodon_colorThumbnailBackground">#20ffffff</color>
     <color name="Mastodon_colorAppCompatAccent">#0080ff</color>
 
+    <!-- OSのステータスバー背景。
+        ダークテーマならアイコン図柄は明るいので、暗い色を指定して良い -->
+    <color name="Mastodon_colorOsStatusBarBg">#444B5D</color>
+    <color name="Mastodon_colorOsNavigationBarBg">#444B5D</color>
+
     <!-- =================================================== -->
 
     <!-- スプラッシュ画面の背景色はテーマ関係なし -->
@@ -152,9 +170,6 @@
 
     <!-- 通知のアクセント色 -->
     <color name="colorOsNotificationAccent">#B3E1FF</color>
-
-    <!-- 白テーマのナビゲーションバーは白ではない -->
-    <color name="colorNavigationBarWorkaround">#707070</color>
 
     <!-- 通知のアクセント色 Pushメッセージ用 -->
     <color name="colorNotificationAccentFavourite">#e5e825</color>

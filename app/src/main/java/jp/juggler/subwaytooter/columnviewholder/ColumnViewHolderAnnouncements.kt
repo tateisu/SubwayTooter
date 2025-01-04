@@ -26,8 +26,8 @@ import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
-import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.*
@@ -168,19 +168,18 @@ private fun ColumnViewHolder.showAnnouncementColors(
 }
 
 private fun ColumnViewHolder.showAnnouncementFonts() {
-    val f = activity.timelineFontSizeSp
-    if (!f.isNaN()) {
-        tvAnnouncementsCaption.textSize = f
-        tvAnnouncementsIndex.textSize = f
-        tvAnnouncementPeriod.textSize = f
-        tvAnnouncementContent.textSize = f
+    ActMain.timelineFontSizeSp.takeIf { it.isFinite() }?.let {
+        tvAnnouncementsCaption.textSize = it
+        tvAnnouncementsIndex.textSize = it
+        tvAnnouncementPeriod.textSize = it
+        tvAnnouncementContent.textSize = it
     }
-    val spacing = activity.timelineSpacing
-    if (spacing != null) {
-        tvAnnouncementPeriod.setLineSpacing(0f, spacing)
-        tvAnnouncementContent.setLineSpacing(0f, spacing)
+    ActMain.timelineSpacing?.let {
+        tvAnnouncementPeriod.setLineSpacing(0f, it)
+        tvAnnouncementContent.setLineSpacing(0f, it)
     }
     tvAnnouncementsCaption.typeface = ActMain.timelineFontBold
+
     val fontNormal = ActMain.timelineFont
     tvAnnouncementsIndex.typeface = fontNormal
     tvAnnouncementPeriod.typeface = fontNormal
@@ -379,19 +378,20 @@ private fun ColumnViewHolder.showReactions(
                 btn.text = EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
             } else {
                 val invalidator = NetworkEmojiInvalidator(actMain.handler, btn)
-                invalidator.text = SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
-                    sb.setSpan(
-                        NetworkEmojiSpan(
-                            url,
-                            scale = 1.5f,
-                            sizeMode = options.emojiSizeMode,
-                            initialAspect = reaction.aspect,
-                        ),
-                        0,
-                        reaction.name.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                }
+                invalidator.text =
+                    SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
+                        sb.setSpan(
+                            NetworkEmojiSpan(
+                                url,
+                                scale = 1.5f,
+                                sizeMode = options.emojiSizeMode,
+                                initialAspect = reaction.aspect,
+                            ),
+                            0,
+                            reaction.name.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
                 extraInvalidatorList.add(invalidator)
             }
 

@@ -6,12 +6,10 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
@@ -36,8 +34,6 @@ import jp.juggler.util.ui.fixColor
 import jp.juggler.util.ui.mixColor
 import jp.juggler.util.ui.scan
 import jp.juggler.util.ui.setIconDrawableId
-import jp.juggler.util.ui.setNavigationBarColorCompat
-import jp.juggler.util.ui.setStatusBarColorCompat
 import org.xmlpull.v1.XmlPullParser
 import kotlin.math.max
 import kotlin.math.min
@@ -486,14 +482,14 @@ fun systemBarStyle(
 ) = when {
     isLightTheme -> SystemBarStyle.light(
         // bg color used when light theme that have dark icon, should use light color.
-        scrim = fixColor(src = colorBg, thresholdLightness = 0.5f, expectLightness = 1f),
+        scrim = fixColor(src = colorBg, lExpect = 1f),
         // bg color used when light theme that have LIGHT icon, should use dark color.
-        darkScrim = fixColor(src = colorBg, thresholdLightness = 0.5f, expectLightness = 0f),
+        darkScrim = fixColor(src = colorBg, lExpect = 0f),
     )
 
     else -> SystemBarStyle.dark(
         // bg color used when dark theme that have LIGHT icon, should use dark color.
-        scrim = fixColor(src = colorBg, thresholdLightness = 0.5f, expectLightness = 0f),
+        scrim = fixColor(src = colorBg, lExpect = 0f),
     )
 }
 
@@ -503,7 +499,7 @@ fun ComponentActivity.enableEdgeToEdgeEx(forceDark: Boolean) {
     val isLightTheme = when (nTheme) {
         2 -> false // R.style.AppTheme_Mastodon
         1 -> false // R.style.AppTheme_Dark
-        /* 0 */ else ->  true // R.style.AppTheme_Light
+        /* 0 */ else -> true // R.style.AppTheme_Light
     }
     enableEdgeToEdge(
         statusBarStyle = systemBarStyle(
@@ -511,14 +507,15 @@ fun ComponentActivity.enableEdgeToEdgeEx(forceDark: Boolean) {
             colorBg = when {
                 forceDark -> Color.BLACK
                 else -> PrefI.ipStatusBarColor.value.notZero()
-                    ?: attrColor(android.R.attr.colorPrimaryDark)
+                    ?: attrColor(R.attr.colorOsStatusBarBg)
             },
         ),
         navigationBarStyle = systemBarStyle(
             isLightTheme = isLightTheme,
             colorBg = when {
                 forceDark -> Color.BLACK
-                else -> PrefI.ipNavigationBarColor.value
+                else -> PrefI.ipNavigationBarColor.value.notZero()
+                    ?: attrColor(R.attr.colorOsNavigationBarBg)
             },
         ),
     )

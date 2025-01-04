@@ -1,4 +1,4 @@
-package jp.juggler.util.colorSpace
+package jp.juggler.colorSpace
 
 import jp.juggler.util.data.clip
 import kotlin.math.abs

@@ -25,7 +25,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.bottomPadding
-import org.jetbrains.anko.textColor
 import org.jetbrains.anko.topPadding
 
 private val log = LogCategory("ColumnViewHolderLifeCycle")
@@ -223,11 +222,11 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         val searchBgColor = PrefI.ipSearchBgColor.value.notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)
 
-        for( v in arrayOf(
+        for (v in arrayOf(
             llSearch,
             llAggBoostBar,
             llListList,
-        )){
+        )) {
             v.apply {
                 backgroundColor = searchBgColor
                 startPadding = dip(12)
@@ -305,8 +304,6 @@ fun ColumnViewHolder.onPageCreate(column: Column, pageIdx: Int, pageCount: Int) 
         column.addColumnViewHolder(this)
 
         lastAnnouncementShown = -1L
-
-
 
         val announcementsBgColor = PrefI.ipAnnouncementsBgColor.value.notZero()
             ?: context.attrColor(R.attr.colorSearchFormBackground)

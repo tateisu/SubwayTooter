@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.databinding.ActExitReasonsBinding
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.data.decodeUTF8
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.withCaption
@@ -82,6 +83,7 @@ class ActExitReasons : AppCompatActivity() {
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalPadding(views.listView)
 

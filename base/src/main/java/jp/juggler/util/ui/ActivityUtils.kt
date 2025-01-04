@@ -11,26 +11,31 @@ private val log = LogCategory("ActivityUtils")
 
 fun ComponentActivity.setContentViewAndInsets(
     contentView: View,
-    insetView:View? = contentView,
-){
+    insetView: View? = contentView,
+) {
     setContentView(contentView)
     if (insetView != null) {
         ViewCompat.setOnApplyWindowInsetsListener(insetView) { v, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Apply the insets as a margin to the view. This solution sets
-            // only the bottom, left, and right dimensions, but you can apply whichever
-            // insets are appropriate to your layout. You can also update the view padding
-            // if that's more appropriate.
+            val insetsList = buildList {
+                // システムバー
+                add(windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()))
+                // ソフトウェアキーボード
+                val typeIme = WindowInsetsCompat.Type.ime()
+                if (windowInsets.isVisible(typeIme)) {
+                    add(windowInsets.getInsets(typeIme))
+                }
+            }
             val lp = v.layoutParams
             if (lp !is MarginLayoutParams) {
-                log.w("activity=${this.javaClass.simpleName}, parent=${v.parent}, view=${v}, layoutParams=$lp, can't apply insets=$insets")
+                log.w("activity=${this.javaClass.simpleName}, parent=${v.parent}, view=${v}, layoutParams=$lp, can't apply windowInsets=$windowInsets")
             } else {
-                log.w("activity=${this.javaClass.simpleName}, parent=${v.parent}, view=${v}, layoutParams=$lp, apply insets=$insets")
-                lp.topMargin = insets.top
-                lp.leftMargin = insets.left
-                lp.bottomMargin = insets.bottom
-                lp.rightMargin = insets.right
-                v.layoutParams = lp
+                log.w("activity=${this.javaClass.simpleName}, parent=${v.parent}, view=${v}, layoutParams=$lp, apply windowInsets=$windowInsets")
+                v.layoutParams = lp.apply {
+                    topMargin = insetsList.maxOfOrNull { it.top } ?: 0
+                    bottomMargin = insetsList.maxOfOrNull { it.bottom } ?: 0
+                    leftMargin = insetsList.maxOfOrNull { it.left } ?: 0
+                    rightMargin = insetsList.maxOfOrNull { it.right } ?: 0
+                }
             }
             // Return CONSUMED if you don't want want the window insets to keep passing
             // down to descendant views.

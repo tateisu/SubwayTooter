@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.column.getHeaderNameColor
 import jp.juggler.subwaytooter.column.getIconId
 import jp.juggler.subwaytooter.column.setHeaderBackground
 import jp.juggler.subwaytooter.databinding.ActColumnCustomizeBinding
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -257,6 +258,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener {
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.svContent)
 

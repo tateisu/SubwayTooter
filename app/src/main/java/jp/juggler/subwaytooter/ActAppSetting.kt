@@ -99,22 +99,16 @@ import kotlin.math.abs
 class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
     companion object {
-
-        internal val log = LogCategory("ActAppSetting")
-
-        fun createIntent(activity: ActMain) =
-            Intent(activity, ActAppSetting::class.java)
-
         private const val COLOR_DIALOG_ID = 1
 
         private const val STATE_CHOOSE_INTENT_TARGET = "customShareTarget"
 
-        // 他の設定子画面と重複しない値にすること
-//		const val REQUEST_CODE_OTHER = 0
-//		const val REQUEST_CODE_APP_DATA_IMPORT = 1
-//		const val REQUEST_CODE_TIMELINE_FONT = 2
-
         val reLinefeed = Regex("[\\x0d\\x0a]+")
+
+        internal val log = LogCategory("ActAppSetting")
+
+        fun ActivityResultHandler.launchAppSetting() =
+            launch(Intent(context!!, ActAppSetting::class.java))
     }
 
     // states

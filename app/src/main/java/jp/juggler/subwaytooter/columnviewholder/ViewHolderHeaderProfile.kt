@@ -211,13 +211,13 @@ internal class ViewHolderHeaderProfile(
         views.run {
             var f: Float
 
-            f = activity.timelineFontSizeSp
-            if (!f.isNaN()) {
-                tvMovedName.textSize = f
-                tvMoved.textSize = f
-                tvPersonalNotes.textSize = f
-                tvFeaturedTags.textSize = f
+            ActMain.timelineFontSizeSp.takeIf { it.isFinite() }?.let {
+                tvMovedName.textSize = it
+                tvMoved.textSize = it
+                tvPersonalNotes.textSize = it
+                tvFeaturedTags.textSize = it
             }
+
 
             f = activity.acctFontSizeSp
             if (!f.isNaN()) {
@@ -226,10 +226,9 @@ internal class ViewHolderHeaderProfile(
                 tvLastStatusAt.textSize = f
             }
 
-            val spacing = activity.timelineSpacing
-            if (spacing != null) {
-                tvMovedName.setLineSpacing(0f, spacing)
-                tvMoved.setLineSpacing(0f, spacing)
+            ActMain.timelineSpacing?.let {
+                tvMovedName.setLineSpacing(0f, it)
+                tvMoved.setLineSpacing(0f, it)
             }
         }
     }
@@ -379,8 +378,6 @@ internal class ViewHolderHeaderProfile(
             )
         }
     }
-
-
 
     override fun onClick(v: View) {
 

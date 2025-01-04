@@ -502,12 +502,7 @@ fun ItemViewHolder.showMessageHolder(
         setCompoundDrawablesRelative(null, null, null, null)
     } else {
         setCompoundDrawablesRelative(
-            DrawableCompat.wrap(
-                resDrawable(iconId)
-            ).also {
-                DrawableCompat.setTint(it, iconColor)
-                it.setBounds(0, 0, it.getIntrinsicWidth(), it.getIntrinsicHeight())
-            },
+            resDrawable(iconId).wrapAndTint( iconColor ),
             null,
             null,
             null,

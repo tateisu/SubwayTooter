@@ -1,4 +1,4 @@
-package jp.juggler.util.colorSpace
+package jp.juggler.colorSpace
 
 import kotlin.math.pow
 

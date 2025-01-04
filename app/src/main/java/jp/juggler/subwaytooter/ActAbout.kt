@@ -9,11 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import jp.juggler.subwaytooter.databinding.ActAboutBinding
 import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.getPackageInfoCompat
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
-import org.jetbrains.anko.contentView
 
 class ActAbout : AppCompatActivity() {
 
@@ -81,6 +81,7 @@ class ActAbout : AppCompatActivity() {
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.svContent)
 

@@ -7,6 +7,7 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import jp.juggler.subwaytooter.databinding.ActDrawableListBinding
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.AsyncActivity
 import jp.juggler.util.data.asciiPattern
@@ -42,6 +43,7 @@ class ActDrawableList : AsyncActivity(), CoroutineScope {
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         fixHorizontalMargin(views.listView)
         setNavigationBack(views.toolbar)
 

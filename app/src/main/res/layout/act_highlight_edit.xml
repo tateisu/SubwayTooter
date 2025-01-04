@@ -14,13 +14,15 @@
         android:elevation="4dp"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
+    <!-- 画面幅による左右パティング適用対象 -->
     <LinearLayout
+        android:id="@+id/llContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:id="@+id/llContent"
         android:orientation="vertical">
 
+        <!-- ボタンバー以外のコンテンツはスクロールする -->
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -29,6 +31,7 @@
             android:fadeScrollbars="false"
             android:fillViewport="true"
             android:padding="12dp"
+            android:scrollbarStyle="outsideOverlay"
             tools:ignore="NestedWeights">
 
             <LinearLayout

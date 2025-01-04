@@ -92,7 +92,6 @@ class ItemListAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        activity
         when (viewType) {
             0 -> {
                 val holder = ItemViewHolder(activity)

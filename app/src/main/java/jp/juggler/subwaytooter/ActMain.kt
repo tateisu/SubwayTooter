@@ -144,16 +144,17 @@ class ActMain : AppCompatActivity(),
         var timelineFont: Typeface = Typeface.DEFAULT
         var timelineFontBold: Typeface = Typeface.DEFAULT_BOLD
         var eventFadeAlpha = 1f
+
+        var timelineFontSizeSp = Float.NaN
+        var timelineSpacing: Float? = null
     }
 
     // アプリ設定のキャッシュ
     var density = 0f
     var acctPadLr = 0
-    var timelineFontSizeSp = Float.NaN
     var acctFontSizeSp = Float.NaN
     var notificationTlFontSizeSp = Float.NaN
     var headerTextSizeSp = Float.NaN
-    var timelineSpacing: Float? = null
     var avatarIconSize: Int = 0
     var notificationTlIconSize: Int = 0
 
@@ -324,6 +325,7 @@ class ActMain : AppCompatActivity(),
         Column.reloadDefaultColor(this)
         showFooterColor()
         updateColumnStrip()
+        enableEdgeToEdgeEx(forceDark = false)
         if (r.resultCode == RESULT_APP_DATA_IMPORT) {
             r.data?.data?.let { importAppData(it) }
         }

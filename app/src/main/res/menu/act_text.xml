@@ -5,6 +5,7 @@
     <item
         android:id="@+id/miCopy"
         android:title="@string/copy_st"
+        android:icon="@drawable/ic_copy"
         app:showAsAction="ifRoom" />
 
     <item

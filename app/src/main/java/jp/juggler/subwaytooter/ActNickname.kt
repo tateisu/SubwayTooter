@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.databinding.ActNicknameBinding
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.daoAcctColor
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.boolean
 import jp.juggler.util.coroutine.launchAndShowError
@@ -92,16 +93,17 @@ class ActNickname : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun initUI() {
+        fixHorizontalMargin(views.llContent)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
-
-        supportActionBar?.subtitle = getString(
-            when {
-                showNotificationSound -> R.string.nickname_and_color_and_notification_sound
-                else -> R.string.nickname_and_color
-            }
+        wrapTitleTextView(
+            subtitle = getString(
+                when {
+                    showNotificationSound -> R.string.nickname_and_color_and_notification_sound
+                    else -> R.string.nickname_and_color
+                }
+            )
         )
-        fixHorizontalMargin(views.llContent)
 
         views.btnTextColorEdit.setOnClickListener(this)
         views.btnTextColorReset.setOnClickListener(this)

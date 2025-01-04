@@ -1,4 +1,4 @@
-package jp.juggler.util.colorSpace
+package jp.juggler.colorSpace
 
 import kotlin.math.abs
 import kotlin.math.max
@@ -17,9 +17,17 @@ data class OkLch(
             return a
         }
 
-        fun mixHue(h1: Float, h2: Float): Float {
-            val roundH1 = h1.round360()
-            val roundH2 = h2.round360()
+        fun mixHue(
+            lch1: OkLch,
+            lch2: OkLch,
+            epsilon: Float = 0.000001f,
+        ): Float {
+            // 片方が無彩色なら、もう片方の色相をそのまま返す
+            if (lch1.c < epsilon) return lch2.h
+            if (lch2.c < epsilon) return lch1.h
+
+            val roundH1 = lch1.h.round360()
+            val roundH2 = lch2.h.round360()
             val min = min(roundH1, roundH2)
             val max = max(roundH1, roundH2)
             return when {

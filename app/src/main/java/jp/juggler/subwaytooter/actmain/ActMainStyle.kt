@@ -6,8 +6,6 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -28,6 +26,8 @@ import jp.juggler.util.data.notZero
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
+import jp.juggler.util.ui.resDrawable
+import jp.juggler.util.ui.wrapAndTint
 import org.jetbrains.anko.backgroundDrawable
 import java.util.*
 import kotlin.math.max
@@ -125,12 +125,12 @@ private fun Float.clipFontSize(): Float =
     if (isNaN()) this else max(1f, this)
 
 fun ActMain.reloadTextSize() {
-    timelineFontSizeSp = PrefF.fpTimelineFontSize.value.clipFontSize()
+    ActMain.timelineFontSizeSp = PrefF.fpTimelineFontSize.value.clipFontSize()
     acctFontSizeSp = PrefF.fpAcctFontSize.value.clipFontSize()
     notificationTlFontSizeSp = PrefF.fpNotificationTlFontSize.value.clipFontSize()
     headerTextSizeSp = PrefF.fpHeaderTextSize.value.clipFontSize()
     val fv = PrefS.spTimelineSpacing.value.toFloatOrNull()
-    timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
+    ActMain.timelineSpacing = if (fv != null && fv.isFinite() && fv != 0f) fv else null
 }
 
 fun ActMain.loadColumnMin() =
@@ -245,8 +245,7 @@ fun ActMain.showFooterColor() {
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 
     var c = footerButtonFgColor.notZero() ?: attrColor(R.attr.colorTextContent)
-    val d = ContextCompat.getDrawable(this, R.drawable.ic_question)
-        ?.let { DrawableCompat.wrap(it).apply { setTint(c) } }
+    val d = resDrawable(R.drawable.ic_question).wrapAndTint(color = c)
     ivQuickTootAccount.setDefaultImage(d)
 
     val csl = ColorStateList.valueOf(

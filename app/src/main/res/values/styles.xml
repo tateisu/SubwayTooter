@@ -20,16 +20,14 @@
         <item name="colorActionBarBg">@color/Light_colorActionBarBg</item>
         <item name="colorActionBarBgStacked">@color/Light_colorActionBarBgStacked</item>
 
-        <!-- ステータスバーの背景色 -->
-        <item name="colorPrimaryDark">@color/Light_colorStatusBarBg</item>
+        <!-- 歴史的には OSのステータスバー背景や contextual app bar 背景など。最近の事情は不明 -->
+        <item name="colorPrimaryDark">@color/Light_colorActionBarBgDark</item>
 
-        <!-- ナビゲーションバー（戻るキー・ホームキーなどがあるバー）の背景色 -->
-        <!--
-            ナビゲーションバーのデフォルト色は通常はカラムストリップと揃えたいが、
-            Lightテーマでそれをやるとボタン図柄の色が白いままの端末で問題になる。
-            仕方ないので白テーマだけデフォルト色が異なる。
-        -->
-        <item name="android:navigationBarColor">@color/colorNavigationBarWorkaround</item>
+        <!-- OSのシステムバーの背景色 -->
+        <item name="android:statusBarColor">@color/Light_colorOsStatusBarBg</item>
+        <item name="android:navigationBarColor">@color/Light_colorOsNavigationBarBg</item>
+        <item name="colorOsStatusBarBg">@color/Light_colorOsStatusBarBg</item>
+        <item name="colorOsNavigationBarBg">@color/Light_colorOsNavigationBarBg</item>
 
         <!-- ウィンドウ背景Drawable -->
         <item name="android:windowBackground">@drawable/window_background</item>
@@ -122,11 +120,15 @@
         <item name="colorActionBarBg">@color/Dark_colorActionBarBg</item>
         <item name="colorActionBarBgStacked">@color/Dark_colorActionBarBgStacked</item>
 
-        <!-- ステータスバーの背景色 -->
-        <item name="colorPrimaryDark">@color/Dark_colorStatusBarBg</item>
+        <!-- 歴史的には OSのステータスバー背景や contextual app bar 背景など。最近の事情は不明 -->
+        <item name="colorPrimaryDark">@color/Dark_colorActionBarBgDark</item>
 
-        <!-- ナビゲーションバー（戻るキー・ホームキーなどがあるバー）の背景色 -->
-        <item name="android:navigationBarColor">@color/Dark_colorColumnStripBackground</item>
+        <!-- OSのシステムバーの背景色 -->
+        <item name="android:statusBarColor">@color/Dark_colorOsStatusBarBg</item>
+        <item name="android:navigationBarColor">@color/Dark_colorOsNavigationBarBg</item>
+        <item name="colorOsStatusBarBg">@color/Dark_colorOsStatusBarBg</item>
+        <item name="colorOsNavigationBarBg">@color/Dark_colorOsNavigationBarBg</item>
+
 
         <!-- ウィンドウ背景Drawable -->
         <item name="android:windowBackground">@drawable/window_background</item>
@@ -222,11 +224,14 @@
         <item name="colorActionBarBg">@color/Mastodon_colorActionBarBg</item>
         <item name="colorActionBarBgStacked">@color/Mastodon_colorActionBarBgStacked</item>
 
-        <!-- ステータスバーの背景色 -->
-        <item name="colorPrimaryDark">@color/Mastodon_colorStatusBarBg</item>
+        <!-- 歴史的には OSのステータスバー背景や contextual app bar 背景など。最近の事情は不明 -->
+        <item name="colorPrimaryDark">@color/Mastodon_colorActionBarBgDark</item>
 
-        <!-- ナビゲーションバー（戻るキー・ホームキーなどがあるバー）の背景色 -->
-        <item name="android:navigationBarColor">@color/Mastodon_colorColumnStripBackground</item>
+        <!-- OSのシステムバーの背景色 -->
+        <item name="android:statusBarColor">@color/Mastodon_colorOsStatusBarBg</item>
+        <item name="android:navigationBarColor">@color/Mastodon_colorOsNavigationBarBg</item>
+        <item name="colorOsStatusBarBg">@color/Mastodon_colorOsStatusBarBg</item>
+        <item name="colorOsNavigationBarBg">@color/Mastodon_colorOsNavigationBarBg</item>
 
         <!-- ウィンドウ背景Drawable -->
         <item name="android:windowBackground">@drawable/window_background</item>

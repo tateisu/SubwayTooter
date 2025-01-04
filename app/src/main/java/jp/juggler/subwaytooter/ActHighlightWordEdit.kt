@@ -6,12 +6,14 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Bundle
+import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import com.jrummyapps.android.colorpicker.dialogColorPicker
 import jp.juggler.subwaytooter.databinding.ActHighlightEditBinding
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.daoHighlightWord
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.decodeJsonObject
@@ -73,6 +75,7 @@ class ActHighlightWordEdit
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         backPressed {
             AlertDialog.Builder(this)
                 .setCancelable(true)
@@ -81,11 +84,12 @@ class ActHighlightWordEdit
                 .setNegativeButton(R.string.yes) { _, _ -> finish() }
                 .show()
         }
-        super.onCreate(savedInstanceState)
+
         arNotificationSound.register(this)
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         initUI()
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
 
         setResult(RESULT_CANCELED)
 
@@ -132,6 +136,7 @@ class ActHighlightWordEdit
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)
 

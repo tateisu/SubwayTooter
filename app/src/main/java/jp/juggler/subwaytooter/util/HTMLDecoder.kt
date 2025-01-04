@@ -9,7 +9,6 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
-import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
@@ -21,7 +20,6 @@ import jp.juggler.subwaytooter.pref.lazyContext
 import jp.juggler.subwaytooter.span.BlockCodeSpan
 import jp.juggler.subwaytooter.span.BlockQuoteSpan
 import jp.juggler.subwaytooter.span.DdSpan
-import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.HrSpan
 import jp.juggler.subwaytooter.span.InlineCodeSpan
@@ -36,7 +34,6 @@ import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoHighlightWord
 import jp.juggler.util.data.CharacterGroup
 import jp.juggler.util.data.asciiPattern
-import jp.juggler.util.data.decodePercent
 import jp.juggler.util.data.groupEx
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.removeEndWhitespaces
@@ -162,13 +159,264 @@ object HTMLDecoder {
     ).toHashSet()
 
     private val reEntity = "&(#?)(\\w+);".asciiPattern()
-    private val entity_map = HashMap<String, Char>()
-    private fun defineEntity(s: String, c: Char) {
-        entity_map[s] = c
-    }
 
-    private fun chr(num: Int): Char {
-        return num.toChar()
+    private val entity_map by lazy {
+        buildMap<String, Char> {
+            fun chr(code: Int): Char = code.toChar()
+            put("AElig", chr(198)) // capital AE diphthong (ligature)
+            put("Aacute", chr(193)) // capital A, acute accent
+            put("Acirc", chr(194)) // capital A, circumflex accent
+            put("Agrave", chr(192)) // capital A, grave accent
+            put("Alpha", chr(913))
+            put("Aring", chr(197)) // capital A, ring
+            put("Atilde", chr(195)) // capital A, tilde
+            put("Auml", chr(196)) // capital A, dieresis or umlaut mark
+            put("Beta", chr(914))
+            put("Ccedil", chr(199)) // capital C, cedilla
+            put("Chi", chr(935))
+            put("Dagger", chr(8225))
+            put("Delta", chr(916))
+            put("ETH", chr(208)) // capital Eth, Icelandic
+            put("Eacute", chr(201)) // capital E, acute accent
+            put("Ecirc", chr(202)) // capital E, circumflex accent
+            put("Egrave", chr(200)) // capital E, grave accent
+            put("Epsilon", chr(917))
+            put("Eta", chr(919))
+            put("Euml", chr(203)) // capital E, dieresis or umlaut mark
+            put("Gamma", chr(915))
+            put("Iacute", chr(205)) // capital I, acute accent
+            put("Icirc", chr(206)) // capital I, circumflex accent
+            put("Igrave", chr(204)) // capital I, grave accent
+            put("Iota", chr(921))
+            put("Iuml", chr(207)) // capital I, dieresis or umlaut mark
+            put("Kappa", chr(922))
+            put("Lambda", chr(923))
+            put("Mu", chr(924))
+            put("Ntilde", chr(209)) // capital N, tilde
+            put("Nu", chr(925))
+            put("OElig", chr(338))
+            put("Oacute", chr(211)) // capital O, acute accent
+            put("Ocirc", chr(212)) // capital O, circumflex accent
+            put("Ograve", chr(210)) // capital O, grave accent
+            put("Omega", chr(937))
+            put("Omicron", chr(927))
+            put("Oslash", chr(216)) // capital O, slash
+            put("Otilde", chr(213)) // capital O, tilde
+            put("Ouml", chr(214)) // capital O, dieresis or umlaut mark
+            put("Phi", chr(934))
+            put("Pi", chr(928))
+            put("Prime", chr(8243))
+            put("Psi", chr(936))
+            put("Rho", chr(929))
+            put("Scaron", chr(352))
+            put("Sigma", chr(931))
+            put("THORN", chr(222)) // capital THORN, Icelandic
+            put("Tau", chr(932))
+            put("Theta", chr(920))
+            put("Uacute", chr(218)) // capital U, acute accent
+            put("Ucirc", chr(219)) // capital U, circumflex accent
+            put("Ugrave", chr(217)) // capital U, grave accent
+            put("Upsilon", chr(933))
+            put("Uuml", chr(220)) // capital U, dieresis or umlaut mark
+            put("Xi", chr(926))
+            put("Yacute", chr(221)) // capital Y, acute accent
+            put("Yuml", chr(376))
+            put("Zeta", chr(918))
+            put("aacute", chr(225)) // small a, acute accent
+            put("acirc", chr(226)) // small a, circumflex accent
+            put("acute", chr(180))
+            put("aelig", chr(230)) // small ae diphthong (ligature)
+            put("agrave", chr(224)) // small a, grave accent
+            put("alefsym", chr(8501))
+            put("alpha", chr(945))
+            put("amp", '&') // ampersand
+            put("and", chr(8743))
+            put("ang", chr(8736))
+            put("apos", '\'') // single quote
+            put("aring", chr(229)) // small a, ring
+            put("asymp", chr(8776))
+            put("atilde", chr(227)) // small a, tilde
+            put("auml", chr(228)) // small a, dieresis or umlaut mark
+            put("bdquo", chr(8222))
+            put("beta", chr(946))
+            put("brvbar", chr(166))
+            put("bull", chr(8226))
+            put("cap", chr(8745))
+            put("ccedil", chr(231)) // small c, cedilla
+            put("cedil", chr(184))
+            put("cent", chr(162))
+            put("chi", chr(967))
+            put("circ", chr(710))
+            put("clubs", chr(9827))
+            put("cong", chr(8773))
+            put("copy", chr(169)) // copyright sign
+            put("crarr", chr(8629))
+            put("cup", chr(8746))
+            put("curren", chr(164))
+            put("dArr", chr(8659))
+            put("dagger", chr(8224))
+            put("darr", chr(8595))
+            put("deg", chr(176))
+            put("delta", chr(948))
+            put("diams", chr(9830))
+            put("divide", chr(247))
+            put("eacute", chr(233)) // small e, acute accent
+            put("ecirc", chr(234)) // small e, circumflex accent
+            put("egrave", chr(232)) // small e, grave accent
+            put("empty", chr(8709))
+            put("emsp", chr(8195))
+            put("ensp", chr(8194))
+            put("epsilon", chr(949))
+            put("equiv", chr(8801))
+            put("eta", chr(951))
+            put("eth", chr(240)) // small eth, Icelandic
+            put("euml", chr(235)) // small e, dieresis or umlaut mark
+            put("euro", chr(8364))
+            put("exist", chr(8707))
+            put("fnof", chr(402))
+            put("forall", chr(8704))
+            put("frac12", chr(189))
+            put("frac14", chr(188))
+            put("frac34", chr(190))
+            put("frasl", chr(8260))
+            put("gamma", chr(947))
+            put("ge", chr(8805))
+            put("gt", '>') // greater than
+            put("hArr", chr(8660))
+            put("harr", chr(8596))
+            put("hearts", chr(9829))
+            put("hellip", chr(8230))
+            put("iacute", chr(237)) // small i, acute accent
+            put("icirc", chr(238)) // small i, circumflex accent
+            put("iexcl", chr(161))
+            put("igrave", chr(236)) // small i, grave accent
+            put("image", chr(8465))
+            put("infin", chr(8734))
+            put("int", chr(8747))
+            put("iota", chr(953))
+            put("iquest", chr(191))
+            put("isin", chr(8712))
+            put("iuml", chr(239)) // small i, dieresis or umlaut mark
+            put("kappa", chr(954))
+            put("lArr", chr(8656))
+            put("lambda", chr(955))
+            put("lang", chr(9001))
+            put("laquo", chr(171))
+            put("larr", chr(8592))
+            put("lceil", chr(8968))
+            put("ldquo", chr(8220))
+            put("le", chr(8804))
+            put("lfloor", chr(8970))
+            put("lowast", chr(8727))
+            put("loz", chr(9674))
+            put("lrm", chr(8206))
+            put("lsaquo", chr(8249))
+            put("lsquo", chr(8216))
+            put("lt", '<') // less than
+            put("macr", chr(175))
+            put("mdash", chr(8212))
+            put("micro", chr(181))
+            put("middot", chr(183))
+            put("minus", chr(8722))
+            put("mu", chr(956))
+            put("nabla", chr(8711))
+            put("nbsp", chr(160)) // non breaking space
+            put("ndash", chr(8211))
+            put("ne", chr(8800))
+            put("ni", chr(8715))
+            put("not", chr(172))
+            put("notin", chr(8713))
+            put("nsub", chr(8836))
+            put("ntilde", chr(241)) // small n, tilde
+            put("nu", chr(957))
+            put("oacute", chr(243)) // small o, acute accent
+            put("ocirc", chr(244)) // small o, circumflex accent
+            put("oelig", chr(339))
+            put("ograve", chr(242)) // small o, grave accent
+            put("oline", chr(8254))
+            put("omega", chr(969))
+            put("omicron", chr(959))
+            put("oplus", chr(8853))
+            put("or", chr(8744))
+            put("ordf", chr(170))
+            put("ordm", chr(186))
+            put("oslash", chr(248)) // small o, slash
+            put("otilde", chr(245)) // small o, tilde
+            put("otimes", chr(8855))
+            put("ouml", chr(246)) // small o, dieresis or umlaut mark
+            put("para", chr(182))
+            put("part", chr(8706))
+            put("permil", chr(8240))
+            put("perp", chr(8869))
+            put("phi", chr(966))
+            put("pi", chr(960))
+            put("piv", chr(982))
+            put("plusmn", chr(177))
+            put("pound", chr(163))
+            put("prime", chr(8242))
+            put("prod", chr(8719))
+            put("prop", chr(8733))
+            put("psi", chr(968))
+            put("quot", '"') // double quote
+            put("rArr", chr(8658))
+            put("radic", chr(8730))
+            put("rang", chr(9002))
+            put("raquo", chr(187))
+            put("rarr", chr(8594))
+            put("rceil", chr(8969))
+            put("rdquo", chr(8221))
+            put("real", chr(8476))
+            put("reg", chr(174)) // registered sign
+            put("rfloor", chr(8971))
+            put("rho", chr(961))
+            put("rlm", chr(8207))
+            put("rsaquo", chr(8250))
+            put("rsquo", chr(8217))
+            put("sbquo", chr(8218))
+            put("scaron", chr(353))
+            put("sdot", chr(8901))
+            put("sect", chr(167))
+            put("shy", chr(173))
+            put("sigma", chr(963))
+            put("sigmaf", chr(962))
+            put("sim", chr(8764))
+            put("spades", chr(9824))
+            put("sub", chr(8834))
+            put("sube", chr(8838))
+            put("sum", chr(8721))
+            put("sup", chr(8835))
+            put("sup1", chr(185))
+            put("sup2", chr(178))
+            put("sup3", chr(179))
+            put("supe", chr(8839))
+            put("szlig", chr(223)) // small sharp s, German (sz ligature)
+            put("tau", chr(964))
+            put("there4", chr(8756))
+            put("theta", chr(952))
+            put("thetasym", chr(977))
+            put("thinsp", chr(8201))
+            put("thorn", chr(254)) // small thorn, Icelandic
+            put("tilde", chr(732))
+            put("times", chr(215))
+            put("trade", chr(8482))
+            put("uArr", chr(8657))
+            put("uacute", chr(250)) // small u, acute accent
+            put("uarr", chr(8593))
+            put("ucirc", chr(251)) // small u, circumflex accent
+            put("ugrave", chr(249)) // small u, grave accent
+            put("uml", chr(168))
+            put("upsih", chr(978))
+            put("upsilon", chr(965))
+            put("uuml", chr(252)) // small u, dieresis or umlaut mark
+            put("weierp", chr(8472))
+            put("xi", chr(958))
+            put("yacute", chr(253)) // small y, acute accent
+            put("yen", chr(165))
+            put("yuml", chr(255)) // small y, dieresis or umlaut mark
+            put("zeta", chr(950))
+            put("zwj", chr(8205))
+            put("zwnj", chr(8204))
+        }
     }
 
     fun decodeEntity(src: String?): String {
@@ -470,7 +718,7 @@ object HTMLDecoder {
         fun String.tagsCanRemoveNearSpaces() = when (this) {
             "li", "ol", "ul", "dl", "dt", "dd", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6",
             "table", "tbody", "thead", "tfoot", "tr", "td", "th",
-            -> true
+                -> true
 
             else -> false
         }
@@ -1131,8 +1379,6 @@ object HTMLDecoder {
         return originalUrl
     }
 
-    private val reNicodic = """\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)""".asciiPattern()
-
     private fun formatLinkCaption(
         options: DecodeOptions,
         originalCaption: CharSequence,
@@ -1206,16 +1452,12 @@ object HTMLDecoder {
             }
 
             else -> {
-
                 val context = options.context
-
                 when {
+                    context == null || !options.short || href.isEmpty() -> Unit
 
-                    context == null || !options.short || href.isEmpty() -> {
-                    }
-
-                    options.isMediaAttachment(href) -> {
-                        // 添付メディアのURLなら絵文字に変換する
+                    // 添付メディアのURLなら絵文字に変換する
+                    options.isMediaAttachment(href) ->
                         linkInfo.caption = SpannableString(href).apply {
                             setSpan(
                                 SvgEmojiSpan(context, "emj_1f5bc.svg", scale = 1f),
@@ -1224,303 +1466,10 @@ object HTMLDecoder {
                                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                             )
                         }
-                        return@also
-                    }
 
-                    else -> {
-                        // ニコニコ大百科のURLを変える
-                        val m = reNicodic.matcher(href)
-                        when {
-                            m.find() -> {
-                                linkInfo.caption =
-                                    SpannableString(
-                                        "${
-                                            m.groupEx(1)!!.decodePercent()
-                                        }:nicodic:"
-                                    ).apply {
-                                        setSpan(
-                                            EmojiImageSpan(context, R.drawable.nicodic),
-                                            length - 9,
-                                            length,
-                                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                                        )
-                                    }
-                                return@also
-                            }
-
-                            else -> linkInfo.caption = shortenUrl(originalCaption)
-                        }
-                    }
+                    else -> linkInfo.caption = shortenUrl(originalCaption)
                 }
             }
         }
-    }
-
-    private fun init1() {
-        defineEntity("amp", '&') // ampersand
-        defineEntity("gt", '>') // greater than
-        defineEntity("lt", '<') // less than
-        defineEntity("quot", '"') // double quote
-        defineEntity("apos", '\'') // single quote
-        defineEntity("AElig", chr(198)) // capital AE diphthong (ligature)
-        defineEntity("Aacute", chr(193)) // capital A, acute accent
-        defineEntity("Acirc", chr(194)) // capital A, circumflex accent
-        defineEntity("Agrave", chr(192)) // capital A, grave accent
-        defineEntity("Aring", chr(197)) // capital A, ring
-        defineEntity("Atilde", chr(195)) // capital A, tilde
-        defineEntity("Auml", chr(196)) // capital A, dieresis or umlaut mark
-        defineEntity("Ccedil", chr(199)) // capital C, cedilla
-        defineEntity("ETH", chr(208)) // capital Eth, Icelandic
-        defineEntity("Eacute", chr(201)) // capital E, acute accent
-        defineEntity("Ecirc", chr(202)) // capital E, circumflex accent
-        defineEntity("Egrave", chr(200)) // capital E, grave accent
-        defineEntity("Euml", chr(203)) // capital E, dieresis or umlaut mark
-        defineEntity("Iacute", chr(205)) // capital I, acute accent
-        defineEntity("Icirc", chr(206)) // capital I, circumflex accent
-        defineEntity("Igrave", chr(204)) // capital I, grave accent
-        defineEntity("Iuml", chr(207)) // capital I, dieresis or umlaut mark
-        defineEntity("Ntilde", chr(209)) // capital N, tilde
-        defineEntity("Oacute", chr(211)) // capital O, acute accent
-        defineEntity("Ocirc", chr(212)) // capital O, circumflex accent
-        defineEntity("Ograve", chr(210)) // capital O, grave accent
-        defineEntity("Oslash", chr(216)) // capital O, slash
-        defineEntity("Otilde", chr(213)) // capital O, tilde
-        defineEntity("Ouml", chr(214)) // capital O, dieresis or umlaut mark
-        defineEntity("THORN", chr(222)) // capital THORN, Icelandic
-        defineEntity("Uacute", chr(218)) // capital U, acute accent
-        defineEntity("Ucirc", chr(219)) // capital U, circumflex accent
-        defineEntity("Ugrave", chr(217)) // capital U, grave accent
-        defineEntity("Uuml", chr(220)) // capital U, dieresis or umlaut mark
-        defineEntity("Yacute", chr(221)) // capital Y, acute accent
-        defineEntity("aacute", chr(225)) // small a, acute accent
-        defineEntity("acirc", chr(226)) // small a, circumflex accent
-        defineEntity("aelig", chr(230)) // small ae diphthong (ligature)
-        defineEntity("agrave", chr(224)) // small a, grave accent
-        defineEntity("aring", chr(229)) // small a, ring
-        defineEntity("atilde", chr(227)) // small a, tilde
-        defineEntity("auml", chr(228)) // small a, dieresis or umlaut mark
-        defineEntity("ccedil", chr(231)) // small c, cedilla
-        defineEntity("eacute", chr(233)) // small e, acute accent
-        defineEntity("ecirc", chr(234)) // small e, circumflex accent
-        defineEntity("egrave", chr(232)) // small e, grave accent
-        defineEntity("eth", chr(240)) // small eth, Icelandic
-        defineEntity("euml", chr(235)) // small e, dieresis or umlaut mark
-        defineEntity("iacute", chr(237)) // small i, acute accent
-        defineEntity("icirc", chr(238)) // small i, circumflex accent
-        defineEntity("igrave", chr(236)) // small i, grave accent
-        defineEntity("iuml", chr(239)) // small i, dieresis or umlaut mark
-        defineEntity("ntilde", chr(241)) // small n, tilde
-        defineEntity("oacute", chr(243)) // small o, acute accent
-        defineEntity("ocirc", chr(244)) // small o, circumflex accent
-        defineEntity("ograve", chr(242)) // small o, grave accent
-        defineEntity("oslash", chr(248)) // small o, slash
-        defineEntity("otilde", chr(245)) // small o, tilde
-        defineEntity("ouml", chr(246)) // small o, dieresis or umlaut mark
-        defineEntity("szlig", chr(223)) // small sharp s, German (sz ligature)
-        defineEntity("thorn", chr(254)) // small thorn, Icelandic
-        defineEntity("uacute", chr(250)) // small u, acute accent
-        defineEntity("ucirc", chr(251)) // small u, circumflex accent
-        defineEntity("ugrave", chr(249)) // small u, grave accent
-        defineEntity("uuml", chr(252)) // small u, dieresis or umlaut mark
-        defineEntity("yacute", chr(253)) // small y, acute accent
-        defineEntity("yuml", chr(255)) // small y, dieresis or umlaut mark
-        defineEntity("copy", chr(169)) // copyright sign
-        defineEntity("reg", chr(174)) // registered sign
-        defineEntity("nbsp", chr(160)) // non breaking space
-        defineEntity("iexcl", chr(161))
-        defineEntity("cent", chr(162))
-        defineEntity("pound", chr(163))
-        defineEntity("curren", chr(164))
-        defineEntity("yen", chr(165))
-        defineEntity("brvbar", chr(166))
-        defineEntity("sect", chr(167))
-        defineEntity("uml", chr(168))
-        defineEntity("ordf", chr(170))
-        defineEntity("laquo", chr(171))
-        defineEntity("not", chr(172))
-        defineEntity("shy", chr(173))
-        defineEntity("macr", chr(175))
-        defineEntity("deg", chr(176))
-        defineEntity("plusmn", chr(177))
-        defineEntity("sup1", chr(185))
-        defineEntity("sup2", chr(178))
-        defineEntity("sup3", chr(179))
-        defineEntity("acute", chr(180))
-        defineEntity("micro", chr(181))
-        defineEntity("para", chr(182))
-        defineEntity("middot", chr(183))
-        defineEntity("cedil", chr(184))
-        defineEntity("ordm", chr(186))
-        defineEntity("raquo", chr(187))
-        defineEntity("frac14", chr(188))
-        defineEntity("frac12", chr(189))
-        defineEntity("frac34", chr(190))
-        defineEntity("iquest", chr(191))
-        defineEntity("times", chr(215))
-    }
-
-    private fun init2() {
-        defineEntity("divide", chr(247))
-        defineEntity("OElig", chr(338))
-        defineEntity("oelig", chr(339))
-        defineEntity("Scaron", chr(352))
-        defineEntity("scaron", chr(353))
-        defineEntity("Yuml", chr(376))
-        defineEntity("fnof", chr(402))
-        defineEntity("circ", chr(710))
-        defineEntity("tilde", chr(732))
-        defineEntity("Alpha", chr(913))
-        defineEntity("Beta", chr(914))
-        defineEntity("Gamma", chr(915))
-        defineEntity("Delta", chr(916))
-        defineEntity("Epsilon", chr(917))
-        defineEntity("Zeta", chr(918))
-        defineEntity("Eta", chr(919))
-        defineEntity("Theta", chr(920))
-        defineEntity("Iota", chr(921))
-        defineEntity("Kappa", chr(922))
-        defineEntity("Lambda", chr(923))
-        defineEntity("Mu", chr(924))
-        defineEntity("Nu", chr(925))
-        defineEntity("Xi", chr(926))
-        defineEntity("Omicron", chr(927))
-        defineEntity("Pi", chr(928))
-        defineEntity("Rho", chr(929))
-        defineEntity("Sigma", chr(931))
-        defineEntity("Tau", chr(932))
-        defineEntity("Upsilon", chr(933))
-        defineEntity("Phi", chr(934))
-        defineEntity("Chi", chr(935))
-        defineEntity("Psi", chr(936))
-        defineEntity("Omega", chr(937))
-        defineEntity("alpha", chr(945))
-        defineEntity("beta", chr(946))
-        defineEntity("gamma", chr(947))
-        defineEntity("delta", chr(948))
-        defineEntity("epsilon", chr(949))
-        defineEntity("zeta", chr(950))
-        defineEntity("eta", chr(951))
-        defineEntity("theta", chr(952))
-        defineEntity("iota", chr(953))
-        defineEntity("kappa", chr(954))
-        defineEntity("lambda", chr(955))
-        defineEntity("mu", chr(956))
-        defineEntity("nu", chr(957))
-        defineEntity("xi", chr(958))
-        defineEntity("omicron", chr(959))
-        defineEntity("pi", chr(960))
-        defineEntity("rho", chr(961))
-        defineEntity("sigmaf", chr(962))
-        defineEntity("sigma", chr(963))
-        defineEntity("tau", chr(964))
-        defineEntity("upsilon", chr(965))
-        defineEntity("phi", chr(966))
-        defineEntity("chi", chr(967))
-        defineEntity("psi", chr(968))
-        defineEntity("omega", chr(969))
-        defineEntity("thetasym", chr(977))
-        defineEntity("upsih", chr(978))
-        defineEntity("piv", chr(982))
-        defineEntity("ensp", chr(8194))
-        defineEntity("emsp", chr(8195))
-        defineEntity("thinsp", chr(8201))
-        defineEntity("zwnj", chr(8204))
-        defineEntity("zwj", chr(8205))
-        defineEntity("lrm", chr(8206))
-        defineEntity("rlm", chr(8207))
-        defineEntity("ndash", chr(8211))
-        defineEntity("mdash", chr(8212))
-        defineEntity("lsquo", chr(8216))
-        defineEntity("rsquo", chr(8217))
-        defineEntity("sbquo", chr(8218))
-        defineEntity("ldquo", chr(8220))
-        defineEntity("rdquo", chr(8221))
-        defineEntity("bdquo", chr(8222))
-        defineEntity("dagger", chr(8224))
-        defineEntity("Dagger", chr(8225))
-        defineEntity("bull", chr(8226))
-        defineEntity("hellip", chr(8230))
-        defineEntity("permil", chr(8240))
-        defineEntity("prime", chr(8242))
-        defineEntity("Prime", chr(8243))
-        defineEntity("lsaquo", chr(8249))
-        defineEntity("rsaquo", chr(8250))
-        defineEntity("oline", chr(8254))
-        defineEntity("frasl", chr(8260))
-        defineEntity("euro", chr(8364))
-        defineEntity("image", chr(8465))
-        defineEntity("weierp", chr(8472))
-        defineEntity("real", chr(8476))
-        defineEntity("trade", chr(8482))
-        defineEntity("alefsym", chr(8501))
-        defineEntity("larr", chr(8592))
-        defineEntity("uarr", chr(8593))
-        defineEntity("rarr", chr(8594))
-        defineEntity("darr", chr(8595))
-        defineEntity("harr", chr(8596))
-        defineEntity("crarr", chr(8629))
-        defineEntity("lArr", chr(8656))
-    }
-
-    private fun init3() {
-        defineEntity("uArr", chr(8657))
-        defineEntity("rArr", chr(8658))
-        defineEntity("dArr", chr(8659))
-        defineEntity("hArr", chr(8660))
-        defineEntity("forall", chr(8704))
-        defineEntity("part", chr(8706))
-        defineEntity("exist", chr(8707))
-        defineEntity("empty", chr(8709))
-        defineEntity("nabla", chr(8711))
-        defineEntity("isin", chr(8712))
-        defineEntity("notin", chr(8713))
-        defineEntity("ni", chr(8715))
-        defineEntity("prod", chr(8719))
-        defineEntity("sum", chr(8721))
-        defineEntity("minus", chr(8722))
-        defineEntity("lowast", chr(8727))
-        defineEntity("radic", chr(8730))
-        defineEntity("prop", chr(8733))
-        defineEntity("infin", chr(8734))
-        defineEntity("ang", chr(8736))
-        defineEntity("and", chr(8743))
-        defineEntity("or", chr(8744))
-        defineEntity("cap", chr(8745))
-        defineEntity("cup", chr(8746))
-        defineEntity("int", chr(8747))
-        defineEntity("there4", chr(8756))
-        defineEntity("sim", chr(8764))
-        defineEntity("cong", chr(8773))
-        defineEntity("asymp", chr(8776))
-        defineEntity("ne", chr(8800))
-        defineEntity("equiv", chr(8801))
-        defineEntity("le", chr(8804))
-        defineEntity("ge", chr(8805))
-        defineEntity("sub", chr(8834))
-        defineEntity("sup", chr(8835))
-        defineEntity("nsub", chr(8836))
-        defineEntity("sube", chr(8838))
-        defineEntity("supe", chr(8839))
-        defineEntity("oplus", chr(8853))
-        defineEntity("otimes", chr(8855))
-        defineEntity("perp", chr(8869))
-        defineEntity("sdot", chr(8901))
-        defineEntity("lceil", chr(8968))
-        defineEntity("rceil", chr(8969))
-        defineEntity("lfloor", chr(8970))
-        defineEntity("rfloor", chr(8971))
-        defineEntity("lang", chr(9001))
-        defineEntity("rang", chr(9002))
-        defineEntity("loz", chr(9674))
-        defineEntity("spades", chr(9824))
-        defineEntity("clubs", chr(9827))
-        defineEntity("hearts", chr(9829))
-        defineEntity("diams", chr(9830))
-    }
-
-    init {
-        init1()
-        init2()
-        init3()
     }
 }

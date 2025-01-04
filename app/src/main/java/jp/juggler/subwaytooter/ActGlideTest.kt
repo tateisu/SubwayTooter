@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.databinding.LvGlideTestBinding
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.util.EmojiSizeMode
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.ui.setContentViewAndInsets
@@ -34,6 +35,7 @@ class ActGlideTest : AppCompatActivity() {
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         fixHorizontalMargin(views.rvImages)
         setNavigationBack(views.toolbar)
 

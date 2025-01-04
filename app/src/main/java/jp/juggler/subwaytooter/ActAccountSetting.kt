@@ -40,6 +40,7 @@ import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.api.runApiTask2
 import jp.juggler.subwaytooter.api.showApiError
 import jp.juggler.subwaytooter.databinding.ActAccountSettingBinding
+import jp.juggler.subwaytooter.databinding.ActionBarCustomTitleBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.notification.checkNotificationImmediate
@@ -51,6 +52,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.view.subtitle
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
@@ -191,6 +194,8 @@ class ActAccountSetting : AppCompatActivity(),
 
     internal var visibility = TootVisibility.Public
 
+    private var customTitleBar: ActionBarCustomTitleBinding? = null
+
     private val languages by lazy {
         loadLanguageList()
     }
@@ -227,19 +232,21 @@ class ActAccountSetting : AppCompatActivity(),
         setContentViewAndInsets(views.root)
         initUI()
 
+        val a = account
+        if (a == null) {
+            finish()
+            return
+        }
+
+        customTitleBar?.subtitle = a.acct.pretty
+        views.btnOpenBrowser.text = getString(
+            R.string.open_instance_website,
+            a.apiHost.pretty,
+        )
         launchAndShowError {
-            val a = account
-            if (a == null) {
-                finish()
-                return@launchAndShowError
-            }
-            supportActionBar?.subtitle = a.acct.pretty
             val ti = loadInstance(a) // may null
             loadUIFromData(a, ti)
             initializeProfile()
-
-            views.btnOpenBrowser.text =
-                getString(R.string.open_instance_website, a.apiHost.pretty)
         }
     }
 
@@ -260,6 +267,7 @@ class ActAccountSetting : AppCompatActivity(),
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
         setSupportActionBar(views.toolbar)
+        customTitleBar = wrapTitleTextView()
         fixHorizontalPadding(views.svContent)
         setSwitchColor(views.root)
 

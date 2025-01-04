@@ -41,11 +41,12 @@ import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
 import com.jrummyapps.android.colorpicker.databinding.CpvDialogColorPickerBinding
 import com.jrummyapps.android.colorpicker.databinding.CpvDialogPresetsBinding
+import jp.juggler.util.coroutine.cancellationException
+import jp.juggler.util.coroutine.resumeWithCancellationException
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.systemService
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.gone
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
 import kotlin.coroutines.resumeWithException
@@ -545,7 +546,7 @@ suspend fun Activity.dialogColorPicker(
 
     dialog.setOnDismissListener {
         log.i("onDismissListener. isActive=${cont.isActive}")
-        if (cont.isActive) cont.resumeWithException(CancellationException())
+        if (cont.isActive) cont.resumeWithCancellationException()
     }
     cont.invokeOnCancellation { dismiss() }
 
@@ -554,7 +555,7 @@ suspend fun Activity.dialogColorPicker(
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
     )
-    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
     dialog.show()
 
     // プリセット切り替えボタンのリスナでダイアログを閉じないようにするため、後から上書きする

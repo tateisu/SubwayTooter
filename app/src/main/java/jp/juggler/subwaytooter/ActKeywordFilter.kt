@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.databinding.LvKeywordFilterBinding
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchMain
@@ -178,6 +179,7 @@ class ActKeywordFilter : AppCompatActivity() {
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)
 

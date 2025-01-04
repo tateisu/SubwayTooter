@@ -277,10 +277,7 @@ class ItemViewHolder(
             v.movementMethod = MyLinkMovementMethod
         }
 
-        var f: Float
-
-        f = activity.timelineFontSizeSp
-        if (!f.isNaN()) {
+        ActMain.timelineFontSizeSp.takeIf { it.isFinite() }?.let { f ->
             tvFollowerName.textSize = f
             tvName.textSize = f
             tvMentions.textSize = f
@@ -301,6 +298,8 @@ class ItemViewHolder(
             tvMediaDescriptions.forEach { it.textSize = f }
         }
 
+        var f: Float
+
         f = activity.notificationTlFontSizeSp
         if (!f.isNaN()) {
             tvBoosted.textSize = f
@@ -319,8 +318,7 @@ class ItemViewHolder(
             tvFilterDetail.textSize = f
         }
 
-        val spacing = activity.timelineSpacing
-        if (spacing != null) {
+        ActMain.timelineSpacing?.let { spacing ->
             tvFollowerName.setLineSpacing(0f, spacing)
             tvName.setLineSpacing(0f, spacing)
             tvMentions.setLineSpacing(0f, spacing)

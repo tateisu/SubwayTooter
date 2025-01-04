@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.databinding.LvMuteAppBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.daoUserRelation
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
@@ -37,20 +38,15 @@ class ActMutedPseudoAccount : AppCompatActivity() {
             setResult(RESULT_OK)
             finish()
         }
+
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
-        initUI()
-        loadData()
-    }
-
-    private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)
         views.listView.adapter = listAdapter
-    }
 
-    private fun loadData() {
         launchAndShowError {
             listAdapter.items = withContext(AppDispatchers.IO) {
                 daoUserRelation.listPseudoMuted()

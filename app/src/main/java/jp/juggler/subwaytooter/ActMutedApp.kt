@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.databinding.LvMuteAppBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.MutedApp
 import jp.juggler.subwaytooter.table.appDatabase
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
@@ -47,6 +48,7 @@ class ActMutedApp : AppCompatActivity() {
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)
         views.listView.adapter = listAdapter

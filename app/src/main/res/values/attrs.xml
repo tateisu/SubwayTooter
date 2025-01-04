@@ -1,111 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="colorLink" format="color"/>
+    <attr name="colorLink" format="color" />
 
-    <attr name="list_item_bg_pressed_dragged" format="color"/>
+    <attr name="list_item_bg_pressed_dragged" format="color" />
 
     <!-- カラムヘッダ背景色、および一部ボタンの背景色 -->
-    <attr name="color_column_header" format="color"/>
+    <attr name="color_column_header" format="color" />
 
     <!-- 簡略表示のステータスボタンポップアップの背景色、投稿画面のフッタ/ヘッダの背景色 CWボタンなどの背景色 -->
-    <attr name="colorStatusButtonsPopupBg" format="color"/>
+    <attr name="colorStatusButtonsPopupBg" format="color" />
 
     <!-- CWボタンの背景色 -->
-    <attr name="colorButtonBgCw" format="color"/>
+    <attr name="colorButtonBgCw" format="color" />
 
     <!-- イメージボタンの図柄の色 ファボ済みなど 0xff0088ff-->
-    <attr name="colorConversationMainTootBg" format="color"/>
+    <attr name="colorConversationMainTootBg" format="color" />
 
     <!-- リップルエフェクトの色 FF808080-->
-    <attr name="colorRippleEffect" format="color"/>
+    <attr name="colorRippleEffect" format="color" />
 
     <!-- v21未満のボタンのselected/focused状態の色 #ff000080-->
-    <attr name="colorButtonSelected" format="color"/>
+    <attr name="colorButtonSelected" format="color" />
 
     <!-- 投稿画面の返信表示の背景 #cccccc -->
-    <attr name="colorReplyBackground" format="color"/>
+    <attr name="colorReplyBackground" format="color" />
 
     <!-- カラム一覧の削除UIの背景 #FF0000 -->
-    <attr name="colorColumnListDeleteBackground" format="color"/>
+    <attr name="colorColumnListDeleteBackground" format="color" />
 
     <!-- カラム一覧の削除UIの文字色 @android:color/white -->
-    <attr name="colorColumnListDeleteText" format="color"/>
+    <attr name="colorColumnListDeleteText" format="color" />
 
     <!-- カラム一覧のドラッグハンドルの背景色 #80cccccc -->
-    <attr name="colorColumnListDragHandleBackground" format="color"/>
+    <attr name="colorColumnListDragHandleBackground" format="color" />
 
     <!-- カラム一覧の要素の文字色 #888888 -->
-    <attr name="colorColumnListItemText" format="color"/>
+    <attr name="colorColumnListItemText" format="color" />
 
     <!-- 日時の表記 #888888 -->
-    <attr name="colorTimeSmall" format="color"/>
+    <attr name="colorTimeSmall" format="color" />
 
     <!-- 本文テキスト -->
     <!-- カスタマイズしない画面のImageButtonの図柄のtint -->
-    <attr name="colorTextContent" format="color"/>
+    <attr name="colorTextContent" format="color" />
 
-    <attr name="colorTextHint" format="color"/>
+    <attr name="colorTextHint" format="color" />
 
-    <attr name="colorRefreshErrorBg" format="color"/>
+    <attr name="colorRefreshErrorBg" format="color" />
 
     <!-- プロフ背景を薄くするマスク #C0FFFFFF -->
-    <attr name="colorProfileBackgroundMask" format="color"/>
+    <attr name="colorProfileBackgroundMask" format="color" />
 
     <!-- NSFWを隠す表示の背景色 #000 -->
-    <attr name="colorShowMediaBackground" format="color"/>
+    <attr name="colorShowMediaBackground" format="color" />
 
     <!-- NSFWを隠す表示の文字色 #fff -->
-    <attr name="colorShowMediaText" format="color"/>
+    <attr name="colorShowMediaText" format="color" />
 
     <!-- カラムヘッダAcctの文字色 #888 -->
-    <attr name="colorColumnHeaderAcct" format="color"/>
+    <attr name="colorColumnHeaderAcct" format="color" />
 
     <!-- カラムヘッダページ番号の文字色 #888 -->
-    <attr name="colorColumnHeaderPageNumber" format="color"/>
+    <attr name="colorColumnHeaderPageNumber" format="color" />
 
     <!-- カラムヘッダのカラム名の文字色 -->
-    <attr name="colorColumnHeaderName" format="color"/>
+    <attr name="colorColumnHeaderName" format="color" />
 
     <!-- カラム設定の背景色 #ccc -->
-    <attr name="colorColumnSettingBackground" format="color"/>
+    <attr name="colorColumnSettingBackground" format="color" />
 
     <!-- カラム設定の背景色 #bee6ff -->
-    <attr name="colorSearchFormBackground" format="color"/>
+    <attr name="colorSearchFormBackground" format="color" />
 
     <!-- 設定画面のdividerの色  #ddd -->
-    <attr name="colorSettingDivider" format="color"/>
+    <attr name="colorSettingDivider" format="color" />
 
     <!-- カラム設定の正規表現フィルタのエラー表示 #f00 -->
-    <attr name="colorRegexFilterError" format="color"/>
+    <attr name="colorRegexFilterError" format="color" />
 
     <!-- 投稿画面のEditTextの下に引くFrameLayoutの背景 -->
-    <attr name="colorPostFormBackground" format="color"/>
+    <attr name="colorPostFormBackground" format="color" />
 
     <!-- カラムストリップの背景色 -->
-    <attr name="colorColumnStripBackground" format="color"/>
+    <attr name="colorColumnStripBackground" format="color" />
 
     <!-- サムネイルの背景色 -->
-    <attr name="colorThumbnailBackground" format="color"/>
+    <attr name="colorThumbnailBackground" format="color" />
 
 
     <!-- @drawable/window_background_light と @drawable/window_background に指定した色をgetAttributeColorで取得したい -->
-    <attr name="colorWindowBackground" format="color"/>
+    <attr name="colorWindowBackground" format="color" />
 
     <!-- アプリ設定などのスイッチのオフの色 -->
-    <attr name="colorSwitchOff" format="color"/>
+    <attr name="colorSwitchOff" format="color" />
 
     <!-- ボタンアクセント色 -->
-    <attr name="colorButtonAccentBoost" format="color"/>
-    <attr name="colorButtonAccentFavourite" format="color"/>
-    <attr name="colorButtonAccentBookmark" format="color"/>
-    <attr name="colorButtonAccentFollow" format="color"/>
-    <attr name="colorButtonAccentFollowRequest" format="color"/>
-    <attr name="colorButtonAccentReaction" format="color"/>
+    <attr name="colorButtonAccentBoost" format="color" />
+    <attr name="colorButtonAccentFavourite" format="color" />
+    <attr name="colorButtonAccentBookmark" format="color" />
+    <attr name="colorButtonAccentFollow" format="color" />
+    <attr name="colorButtonAccentFollowRequest" format="color" />
+    <attr name="colorButtonAccentReaction" format="color" />
 
     <!-- ヘルプテキストなど、少し色の違うテキスト色 -->
-    <attr name="colorTextHelp" format="color"/>
+    <attr name="colorTextHelp" format="color" />
 
-    <attr name="colorActionBarBg" format="color"/>
-    <attr name="colorActionBarBgStacked" format="color"/>
+    <attr name="colorActionBarBg" format="color" />
+    <attr name="colorActionBarBgStacked" format="color" />
+
+    <attr name="colorOsStatusBarBg" format="color" />
+    <attr name="colorOsNavigationBarBg" format="color" />
 
 </resources>

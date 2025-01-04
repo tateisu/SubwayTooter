@@ -10,7 +10,6 @@ import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
-import android.text.style.ForegroundColorSpan
 import android.text.style.UnderlineSpan
 import android.view.View
 import android.view.ViewGroup
@@ -22,13 +21,13 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import jp.juggler.subwaytooter.ActAbout
 import jp.juggler.subwaytooter.ActAppSetting
+import jp.juggler.subwaytooter.ActAppSetting.Companion.launchAppSetting
 import jp.juggler.subwaytooter.ActFavMute
 import jp.juggler.subwaytooter.ActHighlightWordList
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActMutedApp
 import jp.juggler.subwaytooter.ActMutedPseudoAccount
 import jp.juggler.subwaytooter.ActMutedWord
-import jp.juggler.subwaytooter.ui.ossLicense.ActOSSLicense
 import jp.juggler.subwaytooter.ActPushMessageList
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
@@ -48,6 +47,7 @@ import jp.juggler.subwaytooter.pref.prefDevice
 import jp.juggler.subwaytooter.push.fcmHandler
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.accountListCanSeeMyReactions
+import jp.juggler.subwaytooter.ui.ossLicense.ActOSSLicense
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.coroutine.AppDispatchers
@@ -61,6 +61,7 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.getPackageInfoCompat
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
+import jp.juggler.util.ui.ForegroundAttrColorSpan
 import jp.juggler.util.ui.activity
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.createColoredDrawable
@@ -81,11 +82,11 @@ class SideMenuAdapter(
     companion object {
         private val log = LogCategory("SideMenuAdapter")
 
-        private const val urlAppVersion =
+        private const val URL_APP_VERSION =
             "https://mastodon-msg.juggler.jp/appVersion/appVersion.json"
-        private const val urlGithubReleases =
+        private const val URL_GITHUB_RELEASES =
             "https://github.com/tateisu/SubwayTooter/releases"
-        private const val urlOlderDevices =
+        private const val URL_OLDER_DEVICES =
             "https://github.com/tateisu/SubwayTooter/discussions/192"
 
         private val itemTypeCount = ItemType.entries.size
@@ -165,13 +166,10 @@ class SideMenuAdapter(
                 // それはこの端末にインストール可能である
                 newVersion != null && Build.VERSION.SDK_INT >= releaseMinSdkVersion -> {
                     appendSpanLine(
-                        getString(
-                            R.string.new_version_available,
-                            newVersion
-                        ),
-                        ForegroundColorSpan(
-                            attrColor(R.attr.colorRegexFilterError)
-                        ),
+                        getString(R.string.new_version_available, newVersion),
+                        // この時点ではActivityのテーマが初期化されていないので
+                        // 色属性の解決ができない
+                        ForegroundAttrColorSpan(R.attr.colorRegexFilterError),
                     )
                     newRelease?.string("html_url")?.let {
                         appendSpanLine(
@@ -185,7 +183,7 @@ class SideMenuAdapter(
                 else -> appendSpanLine(
                     getString(R.string.release_note),
                     UnderlineSpan(),
-                    clickableSpan(urlGithubReleases),
+                    clickableSpan(URL_GITHUB_RELEASES),
                 )
             }
 
@@ -193,7 +191,7 @@ class SideMenuAdapter(
             if (Build.VERSION.SDK_INT < releaseMinSdkVersionScheduled) {
                 appendSpanLine(
                     getString(R.string.old_devices_warning),
-                    clickableSpan(urlOlderDevices, showUnderline = true),
+                    clickableSpan(URL_OLDER_DEVICES, showUnderline = true),
                 )
             }
         }
@@ -213,14 +211,27 @@ class SideMenuAdapter(
             // リリース情報を取得し直す
             launchIO {
                 try {
-                    val json = App1.getHttpCached(urlAppVersion)
+                    val json = App1.getHttpCached(URL_APP_VERSION)
                         ?.decodeUTF8()
                         ?.decodeJsonObject()
                         ?: error("missing appVersion json")
                     releaseInfo = json
                     versionText = createVersionRow()
                     withContext(AppDispatchers.MainImmediate) {
-                        lastVersionView?.get()?.text = versionText
+                        lastVersionView?.get()?.let { view ->
+                            val context = view.context
+                            versionText.run {
+                                val spans = getSpans(
+                                    0,
+                                    length,
+                                    ForegroundAttrColorSpan::class.java,
+                                )
+                                for (span in spans) {
+                                    span.context = context
+                                }
+                            }
+                            view.text = versionText
+                        }
                     }
                 } catch (ex: Throwable) {
                     log.e(ex, "checkVersion failed")
@@ -440,9 +451,7 @@ class SideMenuAdapter(
         Item(title = R.string.setting),
 
         Item(icon = R.drawable.ic_settings, title = R.string.app_setting) {
-            arAppSetting.launch(
-                ActAppSetting.createIntent(this)
-            )
+            arAppSetting.launchAppSetting()
         },
 
         Item(icon = R.drawable.ic_settings, title = R.string.highlight_word) {
@@ -638,7 +647,7 @@ class SideMenuAdapter(
                 ItemType.IT_NORMAL -> when (it.title) {
                     R.string.antenna_list_misskey,
                     R.string.misskey_hybrid_timeline_long,
-                    -> PrefB.bpEnableDeprecatedSomething.value
+                        -> PrefB.bpEnableDeprecatedSomething.value
 
                     else -> true
                 }

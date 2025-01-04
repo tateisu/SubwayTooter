@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import jp.juggler.subwaytooter.databinding.ActAlertBinding
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.data.encodePercent
 import jp.juggler.util.data.notEmpty
 import jp.juggler.util.ui.setContentViewAndInsets
@@ -33,17 +34,16 @@ class ActAlert : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val title = intent?.getStringExtra(EXTRA_TITLE).notEmpty()
+        val message = intent?.getStringExtra(EXTRA_MESSAGE).notEmpty()
 
+        super.onCreate(savedInstanceState)
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView(title)
         setNavigationBack(views.toolbar)
 
-        intent?.getStringExtra(EXTRA_TITLE).notEmpty()
-            ?.let { title = it }
-
-        intent?.getStringExtra(EXTRA_MESSAGE).notEmpty()
-            ?.let { views.etMessage.setText(it) }
+        views.tvMessage.text = message ?: ""
     }
 }

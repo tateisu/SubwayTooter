@@ -14,14 +14,22 @@
         android:elevation="4dp"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
-    <EditText
-        android:id="@+id/etMessage"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="12dp"
         android:layout_weight="1"
-        android:importantForAutofill="no"
-        android:inputType="none"
-        tools:ignore="LabelFor"
-        tools:text="hello" />
+        android:fillViewport="true"
+        android:scrollbarStyle="outsideOverlay">
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:importantForAutofill="no"
+            android:inputType="none"
+            android:padding="12dp"
+            android:textIsSelectable="true"
+            tools:text="hello" />
+    </ScrollView>
 </LinearLayout>

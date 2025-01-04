@@ -68,12 +68,11 @@ fun ActMain.checkAutoCW(status: TootStatus, text: CharSequence) {
     val tv = MyTextView(this).apply {
         layoutParams =
             LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
-        if (!timelineFontSizeSp.isNaN()) {
-            textSize = timelineFontSizeSp
-        }
+        ActMain.timelineFontSizeSp.takeIf { it.isFinite() }
+            ?.let{ textSize = ActMain.timelineFontSizeSp }
 
-        val fv = timelineSpacing
-        if (fv != null) setLineSpacing(0f, fv)
+        ActMain.timelineSpacing
+            ?.let{ setLineSpacing(0f, it) }
 
         typeface = ActMain.timelineFont
         this.text = text

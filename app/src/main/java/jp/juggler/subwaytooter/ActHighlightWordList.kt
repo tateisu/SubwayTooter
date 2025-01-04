@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.databinding.LvHighlightWordBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.daoHighlightWord
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.cast
@@ -118,6 +119,7 @@ class ActHighlightWordList : AppCompatActivity() {
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.llContent)
 

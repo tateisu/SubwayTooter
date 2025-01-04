@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.ActColumnListBinding
 import jp.juggler.subwaytooter.databinding.LvColumnListBinding
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
@@ -96,6 +97,7 @@ class ActColumnList : AppCompatActivity() {
 
     private fun initUI() {
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.listView)
 

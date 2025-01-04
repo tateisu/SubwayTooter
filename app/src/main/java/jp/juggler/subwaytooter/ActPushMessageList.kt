@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -28,6 +27,7 @@ import jp.juggler.subwaytooter.table.daoPushMessage
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.permissionSpecNotification
 import jp.juggler.subwaytooter.util.requester
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.encodeBase64Url
@@ -37,8 +37,10 @@ import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.os.saveToDownload
 import jp.juggler.util.time.formatLocalTime
+import jp.juggler.util.ui.resDrawable
 import jp.juggler.util.ui.setContentViewAndInsets
 import jp.juggler.util.ui.setNavigationBack
+import jp.juggler.util.ui.wrapAndTint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -73,6 +75,7 @@ class ActPushMessageList : AppCompatActivity() {
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
 
         views.rvMessages.also {
@@ -166,14 +169,12 @@ class ActPushMessageList : AppCompatActivity() {
     fun tintIcon(pm: PushMessage, ic: PushMessageIconColor) =
         tintIconMap.getOrPut("${ic.name}-${pm.loginAcct}") {
             val context = this
-            val src = ContextCompat.getDrawable(context, ic.iconId)!!
-            DrawableCompat.wrap(src).also { d ->
-                val a = acctMap[pm.loginAcct]
-                val c = ic.colorRes.notZero()?.let { ContextCompat.getColor(context, it) }
-                    ?: a?.notificationAccentColor?.notZero()
-                    ?: ContextCompat.getColor(this, R.color.colorOsNotificationAccent)
-                DrawableCompat.setTint(d, c)
-            }
+            val a = acctMap[pm.loginAcct]
+            val c = ic.colorRes.notZero()?.let { ContextCompat.getColor(context, it) }
+                ?: a?.notificationAccentColor?.notZero()
+                ?: ContextCompat.getColor(this, R.color.colorOsNotificationAccent)
+
+            context.resDrawable( ic.iconId).wrapAndTint(color = c)
         }
 
     @SuppressLint("SetTextI18n")

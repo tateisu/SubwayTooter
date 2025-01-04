@@ -1,6 +1,6 @@
 package jp.juggler.colorSpace
 
-import jp.juggler.util.colorSpace.OkLch.Companion.mixHue
+import jp.juggler.colorSpace.OkLch.Companion.mixHue
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -12,7 +12,9 @@ class MixHueTest {
             h2: Float,
             expect: Float,
         ) {
-            val actual = mixHue(h1, h2)
+            val lch1 = OkLch( l= 0.5f, c = 0.5f, h = h1)
+            val lch2 = OkLch( l= 0.5f, c = 0.5f, h = h2)
+            val actual = mixHue(lch1,lch2)
             assertEquals(
                 expect,
                 actual,
@@ -39,5 +41,40 @@ class MixHueTest {
         t(h1 = 270f, h2 = 270f + 30f, expect = 270f + 15f)
         t(h1 = 270f, h2 = 270f + 180f, expect = 180f) // not round
         t(h1 = 270f, h2 = 270f + 181f, expect = 180.5f)
+    }
+    @Test
+    fun testMixHueNoChroma() {
+        fun t(
+            hChroma: Float,
+            hIgnored: Float,
+        ) {
+            // 1が無彩色
+            run{
+                val lch1 = OkLch( l= 0.5f, c = 0f, h = hIgnored)
+                val lch2 = OkLch( l= 0.5f, c = 0.5f, h = hChroma)
+                val actual = mixHue(lch1,lch2)
+                assertEquals(
+                    hChroma,
+                    actual,
+                    "hChroma=$hChroma, hIgnored=$hIgnored",
+                )
+            }
+            // 2が無彩色
+            run{
+                val lch1 = OkLch( l= 0.5f, c = 0.5f, h = hChroma)
+                val lch2 = OkLch( l= 0.5f, c = 0f, h = hIgnored)
+                val actual = mixHue(lch1,lch2)
+                assertEquals(
+                    hChroma,
+                    actual,
+                    "hChroma=$hChroma, hIgnored=$hIgnored",
+                )
+            }
+        }
+        for( hChroma in 0 .. 360 step 30){
+            for( hIgnored in 0 .. 360 step 30){
+                t(hChroma= hChroma.toFloat(), hIgnored = hIgnored.toFloat())
+            }
+        }
     }
 }

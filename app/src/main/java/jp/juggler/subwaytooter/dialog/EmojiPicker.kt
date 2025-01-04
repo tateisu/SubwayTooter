@@ -15,7 +15,6 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -31,7 +30,6 @@ import jp.juggler.subwaytooter.util.emojiSizeMode
 import jp.juggler.subwaytooter.util.minHeightCompat
 import jp.juggler.subwaytooter.util.minWidthCompat
 import jp.juggler.subwaytooter.view.NetworkEmojiView
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.*
 import jp.juggler.util.log.*
@@ -261,11 +259,7 @@ private class EmojiPicker(
                 lastExpandCategory == item.original -> R.drawable.ic_arrow_drop_down
                 else -> R.drawable.ic_arrow_drop_up
             }?.let {
-                ContextCompat.getDrawable(activity, it)
-            }?.let {
-                DrawableCompat.wrap(it).also { d ->
-                    DrawableCompat.setTint(d, activity.attrColor(R.attr.colorTextContent))
-                }
+                activity.resDrawable(it).wrapAndTint(activity.attrColor(R.attr.colorTextContent))
             }
             tv.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
         }

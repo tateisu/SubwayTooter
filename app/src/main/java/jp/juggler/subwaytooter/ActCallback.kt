@@ -11,7 +11,6 @@ import jp.juggler.util.*
 import jp.juggler.util.data.digestSHA256Hex
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
-import jp.juggler.util.ui.setContentViewAndInsets
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*

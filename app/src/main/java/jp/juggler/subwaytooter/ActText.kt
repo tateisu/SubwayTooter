@@ -10,6 +10,8 @@ import android.text.style.BackgroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
+import androidx.core.view.size
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import jp.juggler.subwaytooter.api.entity.TootAccount
@@ -23,6 +25,7 @@ import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.subwaytooter.util.copyToClipboard
+import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.*
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
@@ -152,6 +155,7 @@ class ActText : AppCompatActivity() {
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
         setSupportActionBar(views.toolbar)
+        wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.etText)
         views.etSearch.addTextChangedListener { postSearchText() }
@@ -202,6 +206,12 @@ class ActText : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.act_text, menu)
+        for (i in 0 until menu.size) {
+            val menuItem = menu[i]
+            menuItem.icon = menuItem.icon?.wrapAndTint(
+                color = attrColor(R.attr.colorTextContent),
+            )
+        }
         super.onCreateOptionsMenu(menu)
         return true
     }

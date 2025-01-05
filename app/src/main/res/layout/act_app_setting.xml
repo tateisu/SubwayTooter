@@ -18,6 +18,17 @@
         android:paddingStart="12dp"
         android:paddingTop="6dp">
 
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/btn_bg_transparent_round6dp"
+            android:contentDescription="@string/back"
+            android:stateListAnimator="@null"
+            app:srcCompat="?attr/homeAsUpIndicator"
+            app:tint="?attr/colorTextContent"
+            />
+
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="0dp"

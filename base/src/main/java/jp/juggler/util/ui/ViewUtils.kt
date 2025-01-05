@@ -9,17 +9,18 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.core.content.getSystemService
+import androidx.core.view.children
 import jp.juggler.util.log.LogCategory
 
 private val log = LogCategory("ViewUtils")
 
-fun View?.scan(callback: (view: View) -> Unit) {
+fun View?.scan(
+    callback: (view: View) -> Unit,
+) {
     this ?: return
     callback(this)
     if (this is ViewGroup) {
-        for (i in 0 until this.childCount) {
-            this.getChildAt(i)?.scan(callback)
-        }
+        children.forEach { it.scan(callback) }
     }
 }
 

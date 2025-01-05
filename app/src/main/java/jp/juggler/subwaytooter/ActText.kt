@@ -9,6 +9,7 @@ import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.core.view.size
@@ -158,6 +159,8 @@ class ActText : AppCompatActivity() {
         wrapTitleTextView()
         setNavigationBack(views.toolbar)
         fixHorizontalMargin(views.etText)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+
         views.etSearch.addTextChangedListener { postSearchText() }
         views.btnSearchClear.setOnClickListener { views.etSearch.setText("") }
         views.btnSearchPrev.setOnClickListener { searchPrev() }

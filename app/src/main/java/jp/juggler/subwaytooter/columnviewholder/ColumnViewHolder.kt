@@ -356,7 +356,7 @@ class ColumnViewHolder(
         viewRoot.scan { v ->
             try {
                 // ボタンではないTextViewのフォントを変更する
-                if (v is MyTextView && v !is Button) {
+                if (v is MyTextView) {
                     v.typeface = ActMain.timelineFont
                 }
             } catch (ex: Throwable) {

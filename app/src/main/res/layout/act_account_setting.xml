@@ -10,15 +10,15 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp" />
+        android:background="@drawable/action_bar_bg"
+        android:elevation="4dp"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
 
     <ScrollView
         android:id="@+id/svContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingBottom="128dp"
@@ -214,16 +214,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:baselineAligned="false"
                 android:gravity="center_vertical"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     style="@style/setting_row_label"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
                     android:text="@string/profile_metadata" />
 
                 <ImageButton
@@ -600,38 +599,35 @@
             </LinearLayout>
 
             <TextView
-                style="@style/setting_row_label"
                 android:id="@+id/tvNotificationAccentColor"
+                style="@style/setting_row_label"
                 android:text="@string/notification_accent_color" />
 
             <LinearLayout
-                style="@style/setting_row_form"
                 android:id="@+id/llNotificationAccentColor"
-                android:orientation="horizontal"
+                style="@style/setting_row_form"
                 android:gravity="center_vertical"
-                >
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btnNotificationAccentColorEdit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/edit"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
                 <Button
                     android:id="@+id/btnNotificationAccentColorReset"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/reset"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
 
-                <View android:id="@+id/vNotificationAccentColorColor"
+                <View
+                    android:id="@+id/vNotificationAccentColorColor"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_marginStart="8dp"
-                    />
+                    android:layout_marginStart="8dp" />
 
             </LinearLayout>
 
@@ -702,10 +698,12 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
             </LinearLayout>
+
             <TextView
                 android:id="@+id/tvPullActions"
                 style="@style/setting_row_label"
                 android:text="@string/actions" />
+
             <Button
                 android:id="@+id/btnResetNotificationTracking"
                 style="@style/setting_row_button"

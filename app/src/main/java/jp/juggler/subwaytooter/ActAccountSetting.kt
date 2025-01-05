@@ -53,7 +53,6 @@ import jp.juggler.subwaytooter.table.daoAcctColor
 import jp.juggler.subwaytooter.table.daoSavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.subtitle
-import jp.juggler.subwaytooter.view.wrapTitleTextView
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.AppDispatchers
 import jp.juggler.util.coroutine.launchAndShowError
@@ -80,6 +79,7 @@ import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.isOk
 import jp.juggler.util.ui.scan
 import jp.juggler.util.ui.setContentViewAndInsets
+import jp.juggler.util.ui.setNavigationBack
 import jp.juggler.util.ui.vg
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -179,7 +179,7 @@ class ActAccountSetting : AppCompatActivity(),
     private var profileBusy = false
 
     //    private lateinit var listEtFieldName: List<EditText>
-//    private lateinit var listEtFieldValue: List<EditText>
+    //    private lateinit var listEtFieldValue: List<EditText>
     private lateinit var listFieldNameInvalidator: List<NetworkEmojiInvalidator>
     private lateinit var listFieldValueInvalidator: List<NetworkEmojiInvalidator>
     private lateinit var btnFields: View
@@ -195,6 +195,8 @@ class ActAccountSetting : AppCompatActivity(),
     internal var visibility = TootVisibility.Public
 
     private var customTitleBar: ActionBarCustomTitleBinding? = null
+
+    var density = 1f
 
     private val languages by lazy {
         loadLanguageList()
@@ -222,7 +224,6 @@ class ActAccountSetting : AppCompatActivity(),
 
         visualMediaPicker.register(this)
         cameraOpener.register(this)
-
         arShowAcctColor.register(this)
 
         savedInstanceState?.getString(ACTIVITY_STATE)
@@ -230,6 +231,11 @@ class ActAccountSetting : AppCompatActivity(),
 
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
+        setSupportActionBar(views.toolbar)
+        // customTitleBar = wrapTitleTextView()
+        setNavigationBack(views.toolbar)
+        setSwitchColor(views.root)
+        fixHorizontalPadding(views.svContent)
         initUI()
 
         val a = account
@@ -252,7 +258,6 @@ class ActAccountSetting : AppCompatActivity(),
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
         val encodedState = kJson.encodeToString(state)
         log.d("encodedState=$encodedState")
         val decodedState: State = kJson.decodeFromString(encodedState)
@@ -260,16 +265,10 @@ class ActAccountSetting : AppCompatActivity(),
         outState.putString(ACTIVITY_STATE, encodedState)
     }
 
-    var density: Float = 1f
-
     @Suppress("LongMethod")
     private fun initUI() {
         this.density = resources.displayMetrics.density
         this.handler = App1.getAppState(this).handler
-        setSupportActionBar(views.toolbar)
-        customTitleBar = wrapTitleTextView()
-        fixHorizontalPadding(views.svContent)
-        setSwitchColor(views.root)
 
         views.apply {
             btnPushSubscriptionNotForce.vg(ReleaseType.isDebug)
@@ -367,7 +366,8 @@ class ActAccountSetting : AppCompatActivity(),
                 saveUIToData()
             }
 
-            views.root.scan {
+            // toolbar以外の部分をスキャン
+            svContent.scan {
                 when (it) {
                     etMaxTootChars -> etMaxTootChars.addTextChangedListener(
                         simpleTextWatcher {
@@ -387,8 +387,9 @@ class ActAccountSetting : AppCompatActivity(),
                     is CompoundButton ->
                         it.setOnCheckedChangeListener(this@ActAccountSetting)
 
-                    is ImageButton ->
+                    is ImageButton -> {
                         it.setOnClickListener(this@ActAccountSetting)
+                    }
 
                     is Button ->
                         it.setOnClickListener(this@ActAccountSetting)
@@ -646,9 +647,13 @@ class ActAccountSetting : AppCompatActivity(),
     }
 
     private fun handleBackPressed() {
-        val account = account ?: return
-        checkNotificationImmediateAll(this, onlyEnqueue = true)
-        checkNotificationImmediate(this, account.db_id)
+        log.i("handleBackPressed")
+        if (!loadingBusy) {
+            account?.let { a ->
+                checkNotificationImmediateAll(this, onlyEnqueue = true)
+                checkNotificationImmediate(this, a.db_id)
+            }
+        }
         finish()
     }
 

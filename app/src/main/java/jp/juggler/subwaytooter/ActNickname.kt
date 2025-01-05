@@ -88,11 +88,6 @@ class ActNickname : AppCompatActivity(), View.OnClickListener {
         arNotificationSound.register(this)
         App1.setActivityTheme(this)
         setContentViewAndInsets(views.root)
-        initUI()
-        load()
-    }
-
-    private fun initUI() {
         fixHorizontalMargin(views.llContent)
         setSupportActionBar(views.toolbar)
         setNavigationBack(views.toolbar)
@@ -104,7 +99,11 @@ class ActNickname : AppCompatActivity(), View.OnClickListener {
                 }
             )
         )
+        initUI()
+        load()
+    }
 
+    private fun initUI() {
         views.btnTextColorEdit.setOnClickListener(this)
         views.btnTextColorReset.setOnClickListener(this)
         views.btnBackgroundColorEdit.setOnClickListener(this)

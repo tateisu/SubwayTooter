@@ -1311,5 +1311,6 @@
     <string name="losts_join">と</string>
     <string name="lost_relationships">%1$sを失いました。</string>
     <string name="check_details_web_ui">詳細を見る(Web UI)</string>
+    <string name="back">戻る</string>
 
 </resources>

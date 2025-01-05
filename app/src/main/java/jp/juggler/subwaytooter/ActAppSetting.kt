@@ -151,7 +151,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
     private var pendingQuery: String? = null
 
-    private val procQuery: Runnable = Runnable {
+    private val delayedQuery: Runnable = Runnable {
         if (pendingQuery != null) load(null, pendingQuery)
     }
 
@@ -161,16 +161,20 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     private var lastQuery: String? = null
     private var colorTarget: AppSettingItem? = null
 
+    private val queryWatcher = object : TextWatcher {
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) = Unit
+        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) = Unit
+        override fun afterTextChanged(s: Editable) {
+            pendingQuery = s.toString()
+            this@ActAppSetting.handler.removeCallbacks(delayedQuery)
+            this@ActAppSetting.handler.postDelayed(delayedQuery, 166L)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
-        backPressed {
-            when {
-                lastQuery != null -> load(lastSection, null)
-                lastSection != null -> load(null, null)
-                else -> finish()
-            }
-        }
+        backPressed { handleBack() }
 
         arNoop.register(this)
         arImportAppData.register(this)
@@ -210,32 +214,19 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
         views.lvList.layoutManager = LinearLayoutManager(this)
         views.lvList.adapter = adapter
+        views.btnBack.setOnClickListener { handleBack() }
 
-        views.etSearch.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
-                pendingQuery = p0?.toString()
-                this@ActAppSetting.handler.removeCallbacks(procQuery)
-                this@ActAppSetting.handler.postDelayed(procQuery, 166L)
-            }
-
-            override fun beforeTextChanged(
-                p0: CharSequence?,
-                p1: Int,
-                p2: Int,
-                p3: Int,
-            ) {
-            }
-
-            override fun onTextChanged(
-                p0: CharSequence?,
-                p1: Int,
-                p2: Int,
-                p3: Int,
-            ) {
-            }
-        })
+        views.etSearch.addTextChangedListener(queryWatcher)
 
         views.btnSearchReset.setOnClickListener(this)
+    }
+
+    private fun handleBack() {
+        when {
+            lastQuery != null -> load(lastSection, null)
+            lastSection != null -> load(null, null)
+            else -> finish()
+        }
     }
 
     private fun removeDefaultPref() {
@@ -274,7 +265,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View) {
         when (v.id) {
             R.id.btnSearchReset -> {
-                handler.removeCallbacks(procQuery)
+                handler.removeCallbacks(delayedQuery)
                 views.etSearch.setText("")
                 views.etSearch.hideKeyboard()
                 load(lastSection, null)
@@ -283,6 +274,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun load(section: AppSettingItem?, query: String?) {
+
         adapter.items = buildList {
             var lastPath: String? = null
             fun addParentPath(item: AppSettingItem) {
@@ -299,6 +291,30 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
                     lastPath = path
                     add(path)
                     add(divider)
+                }
+            }
+
+            fun clearQuery() {
+                lastQuery = null
+                views.etSearch.setText("")
+                handler.removeCallbacks(delayedQuery)
+            }
+
+            // あるセクションの下の設定を追加する
+            // (セクション自体は追加しない
+            fun addSectionItems(section: AppSettingItem?) {
+                section ?: return
+                for (item in section.items) {
+                    add(divider)
+                    add(item)
+                    if (item.items.isNotEmpty()) {
+                        when (item.type) {
+                            // グループなら子要素すべてを区切り線なしで並べる
+                            SettingType.Group -> addAll(item.items)
+                            // それ以外は区切り線ありで再帰的に並べる
+                            else -> addSectionItems(item)
+                        }
+                    }
                 }
             }
 
@@ -347,35 +363,20 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
                     }
                     scanGroup(0, appSettingRoot)
                 }
-                // show root page
-                section == null -> {
-                    val root = appSettingRoot
-                    lastQuery = null
+                // セクション指定あり
+                section != null -> {
+                    clearQuery()
+                    lastSection = section
+                    addSectionItems(section)
+                }
+                // 設定トップ
+                else -> {
+                    clearQuery()
                     lastSection = null
-                    for (child in root.items) {
+                    for (child in appSettingRoot.items) {
                         add(divider)
                         add(child)
                     }
-                }
-                // show section page
-                else -> {
-                    lastSection = section
-                    lastQuery = null
-                    fun scanGroup(level: Int, parent: AppSettingItem?) {
-                        parent ?: return
-                        for (item in parent.items) {
-                            add(divider)
-                            add(item)
-                            if (item.items.isNotEmpty()) {
-                                if (item.type == SettingType.Group) {
-                                    addAll(item.items)
-                                } else {
-                                    scanGroup(level + 1, item)
-                                }
-                            }
-                        }
-                    }
-                    scanGroup(0, section.cast())
                 }
             }
             if (isNotEmpty()) add(divider)

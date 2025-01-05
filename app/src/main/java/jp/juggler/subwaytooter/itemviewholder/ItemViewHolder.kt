@@ -709,7 +709,6 @@ class ItemViewHolder(
 
             tvContent = myTextView {
                 setLineSpacing(lineSpacingExtra, 1.1f)
-                // tools:text="Contents\nContents"
             }.lparams(matchParent, wrapContent) {
                 topMargin = dip(3)
             }

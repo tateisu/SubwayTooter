@@ -1325,4 +1325,5 @@
     <string name="losts_join"> and </string>
     <string name="lost_relationships">you lost %1$s.</string>
     <string name="check_details_web_ui">Check details in Web UI.</string>
+    <string name="back">back</string>
 </resources>

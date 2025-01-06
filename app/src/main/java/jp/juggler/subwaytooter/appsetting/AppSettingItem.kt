@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.appsetting
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
@@ -65,7 +66,7 @@ enum class SettingType(val id: Int) {
     Group(9),
     TextWithSelector(10),
     CheckBox(11),
-    Section(12)
+    Section(12),
 
     ;
 
@@ -236,6 +237,15 @@ class AppSettingItem(
 
     override fun hashCode() = id
     override fun equals(other: Any?) = (other as? AppSettingItem)?.id == this.id
+
+    // 項目のcaptionがqueryにマッチするなら真
+    fun match(
+        context: Context,
+        query: String,
+    ): Boolean = when (caption) {
+        0 -> false
+        else -> context.getString(caption).contains(query, ignoreCase = true)
+    }
 
     companion object {
         var idSeed = AtomicInteger(0)
@@ -901,29 +911,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         group(R.string.column_color_default) {
             AppSettingItem.SAMPLE_CCD_HEADER =
                 sample(R.layout.setting_sample_column_header) { activity, viewRoot ->
-
-                    val llColumnHeader: View = viewRoot.findViewById(R.id.llColumnHeader)
-                    val ivColumnHeader: ImageView = viewRoot.findViewById(R.id.ivColumnHeader)
-                    val tvColumnName: TextView = viewRoot.findViewById(R.id.tvColumnName)
-
-                    val colorColumnHeaderBg = PrefI.ipCcdHeaderBg.value
-                    val colorColumnHeaderFg = PrefI.ipCcdHeaderFg.value
-
-                    val headerBg = when {
-                        colorColumnHeaderBg != 0 -> colorColumnHeaderBg
-                        else -> activity.attrColor(R.attr.color_column_header)
-                    }
-
-                    val headerFg = when {
-                        colorColumnHeaderFg != 0 -> colorColumnHeaderFg
-                        else -> activity.attrColor(R.attr.colorColumnHeaderName)
-                    }
-
-                    llColumnHeader.background = getAdaptiveRippleDrawable(headerBg, headerFg)
-
-                    tvColumnName.setTextColor(headerFg)
-                    ivColumnHeader.setImageResource(R.drawable.ic_bike)
-                    ivColumnHeader.imageTintList = ColorStateList.valueOf(headerFg)
+                    showSampleCcdHeader(activity, viewRoot)
                 }
 
             colorOpaque(PrefI.ipCcdHeaderBg, R.string.header_background_color) {
@@ -935,25 +923,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
             AppSettingItem.SAMPLE_CCD_BODY =
                 sample(R.layout.setting_sample_column_body) { activity, viewRoot ->
-                    val flColumnBackground: View = viewRoot.findViewById(R.id.flColumnBackground)
-                    val tvSampleAcct: TextView = viewRoot.findViewById(R.id.tvSampleAcct)
-                    val tvSampleContent: TextView = viewRoot.findViewById(R.id.tvSampleContent)
-
-                    val colorColumnBg = PrefI.ipCcdContentBg.value
-                    val colorColumnAcct = PrefI.ipCcdContentAcct.value
-                    val colorColumnText = PrefI.ipCcdContentText.value
-
-                    flColumnBackground.setBackgroundColor(colorColumnBg) // may 0
-
-                    tvSampleAcct.setTextColor(
-                        colorColumnAcct.notZero()
-                            ?: activity.attrColor(R.attr.colorTimeSmall)
-                    )
-
-                    tvSampleContent.setTextColor(
-                        colorColumnText.notZero()
-                            ?: activity.attrColor(R.attr.colorTextContent)
-                    )
+                    showSampleColumnBody(activity, viewRoot)
                 }
 
             colorOpaque(PrefI.ipCcdContentBg, R.string.content_background_color) {
@@ -972,51 +942,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         group(R.string.footer_color) {
             AppSettingItem.SAMPLE_FOOTER =
                 sample(R.layout.setting_sample_footer) { activity, viewRoot ->
-                    val ivFooterToot: AppCompatImageView = viewRoot.findViewById(R.id.ivFooterToot)
-                    val ivFooterMenu: AppCompatImageView = viewRoot.findViewById(R.id.ivFooterMenu)
-                    val llFooterBG: View = viewRoot.findViewById(R.id.llFooterBG)
-                    val vFooterDivider1: View = viewRoot.findViewById(R.id.vFooterDivider1)
-                    val vFooterDivider2: View = viewRoot.findViewById(R.id.vFooterDivider2)
-                    val vIndicator: View = viewRoot.findViewById(R.id.vIndicator)
-
-                    val footerButtonBgColor = PrefI.ipFooterButtonBgColor.value
-                    val footerButtonFgColor = PrefI.ipFooterButtonFgColor.value
-                    val footerTabBgColor = PrefI.ipFooterTabBgColor.value
-                    val footerTabDividerColor = PrefI.ipFooterTabDividerColor.value
-                    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor.value
-
-                    val colorColumnStripBackground = footerTabBgColor.notZero()
-                        ?: activity.attrColor(R.attr.colorColumnStripBackground)
-
-                    llFooterBG.setBackgroundColor(colorColumnStripBackground)
-
-                    val colorButtonBg = footerButtonBgColor.notZero()
-                        ?: colorColumnStripBackground
-
-                    val colorButtonFg = footerButtonFgColor.notZero()
-                        ?: activity.attrColor(R.attr.colorRippleEffect)
-
-                    ivFooterMenu.backgroundDrawable =
-                        getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
-                    ivFooterToot.backgroundDrawable =
-                        getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
-
-                    val csl = ColorStateList.valueOf(
-                        footerButtonFgColor.notZero()
-                            ?: activity.attrColor(R.attr.colorTextContent)
-                    )
-                    ivFooterToot.imageTintList = csl
-                    ivFooterMenu.imageTintList = csl
-
-                    val c = footerTabDividerColor.notZero()
-                        ?: colorColumnStripBackground
-                    vFooterDivider1.setBackgroundColor(c)
-                    vFooterDivider2.setBackgroundColor(c)
-
-                    vIndicator.setBackgroundColor(
-                        footerTabIndicatorColor.notZero()
-                            ?: activity.attrColor(R.attr.colorTextHelp)
-                    )
+                    showSampleFooter(activity, viewRoot)
                 }
 
             colorOpaque(PrefI.ipFooterButtonBgColor, R.string.button_background_color) {
@@ -1153,4 +1079,99 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             desc = R.string.app_data_import_desc
         }
     }
+}
+
+private fun showSampleCcdHeader(activity: ActAppSetting, viewRoot: View) {
+    val llColumnHeader: View = viewRoot.findViewById(R.id.llColumnHeader)
+    val ivColumnHeader: ImageView = viewRoot.findViewById(R.id.ivColumnHeader)
+    val tvColumnName: TextView = viewRoot.findViewById(R.id.tvColumnName)
+
+    val colorColumnHeaderBg = PrefI.ipCcdHeaderBg.value
+    val colorColumnHeaderFg = PrefI.ipCcdHeaderFg.value
+
+    val headerBg = when {
+        colorColumnHeaderBg != 0 -> colorColumnHeaderBg
+        else -> activity.attrColor(R.attr.color_column_header)
+    }
+
+    val headerFg = when {
+        colorColumnHeaderFg != 0 -> colorColumnHeaderFg
+        else -> activity.attrColor(R.attr.colorColumnHeaderName)
+    }
+
+    llColumnHeader.background = getAdaptiveRippleDrawable(headerBg, headerFg)
+
+    tvColumnName.setTextColor(headerFg)
+    ivColumnHeader.setImageResource(R.drawable.ic_bike)
+    ivColumnHeader.imageTintList = ColorStateList.valueOf(headerFg)
+}
+
+private fun showSampleColumnBody(activity: ActAppSetting, viewRoot: View) {
+    val flColumnBackground: View = viewRoot.findViewById(R.id.flColumnBackground)
+    val tvSampleAcct: TextView = viewRoot.findViewById(R.id.tvSampleAcct)
+    val tvSampleContent: TextView = viewRoot.findViewById(R.id.tvSampleContent)
+
+    val colorColumnBg = PrefI.ipCcdContentBg.value
+    val colorColumnAcct = PrefI.ipCcdContentAcct.value
+    val colorColumnText = PrefI.ipCcdContentText.value
+
+    flColumnBackground.setBackgroundColor(colorColumnBg) // may 0
+
+    tvSampleAcct.setTextColor(
+        colorColumnAcct.notZero()
+            ?: activity.attrColor(R.attr.colorTimeSmall)
+    )
+
+    tvSampleContent.setTextColor(
+        colorColumnText.notZero()
+            ?: activity.attrColor(R.attr.colorTextContent)
+    )
+}
+
+private fun showSampleFooter(activity: ActAppSetting, viewRoot: View) {
+    val ivFooterToot: AppCompatImageView = viewRoot.findViewById(R.id.ivFooterToot)
+    val ivFooterMenu: AppCompatImageView = viewRoot.findViewById(R.id.ivFooterMenu)
+    val llFooterBG: View = viewRoot.findViewById(R.id.llFooterBG)
+    val vFooterDivider1: View = viewRoot.findViewById(R.id.vFooterDivider1)
+    val vFooterDivider2: View = viewRoot.findViewById(R.id.vFooterDivider2)
+    val vIndicator: View = viewRoot.findViewById(R.id.vIndicator)
+
+    val footerButtonBgColor = PrefI.ipFooterButtonBgColor.value
+    val footerButtonFgColor = PrefI.ipFooterButtonFgColor.value
+    val footerTabBgColor = PrefI.ipFooterTabBgColor.value
+    val footerTabDividerColor = PrefI.ipFooterTabDividerColor.value
+    val footerTabIndicatorColor = PrefI.ipFooterTabIndicatorColor.value
+
+    val colorColumnStripBackground = footerTabBgColor.notZero()
+        ?: activity.attrColor(R.attr.colorColumnStripBackground)
+
+    llFooterBG.setBackgroundColor(colorColumnStripBackground)
+
+    val colorButtonBg = footerButtonBgColor.notZero()
+        ?: colorColumnStripBackground
+
+    val colorButtonFg = footerButtonFgColor.notZero()
+        ?: activity.attrColor(R.attr.colorRippleEffect)
+
+    ivFooterMenu.backgroundDrawable =
+        getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
+    ivFooterToot.backgroundDrawable =
+        getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
+
+    val csl = ColorStateList.valueOf(
+        footerButtonFgColor.notZero()
+            ?: activity.attrColor(R.attr.colorTextContent)
+    )
+    ivFooterToot.imageTintList = csl
+    ivFooterMenu.imageTintList = csl
+
+    val c = footerTabDividerColor.notZero()
+        ?: colorColumnStripBackground
+    vFooterDivider1.setBackgroundColor(c)
+    vFooterDivider2.setBackgroundColor(c)
+
+    vIndicator.setBackgroundColor(
+        footerTabIndicatorColor.notZero()
+            ?: activity.attrColor(R.attr.colorTextHelp)
+    )
 }

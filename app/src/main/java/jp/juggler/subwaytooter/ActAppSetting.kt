@@ -273,13 +273,23 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun load(section: AppSettingItem?, query: String?) {
+    private fun clearQuery() {
+        lastQuery = null
+        views.etSearch.setText("")
+        handler.removeCallbacks(delayedQuery)
+    }
 
+    /**
+     * appSettingRoot の内容をセクションやクエリでフィルタしてadapterに設定する
+     */
+    private fun load(section: AppSettingItem?, queryArg: String?) {
+        val context = this@ActAppSetting
         adapter.items = buildList {
+            // 検索時に項目の上にパンくずリストを追加する
+            // リストが前回と同じなら追加しない
             var lastPath: String? = null
             fun addParentPath(item: AppSettingItem) {
                 add(divider)
-
                 val pathList = ArrayList<String>()
                 var parent = item.parent
                 while (parent != null) {
@@ -294,10 +304,36 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
                 }
             }
 
-            fun clearQuery() {
-                lastQuery = null
-                views.etSearch.setText("")
-                handler.removeCallbacks(delayedQuery)
+            fun queryRecursive(item: AppSettingItem, query: String) {
+                if (item.caption == 0) return
+
+                when (item.type) {
+                    // セクション自身にはマッチしないが、子孫はスキャンする
+                    SettingType.Section ->
+                        item.items.forEach { queryRecursive(it, query) }
+
+                    SettingType.Group -> {
+                        // グループは見出しと直接の子要素の名前が検索対象になる
+                        if (item.match(context, query) ||
+                            item.items.any { it.match(context, query) }
+                        ) {
+                            // 追加するときはグループとその子要素すべてを追加する
+                            addParentPath(item)
+                            add(item)
+                            addAll(item.items)
+                        }
+                    }
+
+                    else -> {
+                        // 項目の名称がマッチするなら追加
+                        if (item.match(context, query)) {
+                            addParentPath(item)
+                            add(item)
+                        }
+                        // 子要素も検索対象
+                        item.items.forEach { queryRecursive(it, query) }
+                    }
+                }
             }
 
             // あるセクションの下の設定を追加する
@@ -320,48 +356,9 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
             when {
                 // 検索キーワードあり
-                query?.isNotBlank() == true -> {
-                    lastQuery = query
-                    fun scanGroup(level: Int, item: AppSettingItem) {
-                        if (item.caption == 0) return
-                        if (item.type != SettingType.Section) {
-                            when (item.type) {
-                                SettingType.Group -> {
-                                    var caption = getString(item.caption)
-                                    var match = caption.contains(query, ignoreCase = true)
-                                    // log.d("group match=$match caption=$caption")
-                                    for (child in item.items) {
-                                        if (child.caption == 0) continue
-                                        caption = getString(child.caption)
-                                        match = caption.contains(query, ignoreCase = true)
-                                        // log.d("group.item match=$match caption=$caption")
-                                        if (match) break
-                                    }
-                                    if (match) {
-                                        // put entire group
-                                        addParentPath(item)
-                                        add(item)
-                                        addAll(item.items)
-                                    }
-                                    return
-                                }
-
-                                else -> {
-                                    val caption = getString(item.caption)
-                                    val match = caption.contains(query, ignoreCase = true)
-                                    // log.d("item match=$match caption=$caption")
-                                    if (match) {
-                                        addParentPath(item)
-                                        add(item)
-                                    }
-                                }
-                            }
-                        }
-                        for (child in item.items) {
-                            scanGroup(level + 1, child)
-                        }
-                    }
-                    scanGroup(0, appSettingRoot)
+                queryArg?.isNotEmpty() == true -> {
+                    lastQuery = queryArg
+                    queryRecursive(appSettingRoot, queryArg)
                 }
                 // セクション指定あり
                 section != null -> {

@@ -1302,4 +1302,27 @@
     <string name="applied_when_post">发布时应用。</string>
     <string name="detail">详情</string>
     <string name="emoji_detail">表情符号详情</string>
+    <string name="enquete_item_too_long">选择 %1$d 的调查选项太长。请减少 %2$d 个字符。</string>
+    <string name="pick_images_or_video">选择图片或视频…</string>
+    <string name="zooming_of_resized">(%4$d/%5$d) ×%3$.1f\n%1$d×%2$d (原始 %6$d×%7$d)</string>
+    <string name="language_filter_importing">正在导入语言过滤器…</string>
+    <string name="language_filter_loading">加载可用语言…</string>
+    <string name="language_name_montenegrin">黑山语</string>
+    <string name="notification_type_severed_relationships">已断绝关系</string>
+    <string name="servered_relationships_domain_block">%1$s 的管理员/版主已屏蔽域名 %2$s。</string>
+    <string name="count_followers">%1$d 个你的关注者</string>
+    <string name="losts_join">和</string>
+    <string name="lost_relationships">你失去了 %1$s。</string>
+    <string name="check_details_web_ui">请在网页界面查看详细信息。</string>
+    <string name="agg_boosts">聚合转发</string>
+    <string name="post_404_desc">(或者，你可以回复来自其他账户的仅限关注者的帖子)</string>
+    <string name="rearrange">重新排列</string>
+    <string name="attachment_rearrange_desc">拖动以重新排列。</string>
+    <string name="agg_status_limit">证明帖子限制</string>
+    <string name="display_name_boosted_by_agg">%1$s 和 %2$s 的关注对象已转发。</string>
+    <string name="servered_relationships_account_suspension">%1$s 的管理员/版主已暂停账号 %2$s。</string>
+    <string name="servered_relationships_user_domain_block">用户 %1$s 已屏蔽域名 %2$s。</string>
+    <string name="count_following_1">%1$d 个你关注的账号</string>
+    <string name="count_follower_1">%1$d 个你的关注者</string>
+    <string name="count_followings">%1$d 个你关注的账号</string>
 </resources>

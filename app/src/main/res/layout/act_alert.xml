@@ -18,7 +18,11 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="?attr/colorMainBackground"
+        android:cacheColorHint="#00000000"
+        android:fadingEdgeLength="20dp"
         android:fillViewport="true"
+        android:requiresFadingEdge="vertical"
         android:scrollbarStyle="outsideOverlay">
 
         <TextView

@@ -65,6 +65,7 @@ import jp.juggler.util.ui.ForegroundAttrColorSpan
 import jp.juggler.util.ui.activity
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.createColoredDrawable
+import jp.juggler.util.ui.dp
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference
@@ -668,11 +669,13 @@ class SideMenuAdapter(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
-            backgroundColor = actMain.attrColor(R.attr.colorWindowBackground)
+            backgroundColor = actMain.attrColor(R.attr.colorMainBackground)
             selector = StateListDrawable()
             divider = null
             dividerHeight = 0
             isScrollbarFadingEnabled = false
+            isVerticalFadingEdgeEnabled = true
+            setFadingEdgeLength(context.dp(20))
 
             val padV = (actMain.density * 12f + 0.5f).toInt()
             setPadding(0, padV, 0, padV)

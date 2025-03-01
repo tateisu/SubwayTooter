@@ -10,7 +10,11 @@
     <jp.juggler.subwaytooter.view.MaxHeightScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipToPadding="false"
         android:fadeScrollbars="false"
+        android:fadingEdgeLength="20dp"
+        android:fillViewport="true"
+        android:requiresFadingEdge="vertical"
         android:scrollbarStyle="outsideOverlay"
         app:maxHeight="240dp">
 

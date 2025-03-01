@@ -77,8 +77,7 @@ object PrefI {
     val ipButtonFollowRequestColor = IntPref("ButtonFollowRequestColor", 0)
     val ipButtonReactionedColor = IntPref("ButtonReactionedColor", 0)
 
-    val ipStatusBarColor = IntPref("StatusBarColor", 0)
-    val ipNavigationBarColor = IntPref("NavigationBarColor", 0)
+    val ipWindowInsetsColor = IntPref("StatusBarColor", 0) // キー名は歴史的な理由で異なる
 
     val ipTootColorUnlisted = IntPref("ipTootColorUnlisted", 0)
     val ipTootColorFollower = IntPref("ipTootColorFollower", 0)

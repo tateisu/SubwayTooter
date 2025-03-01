@@ -48,11 +48,9 @@
     <color name="Light_colotListItemDrag">#AACCCCCC</color>
     <color name="Light_colorAppCompatAccent">#0080ff</color>
 
-    <!-- OSのステータスバー背景 -->
-    <color name="Light_colorOsStatusBarBg">#fff</color>
     <!-- OSのナビゲーションバー背景
         端末によりライトテーマでもアイコン図柄が黒くないことがあるので、白にはしない -->
-    <color name="Light_colorOsNavigationBarBg">#ccc</color>
+    <color name="Light_colorWindowInsetsBg">#ccc</color>
 
     <!-- =================================================== -->
     <!-- Dark theme -->
@@ -105,8 +103,7 @@
 
     <!-- OSのステータスバー背景。
     ダークテーマならアイコン図柄は明るいので、暗い色を指定して良い -->
-    <color name="Dark_colorOsStatusBarBg">#222</color>
-    <color name="Dark_colorOsNavigationBarBg">#222</color>
+    <color name="Dark_colorWindowInsetsBg">#000</color>
 
     <!-- =================================================== -->
     <!-- Mastodon theme -->
@@ -160,8 +157,7 @@
 
     <!-- OSのステータスバー背景。
         ダークテーマならアイコン図柄は明るいので、暗い色を指定して良い -->
-    <color name="Mastodon_colorOsStatusBarBg">#444B5D</color>
-    <color name="Mastodon_colorOsNavigationBarBg">#444B5D</color>
+    <color name="Mastodon_colorWindowInsetsBg">#444B5D</color>
 
     <!-- =================================================== -->
 
@@ -186,6 +182,5 @@
     <color name="colorNotificationAccentStatus">#33f597</color>
     <color name="colorNotificationAccentUnfollow">#9433f5</color>
     <color name="colorNotificationAccentUnknown">#ae1aed</color>
-
 
 </resources>

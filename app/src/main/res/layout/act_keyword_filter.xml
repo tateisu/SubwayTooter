@@ -19,25 +19,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="?attr/colorMainBackground"
         android:orientation="vertical">
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:clipToPadding="false"
-            android:fillViewport="true"
-            android:paddingBottom="128dp"
-            android:paddingTop="6dp"
-            android:paddingHorizontal="12dp"
-            android:scrollbarStyle="outsideOverlay"
+            android:cacheColorHint="#00000000"
             android:fadeScrollbars="false"
+            android:fadingEdge="vertical"
+            android:fadingEdgeLength="20dp"
+            android:fillViewport="true"
+            android:paddingHorizontal="12dp"
+            android:requiresFadingEdge="vertical"
+            android:scrollbarStyle="outsideOverlay"
             tools:ignore="NestedWeights,TooManyViews">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingBottom="128dp"
+                android:paddingTop="6dp">
 
                 <View style="@style/setting_divider" />
 

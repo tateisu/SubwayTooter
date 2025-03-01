@@ -23,14 +23,18 @@
         <!-- 歴史的には OSのステータスバー背景や contextual app bar 背景など。最近の事情は不明 -->
         <item name="colorPrimaryDark">@color/Light_colorActionBarBgDark</item>
 
-        <!-- OSのシステムバーの背景色 -->
-        <item name="android:statusBarColor">@color/Light_colorOsStatusBarBg</item>
-        <item name="android:navigationBarColor">@color/Light_colorOsNavigationBarBg</item>
-        <item name="colorOsStatusBarBg">@color/Light_colorOsStatusBarBg</item>
-        <item name="colorOsNavigationBarBg">@color/Light_colorOsNavigationBarBg</item>
+        <!--
+            (後方互換用)ステータスバーやナビゲーションバーの色
+            targetSdk35以降はこの設定は
+            API28まではコードから設定したバー色で更新される
+            API29以降は
+         -->
+        <item name="android:statusBarColor">@color/Light_colorWindowInsetsBg</item>
+        <item name="android:navigationBarColor">@color/Light_colorWindowInsetsBg</item>
 
-        <!-- ウィンドウ背景Drawable -->
-        <item name="android:windowBackground">@drawable/window_background</item>
+        <!-- OSのシステムバーの背景色。Window Insets の領域に表示される色 -->
+        <item name="colorWindowInsetsBg">@color/Light_colorWindowInsetsBg</item>
+        <item name="android:windowBackground">@color/Light_colorWindowInsetsBg</item>
 
         <!-- AppCompat ここまで ============================================ -->
 
@@ -69,7 +73,7 @@
         <item name="colorStatusButtonsPopupBg">@color/Light_colorStatusButtonsPopupBg</item>
         <item name="colorButtonBgCw">@color/Light_colorButtonBgCw</item>
         <item name="colorRefreshErrorBg">@color/Light_colorRefreshErrorBg</item>
-        <item name="colorWindowBackground">@color/Light_colorBackground</item>
+        <item name="colorMainBackground">@color/Light_colorBackground</item>
         <item name="colorButtonAccentBoost">@color/Light_colorButtonAccentBoost</item>
         <item name="colorButtonAccentFavourite">@color/Light_colorButtonAccentFavourite</item>
         <item name="colorButtonAccentBookmark">@color/Light_colorButtonAccentBookmark</item>
@@ -123,15 +127,13 @@
         <!-- 歴史的には OSのステータスバー背景や contextual app bar 背景など。最近の事情は不明 -->
         <item name="colorPrimaryDark">@color/Dark_colorActionBarBgDark</item>
 
-        <!-- OSのシステムバーの背景色 -->
-        <item name="android:statusBarColor">@color/Dark_colorOsStatusBarBg</item>
-        <item name="android:navigationBarColor">@color/Dark_colorOsNavigationBarBg</item>
-        <item name="colorOsStatusBarBg">@color/Dark_colorOsStatusBarBg</item>
-        <item name="colorOsNavigationBarBg">@color/Dark_colorOsNavigationBarBg</item>
+        <!-- (後方互換用)ステータスバーやナビゲーションバーの色 -->
+        <item name="android:statusBarColor">@color/Dark_colorWindowInsetsBg</item>
+        <item name="android:navigationBarColor">@color/Dark_colorWindowInsetsBg</item>
 
-
-        <!-- ウィンドウ背景Drawable -->
-        <item name="android:windowBackground">@drawable/window_background</item>
+        <!-- OSのシステムバーの背景色。Window Insets の領域に表示される色 -->
+        <item name="colorWindowInsetsBg">@color/Dark_colorWindowInsetsBg</item>
+        <item name="android:windowBackground">@color/Light_colorWindowInsetsBg</item>
 
         <!-- AppCompat ここまで ============================================ -->
 
@@ -172,7 +174,7 @@
         <item name="colorButtonBgCw">@color/Dark_colorButtonBgCw</item>
         <item name="colorRefreshErrorBg">@color/Dark_colorRefreshErrorBg</item>
 
-        <item name="colorWindowBackground">@color/Dark_colorBackground</item>
+        <item name="colorMainBackground">@color/Dark_colorBackground</item>
 
         <item name="colorButtonAccentBoost">@color/Dark_colorButtonAccentBoost</item>
         <item name="colorButtonAccentFavourite">@color/Dark_colorButtonAccentFavourite</item>
@@ -227,17 +229,15 @@
         <!-- 歴史的には OSのステータスバー背景や contextual app bar 背景など。最近の事情は不明 -->
         <item name="colorPrimaryDark">@color/Mastodon_colorActionBarBgDark</item>
 
-        <!-- OSのシステムバーの背景色 -->
-        <item name="android:statusBarColor">@color/Mastodon_colorOsStatusBarBg</item>
-        <item name="android:navigationBarColor">@color/Mastodon_colorOsNavigationBarBg</item>
-        <item name="colorOsStatusBarBg">@color/Mastodon_colorOsStatusBarBg</item>
-        <item name="colorOsNavigationBarBg">@color/Mastodon_colorOsNavigationBarBg</item>
+        <!-- (後方互換用)ステータスバーやナビゲーションバーの色 -->
+        <item name="android:statusBarColor">@color/Mastodon_colorWindowInsetsBg</item>
+        <item name="android:navigationBarColor">@color/Mastodon_colorWindowInsetsBg</item>
 
-        <!-- ウィンドウ背景Drawable -->
-        <item name="android:windowBackground">@drawable/window_background</item>
+        <!-- OSのシステムバーの背景色。Window Insets の領域に表示される色 -->
+        <item name="colorWindowInsetsBg">@color/Mastodon_colorWindowInsetsBg</item>
+        <item name="android:windowBackground">@color/Light_colorWindowInsetsBg</item>
 
         <!-- AppCompat ここまで ============================================ -->
-
 
         <item name="colorLink">@color/Mastodon_colorLink</item>
         <item name="list_item_bg_pressed_dragged">@color/Mastodon_colorListItemDrag</item>
@@ -278,7 +278,7 @@
         <item name="colorButtonBgCw">@color/Mastodon_colorButtonBgCw</item>
         <item name="colorRefreshErrorBg">@color/Mastodon_colorRefreshErrorBg</item>
 
-        <item name="colorWindowBackground">@color/Mastodon_colorBackground</item>
+        <item name="colorMainBackground">@color/Mastodon_colorBackground</item>
 
         <item name="colorButtonAccentBoost">@color/Mastodon_colorButtonAccentBoost</item>
         <item name="colorButtonAccentFavourite">@color/Mastodon_colorButtonAccentFavourite</item>

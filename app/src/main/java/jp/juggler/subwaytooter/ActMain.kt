@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -98,6 +99,7 @@ import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.data.anyArrayOf
 import jp.juggler.util.data.notEmpty
+import jp.juggler.util.data.notZero
 import jp.juggler.util.int
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.benchmark
@@ -107,6 +109,7 @@ import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
+import jp.juggler.util.ui.resDrawable
 import jp.juggler.util.ui.setContentViewAndInsets
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -788,18 +791,22 @@ class ActMain : AppCompatActivity(),
     }
 
     private fun galaxyBackgroundWorkaround() {
-        // set window background (redundant)
-        window.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.window_background))
-
-        val color = attrColor(R.attr.colorWindowBackground)
         log.i(
-            "Build MANUFACTURER=${Build.MANUFACTURER}, BRAND=${Build.BRAND}, MODEL=${Build.MODEL}, bgColor=${
-                color.toString(radix = 16)
+            "galaxyBackgroundWorkaround: Build MANUFACTURER=${
+                Build.MANUFACTURER
+            }, BRAND=${
+                Build.BRAND
+            }, MODEL=${
+                Build.MODEL
             }"
         )
         if (Build.MANUFACTURER?.contains("samsung", ignoreCase = true) == true) {
+            val colorBarBg = PrefI.ipWindowInsetsColor.value.notZero()
+                ?: attrColor(R.attr.colorWindowInsetsBg)
+            // Window Insets の色を再設定する
+            window.setBackgroundDrawable(ColorDrawable(colorBarBg))
             // 余計なオーバードローを一回追加する
-            window.decorView.rootView.setBackgroundColor(color)
+            window.decorView.rootView.setBackgroundColor(colorBarBg)
         }
     }
 }

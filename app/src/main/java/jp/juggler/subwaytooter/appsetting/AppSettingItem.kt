@@ -966,16 +966,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             changed = { setSwitchColor() }
         }
 
-        colorOpaque(PrefI.ipStatusBarColor, R.string.status_bar_color) {
-            changed = {
-                enableEdgeToEdgeEx(forceDark = false)
-            }
-        }
-
-        colorOpaque(PrefI.ipNavigationBarColor, R.string.navigation_bar_color) {
-            changed = {
-                enableEdgeToEdgeEx(forceDark = false)
-            }
+        colorOpaque(PrefI.ipWindowInsetsColor, R.string.windows_insets_color) {
+            changed = { enableEdgeToEdgeEx(forceDark = false) }
         }
 
         colorOpaque(PrefI.ipSearchBgColor, R.string.search_bar_background_color)

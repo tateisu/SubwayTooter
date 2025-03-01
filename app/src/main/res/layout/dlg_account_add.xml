@@ -4,7 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:cacheColorHint="#00000000"
     android:fadeScrollbars="false"
+    android:fadingEdgeLength="20dp"
+    android:fillViewport="true"
+    android:requiresFadingEdge="vertical"
     android:scrollbarStyle="outsideOverlay">
 
     <LinearLayout

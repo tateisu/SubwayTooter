@@ -24,8 +24,6 @@ plugins {
 }
 
 allprojects {
-
-
     // configurationのリストを標準出力に出す
     // usage: ./gradlew -q --no-configuration-cache :app:printConfigurations
     tasks.register("printConfigurations") {
@@ -36,14 +34,17 @@ allprojects {
             }
         }
     }
-}
 
-tasks.withType<JavaCompile> {
-    options.compilerArgs.addAll(
-        arrayOf(
-            "-Xlint:unchecked",
-            "-Xlint:deprecation",
-            "-Xlint:divzero",
-        )
-    )
+    // プロジェクトを評価し終わったら JavaCompile 全てにオプションを追加する
+    gradle.projectsEvaluated {
+        tasks.withType<JavaCompile> {
+            options.compilerArgs.addAll(
+                arrayOf(
+                    "-Xlint:unchecked",
+                    "-Xlint:deprecation",
+                    "-Xlint:divzero",
+                )
+            )
+        }
+    }
 }

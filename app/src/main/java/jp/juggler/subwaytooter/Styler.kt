@@ -5,7 +5,9 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.view.View
@@ -417,7 +419,7 @@ fun SpannableStringBuilder.appendMisskeyReaction(
 
 fun Context.setSwitchColor(root: View?) {
     root ?: return
-    val colorBg = attrColor(R.attr.colorWindowBackground)
+    val colorBg = attrColor(R.attr.colorMainBackground)
     val colorOff = attrColor(R.attr.colorSwitchOff)
     val colorOn = PrefI.ipSwitchOnColor.value
 
@@ -476,22 +478,6 @@ fun ViewGroup.generateLayoutParamsEx(): ViewGroup.LayoutParams? =
         null
     }
 
-fun systemBarStyle(
-    isLightTheme: Boolean,
-    colorBg: Int,
-) = when {
-    isLightTheme -> SystemBarStyle.light(
-        // bg color used when light theme that have dark icon, should use light color.
-        scrim = fixColor(src = colorBg, lExpect = 1f),
-        // bg color used when light theme that have LIGHT icon, should use dark color.
-        darkScrim = fixColor(src = colorBg, lExpect = 0f),
-    )
-
-    else -> SystemBarStyle.dark(
-        // bg color used when dark theme that have LIGHT icon, should use dark color.
-        scrim = fixColor(src = colorBg, lExpect = 0f),
-    )
-}
 
 fun ComponentActivity.enableEdgeToEdgeEx(forceDark: Boolean) {
     var nTheme = PrefI.ipUiTheme.value
@@ -501,39 +487,44 @@ fun ComponentActivity.enableEdgeToEdgeEx(forceDark: Boolean) {
         1 -> false // R.style.AppTheme_Dark
         /* 0 */ else -> true // R.style.AppTheme_Light
     }
+    val colorBarBg = when{
+        forceDark -> Color.BLACK
+        // API 28以下では色を指定できる
+        else -> PrefI.ipWindowInsetsColor.value.notZero()
+            ?: attrColor(R.attr.colorWindowInsetsBg)
+    }
+
+    val barStyle =when {
+        isLightTheme -> SystemBarStyle.light(
+            // API 28以下では色を指定できる
+            // bg color used when light theme that have dark icon, should use light color.
+            scrim = fixColor(src = colorBarBg, lExpect = 1f),
+            // bg color used when light theme that have LIGHT icon, should use dark color.
+            darkScrim = fixColor(src = colorBarBg, lExpect = 0f),
+        )
+        else -> SystemBarStyle.dark(
+            // API 28以下では色を指定できる
+            // bg color used when dark theme that have LIGHT icon, should use dark color.
+            scrim = fixColor(src = colorBarBg, lExpect = 0f),
+        )
+    }
     enableEdgeToEdge(
-        statusBarStyle = systemBarStyle(
-            isLightTheme = isLightTheme,
-            colorBg = when {
-                forceDark -> Color.BLACK
-                else -> PrefI.ipStatusBarColor.value.notZero()
-                    ?: attrColor(R.attr.colorOsStatusBarBg)
-            },
-        ),
-        navigationBarStyle = systemBarStyle(
-            isLightTheme = isLightTheme,
-            colorBg = when {
-                forceDark -> Color.BLACK
-                else -> PrefI.ipNavigationBarColor.value.notZero()
-                    ?: attrColor(R.attr.colorOsNavigationBarBg)
-            },
-        ),
+        statusBarStyle = barStyle,
+        navigationBarStyle = barStyle,
     )
-//    window?.apply {
-//        if (Build.VERSION.SDK_INT < 30) {
-//            @Suppress("DEPRECATION")
-//            clearFlags(
-//                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
-//                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
-//            )
-//        }
-//
-//        addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-//
-//        var c =
-//            setStatusBarColorCompat(c)
-//
-//        c =
-//            setNavigationBarColorCompat(c)
-//    }
+
+    window?.apply{
+        // API29以降でinsets部分の色を指定するのは基本的にコレ
+        setBackgroundDrawable(ColorDrawable(colorBarBg))
+
+        // 3ボタンナビゲーションで80% 不透明の背景が追加される挙動を無効化する
+        if(Build.VERSION.SDK_INT >= 29){
+            isNavigationBarContrastEnforced = false
+        }
+        // ステータスバーに80% 不透明の背景が追加される挙動を無効化する
+        if(Build.VERSION.SDK_INT in 29..34 ){
+            @Suppress("DEPRECATION")
+            isStatusBarContrastEnforced = false
+        }
+    }
 }

@@ -15,19 +15,19 @@ import org.gradle.api.Project
 
 class StAndroidApp : Plugin<Project> {
     override fun apply(target: Project) = target.setupAndroidAppOrLib(
-        agpCatalogName = "android-application",
+        androidAppOrLib = "android-application",
     )
 }
 
 class StAndroidLib : Plugin<Project> {
     override fun apply(target: Project) = target.setupAndroidAppOrLib(
-        agpCatalogName = "android-library",
+        androidAppOrLib = "android-library",
     )
 }
 
-private fun Project.setupAndroidAppOrLib(agpCatalogName: String) {
+private fun Project.setupAndroidAppOrLib(androidAppOrLib: String) {
     with(pluginManager) {
-        apply(libs.pluginId(agpCatalogName))
+        apply(libs.pluginId(androidAppOrLib))
         apply(libs.pluginId("kotlin-android"))
     }
     setupKotlin()

@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fadeScrollbars="false"
+    android:fadingEdgeLength="20dp"
+    android:fillViewport="true"
+    android:requiresFadingEdge="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,53 +16,53 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/user" />
 
         <TextView
             android:id="@+id/tvUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:textSize="20sp" />
 
         <TextView
             android:id="@+id/tvStatusCaption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/status" />
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:background="?attr/colorButtonBgCw"
             android:padding="6dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="24dp"
-            android:layout_marginEnd="12dp"
             android:labelFor="@+id/etComment"
             android:text="@string/report_reason" />
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp"
             android:background="?attr/colorPostFormBackground">
 
             <EditText
@@ -72,17 +77,17 @@
             android:id="@+id/tvForwardDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/report_forward_desc" />
 
         <CheckBox
             android:id="@+id/cbForward"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp" />
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp" />
 
         <LinearLayout
             style="?android:attr/buttonBarStyle"

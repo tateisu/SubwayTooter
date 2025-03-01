@@ -964,8 +964,7 @@
     <string name="show_in_directory">ディレクトリに表示</string>
     <string name="featured_hashtags">注目のハッシュタグ</string>
     <string name="custom_emoji">カスタム絵文字</string>
-    <string name="status_bar_color">ステータスバーの色(アプリ再起動が必要)</string>
-    <string name="navigation_bar_color">ナビゲーションバーの色(アプリ再起動が必要)</string>
+    <string name="windows_insets_color">ウィンドウインセットの色(ステータスバーやナビゲーションバー等)(アプリ再起動が必要)</string>
     <string name="pixelfed_does_not_allow_reply_with_media">Pixelfedは返信に添付メディアを追加できません。</string>
     <string name="pixelfed_does_not_allow_post_without_media">Pixelfedは(返信でない)投稿に添付メディアが必要です。</string>
     <string name="hashtag_contains_ascii_and_not_ascii">ハッシュタグ %1$s はASCIIと非ASCIIの文字の両方を含みます。誤記かもしれません。続けますか?</string>

@@ -37,7 +37,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.databinding.ActOssLicenseBinding
 import jp.juggler.subwaytooter.util.StColorScheme
 import jp.juggler.subwaytooter.util.collectOnLifeCycle
 import jp.juggler.subwaytooter.util.dummyStColorTheme
@@ -56,9 +55,6 @@ class ActOSSLicense : ComponentActivity() {
         private val log = LogCategory("ActOSSLicense")
     }
 
-    private val views by lazy {
-        ActOssLicenseBinding.inflate(layoutInflater)
-    }
     private val viewModel by lazy {
         provideViewModel(this) {
             ActOSSLicenseViewModel(application)

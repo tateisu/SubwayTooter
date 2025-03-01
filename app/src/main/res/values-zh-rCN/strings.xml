@@ -614,8 +614,6 @@
     <string name="hashtag_contains_ascii_and_not_ascii">%1$s 标签包含 ASCII 字符和非 ASCII 字符。可能是拼写错误。您确定吗？</string>
     <string name="pixelfed_does_not_allow_post_without_media">Pixelfed 不允许在没有媒体附件的情况下发帖（不是回复）。</string>
     <string name="pixelfed_does_not_allow_reply_with_media">Pixelfed 不允许用媒体附件回复。</string>
-    <string name="navigation_bar_color">导航栏颜色（应用需要重启）</string>
-    <string name="status_bar_color">状态栏颜色（应用需要重启）</string>
     <string name="custom_emoji">自定义表情</string>
     <string name="featured_hashtags">特色标签</string>
     <string name="show_in_directory">在目录中显示</string>

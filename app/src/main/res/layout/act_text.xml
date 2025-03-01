@@ -107,14 +107,20 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- TextViewだと選択可能にはできても、コードからsetSelectionで選択範囲を指定できない -->
-    <!-- しかたないのでEditTextのまま -->
-    <jp.juggler.subwaytooter.view.MyEditText
-        android:id="@+id/etText"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:inputType="none"
-        android:padding="12dp"
-        android:textColor="?attr/colorTextContent" />
+        android:background="?attr/colorMainBackground">
+        <!-- TextViewだと選択可能にはできても、コードからsetSelectionで選択範囲を指定できない -->
+        <!-- しかたないのでEditTextのまま -->
+        <jp.juggler.subwaytooter.view.MyEditText
+            android:id="@+id/etText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="none"
+            android:padding="12dp"
+            android:textColor="?attr/colorTextContent" />
+    </FrameLayout>
+
 </LinearLayout>

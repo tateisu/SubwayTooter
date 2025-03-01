@@ -19,6 +19,13 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="?attr/colorMainBackground"
+        android:cacheColorHint="#00000000"
+        android:fadeScrollbars="false"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="20dp"
+        android:fillViewport="true"
+        android:requiresFadingEdge="vertical"
         tools:ignore="NestedWeights" />
 
     <TextView

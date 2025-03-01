@@ -31,7 +31,7 @@ class MediaBackgroundDrawable(
         WhiteTile({ Color.WHITE }, { Color.BLACK or 0xe0e0e0 }),
 
         EmojiPickerBg(
-            { attrColor(R.attr.colorWindowBackground) },
+            { attrColor(R.attr.colorMainBackground) },
             { attrColor(R.attr.colorTimeSmall) },
             isMediaBackground = false
         ),

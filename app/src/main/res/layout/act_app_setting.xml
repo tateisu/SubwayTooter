@@ -26,8 +26,7 @@
             android:contentDescription="@string/back"
             android:stateListAnimator="@null"
             app:srcCompat="?attr/homeAsUpIndicator"
-            app:tint="?attr/colorTextContent"
-            />
+            app:tint="?attr/colorTextContent" />
 
         <EditText
             android:id="@+id/etSearch"
@@ -55,14 +54,20 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="?attr/colorMainBackground"
+        android:cacheColorHint="#00000000"
         android:clipToPadding="false"
         android:divider="@null"
         android:dividerHeight="0dp"
         android:fadeScrollbars="false"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="20dp"
+        android:fillViewport="true"
         android:paddingBottom="128dp"
         android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="12dp"
+        android:requiresFadingEdge="vertical"
         android:scrollbarStyle="outsideOverlay"
         android:scrollbars="vertical" />
 </LinearLayout>

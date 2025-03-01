@@ -971,8 +971,7 @@
     <string name="show_in_directory">Show in directory</string>
     <string name="featured_hashtags">Featured hashtags</string>
     <string name="custom_emoji">Custom emoji</string>
-    <string name="status_bar_color">Status bar color (app restart required)</string>
-    <string name="navigation_bar_color">Navigation bar color (app restart required)</string>
+    <string name="windows_insets_color">Window insets color (such as OS\'s status/navigation bar)(app restart required)</string>
     <string name="pixelfed_does_not_allow_reply_with_media">Pixelfed does not allow reply with media attachment.</string>
     <string name="pixelfed_does_not_allow_post_without_media">Pixelfed does not allow post (not reply) without media attachment.</string>
     <string name="hashtag_contains_ascii_and_not_ascii">Hashtag %1$s contains both of ASCII and non-ASCII characters. It may be a typo. Are you sure?</string>

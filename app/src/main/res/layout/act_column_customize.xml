@@ -19,17 +19,21 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-
-        android:clipToPadding="false"
+        android:background="?attr/colorMainBackground"
+        android:cacheColorHint="#00000000"
+        android:fadeScrollbars="false"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="20dp"
         android:fillViewport="true"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp"
+        android:requiresFadingEdge="vertical"
         android:scrollbarStyle="outsideOverlay">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp">
 
             <View style="@style/setting_divider" />
 
@@ -117,10 +121,10 @@
                 style="@style/setting_row_label"
                 android:text="@string/column" />
 
-            <LinearLayout style="@style/setting_row_form"
-                android:orientation="vertical"
+            <LinearLayout
+                style="@style/setting_row_form"
                 android:layout_marginBottom="6dp"
-                >
+                android:orientation="vertical">
 
                 <FrameLayout
                     android:id="@+id/flColumnBackground"
@@ -254,17 +258,18 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/tvBackgroundError"
                 style="@style/setting_row_form"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvBackgroundError"
-                android:visibility="gone"
                 android:textColor="?attr/colorRegexFilterError"
-                tools:visibility="visible"
-                tools:text="error error error error " />
+                android:visibility="gone"
+                tools:text="error error error error "
+                tools:visibility="visible" />
 
 
             <LinearLayout style="@style/setting_row_form">
+
                 <TextView
                     style="@style/setting_row_label"
                     android:text="@string/acct_color" />

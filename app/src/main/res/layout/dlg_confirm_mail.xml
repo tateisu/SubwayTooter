@@ -3,7 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:cacheColorHint="#00000000"
+    android:fadingEdgeLength="20dp"
+    android:fillViewport="true"
     android:orientation="vertical"
+    android:requiresFadingEdge="vertical"
     tools:ignore="UnusedAttribute">
 
     <LinearLayout
@@ -15,32 +19,32 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/instance" />
 
         <TextView
             android:id="@+id/tvInstance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp" />
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/user_name" />
 
         <TextView
             android:id="@+id/tvUserName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp"
             android:hint="@string/user_name_hint"
             android:importantForAutofill="no"
             tools:ignore="UnusedAttribute" />
@@ -49,25 +53,25 @@
             android:id="@+id/cbUpdateMailAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/update_mail_address" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/email" />
 
         <EditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp"
             android:enabled="false"
             android:hint="@string/email_hint"
             android:importantForAutofill="no"
@@ -101,9 +105,9 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
             android:text="@string/confirm_mail_description" />
     </LinearLayout>
 </ScrollView>

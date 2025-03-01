@@ -88,8 +88,8 @@
     <attr name="colorThumbnailBackground" format="color" />
 
 
-    <!-- @drawable/window_background_light と @drawable/window_background に指定した色をgetAttributeColorで取得したい -->
-    <attr name="colorWindowBackground" format="color" />
+    <!-- コンテンツのメイン領域のバックグラウンド。インセットではない -->
+    <attr name="colorMainBackground" format="color" />
 
     <!-- アプリ設定などのスイッチのオフの色 -->
     <attr name="colorSwitchOff" format="color" />
@@ -108,7 +108,6 @@
     <attr name="colorActionBarBg" format="color" />
     <attr name="colorActionBarBgStacked" format="color" />
 
-    <attr name="colorOsStatusBarBg" format="color" />
-    <attr name="colorOsNavigationBarBg" format="color" />
+    <attr name="colorWindowInsetsBg" format="color" />
 
 </resources>

@@ -3,8 +3,7 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("buildLogic.StAndroidApp")
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
@@ -21,18 +20,10 @@ val keystoreProperties = Properties().apply {
 android {
     namespace = "jp.juggler.subwaytooter"
 
-    compileSdk = Vers.stCompileSdkVersion
-    buildToolsVersion = Vers.stBuildToolsVersion
-
     defaultConfig {
-        targetSdk = Vers.stTargetSdkVersion
-        minSdk = Vers.stMinSdkVersion
+        applicationId = namespace
         versionCode = 548
         versionName = "5.548"
-        applicationId = "jp.juggler.subwaytooter"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables.useSupportLibrary = true
     }
 
     buildFeatures {
@@ -42,34 +33,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
     }
-
-    // exoPlayer 2.9.0 以降は Java 8 compiler support を要求する
-    compileOptions {
-        sourceCompatibility = Vers.javaSourceCompatibility
-        targetCompatibility = Vers.javaTargetCompatibility
-        isCoreLibraryDesugaringEnabled = true
-    }
-    kotlin {
-        jvmToolchain(Vers.kotlinJvmToolchain)
-    }
-    kotlinOptions {
-        jvmTarget = Vers.kotlinJvmTarget
-        freeCompilerArgs = listOf(
-            "-opt-in=kotlin.ExperimentalStdlibApi",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            //      "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-            //      "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
-        )
-    }
-
-    // kotlin 1.6.0にすると This version (1.0.5) of the Compose Compiler requires Kotlin version 1.5.31 but you appear to be using Kotlin version 1.6.0 which is not known to be compatible. と怒られる
-    //    buildFeatures {
-    //        compose true
-    //    }
-    //    composeOptions {
-    //        kotlinCompilerExtensionVersion compose_version
-    //    }
 
     signingConfigs {
         create("release") {
@@ -147,9 +110,6 @@ android {
 }
 
 dependencies {
-    // desugar_jdk_libs 2.0.0 は AGP 7.4.0-alpha10 以降を要求する
-    coreLibraryDesugaring(libs.desugar.jdk)
-
     implementation(project(":base"))
     implementation(project(":colorpicker"))
     implementation(project(":emoji"))

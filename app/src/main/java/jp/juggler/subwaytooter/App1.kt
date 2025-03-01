@@ -6,11 +6,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Handler
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.ComponentActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 import com.bumptech.glide.Glide

@@ -22,9 +22,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.main.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/base/SubwayTooter.base.unitTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SubwayTooter.buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/SubwayTooter.buildSrc.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SubwayTooter.buildSrc.main.iml" filepath="$PROJECT_DIR$/.idea/modules/SubwayTooter.buildSrc.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SubwayTooter.buildSrc.test.iml" filepath="$PROJECT_DIR$/.idea/modules/SubwayTooter.buildSrc.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.main.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.main.iml" />
@@ -41,6 +38,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/build-logic/build-logic.iml" filepath="$PROJECT_DIR$/.idea/modules/build-logic/build-logic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/build-logic/build-logic.main.iml" filepath="$PROJECT_DIR$/.idea/modules/build-logic/build-logic.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/build-logic/build-logic.test.iml" filepath="$PROJECT_DIR$/.idea/modules/build-logic/build-logic.test.iml" />
     </modules>
   </component>
 </project>

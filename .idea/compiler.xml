@@ -3,7 +3,13 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="19">
       <module name="apng" target="1.7" />
+      <module name="build-logic" target="21" />
+      <module name="build-logic.main" target="17" />
+      <module name="build-logic.test" target="17" />
       <module name="SubwayTooter.anko" target="21" />
+      <module name="SubwayTooter.apng" target="17" />
+      <module name="SubwayTooter.apng.main" target="17" />
+      <module name="SubwayTooter.apng.test" target="17" />
       <module name="SubwayTooter.apng_android" target="21" />
       <module name="SubwayTooter.app" target="21" />
       <module name="SubwayTooter.base" target="21" />

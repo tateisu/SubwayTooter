@@ -31,7 +31,7 @@
     <string name="tap_to_show">Göstermek için dokun</string>
     <string name="show">Göster</string>
     <string name="please_add_account">Gönderi yapmak için hesap açmanız gerekir.</string>
-    <string name="not_selected">(seçili değil)</string>
+    <string name="not_selected_2">(seçili değil)</string>
     <string name="content_warning_hint">Uyarıları buraya yazın</string>
     <string name="content_hint">Gönderinizin içerikleri</string>
     <string name="list_empty">Liste boş</string>

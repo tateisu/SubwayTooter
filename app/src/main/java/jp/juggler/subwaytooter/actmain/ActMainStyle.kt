@@ -28,6 +28,7 @@ import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.getAdaptiveRippleDrawableRound
 import jp.juggler.util.ui.resDrawable
 import jp.juggler.util.ui.wrapAndTint
+import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.backgroundDrawable
 import java.util.*
 import kotlin.math.max
@@ -147,12 +148,12 @@ fun ActMain.justifyWindowContentPortrait() {
             val padding = resources.displayMetrics.widthPixels / 2 - iconW
 
             fun ViewGroup.addViewBeforeLast(v: View) = addView(v, childCount - 1)
-            (svColumnStrip.parent as LinearLayout).addViewBeforeLast(
+            (views.svColumnStrip.parent as LinearLayout).addViewBeforeLast(
                 View(this).apply {
                     layoutParams = LinearLayout.LayoutParams(padding, 0)
                 }
             )
-            llQuickPostBar.addViewBeforeLast(
+            views.llQuickTootBar.addViewBeforeLast(
                 View(this).apply {
                     layoutParams = LinearLayout.LayoutParams(padding, 0)
                 }
@@ -165,12 +166,12 @@ fun ActMain.justifyWindowContentPortrait() {
             val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
 
             fun ViewGroup.addViewAfterFirst(v: View) = addView(v, 1)
-            (svColumnStrip.parent as LinearLayout).addViewAfterFirst(
+            (views.svColumnStrip.parent as LinearLayout).addViewAfterFirst(
                 View(this).apply {
                     layoutParams = LinearLayout.LayoutParams(padding, 0)
                 }
             )
-            llQuickPostBar.addViewAfterFirst(
+            views.llQuickTootBar.addViewAfterFirst(
                 View(this).apply {
                     layoutParams = LinearLayout.LayoutParams(padding, 0)
                 }
@@ -209,6 +210,9 @@ fun ActMain.reloadColors() {
     MyClickableSpan.defaultLinkColor = PrefI.ipLinkColor.value.notZero()
         ?: attrColor(R.attr.colorLink)
 
+    views.llFormRoot.backgroundColor = PrefI.ipCcdContentBg.value
+        .notZero() ?: attrColor(R.attr.colorMainBackground)
+
     CustomShare.reloadCache(this)
 }
 
@@ -222,10 +226,10 @@ fun ActMain.showFooterColor() {
     val colorColumnStripBackground = footerTabBgColor.notZero()
         ?: attrColor(R.attr.colorColumnStripBackground)
 
-    svColumnStrip.setBackgroundColor(colorColumnStripBackground)
-    llQuickPostBar.setBackgroundColor(colorColumnStripBackground)
+    views.svColumnStrip.setBackgroundColor(colorColumnStripBackground)
+    views.llQuickTootBar.setBackgroundColor(colorColumnStripBackground)
 
-    vBottomPadding.setBackgroundColor(colorColumnStripBackground)
+    views.vBottomPadding.setBackgroundColor(colorColumnStripBackground)
 
     val colorButtonBg = footerButtonBgColor.notZero()
         ?: colorColumnStripBackground
@@ -233,34 +237,34 @@ fun ActMain.showFooterColor() {
     val colorButtonFg = footerButtonFgColor.notZero()
         ?: attrColor(R.attr.colorRippleEffect)
 
-    btnMenu.backgroundDrawable =
+    views.btnMenu.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
-    btnToot.backgroundDrawable =
+    views.btnToot.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
-    btnQuickToot.backgroundDrawable =
+    views.btnQuickToot.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
-    ivQuickTootAccount.backgroundDrawable =
+    views.ivQuickTootAccount.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
-    btnQuickPostMenu.backgroundDrawable =
+    views.btnQuickTootMenu.backgroundDrawable =
         getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 
     var c = footerButtonFgColor.notZero() ?: attrColor(R.attr.colorTextContent)
     val d = resDrawable(R.drawable.ic_question).wrapAndTint(color = c)
-    ivQuickTootAccount.setDefaultImage(d)
+    views.ivQuickTootAccount.setDefaultImage(d)
 
     val csl = ColorStateList.valueOf(
         footerButtonFgColor.notZero() ?: attrColor(R.attr.colorTextContent)
     )
-    btnToot.imageTintList = csl
-    btnMenu.imageTintList = csl
-    btnQuickToot.imageTintList = csl
-    btnQuickPostMenu.imageTintList = csl
+    views.btnToot.imageTintList = csl
+    views.btnMenu.imageTintList = csl
+    views.btnQuickToot.imageTintList = csl
+    views.btnQuickTootMenu.imageTintList = csl
 
     c = footerTabDividerColor.notZero() ?: colorColumnStripBackground
-    vFooterDivider1.setBackgroundColor(c)
-    vFooterDivider2.setBackgroundColor(c)
+    views.vFooterDivider1.setBackgroundColor(c)
+    views.vFooterDivider2.setBackgroundColor(c)
 
-    llColumnStrip.indicatorColor =
+    views.llColumnStrip.indicatorColor =
         footerTabIndicatorColor.notZero() ?: attrColor(R.attr.colorTextHelp)
 }
 

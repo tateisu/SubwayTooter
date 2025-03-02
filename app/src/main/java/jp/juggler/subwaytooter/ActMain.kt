@@ -14,7 +14,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
@@ -109,7 +108,6 @@ import jp.juggler.util.string
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.isNotOk
-import jp.juggler.util.ui.resDrawable
 import jp.juggler.util.ui.setContentViewAndInsets
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -195,25 +193,9 @@ class ActMain : AppCompatActivity(),
 
     var quickPostVisibility: TootVisibility = TootVisibility.AccountSetting
 
-    private val views by lazy {
+    val views by lazy {
         ActMainBinding.inflate(layoutInflater)
     }
-
-    val llFormRoot get() = views.llFormRoot
-    val vBottomPadding get() = views.vBottomPadding
-    val llQuickPostBar get() = views.llQuickTootBar
-    val etQuickPost get() = views.etQuickToot
-    val ivQuickTootAccount get() = views.ivQuickTootAccount
-    val btnQuickToot get() = views.btnQuickToot
-    val btnQuickPostMenu get() = views.btnQuickTootMenu
-    val llEmpty get() = views.llEmpty
-    val llColumnStrip get() = views.llColumnStrip
-    val svColumnStrip get() = views.svColumnStrip
-    val btnMenu get() = views.btnMenu
-    val btnToot get() = views.btnToot
-    val vFooterDivider1 get() = views.vFooterDivider1
-    val vFooterDivider2 get() = views.vFooterDivider2
-    val drawer get() = views.drawerLayout
 
     lateinit var completionHelper: CompletionHelper
     lateinit var handler: Handler
@@ -279,17 +261,18 @@ class ActMain : AppCompatActivity(),
             }
 
         override fun onMacro(text: String) {
-            val editable = etQuickPost.text
-            if (editable?.isNotEmpty() == true) {
-                val start = etQuickPost.selectionStart
-                val end = etQuickPost.selectionEnd
-                editable.replace(start, end, text)
-                etQuickPost.requestFocus()
-                etQuickPost.setSelection(start + text.length)
-            } else {
-                etQuickPost.setText(text)
-                etQuickPost.requestFocus()
-                etQuickPost.setSelection(text.length)
+            with(views.etQuickToot) {
+                val editable = this.text
+                if (editable.isNullOrEmpty()) {
+                    setText(text)
+                    requestFocus()
+                    setSelection(text.length)
+                } else {
+                    val replaceEnd = selectionStart + text.length
+                    editable.replace(selectionStart, selectionEnd, text)
+                    requestFocus()
+                    setSelection(replaceEnd)
+                }
             }
         }
     })
@@ -384,7 +367,7 @@ class ActMain : AppCompatActivity(),
     val arActPost = ActivityResultHandler(log) { r ->
         if (r.isNotOk) return@ActivityResultHandler
         r.data?.let { data ->
-            etQuickPost.setText("")
+            views.etQuickToot.setText("")
             onCompleteActPost(data)
         }
     }
@@ -737,7 +720,7 @@ class ActMain : AppCompatActivity(),
         return when {
             super.onKeyShortcut(keyCode, event) -> true
             event?.isCtrlPressed == true && keyCode == KeyEvent.KEYCODE_N -> {
-                btnToot.performClick()
+                views.btnToot.performClick()
                 true
             }
 
@@ -750,11 +733,11 @@ class ActMain : AppCompatActivity(),
 
     // ビューのlateinit変数を初期化する
     private fun findViews() {
-        btnToot.setOnClickListener(this)
-        btnMenu.setOnClickListener(this)
-        ivQuickTootAccount.setOnClickListener(this)
-        btnQuickToot.setOnClickListener(this)
-        btnQuickPostMenu.setOnClickListener(this)
+        views.btnToot.setOnClickListener(this)
+        views.btnMenu.setOnClickListener(this)
+        views.ivQuickTootAccount.setOnClickListener(this)
+        views.btnQuickToot.setOnClickListener(this)
+        views.btnQuickTootMenu.setOnClickListener(this)
     }
 
     internal fun initUI() {
@@ -774,17 +757,17 @@ class ActMain : AppCompatActivity(),
 
         findViews()
 
-        drawer.addDrawerListener(this)
-        drawer.setExclusionSize(stripIconSize)
+        views.drawerLayout.addDrawerListener(this)
+        views.drawerLayout.setExclusionSize(stripIconSize)
 
-        sideMenuAdapter = SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
+        sideMenuAdapter = SideMenuAdapter(this, handler, findViewById(R.id.nav_view), views.drawerLayout)
 
-        vBottomPadding.layoutParams?.height = screenBottomPadding
+        views.vBottomPadding.layoutParams?.height = screenBottomPadding
 
         justifyWindowContentPortrait()
 
         initUIQuickPost()
-        svColumnStrip.isHorizontalFadingEdgeEnabled = true
+        views.svColumnStrip.isHorizontalFadingEdgeEnabled = true
         reloadMediaHeight()
         initPhoneTablet()
         showFooterColor()

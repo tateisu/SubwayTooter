@@ -22,7 +22,7 @@ internal fun Project.setupKotlin() {
                     listOf(
                         "-opt-in=kotlin.ExperimentalStdlibApi",
                         "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                        "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                        // 存在しなくなった "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
                         // "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
                         // "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
                     )

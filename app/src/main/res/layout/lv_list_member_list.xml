@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:descendantFocusability="blocksDescendants"
-    >
-<CheckBox
-    android:id="@+id/cbItem"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center_vertical"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
-    android:minHeight="48dp"
-    />
-</LinearLayout>
+    android:paddingHorizontal="12dp"
+    tools:background="?attr/colorMainBackground">
+    <!--
+        CheckBox にpaddingHorizontalを設定してもチェックマークとテキストの間に余白が追加される
+        仕方ないので親Viewの左右にpaddingを入れる
+        上下方向はその必要がないし、上下余白までタップ判定に含めたい
+    -->
+    <CheckBox
+        android:id="@+id/cbItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:paddingVertical="4dp"
+        tools:text="listName" />
+</FrameLayout>

@@ -1,115 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:clipToPadding="false"
-    android:fadeScrollbars="false"
-    android:fadingEdgeLength="20dp"
-    android:fillViewport="true"
-    android:requiresFadingEdge="vertical">
-
-    <LinearLayout
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:background="?attr/colorMainBackground"
+    tools:layout_height="400dp">
+    <!--
+        ボタンバーが隠れないようにしつつ親のサイズに応じてScrollViewを小さくする
+        - app:layout_constrainedHeight="true" を指定する
+        - 上下方向のconstraintをちゃんと繋ぐ
+    -->
+    <ScrollView
+        android:id="@+id/svContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:cacheColorHint="#00000000"
+        android:fadeScrollbars="false"
+        android:fadingEdgeLength="20dp"
+        android:fillViewport="true"
+        android:requiresFadingEdge="vertical"
+        android:scrollbarStyle="outsideOverlay"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@id/llButtonBar"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:text="@string/user" />
-
-        <TextView
-            android:id="@+id/tvUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/tvStatusCaption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:text="@string/status" />
-
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:background="?attr/colorButtonBgCw"
-            android:padding="6dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="24dp"
-            android:labelFor="@+id/etComment"
-            android:text="@string/report_reason" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:background="?attr/colorPostFormBackground">
-
-            <EditText
-                android:id="@+id/etComment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:importantForAutofill="no"
-                android:inputType="text" />
-        </FrameLayout>
-
-        <TextView
-            android:id="@+id/tvForwardDesc"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:text="@string/report_forward_desc" />
-
-        <CheckBox
-            android:id="@+id/cbForward"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp" />
 
         <LinearLayout
-            style="?android:attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="12dp">
 
-            <Button
-                android:id="@+id/btnCancel"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/cancel" />
+                android:text="@string/user" />
 
-            <Button
-                android:id="@+id/btnOk"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvUser"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/ok" />
+                android:layout_marginTop="3dp"
+                android:textColor="?attr/colorTextContent"
+                android:textSize="20sp"
+                tools:text="user_name" />
+
+            <TextView
+                android:id="@+id/tvStatusCaption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/status" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:background="?attr/colorButtonBgCw"
+                android:padding="6dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:labelFor="@+id/etComment"
+                android:text="@string/report_reason" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:background="?attr/colorPostFormBackground">
+
+                <EditText
+                    android:id="@+id/etComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="textMultiLine"
+                    android:minLines="3" />
+            </FrameLayout>
+
+            <CheckBox
+                android:id="@+id/cbForward"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/report_forward_to" />
+
         </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@id/llButtonBar"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/svContent">
+
+        <Button
+            android:id="@+id/btnCancel"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cancel" />
+
+        <Button
+            android:id="@+id/btnOk"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/ok" />
     </LinearLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

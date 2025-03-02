@@ -138,7 +138,7 @@ fun ActMain.isVisibleColumn(idx: Int) = phoneTab(
 )
 
 fun ActMain.updateColumnStrip() {
-    llEmpty.vg(appState.columnCount == 0)
+    views.tvEmpty.vg(appState.columnCount == 0)
 
     val iconSize = ActMain.stripIconSize
     val rootW = (iconSize * 1.25f + 0.5f).toInt()
@@ -149,16 +149,21 @@ fun ActMain.updateColumnStrip() {
 
     // 両端のメニューと投稿ボタンの大きさ
     val pad = (rootH - iconSize) shr 1
-    for (btn in arrayOf(btnToot, btnMenu, btnQuickPostMenu, btnQuickToot)) {
+    for (btn in arrayOf(
+        views.btnToot,
+        views.btnMenu,
+        views.btnQuickTootMenu,
+        views.btnQuickToot,
+    )) {
         btn.layoutParams.width = rootH // not W
         btn.layoutParams.height = rootH
         btn.setPaddingRelative(pad, pad, pad, pad)
     }
 
-    llColumnStrip.removeAllViews()
+    views.llColumnStrip.removeAllViews()
     appState.columnList.forEachIndexed { index, column ->
 
-        val viewRoot = layoutInflater.inflate(R.layout.lv_column_strip, llColumnStrip, false)
+        val viewRoot = layoutInflater.inflate(R.layout.lv_column_strip, views.llColumnStrip, false)
         val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
         val vAcctColor = viewRoot.findViewById<View>(R.id.vAcctColor)
 
@@ -205,9 +210,9 @@ fun ActMain.updateColumnStrip() {
         }
 
         //
-        llColumnStrip.addView(viewRoot)
+        views.llColumnStrip.addView(viewRoot)
     }
-    svColumnStrip.requestLayout()
+    views.svColumnStrip.requestLayout()
     updateColumnStripSelection(-1, -1f)
 }
 
@@ -452,15 +457,15 @@ fun ActMain.resizeColumnWidth(views: ActMainTabletViews) {
 }
 
 fun ActMain.scrollColumnStrip(select: Int) {
-    val childCount = llColumnStrip.childCount
+    val childCount = views.llColumnStrip.childCount
     if (select < 0 || select >= childCount) {
         return
     }
 
-    val icon = llColumnStrip.getChildAt(select)
+    val icon = views.llColumnStrip.getChildAt(select)
 
-    val svWidth = (llColumnStrip.parent as View).width
-    val llWidth = llColumnStrip.width
+    val svWidth = (views.llColumnStrip.parent as View).width
+    val llWidth = views.llColumnStrip.width
     val iconWidth = icon.width
     val iconLeft = icon.left
 
@@ -469,13 +474,13 @@ fun ActMain.scrollColumnStrip(select: Int) {
     }
 
     val sx = iconLeft + iconWidth / 2 - svWidth / 2
-    svColumnStrip.smoothScrollTo(sx, 0)
+    views.svColumnStrip.smoothScrollTo(sx, 0)
 
     launchMain {
         try {
             val a = AccountCache.load(this@scrollColumnStrip, quickPostAccount())
-            ivQuickTootAccount.setImageUrl(
-                calcIconRound(ivQuickTootAccount.layoutParams.width),
+            views.ivQuickTootAccount.setImageUrl(
+                calcIconRound(views.ivQuickTootAccount.layoutParams.width),
                 urlStatic = a?.avatar_static,
                 urlAnime = a?.avatar,
             )
@@ -490,14 +495,14 @@ fun ActMain.updateColumnStripSelection(position: Int, positionOffset: Float) {
         if (isFinishing) return@Runnable
 
         if (appState.columnCount == 0) {
-            llColumnStrip.setVisibleRange(-1, -1, 0f)
+            views.llColumnStrip.setVisibleRange(-1, -1, 0f)
         } else {
             phoneTab({ env ->
                 if (position >= 0) {
-                    llColumnStrip.setVisibleRange(position, position, positionOffset)
+                    views.llColumnStrip.setVisibleRange(position, position, positionOffset)
                 } else {
                     val c = env.pager.currentItem
-                    llColumnStrip.setVisibleRange(c, c, 0f)
+                    views.llColumnStrip.setVisibleRange(c, c, 0f)
                 }
             }, { env ->
                 val vs = env.tabletLayoutManager.findFirstVisibleItemPosition()
@@ -514,7 +519,7 @@ fun ActMain.updateColumnStripSelection(position: Int, positionOffset: Float) {
                         (abs((child?.left ?: 0) / nColumnWidth.toFloat())).clip(0f, 1f)
                 }
 
-                llColumnStrip.setVisibleRange(vr.first, vr.last, slideRatio)
+                views.llColumnStrip.setVisibleRange(vr.first, vr.last, slideRatio)
             })
         }
     })

@@ -42,7 +42,7 @@
     <string name="act_post">Poster tut</string>
     <string name="content_warning">Innholdsadvarsel</string>
     <string name="please_add_account">Du må sette opp en konto for å poste en tut.</string>
-    <string name="not_selected">(ikke valgt)</string>
+    <string name="not_selected_2">(ikke valgt)</string>
     <string name="content_warning_hint">Skriv advarselen din her</string>
     <string name="content_hint">Innholdet i din tut</string>
     <string name="status">Tut</string>
@@ -477,8 +477,6 @@
     <string name="notification_type_vote">stem</string>
     <string name="dont_show_normal_toot">Ikke vis normal tut</string>
     <string name="set_focus_point">sett fokuspunkt (Mastodon 2.3 eller senere)</string>
-    <string name="report_forward_desc">Kontoen er fra en annen instans. Send en anonymisert kopi av rapporten der også?</string>
-    <string name="report_forward_to">Videresend til %1$s</string>
     <string name="locked_account">Låst konto</string>
     <string name="contact">kontaktkonto</string>
     <string name="languages">språk</string>

@@ -47,7 +47,7 @@
     <string name="act_post">Toot wordt gepost</string>
     <string name="content_warning">Inhoudswaarschuwing</string>
     <string name="please_add_account">Er moet een account ingesteld zijn om een toot te posten.</string>
-    <string name="not_selected">(niet geselecteerd)</string>
+    <string name="not_selected_2">(niet geselecteerd)</string>
     <string name="content_warning_hint">Schrijf hier je waarschuwing</string>
     <string name="content_hint">De inhoud van je status</string>
     <string name="status">Status</string>

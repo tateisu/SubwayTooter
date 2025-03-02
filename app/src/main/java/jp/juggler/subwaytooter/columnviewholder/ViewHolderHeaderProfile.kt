@@ -43,6 +43,7 @@ import jp.juggler.util.data.notEmpty
 import jp.juggler.util.data.notZero
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
+import jp.juggler.util.ui.InputTypeEx
 import jp.juggler.util.ui.attrColor
 import jp.juggler.util.ui.getSpannedString
 import jp.juggler.util.ui.setIconDrawableId
@@ -437,6 +438,7 @@ internal class ViewHolderHeaderProfile(
                             R.string.personal_notes_of,
                             who.acct
                         ),
+                        inputType = InputTypeEx.textMultiLine,
                         initialText = relation?.note ?: "",
                         allowEmpty = true,
                         onEmptyText = {},

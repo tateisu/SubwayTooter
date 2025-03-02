@@ -1,141 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    >
+    tools:background="?attr/colorMainBackground"
+    tools:layout_height="400dp">
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="6dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:text="@string/target_user"
+        android:textSize="14sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="3dp"
+        android:gravity="center_vertical">
+
+        <jp.juggler.subwaytooter.view.MyNetworkImageView
+            android:id="@+id/ivUser"
+            android:layout_width="48dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/thumbnail"
+            android:scaleType="fitEnd" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Follower Name" />
+
+            <TextView
+                android:id="@+id/tvUserAcct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="4dp"
+                android:paddingStart="4dp"
+                android:textColor="?attr/colorTimeSmall"
+                android:textSize="12sp"
+                tools:text="aaaaaaaaaaaaaaaa" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:text="@string/list_owner"
+        android:textSize="14sp" />
+
+
+    <Button
+        android:id="@+id/btnListOwner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="3dp"
+        android:textAllCaps="false"
+        tools:text="ownerName" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:text="@string/list"
+        android:textSize="14sp" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOwnedlists"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginBottom="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:orientation="vertical"
-        >
+        android:cacheColorHint="#00000000"
+        android:fadeScrollbars="false"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="20dp"
+        android:requiresFadingEdge="vertical"
+        android:scrollbarStyle="outsideOverlay" />
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/target_user"
-            />
-
-        <LinearLayout
-            style="@style/setting_row_form"
-            android:gravity="center_vertical"
-            >
-
-            <jp.juggler.subwaytooter.view.MyNetworkImageView
-                android:id="@+id/ivUser"
-                android:layout_width="48dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="4dp"
-                android:contentDescription="@string/thumbnail"
-                android:scaleType="fitEnd"
-
-                />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                >
-
-                <TextView
-                    android:id="@+id/tvUserName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:text="Follower Name"
-                    />
-
-                <TextView
-                    android:id="@+id/tvUserAcct"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingEnd="4dp"
-                    android:paddingStart="4dp"
-                    android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp"
-                    tools:text="aaaaaaaaaaaaaaaa"
-                    />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/list_owner"
-            />
-
-        <LinearLayout
-            style="@style/setting_row_form"
-            android:gravity="center_vertical"
-            >
-
-            <Button
-                android:id="@+id/btnListOwner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                />
-        </LinearLayout>
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/list"
-            />
-
-        <LinearLayout
-            style="@style/setting_row_form"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            >
-
-            <jp.juggler.subwaytooter.view.MyListView
-                android:id="@+id/listView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-
-                android:clipToPadding="false"
-                android:divider="?attr/colorSettingDivider"
-                android:dividerHeight="1dp"
-                android:fadeScrollbars="false"
-                android:fastScrollEnabled="false"
-                android:paddingEnd="12dp"
-                android:paddingStart="12dp"
-                android:scrollbarStyle="outsideOverlay"
-                />
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/setting_row_form"
-            android:gravity="center_vertical"
-            >
-
-            <Button
-                android:id="@+id/btnCreateList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/list_create"
-                android:textAllCaps="false"
-                />
-        </LinearLayout>
-    </LinearLayout>
+    <View style="@style/setting_divider" />
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnClose"
@@ -143,7 +112,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/close"
-            />
+            android:text="@string/close" />
     </LinearLayout>
 </LinearLayout>

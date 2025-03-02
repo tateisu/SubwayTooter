@@ -42,7 +42,7 @@
     <string name="show">Mostrar</string>
     <string name="content_warning">Aviso de conteúdo</string>
     <string name="please_add_account">Você precisa criar uma conta para criar um post.</string>
-    <string name="not_selected">(não selecionado)</string>
+    <string name="not_selected_2">(não selecionado)</string>
     <string name="content_hint">O conteúdo do seu post</string>
     <string name="list_empty">Lista vazia</string>
     <string name="post_from">Publicar de</string>
@@ -647,7 +647,6 @@
     <string name="notification_type_report">(admin) denúncia</string>
     <string name="dont_show_non_public_toot">Não mostrar posts não públicos</string>
     <string name="set_focus_point">definir ponto de foco (Mastodon 2.3+)</string>
-    <string name="report_forward_desc">A conta é de outro servidor. Enviar uma cópia anonimizada da denúncia lá também\?</string>
     <string name="changed">Mudado.</string>
     <string name="thumbnails_arrange_vertically">Arranjar as miniaturas verticalmente (requer reiniciar o app)</string>
     <string name="follow_accept_confirm">Aprovar pedido para seguir de %1$s\?</string>
@@ -1011,7 +1010,6 @@
     <string name="use_webp_format_if_server_accepts">Usar formato WebP se o servidor aceitar.</string>
     <string name="detail">Detalhes</string>
     <string name="emoji_detail">Detalhes de emoji</string>
-    <string name="report_forward_to">Encaminhar para %1$s</string>
     <string name="hide_favourite_notification_from_user">Desativar notificação de fav/BT deste usuário</string>
     <string name="missing_install_id">Não pôde preparar ID de instalação. Por favor tente novamente mais tarde.</string>
     <string name="user_agent_error">User-Agent não pode conter caracteres que não sejam ASCII. [%1$s]</string>

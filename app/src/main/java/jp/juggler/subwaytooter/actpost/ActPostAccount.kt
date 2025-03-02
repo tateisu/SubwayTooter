@@ -28,7 +28,7 @@ fun ActPost.selectAccount(a: SavedAccount?) {
     completionHelper.setInstance(a)
 
     if (a == null) {
-        views.btnAccount.text = getString(R.string.not_selected)
+        views.btnAccount.text = getString(R.string.not_selected_2)
         views.btnAccount.setTextColor(attrColor(android.R.attr.textColorPrimary))
         views.btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
     } else {

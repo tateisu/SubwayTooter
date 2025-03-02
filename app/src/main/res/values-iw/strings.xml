@@ -48,7 +48,7 @@
     <string name="act_post">מפרסם תרועה</string>
     <string name="content_warning">אזהרת תוכן</string>
     <string name="please_add_account">כדי לפרסם תרועה, אתה צריך להגדיר חשבון.</string>
-    <string name="not_selected">(לא נבחר)</string>
+    <string name="not_selected_2">(לא נבחר)</string>
     <string name="content_warning_hint">כתוב כאן את אזהרתך</string>
     <string name="content_hint">תוכן תרועתך</string>
     <string name="status">תרועה</string>

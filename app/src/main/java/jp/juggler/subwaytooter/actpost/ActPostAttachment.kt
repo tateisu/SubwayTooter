@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.decodeAttachmentBitmap
 import jp.juggler.subwaytooter.dialog.dialogAttachmentRearrange
 import jp.juggler.subwaytooter.dialog.focusPointDialog
+import jp.juggler.subwaytooter.dialog.showMediaDescEditDialog
 import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.util.AttachmentRequest
@@ -39,6 +40,7 @@ import jp.juggler.util.log.dialogOrToast
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
 import jp.juggler.util.network.toPutRequestBuilder
+import jp.juggler.util.ui.InputTypeEx
 import jp.juggler.util.ui.isLiveActivity
 import jp.juggler.util.ui.vg
 import kotlinx.coroutines.CancellationException
@@ -394,10 +396,10 @@ suspend fun ActPost.editAttachmentDescription(
             }
         }
         // ダイアログを表示
-        showTextInputDialog(
+        showMediaDescEditDialog(
             title = getString(R.string.attachment_description),
             bitmap = bitmap,
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+            inputType = InputTypeEx.textMultiLine,
             initialText = a.description,
             onEmptyText = { showToast(true, R.string.description_empty) },
         ) { text ->

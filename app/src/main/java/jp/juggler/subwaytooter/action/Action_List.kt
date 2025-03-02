@@ -17,7 +17,6 @@ import jp.juggler.subwaytooter.dialog.actionsDialog
 import jp.juggler.subwaytooter.dialog.showTextInputDialog
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.coroutine.launchAndShowError
-import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.buildJsonObject
 import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toPostRequestBuilder
@@ -28,6 +27,7 @@ fun ActMain.clickListTl(pos: Int, accessInfo: SavedAccount, item: TimelineItem?)
     when (item) {
         is TootList ->
             addColumn(pos, accessInfo, ColumnType.LIST_TL, params = arrayOf(item.id))
+
         is MisskeyAntenna ->
             addColumn(pos, accessInfo, ColumnType.MISSKEY_ANTENNA_TL, params = arrayOf(item.id))
     }
@@ -66,58 +66,50 @@ fun ActMain.clickListMoreButton(pos: Int, accessInfo: SavedAccount, item: Timeli
     }
 }
 
-fun interface ListOnCreatedCallback {
-    fun onCreated(list: TootList)
-}
-
 // リストを作成する
-fun ActMain.listCreate(
+suspend fun ActMain.listCreate(
     accessInfo: SavedAccount,
     title: String,
-    callback: ListOnCreatedCallback?,
-) {
-    launchMain {
-        var resultList: TootList? = null
-        runApiTask(accessInfo) { client ->
-            if (accessInfo.isMisskey) {
-                client.request(
-                    "/api/users/lists/create",
-                    accessInfo.putMisskeyApiToken().apply {
-                        put("title", title)
-                        put("name", title)
-                    }
-                        .toPostRequestBuilder()
-                )
-            } else {
-                client.request(
-                    "/api/v1/lists",
-                    buildJsonObject {
-                        put("title", title)
-                    }.toPostRequestBuilder()
-                )
-            }?.also { result ->
-                client.publishApiProgress(getString(R.string.parsing_response))
-                resultList = parseItem(result.jsonObject) {
-                    TootList(
-                        TootParser(this, accessInfo),
-                        it
-                    )
+): TootList? {
+    var resultList: TootList? = null
+    runApiTask(accessInfo) { client ->
+        if (accessInfo.isMisskey) {
+            client.request(
+                "/api/users/lists/create",
+                accessInfo.putMisskeyApiToken().apply {
+                    put("title", title)
+                    put("name", title)
                 }
+                    .toPostRequestBuilder()
+            )
+        } else {
+            client.request(
+                "/api/v1/lists",
+                buildJsonObject {
+                    put("title", title)
+                }.toPostRequestBuilder()
+            )
+        }?.also { result ->
+            client.publishApiProgress(getString(R.string.parsing_response))
+            resultList = parseItem(result.jsonObject) {
+                TootList(
+                    TootParser(this, accessInfo),
+                    it
+                )
             }
-        }?.let { result ->
-            when (val list = resultList) {
-                null -> showToast(false, result.error)
-
-                else -> {
-                    for (column in appState.columnList) {
-                        column.onListListUpdated(accessInfo)
-                    }
-                    showToast(false, R.string.list_created)
-                    callback?.onCreated(list)
+        }
+    }?.let { result ->
+        when (resultList) {
+            null -> showToast(false, result.error)
+            else -> {
+                for (column in appState.columnList) {
+                    column.onListListUpdated(accessInfo)
                 }
+                showToast(false, R.string.list_created)
             }
         }
     }
+    return resultList
 }
 
 // リストを削除する
@@ -204,6 +196,7 @@ suspend fun ActMain.listRename(
                 showToast(false, result.error)
                 false
             }
+
             else -> {
                 for (column in appState.columnList) {
                     column.onListNameUpdated(accessInfo, list)

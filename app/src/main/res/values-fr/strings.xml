@@ -208,7 +208,7 @@
     <string name="not_available_for_pseudo_account">Non disponible pour les pseudo comptes</string>
     <string name="not_available_for_misskey_account">Non disponible pour les comptes Misskey</string>
     <string name="not_available_for_mastodon_account">Non disponible pour les comptes Mastodon</string>
-    <string name="not_selected">(Aucune sélection)</string>
+    <string name="not_selected_2">(Aucune sélection)</string>
     <string name="notification_count">%1$d notifications</string>
     <string name="notification_delete">Effacer les notifications</string>
     <string name="notification_option">Options de notification</string>
@@ -611,8 +611,6 @@
     <string name="notification_type_vote">sondage</string>
     <string name="dont_show_normal_toot">Ne pas afficher les messages normaux</string>
     <string name="set_focus_point">Réglage de la zone de mise au point (Mastodon 2.3+)</string>
-    <string name="report_forward_desc">Le compte provient d’un autre serveur. Envoyer une copie anonyme du rapport à ce serveur aussi \?</string>
-    <string name="report_forward_to">Transférer à %1$s</string>
     <string name="locked_account">Compte verrouillé</string>
     <string name="contact">Compte de contact</string>
     <string name="languages">langues</string>

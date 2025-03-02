@@ -329,7 +329,7 @@
     <string name="pick_images">اختر صورة…</string>
     <string name="register_app_to_server">تسجيل هذا التطبيق على %1$s…</string>
     <string name="act_post">نشر تبويق</string>
-    <string name="not_selected">(لم يتم اختياره)</string>
+    <string name="not_selected_2">(لم يتم اختياره)</string>
     <string name="post_from">حقل النشر</string>
     <string name="response_not_json">استجابة الـ API ليست بصيغة الـ JSON.</string>
     <string name="tab_divider_color">لون قاسم التبويبات</string>
@@ -350,7 +350,6 @@
     <string name="keyword">الكلمة المفتاحية</string>
     <string name="rename">إعادة التسمية…</string>
     <string name="allow_column_duplication">السماح بازدواجية العمود</string>
-    <string name="report_forward_to">التحويل إلى %1$s</string>
     <string name="login_required">يرجى تهيئة رمز نفاذك مِن خلال إعدادات الحساب.</string>
     <string name="visibility_web_setting">حسب إعدادات تطبيق الويب</string>
     <string name="display_name_unfollowed_by">قام بإلغاء %1$s متابَعتِك</string>

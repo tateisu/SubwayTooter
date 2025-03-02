@@ -48,7 +48,7 @@
     <string name="act_post">Zusammengesetzter Beitrag</string>
     <string name="content_warning">Inhaltswarnung</string>
     <string name="please_add_account">Du musst ein Konto hinterlegen, um einen Beitrag veröffentlichen zu können.</string>
-    <string name="not_selected">(nicht ausgewählt)</string>
+    <string name="not_selected_2">(nicht ausgewählt)</string>
     <string name="content_warning_hint">Schreibe deine Warnung hier</string>
     <string name="content_hint">Der Inhalt deines Beitrages</string>
     <string name="status">Senden</string>
@@ -787,7 +787,6 @@
     <string name="changed">Geändert.</string>
     <string name="languages">Sprachen</string>
     <string name="locked_account">Gesperrtes Konto</string>
-    <string name="report_forward_to">Weiterleiten an %1$s</string>
     <string name="rename">Umbenennen…</string>
     <string name="avatar_icon_dont_round">Ecken des Avatarbilds nicht abrunden (App-Neustart erforderlich)</string>
     <string name="avatar_icon_size">Größe des Avatarbilds (Einheit: dpi. Standard: 48. App-Neustart erforderlich)</string>
@@ -871,7 +870,6 @@
     <string name="your_lists">Deine Listen</string>
     <string name="follow_accept_confirm">Follow-Anfrage von %1$s bestätigen\?</string>
     <string name="follow_deny_confirm">Follow-Anfrage von %1$s ablehnen\?</string>
-    <string name="report_forward_desc">Dieses Konto stammt von einem anderen Server. Sende eine anonymisierte Version dieses Berichts auch dorthin\?</string>
     <string name="dont_show_non_public_toot">Nicht öffentlichen Toot nicht anzeigen</string>
     <string name="dont_show_normal_toot">Normalen Toot nicht anzeigen</string>
     <string name="notification_type_post">posten</string>

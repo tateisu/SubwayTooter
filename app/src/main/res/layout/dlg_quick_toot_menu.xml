@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:background="?attr/colorMainBackground">
 
-    <jp.juggler.subwaytooter.view.MaxHeightScrollView
-        android:id="@+id/llColumnSetting"
+    <ScrollView
+        android:id="@+id/svContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clipToPadding="false"
         android:fadeScrollbars="false"
         android:fadingEdgeLength="20dp"
         android:fillViewport="true"
-        android:padding="12dp"
         android:requiresFadingEdge="vertical"
-        app:maxHeight="240dp">
+        app:layout_constraintBottom_toTopOf="@id/llButtonBar"
+        app:layout_constraintHeight="true"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:padding="12dp"
             android:paddingBottom="3dp"
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
@@ -179,13 +181,16 @@
 
         </LinearLayout>
 
-    </jp.juggler.subwaytooter.view.MaxHeightScrollView>
+    </ScrollView>
 
     <LinearLayout
+        android:id="@+id/llButtonBar"
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/svContent">
 
         <Button
             android:id="@+id/btnCancel"
@@ -195,4 +200,4 @@
             android:layout_weight="1"
             android:text="@string/close" />
     </LinearLayout>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

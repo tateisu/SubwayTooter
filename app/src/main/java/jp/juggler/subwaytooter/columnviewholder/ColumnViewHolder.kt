@@ -1307,8 +1307,8 @@ class ColumnViewHolder(
 
                 // スタイルで指定しないとAndroid 6 で落ちる…
                 listView = recyclerView {
-                    listLayoutManager = LinearLayoutManager(actMain)
-                    layoutManager = listLayoutManager
+                    layoutManager = LinearLayoutManager(actMain)
+                        .also { listLayoutManager = it }
                 }.lparams(matchParent, matchParent) {
                 }
             }

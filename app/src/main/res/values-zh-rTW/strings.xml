@@ -47,7 +47,7 @@
     <string name="content_hint">你發佈的嘟文內容</string>
     <string name="status">嘟文</string>
     <string name="content_warning_hint">在這寫下你的警告提示文字</string>
-    <string name="not_selected">（未選擇）</string>
+    <string name="not_selected_2">（未選擇）</string>
     <string name="content_warning">內容警告</string>
     <string name="act_post">張貼</string>
     <string name="show">顯示</string>

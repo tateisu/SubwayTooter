@@ -22,16 +22,14 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.Column
 import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.databinding.DlgContextMenuBinding
-import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.dialogQrCode
+import jp.juggler.subwaytooter.dialog.openDlgListMember
 import jp.juggler.subwaytooter.pref.PrefB
 import jp.juggler.subwaytooter.pref.PrefI
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.util.*
 import jp.juggler.util.data.*
-import jp.juggler.util.log.*
 import jp.juggler.util.ui.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable
@@ -576,7 +574,9 @@ internal class DlgContextMenu(
             R.id.btnShowBoost -> userSetShowBoosts(accessInfo, who, true)
             R.id.btnHideFavourite -> clickHideFavourite(accessInfo, who)
             R.id.btnShowFavourite -> clickShowFavourite(accessInfo, who)
-            R.id.btnListMemberAddRemove -> DlgListMember(activity, who, accessInfo).show()
+            R.id.btnListMemberAddRemove ->{
+                openDlgListMember(who,  accessInfo.getFullAcct(who), accessInfo)
+            }
             R.id.btnInstanceInformation -> serverInformation(pos, getUserApiHost())
             R.id.btnProfileDirectory -> serverProfileDirectoryFromInstanceInformation(
                 column,

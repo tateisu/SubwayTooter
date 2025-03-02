@@ -19,12 +19,15 @@ import jp.juggler.subwaytooter.column.fireShowContent
 import jp.juggler.subwaytooter.column.isSearchColumn
 import jp.juggler.subwaytooter.column.startLoading
 import jp.juggler.subwaytooter.ui.languageFilter.LanguageFilterActivity.Companion.openLanguageFilterActivity
+import jp.juggler.util.coroutine.launchMain
+import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
-import jp.juggler.util.ui.CustomTextWatcher
 import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isCheckedNoAnime
 import java.util.regex.Pattern
+
+private val log = LogCategory("ColumnViewHolderActions")
 
 fun ColumnViewHolder.onListListUpdated() {
     etListName.setText("")
@@ -59,7 +62,7 @@ fun ColumnViewHolder.isRegexValid(): Boolean {
     return error == null
 }
 
-fun ColumnViewHolder.reloadBySettingChange(){
+fun ColumnViewHolder.reloadBySettingChange() {
     activity.appState.saveColumnList()
     column?.startLoading(ColumnLoadReason.SettingChange)
 }
@@ -232,7 +235,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
             column.startLoading(ColumnLoadReason.ForceReload)
         }
 
-        btnAggStart ->{
+        btnAggStart -> {
             val n = etStatusLoadLimit.text.toString().toIntOrNull()
             if (n != null && n > 0) {
                 column.aggStatusLimit = n
@@ -275,7 +278,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 activity.showToast(true, R.string.list_name_empty)
                 return
             }
-            activity.listCreate(column.accessInfo, tv, null)
+            launchMain { activity.listCreate(column.accessInfo, tv) }
         }
 
         llRefreshError -> {

@@ -43,8 +43,8 @@ fun ActMain.onBackPressedImpl() {
     launchAndShowError {
 
         // メニューが開いていたら閉じる
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START)
+        if (views.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            views.drawerLayout.closeDrawer(GravityCompat.START)
             return@launchAndShowError
         }
 
@@ -124,8 +124,8 @@ fun ActMain.onClickImpl(v: View) {
 
         R.id.btnQuickToot -> quickPostAccountDialog { performQuickPost(it) }
         R.id.btnQuickTootMenu -> toggleQuickPostMenu()
-        R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.openDrawer(GravityCompat.START)
+        R.id.btnMenu -> if (!views.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            views.drawerLayout.openDrawer(GravityCompat.START)
         }
     }
 }

@@ -58,6 +58,7 @@ import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
 import jp.juggler.subwaytooter.view.MyTextView
+import jp.juggler.subwaytooter.view.PaddingItemDecoration
 import jp.juggler.util.backPressed
 import jp.juggler.util.coroutine.launchAndShowError
 import jp.juggler.util.coroutine.launchProgress
@@ -75,6 +76,7 @@ import jp.juggler.util.log.withCaption
 import jp.juggler.util.queryIntentActivitiesCompat
 import jp.juggler.util.ui.ActivityResultHandler
 import jp.juggler.util.ui.attrColor
+import jp.juggler.util.ui.dp
 import jp.juggler.util.ui.hideKeyboard
 import jp.juggler.util.ui.isEnabledAlpha
 import jp.juggler.util.ui.isNotOk
@@ -120,9 +122,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
         ActAppSettingBinding.inflate(layoutInflater)
     }
 
-    private val adapter by lazy {
-        MyAdapter()
-    }
+    private val itemsAdapter by lazy { ItemsAdapter() }
 
     private val arNoop = ActivityResultHandler(log) { }
 
@@ -212,13 +212,23 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     private fun initUi() {
         fixHorizontalPadding(views.llContent, 0f)
 
-        views.lvList.layoutManager = LinearLayoutManager(this)
-        views.lvList.adapter = adapter
         views.btnBack.setOnClickListener { handleBack() }
+        views.btnSearchReset.setOnClickListener(this)
 
         views.etSearch.addTextChangedListener(queryWatcher)
 
-        views.btnSearchReset.setOnClickListener(this)
+        views.lvList.apply{
+            layoutManager = LinearLayoutManager(context)
+            adapter = itemsAdapter
+            addItemDecoration(
+                PaddingItemDecoration(
+                    horizontal = dp(12),
+                    vertical = dp(0),
+                    firstTop = dp(12),
+                    lastBottom = dp(12),
+                )
+            )
+        }
     }
 
     private fun handleBack() {
@@ -284,7 +294,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
      */
     private fun load(section: AppSettingItem?, queryArg: String?) {
         val context = this@ActAppSetting
-        adapter.items = buildList {
+        itemsAdapter.items = buildList {
             // 検索時に項目の上にパンくずリストを追加する
             // リストが前回と同じなら追加しない
             var lastPath: String? = null
@@ -389,7 +399,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     private val settingHolderList =
         ConcurrentHashMap<Int, VhSettingItem>()
 
-    inner class MyAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    inner class ItemsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         var items: List<Any> = emptyList()
             set(newItems) {
                 val oldItems = field
@@ -974,7 +984,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
     }
 
     fun findItemViewHolder(item: AppSettingItem?) =
-        item?.let { adapter.findVhSetting(it) }
+        item?.let { itemsAdapter.findVhSetting(it) }
 
     fun showSample(item: AppSettingItem?) {
         item ?: error("showSample: missing item…")
@@ -1046,7 +1056,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
             log.e(ex, "showTimelineFont failed.")
         }
         // fallback
-        tv.text = getString(R.string.not_selected)
+        tv.text = getString(R.string.not_selected_2)
         tv.typeface = Typeface.DEFAULT
     }
 
@@ -1273,7 +1283,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
         tv ?: return
         val cn = target.customShareComponentName
         val (label, icon) = CustomShare.getInfo(this, cn)
-        tv.text = label ?: getString(R.string.not_selected)
+        tv.text = label ?: getString(R.string.not_selected_2)
         tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
         tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
     }
@@ -1310,7 +1320,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
         tv ?: return
         val cn = prefValue.cn()
         val (label, icon) = CustomShare.getInfo(this, cn)
-        tv.text = label ?: getString(R.string.not_selected)
+        tv.text = label ?: getString(R.string.not_selected_2)
         tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
         tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
     }

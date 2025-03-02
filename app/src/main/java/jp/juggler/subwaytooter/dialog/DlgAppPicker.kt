@@ -45,7 +45,7 @@ class DlgAppPicker(
         for (it in listResolveInfo) {
             if (!filter(it)) continue
             val cn = "${it.activityInfo.packageName}/${it.activityInfo.name}"
-            val label = (it.loadLabel(pm)?.notEmpty() ?: cn).toString()
+            val label = (it.loadLabel(pm).notEmpty() ?: cn).toString()
             add(ListItem(it.loadIcon(pm), label, cn))
         }
 

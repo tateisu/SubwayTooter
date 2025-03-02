@@ -85,7 +85,7 @@
     <string name="act_post">撰写帖文</string>
     <string name="content_warning">内容警告</string>
     <string name="please_add_account">您需要创建账号才能发布帖文。</string>
-    <string name="not_selected">（未选中）</string>
+    <string name="not_selected_2">（未选中）</string>
     <string name="content_hint">您帖文的内容</string>
     <string name="list_empty">列表为空</string>
     <string name="choose_account">选择您的账号</string>
@@ -845,8 +845,6 @@
     <string name="append_attachment_url_to_content">将附件链接附加到内容文本</string>
     <string name="contact">联系账号</string>
     <string name="locked_account">锁嘟账号</string>
-    <string name="report_forward_to">转发给 %1$s</string>
-    <string name="report_forward_desc">此账号来自另一实例，也向那里发送此报告的匿名副本？</string>
     <string name="set_focus_point">设置聚焦点（Mastodon 2.3+）</string>
     <string name="dont_show_non_public_toot">不显示未公开帖文</string>
     <string name="dont_show_normal_toot">不显示正常帖文</string>

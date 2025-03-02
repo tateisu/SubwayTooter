@@ -131,6 +131,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.constraintLayout)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.drawerlayout)
     implementation(libs.androidx.emoji2)

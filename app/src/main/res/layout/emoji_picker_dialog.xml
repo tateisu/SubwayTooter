@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="320dp"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:background="?attr/colorMainBackground"
     android:orientation="vertical">
 
     <com.google.android.flexbox.FlexboxLayout
@@ -66,7 +68,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:cacheColorHint="#00000000"
-        android:clipToPadding="false"
         android:fadeScrollbars="false"
         android:fadingEdge="horizontal"
         android:fadingEdgeLength="32dp"
@@ -79,8 +80,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingBottom="4dp"
-            android:paddingEnd="6dp"
-            android:paddingStart="6dp" />
+            android:paddingHorizontal="6dp" />
     </HorizontalScrollView>
 
     <jp.juggler.subwaytooter.view.GestureInterceptor
@@ -89,9 +89,9 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <!-- Note: このGrid表示はfadeingEdgeしない -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvGrid"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
@@ -99,6 +99,7 @@
             android:minHeight="200dp"
             android:padding="6dp"
             android:scrollbarStyle="outsideOverlay"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </jp.juggler.subwaytooter.view.GestureInterceptor>
 </LinearLayout>

@@ -48,7 +48,7 @@
     <string name="act_post">S\'està publicant el tut</string>
     <string name="content_warning">Avís de contingut</string>
     <string name="please_add_account">Heu de crear un compte per a poder publicar.</string>
-    <string name="not_selected">(no seleccionat)</string>
+    <string name="not_selected_2">(no seleccionat)</string>
     <string name="content_warning_hint">Escriviu aquí l\'avís</string>
     <string name="content_hint">El contingut del vostre tut</string>
     <string name="status">Publica</string>
@@ -642,8 +642,6 @@
     <string name="notification_type_vote">vot</string>
     <string name="dont_show_normal_toot">No mostrar bram normal</string>
     <string name="set_focus_point">defineix punt de focalització (Mastodont 2.3+)</string>
-    <string name="report_forward_desc">El compte és d\'un altre servidor. Vols enviar-hi una còpia de l\'informe\?</string>
-    <string name="report_forward_to">Reenvia a %1$s</string>
     <string name="locked_account">Compte ocult</string>
     <string name="contact">compte de contacte</string>
     <string name="languages">llengües</string>

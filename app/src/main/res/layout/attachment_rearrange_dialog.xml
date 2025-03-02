@@ -18,6 +18,7 @@
     <!--
         並べ替えのRecyclerView
         ドラッグせずにスクロールするためのタッチ領域を確保したいのでpadding多め
+        このリストはfadingEdgeしない
      -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listView"

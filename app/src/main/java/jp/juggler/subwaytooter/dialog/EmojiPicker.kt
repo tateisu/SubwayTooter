@@ -424,7 +424,7 @@ private class EmojiPicker(
 
     private lateinit var pickerCategries: List<PickerItemCategory>
 
-    private val adapter = GridAdapter()
+    private val gridAdapter = GridAdapter()
 
     private val views = EmojiPickerDialogBinding.inflate(activity.layoutInflater)
 
@@ -442,7 +442,7 @@ private class EmojiPicker(
                 selectedTone = (it.tag as SkinTone)
                 showSkinTone()
                 @Suppress("NotifyDataSetChanged")
-                adapter.notifyDataSetChanged()
+                gridAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -731,12 +731,12 @@ private class EmojiPicker(
             }
         }
 
-        adapter.list = list
+        gridAdapter.list = list
 
         val targetCategory = lastExpandCategory
         if (scrollToCategory && targetCategory != null) {
             views.root.handler?.postDelayed({
-                adapter.list.indexOfFirst { (it as? PickerItemCategory)?.original == targetCategory }
+                gridAdapter.list.indexOfFirst { (it as? PickerItemCategory)?.original == targetCategory }
                     .takeIf { it != -1 }
                     ?.let { views.rvGrid.smoothScrollToPosition(it) }
             }, 100L)
@@ -912,21 +912,14 @@ private class EmojiPicker(
         views.giGrid.intercept = { handleTouch(it, wasIntercept = false) }
         views.giGrid.touch = { handleTouch(it, wasIntercept = true) }
 
-        views.rvGrid.adapter = adapter
-
-        views.rvGrid.layoutManager = FlexboxLayoutManagerWrapper(activity).apply {
-            flexDirection = FlexDirection.ROW
-            flexWrap = FlexWrap.WRAP
-            justifyContent = JustifyContent.FLEX_START
+        views.rvGrid.apply {
+            layoutManager = FlexboxLayoutManagerWrapper(context).apply {
+                flexDirection = FlexDirection.ROW
+                flexWrap = FlexWrap.WRAP
+                justifyContent = JustifyContent.FLEX_START
+            }
+            adapter = gridAdapter
         }
-
-//
-//            gridCols,
-//            RecyclerView.VERTICAL,
-//            false
-//        ).also {
-//            it.spanSizeLookup = adapter.spanSizeLookup
-//        }
 
         showSkinTone()
 

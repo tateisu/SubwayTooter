@@ -54,7 +54,7 @@
     <string name="act_post">툿 게시</string>
     <string name="content_warning">내용 경고</string>
     <string name="please_add_account">툿을 게시하려면 계정을 설정해야 합니다.</string>
-    <string name="not_selected">(선택 안 함)</string>
+    <string name="not_selected_2">(선택 안 함)</string>
     <string name="content_warning_hint">경고문을 여기에 작성하세요</string>
     <string name="content_hint">툿 내용</string>
     <string name="status">툿</string>
@@ -620,8 +620,6 @@
     <string name="notification_type_vote">투표</string>
     <string name="dont_show_normal_toot">보통 툿은 보이지 않기</string>
     <string name="set_focus_point">초점 지정 (마스토돈 2.3 이상)</string>
-    <string name="report_forward_desc">해당 계정이 다른 서버에 있습니다. 신고서를 익명 복사본으로 전송할까요\?</string>
-    <string name="report_forward_to">%1$s로 전달</string>
     <string name="locked_account">잠긴 계정</string>
     <string name="contact">계정에 연락</string>
     <string name="languages">언어</string>

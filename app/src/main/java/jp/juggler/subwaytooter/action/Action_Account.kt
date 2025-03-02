@@ -13,11 +13,9 @@ import jp.juggler.subwaytooter.column.ColumnType
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.dialog.DlgCreateAccount.Companion.showUserCreateDialog
 import jp.juggler.subwaytooter.dialog.LoginForm.Companion.showLoginForm
-import jp.juggler.subwaytooter.pref.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openBrowser
-import jp.juggler.util.*
 import jp.juggler.util.coroutine.launchMain
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.encodePercent
@@ -26,7 +24,6 @@ import jp.juggler.util.log.showToast
 import jp.juggler.util.network.toFormRequestBody
 import jp.juggler.util.network.toPost
 import jp.juggler.util.ui.dismissSafe
-import kotlinx.coroutines.*
 
 private val log = LogCategory("Action_Account")
 

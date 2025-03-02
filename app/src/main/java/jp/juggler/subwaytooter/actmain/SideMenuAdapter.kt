@@ -677,9 +677,6 @@ class SideMenuAdapter(
             isVerticalFadingEdgeEnabled = true
             setFadingEdgeLength(context.dp(20))
 
-            val padV = (actMain.density * 12f + 0.5f).toInt()
-            setPadding(0, padV, 0, padV)
-            clipToPadding = false
             scrollBarStyle = ListView.SCROLLBARS_OUTSIDE_OVERLAY
 
             navigationView.addView(this)

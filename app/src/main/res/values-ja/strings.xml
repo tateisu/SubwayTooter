@@ -487,7 +487,7 @@
     <string name="not_blocked">ブロックできません</string>
     <string name="not_muted">ミュートできません</string>
     <string name="not_provided_mastodon_under_1_6">マストドン1.6未満では利用できません</string>
-    <string name="not_selected">(未選択)</string>
+    <string name="not_selected_2">(未選択)</string>
     <string name="note">ノート</string>
     <string name="notification_channel_description">これらの設定は%1$sへの通知に使われます</string>
     <string name="notification_count">%1$d件の通知</string>
@@ -619,8 +619,7 @@
     <string name="reply_to_this_status">この投稿への返信：</string>
     <string name="report">通報</string>
     <string name="report_completed">通報できました</string>
-    <string name="report_forward_desc">対象ユーザは別のサーバーに所属しています。通報内容を投稿元サーバーに匿名で転送しますか?</string>
-    <string name="report_forward_to">%1$s に転送する</string>
+    <string name="report_forward_to">対象ユーザはサーバー %1$s に所属しています。この通報の匿名コピーをそのサーバに転送しますか?</string>
     <string name="report_reason">通報する理由を書いてください</string>
     <string name="reports">通報</string>
     <string name="request_access_token">アクセストークンの取得中…</string>

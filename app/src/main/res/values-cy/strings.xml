@@ -54,7 +54,7 @@
     <string name="act_post">Cyhoeddi\'r tŵt</string>
     <string name="content_warning">Rhybudd cynnwys</string>
     <string name="please_add_account">Mae angen i chi osod cyfrif i gyhoeddi tŵt.</string>
-    <string name="not_selected">(heb ei ddewis)</string>
+    <string name="not_selected_2">(heb ei ddewis)</string>
     <string name="content_warning_hint">Ysgrifenwch eich rhybudd yma</string>
     <string name="content_hint">Cynnwys eich tŵt</string>
     <string name="list_empty">Rhestr wag</string>
@@ -385,7 +385,6 @@
     <string name="notification_type_reaction">ymateb</string>
     <string name="notification_type_vote">pleidlais</string>
     <string name="dont_show_normal_toot">Peidio dangos tŵt arferol</string>
-    <string name="report_forward_to">Anfon ymlaen i %1$s</string>
     <string name="locked_account">Cyfrif wedi\'i gloi</string>
     <string name="languages">ieithoedd</string>
     <string name="changed">newidwyd.</string>

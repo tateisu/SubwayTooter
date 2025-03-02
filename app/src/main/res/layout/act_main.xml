@@ -12,6 +12,7 @@
         android:id="@+id/llFormRoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="?attr/colorMainBackground"
         android:orientation="vertical">
 
         <FrameLayout
@@ -20,20 +21,15 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/llEmpty"
+            <TextView
+                android:id="@+id/tvEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:padding="12dp"
-                    android:text="@string/column_empty" />
-
-            </LinearLayout>
+                android:gravity="center"
+                android:padding="12dp"
+                android:text="@string/column_empty"
+                android:textColor="?attr/colorTextContent"
+                android:textSize="16sp" />
 
             <jp.juggler.subwaytooter.view.MyViewPager
                 android:id="@+id/viewPager"
@@ -151,9 +147,10 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
-        android:background="?attr/colorMainBackground"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="start" />
+        android:layout_gravity="start"
+        android:background="?attr/colorMainBackground"
+        tools:visibility="gone" />
 
 </jp.juggler.subwaytooter.view.MyDrawerLayout>

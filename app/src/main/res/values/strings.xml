@@ -48,7 +48,7 @@
     <string name="act_post">Composite post</string>
     <string name="content_warning">Content warning</string>
     <string name="please_add_account">You need to make an account to create post.</string>
-    <string name="not_selected">(not selected)</string>
+    <string name="not_selected_2">(not selected)</string>
     <string name="content_warning_hint">Write your warning here</string>
     <string name="content_hint">The content of your post</string>
     <string name="status">Post</string>
@@ -647,8 +647,7 @@
     <string name="dont_show_normal_toot">Don\'t show normal posts</string>
     <string name="dont_show_non_public_toot">Don\'t show non-public posts</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3+)</string>
-    <string name="report_forward_desc">The account is from another server. Send an anonymized copy of the report there as well?</string>
-    <string name="report_forward_to">Forward to %1$s</string>
+    <string name="report_forward_to">The user belongs to server %1$s. Forward anonymoused copy of this report to that server?</string>
     <string name="locked_account">Locked account</string>
     <string name="contact">contact account</string>
     <string name="languages">languages</string>

@@ -2,7 +2,7 @@ package jp.juggler.util.ui
 
 import android.text.InputType
 
-@Suppress("unused")
+@Suppress("unused", "ConstPropertyName")
 object InputTypeEx {
 
     // For entering a date.

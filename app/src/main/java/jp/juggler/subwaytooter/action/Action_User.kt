@@ -12,8 +12,8 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.column.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm.confirm
-import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.dialog.pickAccount
+import jp.juggler.subwaytooter.dialog.showReportDialog
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.util.openCustomTab
@@ -701,11 +701,14 @@ fun ActMain.userReportForm(
     accessInfo: SavedAccount,
     who: TootAccount,
     status: TootStatus? = null,
-) {
-    ReportForm.showReportForm(this, accessInfo, who, status) { dialog, comment, forward ->
-        userReport(accessInfo, who, status, comment, forward) {
-            dialog.dismissSafe()
-        }
+) = showReportDialog(
+    accessInfo,
+    who,
+    status,
+    canForward = !accessInfo.matchHost(who) && !accessInfo.isMisskey,
+) { dialog, comment, forward ->
+    userReport(accessInfo, who, status, comment, forward) {
+        dialog.dismissSafe()
     }
 }
 

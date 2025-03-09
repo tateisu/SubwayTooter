@@ -35,7 +35,7 @@
     <string name="follow_requests">கோரிக்கைகளைப் பின்பற்றவும்</string>
     <string name="close">மூடு</string>
     <string name="resize_image">இணைப்பு படம் (JPEG, Png) மறுஅளவிடுங்கள்</string>
-    <string name="resize_square_pixels_2">%1$d சதுர பிக்சல்களுக்கு (சமம். %2$s)</string>
+    <string name="resize_square_pixels_2">%1$d சதுர புள்ளிகளுக்கு (சமம். %2$s)</string>
     <string name="open_profile">திறந்த சுயவிவரம்</string>
     <string name="text_color">உரை நிறம்</string>
     <string name="nickname_applied_after_reload">மறுஏற்றம் நெடுவரிசைக்குப் பிறகு புனைப்பெயர்/வண்ணத்தின் மாற்றம் பயன்படுத்தப்படும்.</string>
@@ -87,7 +87,7 @@
     <string name="show_favourite_notification_from_user">இந்த பயனரிடமிருந்து FAV/BT அறிவிப்புகளை இயக்கவும்</string>
     <string name="field_name1" tools:ignore="Typos">சிட்டை 1</string>
     <string name="field_value4">மதிப்பு 4</string>
-    <string name="account_add">ஒரு கணக்கைச் சேர்க்கவும்</string>
+    <string name="account_add">ஒரு கணக்கைச் சேர்</string>
     <string name="instance">சேவையகம்</string>
     <string name="user_mail_address">மின்னஞ்சல்</string>
     <string name="cancel">ரத்துசெய்</string>
@@ -140,7 +140,7 @@
     <string name="attachment_too_many">4 கோப்புகள் வரை அனுமதிக்கப்படுகிறது.</string>
     <string name="account_select_please">கணக்கைத் தேர்ந்தெடுக்கவும்</string>
     <string name="login_failed">உள்நுழைய முடியவில்லை.</string>
-    <string name="file_size_too_big">கோப்பு %1$d MB வரம்பை விட பெரியது.</string>
+    <string name="file_size_too_big">கோப்பு %1$d எம்பி வரம்பைவிடப் பெரியது.</string>
     <string name="visibility_direct">நேரடி</string>
     <string name="visibility_web_setting">வலை பயன்பாட்டு அமைப்பைக் கண்டறியவும்</string>
     <string name="visibility_account_setting">கணக்கு அமைப்பைக் கண்டறியவும்</string>
@@ -198,7 +198,7 @@
     <string name="conversation_view">உரையாடல் பார்வை</string>
     <string name="conversation_around">இடுகையைச் சுற்றி உரையாடல்:%1$s</string>
     <string name="instance_not_need_slash">சேவையகத்தின் ஓச்ட்பெயர், \'/\', \'@\' இல்லாமல்.</string>
-    <string name="mail_address_not_contains_at_mark">\'@\' மற்றும் \'\' கொண்ட மின்னஞ்சல்களைப் பயன்படுத்தவும்.</string>
+    <string name="mail_address_not_contains_at_mark">\'@\' மற்றும் \'.\' கொண்ட மின்னஞ்சல்களைப் பயன்படுத்தவும்</string>
     <string name="instance_hint">எ.கா) Mastodon.ocial</string>
     <string name="mail_hint">ex) your@e-mail.address</string>
     <string name="unfollow">பின்தொடரவும்</string>
@@ -295,8 +295,8 @@
     <string name="not_available_for_mastodon_account">மாச்டோடன் கணக்கிற்கு கிடைக்கவில்லை</string>
     <string name="exit_app_when_close_protected_column">உறுதிப்படுத்தப்படாமல் பாதுகாக்கப்பட்ட நெடுவரிசையை \"பின்\" பொத்தானைக் கொண்டு மூட முயற்சிக்கும்போது பயன்பாட்டிலிருந்து வெளியேறவும்</string>
     <string name="dont_resize">மறுஅளவிட வேண்டாம்</string>
-    <string name="long_side_pixel">%1$d பிக்சல்களுக்கு மறுஅளவிடுங்கள்</string>
-    <string name="resize_square_pixels">%1$d சதுர பிக்சல்களுக்கு மறுஅளவிடுங்கள் (சமம். %2$dx %2$d)</string>
+    <string name="long_side_pixel">%1$d புள்ளிகளுக்கு மறுஅளவிடுங்கள்</string>
+    <string name="resize_square_pixels">%1$d சதுர புள்ளிகளுக்கு மறுஅளவிடுங்கள் (சமம். %2$dx %2$d)</string>
     <string name="image_capture">படம் எடுக்கவும்</string>
     <string name="video_capture">வீடியோவைப் பிடிக்கவும்</string>
     <string name="voice_capture">ஒரு குரலைப் பிடிக்கவும்</string>
@@ -505,10 +505,10 @@
     <string name="make_enquete">என்குவலை உருவாக்குங்கள்</string>
     <string name="dont_use_action_button_with_quick_toot_bar">\"விரைவான இடுகை\" பட்டியைப் பயன்படுத்தும் போது IME செயல் பொத்தானை முடக்கு (பயன்பாட்டு மறுதொடக்கம் தேவை)</string>
     <string name="auto_cw">தானாக மறை நீண்ட உரை (0 ஐ விட அதிகமாக \"வரி எண்ணிக்கைகள்\" அமைப்பதன் மூலம். பயன்பாட்டு மறுதொடக்கம் தேவை)</string>
-    <string name="enquete_item_is_empty">Enquete தேர்வு %1$d காலியாக உள்ளது.</string>
-    <string name="enquete_item_too_long">Enquete தேர்வு %1$d மிக நீளமானது. தயவுசெய்து %2$d எழுத்து (கள்) குறைகிறது.</string>
+    <string name="enquete_item_is_empty">வாக்கெடுப்பு தேர்வு %1$d காலியாக உள்ளது.</string>
+    <string name="enquete_item_too_long">வாக்கெடுப்பு தேர்வு %1$d மிக நீளமானது. தயவுசெய்து %2$d எழுத்து(கள்) குறை.</string>
     <string name="auto_cw_prefix">(ஆட்டோ சி.டபிள்யூ)</string>
-    <string name="enquete_item_duplicate">Enquete தேர்வு %1$d என்பது மற்றொரு தேர்வின் நகல்.</string>
+    <string name="enquete_item_duplicate">வாக்கெடுப்பு தேர்வு %1$d என்பது மற்றொரு தேர்வின் நகல்.</string>
     <string name="profile_pin">சுயவிவரத்தில் முள்</string>
     <string name="profile_unpin">சுயவிவரத்திலிருந்து அவிழ்த்து விடுங்கள்</string>
     <string name="profile_pin_progress">பின் நிலையை மாற்றுதல்…</string>
@@ -576,7 +576,7 @@
     <string name="list_created">புதிய பட்டியல் உருவாக்கப்பட்டது.</string>
     <string name="list_member">பயனர்களை பட்டியலிடுங்கள்</string>
     <string name="list_timeline">காலவரிசை பட்டியல்</string>
-    <string name="list_member_delete_confirm">Delete the list member \"%1$s\" from list \"%2$s\"?</string>
+    <string name="list_member_delete_confirm">\"%1$s\" பட்டியல் உறுப்பினரை \"%2$s\" பட்டியலிலிருந்து நீக்கவா?</string>
     <string name="target_user">இலக்கு பயனர்</string>
     <string name="list_owner">பட்டியல் உரிமையாளர்</string>
     <string name="list_create">புதிய பட்டியல்…</string>
@@ -637,7 +637,7 @@
     <string name="notification_type_mention">குறிப்பு</string>
     <string name="notification_type_follow">பின்தொடர்</string>
     <string name="notification_type_boost">பூச்ட்</string>
-    <string name="notification_type_favourite">fav.</string>
+    <string name="notification_type_favourite">விரு.</string>
     <string name="notification_type_reaction">எதிர்வினை</string>
     <string name="notification_type_report">(நிர்வாகி) அறிக்கை</string>
     <string name="dont_show_normal_toot">சாதாரண இடுகைகளைக் காட்ட வேண்டாம்</string>
@@ -759,7 +759,7 @@
     <string name="log_save_level_desc">பதிவு தீவிர நிலை. இந்த அமைப்பைக் காட்டிலும் குறைவான தீவிரத்தன்மை கொண்ட பதிவுகள் சேகரிக்கப்படாது.</string>
     <string name="unfollow_hashtag_confirm">\"%1$s\" ஆச்டாக்?</string>
     <string name="plugin_app_intro">செருகுநிரல் பயன்பாடுகளுக்கு அறிமுகம்</string>
-    <string name="media_count">%1$d இணைப்புகள் (அனைத்தையும் பார்க்க தட்டவும்)</string>
+    <string name="media_count">%1$d இணைப்புகள் (அனைத்தையும் பார்க்கத் தட்டவும்)</string>
     <string name="app_data_export_import">பயன்பாட்டு தரவை ஏற்றுமதி/இறக்குமதி செய்யுங்கள்</string>
     <string name="use_webp_format_if_server_accepts">சேவையகம் ஏற்றுக்கொண்டால் WebP வடிவமைப்பைப் பயன்படுத்தவும்.</string>
     <string name="detail">விவரம்</string>
@@ -793,7 +793,7 @@
     <string name="cant_change_account_when_edit">இடுகையைத் திருத்தும்போது கணக்கை மாற்ற முடியாது.</string>
     <string name="delete_base_status_before_toot">இடுகையிடுவதற்கு முன் அடிப்படை நிலையை நீக்கு. பிடித்தவை/ஊக்கங்கள் அனைத்தும் இழக்கப்படும். பதில்கள் துண்டிக்கப்படும். ஊடக இணைப்புகள் மாச்டோடன் முன் -2.4.1 இல் வைக்கப்படாது. நீங்கள் உறுதியாக இருக்கிறீர்களா?</string>
     <string name="notification_tl_icon_size">அறிவிப்பு TL படவுரு அளவு (அலகு: dp. இயல்புநிலை: 24. பயன்பாட்டு மறுதொடக்கம் தேவை)</string>
-    <string name="post_button_tapped_repeatly">போச்ட் பொத்தான் மீண்டும் மீண்டும் தட்டப்பட்டது</string>
+    <string name="post_button_tapped_repeatly">அஞ்சல் பொத்தான் அடுத்தடுத்து தட்டப்பட்டது</string>
     <string name="regex_filter_matches_empty_string">ரீசெக்ச் வடிகட்டி வெற்று சரத்துடன் பொருந்துகிறது.</string>
     <string name="notification_tl_font_size">அறிவிப்பு TL எழுத்துரு அளவு\n (அலகு: எச்பி. இயல்புநிலைக்கு காலியாக விடவும். பயன்பாட்டு மறுதொடக்கம் தேவை)\n …\n …</string>
     <string name="follow_suggestion">ஆலோசனையைப் பின்பற்றவும்</string>
@@ -839,12 +839,12 @@
     <string name="misskey_account_not_supported">மிச்கி கணக்கு ஆதரிக்கப்படவில்லை.</string>
     <string name="misskey_cant_show_all_descendants">மிச்கியில், இலக்கு குறிப்புக்கான நேரடி பதில்கள் மட்டுமே கணக்கிடப்படுகின்றன. எல்லா சந்ததியினரையும் காட்ட முடியாது.</string>
     <string name="cant_get_misskey_app_secret">இந்த மிச்கி சேவையகம்/API/APP/API இன் பதிலில் பயன்பாட்டு ரகசியத்தை வழங்காது. சேவையக நிர்வாகிக்கு மிச்கி பணி பதிப்பைப் புதுப்பிப்பதைக் கவனியுங்கள்.</string>
-    <string name="visibility_style">தெரிவுநிலை பெயர் &amp; ஐகான்</string>
+    <string name="visibility_style"><![CDATA[தெரிவுநிலை பெயர் &சின்னம்]]></string>
     <string name="visibility_style_by_account">நெடுவரிசை கணக்கிற்கு பொருந்தும்</string>
     <string name="misskey">மிச்கி</string>
     <string name="visibility_home">வீடு</string>
     <string name="visibility_followers">பின்தொடர்பவர்கள்</string>
-    <string name="vote_count_text">%1$d டி வாக்குகள்</string>
+    <string name="vote_count_text">%1$d வாக்குகள்</string>
     <string name="reaction_add">எதிர்வினை சேர்க்கவும்</string>
     <string name="reaction_remove">எதிர்வினையை அகற்று</string>
     <string name="unknown_notification_from">%1$s இலிருந்து அறியப்படாத அறிவிப்பு</string>
@@ -871,7 +871,7 @@
     <string name="endorse_set">உங்கள் சுயவிவரத்தில் ஒப்புதல் அளிக்கவும்</string>
     <string name="endorse_unset">உங்கள் சுயவிவரத்தில் ஒப்புதலை அகற்று</string>
     <string name="endorse_succeeded">ஒப்புதல்.</string>
-    <string name="remove_endorse_succeeded">Unendorsemed.</string>
+    <string name="remove_endorse_succeeded">ஒப்புதல்நீக்குவெற்றி.</string>
     <string name="follow_request_cancelled">கோரிக்கையைப் பின்பற்றவும் ரத்து செய்யப்பட்டது.</string>
     <string name="confirm_cancel_follow_request_who_from">ரத்துசெய் %2$s முதல் %1$s வரை கோரிக்கையைப் பின்தொடரவும்?</string>
     <string name="reaction">எதிர்வினை</string>
@@ -987,7 +987,7 @@
     <string name="poll_expire_hours">மணி</string>
     <string name="poll_expire_minutes">நிமிடங்கள்</string>
     <string name="vote_1">1 வாக்கு</string>
-    <string name="vote_2">%1$d votes.</string>
+    <string name="vote_2">%1$d வாக்குகள்.</string>
     <string name="vote_expire_at">நேர வரம்பு: %1$s</string>
     <string name="vote_count_unavailable">\??? வாக்குகள்</string>
     <string name="vote_button">வாக்களிக்கவும்</string>
@@ -1139,7 +1139,7 @@
     <string name="emoji_category_composite_tones">கலப்பு டோன்கள்</string>
     <string name="resend_confirm_mail">அஞ்சலை உறுதிப்படுத்தவும்…</string>
     <string name="update_mail_address">மின்னஞ்சல் முகவரியைப் புதுப்பிக்கவும்</string>
-    <string name="resend_confirm_mail_requested">உறுதிப்படுத்தும் உறுதிப்படுத்தும் மின்னஞ்சல் கோரப்பட்டது.</string>
+    <string name="resend_confirm_mail_requested">மீண்டும் உறுதிப்படுத்தும் மின்னஞ்சல் கோரப்பட்டது.</string>
     <string name="confirm_mail_description">மறுசீரமைக்கப்பட்ட மின்னஞ்சலை மறுசீரமைத்த பிறகு,\n - உங்கள் அஞ்சலில் அஞ்சலை சரிபார்க்கவும்.\n - அஞ்சலில் உறுதிப்படுத்தல் இணைப்பைத் திறக்கவும்.\n - இந்த உரையாடலை மூடி, நெடுவரிசையை மீண்டும் ஏற்றவும்.</string>
     <string name="push_notification_filter">அறிவிப்பு வடிகட்டியை அழுத்தவும்</string>
     <string name="no_one">யாரும் இல்லை</string>

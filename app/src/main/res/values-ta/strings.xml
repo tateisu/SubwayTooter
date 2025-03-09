@@ -140,7 +140,7 @@
     <string name="attachment_too_many">4 கோப்புகள் வரை அனுமதிக்கப்படுகிறது.</string>
     <string name="account_select_please">கணக்கைத் தேர்ந்தெடுக்கவும்</string>
     <string name="login_failed">உள்நுழைய முடியவில்லை.</string>
-    <string name="file_size_too_big">கோப்பு %1 $ DMB வரம்பை விட பெரியது.</string>
+    <string name="file_size_too_big">கோப்பு %1$d MB வரம்பை விட பெரியது.</string>
     <string name="visibility_direct">நேரடி</string>
     <string name="visibility_web_setting">வலை பயன்பாட்டு அமைப்பைக் கண்டறியவும்</string>
     <string name="visibility_account_setting">கணக்கு அமைப்பைக் கண்டறியவும்</string>
@@ -576,7 +576,7 @@
     <string name="list_created">புதிய பட்டியல் உருவாக்கப்பட்டது.</string>
     <string name="list_member">பயனர்களை பட்டியலிடுங்கள்</string>
     <string name="list_timeline">காலவரிசை பட்டியல்</string>
-    <string name="list_member_delete_confirm">பட்டியல் உறுப்பினரை \"%1$s\" பட்டியலில் இருந்து நீக்கவா?</string>
+    <string name="list_member_delete_confirm">Delete the list member \"%1$s\" from list \"%2$s\"?</string>
     <string name="target_user">இலக்கு பயனர்</string>
     <string name="list_owner">பட்டியல் உரிமையாளர்</string>
     <string name="list_create">புதிய பட்டியல்…</string>
@@ -614,8 +614,8 @@
     <string name="media_attachment_empty">ஊடக இணைப்புகளைக் காணவில்லை.</string>
     <string name="media_attachment_type_error">மீடியா இணைப்பு வகை \"%1$s\" ஆகும். செயின்ட் அதைக் கையாள முடியாது, ஆனால் நீங்கள் உலாவியில் திறக்க முயற்சி செய்யலாம்.</string>
     <string name="dont_repeat_download_to_same_url">சில நொடிகளில் அதே முகவரி ஐ பதிவிறக்குவதை மீண்டும் செய்ய முடியாது.</string>
-    <string name="zooming_of">(%4 $ d/%5 $ d) ×%3 $ .1f\n %1$d ×%2$d</string>
-    <string name="zooming_of_resized">(%4 $ d/%5 $ d) ×%3 $ .1f\n %1$d ×%2$d (அசல்%6 $ டி ×%7 $ D)</string>
+    <string name="zooming_of">(%4$d/%5$d) ×%3$.1f\n%1$d×%2$d</string>
+    <string name="zooming_of_resized">(%4$d/%5$d)×%3$.1f\n%1$d×%2$d (original %6$d×%7$d)</string>
     <string name="media_attachment_still_uploading">இன்னும் ஊடகங்களை பதிவேற்றுகிறது.</string>
     <string name="highlight_word">முக்கிய சொல்லை முன்னிலைப்படுத்தவும்</string>
     <string name="new_item">புதிய உருப்படி…</string>
@@ -844,7 +844,7 @@
     <string name="misskey">மிச்கி</string>
     <string name="visibility_home">வீடு</string>
     <string name="visibility_followers">பின்தொடர்பவர்கள்</string>
-    <string name="vote_count_text">% 1 $ டி வாக்குகள்</string>
+    <string name="vote_count_text">%1$d டி வாக்குகள்</string>
     <string name="reaction_add">எதிர்வினை சேர்க்கவும்</string>
     <string name="reaction_remove">எதிர்வினையை அகற்று</string>
     <string name="unknown_notification_from">%1$s இலிருந்து அறியப்படாத அறிவிப்பு</string>
@@ -885,7 +885,7 @@
     <string name="agree">நான் ஒப்புக்கொள்கிறேன்</string>
     <string name="ltl_around">சுற்றி உள்ளக காலவரிசை…</string>
     <string name="ltl_around_toot">இடுகையைச் சுற்றி உள்ளக டி.எல்</string>
-    <string name="ltl_around_of">உள்ளக காலவரிசை சுமார் 1 $ s</string>
+    <string name="ltl_around_of">உள்ளக காலவரிசை சுமார் %1$s</string>
     <string name="ftl_around_toot">இடுகையைச் சுற்றி கூட்டாட்சி டி.எல்</string>
     <string name="ftl_around_of">கூட்டாட்சி காலவரிசை %1$s</string>
     <string name="ftl_around">கூட்டாட்சி காலவரிசை…</string>
@@ -987,7 +987,7 @@
     <string name="poll_expire_hours">மணி</string>
     <string name="poll_expire_minutes">நிமிடங்கள்</string>
     <string name="vote_1">1 வாக்கு</string>
-    <string name="vote_2">% 1 $ டி வாக்குகள்.</string>
+    <string name="vote_2">%1$d votes.</string>
     <string name="vote_expire_at">நேர வரம்பு: %1$s</string>
     <string name="vote_count_unavailable">\??? வாக்குகள்</string>
     <string name="vote_button">வாக்களிக்கவும்</string>

@@ -839,7 +839,7 @@
     <string name="misskey_account_not_supported">மிச்கி கணக்கு ஆதரிக்கப்படவில்லை.</string>
     <string name="misskey_cant_show_all_descendants">மிச்கியில், இலக்கு குறிப்புக்கான நேரடி பதில்கள் மட்டுமே கணக்கிடப்படுகின்றன. எல்லா சந்ததியினரையும் காட்ட முடியாது.</string>
     <string name="cant_get_misskey_app_secret">இந்த மிச்கி சேவையகம்/API/APP/API இன் பதிலில் பயன்பாட்டு ரகசியத்தை வழங்காது. சேவையக நிர்வாகிக்கு மிச்கி பணி பதிப்பைப் புதுப்பிப்பதைக் கவனியுங்கள்.</string>
-    <string name="visibility_style">&lt;! [CDATA [தெரிவுநிலை பெயர் &amp; ஐகான்]]&gt;</string>
+    <string name="visibility_style">தெரிவுநிலை பெயர் &amp; ஐகான்</string>
     <string name="visibility_style_by_account">நெடுவரிசை கணக்கிற்கு பொருந்தும்</string>
     <string name="misskey">மிச்கி</string>
     <string name="visibility_home">வீடு</string>

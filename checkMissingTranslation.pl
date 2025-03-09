@@ -107,6 +107,11 @@ for my $lang ( sort keys %langs ){
 			$missing{$name} =1;
 		}
 
+		if($value =~ /CDATA|\]\]/ ){
+			$hasError =1;
+			print "!! ($lang)$name : broken CDATA section.\n";
+        }
+
 		my @params = $value =~ /(%\d+\$[\d\.]*[sdxf])/g;
 		my $params = join ',', sort @params;
 		my $master_params = $params{$name} // '';

@@ -7,10 +7,16 @@ use XML::LibXML;
 use Data::Dump qw(dump);
 use utf8;
 use feature qw(say);
+use Getopt::Long;
 
 binmode $_,":utf8" for \*STDOUT,\*STDERR;
 
-my $preCommit = grep{ $_ eq '--pre-commit'} @ARGV;
+# git の pre-commit フックから呼ばれる際に指定される
+my $preCommit;
+
+GetOptions(
+    "preCommit:+" => \$preCommit,
+) or die "bad options.";
 
 sub cmd($){
 	print "+ ",$_[0],"\n";
@@ -53,7 +59,7 @@ close($fh)
 @untrackedFiles and die "forgot git add?\n",map{ "- $_\n"} @untrackedFiles;
 
 
-my $default_name = "_default";
+my $baseName = "_base";
 
 my @files;
 
@@ -70,7 +76,7 @@ for my $file(@files){
 	if( $file =~ m|values-([^/]+)| ){
 		$lang = $1;
 	}else{
-		$lang=$default_name;
+		$lang=$baseName;
 	}
 
 	my %names;
@@ -88,10 +94,10 @@ for my $file(@files){
 
 my $hasError = 0;
 
-my $master = $langs{ $default_name };
-$master or die "missing master languages.\n";
+my $base = $langs{ $baseName };
+$base or die "missing base language.\n";
 my %params;
-while(my($name,$value)=each %$master){
+while(my($name,$value)=each %$base){
 	my @params = $value =~ /(%\d+\$[\d\.]*[sdxf])/g;
 	$params{$name} = join ',', sort @params;
 }
@@ -103,7 +109,7 @@ for my $lang ( sort keys %langs ){
 	while(my($name,$value)=each %$names){
 
 		$allNames{$name}=1;
-		if(not $master->{$name} ){
+		if(not $base->{$name} ){
 			$missing{$name} =1;
 		}
 
@@ -114,10 +120,10 @@ for my $lang ( sort keys %langs ){
 
 		my @params = $value =~ /(%\d+\$[\d\.]*[sdxf])/g;
 		my $params = join ',', sort @params;
-		my $master_params = $params{$name} // '';
-		if( $params ne $master_params){
+		my $baseParams = $params{$name} // '';
+		if( $params ne $baseParams){
 			$hasError =1;
-			print "!! ($lang)$name : parameter mismatch. master=$master_params, found=$params\n";
+			print "!! ($lang)$name : parameter mismatch. main=$baseParams, found=$params\n";
 		}
 
 		# 残りの部分に%が登場したらエラー
@@ -140,7 +146,7 @@ for my $lang ( sort keys %langs ){
 }
 
 my @missing = sort keys %missing;
-@missing and die "missing string resources in master language: ",join(', ',@missing),"\n";
+@missing and die "missing string resources in default language: ",join(', ',@missing),"\n";
 
 my $nameCount = 0+ keys %allNames;
 print "(total)string resource count=$nameCount\n";

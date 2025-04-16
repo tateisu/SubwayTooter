@@ -1,2 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="action_settings">Iestatījumi</string>
+    <string name="account_select_please">Lūdzu, atlasiet kontu</string>
+    <string name="not_selected_2">(nav atlasīts)</string>
+    <string name="account_add">Pievienot kontu</string>
+    <string name="instance">Serveris</string>
+    <string name="user_mail_address">E-pasts</string>
+    <string name="ok">Labi</string>
+    <string name="cancel">Atcelt</string>
+    <string name="instance_not_specified">Serveris nav norādīts</string>
+    <string name="error_response">Kļūdas atbilde.</string>
+    <string name="api_error">API kļūda. %1$s</string>
+    <string name="cancelled">Atcelts</string>
+    <string name="account_pick">Atlasiet kontu</string>
+    <string name="reply">Atbildēt</string>
+    <string name="close_column">Aizvērt kolonnu</string>
+    <string name="notifications">Paziņojumi</string>
+    <string name="your_statuses">Jūsu profils</string>
+    <string name="statuses_of">%1$s profils</string>
+    <string name="follow">Sekot</string>
+    <string name="following">Seko</string>
+    <string name="followers">Sekotāji</string>
+    <string name="list_empty">Saraksts tukšs</string>
+    <string name="choose_account">Atlasiet savu kontu</string>
+    <string name="visibility_public">Publisks</string>
+    <string name="visibility_private">Tikai sekotāji</string>
+    <string name="account_setting">Konta iestatījumi</string>
+    <string name="setting">Iestatījumi</string>
+    <string name="app_setting">Lietotnes iestatījumi</string>
+    <string name="column_list">Kolonnu saraksts</string>
+    <string name="actions">Darbības</string>
+    <string name="user_name_not_match">Lietotājvārds neatbilst</string>
+    <string name="back_to_column_list">Doties uz kolonnas sarakstu, kad nospiež \"Atpakaļ\" pogu</string>
+    <string name="dont_confirm_before_close_column">Aizvērt kolonnu bez apstiprinājuma</string>
+    <string name="delete">Dzēst</string>
+    <string name="column">Kolonna</string>
+    <string name="conversation_view">Sarunu skats</string>
+    <string name="user_password">Parole</string>
+    <string name="choose_visibility">Atlasiet redzamību</string>
+    <string name="mail_not_specified">E-pasts nav norādīts</string>
+    <string name="password_not_specified">Parole nav norādīta</string>
+    <string name="network_error">Tīkla kļūda.</string>
+    <string name="confirm">Apstiprināt</string>
+    <string name="file_size_too_big">Fails ir lielāks par %1$d MB ierobežojumu.</string>
+    <string name="account_remove">Noņemt šo kontu</string>
+    <string name="account">Konts</string>
+    <string name="user">Lietotājs</string>
+    <string name="mail_address_not_contains_at_mark">Izmantojiet e-pastus, kas satur \'@\' un \'.\'</string>
+    <string name="confirm_account_remove">Šis konts tiks izdzēsts, un visas kolonnas tiks noņemtas.\nVai tiešām?</string>
+</resources>

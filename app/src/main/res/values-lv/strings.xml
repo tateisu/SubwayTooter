@@ -48,4 +48,6 @@
     <string name="user">Lietotājs</string>
     <string name="mail_address_not_contains_at_mark">Izmantojiet e-pastus, kas satur \'@\' un \'.\'</string>
     <string name="confirm_account_remove">Šis konts tiks izdzēsts, un visas kolonnas tiks noņemtas.\nVai tiešām?</string>
+    <string name="request_access_token">Pieprasa piekļuves pilnvaru…</string>
+    <string name="column_empty">Izmantojiet apakšējo kreiso izvēlnes pogu, lai pievienotu kolonnu</string>
 </resources>

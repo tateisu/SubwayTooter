@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId = namespace
-        versionCode = 550
-        versionName = "5.550"
+        versionCode = 551
+        versionName = "5.551"
     }
 
     buildFeatures {
@@ -66,6 +66,12 @@ android {
             versionNameSuffix = "-noFcm"
             applicationIdSuffix = ".noFcm"
             manifestPlaceholders["customScheme"] = "subwaytooternofcm"
+            dependenciesInfo {
+                // Disables dependency metadata when building APKs.
+                includeInApk = false
+                // Disables dependency metadata when building Android App Bundles.
+                includeInBundle = false
+            }
         }
         create("fcm") {
             dimension = "fcmType"
@@ -105,13 +111,6 @@ android {
     lint {
         warning += "DuplicatePlatformClasses"
         disable += "MissingTranslation"
-    }
-
-    dependenciesInfo {
-        // Disables dependency metadata when building APKs.
-        includeInApk = false
-        // Disables dependency metadata when building Android App Bundles.
-        includeInBundle = false
     }
 }
 

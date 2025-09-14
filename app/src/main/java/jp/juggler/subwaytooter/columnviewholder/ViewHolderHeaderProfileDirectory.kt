@@ -59,9 +59,7 @@ internal class ViewHolderHeaderProfileDirectory(
     override fun onViewRecycled() {
     }
 
-    override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
-        buttonView ?: return
-
+    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (busy) return
 
         if (buttonView is RadioButton && !isChecked) return

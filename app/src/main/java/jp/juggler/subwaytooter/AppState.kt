@@ -24,6 +24,7 @@ import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.coroutine.launchIO
 import jp.juggler.util.coroutine.runOnMainLooper
 import jp.juggler.util.data.*
+import jp.juggler.util.idCompat
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import java.io.File
@@ -69,7 +70,7 @@ class AppState(
             synchronized(log) {
                 try {
                     val tmpName =
-                        "tmpColumnList.${System.currentTimeMillis()}.${Thread.currentThread().id}"
+                        "tmpColumnList.${System.currentTimeMillis()}.${Thread.currentThread().idCompat}"
                     val tmpFile = context.getFileStreamPath(tmpName)
                     try {
                         // write to tmp file

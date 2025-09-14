@@ -217,7 +217,7 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
 
         views.etSearch.addTextChangedListener(queryWatcher)
 
-        views.lvList.apply{
+        views.lvList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = itemsAdapter
             addItemDecoration(
@@ -837,7 +837,8 @@ class ActAppSetting : AppCompatActivity(), View.OnClickListener {
             item.changed.invoke(actAppSetting)
         }
 
-        override fun onCheckedChanged(v: CompoundButton?, isChecked: Boolean) {
+        // implements CompoundButton.OnCheckedChangeListener
+        override fun onCheckedChanged(v: CompoundButton, isChecked: Boolean) {
             if (bindingBusy) return
             val item = item ?: return
             when (val pi = item.pref) {

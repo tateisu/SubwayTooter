@@ -63,6 +63,7 @@ import jp.juggler.util.data.UriSerializer
 import jp.juggler.util.data.getDocumentName
 import jp.juggler.util.data.getStreamSize
 import jp.juggler.util.data.notZero
+import jp.juggler.util.idCompat
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.showToast
 import jp.juggler.util.log.withCaption
@@ -1430,7 +1431,7 @@ class ActAccountSetting : AppCompatActivity(),
 
                         val tempFile = File(
                             cacheDir,
-                            "tmp." + System.currentTimeMillis() + "." + Thread.currentThread().id
+                            "tmp." + System.currentTimeMillis() + "." + Thread.currentThread().idCompat
                         )
                         FileOutputStream(tempFile).use { os ->
                             if (isJpeg) {

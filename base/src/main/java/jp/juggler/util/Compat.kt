@@ -377,9 +377,22 @@ fun AppCompatActivity.overrideActivityTransitionCompat(
 //}
 //
 
+/**
+ * suspendCancellableCoroutine 内部で使う cont.resume() の互換関数。
+ */
 fun <T> CancellableContinuation<T>.resumeCompat(
-    value:T,
-    onCancellation: ((cause: Throwable, value: T, context: CoroutineContext) -> Unit)? = null
-){
-    this.resume(value,onCancellation)
-}
+    value: T,
+    onCancellation: ((cause: Throwable, value: T, context: CoroutineContext) -> Unit)? = null,
+) = resume(value, onCancellation)
+
+/**
+ * Java 19 で deprecated になった Thread.getId() の五感関数。
+ * Java 19 の threadId() が推奨されているが、
+ * API 26 のエミュで使うと例外が出ていた
+ * > NoSuchMethodError: No virtual method threadId()J in class Ljava/lang/Thread;
+ * https://developer.android.com/build/jdks
+ * によると Android 14 (API 34)で Java 17 なので、当面は Thread.getId() を使うことになる。
+ */
+@Suppress("DEPRECATION")
+val Thread.idCompat: Long
+    get() = id

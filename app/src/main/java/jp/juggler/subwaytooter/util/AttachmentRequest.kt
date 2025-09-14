@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.data.JsonObject
 import jp.juggler.util.data.getStreamSize
 import jp.juggler.util.data.notEmpty
+import jp.juggler.util.idCompat
 import jp.juggler.util.log.LogCategory
 import jp.juggler.util.log.errorEx
 import jp.juggler.util.media.ResizeConfig
@@ -311,8 +312,8 @@ class AttachmentRequest(
             ?.apply { mkdirs() }
             ?: error("getExternalCacheDir returns null.")
 
-        val tempFile = File(cacheDir, "movie." + Thread.currentThread().id + ".tmp")
-        val outFile = File(cacheDir, "movie." + Thread.currentThread().id + ".mp4")
+        val tempFile = File(cacheDir, "movie." + Thread.currentThread().idCompat + ".tmp")
+        val outFile = File(cacheDir, "movie." + Thread.currentThread().idCompat + ".mp4")
         var resultFile: File? = null
         try {
 

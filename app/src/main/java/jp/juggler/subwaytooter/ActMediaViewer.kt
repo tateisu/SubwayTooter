@@ -234,8 +234,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
             mediaPeriodId: MediaSource.MediaPeriodId?,
             loadEventInfo: LoadEventInfo,
             mediaLoadData: MediaLoadData,
+            retryCount: Int,
         ) {
-            log.d("onLoadStarted")
+            log.d("onLoadStarted retryCount=$retryCount")
         }
 
         override fun onDownstreamFormatChanged(

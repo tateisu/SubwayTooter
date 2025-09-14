@@ -1,6 +1,7 @@
 package jp.juggler.apng
 
 import android.graphics.Bitmap
+import androidx.core.graphics.createBitmap
 import com.bumptech.glide.gifdecoder.GifDecoder
 import com.bumptech.glide.integration.webp.WebpImage
 import com.bumptech.glide.integration.webp.decoder.WebpDecoder
@@ -14,7 +15,7 @@ class MyWebPDecoder(val callback: MyGifDecoderCallback) {
         override fun obtainByteArray(size: Int) = ByteArray(size)
         override fun obtainIntArray(size: Int) = IntArray(size)
         override fun obtain(width: Int, height: Int, config: Bitmap.Config): Bitmap =
-            Bitmap.createBitmap(width, height, config)
+            createBitmap(width, height, config)
 
         override fun release(bitmap: Bitmap) {
             bitmap.recycle()

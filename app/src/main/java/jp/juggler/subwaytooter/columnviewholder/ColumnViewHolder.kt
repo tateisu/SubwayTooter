@@ -566,7 +566,7 @@ class ColumnViewHolder(
 
     override fun onClick(v: View?) = onClickImpl(v)
     override fun onLongClick(v: View?): Boolean = onLongClickImpl(v)
-    override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) =
+    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) =
         onCheckedChangedImpl(buttonView, isChecked)
 
     private fun _LinearLayout.inflateColumnHeader() {

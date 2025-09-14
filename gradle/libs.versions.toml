@@ -35,9 +35,7 @@ desugarJdk = "2.1.5"
 detekt = "1.23.8"
 draglistview = "1.7.3"
 firebaseMessaging = "25.0.0"
-# glideバージョン は zjupure/GlideWebpDecoder が対応しているものにすること
-#noinspection NewerVersionAvailable
-glide = "4.16.0"
+glide = "5.0.5"
 googleFlexbox = "3.0.0"
 googleMaterial = "1.13.0"
 googleServices = "4.4.3"
@@ -51,7 +49,10 @@ ksp = "2.2.20-2.0.3" # kotlinバージョンに依存している
 okhttp = "5.1.0"
 otaliastudiosTranscoder = "0.11.2"
 unifiedPushAndroidConnector = "2.1.1"
+
 # zjupure/GlideWebpDecoder
+# Note: ライブラリはGlide統合用だが、このアプリでは MyWebPDecoder.kt から直接使っているだけだ。
+# glideとの統合はしていない
 webpDecoder = "2.7.4.16.0" # glideバージョンに依存している
 
 # 以下は未使用に見えても削除してはいけない

@@ -226,3 +226,5 @@ app/fcm/release/output-metadata.json
 
 
 /.kotlin/
+
+/build-logic/.kotlin/

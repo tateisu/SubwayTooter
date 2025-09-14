@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="19">
+    <bytecodeTargetLevel target="17">
       <module name="apng" target="1.7" />
       <module name="SubwayTooter.buildSrc" target="21" />
       <module name="SubwayTooter.buildSrc.main" target="21" />
@@ -9,5 +9,12 @@
       <module name="SubwayTooter.main" target="17" />
       <module name="SubwayTooter.test" target="17" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="SubwayTooter.apng" options="-Xlint:unchecked -Xlint:deprecation -Xlint:divzero" />
+      <module name="SubwayTooter.apng.main" options="-Xlint:unchecked -Xlint:deprecation -Xlint:divzero" />
+      <module name="SubwayTooter.apng.test" options="-Xlint:unchecked -Xlint:deprecation -Xlint:divzero" />
+    </option>
   </component>
 </project>

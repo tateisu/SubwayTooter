@@ -70,7 +70,7 @@ suspend fun transcodeAudio(
                 ) {
                     val mediaItem = composition.sequences[0].editedMediaItems[0].mediaItem
                     log.i("onCompleted mediaItem=$mediaItem exportResult=$exportResult")
-                    if (cont.isActive) cont.resume(exportResult) {}
+                    if (cont.isActive) cont.resumeCompat(exportResult)
                 }
 
                 override fun onError(

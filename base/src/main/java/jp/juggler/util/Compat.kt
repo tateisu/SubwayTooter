@@ -16,6 +16,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CancellableContinuation
+import kotlin.coroutines.CoroutineContext
 
 /**
  * API 33 で Bundle.get() が deprecatedになる。
@@ -374,3 +376,10 @@ fun AppCompatActivity.overrideActivityTransitionCompat(
 //	}
 //}
 //
+
+fun <T> CancellableContinuation<T>.resumeCompat(
+    value:T,
+    onCancellation: ((cause: Throwable, value: T, context: CoroutineContext) -> Unit)? = null
+){
+    this.resume(value,onCancellation)
+}

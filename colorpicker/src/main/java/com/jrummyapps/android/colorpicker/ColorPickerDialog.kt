@@ -41,15 +41,14 @@ import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
 import com.jrummyapps.android.colorpicker.databinding.CpvDialogColorPickerBinding
 import com.jrummyapps.android.colorpicker.databinding.CpvDialogPresetsBinding
-import jp.juggler.util.coroutine.cancellationException
 import jp.juggler.util.coroutine.resumeWithCancellationException
 import jp.juggler.util.log.LogCategory
+import jp.juggler.util.resumeCompat
 import jp.juggler.util.systemService
 import jp.juggler.util.ui.dismissSafe
 import jp.juggler.util.ui.gone
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
-import kotlin.coroutines.resumeWithException
 import kotlin.math.roundToInt
 
 private val log = LogCategory("ColorPickerDialog")
@@ -231,7 +230,7 @@ suspend fun Activity.dialogColorPicker(
     fun dismiss() = dialog?.dismissSafe()
 
     fun complete() {
-        if (cont.isActive) cont.resume(currentColor) {}
+        if (cont.isActive) cont.resumeCompat(currentColor)
         dismiss()
     }
 
@@ -469,7 +468,7 @@ suspend fun Activity.dialogColorPicker(
                 listener = {
                     when (it) {
                         currentColor -> {
-                            if (cont.isActive) cont.resume(currentColor) {}
+                            if (cont.isActive) cont.resumeCompat(currentColor)
                             dismiss()
                         }
 
@@ -528,7 +527,7 @@ suspend fun Activity.dialogColorPicker(
             setTitle(dialogTitle)
         }
         setPositiveButton(R.string.cpv_select) { _, _ ->
-            if (cont.isActive) cont.resume(currentColor) {}
+            if (cont.isActive) cont.resumeCompat(currentColor)
         }
         val neutralButtonStringRes = when {
             !dialogTypeSwitcher -> 0

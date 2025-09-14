@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId = namespace
-        versionCode = 549
-        versionName = "5.549"
+        versionCode = 550
+        versionName = "5.550"
     }
 
     buildFeatures {

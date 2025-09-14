@@ -67,14 +67,14 @@ class VideoInfo(
                         // OMX.qcom.video.encoder.avc color 7f420888 COLOR_FormatYUV420Flexible
                         // OMX.qcom.video.encoder.avc color 15 COLOR_Format32bitBGRA8888
                     }
-                    caps.videoCapabilities.bitrateRange?.let { range ->
+                    caps.videoCapabilities?.bitrateRange?.let { range ->
                         log.i("bitrateRange $range")
                     }
-                    caps.videoCapabilities.supportedFrameRates?.let { range ->
+                    caps.videoCapabilities?.supportedFrameRates?.let { range ->
                         log.i("supportedFrameRates $range")
                     }
                     if (Build.VERSION.SDK_INT >= 28) {
-                        caps.encoderCapabilities.qualityRange?.let { range ->
+                        caps.encoderCapabilities?.qualityRange?.let { range ->
                             log.i("qualityRange $range")
                         }
                     }

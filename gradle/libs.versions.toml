@@ -74,8 +74,8 @@ kotlin = "2.2.20"
 
 # android関連の指定
 # 未使用に見えるが削除してはいけない。buildLogicから参照される
-stBuildToolsVersion = "35.0.1"
-stCompileSdkVersion = "35"
+stBuildToolsVersion = "36.0.0"
+stCompileSdkVersion = "36"
 stTargetSdkVersion = "35"
 stMinSdkVersion = "26"
 

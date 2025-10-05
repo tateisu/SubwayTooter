@@ -178,4 +178,6 @@
     <string name="location">Atrašanās vieta</string>
     <string name="conversation_to">Kam:</string>
     <string name="agree_terms">Es piekrītu pakalpojuma lietošanas nosacījumiem</string>
+    <string name="home">Sākums</string>
+    <string name="show">Rādīt</string>
 </resources>

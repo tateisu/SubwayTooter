@@ -45,7 +45,8 @@ kotlinCoroutinesOkhttp = "1.0"
 kotlinxCoroutines = "1.10.2"
 kotlinxCoroutinesGuava = "1.10.2"
 kotlinxSerialization = "1.9.0"
-ksp = "2.2.20-2.0.3" # kotlinバージョンに依存している
+# since 2.3.0, KSP version is no longer tied to the Kotlin compiler version
+ksp = "2.3.3"
 okhttp = "5.3.2"
 otaliastudiosTranscoder = "0.11.2"
 unifiedPushAndroidConnector = "2.1.1"

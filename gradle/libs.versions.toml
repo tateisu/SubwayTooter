@@ -1,19 +1,19 @@
 [versions]
 androidGradlePlugin = "8.13.1"
 androidSvgAar = "1.4"
-androidxActivity = "1.11.0"
+androidxActivity = "1.12.0"
 androidxAnnotation = "1.9.1"
 androidxAppcompat = "1.7.1"
 androidxArchCoreTesting = "2.2.0"
 androidxBrowser = "1.9.0"
-androidxComposeBom = "2025.09.00"
+androidxComposeBom = "2025.11.01"
 androidxConstraintLayout = "2.2.1"
 androidxCoreKtx = "1.17.0"
-androidxCoreSplashscreen = "1.2.0-rc01"
+androidxCoreSplashscreen = "1.2.0"
 androidxDrawerlayout = "1.2.0"
 androidxEmoji2 = "1.6.0"
 androidxExifInterface = "1.4.1"
-androidxLifecycle = "2.9.3"
+androidxLifecycle = "2.10.0"
 androidxMedia3 = "1.8.0"
 androidxMedia3Effect = "1.8.0"
 androidxMedia3Transformer = "1.8.0"
@@ -26,7 +26,7 @@ androidxTestExtJunit = "1.3.0"
 androidxTestExtTruth = "1.7.0"
 androidxTestOrchestrator = "1.6.1"
 androidxTestRunner = "1.7.0"
-androidxWork = "2.10.4"
+androidxWork = "2.11.0"
 apng4Android = "3.0.5"
 bcprovJdk15on = "1.70"
 conscryptAndroid = "2.5.3"
@@ -34,11 +34,11 @@ customQrGenerator = "1.6.2"
 desugarJdk = "2.1.5"
 detekt = "1.23.8"
 draglistview = "1.7.3"
-firebaseMessaging = "25.0.0"
+firebaseMessaging = "25.0.1"
 glide = "5.0.5"
 googleFlexbox = "3.0.0"
 googleMaterial = "1.13.0"
-googleServices = "4.4.3"
+googleServices = "4.4.4"
 junit = "4.13.2"
 koinBom = "4.1.1"
 kotlinCoroutinesOkhttp = "1.0"
@@ -46,7 +46,7 @@ kotlinxCoroutines = "1.10.2"
 kotlinxCoroutinesGuava = "1.10.2"
 kotlinxSerialization = "1.9.0"
 ksp = "2.2.20-2.0.3" # kotlinバージョンに依存している
-okhttp = "5.1.0"
+okhttp = "5.3.2"
 otaliastudiosTranscoder = "0.11.2"
 unifiedPushAndroidConnector = "2.1.1"
 
@@ -61,24 +61,33 @@ webpDecoder = "2.7.4.16.0" # glideバージョンに依存している
 # Javaの互換性
 # org.gradle.api.JavaVersion.toVersion(...) に渡される
 # 未使用に見えるが削除してはいけない。buildLogicから参照される
+#noinspection UnusedVersionCatalogEntry
 javaSourceCompatibility = "17"
+#noinspection UnusedVersionCatalogEntry
 javaTargetCompatibility = "17"
 
 # Kotlinに指定するJvmTarget
+#noinspection UnusedVersionCatalogEntry
 kotlinJvmTarget = "17"
 
 # Android Studio同梱のJavaツールチェインのバージョン
+#noinspection UnusedVersionCatalogEntry
 kotlinJvmToolchain = "21"
 
 # KotlinとKotlin pluginのバージョン
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 
 # android関連の指定
 # 未使用に見えるが削除してはいけない。buildLogicから参照される
+#noinspection UnusedVersionCatalogEntry
 stBuildToolsVersion = "36.0.0"
+#noinspection UnusedVersionCatalogEntry
 stCompileSdkVersion = "36"
+#noinspection UnusedVersionCatalogEntry
 stTargetSdkVersion = "35"
+#noinspection UnusedVersionCatalogEntry
 stMinSdkVersion = "26"
+#noinspection UnusedVersionCatalogEntry
 
 [libraries]
 androidsvg-aar = { module = "com.caverock:androidsvg-aar", version.ref = "androidSvgAar" }
@@ -163,6 +172,7 @@ unifiedpush-android-connector = { module = "com.github.UnifiedPush:android-conne
 webpDecoder = { module = "com.github.zjupure:webpdecoder", version.ref = "webpDecoder" }
 
 # 以下は未使用に見えるが削除してはいけない。buildLogicから参照される
+#noinspection UnusedVersionCatalogEntry
 desugar-jdk = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdk" }
 
 # 以下は build-logic で実装する gradlePlugin から参照されるライブラリ

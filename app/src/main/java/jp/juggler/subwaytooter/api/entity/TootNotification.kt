@@ -25,6 +25,9 @@ class TootNotification(
     // Mastodon 4.3, severed_relationships で供給される
     val event: RelationshipSeveranceEvent?,
 
+    // Mastodon 4.0, admin.report: report.target_account (the reported account)
+    val reportTargetAccountRef: TootAccountRef? = null,
+
     var reaction: TootReaction? = null,
 
     val reblog_visibility: TootVisibility,
@@ -98,6 +101,13 @@ class TootNotification(
             val reblog_visibility = TootVisibility.parseMastodon(visibilityString)
                 ?: TootVisibility.Unknown
 
+            val reportTargetAccountRef = when (type) {
+                NotificationType.AdminReport -> src.jsonObject("report")?.let { reportJson ->
+                    tootAccountRefOrNull(parser, parser.account(reportJson.jsonObject("target_account")))
+                }
+                else -> null
+            }
+
             return TootNotification(
                 json = src,
                 id = EntityId.mayDefault(src.string("id")),
@@ -109,6 +119,7 @@ class TootNotification(
                 created_at = created_at,
                 time_created_at = TootStatus.parseTime(created_at),
                 event = src.jsonObject("event")?.parseTootNotififcationEvent(),
+                reportTargetAccountRef = reportTargetAccountRef,
             )
         }
 
@@ -158,8 +169,18 @@ class TootNotification(
             NotificationType.AdminSignup,
                 -> context.getString(R.string.display_name_signed_up, name)
 
-            NotificationType.AdminReport,
-                -> context.getString(R.string.display_name_report, name)
+            NotificationType.AdminReport -> {
+                val targetRef = reportTargetAccountRef
+                if (targetRef != null) {
+                    val targetName = when (PrefB.bpShowAcctInSystemNotification.value) {
+                        true -> targetRef.get()?.acct?.pretty?.notEmpty()?.let { "@$it" }
+                        else -> targetRef.decoded_display_name
+                    } ?: "?"
+                    context.getString(R.string.display_name_report_target, name, targetName)
+                } else {
+                    context.getString(R.string.display_name_report, name)
+                }
+            }
 
             NotificationType.Favourite,
                 -> context.getString(R.string.display_name_favourited_by, name)

@@ -98,6 +98,7 @@
     <string name="display_name_unfollowed_by">%1$s unfollowed you</string>
     <string name="display_name_signed_up">%1$s signed up on your server</string>
     <string name="display_name_report">%1$s reported.</string>
+    <string name="display_name_report_target">%1$s reported %2$s</string>
     <string name="account">Account</string>
     <string name="account_setting">Account settings</string>
     <string name="setting">Settings</string>

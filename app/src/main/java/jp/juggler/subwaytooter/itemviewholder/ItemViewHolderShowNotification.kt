@@ -159,14 +159,36 @@ private fun ItemViewHolder.showNotificationReport(
 ) {
     val colorBg = PrefI.ipEventBgColorReport.value
     colorBg.notZero()?.let { viewRoot.backgroundColor = it }
-    nAccountRef?.let {
-        showBoost(
-            it,
-            n.time_created_at,
-            R.drawable.ic_follow_wait,
-            R.string.display_name_report
-        )
-        showAccount(it)
+    val reporterRef = nAccountRef
+    val reportedTargetRef = n.reportTargetAccountRef
+    when {
+        reporterRef != null && reportedTargetRef != null -> {
+            val reporterName = reporterRef.get().decodeDisplayNameCached(activity)
+            val targetName = reportedTargetRef.get().decodeDisplayNameCached(activity)
+            val boostText = activity.getSpannedString(
+                R.string.display_name_report_target,
+                reporterName,
+                targetName,
+            )
+            showBoost(
+                reporterRef,
+                n.time_created_at,
+                R.drawable.ic_follow_wait,
+                R.string.display_name_report,
+                avatarNameReplacement = boostText,
+            )
+            showAccount(reportedTargetRef)
+            statusAccount = reportedTargetRef
+        }
+        reporterRef != null -> {
+            showBoost(
+                reporterRef,
+                n.time_created_at,
+                R.drawable.ic_follow_wait,
+                R.string.display_name_report,
+            )
+            showAccount(reporterRef)
+        }
     }
 }
 
